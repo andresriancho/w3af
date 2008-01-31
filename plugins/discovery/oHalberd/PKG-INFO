@@ -1,0 +1,22 @@
+Metadata-Version: 1.0
+Name: halberd
+Version: 0.2.3
+Summary: HTTP load balancer detector
+Home-page: http://halberd.superadditive.com/
+Author: Juan M. Bello Rivas
+Author-email: jmbr@superadditive.com
+License: UNKNOWN
+Description: Halberd discovers HTTP load balancers. It is useful for web application security auditing
+        and for load balancer configuration testing.
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Security

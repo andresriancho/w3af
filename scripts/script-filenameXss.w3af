@@ -1,0 +1,28 @@
+# This is a fuzz file name demo:
+
+misc-settings
+set fuzzFileName true
+back
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+audit xss
+audit
+
+back
+target
+set target http://localhost/w3af/fuzzFileName/test/1.html
+back
+start
+
+assert len(kb.kb.getData('xss','xss')) == 2
+exit

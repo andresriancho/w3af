@@ -1,0 +1,56 @@
+<project default="build">
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+  <property name="output.dir" value="../docs"/>
+  <property name="staging.dir" value="c:/Program Files/Apache Group/Apache2/htdocs/pywordnet"/>
+  
+  <path id="saxon.processor.classpath">
+    <pathelement path="c:/laszlo/lps-doc/WEB-INF/lib/saxon-6.5.3-lz-p1.jar" />
+    <pathelement path="c:/laszlo/lps-doc/3rd-party/jars/dev/xercesImpl.jar"/>
+    <pathelement path="${docbook-xsl}/extensions/saxon651.jar" />
+  </path>
+  
+  <target name="build">
+    <style in="contributors-src.xml"
+           style="format-contributors.xsl"
+           out="contributors.xml"/>
+    <!--style in="index.xml"
+           style="make-navigation.xsl"
+           out="${output.dir}/nav.html.inc"/-->
+    <style in="index.xml"
+           style="make-css-prefix.xsl"
+           out="${output.dir}/styles.css.prefix"/>
+    <concat destfile="${output.dir}/styles.css">
+      <filelist dir="${output.dir}" files="styles.css.prefix"/>
+      <filelist dir="." files="styles.in.css"/>
+    </concat>
+    
+        <java classname="com.icl.saxon.StyleSheet"
+              fork="yes"
+          failonerror="true">
+          <classpath refid="saxon.processor.classpath" />
+          <jvmarg value="-Djavax.xml.parsers.DocumentBuilderFactory=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"/>
+          <jvmarg value="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl"/>
+          <jvmarg value="-Dorg.apache.xerces.xni.parser.XMLParserConfiguration=org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+          
+          <arg line="-o ${output.dir}/contents.html"/>
+          <arg line="index.xml"/>
+          <arg line="publish.xsl"/>
+          <arg line="base.dir=${output.dir}/"/>
+        </java>
+       
+    <!--copy todir="${staging.dir}">
+      <fileset dir="${output.dir}"/>
+      <mapper from="*.html" to="*.php" type="glob"/>
+    </copy-->
+    <copy todir="${staging.dir}">
+      <fileset dir="${output.dir}"/>
+    </copy>
+  </target>
+  
+  <target name="clean">
+    <delete>
+      <fileset dir="${output.dir}"/>
+      <fileset dir="${staging.dir}"/>
+    </delete>
+  </target>
+</project>

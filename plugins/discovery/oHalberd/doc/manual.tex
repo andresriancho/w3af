@@ -1,0 +1,352 @@
+\documentclass[a4paper]{book}
+\usepackage[english]{babel}
+\begin{document}
+
+\title{Halberd user's guide}
+\author{Juan M. Bello Rivas}
+\maketitle
+
+\tableofcontents
+
+% 1. Explain the problem being solved.
+% 2. Present the concepts, not just the features.
+% 3. Give'em more than they deserve.
+% 4. Make it enjoyable to read.
+
+\chapter{Introduction}
+
+Halberd discovers HTTP load balancers. It is useful for web application
+security auditing and for load balancer configuration testing.
+
+\section{Motivation}
+
+To cope with heavy traffic loads, web site administrators often install load
+balancer devices. These machines hide (possibly) many real web servers behind
+a virtual IP. They receive HTTP requests and redirect them to the real web
+servers in order to share the traffic between them.
+
+There are a few ways to map the servers behind the VIP and to reach them
+individually.
+
+Identifying and being able to reach all real servers individually (effectively
+bypassing the load balancer) is very important for an attacker trying to break
+into a site. It is often the case that there are configuration differences
+ranging from the slight:
+
+\begin{itemize}
+  \item server software versions,
+  \item server modules
+\end{itemize}
+
+to the extreme:
+
+\begin{itemize}
+  \item different platforms
+  \item server software.
+\end{itemize}
+
+For an attacker, this information is crucial because he might find vulnerable
+configurations that otherwise (without mapping the real servers) could have
+gone unnoticed.
+
+But someone trying to break into a web site doesn't have server software as its
+only target. He will try to subvert dynamic server pages in several ways.  By
+identifying all the real servers and scanning them individually for
+vulnerabilities, he might find bugs affecting only one or a few of the web
+servers. Even if all machines are running the same server software, halberd can
+enumerate them allowing more thorough vulnerability scans on the application
+level.
+
+\chapter{Concepts}
+
+Halberd operates in stages:
+
+\begin{enumerate}
+  \item Initially, it sends multiple requests to the target web server and
+  records its responses.  This is called the \emph{sampling phase}.  The time
+  to spend in this phase and the amount of HTTP requests to be sent can be
+  specified using the \texttt{--time} and \texttt{--parallelism} command line
+  options.  See \ref{sec:time} and \ref{sec:parallelism}.
+
+  \item After the analysis phase finishes, either normally or because the user
+  interrupted it pressing Control-C, the program processes the replies looking
+  for signs of load balancing.  This is called the \emph{analysis phase}.
+
+  \item Finally, halberd writes a report of its findings to the screen (or to a
+  file if the \texttt{--out} option is used).
+\end{enumerate}
+
+The user may skip the scanning phase and proceed to the analysis of samplings
+saved in a previous session. See \ref{sec:read} and \ref{sec:write}.
+
+The following is a list of detection techniques currently implemented:
+
+\section{Date comparison}
+
+HTTP responses reveal the internal clock of the web server that produces them.
+By tracking how many different clocks appear to be, halberd can have some
+insight into the number of real servers.
+
+\section{MIME header field names, values and their order}
+
+Differences in fields appearing in server responses can allow halberd to
+narrow down its search.
+
+%\section{Special cookie usage}
+%
+%Some HTTP load balancers generate a cookie which will be used to direct future
+%requests to a certain server. Administrators can also set up cookies that will
+%be taken into account for deciding where to send requests. By selecting which
+%cookies to send, the program attempts to force the load balancer to route
+%requests to a server of our choice.
+
+\section{Generating high amounts of traffic}
+
+Under certain configurations, load balancers might start to distribute traffic
+only after a certain threshold has been reached.  By default, halberd attempts
+to generate a sizable traffic volume to trigger this condition and reach as
+many real servers as possible. See \ref{sec:parallelism}.
+
+%Halberd can be used in a distributed fashion to generate heavy traffic loads.
+%Running the program in RPC server mode in computers located at several
+%networks lets the user launch distributed scans against a web site, forcing
+%the idle web servers to reveal themselves.
+
+\section{Using different URLs}
+
+An HTTP load balancer can be configured to take URLs into account when deciding
+where to direct requests. Gathering URLs with a spider and feeding them to
+halberd will make it more likely that all servers will reply at some point.
+See \ref{sec:urlfile}.
+
+\section{Detecting server-side caches}
+
+Halberd might come across web sites having server-side caches (e.g.: Squid).
+This kind of configuration is appropriately identified by halberd and in case
+there is more than one cache, the program can enumerate them.
+
+\section{Obtaining public IP addresses}
+
+Sometimes cookies or special MIME fields in server responses can reveal public
+IP addresses or host names. In these cases the load balancer can be bypassed
+connecting directly to the real servers.
+
+\chapter{Installation}
+
+\section{Prerequisites}
+
+You need Python version 2.3 or above with the threading and MD5 (or SHA1)
+modules enabled.  If you want to scan through HTTPS you will also need a Python
+interpreter configured with support for SSL sockets.
+
+\section{Supported platforms}
+
+Halberd should work in every machine satisfying the prerequisites mentioned
+above.  The program has been successfully built and tested on GNU/Linux, Windows
+2000 and Mac OS X.
+
+\section{Installation steps}
+
+Installing halberd is a very simple task.  It suffices to write (perhaps as
+root):
+
+\begin{verbatim}
+python setup.py install
+\end{verbatim}
+
+Halberd creates the file \verb|$HOME/.halberd/halberd.cfg| when you execute it
+for the first time.  This file lets the user configure proxy settings and
+specify an SSL certificate.
+
+It is recommended that you read the output of
+\verb|python setup.py install --help| in case you want to fine tune the
+installation process.
+
+\chapter{Operation}
+
+This chapter explains how to use halberd in the real world.
+
+\section{Sample session}
+
+Peter is on the phone, talking to a client who asks him to perform a
+penetration test of a large web application that's just entered production.
+
+He impatiently taps his fingers against the wooden table waiting for the email
+from the client to arrive.  Our hero is finally given the green light and he
+begins his dutiful work.
+
+First of all, a load balancer scanning is due.  He fires up a virtual terminal
+and writes:
+
+\begin{verbatim}
+$ halberd http://www.target-company.com
+\end{verbatim}
+
+Peter reads the output of his previous incantation and nods...
+
+% XXX: use sed or whatever to update the version here.
+
+\begin{verbatim}
+halberd 0.2.0
+
+INFO looking up host www.target-company.com...
+INFO host lookup done.
+INFO www.target-company.com resolves to x.x.x.1
+INFO www.target-company.com resolves to x.x.x.2
+x.x.x.1   [######    ]  clues:   3 | replies:  17 | missed:   0
+\end{verbatim}
+
+After 17 replies he thinks halberd has enough samples to analyze, so he hits
+Control-C and stops the scan for this host.  Peter notes there is DNS load
+balancing in place so he'll have to check both IP addresses.
+
+\begin{verbatim}
+
+*** finished (received SIGINT) ***
+
+=============================================================
+http://www.target-company.com (x.x.x.1): 1 real server(s)
+=============================================================
+
+server 1: foo/1.2.3  mod_bar/4.2 (Unix)
+-------------------------------------------------------------
+
+difference: 3600 seconds
+successful requests: 17 hits (100.00%)
+header fingerprint: c0ba8262100168851872c8feea3196f21ba2d732
+different headers:
+  1. Server: foo/1.2.3  mod_bar/4.2 (Unix)
+\end{verbatim}
+
+"Nothing to see here, let's move along" muttered Peter while halberd
+progressed to the second IP address.
+
+\begin{verbatim}
+============================================================
+http://www.target-company.com (x.x.x.2): 2 real server(s)
+============================================================
+
+server 1: foo/1.2.2  mod_bar/4.2 (Unix)
+------------------------------------------------------------
+
+difference: 3600 seconds
+successful requests: 11 hits (33.33%)
+header fingerprint: 732deadbeef100168851872c8feea196f21ba2d2
+different headers:
+  1. Date: Wed, 16 Aug 2006 22:47:04 GMT
+  2. Server: foo/1.2.2  mod_bar/4.2 (Unix)
+
+server 2: foo/1.2.3  mod_bar/4.2 (Unix)
+------------------------------------------------------------
+
+difference: 3662 seconds
+successful requests: 23 hits (66.66%)
+header fingerprint: ad2d33a88f259b434c094a7b1172f5697a35cff4
+different headers:
+  1. Date: Wed, 16 Aug 2006 22:46:02 GMT
+  2. Server: foo/1.2.3  mod_bar/4.2 (Unix)
+\end{verbatim}
+
+"Aha!" shouts our fellow, almost falling off his chair.  "Not only did they
+forget to set up NTP on those servers, letting me distinguish them easily,
+they also have different \emph{server versions}!"
+
+His eyes go blank while he runs a search in his brain cell based, caffeine
+fueled vulnerability database for the terms foo/1.2.2 mod\_bar/4.2.  He
+remembers there was a recent exploit for a buffer overflow in that version of
+foo.
+
+Peter has to take into account that the vulnerable web server gets one third
+of the traffic (33.33\%).  Thus, he executes the exploit enough times to make
+sure it hits the exposed target and he finally breaks into the machine.
+
+"I'm so lucky to have this wonderful load balancer detector in my toolkit!
+This vulnerability could have easily been skipped."
+
+Our hero begins to walk in circles around the room, planning the next stages
+of his assault and anticipating with apprehension the time when he'll have to
+write the report for his client.
+
+\section{Command line options}
+
+\subsection{\texttt{--version}}
+
+Shows the program's version number.
+
+\subsection{\texttt{-h, --help}}
+
+Shows a help message describing every option.
+
+\subsection{\texttt{-q, --quiet}}
+
+Runs quietly, limiting the amount of information being displayed while the
+program runs.
+
+\subsection{\texttt{-d, --debug}}
+
+Enables debugging information.  This can be useful if you want halberd to dump
+all the HTTP headers or if you're debugging the tool itself.
+
+\subsection{\texttt{-t NUM, --time=NUM}}
+
+\label{sec:time}
+Stops halberd after NUM seconds have passed since the beginning of the
+sampling phase.
+
+\subsection{\texttt{-p NUM, --parallelism=NUM}}
+
+\label{sec:parallelism}
+Specifies the number of parallel threads to use for network operations.  This
+can increase the amount of requests per second during the sampling phase.
+
+\subsection{\texttt{-u FILE, --urlfile=FILE}}
+
+\label{sec:urlfile}
+Read URLs from FILE.  FILE is a text archive containing an URL in each line.
+halberd will scan these URLs one by one.
+
+\subsection{\texttt{-o FILE, --out=FILE}}
+
+Writes the human-readable results from the analysis phase to FILE.
+
+\subsection{\texttt{-a ADDR, --address=ADDR}}
+
+Specifies the target by its IP address.
+
+\subsection{\texttt{-r FILE, --read=FILE}}
+
+\label{sec:read}
+Loads and analyzes \emph{clues} from FILE.  \emph{Clues} are what halberd uses
+to figure out (during the analysis phase) whether there is a load balancer or
+not.  These \emph{clues} can be written (un-analyzed) to a file with the
+\texttt{--write} option for comparison with future scans or other purposes.
+
+\subsection{\texttt{-w DIR, --write=DIR}}
+
+\label{sec:write}
+Saves \emph{clues} to the specified directory.  If it doesn't exist, it will be
+created.
+
+For being portable, \emph{clues} are stored in text files contained in a
+special directory layout.  The following is an example of the generated file
+hierarchy:
+
+\begin{verbatim}
+http___www_target_company_com/
+http___www_target_company_com/x_x_x_1.clu
+http___www_target_company_com/x_x_x_2.clu
+\end{verbatim}
+
+\subsection{\texttt{--config=FILE}}
+
+Tells halberd to use the configuration stored in FILE instead of the default
+\verb|halberd.cfg|.
+
+\chapter{Support}
+
+Suggestions, bug reports and patches can be emailed to the author at
+\texttt{jmbr@superadditive.com}
+
+\end{document}
+
+% vim: ts=2 sw=2 et ft=tex

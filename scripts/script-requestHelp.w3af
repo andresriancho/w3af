@@ -1,0 +1,15 @@
+# This shows how a user requests help ;)
+
+plugins
+audit
+audit config xss
+view
+help checkPersistent
+back
+
+back
+
+assert 1 == 1
+
+exit
+

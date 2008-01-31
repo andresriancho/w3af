@@ -1,0 +1,48 @@
+<article xmlns:xi="http://www.w3.org/2003/XInclude">
+
+<title>PyWordNet</title>
+
+<!--section id="index">
+<title>About PyWordNet</title-->
+
+<para><application>PyWordNet</application> is a
+<glossterm>Python</glossterm> interface to the
+<glossterm>WordNet</glossterm> database of word meanings and lexical
+relationships<footnote><para>A lexical relationship is a relationship
+between words, such as <glossterm>synonym</glossterm>, <glossterm>antonym</glossterm>, <glossterm>hypernym</glossterm>
+(<quote>poodle</quote> 
+&#x2192; <quote>dog</quote>), and <glossterm>hyponym</glossterm> (<quote>poodle</quote> &#x2192;
+<quote>dog</quote>)</para></footnote>.</para>
+
+<para>PyWordNet presents a concise interface to WordNet, that allows
+the user to type expressions such as <userinput>N['dog']</userinput>,
+<userinput>hyponyms(N['dog'][0])</userinput>, and
+<userinput>closure(ADJ['red'], SYNONYM)</userinput> to query the
+database.</para>
+
+<informalexample>
+<programlisting>
+&gt;&gt;&gt; <userinput>N['dog']</userinput>
+dog(n.)
+&gt;&gt;&gt; <userinput>N['dog'].getSenses()</userinput>
+('dog' in {noun: dog, domestic dog, Canis familiaris},
+ 'dog' in {noun: frump, dog}, 'dog' in {noun: dog},
+ 'dog' in {noun: cad, bounder, blackguard, dog, hound, heel},
+ 'dog' in {noun: pawl, detent, click, dog},
+ 'dog' in {noun: andiron, firedog, dog, dogiron})
+</programlisting>
+</informalexample>
+
+<para>Files hosted by <ulink url="http://sourceforge.net/projects/pywordnet">SourceForge</ulink>.
+<mediaobject><imageobject><imagedata fileref="http://sourceforge.net/sflogo.php?group_id=27422"/></imageobject></mediaobject>
+</para>
+
+<!--/section-->
+
+<xi:include href="examples.xml"/>
+<xi:include href="download.xml"/>
+<xi:include href="install.xml"/>
+<xi:include href="release-notes.xml"/>
+<xi:include href="contributors.xml"/>
+<xi:include href="license.xml"/>
+</article>

@@ -1,0 +1,27 @@
+# grep demo of mark of the web
+
+plugins
+output console
+output
+#output config textFile
+#set fileName output-w3af.txt
+#set verbosity 10
+#back
+output config console
+set verbosity 5
+back
+grep motw
+grep config motw
+set withoutMOTW True
+back
+grep
+
+back
+target
+set target http://localhost/w3af/motw/compliant-motw.html , http://localhost/w3af/motw/non-compliant-motw.html
+back
+start
+
+assert len( kb.kb.getData( 'motw', 'motw' ) ) == 1
+
+exit

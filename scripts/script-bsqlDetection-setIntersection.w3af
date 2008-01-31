@@ -1,0 +1,26 @@
+# This is the blind sqli demo, when using a diferent string equal operator
+plugins
+audit blindSqli
+audit config blindSqli
+set equAlgorithm setIntersection
+back
+
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+back
+target
+set target http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1,http://localhost/w3af/blindSqli/blindSqli-str.php?email=acho@cybsec.com, http://localhost/w3af/blindSqli/blindSqli-rnd.php?email=acho@cybsec.com
+back
+start
+
+assert len( kb.kb.getData('blindSqli', 'blindSqli') ) == 3
+
+exit

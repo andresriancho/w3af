@@ -1,0 +1,26 @@
+# This is the basic Auth Bruteforce demo
+
+misc-settings
+set maxThreads 10
+back
+
+plugins
+audit htaccessMethods
+bruteforce basicAuthBrute
+discovery allowedMethods,webSpider,error404page
+grep httpAuthDetect,passwordProfiling
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+back
+target
+set target http://localhost/w3af/basicAuthBrute/
+back
+start
+exit

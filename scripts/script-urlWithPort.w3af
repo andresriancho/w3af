@@ -1,0 +1,28 @@
+# This is a test case for setting a port in the URL
+
+plugins
+audit sqli
+discovery hmap
+
+output console, textFile
+
+output config console
+set verbosity 0
+back
+
+output config textFile
+set verbosity 10
+back
+
+back
+
+target
+set target http://localhost:80/w3af/sqli/sqli.php?tabla=agenda
+back
+
+start
+
+assert len( kb.kb.getData('sqli', 'sqli') ) == 1
+assert 'Apache' in kb.kb.getData( 'hmap','server')
+
+exit

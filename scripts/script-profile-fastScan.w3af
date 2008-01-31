@@ -1,0 +1,22 @@
+# Dumb fastScan usage
+
+profiles
+list
+
+use fastScan
+
+plugins
+output config textFile
+set verbosity 10
+back
+back
+
+
+target
+set target http://localhost/w3af/
+back
+
+assert 1==1
+
+start
+exit

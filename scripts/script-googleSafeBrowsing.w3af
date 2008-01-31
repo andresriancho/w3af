@@ -1,0 +1,24 @@
+# detect phishing using google safe browsing
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery googleSafeBrowsing
+
+back
+target
+# not in gsb
+#set target http://localhost/w3af/detectPhishing/
+
+# in gsb
+set target http://059148190010.ctinets.com/
+back
+
+start

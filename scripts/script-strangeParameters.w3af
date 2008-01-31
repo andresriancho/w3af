@@ -1,0 +1,24 @@
+# grep demo that searches for strange parameters
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+grep strangeParameters
+back
+
+target
+set target http://localhost/w3af/strangeParameters/1.html
+back
+
+start
+
+assert len(kb.kb.getData('strangeParameters','strangeParameters')) == 2
+
+exit

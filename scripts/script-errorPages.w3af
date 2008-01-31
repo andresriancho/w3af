@@ -1,0 +1,23 @@
+# errorPages
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery allowedMethods,webSpider
+discovery
+grep errorPages
+grep
+audit xss
+audit
+back
+target
+set target http://localhost/w3af/a.b.c
+back
+start

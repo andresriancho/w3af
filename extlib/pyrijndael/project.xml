@@ -1,0 +1,25 @@
+<project>
+    <title>pyRijndael</title>
+    <version>1.3</version>
+    <author>Jeffrey Clement</author>
+    <license>BSD</license>
+    <status>Stable</status>
+    <download>/pyrijndael</download>
+    <shortdescription>
+    A pure python implementation of the AES encryption standard, Rijndael.
+    </shortdescription>
+    <description>
+This is a pure python implementation of the Rijndael encryption algorithm
+with a really easy to use interface.  If you need easy secure encryption for
+your python software look no further.  Being that this is written in Python 
+beware that it is really quite slow for large data sets.
+
+.*2003/09/03* - fixed bug for future Python versions (2.4+)
+    </description>
+    <requirements>
+        <requirement>
+            <url>http://python.org</url>
+            <title>Python 2.2+</title>
+        </requirement>
+    </requirements>
+</project>

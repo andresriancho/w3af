@@ -1,0 +1,24 @@
+# Test the lang plugin
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+grep lang
+back
+
+target
+set target http://localhost/w3af/
+back
+
+start
+
+assert kb.kb.getData( 'lang', 'lang' ) == 'en'
+
+exit

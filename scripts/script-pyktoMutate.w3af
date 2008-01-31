@@ -1,0 +1,21 @@
+# This script is a test for the mutation option of pykto
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+
+discovery config pykto
+set updateScandb True
+set mutateTests True
+view
+back
+discovery pykto,serverHeader,error404page
+back
+target
+set target http://localhost/w3af/
+back
+start

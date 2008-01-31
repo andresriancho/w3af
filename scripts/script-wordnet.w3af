@@ -1,0 +1,28 @@
+# This scripts tests the wordnet plugin
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery webSpider, wordnet
+
+discovery config webSpider
+set onlyForward True
+back
+
+back
+target
+#set target http://localhost/w3af/
+set target http://localhost/w3af/googleSets-wordnet/show.php?os=unix, http://localhost/w3af/googleSets-wordnet/show.php?os=linux, http://localhost/w3af/googleSets-wordnet/red.html, http://localhost/w3af/googleSets-wordnet/blue.html
+back
+start
+
+assert len( kb.kb.getData('urls', 'urlList') ) == 8
+
+exit

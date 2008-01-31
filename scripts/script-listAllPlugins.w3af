@@ -1,0 +1,16 @@
+plugins
+list discovery
+list bruteforce
+list audit
+list evasion
+list output
+list grep
+back
+
+exploit
+list
+
+back
+
+assert 1 == 1
+exit

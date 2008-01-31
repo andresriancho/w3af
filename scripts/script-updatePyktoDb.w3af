@@ -1,0 +1,20 @@
+# This script show how to update the pykto database
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+
+discovery config pykto
+set updateScandb True
+view
+back
+discovery pykto,serverHeader,error404page
+back
+target
+set target http://127.0.0.1/
+back
+start

@@ -1,0 +1,97 @@
+
+Globus Support
+==============
+
+Extensions have been added to the SOAPpy module to allow the use of the
+Globus Toolkit v2 for secure transport of SOAP calls. These extensions are
+possible by using the Globus Toolkit (http://www.globus.org) and the
+pyGlobus software (http://www-itg.lbl.gov/gtg/projects/pyGlobus/), which
+exposes the Globus Toolkit via a set of Python interfaces. This enables
+bi-directional PKI authentication so that the server and client are both
+guaranteed of the identity of the other. Using PKI this way also allows a
+more robust authorization solution above the SOAP hosting layer, which
+provides better application level authorization control. These tools are
+used by the Access Grid Project (http://www.accessgrid.org) to build a
+Grid-based, Web Services based, real-time collaboration environment.
+
+In order to use the SOAPpy module with the Globus Toolkit, you must first
+obtain and install the Globus Toolkit and pyGlobus software. Information on
+how to do that is at the respective web sites listed below. In order to use
+the Globus Toolkit it is necessary to have an x509 identity certificate.
+Information on how to obtain one of those is available on the web as well. 
+
+To use GSI with an authorization method, set the SOAPConfig.authMethod =
+"methodname". You must have this method defined on any objects you register
+with SOAPpy, and/or as a registered method. It should return 0 or 1 to
+indicate if authorization is allowed or not.
+
+Once the software is installed, you have obtained your certificate, and the
+SOAPpy module is installed, the following code shows how to run a GSI
+secured SOAP server (These snippets are directly from the echoServer.py and
+echoClient.py in the test directory).
+
+Server
+------
+
+    def _authorize(self, *args, **kw):
+        return 1
+    
+    Config.authMethod = "_authorize"
+    
+    addr = ('localhost', 9900)
+    from SOAPpy.GSIServer import GSISOAPServer
+    server = GSISOAPServer(addr)
+    
+    server.registerFunction(_authorize)
+    server.registerFunction(echo)
+    
+    Then you use the server like the SSL server or the standard server.
+    
+Client
+------
+
+    import pyGlobus
+    
+    # The httpg distinguishes this as a GSI TCP connection, so after 
+    # this you can use the SOAP proxy as you would any other SOAP Proxy.
+    
+    server = SOAPProxy("httpg://localhost:9900/")
+    print server.echo("moo")
+
+
+
+Globus Toolkit http://www.globus.org
+------------------------------------
+
+    The Globus Toolkit is an open source software toolkit used for
+    building grids. It is being developed by the Globus Alliance and
+    many others all over the world. A growing number of projects and
+    companies are using the Globus Toolkit to unlock the potential
+    of grids for their cause.
+
+PyGlobus http://www-itg.lbl.gov/gtg/projects/pyGlobus/
+------------------------------------------------------
+
+    The goal of this project is to allow the use of the entire
+    Globus toolkit from Python, a high-level scripting
+    language. SWIG is used to generate the necessary interface
+    code. Currently a substantial subset of the 2.2.4 and 2.4
+    versions of the Globus toolkit has been wrapped.
+
+The Access Grid http://www.accessgrid.org/
+------------------------------------------
+
+    The Access GridT is an ensemble of resources including
+    multimedia large-format displays, presentation and interactive
+    environments, and interfaces to Grid middleware and to
+    visualization environments. These resources are used to support
+    group-to-group interactions across the Grid. For example, the
+    Access Grid (AG) is used for large-scale distributed meetings,
+    collaborative work sessions, seminars, lectures, tutorials, and
+    training.  The Access Grid thus differs from desktop-to-desktop
+    tools that focus on individual communication.
+ 
+- Submitted 2004-01-08 by Ivan R. Judson <mailto:judson@mcs.anl.gov>
+
+
+$Id: GlobusSupport.txt,v 1.3 2005/02/21 20:09:32 warnes Exp $

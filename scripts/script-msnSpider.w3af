@@ -1,0 +1,19 @@
+# This scripts tests the MSNSpider plugin
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery MSNSpider
+discovery
+back
+target
+set target http://www.cybsec.com/
+back
+start

@@ -1,0 +1,24 @@
+# backdoor search
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery backdoor
+discovery
+
+back
+target
+set target http://localhost/w3af/backdoors/f00.html
+back
+start
+
+assert len(kb.kb.getData('backdoor','backdoors')) == 1
+
+exit

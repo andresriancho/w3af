@@ -1,0 +1,23 @@
+# generate a hmap fingerprint file
+
+plugins
+discovery serverHeader,hmap
+discovery config hmap
+set genFpF True
+back
+output console
+output config console
+set verbosity 0
+back
+back
+url-settings
+set userAgent pepe
+back
+target
+set target http://localhost/
+back
+start
+
+assert 1 == 1
+
+exit

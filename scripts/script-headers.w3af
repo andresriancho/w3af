@@ -1,0 +1,24 @@
+# Header fuzzing !
+
+misc-settings
+set fuzzCookie False
+set fuzzableHeaders user-agent
+back
+plugins
+help audit
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+audit xss
+audit
+back
+target
+set target http://localhost/w3af/headerFuzzing/index.php
+back
+start

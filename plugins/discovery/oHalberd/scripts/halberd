@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+
+"""Command line interface.
+"""
+
+# Copyright (C) 2004, 2005, 2006 Juan M. Bello Rivas <jmbr@superadditive.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+import sys
+
+import Halberd.shell
+import Halberd.logger
+import Halberd.ScanTask
+import Halberd.version as version
+
+
+def make_parser():
+    """Sets up the command line option parser.
+    """
+    import optparse
+
+    notice = version.version.v_gnu + '\n\n' + \
+r"""Copyright (C) 2004, 2005, 2006 Juan M. Bello Rivas <jmbr@superadditive.com>
+
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."""
+
+    parser = optparse.OptionParser(usage='%prog [OPTION]... URL',
+                                   version=notice)
+    parser.set_description("Discover web servers behind HTTP load balancers.")
+
+    parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+                      help='explain what is being done', default=True)
+    parser.add_option('-q', '--quiet', action='store_false', dest='verbose',
+                      help='run quietly', default=True)
+    # xxx - use increment over verbosity level instead of this
+    parser.add_option('-d', '--debug', action='store_true', dest='debug',
+                      help='enable debugging information', default=False)
+
+    parser.add_option('-t', '--time',
+                      action='store', type='int', dest='scantime',
+                      help='time (in seconds) to spend scanning the target',
+                      metavar='NUM', default=Halberd.ScanTask.default_scantime)
+
+    parser.add_option('-p', '--parallelism', action='store', type='int',
+                      dest='parallelism',
+                      help='specify the number of parallel threads to use',
+                      metavar='NUM', default=Halberd.ScanTask.default_parallelism)
+
+    parser.add_option('-u', '--urlfile', action='store', dest='urlfile',
+                      help='read URLs from FILE', metavar='FILE')
+
+    parser.add_option('-o', '--out', action='store', dest='out',
+                      help='write report to the specified file',
+                      metavar='FILE', default='')
+
+    parser.add_option('-a', '--address', action='store', dest='addr',
+                      help='specify address to scan',
+                      metavar='ADDR', default='')
+
+    parser.add_option('-r', '--read', action='store', dest='cluefile',
+                      help='load clues from the specified file',
+                      metavar='FILE', default='')
+    parser.add_option('-w', '--write', action='store', dest='save',
+                      help='save clues to the specified directory',
+                      metavar='DIR', default='')
+
+    parser.add_option('', '--config', action='store', dest='confname',
+                      help='use alternative configuration file',
+                      metavar='FILE',
+                      default=Halberd.ScanTask.default_conf_file)
+
+    return parser
+
+
+def make_url(url):
+    """Ensures the URL is a valid one.
+
+    Characters aren't escaped, so strings like 'htt%xx://' won't be parsed.
+
+    @param url: An incomplete (or not) URL.
+    @type url: C{str}
+    """
+    if url.startswith('http://') or url.startswith('https://'):
+        newurl = url
+    else:
+        newurl = 'http://' + url
+
+    return newurl
+
+
+def scannerFactory(opts, args):
+    """Instantiates a scanner of the appropriate flavour.
+
+    It selects which scanning strategy to follow depending on how the user
+    invoked the program.
+    """
+    scantask = Halberd.ScanTask.ScanTask()
+
+    scantask.scantime = opts.scantime
+    scantask.parallelism = opts.parallelism
+    scantask.verbose = opts.verbose
+    scantask.debug = opts.debug
+    scantask.conf_file = opts.confname
+    scantask.cluefile = opts.cluefile
+    scantask.save = opts.save
+    scantask.out = opts.out
+
+    # Set logging level.
+    if not scantask.verbose:
+        Halberd.logger.setError()
+    if scantask.debug:
+        Halberd.logger.setDebug()
+
+    scantask.readConf()
+
+    if opts.cluefile:
+        # Read and analyze clues.
+        scanner = Halberd.shell.ClueReaderStrategy
+    elif opts.urlfile:
+        # MultiScan
+        scantask.urlfile = opts.urlfile
+        scanner = Halberd.shell.MultiScanStrategy
+    elif len(args) > 0:
+        # UniScan
+        scantask.url = make_url(args[0])
+        scantask.addr = opts.addr
+        scanner = Halberd.shell.UniScanStrategy
+    else:
+        return None
+
+    return scanner(scantask)
+
+
+def main(argv):
+    """Command line interface.
+    """
+    parser = make_parser()
+
+    (opts, args) = parser.parse_args(argv[1:])
+
+    if opts.verbose:
+        print version.version.v_gnu
+        print
+
+    try:
+        scanner = scannerFactory(opts, args)
+        if scanner is None:
+            parser.error('incorrect number of arguments')
+        scanner.execute()
+    except Halberd.shell.ScanError, msg:
+        sys.stderr.write('\n*** %s ***\n' % msg)
+    except KeyboardInterrupt:
+        sys.stderr.write('\r*** interrupted by the user ***\n')
+
+
+if __name__ == '__main__':
+#    import gc
+#    gc.set_debug(gc.DEBUG_LEAK)
+    main(sys.argv)
+
+
+# vim: ts=4 sw=4 et

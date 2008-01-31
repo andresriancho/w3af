@@ -1,0 +1,24 @@
+# archive.org test plugin
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery allowedMethods,archiveDotOrg,error404page
+discovery
+back
+
+target
+#set target http://w3af.sourceforge.net/
+set target http://www.securearg.net/
+back
+
+start
+
+exit

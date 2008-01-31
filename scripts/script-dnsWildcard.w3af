@@ -1,0 +1,27 @@
+# dnsWildcard
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery dnsWildcard
+discovery
+
+back
+target
+#set target http://localhost/w3af/
+#set target http://google.com.ar/
+set target http://ipaddress.com.ar/
+back
+
+start
+
+assert len(kb.kb.getData('dnsWildcard','dnsWildcard')) == 2
+
+exit

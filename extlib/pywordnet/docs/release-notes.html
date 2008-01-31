@@ -1,0 +1,182 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   
+      <title>Release Notes</title>
+      <link rel="stylesheet" href="styles.css" type="text/css">
+      <meta name="generator" content="DocBook XSL Stylesheets V1.65.1">
+      <link rel="home" href="index.html" title="PyWordNet">
+      <link rel="up" href="index.html" title="PyWordNet">
+      <link rel="previous" href="installation.html" title="Install">
+      <link rel="next" href="contributors.html" title="Contributors">
+   </head>
+   <body id="release-notes">
+      <div class="banner"><span class="projectname"><a href="http://osteele.com/projects/pywordnet/">PyWordNet</a></span></div>
+      <div id="navigation">
+         <ul>
+            <li><a id="nav-index" href="index.html">About</a></li>
+            <li><a id="nav-examples" href="examples.html">Examples</a></li>
+            <li><a id="nav-download" href="download.html">Download</a></li>
+            <li><a id="nav-installation" href="installation.html">Install</a></li>
+            <li><a id="nav-release-notes" href="release-notes.html">Release Notes</a></li>
+            <li><a id="nav-contributors" href="contributors.html">Contributors</a></li>
+            <li><a id="nav-license" href="license.html">License</a></li>
+         </ul>
+      </div>
+      <div class="section" lang="en">
+         <div class="titlepage">
+            <div>
+               <div>
+                  <h2 class="title" style="clear: both"><a name="release-notes"></a>Release Notes
+                  </h2>
+               </div>
+            </div>
+            <div></div>
+         </div>
+         <table border="0" bgcolor="#E0E0E0">
+            <tr>
+               <td><pre class="programlisting">
+PyWordNet Change History
+~~~~~~~~~~~~~~~~~~~~~~~~
+Version 2.0.1 (7/17/2004)
+=======================
+New Features:
+- Added concordance.py, contributed by Des Berry.
+
+Bugs Fixed:
+- V.has_key fails on words with spaces; fixed by Juha Erkkila
+  &lt;erkkila@itu.st.jyu.fi&gt;
+- Example docs missing "from wordnet *" to the readme example
+- Dictionary.keys() returned words with '_' for ' '
+- 560950 len(V['love']) raises exception
+- 571235 Testing every word in the Verb dict.
+- 559927 morphological substitution fix; submitted by anon.
+- 448189 extractVerbFrames uses wrong base?; fixed by Scott James
+  &lt;ascribbler@earthlink.net&gt;
+- 560932 Dictionary.keys() raises exception; fixed by Danny Yoo
+  &lt;dyoo@users.sourceforge.net&gt;
+
+Notes:
+- The 2.0 change notes erroneously listed concordance.py among the new
+  features, but it wasn't actually added to the list of distributable files.
+
+Version 2.0 (4/19/2004)
+=======================
+New Features
+------------
+- Revised to work with WordNet 2.0 database.
+- Added new suffices to morphy.
+
+Details
+-------
+Changes to work with WordNet 2.0:
+- Added new pointer types FRAME, CLASSIF_CATEGORY, CLASSIF_USAGE,
+  CLASSIF_REGIONAL, CLASS_CATEGORY, CLASS_USAGE, and CLASS_REGIONAL.
+  Patch contributed
+- Updated test cases
+
+Contributors
+------------
+- Des Berry &lt;berry@ais.it&gt;
+- Wei-Hao Lin &lt;whlin@cs.cmu.edu&gt;
+- Klaus Reis &lt;reis@cs.cmu.edu&gt;
+
+Version 1.4 (Not publically released)
+===========
+New Features
+------------
+- Incorporated Klaus Reis &lt;reis@cs.cmu.edu&gt;'s implementation of
+  Lexname (not yet documented).
+
+API Changes
+-----------
+- Added ``Word.getSenses()``, which will replace the deprecated
+  ``Word.sense()``.  (It wasn't clear under the old naming scheme which
+  were data fields and which were methods.)
+- Other new methods:
+  ``Word.getAdjectivePositions``, ``Synset.getSenses``,
+  ``Synset.getPointers``, ``Synset.getPointerTargets``,
+  ``Sense.getPointers``, ``Sense.getPointerTargets``, ``Sense.getSenses``,
+  ``Sense.getWord``, ``Pointer.getSource``, ``Pointer.getTarget``.
+- Remove ``Word.string``, ``Sense.string``, and ``Synset.string``. (Use
+  ``object.form`` instead.)
+- Added ``Word.getPointers`` and ``Word.getPointerTargets``, that raise an
+  error and direct the user to the corresponding methods on sense and
+  synset.
+
+Bug fixes
+---------
+- ``morphy('hardrock', 'adv')`` no longer goes into an infinite loop.
+  (This was caused by a bug in ``binarySearchFile`` where the search
+  position was at the end of the file.)
+
+Other Changes
+-------------
+- Updated doctest examples to wn1.7 database. (``wordnet._test()`` is
+  therefore no longer useful with a wn1.6 database, since their are
+  more synsets and they're in a different order, and so on.)
+- Updated comments.  ``help(wordnet)`` is now useful.
+
+Version 1.3 (8/5/2001)
+======================
+- The windows version looks for unix-style names too, so that it will
+  work with wn1.7
+- Moved project page to http://www.sourceforge.net/projects/pywordnet
+- Changed to the Artistic License
+  &lt;www.opensource.org/licenses/artistic-license.html&gt;.
+- Reformat to Python source conventions, and wrap long comments
+- Move release notes to a separate file
+- Package with distutils
+
+Version 1.2	(4/15/1999)
+=======================
+- public release
+- moved nonessential utility functions to wntools
+- renamed private functions to begin with _
+- closure (now in wntools) unions, rather than concatenating
+- fixed searchBinaryFile to find the first line
+
+Version 1.1.2	(4/24/1999)
+===========================
+- fixed for Windows (added workaround for Python file.seek() bug)
+- first public release of wntools.py; includes morphy and getindex
+
+Version 1.1.1	(4/21/1999)
+===========================
+- fixed len(Dictionary); fixed doctest comments
+- moved string, sequence, tree utility functions to wntools.py (not
+  yet released)
+
+Version 1.1		(4/14/1999)
+===========================
+- more doctest comments
+- added 'form' attribute as a synonym for 'string'
+- extend closure and its derivatives to work on Words
+
+Version 1.1d3	(3/18/1999)
+===========================
+- added test code and doctest comments
+
+Version 1.1d2	(3/8/1999)
+==========================
+- added verb frames
+
+Version 1.1d1	(2/27/1999)
+===========================
+- simplified copyright notice (it's still free)
+- added cache (buildIndexCaches)
+- make Dictionary print as the variable that's bound to it
+- added method Dictionary.keys(), that returns strings for that part of speech
+- added method Dictionary.has_key()
+- more efficient (don't reopen same pathname)
+- reorganized code: move Cache later, broke _IndexFile out of Dictionary
+
+Version 1.0	(11/13/1998)
+========================
+- initial public release
+</pre></td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,24 @@
+# This script show how to update the ghdb database
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+
+discovery config ghdb
+set updateGHDB True
+view
+back
+discovery ghdb
+back
+target
+set target http://127.0.0.1/
+back
+start
+
+assert 1 == 1
+
+exit

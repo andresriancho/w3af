@@ -1,0 +1,186 @@
+README for hmap 0.1 
+
+Contents
+
+   - What is hmap?
+   - How to install
+   - How to run
+   - How to interpret results
+   - How it works   
+   - Contact and thanks
+
+======================================================================
+- What is hmap?
+
+   "hmap" is a tool for fingerprinting web servers.  Basically, it collects
+   a number of characteristics (see: "How it works" below) and compares
+   them with known profiles to find a closest match.  The closest match is
+   its best guess for the identity of the server.
+
+   This tool will be of interest to system administrators who are trying
+   to hide the identity of their server for security reasons.  hmap will
+   will help indicate if, after they have applied their hiding techniques,
+   it can still be identified.
+	
+   This tool will also be of interest to Intrusion Detection System
+   developers.  The hmap tool shows the types of tests that can be used to
+   fingerprint a web server and therefore what sorts of features to look
+   for in server logs and in network traffic to identify web server
+   fingerprinting activies.
+
+   Finally it is of interests to those who are curious about fingerprinting
+   and web servers or just want to see some strange games you can play with
+   web servers.
+
+   NOTE: DO NOT run this tool against someone's web server without
+         permission.  The legality of doing so is not clear to me, so to be
+         safe (and polite) please play fair.
+
+======================================================================
+
+- How to install 
+
+   Create a directory (e.g. ~username/hmap/).  Copy the hmap.tgz file
+   here.  Uncompress and untar and you are ready to go!
+   NOTE: hmap was developed under Python 2.2.  If you want to make it
+         work on earlier versions of Python try substituting the 
+         keyword 'file' with 'open'
+
+   If you want to run hmap under *nix then make sure the #! path makes
+   sense for your system and "chmod a+x" the hmap.py file.
+
+   FILES:
+      - hmap.py : the tool
+      - known.servers : a directory with the known server profiles
+        for comparison
+      - README : this file
+      - FAQ : questions about this tool
+      - HIDING.TIPS : some methods for hiding the identity of your
+        web server
+      - License
+
+======================================================================
+
+- How to run
+
+   try: python hmap.py -h
+
+   example 1:
+
+      python hmap.py -v -c 10 http://www.somehost.com:80
+
+         - the -v option (verbose) says to show information as it processes
+
+         - the -c option (count) says to show this many of the top matches
+
+         - the :80 is redundant but it shows how you could add a port
+           number to a URL if the target web server is not at the
+           traditional location
+
+         - a file called www.somehost.com.80 will be created that
+           stores all the characteristics discovered in a python
+           dictionary structure
+
+         - a list of candidate matches will be displayed with the
+           best matches at the top
+
+         - NOTE: a data file representing the target server will be
+           created in the current directory.
+
+   example 2:
+
+      python hmap.py -p www.somehost.com.80
+
+         - uses a previously fetched profile instead of querying 
+           the target server again
+
+   example 3:
+
+      python hmap.py -g http://www.somehost.com.80
+
+         - gathers the profile from a server without doing a 
+           comparison with known profiles.
+
+======================================================================
+
+- How to interpret results
+
+  Here are the first few lines of an example output
+
+					   matches : mismatches : unknowns
+      Apache/1.3.22 (Win32)                      116 :   0 :   7
+      Apache/1.3.12 (Win32)                      113 :   3 :   7
+      Apache/1.3.14 (Win32)                      113 :   3 :   7
+      Apache/1.3.17 (Win32)                      113 :   3 :   7
+      Apache/1.3.9 (Win32)                       112 :   3 :   8
+
+  The first column is server/version/OS info.  Each of these is followed by
+  three numbers separated by ':'s.  These numbers are: 
+
+  matches : mismatches : unknowns
+
+  So for Apache/1.3.22 the target server had 16 matching characteristics, 0
+  mismatched characteristics and 7 characteristics that were not discovered
+  and so couldn't be processed.  Therefore the most likely match for the
+  target server is: Apache/1.3.22 (Win32).  
+
+  Note: You can get a false positive if several web servers have very
+        similar fingerprint profiles.  You can get false negatives if a web
+        server has had hiding techniques applied to it.
+
+  Note: It is not a good idea to score unknowns better than mismatches
+        since we can't assume unknowns are likely matches.
+
+  Note: The OS is given as well since I have found that the same
+        server seems to behave differently on different OSes.
+
+======================================================================
+
+- How it works
+
+   This tool is based on my masters thesis
+   (http://seclab.cs.ucdavis.edu/papers/hmap-thesis.pdf) and related paper
+   (http://acsac.org/2002/abstracts/96.html)
+
+   In this first incarnation hmap is not concerned with stealth or
+   conciseness.  At some point hmap will be adapted to use only a minimal
+   subset of queries, but at this stage I'm still gathering complete
+   profiles on different servers and want to stay open minded as to which
+   characteristics are the most important.
+
+   Ideally to identify a server we would: 1) do a test to gather each
+   characteristic that we can get from a server and compare these with
+   known profiles and find the best match.
+
+   The problem with this is that we don't know what tests to run since
+   different servers behave differently for the same test. The simplest
+   solution is simply to run all the tests you know about and then sort it
+   out afterwards.  This is the current strategy.  See KNOWN_TESTS for an
+   idea of the types of tests that can be used in probing.
+
+   It is also difficult to do a straight forward matching of target server
+   characteristics with known profiles since the target server's identity
+   might be partially hidden already (see HIDING_GUIDE).  The simple
+   solution to this is to compare all known characteristics and count the
+   number of matches.
+
+======================================================================
+
+Contact and thanks.
+
+   You can reach me with questions, suggestions, kudos and threats at:
+
+   leed@cs.ucdavis.edu
+
+   I'd like to thank my thesis advisor (Karl Levitt) and additionally my
+   co-authors (Jeff Rowe and Calvin Ko) for their help, funding and
+   patience.  Any errors or bugs in this or the bundled documents/code are
+   solely my own.
+
+   I'd also like to thank all the people who have volunteered to let me do
+   strange things to their web servers.  Hopefully its for a good cause.
+   [watch this space for names of volunteers....]
+
+   And finally I'd like to thank my wife Jodi who has proof read and
+   offered many valuable writing suggestions and has endured way too much
+   geeky ramblings on this topic.

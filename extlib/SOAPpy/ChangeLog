@@ -1,0 +1,3195 @@
+2005-02-22 10:58  warnes
+
+	* ChangeLog, README, RELEASE_INFO: Update for 0.12.0 release.
+
+2005-02-21 23:30  tag SOAPpy_0_12_0
+
+2005-02-21 23:30  warnes
+
+	* tests/README: update README since TCtests.py now passes!
+
+2005-02-21 23:29  warnes
+
+	* SOAPpy/: Parser.py, Types.py: Fix handling of parse rules!
+	  TCtest.py now passes!
+
+2005-02-21 23:25  warnes
+
+	* tests/: Bug1001646.py, Bug916265.py, ComplexTypes.py,
+	  GoogleTest.py, Makefile, README, TCtest.py, echoClient.py,
+	  echoHeader.py, echoServer.py, largeDataTest.py, testleak.py:
+	  Enhance echoServer with a quit method.  Provide a makefile for
+	  running all working tests.
+
+2005-02-21 15:27  warnes
+
+	* SOAPpy/Client.py: Fix loss of quotes at start of  file
+	  description.
+
+2005-02-21 15:24  warnes
+
+	* SOAPpy/SOAPBuilder.py: Add spaces and newlines to soap
+	  environment declarations when writing SOAP enclosure so that the
+	  results are more human readable.
+
+2005-02-21 15:21  warnes
+
+	* SOAPpy/Client.py: Add code to handle the case when headers are
+	  empty or not present.
+
+2005-02-21 15:16  warnes
+
+	* SOAPpy/WSDL.py: Add 'show_methods' which will print the methods
+	  and associated parameters.
+
+2005-02-21 15:09  warnes
+
+	* docs/: GettingStarted.txt, GlobusSupport.txt, WSDL.txt,
+	  complexTypes.txt, simpleTypes.txt: Update documentation.
+
+2005-02-18 14:29  warnes
+
+	* SOAPpy/Client.py: If content_length is missing or empty, we need
+	  not check for a the OC4J bug...
+
+2005-02-18 11:28  warnes
+
+	* README: Add bug reporting and mailing list information.
+
+2005-02-18 10:42  warnes
+
+	* docs/GettingStarted.txt: Change 'SOAP.py' to 'SOAPpy'
+
+2005-02-18 10:40  warnes
+
+	* docs/attrs.txt: Remove the long copyright and usage notices.
+	  Clarify the (too brief) text.
+
+2005-02-18 10:36  warnes
+
+	* docs/: complexTypes.txt, UsingHeaders.txt: Most of the
+	  information in the 'complexTypes.txt' file was actually about the
+	  use of headers.  Moved that text to a new file
+	  'UsingHeaders.txt'.
+
+2005-02-18 08:50  warnes
+
+	* SOAPpy/wstools/XMLSchema.py: Apply patch submitted by Peter
+	  McA'Nulty of WebReply.com:	 "class SimpleContent, class
+	  Extension.fromDom() at line ~2313	 doesn't handle extensions
+	  without contents -- unusual, but not	    illegal"
+
+2005-02-17 01:44  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  XMLSchema.py -- added the item trace to an exception
+	  thrown
+		     when an unexpected child is encountered in
+	  complexType.fromDom
+		     method so one can see where the problem is occuring.
+
+
+	  ----------------------------------------------------------------------
+
+2005-02-16 13:39  warnes
+
+	* tests/echoServer.py: Added echo_jheader which returns its
+	  argument and the header, in order to support Bug1001646.py
+
+2005-02-16 13:34  warnes
+
+	* tests/Bug1001646.py: Test now properly checks to see that the
+	  header is preserved.
+
+2005-02-16 09:45  tag v1_7
+
+2005-02-16 09:45  warnes
+
+	* SOAPpy/wstools/XMLname.py: Remember to paste prefix back onto the
+	  XMLname before returning.
+
+2005-02-15 23:27  warnes
+
+	* SOAPpy/SOAPBuilder.py: Bug fix for [ 1078051 ] "Arrays of complex
+	  types (doc/lit)" per the patch submited with the bug report by
+	  Nelson Minar.
+
+2005-02-15 23:25  warnes
+
+	* tests/echoClient.py: Print what we're trying to do so that errors
+	  are easier to track down.
+
+2005-02-15 23:24  warnes
+
+	* tests/storageTest.py: Updated 'registerUser' to match current
+	  documentation, but still get an error from the server.
+
+2005-02-15 23:23  warnes
+
+	* tests/echoServer.py: Add 'echo_simple' command that just returns
+	  its arguments as-is.
+
+2005-02-15 23:22  warnes
+
+	* tests/Bug1001646.py: Turn of some debugging information.
+
+2005-02-15 23:21  warnes
+
+	* tests/Bug916265.py: Regression test for [ 916265 ] "Arrays of
+	  unicode do not serialize correctly (patch included)"
+
+2005-02-15 23:09  warnes
+
+	* tests/Bug1001646.py: Regression test for bug [ 1001646 ] SOAPpy
+	  stomps headers when sending multirefs.
+
+2005-02-15 16:51  warnes
+
+	* SOAPpy/Client.py: Create workaround for a bug in OC4J reported in
+	  [ 1122991 ] "error from SOAPpy/Client.py for content_length
+	  evaluation?" by Merten Schumann.
+
+2005-02-15 16:09  warnes
+
+	* SOAPpy/SOAPBuilder.py: Fix [ 1106450 ] "Floats are truncated to
+	  10 digits, causing precision loss" submitted by Kerry 'krdavis'.
+
+2005-02-15 16:07  warnes
+
+	* SOAPpy/Client.py: Fixed [ 1096971 ] "Parse error: missing HTTP
+	  header 'Content-length'" submitted by 'pure water'.
+
+2005-02-15 15:59  warnes
+
+	* SOAPpy/Types.py: Fix [ 1064248 ] "Bugs in _asdict() and
+	  _asarray() in Types.py" submitted by Peter Lamb.
+
+2005-02-15 15:56  warnes
+
+	* SOAPpy/SOAPBuilder.py: Fix handling of 0-length arrays.
+
+2005-02-15 15:52  warnes
+
+	* SOAPpy/SOAPBuilder.py: Apply [ 1064233 ] "Bug fixes for complex
+	  types" from Peter Lamb.
+
+2005-02-15 15:41  warnes
+
+	* SOAPpy/SOAPBuilder.py: Fix bug [ 1001646 ] SOAPpy stomps headers
+	  when sending multirefs using included patch provide by Nelson
+	  Minar
+
+2005-02-15 15:15  warnes
+
+	* SOAPpy/Client.py: Fix [ 925077 ] SOAPpy prints out SOAP fault
+	  /even when Config.debug is off/.
+
+2005-02-15 15:12  warnes
+
+	* SOAPpy/Parser.py, tests/Bug918216.py: Fix parsing bug & add
+	  regression test.  SOAPpy was not allowing anything after the
+	  close of a faulttype block, but multirefs should be permitted
+	  there.  Closes bug [ 918216 ] "Parsing faults in SOAPpy 0.11.3"
+
+2005-02-15 14:30  warnes
+
+	* tests/ZeroLengthArray.py: Test handling of zero-length typed
+	  lists.  Currently fails.
+
+2005-02-15 14:22  warnes
+
+	* SOAPpy/SOAPBuilder.py: Revert broken header generation from last
+	  patch.
+
+2005-02-15 11:41  warnes
+
+	* SOAPpy/SOAPBuilder.py: Fix bug [ 916265 ] Arrays of unicode do
+	  not serialize correctly, submitted by Nelson Minar.
+
+2005-02-15 11:37  warnes
+
+	* README: Fix typo in README.
+
+2005-02-15 11:32  warnes
+
+	* LICENSE, README, setup.py, SOAPpy/Client.py, SOAPpy/Errors.py,
+	  SOAPpy/GSIServer.py, SOAPpy/NS.py, SOAPpy/Server.py,
+	  SOAPpy/wstools/XMLname.py, docs/MethodParameterNaming.txt: Update
+	  email address
+
+2005-02-09 13:33  tag bogus-12_9_123RC93
+
+2005-02-09 13:33  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Utility.py -- need to do isfile check before calling mod
+	  func
+		     "urlopen" for cross-platform compat.
+
+
+	  ----------------------------------------------------------------------
+
+2005-02-07 12:07  irjudson
+
+	* SOAPpy/wstools/WSDLTools.py: Mod to flatten wsdl imports, schemas
+	  not dealt with yet.
+
+2005-02-04 14:18  boverhof
+
+	* SOAPpy/wstools/Namespaces.py:
+	  ----------------------------------------------------------------------
+	   Committing in .
+
+	   Modified Files:
+		  Namespaces.py -- OASIS.PROPERTIES wasn't quite correct
+	  (suffix .wsdl --> .xsd)
+
+	  ----------------------------------------------------------------------
+
+2005-02-01 13:10  boverhof
+
+	* SOAPpy/wstools/Namespaces.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Namespaces.py -- added OASIS BaseFaults.
+
+
+	  ----------------------------------------------------------------------
+
+2005-01-31 09:45  warnes
+
+	* README: Update URL for fpconst.
+
+2005-01-27 18:01  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added a couple convenience methods for
+	  grabbing
+		     various Schema Items.
+
+
+	  ----------------------------------------------------------------------
+
+2005-01-25 19:31  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Utility.py -- change to accomodate writing out XML
+	  instances
+			  w/o SOAP Envelopes, "known" prefixes aren't
+	  "known"
+			  when the Envelope isn't writen out.
+
+
+	  ----------------------------------------------------------------------
+
+2005-01-18 12:18  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Namespaces.py
+		  -- added Oasis base notification ns.
+		  XMLSchema.py
+		  -- modified an exception message.
+
+	  ----------------------------------------------------------------------
+
+2004-12-20 15:36  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py
+		  -- removed a line that was screwing up imports/includes
+	  of
+		  when WSDL file was specified to "wsdl2py" via a relative
+	  path.
+
+		  XMLSchema.py
+		  -- stop requiring suffix "xsd" for schema files.
+
+
+	  ----------------------------------------------------------------------
+
+2004-12-17 16:41  boverhof
+
+	* SOAPpy/wstools/c14n.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  c14n.py -- fixed a bug affecting those who don't have
+	  pyXML installed.
+
+	  ----------------------------------------------------------------------
+
+2004-12-08 15:04  boverhof
+
+	* SOAPpy/wstools/c14n.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  c14n.py -- just removed import of ZSI so SOAPy can use
+			  w/o ZSI.
+
+	  ----------------------------------------------------------------------
+
+2004-12-07 10:54  blunck2
+
+	* SOAPpy/wstools/__init__.py: uncommented import of WSDLTools.
+	  josh commented this out during another commit and i think it was
+	  unintentional
+
+2004-11-30 01:27  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, WSDLTools.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Namespaces.py WSDLTools.py
+		  -- added WSA 2004/08 namespaces, and enabled "PortType"
+	  to
+		  discover it.
+
+	  ----------------------------------------------------------------------
+
+2004-11-16 15:59  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added a couple helper methods for
+	  discovering
+		     whether or not an element should be qualified.
+
+
+	  ----------------------------------------------------------------------
+
+2004-11-12 18:14  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, WSDLTools.py, XMLSchema.py,
+	  logging.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Namespaces.py
+		  -- Added a SOAP-1.2 binding
+		  WSDLTools.py
+		  -- Added some methods from grabbing ElementDeclaration
+	  and
+		  TypeDefintion from Message instances.
+		  XMLSchema.py
+		  -- fixed a bug in SchemaReader.
+		  logging.py
+		  -- added a couple more functions, and a level to basic
+	  logger.
+
+	  ----------------------------------------------------------------------
+
+2004-11-08 14:46  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+	   Committing in .
+
+	   Modified Files:
+		  Utility.py -- removed "sw" property in ElementProxy.
+
+
+	  ----------------------------------------------------------------------
+
+2004-11-05 02:32  boverhof
+
+	* SOAPpy/wstools/c14n.py:
+
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  c14n.py -- opps, want to call the implementation
+	  constructor
+		     when passed any NodeType, not just Element nodes.
+
+
+	  ----------------------------------------------------------------------
+
+2004-11-05 01:35  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, Utility.py, WSDLTools.py,
+	  __init__.py, c14n.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  ** removed all "imports" of ZSI or ZSI.wstools, so
+	  wstools
+		  can be used independently by SOAPpy.
+
+		  Namespaces.py
+		  -- added a namespace
+
+		  Utility.py
+		  -- moved ZSI.utility here, and the "Base" class for
+	  logging.
+
+		  WSDLTools.py
+		  -- added a "toDom" and "GetWSDL" methods to several
+	  classes,
+		  so now you can construct a WSDL instance and then call
+		  WSDL.toDom() --> DOM --> and create a WSDL file.
+
+		  __init__.py
+		  -- removed "Base" class for logging.
+
+	   Added Files:
+		  c14n.py
+		  -- moved the c14n stuff from ZSI.compat here.
+
+
+	  ----------------------------------------------------------------------
+
+2004-11-04 18:06  mateo41
+
+	* SOAPpy/wstools/Namespaces.py: overloaded the DSIG.C14N (from
+	  PyXML Namespace with a newer canonicalization algorithm. Added
+	  GLOBUS.SIG, which is the namespace for SecureConversation
+
+2004-10-26 20:09  boverhof
+
+	* SOAPpy/wstools/Namespaces.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Namespaces.py -- added OASIS.LIFETIME
+
+	  ----------------------------------------------------------------------
+
+2004-10-22 16:11  boverhof
+
+	* SOAPpy/wstools/: Utility.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- catch any exceptions thrown when a DOM is
+	  loaded up,
+			  throw a ParseError with old ex.args and inform
+	  which file
+			  caused the problem.
+
+		  XMLSchema.py -- For attributeGroup incorrectly adding
+	  global
+			  attribute declarations, but these are declared
+	  locally.
+
+
+	  ----------------------------------------------------------------------
+
+2004-10-21 02:40  mateo41
+
+	* SOAPpy/wstools/Namespaces.py: added another namespace to WSSE,
+	  and created a GLOBUS namespace class with 2 namespaces
+
+2004-10-20 18:35  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  WSDLTools.py -- uncommented some "import" code that I
+	  didn't
+			  think was of any use.  Now I need it.
+
+
+	  ----------------------------------------------------------------------
+
+2004-10-19 21:33  mateo41
+
+	* SOAPpy/wstools/Namespaces.py: added the BEA class, which is an
+	  organization which has created schema for the SecureConversation
+	  protocol
+
+2004-10-19 18:52  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py
+		  XMLSchema.py
+		  --removed some print statements I left behind.
+
+	  ----------------------------------------------------------------------
+
+2004-10-18 22:51  boverhof
+
+	* SOAPpy/wstools/Namespaces.py:
+
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  Namespaces.py -- added some URLs for Oasis
+	  specifications.
+
+
+	  ----------------------------------------------------------------------
+
+2004-10-15 21:15  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- forgot to look for 2004 WS-Actions.
+
+
+	  ----------------------------------------------------------------------
+
+2004-10-14 04:24  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py
+		  -- resolution of default WS-Action was incorrect when
+	  using
+		  imported portTypes.
+
+		  XMLSchema.py
+		  -- added a couple helper functions, and a few more
+	  Markers
+		  for introspecting modelGroups and simpleType derivations.
+
+
+	  ----------------------------------------------------------------------
+
+2004-10-01 00:27  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  XMLSchema.py -- SchemaReader wasn't resolving relative
+	  paths correctly.
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-27 16:40  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- Shouldn't check attributes for WSDL
+	  definition
+		     since it's legal to specify <any> attribute in
+	  <definition>
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-27 15:55  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- required another condition in
+	  getItemTrace,
+		     need to check if at <xsd:schema> or <wsdl:definition>,
+		     also added some info to SchemaError throw in
+	  checkAttributes.
+		     Now provides namespace/attribute and the Schema Item
+	  containing
+		     the offending attribute.
+
+
+	  ----------------------------------------------------------------------
+	  ~
+
+2004-09-22 18:40  boverhof
+
+	* SOAPpy/wstools/: XMLSchema.py, __init__.py, logging.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py
+		  -- added a few convience methods, and 'disabled' a few
+	  methods
+		  to force a sane usage.
+
+		  __init__.py
+		  -- removed use of python logging module, and replaced it
+	  with
+		  the below.
+
+	   Added Files:
+		  logging.py
+		  -- simple interface to log message to, can write your own
+		  logger class.  By default do no logging.
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-21 18:19  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added a "getItemTrace" method to
+	  XMLSchemaComponent
+		     Base class to produce a node trace.  Added a bunch of
+	  "tag"
+		     class variables for identifying what an instance
+	  represents,
+		     and removed a bunch of unused code.
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-10 23:14  warnes
+
+	* RELEASE_INFO: Update for release 0.11.6
+
+2004-09-10 23:07  tag SOAPpy_0_11_6
+
+2004-09-10 23:07  warnes
+
+	* ChangeLog, SOAPpy/version.py: Update version number
+
+2004-09-10 23:03  warnes
+
+	* LICENSE, README, RELEASE_INFO, SOAPpy/Types.py: - Update URLs and
+	  email address.  - Use 'dictType' instead of 'dict' in type check.
+
+2004-09-09 19:32  boverhof
+
+	* SOAPpy/wstools/__init__.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  __init__.py -- changed "Base", which contains a logger,
+	  to
+		     no-op logging if the logging configuration file is not
+		     found and avoid the overhead of using the logging
+	  module.
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-09 00:37  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  WSDLTools.py -- Commented out the "imports" collection,
+		     which isn't of much use.
+
+		  Now URLs are resolved relative to the importing document.
+
+		  Support for this scenario:
+
+		      ---
+	  /Users/boverhof/Desktop/Wsdl/Service/whatever.wsdl
+		      <definition>
+			  <import location="../hello/hello.wsdl"/>
+			  ...
+		      </definition>
+
+		      --- /Users/boverhof/Desktop/Wsdl/hello/hello.wsdl
+		      <definition>
+			  <import location="goodbye.wsdl"/>
+			  ...
+		      </definition>
+
+		      --- /Users/boverhof/Desktop/Wsdl/hello/goodbye.wsdl
+		      <definition>
+			  ...
+		      </definition>
+
+
+	  ----------------------------------------------------------------------
+
+2004-09-01 22:18  tag SOAPpy_0_11_5
+
+2004-09-01 22:18  warnes
+
+	* ChangeLog, RELEASE_INFO, SOAPpy/version.py: Update for release
+	  0.11.5
+
+2004-08-18 19:12  boverhof
+
+	* SOAPpy/wstools/__init__.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  __init__.py -- cleaned up the module, removed some old
+	  code.
+
+
+	  ----------------------------------------------------------------------
+
+2004-06-23 16:10  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added getAttributeContent method wherever
+	  appropriate.
+
+
+	  ----------------------------------------------------------------------
+
+2004-06-23 14:05  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- SoapBinding item soap:header message
+	  attribute
+		     needs to be stored as a (namespace,name) tuple to
+	  enable
+		     lookup.
+
+
+	  ----------------------------------------------------------------------
+
+2004-06-21 17:40  boverhof
+
+	* SOAPpy/wstools/Namespaces.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Namespaces.py -- added 2004 ws-addressing namespaces.
+
+	  ----------------------------------------------------------------------
+
+2004-06-05 14:30  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- couple bug fixes for determining default
+			wsa:Action values
+
+	  ----------------------------------------------------------------------
+
+2004-06-04 12:53  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- added a "getResourceProperties" method to
+	  class PortType.
+
+	  ----------------------------------------------------------------------
+
+2004-06-04 12:44  boverhof
+
+	* SOAPpy/wstools/__init__.py:
+	  ----------------------------------------------------------------------
+	   Enter Log.  Lines beginning with `CVS:' are removed
+	  automatically
+
+	   Committing in .
+
+	   Modified Files:
+		  __init__.py -- added some code for doing logging
+
+
+	  ----------------------------------------------------------------------
+
+2004-06-03 09:03  warnes
+
+	* MANIFEST.in: Add text files like LICENSE to the list included in
+	  distributed packages.
+
+2004-05-14 00:37  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- Had to change how the default wsa:Action
+	  values
+		     are set up.  Must wait until entire WSDL is loaded,
+	  otherwise
+		     can get into situations where the objects we need to
+	  access
+		     haven't been initialized yet because of the order of
+	  WSDL
+		     information items in the WSDL definition.
+
+
+	  ----------------------------------------------------------------------
+
+2004-05-13 13:15  tyger23
+
+	* SOAPpy/wstools/Namespaces.py: added XSD_LIST to SCHEMA because
+	  it's absence broke wsdl2python.
+
+2004-05-11 04:07  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Namespaces.py -- added a bunch of namespaces (encryption,
+	  ws-address, ws-resourcepolicy, etc)
+
+		  WSDLTools.py -- added functionality for getting
+	  WS-ResourceProperties and
+		     ws-Address information out of WSDL.  Ran all unittests
+	  and passed.
+
+
+	  ----------------------------------------------------------------------
+
+2004-05-10 21:09  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added some code to generate user
+	  interpretable
+		    exceptions.
+
+	  BEFORE:
+
+	    File
+	  "/System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/ZSI/wstools/Utility.py",
+	  line 600, in __getitem__
+	      return self.data[key]
+	  KeyError: u'xtvd'
+
+	  AFTER:   File
+	  "/System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/ZSI/wstools/XMLSchema.py",
+	  line 465, in getQNameAttribute     raise KeyError,
+	  "targetNamespace(%s) collection(%s) has no item(%s)"\ KeyError:
+	  u'targetNamespace(urn:TMSWebServices) collection(types) has no
+	  item(xtvd)'
+
+
+	  ----------------------------------------------------------------------
+
+2004-04-28 21:40  boverhof
+
+	* SOAPpy/wstools/: Namespaces.py, Utility.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py
+		  XMLSchema.py -- just moved SplitQName out of here and
+	  into Utility
+
+	   Added Files:
+		  Namespaces.py -- WSDL, SOAP, SCHEMA, XMLNS namespaces
+	  here.  Doesn't
+		     require PyXml
+
+
+	  ----------------------------------------------------------------------
+
+2004-04-28 17:47  warnes
+
+	* SOAPpy/Server.py: Fix string format error in fault handling
+
+2004-04-27 11:47  warnes
+
+	* CHANGELOG: Renamed to ChangeLog
+
+2004-04-27 11:39  warnes
+
+	* ChangeLog, SOAPpy/version.py: Update for 0.11.4.
+
+2004-04-27 11:38  warnes
+
+	* RELEASE_INFO:
+	  Updated for 0.11.4 release.
+
+2004-04-27 11:23  warnes
+
+	* SOAPpy/Server.py: Check if header information contains SOAPAction
+	  key before checking its value.
+
+2004-04-27 11:22  warnes
+
+	* tests/TCtest.py: Convert TCtest.py to unit test framework.
+
+2004-04-13 23:42  irjudson
+
+	* SOAPpy/Types.py: Added traceback info to exception for
+	  methodnotfound.
+
+2004-04-13 23:41  irjudson
+
+	* SOAPpy/Server.py: Added traceback back in, without optional
+	  config arg, seems resonable to do it this way.
+
+2004-04-11 18:01  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py
+		  -- Fix to DOM singleton hasAttr method.  _attr and
+	  _attrNS are
+		  instance variables of the minidom Element, and are
+	  implementation
+		  specific.  Now hasAttr method will work when using
+	  FtNode.Element,
+		  which is what ZSI ParsedSoap defaults to (Ft.Doc).
+
+
+	  ----------------------------------------------------------------------
+
+2004-04-10 00:29  irjudson
+
+	* SOAPpy/Types.py: Applied patch from antonio.beamud@linkend.com,
+	  for tagging complexType arrays. Looks entirely self-contained,
+	  and therefore safe to apply.	Also includes new classes for the
+	  standard soap faults that can occur, so clients can catch them
+	  directly.
+
+2004-04-10 00:28  irjudson
+
+	* SOAPpy/SOAPBuilder.py: Applied patch from
+	  antonio.beamud@linkend.com, for tagging complexType arrays. Looks
+	  entirely self-contained, and therefore safe to apply.
+
+2004-04-10 00:26  irjudson
+
+	* SOAPpy/Server.py: Changed faultType construction to be more
+	  client side parsable, make faultstring a non-variable string (ie
+	  no nsmethod in it) so that it can be programmatically checked
+	  more easily. Modified faultdetail to be the nsmethod. Now the
+	  traceback doesn't get passed to the client side.
+
+2004-04-10 00:22  irjudson
+
+	* SOAPpy/Client.py: Put quotes back in around SOAP Action, for spec
+	  conformance.
+
+2004-04-02 08:45  irjudson
+
+	* SOAPpy/Client.py: Removed quotes from SOAPAction header, seems to
+	  be more correct.
+
+2004-04-01 08:25  warnes
+
+	* SOAPpy/SOAPBuilder.py, SOAPpy/Types.py, SOAPpy/version.py,
+	  tests/SOAPtest.py: - Fixed bug that caused typedArrayTypes to
+	  lose their type information when   rendered to SOAP.	- Added
+	  corresponding test case to SOAPtest.py - Updated version number.
+
+2004-03-30 19:42  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- 'attrsNS' replaced with '_attrNS', the
+	  actual name
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-30 18:19  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- isElement should return False if NOT an
+	  Element.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-25 15:46  irjudson
+
+	* SOAPpy/Server.py: Modified unregsiterObject function to take
+	  optional namespace/path args to be consistent with
+	  registerObject.
+
+2004-03-22 14:32  irjudson
+
+	* SOAPpy/Client.py: Fixed indent block bug and removed extraneous
+	  print.
+
+2004-03-18 19:21  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- qualified Names are now stored as tuples
+	  (namespace, localName).
+		    These tuples are used as keys into CollectionNS
+	  instances.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-18 09:19  irjudson
+
+	* SOAPpy/Client.py: Introduced the notion of a fault handler, if a
+	  call fails a user specified fault handler can be invoked (if it's
+	  specified). This can be used in many situations, we're using is
+	  specifically to handle credential problems.
+
+2004-03-11 18:07  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed a few problem with the XML
+	  namespace, mainly
+		      affecting the use of 'xml:lang'.	Fixed a bug
+	  identifying
+		      attributeGroup references vs. definitions.  Also
+	  changed the
+		      inheritance of MarkerInterface, and moved the classes
+	  involved
+		      before all Schema classes.
+
+		      Now will parse "XML Schema Part 1: Structures", and
+		      "XML Schema Part 2: Datatypes" XML Schema
+	  definitions.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-11 14:14  boverhof
+
+	* SOAPpy/wstools/: Utility.py, WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+
+		  Utility.py -- added a CollectionNS class that keys items
+	  via
+		      (targetNamespace, name).
+
+		  WSDLTools.py --
+
+		      Made WSDL Collections into CollectionNS instances,
+		      this fixes problem with collisions, caused by
+	  wsdl:imports,
+		      between items with same name but defined in different
+		      targetNamespaces.  So now all items can be accessed
+	  via
+		      (namespace,name), but ONLY those items defined in
+		      WSDL.targetNamepsace (not an import.targetNamespace)
+	  can
+		      be accessed using just 'name'.
+
+		      Also changed how portType is "loaded".  Now instead
+	  of
+		      dropping all the operation nodes in "load", I drop
+		      the portType node into "load".  This makes sense
+	  because
+		      portType really should know about itself, and the
+		      XML Schema definition of "portType" includes an
+	  "anyAttribute"
+		      and I need to make this stuff available.	I may
+	  change the
+		      other WSDL information items to do this to be
+	  consistent.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-09 17:53  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py	- small fix for the creation of the output
+	  parameters,
+		     to enable return messages to be properly typecoded.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-04 14:50  irjudson
+
+	* SOAPpy/SOAPBuilder.py: Added calls in dumpers to ensure tags are
+	  built using toXMLname.
+
+2004-03-01 20:34  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- fixed bug in _clone_node patch.  This
+	  method
+		    was being called with qualifiedName for namespaced
+	  attributes,
+		    and bombing.   It is supposed to be called like so:
+
+	       getAttributeNodeNS(self, namespaceURI, localName)
+
+		    Really could remove the if/else clause here but I
+		    decided to leave it there just to keep the 3
+	  distinctions
+		    in the code.
+
+
+	  ----------------------------------------------------------------------
+
+2004-03-01 18:27  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed bugs concerning Model Group
+	  References (missing minOccurs/maxOccurs),
+		      and simpleType annotations.
+
+
+	  ----------------------------------------------------------------------
+
+2004-02-19 10:37  irjudson
+
+	* SOAPpy/Server.py: Added an unregisterObject function, which
+	  unfortunately looks through the entire self.objmap dictionary to
+	  find the object to remove, but it does remove it.
+
+2004-02-18 16:48  warnes
+
+	* SOAPpy/: SOAPBuilder.py, Types.py: Changes to allow SOAPBuilder
+	  to allow it to be passed a 'raw' Python object.
+
+2004-02-18 16:27  warnes
+
+	* tests/: esj_test_client.py, esj_test_server.py: Add quit() method
+	  to server and appropriate call to client.
+
+2004-02-18 16:22  warnes
+
+	* tests/: cardClient.py, cardServer.py: Add quit() method to
+	  cardServer, and have cardClient call it when done.
+
+2004-02-17 23:53  warnes
+
+	* CHANGELOG, RELEASE_INFO: Update CHANGELOG and RELEASE_INFO for
+	  0.11.3 release.
+
+2004-02-17 23:36  warnes
+
+	* tests/SOAPtest.py: Fix a change to how SOAPpy returns namespace
+	  URI's that are non-string.  They used to be converted to strings
+	  and now are not.  I'm not entirely sure what the correct behavior
+	  is...
+
+2004-02-17 23:28  warnes
+
+	* SOAPpy/Types.py: Accept provosed revision by Ivan Judson to the
+	  handling of faultType objects in simplify().
+
+2004-02-17 23:25  warnes
+
+	* SOAPpy/version.py: Update version number for 0.11.1 release.
+
+2004-02-17 23:17  warnes
+
+	* docs/GettingStarted.txt: Add \n to end of file.
+
+2004-02-17 23:16  warnes
+
+	* tests/testClient1.py: Add test of echo with named parameter in
+	  call to catch bugs related to providing names.
+
+2004-02-17 23:15  warnes
+
+	* SOAPpy/SOAPBuilder.py: Fix bug #875977: no escaping of bad
+	  tagnames for NoneTypes.  Both bug and fix suggested by Robert
+	  Zimmermann.
+
+2004-02-17 23:10  warnes
+
+	* SOAPpy/SOAPBuilder.py: Apply patch to fix bug #888345: Python 2.3
+	  boolean type serialized as int, both provided by Nelson Minar.
+
+2004-02-17 23:05  warnes
+
+	* SOAPpy/Client.py: Nelson Minar reported bug 888352 and provided a
+	  patch:
+
+	      If the server does not send a content-length header for the
+	      response, SOAPpy's Client fails to read the response. The
+	  Google
+	      Web APIs at api.google.com are one such service, as of around
+	      2004-01-20.
+
+	      A patch is included below to just read the whole socket's
+	  contents
+	      if there is no content-length. This should work fine for
+	  HTTP/1.0,
+	      but will cause troubles with HTTP/1.1 and chunked
+	      encoding. SOAPpy's Client.py uses an old HTTP compatibility
+	  class
+	      from httplib which sends 1.0 requests, so this seems safe.
+
+2004-02-13 14:04  irjudson
+
+	* SOAPpy/Types.py: I've added a SOAPException(Exception) class. The
+	  simplify_objects option now raises a SOAPException instead of a
+	  faultType. This seems to make more sense to me, but I could be
+	  wrong.
+
+2004-02-13 14:02  irjudson
+
+	* tests/echoClient.py: Added another missing call.
+
+2004-02-03 22:21  irjudson
+
+	* SOAPpy/GSIServer.py: Modified GSIServer to have a GSIConfig that
+	  handles the pyGlobus specific configuartion details. Hides this
+	  from users.
+
+2004-02-03 01:39  irjudson
+
+	* docs/GlobusSupport.txt: Updated for simpler client usage.
+
+2004-02-03 01:38  irjudson
+
+	* SOAPpy/Server.py: Added a fix for exception handling that cleans
+	  up exception data structures. This plugs a memory leak when
+	  exceptions are raised.
+
+2004-02-03 01:21  irjudson
+
+	* tests/echoServer.py: Added Context Test, cleaned up output to
+	  honor Config.debug flag more.
+
+2004-02-03 01:20  irjudson
+
+	* tests/echoClient.py: Cleaned up client usage of globus, added in
+	  simplest test.
+
+2004-02-03 01:11  irjudson
+
+	* SOAPpy/Client.py: Changed the use of SOAPAction, it used to
+	  default to setting it to "", now it defaults to setting it to the
+	  method (not the nsmethod). There is a clause in Server.py that
+	  catches 'old style' SOAPActions (aka "") and sets them to the
+	  method. When this is confirmed to be what everyone wants and we
+	  decide it's alright to (possibly) break client/server interop, we
+	  can take the clause out of Server.py and just handle SOAPActions
+	  of "" as a possible error/warning.
+
+2004-02-03 01:08  irjudson
+
+	* SOAPpy/GSIServer.py: Turned off default logging.
+
+2004-02-03 01:08  irjudson
+
+	* SOAPpy/Server.py: Added context handling. Each call builds a SOAP
+	  context and puts it in the global dict _contexts (indexed by
+	  thread id).  There is also a new function: GetSOAPContext() that
+	  returns the context for the current thread.  Removed previously
+	  added method keyword args,.  Turned off default log = 1 in
+	  RequestHandler Classes.
+
+2004-01-30 23:20  warnes
+
+	* SOAPpy/: Client.py, Config.py, Errors.py, GSIServer.py, NS.py,
+	  Parser.py, SOAP.py, SOAPBuilder.py, Server.py, Types.py,
+	  URLopener.py, Utilities.py, WSDL.py, __init__.py, version.py:
+	  Add ident and __version string to all files.
+
+2004-01-30 23:19  warnes
+
+	* SOAPpy/Server.py:
+	  Fix bug reported by Dan Nathan that occurs using named arguments.
+
+2004-01-26 01:39  dwrobertson
+
+	* SOAPpy/wstools/test/test_WSDLReader.py: Removed duplicate test.
+
+2004-01-26 01:38  dwrobertson
+
+	* SOAPpy/wstools/test/: README, __init__.py, test_wsdl.py,
+	  test_wstools.py, test_wstools_net.py: Brought README up to date,
+	  made changes having to do with moving of ZSI-specific material to
+	  zsi/test/wsdlpy, removed dependencies on utils.py.
+
+2004-01-26 01:35  dwrobertson
+
+	* SOAPpy/wstools/test/: config.py, config.txt: config.py renamed to
+	  config.txt
+
+2004-01-26 01:34  dwrobertson
+
+	* SOAPpy/wstools/test/: test_wsdl2python.py, utils.py: Code moved
+	  to zsi/test/wsdl2py
+
+2004-01-21 16:54  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added substutionGroup to the list of
+	  attributes
+			  that can be specified in an ElementDeclaration.
+
+	  ----------------------------------------------------------------------
+
+2004-01-15 01:09  warnes
+
+	* docs/GlobusSupport.txt:
+	  Added GlobusSupport.txt documentation submitted by Ivan R. Judson
+	  <judson@mcs.anl.gov>.
+
+2004-01-15 00:39  warnes
+
+	* tests/testClient1.py:
+	  Add test for dataTimeType objects.
+
+2004-01-15 00:34  warnes
+
+	* SOAPpy/Server.py, tests/echoServer.py:
+	  Integrate patch from Ivan R. Judson [mailto:judson@mcs.anl.gov]:
+
+	      "There's a namespace collision in the Server.py module for
+	      deciding what namespace should be used, ie, r._ns or the
+	      path. I've resolved it with a big comment that basically
+	  says,
+	      r._ns is the preferred specification, but that if it is
+	  missing
+	      and self.path exists, use that.
+
+	      "This patch also includes the previous patch to include
+	  "method" :
+	      nsmethod in the keywords for invocations so that
+	  authorization
+	      gets the methodname."
+
+2004-01-05 13:03  warnes
+
+	* SOAPpy/Types.py:
+	  - Code assumes nested scopes, so I added the proper import so
+	  this	 will work under python 2.2.x
+
+	  - _setAttr was assuming that all attributes are strings. Fixed.
+
+2004-01-01 23:17  rsalz
+
+	* SOAPpy/.cvsignore: added
+
+2003-12-23 05:19  tag SOAPpy_0_11_1
+
+2003-12-23 05:19  warnes
+
+	* CHANGELOG, RELEASE_INFO, TODO:
+	  - Updated documentation for 0.11.1 release.
+
+2003-12-23 05:05  warnes
+
+	* SOAPpy/version.py:
+	  - Update version number for new release.
+
+2003-12-23 05:04  warnes
+
+	* SOAPpy/Server.py:
+	  - Changes suggested by Richard Au (richardau) to fix ssl support.
+	  See	 bug report [ 752882 ] "SSL SOAP Server no longer working."
+
+2003-12-23 04:33  warnes
+
+	* SOAPpy/SOAPBuilder.py:
+	  - Fixed bug [ 792258 ] "SOAPBuilder.SOAPBuilder.dump can catch
+	  wrong   exceptions" in SOAPBuilder.dump() submitted by Greg
+	  Chapman (glchapman).
+
+	  - Fixed a bug in SOAPBuilder.dump_instance() that had been masked
+	  by   bug #792258.
+
+2003-12-23 04:24  warnes
+
+	* tests/SOAPtest.py:
+	  - Add call to structType.__init__ for user classes that inherit
+	  from	 structType.  This fixes a bug in the tests that was masked
+	  by   incorrectly catching & ignoring exceptions in
+	  SOAPBuilder.dump().
+
+2003-12-23 04:10  warnes
+
+	* tests/testClient1.py:
+	  - testClient1.py now works.  The problem was failing to set
+	  'quit' back to zero	after the SOAP server exited.
+
+2003-12-23 03:22  warnes
+
+	* SOAPpy/SOAPBuilder.py:
+	  - Remove call to gentag from 'dump' and add to 'dump_float', per
+	  bug	report [ 792600 ] "SOAPBuilder.SOAPBuilder.dump possibly
+	  should not   call gentag" by Greg Chapman (glchapman).
+
+2003-12-23 03:21  warnes
+
+	* tests/SOAPtest.py: - Add a tests for handling of nil="true" and
+	  nil="false".
+
+2003-12-23 03:17  warnes
+
+	* SOAPpy/Parser.py:
+	  - Correctly handle testing for nil="true" and for nil=1.
+
+2003-12-23 02:56  warnes
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  - Fix syntax error from last change.
+
+2003-12-23 02:42  warnes
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  - Added 'strict' option to the WSDL class. If strict is true, a
+	  RuntimeException will be raised if an unrecogned message is
+	  recieved.  If strict is false, a warning will be printed to the
+	  console, the message type will be added to the WSDL schema, and
+	  processing will continue.  This is in response to the second half
+	  of   bug report [ 817331 ] "Some WSDL.py changes", submitted by
+	  Rudolf   Ruland.
+
+2003-12-23 02:21  warnes
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  - rename loadFromStream's 'file' argument to 'stream' to make it
+	  clear   that the stream need not be a file.
+
+2003-12-23 02:11  warnes
+
+	* SOAPpy/Parser.py:
+	  - Fix bug [ 858168 ] 'xsi:nil="true" causes exception', reported
+	  by   Robert Zimmermann (robertzett@user.sf.net).
+
+2003-12-19 22:21  warnes
+
+	* RELEASE_INFO:
+	  - Mistyped 'unwrap_results' instead of 'simplify_objects'
+
+2003-12-19 22:03  tag SOAPpy_0_11_0
+
+2003-12-19 22:03  warnes
+
+	* SOAPpy/version.py:
+	  - Update version number for release.
+
+2003-12-19 17:23  warnes
+
+	* TODO:
+	  - Clarify what documentation needs to be done.
+
+2003-12-19 17:20  warnes
+
+	* docs/quickstart.txt:
+	  Renamed quickstart.txt to GettingStarted.txt.
+
+2003-12-19 17:19  warnes
+
+	* CHANGELOG, LICENSE, README, RELEASE_INFO,
+	  docs/GettingStarted.txt, docs/WSDL.txt:
+	  Updated README to be shorter and clearer: - Moved most example to
+	  docs/GettingStarted.txt
+
+	  - Moved WSDL example to docs/WSDL.txt
+
+	  - Moved license text to LICENSE
+
+	  Updated RELEASE_INFO
+
+	  Updated CHANGELOG
+
+2003-12-19 15:19  warnes
+
+	* SOAPpy/Client.py, SOAPpy/Parser.py, SOAPpy/SOAPBuilder.py,
+	  tests/SOAPtest.py, tests/simpleWSDL.py:
+	  - Updated calls to fpconst - SOAPpy now checks for nonstandard
+	  infinity encoding produced by some older SOAP tools like SOAP4J
+	  and	Apache SOAP (both now superceeded by Axis SOAP).
+
+	  - Added the offending XML string to the exception thrown when a
+	  float/double underflow or overflow occurs.
+
+	  - Minor twiddles in the examples.
+
+2003-12-19 13:22  warnes
+
+	* SOAPpy/: Client.py, Config.py, Types.py:
+	  - Modified SOAPProxy code to correctly pull value of
+	  unwrap_results   and simplify_objects from Config unless
+	  specifically provided in the	 instantiation call.
+
+	  - Modified Config to better handle configuration variables that
+	  are	only valid when pyGlobus is available.
+
+	  - Added more documentation to Config variables.
+
+	  - Better documentation for simplify() and simplify_contents()
+	  functions.
+
+2003-12-19 13:16  warnes
+
+	* tests/: README, SOAPtest.py, echoClient.py, echoHeader.py,
+	  echoServer.py, esj_test_client.py, simpleWSDL.py:
+	  - Add more documentation - Modify echoClient to work properly
+	  when pyGlobus is not available.  - Misc cleanup.
+
+2003-12-19 12:04  warnes
+
+	* SOAPpy/Client.py, SOAPpy/Config.py, SOAPpy/Parser.py,
+	  SOAPpy/Server.py, tests/SOAPtest.py, tests/echoClient.py,
+	  tests/echoServer.py, tests/esj_test_client.py,
+	  tests/esj_test_server.py:
+	  - Restored Config.unwrap_results to its previous meaning.
+
+	  - Added Config.simplify_objects to control whether SOAPpy objects
+	  are	simplified into basic python types.
+
+	  - Moved simplification code out of ParseSOAPRPC into
+	  SOAPRequestHandler.do_POST and SOAPProxy.__call.
+
+	  - Modified test code appropriately.
+
+2003-12-19 10:58  warnes
+
+	* tests/simpleWSDL.py:
+	  - Add WSDL example from the README as simpleWSDL.py
+
+2003-12-18 17:46  warnes
+
+	* tests/README:
+	  - More information
+
+2003-12-18 17:42  warnes
+
+	* tests/: README, esj_test_client.py, esj_test_server.py,
+	  largeDataTest.py, testClient1.py:
+	  - Update test/README with more information - Remove/comment out
+	  verbose debugging from tests.
+
+2003-12-18 17:40  warnes
+
+	* SOAPpy/: Client.py, Config.py, GSIServer.py, Parser.py,
+	  SOAPBuilder.py, Server.py, Types.py, WSDL.py, version.py:
+	  - More changes to enable proper return of simple python objects
+	  when	 Config.unwrap_results=1.
+
+	  - Addition of support for Globus, contributed by Ivan R. Judson
+	  <judson@mcs.anl.gov>
+
+	  - Resolution of merge conflicts due to unsynchronized copies at
+	  home and work.
+
+2003-12-18 13:28  warnes
+
+	* tests/: echoHeader.py, esj_test_client.py, esj_test_server.py,
+	  largeDataTest.py, testClient1.py, testleak.py:
+	  - Added more test scripts.
+
+2003-12-18 13:26  warnes
+
+	* tests/: echoClient.py, echoServer.py:
+	  - Add testing of Globus Support code - Turn off verbose debugging
+	  messages
+
+2003-12-18 13:25  warnes
+
+	* tests/SOAPtest.py:
+	  - Missed a call to parseSOAPRPC when config.uwrap_results=0.
+
+2003-12-18 02:08  warnes
+
+	* RELEASE_INFO, TODO:
+
+	  - Update documentation.
+
+2003-12-18 01:55  warnes
+
+	* SOAPpy/version.py:
+
+	  - Update version string.
+
+2003-12-18 01:54  warnes
+
+	* SOAPpy/: Config.py, Parser.py, SOAPBuilder.py, Server.py,
+	  Types.py:
+
+	  - Config.unwrap_results now works properly.
+
+	  - New Config.dict_encoding option to control the encoding of
+	  dictionary keys.    By default this is 'ascii' so that
+	  dictionaries have ordinary string    keys even if they were
+	  encoded into UTF for transport (the default	 is UTF-8).  Any
+	  other encoding known to string.encode is valid.
+
+	  - New Config.strict_range option to force Parsing to enforce
+	  range   checking on  double and float variables.  This is off by
+	  default.
+
+2003-12-18 01:31  warnes
+
+	* tests/: SOAPtest.py, TCtest.py, echoClient.py, echoServer.py,
+	  quoteTest.py, storageTest.py, xmethods.py:
+
+	  - Modified SOAPtest.py to work when Config.unwrap_results=1.	-
+	  Modified SOAPtest.py to set Config.strict_range to enforce
+	  checking   of the range of float and double objects.	[This is a
+	  new Config   variable and is off by default.] - Fixed wrongly
+	  named arguments in TCtest.py - Turned off excess debugging
+	  information in echoClient.py,   echoServer.py, storageTest.py -
+	  Removed unneeded import from quoteTest.py that was generating a
+	  warning.  - Removed unnecessary explict mapping to dictionary in
+	  xmethods.py
+
+2003-12-18 01:23  warnes
+
+	* tests/README:
+
+	  - A little documentation can go a long way, ;^)
+
+2003-12-17 17:18  warnes
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  - Fix problem when WSDL.Proxy was passed WSDL in a string or
+	  other   object that does not have a 'name' attribute.
+
+2003-12-08 03:04  boverhof
+
+	* SOAPpy/wstools/WSDLTools.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- partial bug fix for [ 850905 ] wsdl2py
+	  crash on a more sophisticated WSDL.
+		      We do expect a list, but nmtokens is a list separated
+	  by a single space.  So if
+		      "parts" is a string, the just split it to create a
+	  list.
+
+
+	  ----------------------------------------------------------------------
+
+2003-12-05 20:49  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- If a schema needs to 'create' a schema
+	  instance
+			  itself it adds this schema to its import
+	  dictionary.
+
+
+	  ----------------------------------------------------------------------
+
+2003-12-05 19:17  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- error in Import class for accessing a
+	  schemaLocation.
+		      This bug would only show up if a schema had to
+	  'construct' a
+		      schema instance of a different namespace itself.
+	  Basically the
+		      last option.
+
+
+	  ----------------------------------------------------------------------
+
+2003-12-05 10:34  warnes
+
+	* SOAPpy/: WSDL.py, wstools/WSDLTools.py:
+	  - Fixes submitted by Kirk Strauser <kirk@daycos.com> for WSDL use
+	  in SOAPpy
+
+2003-12-04 14:05  warnes
+
+	* zope/: README, zope-2.5.0-soappy.diff, zope-2.6.2-soappy.diff,
+	  zope-soap-client.py:
+	  - Added contributed patches from Antonio Beamud Montero
+	  <antonio.beamud@linkend.com> that extend Zope with SOAP support.
+
+2003-12-04 13:57  warnes
+
+	* README, README.MethodParameterNaming, SOAPpy/Config.py,
+	  SOAPpy/Parser.py, SOAPpy/SOAPBuilder.py, SOAPpy/Types.py,
+	  SOAPpy/version.py:
+	  - Mostly changes to allow returned SOAP objects to be 'unwrapped'
+	  into	 plain python objects when Config.unwrap_results=1.
+
+2003-11-21 18:12  warnes
+
+	* tests/SOAPtest.py:
+	  - Fix some errors - Updated to mactch change back to "v#" unnamed
+	  variable naming strategy.  - Added config.unwrap=0 to prevent
+	  unwrapping since this test code   expects the old behavior.  -
+	  Only 1 failure now!
+
+2003-11-14 14:09  warnes
+
+	* docs/MethodParameterNaming.txt:
+	  Moved /README.MethodParameterNaming to
+	  /docs/MethodParameterNaming.txt
+
+2003-11-14 13:48  warnes
+
+	* SOAPpy/Types.py:
+	  - Modify compoundType to remove internal _asdict and _aslist
+	  objects   which were different views of (some of) the object
+	  attributes.  It   was possible for these views to get out of sync
+	  causing (at least)   confusion.  Instead, I provide _aslist() and
+	  _asdict() functions to   render the existing data in the desired
+	  format.
+
+	  - Modify simplify() function to work recursively on compound
+	  types.
+
+2003-11-14 13:44  warnes
+
+	* SOAPpy/Server.py: - if Config.unwrap_results is True, convert
+	  SOAPpy arrayType and	 structType to python list and dictionary.
+
+	  - Modify special argument handling to use "v[0-9]" for unnamed
+	  ordered   arguments.
+
+2003-11-14 13:36  warnes
+
+	* SOAPpy/SOAPBuilder.py: - Modifid to use "v[0-9]+" as pattern for
+	  ordered but unnamed	parameters instead of "_[0-9]".  - Modified
+	  dump_instance to simplify writing out object components.
+
+2003-11-14 13:32  warnes
+
+	* SOAPpy/Parser.py: - Parser.py now converts arrayType and
+	  structType SOAPpy objects to	 standard python lists and
+	  dictionaries when Config.unwrap_results is   True.
+
+2003-11-14 13:29  warnes
+
+	* SOAPpy/Config.py: - Changed config.specialArgs back to a simple
+	  flag.
+
+2003-10-31 21:49  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed an unknown bug caused by
+	  overlooking
+		     the potential namespace contents of a "types" node.
+
+
+	  ----------------------------------------------------------------------
+
+2003-10-27 17:42  boverhof
+
+	* SOAPpy/wstools/: Utility.py, WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py
+		  WSDLTools.py
+		  XMLSchema.py
+
+	       -- Fixed [ 810251 ] default method broken in
+	  wstools.Utility.Collection
+
+	       -- Also fixed problem with includes Collection key, and
+	  changed
+		  Types(Collection) class to declare a different default
+	  key instead
+		  of redefining several methods.
+
+
+	  ----------------------------------------------------------------------
+
+2003-10-27 16:26  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py
+		  XMLSchema.py
+
+	      -- Fixed [ 808505 ] ZSI fails with <xs:include ... />
+		 Now schema include statements should be handled correctly.
+
+	      -- Also fixed a problem with relative uri handling for
+	  XMLSchema
+		 and SchemaReader.
+
+
+	  ----------------------------------------------------------------------
+
+2003-10-25 22:54  dwrobertson
+
+	* SOAPpy/wstools/test/utils.py: Fixed bug, where if multiple tests
+	  using one diff file, and one test failed, subsequent tests failed
+	  on assertion errors.
+
+2003-10-23 15:09  uid27080
+
+	* README:
+	  Updated for 0.10.4
+
+2003-10-23 15:00  uid27080
+
+	* RELEASE_INFO: Updated for 0.10.4
+
+2003-10-23 14:58  uid27080
+
+	* CHANGELOG: - Updated for 0.10.4.
+
+2003-10-22 12:46  tag SOAPpy_0_10_4
+
+2003-10-22 12:46  warnes
+
+	* SOAPpy/version.py:
+	  Release with improved performace thanks to a patch by Erik
+	  Westra.
+
+2003-10-22 12:45  warnes
+
+	* SOAPpy/Parser.py:
+
+	  Patch improving parser performance submitted by Erik Westra:
+
+	  On Tuesday, October 21, 2003, at 09:44  PM, Erik Westra wrote:
+
+	  > Hi Greg,
+	  >
+	  > I've been using your SOAPpy library (version 0.10.3) in an
+	  application
+	  > I've been developing, and have had complaints about the amount
+	  of time
+	  > it takes to receive large packets of data.	In this
+	  application, the
+	  > server was sending through PDF documents as base64-encoded
+	  strings,
+	  > which were transmitted using a perl SOAP library, and processed
+	  on my
+	  > end using SOAPpy.  As soon as the PDF files got reasonably
+	  large,
+	  > SOAPpy was taking a long time to decode the data -- up to five
+	  minutes
+	  > in some cases.
+	  >
+	  > I started digging into the SOAPpy source code, and quickly
+	  found the
+	  > cause of the problem: the Parser.py module was using a Python
+	  string
+	  > to store the character data, and as new character data was
+	  being
+	  > received, it was "appending" the new data like this [from
+	  Parser.py,
+	  > line 404]:
+	  >
+	  >	  self._data += c
+	  >
+	  > The problem with this is that Python strings are immutable, so
+	  the
+	  > above statement is actually recreating the entire string buffer
+	  from
+	  > scratch every time a new line of character data is received --
+	  which
+	  > is extremely inefficient.  A much better way to do this is to
+	  use a
+	  > (mutable) Python list object, and to append the new character
+	  data to
+	  > the end of this list, like this:
+	  >
+	  >	  self._data = []
+	  >
+	  >	  ...
+	  >
+	  >	  self._data.append(c)
+	  >
+	  > and then use:
+	  >
+	  >	  string.join(self._data, "")
+	  >
+	  > to obtain the complete copy of the list once all the lines of
+	  data
+	  > have been processed.  I've attached a unified diff file listing
+	  the
+	  > changes I've made to Parser.py to implement this -- they're
+	  pretty
+	  > minimal, and won't affect anything other than the performance
+	  of
+	  > character data processing.
+	  >
+	  > The results of this patch are quite impressive: I tried
+	  processing a
+	  > SOAP response with a single string containing around 675K of
+	  data.
+	  > Using the unpatched Parser.py file, it took 111 seconds to
+	  process --
+	  > with this patch, it took just 2.4 seconds.
+	  >
+	  > I hope you find this useful...
+	  >
+	  > Cheers,
+	  >
+	  >  - Erik.
+	  >
+	  > PS: Thanks for the work you (and the others) are doing on
+	  SOAPpy.
+	  > It's a great library!
+
+2003-10-21 17:19  dwrobertson
+
+	* SOAPpy/wstools/test/config.py: Latest xmethods.
+
+2003-10-14 12:08  mbucc
+
+	* SOAPpy/wstools/Utility.py: Use m2crypto for SSL if it's installed
+
+2003-10-08 13:07  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- now we get reasonable error message back
+	  when
+			  import or include is incorrectly defined.
+
+	    File
+	  "/usr/local/lib/python2.3/site-packages/ZSI/wstools/XMLSchema.py",
+	  line 478, in __checkAttributes
+	      raise SchemaError, '%s, unknown attribute' %a
+	  ZSI.wstools.XMLSchema.SchemaError: location, unknown attribute
+
+
+	  ----------------------------------------------------------------------
+
+2003-10-03 13:49  rsalz
+
+	* SOAPpy/wstools/Utility.py: Let lower layers (http lib) raise
+	  exception if trying to use SSL on a non-SSL-enabled system.
+
+2003-10-03 10:01  mbucc
+
+	* SOAPpy/wstools/XMLSchema.py: Removed pyXml dependency.
+
+2003-10-01 18:08  dwrobertson
+
+	* SOAPpy/wstools/test/__init__.py: For importing utils
+
+2003-10-01 17:47  dwrobertson
+
+	* SOAPpy/wstools/test/test_wsdl2python.py: High level client code
+	  generator tests moved elsewhere.
+
+2003-09-30 04:25  dwrobertson
+
+	* SOAPpy/wstools/test/utils.py: Fixed premature close of string
+	  buffer.
+
+2003-09-25 14:12  tag SOAPpy_0_10_3
+
+2003-09-25 14:12  warnes
+
+	* SOAPpy/version.py: - Updated to 0.10.3 (we missed a cvs tag
+	  point)
+
+2003-09-25 14:09  tag SOAPpy_0_10_2
+
+2003-09-25 14:09  warnes
+
+	* SOAPpy/SOAPBuilder.py: Updated version number for release 0.10.2.
+
+2003-09-16 20:08  dwrobertson
+
+	* SOAPpy/wstools/test/config.py: Updated with latest xmethods,
+	  removed URL's no longer in xmethods.
+
+2003-09-16 15:25  rsalz
+
+	* SOAPpy/WSDL.py: Bug 792247: Unnecessarily slow code in
+	  WSDL.Proxy.__getattr__	 Use has_key instead of creating
+	  temporary names() list
+
+2003-09-13 20:38  dwrobertson
+
+	* SOAPpy/wstools/test/utils.py: Added ability to read values from
+	  multiple config file sections, added setUpWsdl utility function,
+	  cleaned up loadTestsFromNames, updated comments.
+
+2003-09-13 20:36  dwrobertson
+
+	* SOAPpy/wstools/test/test_WSDLReader.py: Now using separate
+	  MatchTestLoader in makeSuite.  Improved way config file sections
+	  are selected.
+
+2003-09-13 20:35  dwrobertson
+
+	* SOAPpy/wstools/test/test_wsdl2python.py: Combined two tests
+	  generating services and services_types files into one method.
+	  Moved setUpWsdl to utils.  Added easier choosing of config file
+	  sections.  Used separate MatchTestLoader in makeTestSuite.
+
+2003-09-13 20:32  dwrobertson
+
+	* SOAPpy/wstools/test/: test_t1.py, test_wsdl.py, test_wstools.py,
+	  test_wstools_net.py: Converted to more automated way of
+	  generating test cases from configuration file.
+
+2003-09-12 02:11  dwrobertson
+
+	* SOAPpy/wstools/test/config.py: Cleaned up names.
+
+2003-09-11 21:22  dwrobertson
+
+	* SOAPpy/wstools/test/config.py: services_by_http section divided
+	  into services where there is no schema, those with only simple
+	  types, those with complex types, those with WSDLReader errors,
+	  and those with wsdl2python errors.  The last contain mostly those
+	  that are raised by that module.
+
+2003-09-11 18:53  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+
+	   Modified Files:
+		  XMLSchema.py -- fixed two places where 'readFromURL' was
+	  supposed
+			  to be loadFromURL.
+
+	  ----------------------------------------------------------------------
+
+2003-09-10 02:01  dwrobertson
+
+	* SOAPpy/wstools/test/test_wsdl2python.py: Got rid of pyGridWare
+	  import.
+
+2003-09-10 02:01  dwrobertson
+
+	* SOAPpy/wstools/test/test_WSDLReader.py: Got rid of pyGridWare
+	  import
+
+2003-09-10 00:17  dwrobertson
+
+	* SOAPpy/wstools/test/utils.py: Utilities to aid unit tests.
+
+2003-09-10 00:16  dwrobertson
+
+	* SOAPpy/wstools/test/test_wsdl2python.py: Unit tests for code
+	  generation in wsdl2python
+
+2003-09-10 00:15  dwrobertson
+
+	* SOAPpy/wstools/test/test_WSDLReader.py: Unit tests for WSDLReader
+	  from WSTools
+
+2003-09-10 00:14  dwrobertson
+
+	* SOAPpy/wstools/test/config.py: Added many URL's from xmethods to
+	  services_by_http section.
+
+2003-09-05 15:59  warnes
+
+	* README:
+	  Changed dependency list.  SOAPpy does depend on fpconst, but no
+	  longer depends on pyXML.
+
+2003-09-05 15:53  warnes
+
+	* README:
+	  - Added dependencies list
+
+2003-09-05 14:57  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added a try clause to catch xml.dom.ext
+	  ImportError,
+		     and added a SplitQName function that matches
+	  xml.dom.ext.SplitQName
+		     output.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-28 15:03  boverhof
+
+	* SOAPpy/wstools/test/: README, config.py, test_t1.py,
+	  test_wsdl.py, xmethods.tar.gz:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  README config.py test_t1.py test_wsdl.py xmethods.tar.gz
+
+		  Added a couple tests and an explanation of how to add new
+		  tests.
+
+	  ----------------------------------------------------------------------
+
+2003-08-28 13:26  warnes
+
+	* SOAPpy/Client.py: - Fixed missing import needed for basic
+	  authentication.
+
+2003-08-27 18:27  boverhof
+
+	* SOAPpy/wstools/test/: README, config.py, schema.tar.gz,
+	  test_t1.py, test_wsdl.py, test_wstools.py, test_wstools_net.py,
+	  xmethods.tar.gz:
+	  ----------------------------------------------------------------------
+	   Added Files:
+		  README config.py schema.tar.gz test_t1.py test_wsdl.py
+		  test_wstools.py test_wstools_net.py xmethods.tar.gz
+
+		  -- basic unittesting framework for WSDLTools/XMLSchema,
+		     test_t1 just checks that everything goes where it's
+	  supposed to.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-27 18:25  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- attribute declarations were going into
+	  wrong collection.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-26 18:43  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  WSDLTools.py -- added a line in Reader to to set
+	  WSDL.location
+		     for files so that imports with relative paths will
+	  work for
+		     file paths as well as urls.
+
+		  XMLSchema.py -- a couple Attribute fixes, and the
+	  WSDLAdapter
+		     wasn't passing it's parent into the XMLSchemaComponent
+		     constructor which was messing up import lookups.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-25 18:35  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed XMLSchemaComponent.setAttributes,
+	  added
+			  the needed getNamespace method to all
+	  DOMAdapters.	All
+			  changes are related to XML attribute handling.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-25 08:16  warnes
+
+	* README:
+	  - Applied patch submitted by Humberto Diógenes (virtualspirit):
+
+		  Corrected examples inside "readme
+
+		  Just eliminated some warnings ("import SOAPProxy" instead
+	  of
+		  "import SOAP")
+
+2003-08-07 00:49  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- Modified/Extended some of the element
+	  classes.
+			  For LocalElementDeclaration inheritance was
+	  duplicitous,
+			  and for ElementReference it was wrong.
+
+
+	  ----------------------------------------------------------------------
+
+2003-08-05 19:42  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- Fixed a few bugs, a few classes
+	  mistakenly thought
+			  they contained global attribute declarations and
+	  I fixed this
+			  to local attribute declarations.  Couple spots
+	  where
+			  AttributeGroup declarations and references were
+	  incorreclty
+			  used in place of eachother.  Completed a few
+	  classes but
+			  a few remain incomplete.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-31 02:37  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- Namespaced a couple attributes in
+	  attribute
+			  dictionary that I missed.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-30 15:45  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- there was a indexing logic error in
+	  Restriction/Extention
+			  classes fromDom method.  Also changed the
+	  attribute dictionary of all
+			  classes that inherit XMLSchemaComponent, now all
+	  attributes
+			  are organized by namespace.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-25 17:46  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py --
+		      Wasn't resolving schema imports in every scenario.
+		      Now look in parent schema imported_schemas first,
+	  second look
+		      in the parent wsdl, lastly try to resolve
+	  schemaLocation.
+
+		      Removed 'what' parameter from marker interface
+	  methods, I don't
+		      know what it was doing there.  Check self.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-23 20:34  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- changed getQNameAttribute to return None
+	  if it
+			  can't find QName obj in it's own tns or in any of
+	  its
+			  imported namespaces.	Used to throw an exception.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-23 18:16  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed some default attribute handling,
+	  added a
+			  few get methods in XMLSchema for
+	  elementFormDefault,
+			  attributeFormDefault, blockDefault, finalDefault.
+	   Also
+			  added a global method GetSchema.  Now default
+	  attributes
+			  are set correctly in all schema components.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-23 16:33  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- checking for wrong class in two methods.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-23 14:25  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- removed bogus method setType in
+	  SimpleType class.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-22 13:39  boverhof
+
+	* SOAPpy/wstools/Utility.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- commited a mistake. fixed.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-22 13:34  boverhof
+
+	* SOAPpy/wstools/: Utility.py, XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  Utility.py -- Added a parameter to Collection class
+	  constructor,
+			  'name' is the default attribute used for keys but
+	  one
+			   can specify whatever key they want.
+
+		  XMLSchema.py -- Used the above parameter to make
+	  Collection
+			  instances use the appropriate 'attribute' as key.
+
+
+	  ----------------------------------------------------------------------
+
+2003-07-22 10:57  warnes
+
+	* SOAPpy/: Parser.py, SOAPBuilder.py:
+	  - More fixes to use fpconst instead of ieee754.
+
+2003-07-22 10:54  warnes
+
+	* SOAPpy/: Parser.py, SOAPBuilder.py, wstools/__init__.py,
+	  wstools/ieee754.py:
+	  - Remove obsolete ieee754.py.  PEP 754 provides a (proposed)
+	  fpconst   module which is a newer version of this code.  fpconst,
+	  will of   course, need to be installed separately.
+
+2003-07-21 18:13  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- still a couple mistakes in constructors,
+	  changed
+			  XSDNS to SCHEMA.XSD_LIST which was a mistake.
+
+2003-07-21 17:56  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- missing parent parameter to a few
+	  constructors
+			  that expect to see it.  fixed.
+
+2003-07-21 15:14  boverhof
+
+	* SOAPpy/wstools/: XMLSchema.py, license.txt:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- added LBNL copyright header.
+	   Added Files:
+		  license.txt -- LBNL copyright.
+
+2003-07-21 10:18  warnes
+
+	* SOAPpy/: version.py, wstools/UserTuple.py, wstools/XMLSchema.py:
+
+	  - Modified XMLSchema to extend UserTuple instead of tuple for
+	  python < 2.2.
+
+	  - Added UserTuple class, taken from from Stefan Schwarzer's
+	  ftputil   library, which is available at
+	  <http://www.ndh.net/home/sschwarzer/python/python_software.html>.
+
+2003-07-21 09:15  warnes
+
+	* SOAPpy/Utilities.py:
+	  - Unecesssary import was creating a circular import loop.
+
+2003-07-18 13:36  tyger23
+
+	* SOAPpy/wstools/XMLSchema.py: fixed a naming issue
+
+2003-07-18 11:58  warnes
+
+	* SOAPpy/URLopener.py, SOAPpy/WSDL.py, tests/BabelfishWSDLTest.py:
+	  - Modifed WSDL.Proxy to pass along all arguments to SOAPProxy.
+	  This	 should ensure that all features of SOAPProxy are
+	  accessible to users	of WSDL.Proxy
+
+	  - Created URLopener.py, which contains a class extending
+	  urllib.FancyURLopener.  This class allows reading from URLs that
+	   are protected by basic authenticatoin, have been relocated, etc.
+
+	  - Modified WSDL.Proxy to use URLopener.  It should now permit
+	  access   to WSDL files protected by basic authentication.
+
+2003-07-18 10:13  warnes
+
+	* SOAPpy/Client.py: - Trivial formatting change
+
+2003-07-17 18:23  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:
+	  ----------------------------------------------------------------------
+	   Modified Files:
+		  XMLSchema.py -- fixed a couple bad variable references.
+
+2003-07-17 17:48  boverhof
+
+	* SOAPpy/wstools/: WSDLTools.py, XMLSchema.py:	Modified Files:
+		  WSDLTools.py -- just a few minor changes so the new
+	  schema class
+			  will be used instead of the schema tns
+	  placeholder.
+
+			  Might want to add an argument to WSDL.load method
+	  so that
+			  programmer can specify the placeholder or actual
+			  implementation.
+
+		  XMLSchema.py -- mostly new, unused original code is
+	  commented out at the bottom.
+
+2003-07-02 14:58  warnes
+
+	* SOAPpy/: Client.py, version.py:
+	  - Client.py failed to import faultType from Types.py, and was
+	  getting   the python default instead.  This caused problems in
+	  properly   detecting errors on the server reported via SOAP.
+
+2003-05-29 17:01  warnes
+
+	* SOAPpy/WSDL.py:
+	  - Add additional arguments to __init__ which will be passed to
+	  Proxy.__init__.  This allows specification of proxy server and
+	  other   options.
+
+2003-05-22 22:31  feanor420
+
+	* SOAPpy/wstools/Utility.py: Running pychecker over ZSI, and I
+	  noticed some problems in wstools.
+
+	  I fixed that fact that Notation and Entity were not be found. I
+	  changed them to use the qualified name like the rest of the
+	  symbols from xml.dom.minidom.
+
+	  I also discovered that a RecursionError was being thrown, but
+	  RecursionError didn't exist. I created simple sub-class of
+	  Exception to rectify this.
+
+2003-05-21 13:39  warnes
+
+	* SOAPpy/Client.py:
+	  - Modified getNS pattern to prevent grabbing to much text.
+
+2003-05-21 12:06  blunck2
+
+	* SOAPpy/Client.py: changed namespace regular expression so that it
+	  matches what is returned from a stateful (*shiver*) soap server.
+	  for example, the namespace returned from a stateful soap server
+	  looks like:  urn:echo@rO0ABXNyACJ3ZWJsb2....	where urn:echo was
+	  the original namespace.
+
+2003-05-21 11:33  tag SOAPpy_0_10_1
+
+2003-05-21 11:33  warnes
+
+	* CHANGELOG, RELEASE_INFO: - Updated CHANGELOG and RELEASE_INFO for
+	  0.10.1 release.
+
+2003-05-21 10:52  warnes
+
+	* tests/: SOAPtest.py, TCtest.py, alanbushTest.py, echoClient.py,
+	  echoServer.py, excelTest.py, newsTest.py, quoteTest.py,
+	  speedTest.py, storageTest.py, translateTest.py, weatherTest.py,
+	  whoisTest.py, xmethods.py:
+	  - Add ".." to python module path so that the local SOAPpy code
+	  will be   used instead of the globally installed code when
+	  running tests.
+
+2003-05-21 10:51  warnes
+
+	* setup.py:
+	  - Update setup.py to get version string from
+	  SOAPpy/version.__version__.
+
+2003-05-21 10:37  warnes
+
+	* SOAPpy/version.py: - I forgot to update the version number
+	  associated with the addition	 of the file version.py.
+
+2003-05-21 10:34  warnes
+
+	* SOAPpy/: Client.py, Errors.py, Server.py, version.py:
+	  - Added file 'version.py' whose sole purpose is to hold the
+	  definition   of __version__ in a single place.  - Modified
+	  Server.py and Client.py to 'from version import __version__'.  -
+	  Removed __version__ definition from Error.py, which never used
+	  it.
+
+2003-05-20 17:25  tag SOAPpy_0_10_0
+
+2003-05-20 17:25  warnes
+
+	* RELEASE_INFO: Updated for release 0.10.0.
+
+2003-05-20 17:10  warnes
+
+	* SOAPpy/wstools/: TimeoutSocket.py, Utility.py, WSDLTools.py,
+	  XMLSchema.py, XMLname.py, __init__.py:
+	  - Added ident string containing CVS version to all files that
+	  were	 lacking this.
+
+2003-05-20 17:04  warnes
+
+	* CHANGELOG, TODO, setup.py, SOAPpy/SOAP.py, SOAPpy/Types.py,
+	  SOAPpy/WSDL.py, SOAPpy/__init__.py:
+	  - Added ident string containing CVS version to all files that
+	  were	 lacking this.
+
+2003-05-20 16:08  warnes
+
+	* SOAPpy/Client.py:
+	  - Fix bug in getNS that caused loss of namespace by using better
+	  pattern matching to find the namespace in the SOAP message.
+
+2003-05-20 08:47  warnes
+
+	* setup.py:
+	  - Removed or changed dashes to underscores in version numbers to
+	  make	 RPM happy.
+
+2003-05-19 13:45  warnes
+
+	* SOAPpy/Server.py: - Added ThreadingSOAPServer which inherits from
+	  ThreadingTCPServer   server so that muliple clients will be
+	  automatically multiplexed.
+
+2003-05-15 20:31  boverhof
+
+	* SOAPpy/wstools/XMLSchema.py:	Modified Files:
+		  XMLSchema.py
+
+
+	  ----------------------------------------------------------------------
+	     fixed an obvious bug, added a SchemaError class so it can
+	  actually
+	  be thrown.
+
+
+	  ----------------------------------------------------------------------
+
+2003-05-13 20:22  blunck2
+
+	* SOAPpy/wstools/WSDLTools.py: changed references to classes that
+	  exist within this module.
+
+2003-05-09 08:46  warnes
+
+	* README, TODO, setup.py, SOAPpy/Client.py, SOAPpy/Config.py,
+	  SOAPpy/Errors.py, SOAPpy/NS.py, SOAPpy/Parser.py, SOAPpy/SOAP.py,
+	  SOAPpy/SOAPBuilder.py, SOAPpy/Server.py, SOAPpy/Types.py,
+	  SOAPpy/Utilities.py, SOAPpy/WSDL.py, SOAPpy/__init__.py,
+	  tests/SOAPtest.py, tests/TCtest.py, tests/alanbushTest.py,
+	  tests/cardClient.py, tests/cardServer.py, tests/echoClient.py,
+	  tests/echoServer.py, tests/excelTest.py, tests/fortuneTest.py,
+	  tests/guidTest.py, tests/itimeTest.py, tests/newsTest.py,
+	  tests/quoteTest.py, tests/quoteTest1.py, tests/quoteTest2.py,
+	  tests/speedTest.py, tests/storageTest.py, tests/testWSDL.py,
+	  tests/translateTest.py, tests/weatherTest.py, tests/whoisTest.py,
+	  tests/wordFindTest.py, tests/xmethods.py:
+	  - Merge changes splitting SOAP.py file into 10 separate files.
+	  This	 should make the source much easier to navigate.
+
+2003-05-09 03:17  warnes
+
+	* setup.py, SOAPpy/Client.py, SOAPpy/Parser.py, SOAPpy/SOAP.py,
+	  SOAPpy/Server.py, SOAPpy/Utilities.py, SOAPpy/WSDL.py,
+	  SOAPpy/__init__.py, tests/SOAPtest.py, tests/TCtest.py,
+	  tests/alanbushTest.py, tests/cardClient.py, tests/cardServer.py,
+	  tests/echoClient.py, tests/echoServer.py, tests/excelTest.py,
+	  tests/newsTest.py, tests/quoteTest.py, tests/speedTest.py,
+	  tests/storageTest.py, tests/testWSDL.py, tests/translateTest.py,
+	  tests/weatherTest.py: - Many changes associated with splitting
+	  SOAP.py into separate files.	- Added Mark Bucciarelli's
+	  <mark@hubcapconsulting.com> patch to	 provide wsdl code on
+	  properly structured .GET requests
+
+2003-05-09 02:41  warnes
+
+	* tests/translateTest.py:
+	  - Added code to check for http_proxy environment variable and 'do
+	  the	right thing' (tm).
+
+2003-05-09 02:39  warnes
+
+	* tests/whoisTest.py:
+	  - Updated to use whois SOAP service provided by
+	  www.SoapClient.com
+
+2003-05-09 02:23  warnes
+
+	* tests/wordFindTest.py:
+	  - Service no longer exists.
+
+2003-05-09 02:16  warnes
+
+	* tests/: quoteTest1.py, quoteTest2.py:
+	  - Service no longer exists.
+
+2003-05-09 02:13  warnes
+
+	* tests/xmethods.py:
+	  - Added test out to xmethods.net, which looks like a stable site
+	  with	 lots of useful SOAP/WSDL/... stuff.
+
+2003-05-09 02:13  warnes
+
+	* tests/itimeTest.py:
+	  - Service no longer exists.
+
+2003-05-08 23:44  warnes
+
+	* tests/guidTest.py:
+	  - The target SOAP server no longer exists.
+
+2003-05-08 23:14  warnes
+
+	* tests/fortuneTest.py:
+	  - The target server no longer exists.  Delete test.
+
+2003-05-08 17:32  warnes
+
+	* TODO:
+	  - Add TODO file.
+
+2003-05-08 17:29  warnes
+
+	* README, setup.py, SOAPpy/Client.py, SOAPpy/Config.py,
+	  SOAPpy/Errors.py, SOAPpy/NS.py, SOAPpy/Parser.py, SOAPpy/SOAP.py,
+	  SOAPpy/SOAPBuilder.py, SOAPpy/Server.py, SOAPpy/Types.py,
+	  SOAPpy/Utilities.py, SOAPpy/__init__.py, tests/cardClient.py,
+	  tests/excelTest.py, tests/testWSDL.py:
+	  - Split up the monolithic SOAPpy/SOAP.py into separate files.
+	  This	 should make SOAPpy easier to maintain.
+
+	  - Other incidental changes..
+
+2003-05-08 13:26  rsalz
+
+	* SOAPpy/: WSDL.py, wstools/ServiceProxy.py, wstools/__init__.py:
+	  Finish up what Mark Bucciarelli kicked off and I started with
+	  commit a little while ago. :)  That is, wstools is now
+	  independant of SOAPpy and ZSI.  This commit does the following:
+	  wstools/ServiceProxy.py is now ZSI/ServiceProxy.py, so some
+	  imports and ZSI docs had to change.  ZSI needs some changing, in
+	  case I didn't patch up all the imports right.
+
+2003-05-08 12:58  rsalz
+
+	* SOAPpy/wstools/: ServiceProxy.py, WSDLTools.py: Move some stuff
+	  from ServiceProxy (which imports ZSI) to WSDLTools (which
+	  doesn't), so that SOAPpy can use wstools without needing ZSI
+	  around...  which is kinda the point of generic common-code. :)
+
+	      class SOAPCallInfo:
+	      class ParameterInfo:
+	      class HeaderInfo(ParameterInfo):
+	      def callInfoFromWSDL(port, name):
+	  Next step is to move what's left of wstools/ServiceProxy.py into
+	  the ZSI module (and fix up the imports), so that wstools has *no*
+	  soap-stack-specific code in it.
+
+2003-05-07 17:07  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Fixed XML parse error memory leak fix to still raise the
+	  error...
+
+2003-05-07 12:50  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Applied patch by bstpierre, which he suggested to fix memory
+	  leaks   in bug report 544572 (see
+	  http://sourceforge.net/tracker/index.php?func=detail&aid=544572&group_id=26590&atid=387667).
+	  The leaks seem to have been corrected by other patches, but
+	  the	 suggested code is cleaner, so I've applied it anyway.
+
+2003-05-07 11:34  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Applied patch by Mark Bucciarelli to fix memory leak when the
+	  SAX	parser throws an exception.
+
+2003-05-07 10:39  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Commit memory leak fix patch submitted by Jeremy Fincher
+	  (jemfinch).
+
+2003-04-30 15:38  warnes
+
+	* SOAPpy/SOAP.py: - Fixed display of exception when an internal
+	  error happens.
+
+2003-04-29 10:53  rsalz
+
+	* SOAPpy/wstools/: ServiceProxy.py, Utility.py: Remove DOS
+	  line-ending ^M chars
+
+2003-04-28 10:59  rsalz
+
+	* SOAPpy/wstools/.cvsignore: Move .cvsignore from ZSI/wsdl to
+	  wstools
+
+2003-04-28 09:57  tag SOAPpy_0_9_9_pre5
+
+2003-04-28 09:57  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Updated version number
+
+2003-04-28 09:56  warnes
+
+	* CHANGELOG, MANIFEST.in, README, SOAPpy/WSDL.py,
+	  SOAPpy/__init__.py, tests/TemperatureService.wsdl,
+	  tests/testWSDL.py: - Added client support for WSDL, ported from
+	  ZSI by Mark Bucciarelli   <mark@hubcapconsulting.com>
+
+2003-04-24 22:50  warnes
+
+	* setup.py, SOAPpy/SOAP.py, SOAPpy/__init__.py: - More changes
+	  associated with moving ZSI/SOAPpy common code into   wstools CVS
+	  package.
+
+2003-04-24 19:08  warnes
+
+	* setup.py, SOAPpy/SOAP.py, SOAPpy/XMLname.py, SOAPpy/__init__.py,
+	  SOAPpy/ieee754.py:
+	  - Moved XMLname.py and ieee754 to the wstools CVS package.  -
+	  Modified SOAPpy to include these files from thier new location.
+
+2003-04-24 13:45  warnes
+
+	* SOAPpy/wstools/: XMLname.py, __init__.py, ieee754.py:
+	  - Moved XMLname.py and ieee754.py into the wstools CVS package
+	  from	 SOAPpy/SOAPpy.
+
+2003-04-24 13:03  rsalz
+
+	* SOAPpy/wstools/: ServiceProxy.py, TimeoutSocket.py, Utility.py,
+	  WSDLTools.py, XMLSchema.py, ZPL, __init__.py: Import files from
+	  (now outdated) ZSI/wsdl directory
+
+2003-03-27 11:36  warnes
+
+	* CHANGELOG, SOAPpy/SOAP.py:
+	  Updated version to 0.9.9-pre3 and added reason to changelog.
+
+2003-03-27 11:22  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Only define SOAPUnixSocketServer if the Unix domain sockets are
+	  supported
+
+2003-03-27 08:10  tag REL_0_9_9_pre2
+
+2003-03-27 08:10  warnes
+
+	* CHANGELOG:
+	  - Added named scope change.
+
+2003-03-27 08:07  warnes
+
+	* SOAPpy/SOAP.py:
+	  - New argument handling codes needs nested scopes.
+
+2003-03-27 07:32  warnes
+
+	* CHANGELOG, README, RELEASE_INFO:
+	  - Updated text files for 0.9.9-pre2 release.
+
+2003-03-26 16:12  warnes
+
+	* SOAPpy/SOAP.py: - Update version number to 0.9.9-pre2
+
+2003-03-26 12:55  warnes
+
+	* SOAPpy/__init__.py:
+	  - Added import of ieee754.
+
+2003-03-26 12:54  warnes
+
+	* SOAPpy/ieee754.py:
+	  - Fixed type in __doc__ text.
+
+2003-03-26 11:29  warnes
+
+	* SOAPpy/SOAP.py: - Split class SOAPServer into SOAPServerBase and
+	  two sublcasses,   SOAPServer and SOAPUnixSocketServer.
+	  SOAPServer has the same   functionality as before, while
+	  SOAPUnixSocketServer connects over a	 Unix domain socket instead
+	  of to a (public) TCP/IP port.
+
+2003-03-26 00:02  tag REL_0_9_9_pre1
+
+2003-03-26 00:02  warnes
+
+	* CHANGELOG: - Updated to note addition of ieee754 module and
+	  changes enablein   MS-Windows support
+
+2003-03-25 23:51  warnes
+
+	* SOAPpy/: SOAP.py, ieee754.py:
+	  - Added ieee754.py, which handles checking for IEEE 754 special
+	  values: Inf, -Inf, NaN, ...  - Updated SOAP.py to use the new
+	  ieee754 module instead of the old   (broken) windows hack.
+
+2003-03-25 15:53  warnes
+
+	* SOAPpy/SOAP.py: - Reversed version string to 0.9.9-pre1.
+
+2003-03-25 15:45  warnes
+
+	* CHANGELOG, README.MethodParameterNaming, SOAPpy/SOAP.py:
+	  - specialArgs handling is now enabled by default.
+
+2003-03-25 15:26  warnes
+
+	* setup.py:
+	  - Modified setup.py to get version number directly from
+	  SOAPpy/SOAP.py's __version__ variable.
+
+2003-03-25 12:53  warnes
+
+	* SOAPpy/SOAP.py: - Changed all references from actzero.com to
+	  pywebsvcs.sf.net.
+
+2003-03-25 12:02  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Unnamed arguments which were lists were being incorrectly given
+	  the	name 'Result'.
+
+2003-03-12 03:14  tag REL_0_9_8
+
+2003-03-12 03:14  warnes
+
+	* MANIFEST.in:
+	  - Added MANIFEST.in: needed by setup.py to create source
+	  distribution.
+
+2003-03-12 02:53  warnes
+
+	* tests/: SOAPtest.py, TCtest.py, echoClient.py, echoServer.py,
+	  excelTest.py, speedTest.py:
+	  - Updates related to change in structure to allow installation
+	  using python	 distutils (i.e. setup.py)
+
+2003-03-12 02:47  warnes
+
+	* setup.py:
+	  - Updated version number to 0.9.8
+
+2003-03-12 02:38  warnes
+
+	* CHANGELOG:
+	  - Noted directory restructuring in CHANGELOG.
+
+2003-03-08 00:10  warnes
+
+	* CHANGELOG, README, setup.py, SOAPpy/__init__.py,
+	  bid/inventoryClient.py, bid/inventoryServer.py,
+	  bid/monitorClient.py, contrib/soap_cli.py,
+	  contrib/soap_handler.py, tests/alanbushTest.py,
+	  tests/cardClient.py, tests/cardServer.py, tests/fortuneTest.py,
+	  tests/guidTest.py, tests/itimeTest.py, tests/newsTest.py,
+	  tests/quoteTest.py, tests/quoteTest1.py, tests/quoteTest2.py,
+	  tests/storageTest.py, tests/translateTest.py,
+	  tests/weatherTest.py, tests/whoisTest.py, tests/wordFindTest.py,
+	  validate/silabclient.py, validate/silabserver.py,
+	  validate/soapware.py:
+	  - Updates related to change in structure to allow installation
+	  using python	 distutils (i.e. setup.py)
+
+2003-03-08 00:07  warnes
+
+	* SOAPpy/SOAP.py:
+	  - implemented an experimental method of handling method argument
+	  names.
+
+2003-03-08 00:00  warnes
+
+	* README.MethodParameterNaming:
+	  - Fixed typos, improved wording and formatting.
+
+2003-03-05 16:43  warnes
+
+	* setup.py: - Initial version of setup.py.  Not yet tested!
+
+2003-02-10 12:06  rsalz
+
+	* SOAPpy.spec: Add RPM spec file from Antonio Beamud Montero
+	  (http://www.agoratechnologies.com).  Temporary fix until a
+	  setup.py file is written.
+
+2002-08-06 14:26  tag Release_1_0_0_beta3
+
+2002-08-06 14:26  blunck2
+
+	* SOAPpy/SOAP.py: - Changed invoke method in SOAPProxy class to
+	  return the value from the __call invocation (there was previously
+	  no way to extract the return values from the call)
+
+2002-07-30 22:28  blunck2
+
+	* SOAPpy/SOAP.py: HTTPTransport.call(..) returns the response
+	  message from the HTTP request regardless of the value of
+	  config.dumpSOAPIn.  I removed the conditional logic around the
+	  fetching of the response message so that prior to the call to
+	  getNS, the data is guaranteed to be there.
+
+2002-07-30 20:30  warnes
+
+	* CHANGELOG, README, SOAPpy/SOAP.py: - Added 'no namespace' check
+	  to namespace-rewriting code to avoid	 problems when no namespace
+	  is specified.
+
+	  - Updated CHANGELOG and README
+
+	  - Added noroot parameter to the SOAPBuilder and SOAPProxy objects
+	    in order to provide compatibility with an older version of
+	  EasySOAP (v0.2) that balked if the SOAP-ENC:root parameter was
+	  included.(Brad Knotwell)
+
+2002-07-25 17:38  blunck2
+
+	* SOAPpy/SOAP.py: - Added support for namespace-rewriting (used by
+	  Apache v2.x SOAP server for	error conditions as well as
+	  stateful communication) - Added string <-> str conversion for
+	  array types (Python 2.2+) - Added convenience method (invoke) to
+	  SOAPProxy that calls __call (not sure   if it is necessary - feel
+	  free to remove if you want)
+
+2002-07-25 15:43  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Python 'float' are equivalent to SOAP 'double'.  Modified
+	  dump_float   and dump_list to use SOAP type string 'double'
+	  appropriately.
+
+2002-06-27 15:44  tag Release_0_1_b2
+
+2002-06-27 15:44  tag Release_0_1b2
+
+2002-06-27 15:44  warnes
+
+	* SOAPpy/SOAP.py:
+	  - Patch from Brad Knotwell [b.knotwell@f5.com] to add basic
+	  authentication:
+
+	       Hi Gregory--
+
+	       This is untested (except for running some of the example
+	  programs
+	       to ensure it didn't break anything).  However, it's trivial
+	       enough (and copied almost verbatim from ZSI. . .I helped
+	  Rich
+	       with Authorization there as well) that I would be pretty
+	       confident about committing it.  My primary assumption in
+	  saying
+	       this is that the Authorization header can show up *anywhere*
+	  in
+	       the header stream and that I've inserted the putheader in
+	  the
+	       right method call.
+
+	       --Brad
+
+2002-05-24 17:38  warnes
+
+	* SOAPpy/SOAP.py:
+	  Fixes to enble proper handling of SOAP faults by the client.
+
+	  - Fixed test of whether message content is text/xml when
+	  recieving a fault.  - Added __call__ method to exception classes
+	  to match the current API.  - The faultType.__repr__() method now
+	  print details if present
+
+2002-05-10 10:56  warnes
+
+	* SOAPpy/: SOAP.py, XMLname.py, __init__.py:
+	  - Added XMLnam.py which provides toXMLname() and fromXMLname()
+	  for	properly encoding xml tag names per the SOAP 2.1 (draft)
+	  specification.
+
+	  - Added calls to toXMLname() and fromXMLname() so that tags names
+	  are	properly encoded.  This resolves bug [ 548785 ] 'Error
+	  passing dict	 keys containing space.'
+
+	  - Added code to cgi encode contents of tags when they are not a
+	  recognized type.  Fixes bug [ 549551 ] 'Error when passing
+	  non-standard types'.
+
+	  - Added __init__.py, so that SOAPpy can be used like a standard
+	  python   module.
+
+2002-02-26 22:19  gliptak
+
+	* SOAPpy/SOAP.py, tests/SOAPtest.py: Use array for string concat
+	  when building messages
+
+2002-02-26 21:33  gliptak
+
+	* SOAPpy/SOAP.py, tests/SOAPtest.py: Correcting arrayType struct
+	  typo
+
+2002-02-26 20:14  gliptak
+
+	* tests/quoteTest2.py: Another quote test using mybubble.com
+
+2002-02-26 20:13  gliptak
+
+	* tests/SOAPtest.py: Added test for parameter ordering
+
+2002-02-26 20:11  gliptak
+
+	* SOAPpy/SOAP.py: Support for explicit parameter ordering
+
+2002-02-25 22:34  gliptak
+
+	* tests/translateTest.py: Correcting URL and URN
+
+2002-02-25 22:25  gliptak
+
+	* tests/guidTest.py: Correcting URL
+
+2002-02-25 22:17  gliptak
+
+	* tests/alanbushTest.py: Correct URI and list categories
+
+2002-02-25 22:06  gliptak
+
+	* tests/SOAPtest.py: Modified to use PyUnit
+
+2002-02-25 16:47  gliptak
+
+	* tests/SOAPtest.py: Do not fail for large double parsing for
+	  Python 2.2
+
+2002-02-25 10:57  gliptak
+
+	* SOAPpy/SOAP.py: Fixing abs(None) traceback
+
+2002-02-24 21:50  gliptak
+
+	* tests/quoteTest1.py: Another quote service test
+
+2002-02-24 21:48  gliptak
+
+	* tests/wordFindTest.py: Corrected import path
+
+2002-02-24 21:46  gliptak
+
+	* SOAPpy/SOAP.py: Aliases for Python 2.2 (lib\types.py definitions
+	  changed)
+
+2001-11-05 14:19  tag REL_0_9_9_pre5
+
+2001-11-05 14:19  tag v1_2RC4
+
+2001-11-05 14:19  tag v1_2RC5
+
+2001-11-05 14:19  tag v1_2RC6
+
+2001-11-05 14:19  rsalz
+
+	* .cvsignore, bid/.cvsignore, contrib/.cvsignore, tests/.cvsignore,
+	  tools/.cvsignore, validate/.cvsignore: add .cvsignore
+
+2001-07-06 14:03  tag v1_2RC1
+
+2001-07-06 14:03  tag v1_2RC2
+
+2001-07-06 14:03  tag v1_2RC3
+
+2001-07-06 14:03  cullman
+
+	* SOAPpy/SOAP.py: Fixed the memory leak.
+
+2001-06-28 16:13  cullman
+
+	* SOAPpy/SOAP.py: Fixed the 500 return code is always a SOAP
+	  response "issue".
+
+2001-06-27 18:33  tag REL_0_9_6
+
+2001-06-27 18:33  cullman
+
+	* CHANGELOG: More changelog changes.
+
+2001-06-27 18:30  cullman
+
+	* contrib/soap_handler.py: Adding the contributed soap_handler.
+
+2001-06-27 18:29  cullman
+
+	* contrib/soap_cli.py: Added the medusa example files contributed
+	  by Ng.
+
+2001-06-27 18:13  cullman
+
+	* CHANGELOG: Added a description of the latest release.
+
+2001-06-27 17:36  tag start
+
+2001-06-27 17:36  cullman
+
+	* CHANGELOG, README, SOAPpy/SOAP.py, bid/inventory.servers,
+	  bid/inventoryClient.py, bid/inventoryServer.py,
+	  bid/monitorClient.py, docs/quickstart.txt, docs/simpleTypes.txt,
+	  tests/SOAPtest.py, tests/TCtest.py, tests/echoClient.py,
+	  tests/echoServer.py, tests/excelTest.py, tests/speedTest.py,
+	  docs/attrs.txt, docs/complexTypes.txt, tests/alanbushTest.py,
+	  tests/cardClient.py, tests/cardServer.py, tests/fortuneTest.py,
+	  tests/guidTest.py, tests/itimeTest.py, tests/newsTest.py,
+	  tests/quoteTest.py, tests/storageTest.py, tests/translateTest.py,
+	  tests/weatherTest.py, tests/whoisTest.py, tests/wordFindTest.py,
+	  tools/interop2html.py, validate/server.pem,
+	  validate/silab.servers, validate/silabclient.py,
+	  validate/silabserver.py, validate/soapware.py: Initial SOAP.py
+	  check in.
+
+2001-06-27 17:36  cullman
+
+	* CHANGELOG, README, SOAPpy/SOAP.py, bid/inventory.servers,
+	  bid/inventoryClient.py, bid/inventoryServer.py,
+	  bid/monitorClient.py, docs/quickstart.txt, docs/simpleTypes.txt,
+	  tests/SOAPtest.py, tests/TCtest.py, tests/echoClient.py,
+	  tests/echoServer.py, tests/excelTest.py, tests/speedTest.py,
+	  docs/attrs.txt, docs/complexTypes.txt, tests/alanbushTest.py,
+	  tests/cardClient.py, tests/cardServer.py, tests/fortuneTest.py,
+	  tests/guidTest.py, tests/itimeTest.py, tests/newsTest.py,
+	  tests/quoteTest.py, tests/storageTest.py, tests/translateTest.py,
+	  tests/weatherTest.py, tests/whoisTest.py, tests/wordFindTest.py,
+	  tools/interop2html.py, validate/server.pem,
+	  validate/silab.servers, validate/silabclient.py,
+	  validate/silabserver.py, validate/soapware.py: Initial revision
+

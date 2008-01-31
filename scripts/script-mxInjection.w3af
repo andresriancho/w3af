@@ -1,0 +1,17 @@
+# This is the MX injection demo
+
+plugins
+audit mxInjection
+output console
+output config console
+set verbosity 0
+back
+back
+target
+set target http://localhost/w3af/mxInjection/mxi.php?i=f00
+back
+start
+
+assert len( kb.kb.getData('mxInjection', 'mxInjection') ) == 1
+
+exit

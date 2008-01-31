@@ -1,0 +1,19 @@
+# This scripts tests the googleSets plugin
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery googleSets
+discovery
+back
+target
+set target http://localhost/w3af/googleSets-wordnet/show.php?os=unix, http://localhost/w3af/googleSets-wordnet/show.php?os=linux, http://localhost/w3af/googleSets-wordnet/red.html, http://localhost/w3af/googleSets-wordnet/blue.html
+back
+start

@@ -1,0 +1,30 @@
+# This is a test for the error404page plugin
+
+#url-settings
+#set proxyAddress 127.0.0.1
+#set proxyPort 8081
+#back
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery error404page,pykto,serverHeader
+discovery
+audit sqli
+audit
+back
+target
+set target http://localhost/w3af/mod404error/
+back
+start
+
+assert len(kb.kb.getData('urls','urlList')) == 4
+assert len(kb.kb.getData('pykto','vuln')) == 3
+
+exit

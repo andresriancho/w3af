@@ -1,0 +1,29 @@
+# webServices
+
+url-settings
+set proxyAddress 127.0.0.1
+set proxyPort 8080
+back
+
+misc-settings
+set fuzzCookie False
+back
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+audit xss
+audit
+back
+target
+set target http://www.xmethods.net/sd/2001/TemperatureService.wsdl
+# This wont work cause SOAPpy has problems parsing asmx WSDL's
+#set target http://192.168.2.133/wsFuzz1/prueba1.asmx?WSDL
+back
+start

@@ -1,0 +1,26 @@
+# serverHeader
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery serverHeader
+discovery
+back
+
+target
+set target http://localhost/w3af/xss/shortcut.php
+back
+
+start
+
+assert 'Apache' in kb.kb.getData('serverHeader', 'server')
+assert 'PHP' in kb.kb.getData('serverHeader','poweredBy')[0]
+
+exit

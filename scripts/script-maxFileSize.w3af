@@ -1,0 +1,20 @@
+# Test the max file size feature of xUrllib
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery webSpider
+grep lang
+back
+target
+set target http://localhost/w3af/
+#set target http://localhost/w3af/maxFileSize/maxFileSize.tgz
+back
+start

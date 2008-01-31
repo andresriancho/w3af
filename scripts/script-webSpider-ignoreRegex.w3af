@@ -1,0 +1,26 @@
+# webspider
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery allowedMethods,webSpider,error404page
+discovery
+
+discovery config webSpider
+set ignoreRegex .*a.html
+back
+back
+
+target
+set target http://localhost/w3af/
+back
+
+start
+exit

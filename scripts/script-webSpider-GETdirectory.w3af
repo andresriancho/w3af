@@ -1,0 +1,30 @@
+# webspider - directory GET feature
+                # I also want to analyze all directories, if the URL I just fetched is:
+                # http://localhost/a/b/c/f00.php I want to GET:
+                # http://localhost/a/b/c/
+                # http://localhost/a/b/
+                # http://localhost/a/
+                # http://localhost/
+                # And analyze the response...
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery allowedMethods,webSpider,error404page
+discovery
+back
+target
+set target http://localhost/w3af/webSpider/a/b/c/d/
+back
+start
+
+assert len( kb.kb.getData('urls', 'urlList') ) >= 14
+
+exit

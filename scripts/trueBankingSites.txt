@@ -1,0 +1,8 @@
+https://www.halifax-online.co.uk/_mem_bin/formslogin.asp
+https://onlineservices.wachovia.com/auth/AuthService?action=presentLogin&url=https%3a//onlineservices.wachovia.com/NASApp/NavApp/Titanium%3faction%3dreturnHome
+https://www.hb.bancorio.com.ar/hb/html/login/inicio.jsp
+https://www.bankboston.com.ar/cgi-bin/preprd.dll/bkb/login.do?portal=access
+https://bancainternet.bancocredicoop.coop/bcclbi/init.jsp
+https://www.latam.citibank.com/PEGCB/JPS/portal/Index.do
+https://www.ebank.us.hsbc.com/servlet/com.hsbc.us.ibank.signon.Logon
+https://www.bankofamerica.com/index.jsp

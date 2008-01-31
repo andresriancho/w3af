@@ -1,0 +1,1181 @@
+Tue May 29 20:57:39 CEST 2007  Juan M. Bello Rivas <jmbr@superadditive.com>
+  tagged 0.2.2
+
+Tue May 29 20:56:58 CEST 2007  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Added THANKS file
+
+Tue May 29 20:36:17 CEST 2007  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Bumped version number
+
+Tue May 29 20:30:28 CEST 2007  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Fixed an incorrectly named exception.  Noticed by Andres Riancho (http://w3af.sourceforge.net/)
+
+Tue May 29 20:28:01 CEST 2007  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Forgot to distribute a copy of the GPL
+
+Mon Sep 18 12:42:03 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Further modifications to warning messages.
+
+Mon Sep 18 12:03:45 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Enhanced warning during the clue analysis stage.
+
+Sun Sep 17 15:18:21 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Further improvements towards compatibility with older Python versions.
+
+Sat Sep 16 18:13:38 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Updated email address.
+
+Sat Sep 16 17:59:36 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Updated documentation to reflect compatibility with Python 2.3.*
+
+Sat Sep 16 14:00:50 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Replaced list.sort(key=...) by a backwards-compatible sorting function.
+
+Thu Sep  7 17:45:14 CEST 2006  Juan M. Bello Rivas <jmbr@superadditive.com>
+  * Removed reference to a stale file name in README.
+
+Tue Aug 29 00:07:58 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Fixed a bug which prevented human readable reports from being saved.
+
+Mon Aug 28 23:34:42 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Fixed a bug in Halberd.clues.analysis.reanalyze that would provide incorrect information to the user in certain cases.
+
+Thu Aug 24 19:07:44 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  tagged 0.2.1
+
+Thu Aug 24 19:07:23 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Added the NEWS file to the distribution.
+
+Thu Aug 24 18:38:24 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Bumped version number
+
+Thu Aug 24 18:37:39 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Synced the classifiers with those on cheeseshop.python.org/pypi
+
+Mon Aug 21 12:49:22 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Corrected a spelling error in the user's guide.
+
+Mon Aug 21 00:40:33 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Made some corrections to the documentation.
+
+Sun Aug 20 11:37:23 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Reduced default_scantime to 15 seconds.
+
+Sat Aug 19 12:45:03 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Removed outdated TODO document from the distribution.
+
+Sat Aug 19 02:09:31 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Implemented a sanity check at the end of ignore_changing_fields.
+
+Sat Aug 19 01:14:45 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  tagged 0.2.0
+
+Thu Aug 17 18:01:12 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * More documentation rewrites.
+
+Thu Aug 17 04:34:45 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Dropped the overview.html makefile target and the dependency on docutils.
+
+Thu Aug 17 03:38:42 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Dropped doc/overview.txt
+
+Thu Aug 17 03:10:58 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Bumped the version number.
+
+Thu Aug 17 03:10:34 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Updated the project URL in setup.py
+
+Thu Aug 17 03:10:04 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Updated copyright notice in the scripts/halberd
+
+Thu Aug 17 03:09:18 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Produce PDF manual by default and added LaTeX2HTML target.
+
+Thu Aug 17 03:07:19 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Major documentation effort.
+
+Thu Aug 17 03:06:32 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Updated darcs' path in main makefile.
+
+Wed Aug 16 01:31:31 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Added some more explanations to the HACKING document.
+
+Wed Aug 16 01:18:56 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Added Halberd/version.py to the repository.
+
+Tue Aug 15 15:01:45 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Created the HACKING document.
+
+Tue Aug 15 02:00:34 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Updated copyright notice and contact information.
+
+Tue Aug 15 01:50:39 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Minor cleanups in setup.py
+
+Tue Aug 15 01:50:21 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Improved documentation
+
+Tue Aug 15 01:48:42 CEST 2006  Juan M. Bello Rivas <jmbr+halberd@superadditive.com>
+  * Included INSTALL in MANIFEST.in
+
+Wed Aug 31 23:52:28 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Documentation enhancements.
+
+Wed Aug 31 23:51:15 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Trimmed stale code.
+
+Wed Aug 31 23:50:15 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Inserted pylint in the development toolchain.
+
+Wed Aug 31 23:02:39 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Wrote makefile targets for cleaning the doc directory.
+
+Wed Aug 31 13:03:18 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Wrote the layout for the user's guide.
+
+Wed Aug 31 13:00:58 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed dangling reST markup in README.
+
+Wed Aug 31 12:58:20 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Fixed a problem with the install target in GNUmakefile (it wouldn't install the man page).
+  This fix is only relevant for internal development.
+
+Mon Aug 29 05:52:34 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Arranged the program so that man pages can be generated automatically by GNU help2man.
+
+Mon Aug 29 05:50:16 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Dropped references to obsolete code in the makefile.
+
+Mon Aug 29 00:17:40 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Redistributed TODO file.
+
+Mon Aug 29 00:16:38 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Edited README document.
+
+Mon Aug 29 00:15:42 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Wrote INSTALL document.
+
+Sun Aug 28 18:54:38 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Moved some pending task from the TODO list to the issue tracker.
+
+Sun Aug 28 15:21:17 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed __revision__ strings from sources.
+
+Sun Aug 28 15:08:35 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  tagged stable
+
+Sun Aug 28 14:54:52 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed a debugging print from ScanTask.
+
+Sun Aug 28 14:44:52 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed the distributed (RPC) scanning feature from the stable branch.
+
+Sun Aug 28 14:44:00 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Modified the install target in the makefile to ease local testing.
+
+Sun Aug 28 14:17:39 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Added two new items.
+
+Sun Aug 28 14:09:34 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed left-over code from transition to darcs.
+
+Sun Aug 28 14:01:18 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Replaced the external hosts used for testing with more reliable ones.
+
+Sun Aug 28 14:00:55 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Changed one of the pending tasks.
+
+Sun Aug 28 13:57:00 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Updated email address.
+
+Sun Aug 28 13:50:02 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Updated the program's description.
+
+Sun Aug 28 13:29:24 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Fixed the ChangeLog target to use darcs instead of the old cvs2cl.pl script
+
+Sun Aug 28 13:21:06 CEST 2005  Juan M. Bello Rivas <jmbr@acm.org>
+  * Removed dependency on docutils' default stylesheet.
+
+Sun Aug 28 12:48:07 CEST 2005  rwx
+  * Moved the main program 'halberd' to the new 'scripts' directory to avoid
+  Moved the main program 'halberd' to the new 'scripts' directory to avoid
+  conflicts with case-insensitive file-systems.
+  
+
+Sun Aug 28 11:18:44 CEST 2005  rwx
+  * Got rid of some pending items.  Added some more.
+
+Sun Aug 28 11:18:26 CEST 2005  rwx
+  * Clarified the --help message.
+
+Sun Aug 28 11:17:40 CEST 2005  rwx
+  * Enforced docstring-revision-copyright convention
+
+Sun Aug 28 11:17:05 CEST 2005  rwx
+  * Fixed an error in a docstring.
+
+Sun Aug 28 11:15:59 CEST 2005  rwx
+  * Removed internal TODO from the distribution file.
+
+Sat Aug 27 15:44:53 CEST 2005  rwx
+  * Pretty print headers when halberd is invoked with the --debug parameter.
+
+Sat Aug 27 15:14:46 CEST 2005  rwx
+  * Fixed a bug related to MIME header manipulation.
+
+Sat Aug 27 14:21:42 CEST 2005  rwx
+  * Updated to take into account the modifications in Halberd.clientlib.
+
+Sat Aug 27 14:20:49 CEST 2005  rwx
+  * Wrote a notice about the dependency of test_clientlib.py on
+  Wrote a notice about the dependency of test_clientlib.py on
+  Halberd.clientlib.default_template.
+  
+
+Sat Aug 27 14:13:44 CEST 2005  rwx
+  * Updated default_template with Firefox headers.
+  Updated default_template with Firefox headers.
+  Added the port number to the Host header field in HTTPClient._fillTemplate()
+  
+
+Sat Aug 27 13:58:53 CEST 2005  rwx
+  * Documented the fact that halberd requires Python 2.4 or above.
+
+Sat Aug 27 13:41:49 CEST 2005  rwx
+  * Replaced the functions unzip, decorate_and_sort and undecorate with a (Python
+  Replaced the functions unzip, decorate_and_sort and undecorate with a (Python
+  2.4 specific) call to list.sort(key=...)
+  Reimplemented the slices function in a simpler way.
+  
+
+Sat Aug 27 03:36:05 CEST 2005  rwx
+  * Replaced the implementation of deltas() with a shorter and more reliable one.
+
+Sat Aug 27 03:06:16 CEST 2005  rwx
+  * Corrected a mistake in the license name.
+
+Sat Aug 27 03:05:19 CEST 2005  rwx
+  * Minor changes to an output message.
+
+Fri Aug 26 14:15:57 CEST 2005  rwx
+  * One more task added to the list.
+
+Fri Aug 26 14:14:56 CEST 2005  rwx
+  * Added another item to the TODO list.
+
+Fri Aug 26 14:14:01 CEST 2005  rwx
+  * Renamed main program from 'halberd.py' to 'halberd'
+
+Fri Aug 26 14:06:11 CEST 2005  rwx
+  * Renamed the hlbd module to Halberd in the whole source tree.
+
+Fri Aug 26 14:05:39 CEST 2005  rwx
+  * Updated the TODO list.
+
+Fri Aug 26 13:44:21 CEST 2005  rwx
+  * Enforced the docstring-revision-copyright convention in every file.
+
+Sat Aug 21 08:42:39 CEST 2004  rwx
+  * Made some assorted corrections and remarks.
+
+Sun Apr 11 13:36:08 CEST 2004  rwx
+  * Improved reStructuredText output.
+
+Sun Apr 11 13:35:47 CEST 2004  rwx
+  * Updated documentation.
+
+Sun Apr 11 13:35:23 CEST 2004  rwx
+  * Did some error checking and code clean-up.
+
+Sun Apr 11 13:34:53 CEST 2004  rwx
+  * Documented the functions.
+
+Sun Apr 11 13:34:29 CEST 2004  rwx
+  * Catches KeyboardInterrupt cleanly.
+
+Sun Apr 11 13:34:10 CEST 2004  rwx
+  * Updated some instructions.
+
+Wed Apr  7 14:16:02 CEST 2004  rwx
+  * Added a new member ScanTask.debug to tell if debugging info. should be
+  Added a new member ScanTask.debug to tell if debugging info. should be
+  displayed/reported or not.
+  
+
+Wed Apr  7 14:15:25 CEST 2004  rwx
+  * Improved --debug command line option.
+
+Wed Apr  7 13:11:20 CEST 2004  rwx
+  * Several enhancements to debugging information.
+
+Wed Apr  7 13:09:38 CEST 2004  rwx
+  * Done with logging.
+
+Wed Apr  7 12:25:47 CEST 2004  rwx
+  * Added logging facilities in hlbd.logger and modified the program to use it.
+
+Wed Apr  7 02:35:10 CEST 2004  rwx
+  * Improved module documentation.
+
+Wed Apr  7 02:26:44 CEST 2004  rwx
+  * Removed a wrong import statement.
+
+Wed Apr  7 02:24:22 CEST 2004  rwx
+  * Discarded tlslite as SSL/TLS library of choice.
+
+Wed Apr  7 02:22:19 CEST 2004  rwx
+  * Removed hlbd.ScanTask.ScanTask.setURL and ScanTask.setAddr, its work is
+  Removed hlbd.ScanTask.ScanTask.setURL and ScanTask.setAddr, its work is
+  currently done by hlbd.shell.BaseStrategy._scan directly.
+  
+
+Tue Apr  6 14:07:29 CEST 2004  rwx
+  * Removed an unneeded import.
+
+Tue Apr  6 14:04:15 CEST 2004  rwx
+  * Added a TODO file.
+
+Tue Apr  6 14:03:01 CEST 2004  rwx
+  * Several clean-ups + inclusion of the TODO file.
+
+Tue Apr  6 14:02:30 CEST 2004  rwx
+  * Renamed isDist to isDistributed for better clarity.
+
+Tue Apr  6 14:01:09 CEST 2004  rwx
+  * Improved documentation.
+  Improved documentation.
+  Allowed users of HTTPClient (and its derivates) to specify the template for the
+  HTTP request to be sent.
+  
+
+Tue Apr  6 14:00:08 CEST 2004  rwx
+  * Refactoring in RPCScanner thread code.
+  Refactoring in RPCScanner thread code.
+  Fixed a subtle synchronization bug which could have caused big headaches.
+  
+
+Tue Apr  6 13:58:41 CEST 2004  rwx
+  * Improved documentation and made higher level helper methods private.
+
+Tue Apr  6 13:57:39 CEST 2004  rwx
+  * Fixed documentation mistakes.
+
+Sun Apr  4 03:19:09 CEST 2004  rwx
+  * Removed temporarily.
+
+Sun Apr  4 03:18:51 CEST 2004  rwx
+  * Fixed a bug regarding hit accounting (issue 80).
+  Fixed a bug regarding hit accounting (issue 80).
+  Improved the clarity of the output.
+  
+
+Sun Apr  4 03:16:40 CEST 2004  rwx
+  * Refactored MultiScanStrategy.
+  Refactored MultiScanStrategy.
+  Improved module documentation.
+  
+
+Sun Apr  4 03:15:39 CEST 2004  rwx
+  * Cosmetic changes to the output (in verbose mode).
+
+Sun Apr  4 03:15:22 CEST 2004  rwx
+  * Disabled garbage collection debugging hooks.
+
+Sun Apr  4 03:15:01 CEST 2004  rwx
+  * Removed halberd.cfg
+
+Sun Apr  4 03:14:28 CEST 2004  rwx
+  * There's no longer a need to copy halberd.cfg anywhere at install time.
+
+Sun Apr  4 03:13:29 CEST 2004  rwx
+  * No longer needed (it is generated by hlbd.conflib).
+
+Sat Apr  3 17:29:19 CEST 2004  rwx
+  * Fixed a small glitch
+
+Sat Apr  3 17:24:33 CEST 2004  rwx
+  * No longer needed.
+
+Sat Apr  3 17:24:16 CEST 2004  rwx
+  * Removed hlbd.shell *package* from the distribution.
+
+Sat Apr  3 17:23:58 CEST 2004  rwx
+  * Implemented and polished the class hierarchy and code.
+
+Sat Apr  3 17:12:28 CEST 2004  rwx
+  * Minor package enhancements.
+
+Sat Apr  3 17:11:02 CEST 2004  rwx
+  * Improved documentation.
+
+Sat Apr  3 17:10:45 CEST 2004  rwx
+  * Most of the program's inner workings have changed. Now halberd works with a few
+  Most of the program's inner workings have changed. Now halberd works with a few
+  important scanning concepts: tasks, strategies and a pool of scanner threads.
+  All the code has changed to accomodate this.  Distributed scan code is MUCH
+  more reliable and robust now and the whole program is easier to modify and
+  script.
+  
+
+Sat Apr  3 17:07:29 CEST 2004  rwx
+  * Changed to use the new framework.
+
+Sat Apr  3 17:06:14 CEST 2004  rwx
+  * Made some corrections.
+
+Sat Apr  3 17:05:54 CEST 2004  rwx
+  * Modified to generate documentation of modules and not scripts.
+
+Sat Apr  3 17:05:18 CEST 2004  rwx
+  * No longer needed.
+
+Sat Apr  3 13:50:01 CEST 2004  rwx
+  * Replaced by hlbd.RPCServer
+
+Thu Apr  1 14:28:06 CEST 2004  rwx
+  * Superseded by hlbd.crew
+
+Tue Mar 30 16:46:44 CEST 2004  rwx
+  * No longer needed.
+
+Tue Mar 30 11:25:43 CEST 2004  rwx
+  * No longer needed.
+
+Mon Mar 29 12:36:56 CEST 2004  rwx
+  * Fixed the RPC server entry point.
+
+Mon Mar 29 12:36:22 CEST 2004  rwx
+  * Analyze clues prior to reporting.
+
+Mon Mar 29 12:35:57 CEST 2004  rwx
+  * Fixed an incorrect assertion.
+
+Mon Mar 29 11:56:04 CEST 2004  rwx
+  * Removed bulkscan.py.
+  Removed bulkscan.py.
+  Now mass scans can be launched with the --urlfile option of halberd.py
+  
+
+Mon Mar 29 11:54:33 CEST 2004  rwx
+  * Modified to use hlbd.shell
+
+Mon Mar 29 11:54:21 CEST 2004  rwx
+  * Fixed a problem with default values.
+
+Mon Mar 29 11:49:06 CEST 2004  rwx
+  * Wrote the hlbd.shell package. It deals with creation and use of different types
+  Wrote the hlbd.shell package. It deals with creation and use of different types
+  of scanners so they can be easily instantiated in several ways. It also eases
+  the construction of meta-scanners.
+  
+
+Mon Mar 29 11:47:53 CEST 2004  rwx
+  * Added the hlbd.shell package to the distribution.
+
+Mon Mar 29 11:47:06 CEST 2004  rwx
+  * Slight output changes.
+
+Mon Mar 29 11:46:15 CEST 2004  rwx
+  * Implemented a ClueDir class which deals with hierarchical storage of clues
+  Implemented a ClueDir class which deals with hierarchical storage of clues
+  using the underlying filesystem.
+  
+
+Mon Mar 29 11:45:27 CEST 2004  rwx
+  * No longer needed. Its functionality has been integrated with the main script
+  No longer needed. Its functionality has been integrated with the main script
+  (halberd.py)
+  
+
+Fri Mar 26 01:49:05 CET 2004  rwx
+  * Improved the portability of the clue storage scheme.
+
+Fri Mar 26 01:48:25 CET 2004  rwx
+  * Moved the halberd class into the shell module so it can be easily reused by
+  Moved the halberd class into the shell module so it can be easily reused by
+  meta-scanners.
+  
+
+Fri Mar 26 01:46:49 CET 2004  rwx
+  * Minor corrections.
+
+Sun Mar  7 11:29:32 CET 2004  rwx
+  * Takes generated HTML from reST into account.
+
+Sun Mar  7 11:29:14 CET 2004  rwx
+  * Now generates HTML from reStructuredText documents.
+
+Sun Mar  7 11:27:51 CET 2004  rwx
+  * Converted to reStructuredText.
+
+Sat Mar  6 11:28:21 CET 2004  rwx
+  * Corrected misspelling.
+
+Sat Mar  6 11:27:23 CET 2004  rwx
+  * Improved documentation.
+
+Sat Mar  6 11:27:09 CET 2004  rwx
+  * Small changes to package description.
+
+Sat Mar  6 11:26:26 CET 2004  rwx
+  * Removed unneeded dependency.
+
+Sat Mar  6 11:26:13 CET 2004  rwx
+  * Corrected a mistake in the way doctests were executed.
+
+Sat Mar  6 11:25:16 CET 2004  rwx
+  * Added new tests.
+
+Sat Mar  6 11:25:02 CET 2004  rwx
+  * Added some new site tests.
+
+Fri Mar  5 01:31:50 CET 2004  rwx
+  * Slight user interface changes.
+
+Fri Mar  5 01:30:55 CET 2004  rwx
+  * Corrected a slight mistake in the help output.
+
+Fri Mar  5 01:29:08 CET 2004  rwx
+  * Split TestHTTPSClient.testConnect in two for clarity.
+
+Thu Mar  4 17:09:25 CET 2004  rwx
+  * Corrections.
+
+Thu Mar  4 12:56:38 CET 2004  rwx
+  * Updated to take doc/overview.txt into account.
+
+Thu Mar  4 12:55:57 CET 2004  rwx
+  * Modified to use hlbd.clues.file. Now clues resulting from a massive scan are
+  Modified to use hlbd.clues.file. Now clues resulting from a massive scan are
+  stored in a platform independent way.
+  
+
+Thu Mar  4 12:53:26 CET 2004  rwx
+  * Initial serious documentation.
+
+Wed Mar  3 16:44:39 CET 2004  rwx
+  * Fixed a small glitch.
+
+Wed Mar  3 16:22:02 CET 2004  rwx
+  * hlbd.clues.Clue.normalize has changed so testNormalize had to take the changes
+  hlbd.clues.Clue.normalize has changed so testNormalize had to take the changes
+  into account.
+  
+
+Wed Mar  3 16:21:23 CET 2004  rwx
+  * hlbd.clues.Clue.normalize uses a translation table from hlbd.util to convert
+  hlbd.clues.Clue.normalize uses a translation table from hlbd.util to convert
+  strings into method names.
+  hlbd.clues.analysis had to be fixed to allow the doctest suite to run properly.
+  
+
+Wed Mar  3 16:20:03 CET 2004  rwx
+  * Added a new module hlbd.util. It will act as a placeholder for functions that
+  Added a new module hlbd.util. It will act as a placeholder for functions that
+  don't fit well anywhere else.
+  
+
+Wed Mar  3 14:31:47 CET 2004  rwx
+  * Now halberd.readConf catches OSError in case os.mkdir fails when creating a
+  Now halberd.readConf catches OSError in case os.mkdir fails when creating a
+  default configuration file.
+  
+
+Wed Mar  3 14:21:19 CET 2004  rwx
+  * Early implementation of a proxy.
+
+Wed Mar  3 14:05:22 CET 2004  rwx
+  * Further readability improvements in HTTPClient._getReply.
+  Further readability improvements in HTTPClient._getReply.
+  Modified HTTPSClient._connect's interface for correctness' sake.
+  
+
+Wed Mar  3 13:53:32 CET 2004  rwx
+  * Improved error reporting.
+  Improved error reporting.
+  Now scan_thr catches the appropriate exception when an SSL connection can't be
+  established.
+  
+
+Wed Mar  3 13:52:08 CET 2004  rwx
+  * Introduced an HTTPClient._timeout_exceptions attribute for dealing with SSL
+  Introduced an HTTPClient._timeout_exceptions attribute for dealing with SSL
+  exceptions when reading from the network.
+  
+
+Wed Mar  3 13:11:55 CET 2004  rwx
+  * Replaced by default configuration file.
+
+Wed Mar  3 13:11:27 CET 2004  rwx
+  * Slight changes to target distclean.
+
+Wed Mar  3 13:11:08 CET 2004  rwx
+  * Increaded verbosity while running the test suite.
+
+Wed Mar  3 13:10:35 CET 2004  rwx
+  * Improved logging information.
+
+Wed Mar  3 13:10:20 CET 2004  rwx
+  * Fixed a typo.
+
+Wed Mar  3 12:38:10 CET 2004  rwx
+  * Added a test for http://www.tripod.com
+
+Wed Mar  3 12:36:42 CET 2004  rwx
+  * There were two bugs fixed in hlbd.clientlib.HTTPClient._getReply. One of the
+  There were two bugs fixed in hlbd.clientlib.HTTPClient._getReply. One of the
+  related to a condition leading to an endless loop while reading from the
+  network and the other had to do with buffer sizes and being able to find the
+  end of MIME headers.
+  Wrote a test to prevent the fixed bugs from being reintroduced in the future.
+  
+
+Wed Mar  3 12:33:52 CET 2004  rwx
+  * Fixed two bugs in HTTPClient._getReply.
+  Fixed two bugs in HTTPClient._getReply.
+  Removed the wildcard exception handler in HTTPClient._getReply.
+  
+
+Wed Mar  3 10:38:17 CET 2004  rwx
+  * Made several minor corrections.
+
+Wed Mar  3 10:29:53 CET 2004  rwx
+  * Corrected documentation.
+
+Wed Mar  3 10:29:28 CET 2004  rwx
+  * Updated documentation.
+
+Wed Mar  3 02:14:48 CET 2004  rwx
+  * Clue.parse now accepts strings in unicode too.
+
+Wed Mar  3 01:04:40 CET 2004  rwx
+  * Creates a default configuration file automatically when there is none at the
+  Creates a default configuration file automatically when there is none at the
+  default path.
+  
+
+Wed Mar  3 01:03:55 CET 2004  rwx
+  * Implemented ConfReader.writeDefault to write a bare-bones configuration to the
+  Implemented ConfReader.writeDefault to write a bare-bones configuration to the
+  specified file.
+  
+
+Tue Mar  2 12:57:57 CET 2004  rwx
+  * Now it checks if the server responds with HTTP right at the beginning and if it
+  Now it checks if the server responds with HTTP right at the beginning and if it
+  doesn't aborts without reading anymore data from the network.
+  
+
+Tue Mar  2 12:56:42 CET 2004  rwx
+  * Removed wrong default path for halberd.cfg
+
+Tue Mar  2 03:12:21 CET 2004  rwx
+  * Improved documentation.
+
+Tue Mar  2 03:12:04 CET 2004  rwx
+  * Wrote the remove function and did some slight changes to several targets.
+
+Tue Mar  2 03:10:30 CET 2004  rwx
+  * Instead of instantiating hlbd.clientlib.HTTPClient we now call an abstract
+  Instead of instantiating hlbd.clientlib.HTTPClient we now call an abstract
+  client factory which returns the appropriate client class depending on the
+  target URL.
+  
+
+Tue Mar  2 03:08:38 CET 2004  rwx
+  * Now `import hlbd.clues' will also take hlbd.clues.file into account.
+
+Tue Mar  2 03:07:16 CET 2004  rwx
+  * Wrote test for hlbd.clientlib's SSL support.
+
+Tue Mar  2 03:07:01 CET 2004  rwx
+  * Implemented SSL support.
+
+Tue Mar  2 01:55:54 CET 2004  rwx
+  * Wrote a better README file
+
+Tue Mar  2 01:55:07 CET 2004  rwx
+  * halberd.cfg is installed in the user's home directory.
+
+Tue Mar  2 01:54:02 CET 2004  rwx
+  * Changed the return values for hostname and addresses when errors are found so
+  Changed the return values for hostname and addresses when errors are found so
+  that their callers can deal with them better.
+  
+
+Tue Mar  2 01:52:26 CET 2004  rwx
+  * Fixed a bug in HTTPClient._getHostAndPort.
+  Fixed a bug in HTTPClient._getHostAndPort.
+  Initial work towards a useful HTTPSClient class.
+  
+
+Thu Feb 26 05:15:03 CET 2004  rwx
+  * Fixed several glitches in the makefile and added it to the distribution.
+
+Thu Feb 26 05:12:40 CET 2004  rwx
+  * Made some changes to conduct the tests faster.
+
+Wed Feb 25 12:15:02 CET 2004  rwx
+  * Added an initial unit test for the main class (Halberd)
+
+Wed Feb 25 12:10:00 CET 2004  rwx
+  * Moved the second phase analysis code into hlbd.clues.analysis.reanalyze.
+  Moved the second phase analysis code into hlbd.clues.analysis.reanalyze.
+  Modified clue load/save calls so that the new hlbd.clues.file functions are
+  used.
+  
+
+Wed Feb 25 12:08:22 CET 2004  rwx
+  * Wrote documentation for the second phase analysis function.
+
+Wed Feb 25 12:07:51 CET 2004  rwx
+  * Put an upper bound to the number of clues so the test suite runs faster.
+
+Wed Feb 25 05:01:29 CET 2004  rwx
+  * Wrote test suite for hlbd.clues.file
+
+Wed Feb 25 05:01:15 CET 2004  rwx
+  * Wrote platform-independent clue storage functions.
+
+Wed Feb 25 04:53:04 CET 2004  rwx
+  * Auxiliary files for hlbd.clues.analysis' test suite.
+
+Wed Feb 25 04:52:46 CET 2004  rwx
+  * Wrote initial test suite for hlbd.clues.analysis
+
+Wed Feb 25 04:52:20 CET 2004  rwx
+  * Moved second stage analysis functionality into this module.
+
+Wed Feb 25 04:51:18 CET 2004  rwx
+  * Fixed a bug regarding Clue.__tmphdrs
+
+Wed Feb 25 02:37:59 CET 2004  rwx
+  * No longer relevant.
+
+Wed Feb 25 02:36:48 CET 2004  rwx
+  * Fixed a bug in ignore_varying_fields.
+
+Wed Feb 25 02:36:16 CET 2004  rwx
+  * Renamed test_cluelib.py as test_clues_Clue.py.
+  Renamed test_cluelib.py as test_clues_Clue.py.
+  Added a test for invalid digest recomputations.
+  
+
+Wed Feb 25 02:35:33 CET 2004  rwx
+  * Modified Clue.parse to accept headers as either a string or a sequence of name,
+  Modified Clue.parse to accept headers as either a string or a sequence of name,
+  value tuples.
+  Added an assertion to ensure Clue._updateDigest is not called without a
+  previous call to Clue.parse.
+  
+
+Wed Feb 25 02:30:23 CET 2004  rwx
+  * halberd.hostname now returns None in case the passed URL doesn't have a netloc
+  halberd.hostname now returns None in case the passed URL doesn't have a netloc
+  part.
+  bulkscan has been updated to check for that error condition.
+  
+
+Fri Feb 20 13:55:21 CET 2004  rwx
+  * Adapted to the new results coming out of hlbd.clues.analysis.diff_fields
+
+Fri Feb 20 13:54:36 CET 2004  rwx
+  * Removed the percentage information from the results of diff_fields
+
+Fri Feb 20 13:50:46 CET 2004  rwx
+  * Allow the user to specify the destination directory.
+  Allow the user to specify the destination directory.
+  Fixed a bug which involved modifying directly the address attribute without
+  taking into account the list of clues (which had to be emptied).
+  
+
+Fri Feb 20 10:35:10 CET 2004  rwx
+  * Calls hlbd.clues.analysis.hits to obtain the total number of replies.
+
+Fri Feb 20 10:34:50 CET 2004  rwx
+  * Address the case of a web site producing different MIME fields in its headers
+  Address the case of a web site producing different MIME fields in its headers
+  for each request.
+  There's a routine that calls hlbd.clues.analyze.ignore_changing_fields and
+  reanalyzes the clues after doing so.
+  
+
+Fri Feb 20 10:30:39 CET 2004  rwx
+  * Implemented ignore_changing_fields and hits.
+
+Thu Feb 19 16:01:55 CET 2004  rwx
+  * Modified in order to distribute bulkscan.py
+
+Thu Feb 19 16:00:29 CET 2004  rwx
+  * Refactored Halberd class.
+  Refactored Halberd class.
+  Now scanning all the addresses of a host with DNS RR is the default behaviour.
+  
+
+Thu Feb 19 15:59:37 CET 2004  rwx
+  * Displays all the cookies instead of just one.
+
+Thu Feb 19 15:59:11 CET 2004  rwx
+  * Improved exception info.
+
+Thu Feb 19 15:58:39 CET 2004  rwx
+  * Improved status information.
+
+Thu Feb 19 15:58:14 CET 2004  rwx
+  * Caught hlbd.clientlib.UnknownReply exception.
+  Caught hlbd.clientlib.UnknownReply exception.
+  Modified the status information so it fits better with multiple address
+  scanning.
+  
+
+Thu Feb 19 15:57:25 CET 2004  rwx
+  * Cookies are now stored in a list so all of them are kept.
+
+Thu Feb 19 15:56:23 CET 2004  rwx
+  * Fixed some documentation mistakes.
+
+Thu Feb 19 15:55:33 CET 2004  rwx
+  * Wrote a tool for massive scanning.
+
+Sun Feb 15 20:54:52 CET 2004  rwx
+  * Added classifiers for the Trove software map (used by PyPI).
+
+Sun Feb 15 19:57:14 CET 2004  rwx
+  * Added a target for LOC count.
+
+Sun Feb 15 19:56:54 CET 2004  rwx
+  * Now merge creates a new clue instead of using the first item of the passed
+  Now merge creates a new clue instead of using the first item of the passed
+  sequence. This allows filter_proxy to work without destroying the original list
+  of clues.
+  
+
+Sun Feb 15 19:17:15 CET 2004  rwx
+  * Now includes itself in the distribution.
+
+Sun Feb 15 19:02:35 CET 2004  rwx
+  * Moved tests to another directory following the changes in setup.py
+
+Sun Feb 15 19:02:00 CET 2004  rwx
+  * Moved testing framework into setup.py
+
+Sun Feb 15 19:01:25 CET 2004  rwx
+  * Adapted to the current layout of hlbd.clues
+
+Sun Feb 15 18:03:20 CET 2004  rwx
+  * Clarified some parts of the code.
+  Clarified some parts of the code.
+  Implemented utctime function.
+  
+
+Sun Feb 15 18:01:46 CET 2004  rwx
+  * Distributed scanning now done in parallel with local scanning.
+
+Sun Feb 15 18:00:39 CET 2004  rwx
+  * Improved documentation.
+
+Sun Feb 15 15:03:54 CET 2004  rwx
+  * Wrote useful documentation.
+  Wrote useful documentation.
+  Turned Clue.normalize into a static method.
+  
+
+Sun Feb 15 05:33:11 CET 2004  rwx
+  * Refactored and documented several important functions.
+  Refactored and documented several important functions.
+  The examples in the documentation can be automatically checked out by doctest.
+  
+
+Fri Feb 13 02:29:54 CET 2004  rwx
+  * Updated to the new module layout.
+  Updated to the new module layout.
+  Now dist target doesn't rely on incversion.
+  
+
+Fri Feb 13 02:29:10 CET 2004  rwx
+  * Fixed a typo.
+
+Fri Feb 13 02:29:00 CET 2004  rwx
+  * Implemented the initial version of a working distributed scanning feature.
+
+Fri Feb 13 02:27:36 CET 2004  rwx
+  * Removed unneeded code.
+
+Fri Feb 13 02:24:51 CET 2004  rwx
+  * Rewrote the RPC mechanism.
+
+Fri Feb 13 02:23:24 CET 2004  rwx
+  * Updated to the new module layout.
+
+Fri Feb 13 02:17:43 CET 2004  rwx
+  * Splitted cluelib into sub-modules for easier manipulation.
+
+Fri Feb 13 02:17:10 CET 2004  rwx
+  * Updated the test cases depending on cluelib.
+
+Fri Feb 13 02:16:55 CET 2004  rwx
+  * Splitted cluelib into two modules: hlbd.clues.{Clue,analysis}
+  Splitted cluelib into two modules: hlbd.clues.{Clue,analysis}
+  Updated the code depending on cluelib.
+  hlbd.scanlib wraps signal handling around exception handlers to avoid problems
+  when invoked as an rpc client. This is a kludge and a temporary solution.
+  
+
+Thu Feb 12 12:20:38 CET 2004  rwx
+  * Added configuration file template.
+
+Thu Feb 12 12:20:11 CET 2004  rwx
+  * Wrote a module to deal properly with configuration file parsing.
+
+Thu Feb 12 12:19:51 CET 2004  rwx
+  * Improved configuration file handling.
+  Improved configuration file handling.
+  Added a conf. file temlate with the distribution.
+  
+
+Thu Feb 12 12:19:02 CET 2004  rwx
+  * Added a handler for Cache-expires in Clue.
+  Added a handler for Cache-expires in Clue.
+  Refactored some of find_proxies' auxiliary functions.
+  
+
+Thu Feb 12 12:15:39 CET 2004  rwx
+  * Several minor enhancements.
+
+Wed Feb 11 12:17:02 CET 2004  rwx
+  * Performed some refactoring in the analysis functions.
+
+Wed Feb 11 11:19:55 CET 2004  rwx
+  * Added the bare-bones of configuration file handling.
+  Added the bare-bones of configuration file handling.
+  Adapted to the new semantics of hlbd.scanlib.scan
+  
+
+Wed Feb 11 11:19:20 CET 2004  rwx
+  * Now scan doesn't return a tuple with the total number of hits since those can
+  Now scan doesn't return a tuple with the total number of hits since those can
+  be easily calculated from the list of clues.
+  
+
+Wed Feb 11 11:18:36 CET 2004  rwx
+  * Added filter_proxies functionality for detecting proxy-caches on the target.
+
+Mon Feb  9 13:07:25 CET 2004  rwx
+  * Moved the functionality from inspectlib into cluelib.diff_fields
+
+Mon Feb  9 13:05:37 CET 2004  rwx
+  * Several enhancements to the output (now it's much more clear and informative).
+
+Mon Feb  9 13:05:08 CET 2004  rwx
+  * Fixed locking.
+
+Sun Feb  8 02:55:05 CET 2004  rwx
+  * Fixed a small glitch in Clue.parse
+
+Sat Feb  7 22:15:53 CET 2004  rwx
+  * Moved status updates to the main thread so that they don't slow down the
+  Moved status updates to the main thread so that they don't slow down the
+  scanning.
+  The scan can now be interrupted anytime by the user.
+  
+
+Sat Feb  7 20:08:20 CET 2004  rwx
+  * Fixed one of the targets
+
+Sat Feb  7 18:15:37 CET 2004  rwx
+  * The scanner runs completely in parallel now.
+
+Sat Feb  7 18:01:09 CET 2004  rwx
+  * Refactored find_clusters.
+
+Sat Feb  7 17:59:18 CET 2004  rwx
+  * Adapted to the new return type of getReply.
+
+Sat Feb  7 14:33:30 CET 2004  rwx
+  * Began to turn the code into a multi-threaded scanner.
+  Began to turn the code into a multi-threaded scanner.
+  Disabled temporarily the clue inspector.
+  
+
+Sat Feb  7 14:29:56 CET 2004  rwx
+  * Added two header handlers in Clue: one for ETag and the other for
+  Added two header handlers in Clue: one for ETag and the other for
+  Last-modified.
+  Fixed a serious bug in find_clusters.
+  
+
+Sat Feb  7 14:28:02 CET 2004  rwx
+  * The skeleton functions for halberd's distributed capabilities have been
+  The skeleton functions for halberd's distributed capabilities have been
+  written.
+  
+
+Sat Feb  7 14:27:12 CET 2004  rwx
+  * Several enhancements were made to the output of the program.
+
+Sat Feb  7 14:26:04 CET 2004  rwx
+  * Added some new options (mainly --parallelism) and rearranged the code heavily.
+  Added some new options (mainly --parallelism) and rearranged the code heavily.
+  Now there's a Halber class which encapsulates everything related to the
+  scanning/analysis/reporting process.
+  
+
+Fri Feb  6 17:02:26 CET 2004  rwx
+  * Modified Clue to make it easier to send it by XML-RPC.
+  Modified Clue to make it easier to send it by XML-RPC.
+  Improved documentation and clarity of the analysis functions.
+  
+
+Fri Feb  6 16:59:22 CET 2004  rwx
+  * Improved timestamp accuracy.
+
+Wed Feb  4 05:31:03 CET 2004  rwx
+  * Beautified HTTPClient._fillTemplate
+
+Wed Feb  4 05:11:54 CET 2004  rwx
+  * Removed tests for CmpOperators since they no longer exist in hlbd.cluelib
+
+Wed Feb  4 05:11:39 CET 2004  rwx
+  * Refactored heavily.
+
+Tue Feb  3 20:47:56 CET 2004  rwx
+  * Began refactoring of analyze.
+  Began refactoring of analyze.
+  CmpOperators were removed from the code. They were no longer needed since clue
+  sorting is now done using the decorate-sort-undecorate pattern and
+  Clue.__contains__ is not used anymore in analyze. The relevant functionality
+  was moved into Clue.__eq__.
+  
+
+Mon Feb  2 08:32:08 CET 2004  rwx
+  * Fixed a small glitch regarding cluelib.normalize
+
+Mon Feb  2 08:21:08 CET 2004  rwx
+  * Wrote some code to detect when the number of clues increments linearly with
+  Wrote some code to detect when the number of clues increments linearly with
+  regard to the received responses. Now there's a piece of code which
+  automagickally finds out the MIME headers responsible for such increase and
+  ignores them on-the-fly.
+  
+
+Mon Feb  2 08:15:50 CET 2004  rwx
+  * Turned normalize into a conventional function (for use with inspectlib).
+  Turned normalize into a conventional function (for use with inspectlib).
+  Stopped using dictionaries to store MIME headers because field ordering (very
+  important) was missing from the hash.
+  Now the Server field gets hashed too and a new default handler method for
+  Content-Length has been added.
+  
+
+Mon Feb  2 08:04:46 CET 2004  rwx
+  * Removed --sockets option.
+  Removed --sockets option.
+  Fixed a bug in make_url.
+  Now the user doesn't need to specify --verbose to see the DNS information. It
+  is shown by default when the target host resolves to several addresses.
+  
+
+Sun Feb  1 04:50:28 CET 2004  rwx
+  * Turned analyze.groups into a generator function.
+  Turned analyze.groups into a generator function.
+  Fixed the Clue._get_* methods so that they work with Clue._normalize.
+  
+
+Sun Feb  1 04:48:56 CET 2004  rwx
+  * Fixed a small glitch with make_url
+
+Sun Feb  1 04:48:39 CET 2004  rwx
+  * Now catches hlbd.clientlib.ConnectionRefused and shows the amount of replies
+  Now catches hlbd.clientlib.ConnectionRefused and shows the amount of replies
+  missed due to timeouts.
+  
+
+Sat Jan 31 15:03:59 CET 2004  rwx
+  * Some tests for hlbd.clientlib have been written.
+
+Sat Jan 31 15:03:46 CET 2004  rwx
+  * hlbd.clientlib has been dramatically simplified and hlbd.scanlib has been
+  hlbd.clientlib has been dramatically simplified and hlbd.scanlib has been
+  changed accordingly. Now hlbd.scanlib performs more reliable (but iterative)
+  scans.
+  
+
+Sat Jan 31 14:59:41 CET 2004  rwx
+  * Some tests for cluelib have been written.
+
+Sat Jan 31 14:59:21 CET 2004  rwx
+  * hlbd.cluelib now has a better analysis functionality and some Clue attributes
+  hlbd.cluelib now has a better analysis functionality and some Clue attributes
+  have been replaced for entries in an info dictionary attribute.
+  hlbd.reportlib has been updated for to work with the changes in the Clue class.
+  
+
+Sat Jan 31 14:57:48 CET 2004  rwx
+  * All the analysis functionality has been rewritten and the main module adapted
+  All the analysis functionality has been rewritten and the main module adapted
+  to the changes.
+  
+
+Thu Jan 29 14:11:33 CET 2004  rwx
+  * Added a test for Clue._normalize.
+  Added a test for Clue._normalize.
+  Added a test exercising Clue.incCount's error checking.
+  
+
+Thu Jan 29 14:10:59 CET 2004  rwx
+  * Implemented Clue._normalize to avoid getting invalid MIME field names.
+  Implemented Clue._normalize to avoid getting invalid MIME field names.
+  Improved Clue.incCount error checking.
+  
+
+Thu Jan 29 03:17:52 CET 2004  rwx
+  * The file is automatically generated by shtool so there's no need to have the
+  The file is automatically generated by shtool so there's no need to have the
+  file in the repository.
+  
+
+Thu Jan 29 03:15:42 CET 2004  rwx
+  * Improved documentation
+
+Thu Jan 29 03:14:56 CET 2004  rwx
+  * Implemented clue list loading and saving functionality.
+  Implemented clue list loading and saving functionality.
+  Improved documentation.
+  
+
+Thu Jan 29 03:13:58 CET 2004  rwx
+  * Moved clue saving code to hlbd.cluelib
+
+Thu Jan 29 03:11:41 CET 2004  rwx
+  * Rewrote test suite support.
+
+Thu Jan 29 03:10:47 CET 2004  rwx
+  * Added test suite support.
+
+Tue Jan 27 23:10:02 CET 2004  rwx
+  * Modified the Clue object so that it can be pickled.
+
+Tue Jan 27 23:09:31 CET 2004  rwx
+  * Added --record option to be able to write clues to a file.
+  Added --record option to be able to write clues to a file.
+  This makes it possible to load them again in future executions of the program.
+  
+
+Tue Jan 27 17:47:42 CET 2004  rwx
+  * Added --address option.
+
+Tue Jan 27 14:15:03 CET 2004  rwx
+  * Refactored all the clue comparison code into a CmpOperator class which allows
+  Refactored all the clue comparison code into a CmpOperator class which allows
+  the creation of customized comparison functions.
+  
+
+Tue Jan 27 03:28:32 CET 2004  rwx
+  * Takes the ChangeLog file into account.
+
+Tue Jan 27 03:24:30 CET 2004  rwx
+  * Now distributes the ChangeLog too.
+
+Tue Jan 27 00:07:31 CET 2004  rwx
+  * Initial revision

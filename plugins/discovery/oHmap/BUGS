@@ -1,0 +1,11 @@
+KNOWN BUGS
+
+======================================================================
+
+- if the default page (e.g. index.html) is missing profiles tend to be
+  way off
+
+- some requests return NO_RESPONSE message intermittently
+   - makes long error range type tests somewhat unreliable for some servers
+   - don't know if this is a problem with my code or the server or
+     with the connection

@@ -1,0 +1,211 @@
+﻿/*
+ * Menús Simples con CSS
+ * Autor: Braulio Andrés Soncco Pimentel <braulio@buayacorp.com>
+ * http://www.buayacorp.com/
+ * 
+ * Esta hoja está bajo licencia de Creative Commons 
+ * http://creativecommons.org/licenses/by/2.0/
+ */
+
+
+/*
+	Menu Vertical
+*/
+#menuv {
+	border: 1px solid #ACCFE8;
+	border-width: 1px 1px 0 1px;
+	width: 160px;
+	font: 80% "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+#menuv ul, li {
+	list-style-type: none;
+}
+
+#menuv ul {
+	margin: 0;
+	padding: 0;
+}
+
+#menuv li {
+	border-bottom: 1px solid #ACCFE8;
+}
+
+#menuv a {
+	text-decoration: none;
+	color: #3366CC;
+	background: #F0F7FC;
+	display: block;
+	padding: 3px 6px;
+	width: 148px;
+}
+
+#menuv a:hover {
+	background: #DBEBF6;
+}
+
+
+#centrado {
+	text-align: center;
+	
+}
+
+/*
+	Menu Horizontal
+*/
+#menuh {
+	font: 80% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	margin-top: 20px;
+	
+}
+
+#menuh ul, li {
+	list-style-type: none;
+}
+
+#menuh ul {
+	margin: 0;
+	padding: 0;
+}
+
+#menuh li {
+	float: left;
+}
+
+#menuh a {
+	text-decoration: none;
+	color: #3366CC;
+	background: #F0F7FC;
+	display: block;
+	padding: 3px 10px;
+	text-align: center;
+	border: 1px solid #ACCFE8;
+	border-width: 1px 1px 1px 0;
+}
+
+#menuh a#primero {
+	border-left: 1px solid #ACCFE8;
+}
+
+#menuh a:hover {
+	background: #DBEBF6;
+}
+
+/*
+*
+* Text
+*
+*/
+#text {
+	font: 100% "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+#text a{
+	color: #3366CC;
+}
+
+#error {
+	font: 100% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: red;
+}
+
+/*
+*
+* Plugin Config CSS
+*
+*/
+.bodyc {
+	background: #FFFFFF;
+}
+
+.plugType {
+	color: #3366CC;
+	text-decoration: none;
+	font: 115% "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+.plugconfTable {
+	color: #3366CC;
+	text-decoration: none;
+	background: #F0F7FC;
+	font: 90% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	padding: 3px 20px;
+	border: 1px solid #ACCFE8;
+	border-width: 2px 2px 0px 0px;
+}
+
+.plugName {
+	text-decoration: none;
+	color: #3366CC;
+	font: 95% "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+.plugNameOn {
+	text-decoration: none;
+	color: #3366CC;
+	font: 95% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	background: #F0F7FC;	
+	border: 1px solid #ACCFE8;
+	border-width: 0px 0px 0px 2px;
+}
+
+.plugDesc {
+	font: 90% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: #000000;
+	text-align: center;
+}
+
+.optDesc {
+	font: 85% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: #3366CC;
+	text-align: right;
+}
+
+.plugCheck {
+	background: #3366CC;
+}
+
+.SubmitButton {
+	text-decoration: none;
+	color: #3366CC;
+	background: #F0F7FC;
+	display: block;
+	padding: 3px 10px;
+	text-align: center;
+	border: 1px solid #ACCFE8;
+	cursor:pointer;
+}
+
+.SubmitButton:hover {
+	background: #DBEBF6;
+}
+
+#####
+#
+# File input magic
+#
+#####
+
+input.hide{
+  position:absolute;
+  left:-137px;
+  -moz-opacity:0;
+  filter:alpha(opacity: 0);
+  opacity: 0;
+  z-index: 2;
+}
+
+input.blue{
+	text-decoration: none;
+	color: #3366CC;
+	background: #F0F7FC;
+	display: block;
+	padding: 3px 10px;
+	text-align: center;
+	border: 1px solid #ACCFE8;
+	cursor:pointer;
+}
+
+input.blue:hover{
+	background: #DBEBF6;
+}

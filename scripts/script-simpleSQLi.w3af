@@ -1,0 +1,17 @@
+# This is the sqli demo
+
+plugins
+audit sqli
+output console
+output config console
+set verbosity 10
+back
+back
+target
+set target http://localhost/w3af/sqli/sqli.php?tabla=agenda
+back
+start
+
+assert len( kb.kb.getData('sqli', 'sqli') ) == 1
+
+exit

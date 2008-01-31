@@ -1,0 +1,180 @@
+<section id="examples">
+<title>Examples</title>
+
+<para>
+<filename>wordnet.py</filename> contains the core database access
+functions.  <filename>wntools.py</filename> contains the utility
+functions such as <function>hyponyms</function>,
+<function>meet</function>, <function>morphy</function>,
+<function>closure</function>, etc.  Importing
+<classname>wntools</classname> imports all the public functions from
+both modules:</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>from wordnet import *</userinput>
+&gt;&gt;&gt; <userinput>from wntools import *</userinput>
+</programlisting>
+
+<para>Retrieve a <classname>Word</classname> from the
+<classname>Noun</classname> database:</para>
+
+<programlisting><![CDATA[
+>>> ]]><userinput>N['dog']</userinput>
+dog(n.)
+</programlisting>
+
+<para><quote>Dog</quote> has six senses:</para>
+
+<programlisting><computeroutput><![CDATA[
+>>> ]]><userinput>N['dog'].getSenses()</userinput>
+('dog' in {noun: dog, domestic dog, Canis familiaris},
+ 'dog' in {noun: frump, dog}, 'dog' in {noun: dog},
+ 'dog' in {noun: cad, bounder, blackguard, dog, hound, heel},
+ 'dog' in {noun: pawl, detent, click, dog},
+ 'dog' in {noun: andiron, firedog, dog, dogiron})
+</computeroutput></programlisting>
+
+<para>Bind the first-listed sense to a variable, for easier access.
+(<code>word[0]</code> is shorthand for <code>word.getSenses()[0]</code>.)</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>dog = N['dog'][0]</userinput>
+&gt;&gt;&gt; <userinput>dog</userinput>
+'dog' in {noun: dog, domestic dog, Canis familiaris}
+</programlisting>
+
+<para>Retrieve all the relations, of any kind, that have this sense of "dog"
+as the source.  (<code>dog.getPointers(HYPONYM)</code> would retrieve the
+hyponyms, or names of subcategories of this sense of "dog".)</para>
+
+<programlisting>
+<![CDATA[
+>>> ]]><userinput>dog.getPointers()</userinput>
+(hypernym -> {noun: canine, canid},
+ member meronym -> {noun: Canis, genus Canis},
+ member meronym -> {noun: pack},
+ hyponym -> {noun: pooch, doggie, doggy, bow-wow},
+ hyponym -> {noun: cur, mongrel, mutt},
+ hyponym -> {noun: lapdog},
+ hyponym -> {noun: toy dog, toy},
+ hyponym -> {noun: hunting dog},
+ hyponym -> {noun: working dog},
+ hyponym -> {noun: dalmatian, coach dog, carriage dog},
+ hyponym -> {noun: basenji},
+ hyponym -> {noun: pug, pug-dog},
+ hyponym -> {noun: Newfoundland},
+ hyponym -> {noun: Great Pyrenees},
+ hyponym -> {noun: spitz},
+ hyponym -> {noun: griffon, Brussels griffon, Belgian griffon},
+ hyponym -> {noun: corgi, Welsh corgi},
+ hyponym -> {noun: poodle, poodle dog},
+ hyponym -> {noun: Mexican hairless},
+ part holonym -> {noun: flag})
+
+&gt;&gt;&gt; <userinput>dog.pointerTargets(MEMBER_MERONYM)</userinput>
+[{noun: Canis, genus Canis}, {noun: pack}]
+</programlisting>
+
+<para>Hypernyms of "dog", and their hypernyms, and so on until the
+links peter out.  (<code>hypernyms(dog)</code> is a shortcut for the
+closure of this particular relationship.)</para>
+
+<programlisting>
+<![CDATA[
+>>> ]]><userinput>closure(dog, HYPERNYM)</userinput>
+['dog' in {noun: dog, domestic dog, Canis familiaris}, {noun: canine, canid},
+ {noun: carnivore}, {noun: placental, placental mammal, eutherian, eutherian
+  mammal}, {noun: mammal}, {noun: vertebrate, craniate}, {noun: chordate},
+ {noun: animal, animate being, beast, brute, creature, fauna}, {noun: life form,
+  organism, being, living thing}, {noun: entity, something}]
+>>> cat = N['cat']
+</programlisting>
+
+<para>The <glossterm>meet</glossterm> of two items is their most subordinate common concept:</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>meet(dog, cat[0])</userinput>
+{noun: carnivore}
+&gt;&gt;&gt; <userinput>meet(dog, N['person'][0])</userinput>
+{noun: life form, organism, being, living thing}
+&gt;&gt;&gt; <userinput>meet(N['thought'][0], N['belief'][0])</userinput>
+{noun: content, cognitive content, mental object}
+</programlisting>
+
+<para>Hyponyms of "dog" (n.) that are homophonous with verbs:</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>filter(lambda sense:V.get(sense.form),
+           flatten1(map(lambda e:e.senses(), hyponyms(N['dog'][0]))))</userinput>
+['dog' in {noun: dog, domestic dog, Canis familiaris}, 'pooch' in {noun: pooch,
+  doggie, doggy, bow-wow}, 'toy' in {noun: toy dog, toy}, 'hound' in
+ {noun: hound, hound dog}, 'basset' in {noun: basset, basset hound}, 'cocker' in
+ {noun: cocker spaniel, English cocker spaniel, cocker}, 'bulldog' in {noun:
+  bulldog, English bulldog}]
+</programlisting>
+
+<para>The first five adjectives that are transitively SIMILAR to red (there
+are 71 in all):</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>closure(ADJ['red'][0], SIMILAR)</userinput>
+['red' in {adjective: red, reddish, ruddy, blood-red, carmine, cerise, cherry, cherry-red, crimson, ruby, ruby-red, scarlet}, {adjective: chromatic}, {adjective: amber, brownish-yellow, yellow-brown}, {adjective: amethyst}, {adjective: aureate, gilded, gilt, gold, golden}]
+</programlisting>
+
+<para>Trace the senses of dog to the top concepts, and display the results
+in a readable form:</para>
+
+<programlisting>
+&gt;&gt;&gt; <userinput>from pprint import pprint</userinput>
+&gt;&gt;&gt; <userinput>pprint(tree(N['dog'], HYPERNYM))</userinput>
+[['dog' in {noun: dog, domestic dog, Canis familiaris},
+  [{noun: canine, canid},
+   [{noun: carnivore},
+    [{noun: placental, placental mammal, eutherian, eutherian mammal},
+     [{noun: mammal},
+      [{noun: vertebrate, craniate},
+       [{noun: chordate},
+        [{noun: animal, animate being, beast, brute, creature, fauna},
+         [{noun: life form, organism, being, living thing},
+          [{noun: entity, something}]]]]]]]]]],
+ ['dog' in {noun: frump, dog},
+  [{noun: unpleasant woman, disagreeable woman},
+   [{noun: unpleasant person, disagreeable person},
+    [{noun: unwelcome person, persona non grata},
+     [{noun: person, individual, someone, somebody, mortal, human, soul},
+      [{noun: life form, organism, being, living thing},
+       [{noun: entity, something}]],
+      [{noun: causal agent, cause, causal agency},
+       [{noun: entity, something}]]]]]]],
+ ['dog' in {noun: dog},
+  [{noun: chap, fellow, lad, gent, fella, blighter, cuss},
+   [{noun: male, male person},
+    [{noun: person, individual, someone, somebody, mortal, human, soul},
+     [{noun: life form, organism, being, living thing},
+      [{noun: entity, something}]],
+     [{noun: causal agent, cause, causal agency},
+      [{noun: entity, something}]]]]]],
+ ['dog' in {noun: cad, bounder, blackguard, dog, hound, heel},
+  [{noun: villain, scoundrel},
+   [{noun: unwelcome person, persona non grata},
+    [{noun: person, individual, someone, somebody, mortal, human, soul},
+     [{noun: life form, organism, being, living thing},
+      [{noun: entity, something}]],
+     [{noun: causal agent, cause, causal agency},
+      [{noun: entity, something}]]]]]],
+ ['dog' in {noun: pawl, detent, click, dog},
+  [{noun: catch, stop},
+   [{noun: restraint, constraint},
+    [{noun: device},
+     [{noun: instrumentality, instrumentation},
+      [{noun: artifact, artefact},
+       [{noun: object, physical object}, [{noun: entity, something}]]]]]]]],
+ ['dog' in {noun: andiron, firedog, dog, dogiron},
+  [{noun: support},
+   [{noun: device},
+    [{noun: instrumentality, instrumentation},
+     [{noun: artifact, artefact},
+      [{noun: object, physical object}, [{noun: entity, something}]]]]]]]]
+</programlisting>
+
+</section>

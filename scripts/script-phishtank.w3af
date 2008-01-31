@@ -1,0 +1,33 @@
+# detect phishing using the phishtank API
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery phishtank
+
+# This is for testing the update
+#discovery config phishtank
+#set updateDB True
+#back
+
+back
+target
+# not in phishtank
+#set target http://localhost/w3af/detectPhishing/
+
+# in phishtank
+set target http://lnked.bankofamerica.com.bofa-security-update.trust-update.it.ugtech.net/
+back
+
+start
+
+assert len( kb.kb.getData('phishtank', 'phishtank') ) == 6
+
+exit

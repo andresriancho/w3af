@@ -1,0 +1,26 @@
+# error500 catcher!
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery webSpider
+grep error500
+grep
+audit xss
+audit
+back
+target
+set target http://localhost/w3af/basicAuthBrute/
+back
+start
+
+assert len(kb.kb.getData('error500','error500')) == 2
+
+exit

@@ -1,0 +1,37 @@
+# This is a test for file uploads using PUT method, and the exploit of that issue
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+audit dav
+audit
+discovery error404page, serverHeader
+back
+target
+set target http://localhost/w3af/dav/
+back
+start
+
+exploit
+exploit davShell
+
+interact
+interact 0
+ls
+w
+
+endInteraction
+back
+assert len(kb.kb.getData('davShell','shell')) == 1
+
+exit
+
+
+

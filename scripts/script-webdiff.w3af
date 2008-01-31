@@ -1,0 +1,23 @@
+# webdiff !
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery allowedMethods,webDiff
+discovery
+discovery config webDiff
+set localDir /var/www/w3af/
+set remotePath http://127.0.0.1/w3af/
+back
+back
+target
+set target http://127.0.0.1/
+back
+start

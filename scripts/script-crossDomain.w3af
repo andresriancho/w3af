@@ -1,0 +1,13 @@
+# This script shows how w3af reads a crossdomain.xml file
+plugins
+discovery crossDomain,error404page
+back
+target
+set target http://127.0.0.1/
+back
+start
+
+assert len( kb.kb.getData('crossDomain', 'vuln') ) == 1
+assert len( kb.kb.getData('crossDomain', 'info') ) == 2
+
+exit

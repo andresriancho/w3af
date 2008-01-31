@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
+<!-- Tasks file for project w3af -->
+<<<<<<< .mine
+<!-- Saved: 2008-01-29, 18:23:49 -->
+=======
+<<<<<<< .mine
+<!-- Saved: 2008-01-28, 17:55:39 -->
+=======
+<<<<<<< .mine
+<!-- Saved: 2008-01-19, 17:57:27 -->
+=======
+<!-- Saved: 2008-01-28, 09:24:18 -->
+>>>>>>> .r597
+>>>>>>> .r592
+>>>>>>> .r601
+<Tasks version="3.8">
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: this is a hack to allow showing the different stuff we have here</Description>
+    <Created>2008-01-15, 22:06:27</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>scanrun.py</Name>
+      </Filename>
+      <Linenumber>90</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Add mod_perl ssi injection support</Description>
+    <Created>2008-01-15, 22:32:01</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>77</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
+    <Created>2008-01-15, 22:41:21</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>xss.py</Name>
+      </Filename>
+      <Linenumber>104</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
+    <Created>2008-01-15, 23:08:06</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>directoryIndexing.py</Name>
+      </Filename>
+      <Linenumber>75</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here</Description>
+    <Created>2008-01-15, 23:30:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>74</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Not thread safe</Description>
+    <Created>2008-01-16, 21:24:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>66</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
+    <Created>2008-01-16, 21:24:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>316</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: missing, put a placeholder</Description>
+    <Created>2008-01-18, 13:22:36</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>main.py</Name>
+      </Filename>
+      <Linenumber>161</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: missing, put a placeholder</Description>
+    <Created>2008-01-18, 13:22:36</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>main.py</Name>
+      </Filename>
+      <Linenumber>163</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a proxy object instead.</Description>
+    <Created>2008-01-18, 19:33:34</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>googleProxy.py</Name>
+      </Filename>
+      <Linenumber>67</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I dont like globals, please see TODO below.</Description>
+    <Created>2008-01-18, 19:33:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>42</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I really dislike this, if someone knows how to send variables to</Description>
+    <Created>2008-01-18, 19:33:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>177</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: this list should be updated from time to time, automatically.</Description>
+    <Created>2008-01-28, 19:20:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>200</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: decide what message to show here</Description>
+    <Created>2008-01-28, 20:04:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>exploittab.py</Name>
+      </Filename>
+      <Linenumber>286</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: decide what message to show here</Description>
+    <Created>2008-01-28, 20:04:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>exploittab.py</Name>
+      </Filename>
+      <Linenumber>294</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-01-28, 20:56:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>httpLogTab.py</Name>
+      </Filename>
+      <Linenumber>284</Linenumber>
+    </Resource>
+  </Task>
+</Tasks>

@@ -1,0 +1,25 @@
+# digitSum demo
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+discovery digitSum,error404page
+discovery
+grep all
+grep
+back
+target
+set target http://localhost/w3af/digitSum/index1.php?id=22, http://localhost/w3af/digitSum/index-3-1.html
+back
+start
+
+assert len( kb.kb.getData('urls', 'urlList') ) == 3
+
+exit

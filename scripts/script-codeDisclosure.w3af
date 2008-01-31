@@ -1,0 +1,23 @@
+# grep code disclosure
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+grep codeDisclosure
+grep
+back
+target
+set target http://localhost/w3af/codeDisclosure/cd.html, http://localhost/w3af/codeDisclosure/notcd.html
+back
+start
+
+assert len( kb.kb.getData('codeDisclosure', 'codeDisclosure') ) == 1
+
+exit

@@ -1,0 +1,17 @@
+# This is the LDAP injection demo
+
+plugins
+audit LDAPi
+output console
+output config console
+set verbosity 0
+back
+back
+target
+set target http://localhost/w3af/LDAP/ldap.php?i=f00
+back
+start
+
+assert len( kb.kb.getData('LDAPi', 'LDAPi') ) == 1
+
+exit

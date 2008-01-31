@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section id="contributors">
+<title>Contributors</title>
+  
+  <informaltable><tgroup cols="2"><thead><row><entry>Name</entry><entry>Affiliation</entry><entry>Homepage</entry></row></thead><tbody><row><entry><author><firstname>Oliver</firstname><surname>Steele</surname><email>steele@osteele.com</email></author></entry><entry/><entry><ulink url="http://osteele.com"/></entry></row><row><entry><author><firstname>Des</firstname><surname>Berry</surname><email>berry@ais.it</email></author></entry><entry/></row><row><entry><author><firstname>Juha</firstname><surname>Erkkila</surname><email>erkkila@cc.jyu.fi</email></author></entry><entry/></row><row><entry><author><firstname>Scott</firstname><surname>James</surname><email>ascribbler@earthlink.net</email></author></entry><entry/></row><row><entry><author><firstname>Wei-Hao</firstname><surname>Lin</surname><email>whlin@cs.cmu.edu</email></author></entry><entry><para>CMU</para></entry></row><row><entry><author><firstname>Klaus</firstname><surname>Reis</surname><email>reis@cs.cmu.edu</email></author></entry><entry><para>CMU</para></entry></row><row><entry><author><firstname>Danny</firstname><surname>Yoo</surname><email>dyoo@users.sourceforge.net</email></author></entry><entry/></row></tbody></tgroup></informaltable>
+
+</section>

@@ -1,0 +1,29 @@
+# webspider
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+discovery allowedMethods,webSpider,error404page
+discovery config webSpider
+set onlyForward True
+back
+
+back
+
+target
+set target http://localhost/w3af/htmlParser/urlRegex.html
+back
+
+start
+
+assert 'http://localhost/w3af/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','urlList')
+
+exit

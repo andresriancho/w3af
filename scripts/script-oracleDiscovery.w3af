@@ -1,0 +1,27 @@
+# This script shows how oracleDiscovery works
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+discovery oracleDiscovery,error404page
+grep oracle
+back
+
+target
+set target http://localhost/w3af/oracle/1.html
+back
+
+start
+
+assert len(kb.kb.getData('oracle','oracle')) == 1
+assert len(kb.kb.getData('oracleDiscovery', 'info')) == 1
+
+exit

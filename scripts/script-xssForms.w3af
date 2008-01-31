@@ -1,0 +1,35 @@
+# This is a simple xss detection demo:
+
+#url-settings
+#set proxyAddress 127.0.0.1
+#set proxyPort 8080
+#back
+
+misc-settings
+set fuzzCookie False
+back
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+
+
+audit xss
+audit
+back
+
+target
+set target http://localhost/w3af/xss-forms/test-forms.html
+back
+start
+
+assert len( kb.kb.getData('xss', 'xss') ) == 1
+
+exit

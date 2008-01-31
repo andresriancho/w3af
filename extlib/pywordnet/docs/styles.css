@@ -1,0 +1,47 @@
+#examples #nav-examples,
+#download #nav-download,
+#installation #nav-installation,
+#release-notes #nav-release-notes,
+#contributors #nav-contributors,
+#license #nav-license,
+#index #nav-index {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#navigation {
+    position: absolute;
+    width: 180;
+    height: 100%;
+    background-color: #4080FF;
+    border: 1pt solid;
+}
+
+.article, body > .section { 
+    margin-left: 200;
+}
+
+.banner {
+    border-bottom: 1pt solid;
+}
+
+.projectname {
+    position: absolute;
+    right: 0;
+    margin: 5pt;
+    padding: 5pt;
+    border: 1pt solid;
+    background-color: #eee;
+    color: #00e;
+    font-size: xx-large;
+}
+
+.projectname a {
+    text-decoration: none;
+}
+
+/* a[href^="http://sourceforge.net"] {
+    background: url(http://sourceforge.net/sflogo.php?group_id=27422) right center no-repeat;
+    padding-top: 15px;
+    padding-right: 92px;
+} */

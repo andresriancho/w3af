@@ -1,0 +1,24 @@
+# grep demo
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+grep hashFind
+discovery webSpider
+grep
+back
+target
+set target http://localhost/w3af/hashFind/hf.html
+back
+start
+
+assert len( kb.kb.getData( 'hashFind', 'hashFind' ) ) == 2
+
+exit
