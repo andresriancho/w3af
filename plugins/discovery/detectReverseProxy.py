@@ -1,5 +1,5 @@
 '''
-detectTransparentProxy.py
+detectReverseProxy.py
 
 Copyright 2006 Andres Riancho
 
@@ -28,9 +28,9 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import socket
 from core.controllers.w3afException import w3afRunOnce
 
-class detectTransparentProxy(baseDiscoveryPlugin):
+class detectReverseProxy(baseDiscoveryPlugin):
     '''
-    Find out if your ISP has a transparent proxy installed.
+    Find out if the remote web server has a reverse proxy.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
@@ -46,41 +46,32 @@ class detectTransparentProxy(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-            # I will only run this one time. All calls to detectTransparentProxy return the same url's
+            # I will only run this one time. All calls to detectReverseProxy return the same url's
             self._run = False
             
-            if self._isProxyedConn( fuzzableRequest ):
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+            
+            if self._hasReverseProxy( response ):
                 i = info.info()
                 i.setURL( fuzzableRequest.getURL() )
-                i.setDesc( 'Your ISP seems to have a transparent proxy installed, this can influence w3af results.' )
-                kb.kb.append( self, 'detectTransparentProxy', i )
+                i.setDesc( 'The remote web server seems to have a reverse proxy installed.' )
+                i.setName('Found reverse proxy')
+                kb.kb.append( self, 'detectReverseProxy', i )
                 om.out.information( i.getDesc() )
             else:
-                om.out.information( 'Your ISP has no transparent proxy.' )
+                om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
             
         return []
     
-    def _isProxyedConn( self, fuzzableRequest ):
+    def _hasReverseProxy( self, response ):
         '''
-        Make a connection to a "random" IP to port 80 and make a request for the URL we are interested in.
-        @return: True if proxy is present.
+        Performs the analysis
+        @return: True if the remote web server has a reverse proxy
         '''
-        randIPs = [ '1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1', \
-        '60.60.60.60', '44.44.44.44', '11.22.33.44', '11.22.33.11', '7.99.7.99',\
-        '87.78.87.78']
-        
-        for ip in randIPs:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                s.connect( ( ip , 80) )
-            except:
-                return False
-            else:
-                continue
-                
-        return True
-
-
+        if 'Via' in response.getHeaders():
+            return True
+        else:
+            return False
     
     def getOptionsXML(self):
         '''
@@ -118,8 +109,8 @@ class detectTransparentProxy(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to detect transparent proxies.
+        This plugin tries to determine if the remote end has a reverse proxy installed.
         
-        The procedure for detecting transparent proxies is simple, I try to connect to a series of IP addresses,
-        to the port 80, if all of them return an opened socket, then it's the proxy server responding.
+        The procedure used to detect reverse proxies is to send a request to the remote server and analyze the response headers,
+        if a Via header is found, chances are that the remote site has a reverse proxy.
         '''

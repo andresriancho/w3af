@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-01-31, 18:24:46 -->
+<!-- Saved: 2008-01-31, 19:43:36 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3727,6 +3727,11 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>prompt.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>detectReverseProxy.py</Name>
     </Source>
   </Sources>
   <Forms>
