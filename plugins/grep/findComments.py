@@ -58,6 +58,11 @@ class findComments(baseGrepPlugin):
                 commentList = dp.getComments()
                 
                 for comment in commentList:
+                    # This next two lines fix this issue:
+                    # audit.ssi + grep.findComments + web app with XSS = false positive
+                    if self._wasSent( request, '<!--'+comment+'>' ):
+                        continue
+                        
                     if comment not in self._comments.keys():
                         self._comments[ comment ] = [ response.getURL(), ]
                     else:

@@ -1,33 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<<<<<<< .mine
-<!-- Saved: 2008-01-29, 18:23:49 -->
-=======
-<<<<<<< .mine
-<!-- Saved: 2008-01-28, 17:55:39 -->
-=======
-<<<<<<< .mine
-<!-- Saved: 2008-01-19, 17:57:27 -->
-=======
-<!-- Saved: 2008-01-28, 09:24:18 -->
->>>>>>> .r597
->>>>>>> .r592
->>>>>>> .r601
+<!-- Saved: 2008-01-31, 17:55:35 -->
 <Tasks version="3.8">
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: this is a hack to allow showing the different stuff we have here</Description>
-    <Created>2008-01-15, 22:06:27</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>scanrun.py</Name>
-      </Filename>
-      <Linenumber>90</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: Add mod_perl ssi injection support</Description>
     <Created>2008-01-15, 22:32:01</Created>
@@ -102,32 +77,6 @@
       <Linenumber>316</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: missing, put a placeholder</Description>
-    <Created>2008-01-18, 13:22:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>main.py</Name>
-      </Filename>
-      <Linenumber>161</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: missing, put a placeholder</Description>
-    <Created>2008-01-18, 13:22:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>main.py</Name>
-      </Filename>
-      <Linenumber>163</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: Create a proxy object instead.</Description>
     <Created>2008-01-18, 19:33:34</Created>
@@ -177,9 +126,48 @@
       <Linenumber>200</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-01-29, 21:23:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>httpLogTab.py</Name>
+      </Filename>
+      <Linenumber>284</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: review this, I'm not sure *when* activate this</Description>
+    <Created>2008-01-29, 21:45:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>scantab.py</Name>
+      </Filename>
+      <Linenumber>105</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Stop not implemented yet!"</Description>
+    <Created>2008-01-29, 21:45:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>scantab.py</Name>
+      </Filename>
+      <Linenumber>109</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-01-28, 20:04:42</Created>
+    <Created>2008-01-29, 21:49:07</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -192,7 +180,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-01-28, 20:04:42</Created>
+    <Created>2008-01-29, 21:49:07</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -203,17 +191,82 @@
       <Linenumber>294</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-01-28, 20:56:46</Created>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Do I need to call gtk.quit ?</Description>
+    <Created>2008-01-29, 21:49:12</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>ui</Dir>
         <Dir>gtkUi</Dir>
-        <Name>httpLogTab.py</Name>
+        <Name>helpers.py</Name>
       </Filename>
-      <Linenumber>284</Linenumber>
+      <Linenumber>210</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: missing, put a placeholder</Description>
+    <Created>2008-01-29, 21:49:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>main.py</Name>
+      </Filename>
+      <Linenumber>161</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: missing, put a placeholder</Description>
+    <Created>2008-01-29, 21:49:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>main.py</Name>
+      </Filename>
+      <Linenumber>163</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
+    <Created>2008-01-29, 21:49:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>40</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: use g_io_channel when pygtk supports it</Description>
+    <Created>2008-01-29, 21:49:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>pluginEditor.py</Name>
+      </Filename>
+      <Linenumber>74</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: check return</Description>
+    <Created>2008-01-29, 21:49:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>pluginEditor.py</Name>
+      </Filename>
+      <Linenumber>114</Linenumber>
     </Resource>
   </Task>
 </Tasks>
