@@ -152,13 +152,13 @@ class miscSettings(configurable):
                 <tabid>Misc settings</tabid>\
             </Option>\
             <Option name="404exceptions">\
-                <default>'+','.join(self._404exceptions)+'</default>\
+                <default>'+','.join(cf.cf.getData('404exceptions'))+'</default>\
                 <desc>A comma separated list that determines what URLs will NEVER be detected as 404 pages.</desc>\
                 <type>list</type>\
                 <tabid>404 settings</tabid>\
             </Option>\
             <Option name="always404">\
-                <default>'+','.join(self._always404)+'</default>\
+                <default>'+','.join(cf.cf.getData('always404'))+'</default>\
                 <desc>A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.</desc>\
                 <type>list</type>\
                 <tabid>404 settings</tabid>\
