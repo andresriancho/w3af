@@ -12,7 +12,6 @@ set verbosity 0
 back
 audit fileUpload
 audit
-discovery error404page
 back
 target
 set target http://localhost/w3af/fileUpload/

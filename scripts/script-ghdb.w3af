@@ -10,7 +10,7 @@ back
 output config console
 set verbosity 0
 back
-discovery ghdb,error404page
+discovery ghdb
 discovery
 back
 target

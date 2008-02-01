@@ -1,6 +1,6 @@
 # This script shows how w3af reads a crossdomain.xml file
 plugins
-discovery crossDomain,error404page
+discovery crossDomain
 back
 target
 set target http://127.0.0.1/

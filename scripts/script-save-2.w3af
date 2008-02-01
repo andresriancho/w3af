@@ -13,7 +13,7 @@ back
 output config console
 set verbosity 0
 back
-discovery digitSum,error404page, webSpider
+discovery digitSum,webSpider
 discovery
 grep all
 grep

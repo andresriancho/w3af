@@ -2,7 +2,7 @@
 
 plugins
 bruteforce formAuthBrute
-discovery allowedMethods, webSpider, error404page, fingerPKS
+discovery allowedMethods, webSpider, fingerPKS
 grep passwordProfiling
 
 output console,textFile

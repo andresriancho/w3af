@@ -12,7 +12,6 @@ set verbosity 0
 back
 audit generic
 audit
-discovery error404page
 back
 target
 set target http://localhost/w3af/sqli/sqli3.php?nombre=apr

@@ -12,7 +12,7 @@ set verbosity 0
 back
 audit dav, osCommanding
 audit
-discovery error404page, serverHeader
+discovery serverHeader
 back
 target
 set target http://localhost/w3af/dav/ , http://localhost/w3af/osCommanding/vulnerable.php?command=f0as9

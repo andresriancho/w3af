@@ -11,7 +11,7 @@ output config console
 set verbosity 0
 back
 
-discovery serverStatus,error404page
+discovery serverStatus
 back
 
 target

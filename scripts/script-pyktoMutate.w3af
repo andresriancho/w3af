@@ -13,7 +13,7 @@ set updateScandb True
 set mutateTests True
 view
 back
-discovery pykto,serverHeader,error404page
+discovery pykto,serverHeader
 back
 target
 set target http://localhost/w3af/

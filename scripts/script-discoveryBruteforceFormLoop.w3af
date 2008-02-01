@@ -3,7 +3,7 @@
 plugins
 audit htaccessMethods
 bruteforce formAuthBrute
-discovery allowedMethods,webSpider,error404page
+discovery allowedMethods,webSpider
 grep passwordProfiling
 output console,textFile
 output

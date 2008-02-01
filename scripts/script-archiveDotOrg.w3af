@@ -10,7 +10,7 @@ back
 output config console
 set verbosity 0
 back
-discovery allowedMethods,archiveDotOrg,error404page
+discovery allowedMethods,archiveDotOrg
 discovery
 back
 

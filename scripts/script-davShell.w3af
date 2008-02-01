@@ -12,7 +12,7 @@ set verbosity 0
 back
 audit dav
 audit
-discovery error404page, serverHeader
+discovery serverHeader
 back
 target
 set target http://localhost/w3af/dav/

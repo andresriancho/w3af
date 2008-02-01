@@ -10,7 +10,7 @@ back
 output config console
 set verbosity 0
 back
-discovery allowedMethods,webSpider,error404page
+discovery allowedMethods,webSpider
 discovery
 grep all
 grep

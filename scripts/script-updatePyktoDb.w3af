@@ -12,7 +12,7 @@ discovery config pykto
 set updateScandb True
 view
 back
-discovery pykto,serverHeader,error404page
+discovery pykto,serverHeader
 back
 target
 set target http://127.0.0.1/

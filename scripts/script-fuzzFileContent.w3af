@@ -15,7 +15,6 @@ set verbosity 0
 back
 audit xss
 audit
-discovery error404page
 back
 target
 set target http://localhost/w3af/fuzzFileContent/
