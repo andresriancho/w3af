@@ -94,7 +94,7 @@ class sharedHosting(baseDiscoveryPlugin):
                     om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same IP address (%s):' % ip )
                     for url in results:
                         om.out.vulnerability('- ' + url )
-                        
+                        kb.kb.append( self, 'domains', urlParser.getDomain(url) )
                 
         return []
     
