@@ -68,7 +68,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         Performs the analysis
         @return: True if the remote web server has a reverse proxy
         '''
-        if 'Via' in response.getHeaders():
+        if 'Via' in response.getHeaders() and not kb.kb.getData( 'detectTransparentProxy', 'detectTransparentProxy'):
             return True
         else:
             return False
@@ -102,7 +102,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return []
+        return ['discovery.detectTransparentProxy']
 
     def getLongDesc( self ):
         '''
