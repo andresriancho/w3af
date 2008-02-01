@@ -64,10 +64,10 @@ class findComments(baseGrepPlugin):
                         continue
                         
                     if comment not in self._comments.keys():
-                        self._comments[ comment ] = [ response.getURL(), ]
+                        self._comments[ comment ] = [ (response.getURL(), response.id), ]
                     else:
                         if response.getURL() not in self._comments[ comment ]:
-                            self._comments[ comment ].append( response.getURL() )
+                            self._comments[ comment ].append( (response.getURL(), response.id) )
                     
                     comment = comment.lower()
                     for word in self._interestingWords:
@@ -108,9 +108,9 @@ class findComments(baseGrepPlugin):
         inform = []
         for comment in self._comments.keys():
             urlsWithThisComment = self._comments[comment]
-            om.out.information('The comment : "' + comment + '" was found on this URLs:')
-            for url in urlsWithThisComment:
-                inform.append('- ' + url )
+            om.out.information('The comment : "' + comment + '" was found on this URL(s):')
+            for url , request_id in urlsWithThisComment:
+                inform.append('- ' + url + ' (with id:'+str(request_id)+')' )
         
             inform.sort()
             inform = list(set(inform))

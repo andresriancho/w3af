@@ -82,7 +82,7 @@ class frontpage(baseAuditPlugin):
                     uploadId = self._uploadFile( domainPath,  randFile )
                     self._verifyUpload( domainPath,  randFile,  uploadId )
                 else:
-                    om.out.error('frontpage plugin failed to find a 404 page. This is mostly because of an error in error404page.')
+                    om.out.error('frontpage plugin failed to find a 404 page. This is mostly because of an error in 404 page detection.')
             
     def _uploadFile( self, domainPath,  randFile ):
         '''
@@ -167,7 +167,7 @@ class frontpage(baseAuditPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.error404page']
+        return []
     
     def getLongDesc( self ):
         '''

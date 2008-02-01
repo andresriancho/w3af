@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-01-31, 19:43:36 -->
+<!-- Saved: 2008-01-31, 22:58:09 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -664,11 +664,6 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>phishtank.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>error404page.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3619,12 +3614,6 @@
       <Name>TODO</Name>
     </Source>
     <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>misc</Dir>
-      <Name>progressBar.py</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>grep</Dir>
       <Name>motw.py</Name>
@@ -3732,6 +3721,34 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>detectReverseProxy.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>coreHelpers</Dir>
+      <Name>fingerprint404Page.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>coreHelpers</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>coreHelpers</Dir>
+      <Name>progressBar.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>audit</Dir>
+      <Name>frontpage.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>findBackdoor.py</Name>
     </Source>
   </Sources>
   <Forms>

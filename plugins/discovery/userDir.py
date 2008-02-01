@@ -300,10 +300,10 @@ class userDir(baseDiscoveryPlugin):
         '''
         if self._doFastSearch:
             # This was left here for fast testing of the plugin.
-            return ['discovery.error404page' ]
+            return []
         else:
             # This is the correct return value for this method.
-            return ['discovery.error404page','discovery.fingerMSN', 'discovery.fingerGoogle', 'discovery.fingerPKS' ]
+            return ['discovery.fingerMSN', 'discovery.fingerGoogle', 'discovery.fingerPKS' ]
     
     def getLongDesc( self ):
         '''

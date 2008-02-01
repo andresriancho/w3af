@@ -526,7 +526,7 @@ class pykto(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.serverHeader','discovery.error404page']
+        return ['discovery.serverHeader']
     
     def getLongDesc( self ):
         '''

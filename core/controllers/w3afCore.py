@@ -48,7 +48,8 @@ from core.data.request.frFactory import createFuzzableRequests
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # Provide a progress bar for all plugins.
-from core.controllers.misc.progressBar import progressBar
+from core.controllers.coreHelpers.progressBar import progressBar
+from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
 
 class w3afCore:
     '''
@@ -62,6 +63,9 @@ class w3afCore:
         self.uriOpener = xUrllib()
         self._session = sessionManager()
         self._session.saveSession()
+        
+        # Only by creating this object I'm adding 404 detection to all plugins
+        fingerprint404Page()
         
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\

@@ -152,7 +152,7 @@ class passwordProfiling(baseGrepPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.error404page','grep.lang']
+        return ['grep.lang']
     
     def getLongDesc( self ):
         '''

@@ -224,7 +224,7 @@ class webSpider(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return [ 'discovery.allowedMethods','discovery.error404page' ]
+        return [ 'discovery.allowedMethods' ]
             
     def getLongDesc( self ):
         '''

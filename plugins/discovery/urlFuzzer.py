@@ -315,7 +315,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.error404page','discovery.allowedMethods']
+        return ['discovery.allowedMethods']
     
     def getLongDesc( self ):
         '''

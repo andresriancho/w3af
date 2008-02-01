@@ -302,7 +302,7 @@ class ghdb(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.error404page']
+        return []
     
     def getLongDesc( self ):
         '''

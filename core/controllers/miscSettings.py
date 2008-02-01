@@ -47,6 +47,10 @@ class miscSettings(configurable):
             cf.cf.save('demo', False )
             cf.cf.save('showProgressBar', True )
             cf.cf.save('nonTargets', [] )
+            
+            cf.cf.save('404exceptions', []  )
+            cf.cf.save('always404', [] )
+            
         
     def getOptionsXML(self):
         '''
@@ -147,6 +151,18 @@ class miscSettings(configurable):
                 <type>list</type>\
                 <tabid>Misc settings</tabid>\
             </Option>\
+            <Option name="404exceptions">\
+                <default>'+','.join(self._404exceptions)+'</default>\
+                <desc>A comma separated list that determines what URLs will NEVER be detected as 404 pages.</desc>\
+                <type>list</type>\
+                <tabid>404 settings</tabid>\
+            </Option>\
+            <Option name="always404">\
+                <default>'+','.join(self._always404)+'</default>\
+                <desc>A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.</desc>\
+                <type>list</type>\
+                <tabid>404 settings</tabid>\
+            </Option>\
         </OptionList>\
         '
     
@@ -176,6 +192,8 @@ class miscSettings(configurable):
         cf.cf.save('demo', OptionMap['demo']  )
         cf.cf.save('showProgressBar', OptionMap['showProgressBar']  )
         cf.cf.save('nonTargets', OptionMap['nonTarget'] )
+        cf.cf.save('404exceptions', OptionMap['404exceptions']  )
+        cf.cf.save('always404', OptionMap['always404'] )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 miscSettings()
