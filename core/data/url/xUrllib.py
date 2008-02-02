@@ -451,6 +451,7 @@ class xUrllib:
         for eplugin in self._evasionPlugins:
             try:
                 request = eplugin.modifyRequest( request )
+                print eplugin
             except w3afException, e:
                 om.out.error('Evasion plugin "'+eplugin.getName()+'" failed to modify the request. Exception: ' + str(e) )
             except Exception, e:

@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-01-31, 17:55:35 -->
+<!-- Saved: 2008-02-01, 19:23:49 -->
 <Tasks version="3.8">
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Add mod_perl ssi injection support</Description>
-    <Created>2008-01-15, 22:32:01</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>ssi.py</Name>
-      </Filename>
-      <Linenumber>77</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
     <Created>2008-01-15, 22:41:21</Created>
@@ -37,18 +25,6 @@
         <Name>directoryIndexing.py</Name>
       </Filename>
       <Linenumber>75</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: verify if I need to add more values here</Description>
-    <Created>2008-01-15, 23:30:11</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>strangeHeaders.py</Name>
-      </Filename>
-      <Linenumber>74</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -267,6 +243,54 @@
         <Name>pluginEditor.py</Name>
       </Filename>
       <Linenumber>114</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Add mod_perl ssi injection support</Description>
+    <Created>2008-01-31, 18:12:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>77</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here</Description>
+    <Created>2008-01-31, 19:22:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>99</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: review this code !!</Description>
+    <Created>2008-01-31, 22:55:06</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>urlFuzzer.py</Name>
+      </Filename>
+      <Linenumber>147</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
+    <Created>2008-01-31, 22:57:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>passwordProfiling.py</Name>
+      </Filename>
+      <Linenumber>47</Linenumber>
     </Resource>
   </Task>
 </Tasks>
