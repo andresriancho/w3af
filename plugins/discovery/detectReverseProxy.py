@@ -60,13 +60,13 @@ class detectReverseProxy(baseDiscoveryPlugin):
            
            # detect using TRACE
            # only if I wasn't able to do it with GET
-            if not kb.kb.append( 'detectReverseProxy', 'detectReverseProxy' ):
+            if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
                 response = self._urlOpener.TRACE( fuzzableRequest.getURL(), useCache=True )
                 if self._hasProxyContent( response ):
                     self._reportFinding( response )
                 
             # Report failure to detect reverse proxy
-            if not kb.kb.append( 'detectReverseProxy', 'detectReverseProxy' ):
+            if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
                 om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
 
         return []
