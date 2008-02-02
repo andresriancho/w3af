@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-01-31, 22:58:09 -->
+<!-- Saved: 2008-02-02, 13:48:36 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3749,6 +3749,11 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>findBackdoor.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>detectURLScan.py</Name>
     </Source>
   </Sources>
   <Forms>

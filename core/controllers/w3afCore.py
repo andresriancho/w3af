@@ -64,9 +64,6 @@ class w3afCore:
         self._session = sessionManager()
         self._session.saveSession()
         
-        # Only by creating this object I'm adding 404 detection to all plugins
-        fingerprint404Page()
-        
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
         'evasion':[], 'mangle':[], 'output':['console']}
@@ -233,6 +230,9 @@ class w3afCore:
         
         self._plugins['mangle'] = self._rPlugFactory( self._strPlugins['mangle'] , 'mangle')
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
+        
+        # Only by creating this object I'm adding 404 detection to all plugins
+        fingerprint404Page( self.uriOpener )
 
     def _updateURLsInKb( self, fuzzableRequestList ):
         '''

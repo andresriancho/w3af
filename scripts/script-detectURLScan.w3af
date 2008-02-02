@@ -1,4 +1,4 @@
-# backdoor search
+# This scripts detects an URLScan installation
 
 plugins
 output console,textFile
@@ -10,15 +10,14 @@ back
 output config console
 set verbosity 0
 back
-discovery findBackdoor
+discovery detectURLScan
 discovery
-
 back
 target
-set target http://localhost/w3af/backdoors/f00.html
+set target http://www.microsoft.com/
 back
 start
 
-assert len(kb.kb.getData('findBackdoor','backdoors')) == 1
+assert len(kb.kb.getData('detectURLScan','detectURLScan')) == 0
 
 exit

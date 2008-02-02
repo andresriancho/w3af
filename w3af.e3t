@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-02-01, 19:23:49 -->
+<!-- Saved: 2008-02-02, 08:50:04 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
@@ -25,32 +25,6 @@
         <Name>directoryIndexing.py</Name>
       </Filename>
       <Linenumber>75</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Not thread safe</Description>
-    <Created>2008-01-16, 21:24:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-01-16, 21:24:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>316</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -291,6 +265,32 @@
         <Name>passwordProfiling.py</Name>
       </Filename>
       <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Not thread safe</Description>
+    <Created>2008-02-01, 21:43:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>66</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
+    <Created>2008-02-01, 21:43:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>316</Linenumber>
     </Resource>
   </Task>
 </Tasks>

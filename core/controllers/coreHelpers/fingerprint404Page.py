@@ -33,7 +33,9 @@ class fingerprint404Page:
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
+    def __init__(self, uriOpener):
+        self._urlOpener =  uriOpener
+        
         # Note that \ are escaped first !
         self._metachars = ['\\', '.', '^', '$', '*', '+', '?', '{', '[', ']', \
         '|', '(', ')','..','\\d','\\D','\\s','\\S','\\w','\\W',\
@@ -111,7 +113,10 @@ class fingerprint404Page:
                 return False
             else:
                 return self.is404( httpResponse )
-            
+    
+    def getName( self ):
+        return 'error404page'
+    
     def _generate404( self, url ):
         randAlNumFile = createRandAlNum( 11 ) + '.html'
         url404 = urlParser.urlJoin(  url , randAlNumFile )

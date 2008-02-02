@@ -1,5 +1,5 @@
 '''
-detectReverseProxy.py
+detectURLScan.py
 
 Copyright 2006 Andres Riancho
 
@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from core.data.fuzzer.fuzzer import *
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
@@ -28,18 +29,15 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import socket
 from core.controllers.w3afException import w3afRunOnce
 
-class detectReverseProxy(baseDiscoveryPlugin):
+class detectURLScan(baseDiscoveryPlugin):
     '''
-    Find out if the remote web server has a reverse proxy.
+    Find out if the remote web server URLScan installed.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         self._run = True
-        
-        # Some internal variables
-        self._proxyHeaderList = ['Via','X-Forwarded-For','Proxy-Connection']
         
     def discover(self, fuzzableRequest ):
         '''
@@ -49,58 +47,50 @@ class detectReverseProxy(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-            # I will only run this one time. All calls to detectReverseProxy return the same url's
-            self._run = False
-            
             # detect using GET
-            if not kb.kb.getData( 'detectTransparentProxy', 'detectTransparentProxy'):            
-                response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
-                if self._hasProxyHeaders( response ):
-                    self._reportFinding( response )
-           
-           # detect using TRACE
-           # only if I wasn't able to do it with GET
-            if not kb.kb.append( 'detectReverseProxy', 'detectReverseProxy' ):
-                response = self._urlOpener.TRACE( fuzzableRequest.getURL(), useCache=True )
-                if self._hasProxyContent( response ):
-                    self._reportFinding( response )
+            # Get the original response
+            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+            if originalResponse.getCode() != 404:
+                # I will only run this one time. All calls to detectURLScan return the same url's
+                self._run = False
+
+                # Now add the if header and try again
+                h = fuzzableRequest.getHeaders()
+                h['If'] = createRandAlpha(8)
+                ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
                 
-            # Report failure to detect reverse proxy
-            if not kb.kb.append( 'detectReverseProxy', 'detectReverseProxy' ):
-                om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
+                h = fuzzableRequest.getHeaders()
+                h['Translate'] = createRandAlpha(8)
+                translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+                
+                h = fuzzableRequest.getHeaders()
+                h['Lock-Token'] = createRandAlpha(8)
+                lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+                
+                h = fuzzableRequest.getHeaders()
+                h['Transfer-Encoding'] = createRandAlpha(8)
+                transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            
+                if ifResponse.getCode() == 404 or translateResponse.getCode() == 404 or\
+                lockResponse.getCode() == 404 or transferEncodingResponse.getCode() == 404:
+                    self._reportFinding('URLScan', response)
+                    
+                # And now a final check for SecureIIS
+                h = fuzzableRequest.getHeaders()
+                h['Transfer-Encoding'] = createRandAlpha(1044)
+                lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+                if lockResponse2.getCode() == 404:
+                    self._reportFinding('SecureIIS', response)
 
         return []
         
-    def _reportFinding( self, response ):
+    def _reportFinding( self, name, response ):
         i = info.info()
         i.setURL( fuzzableRequest.getURL() )
-        i.setDesc( 'The remote web server seems to have a reverse proxy installed.' )
-        i.setName('Found reverse proxy')
-        kb.kb.append( self, 'detectReverseProxy', i )
+        i.setDesc( 'The remote web server seems to have the '+name+' extension installed.' )
+        i.setName('Found '+name+' installation')
+        kb.kb.append( self, name, i )
         om.out.information( i.getDesc() )
-    
-    def _hasProxyHeaders( self, response ):
-        '''
-        Performs the analysis
-        @return: True if the remote web server has a reverse proxy
-        '''
-        for proxyHeader in self._proxyHeaderList:
-            for responseHeader in response.getHeaders():
-                if proxyHeader.upper() == responseHeader.upper():
-                    return True
-                else:
-                    return False
-                    
-    def _hasProxyContent( self, response ):
-        '''
-        Performs the analysis of the response of the TRACE command.
-        @return: True if the remote web server has a reverse proxy
-        '''
-        for proxyHeader in self._proxyHeaderList:
-            if proxyHeader.upper() + ':' in response.getBody().upper():
-                return True
-            else:
-                return False
     
     def getOptionsXML(self):
         '''
@@ -131,15 +121,12 @@ class detectReverseProxy(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return ['discovery.detectTransparentProxy']
+        return []
 
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to determine if the remote end has a reverse proxy installed.
-        
-        The procedure used to detect reverse proxies is to send a request to the remote server and analyze the response headers,
-        if a Via header is found, chances are that the remote site has a reverse proxy.
+        This plugin tries to determine if the remote web server has URLScan installed.
         '''

@@ -131,9 +131,7 @@ class xss(baseAuditPlugin):
         
         xss_strings = xss_strings[:self._numberOfChecks]
         xss_strings = [ x.replace( 'RANDOMIZE', self._rndValue ) for x in xss_strings ]
-        
-        
-        
+
         return xss_strings
     
     def _isEchoed( self, mutant ):
