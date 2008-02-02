@@ -151,6 +151,11 @@ class collectCookies(baseGrepPlugin):
         # This is a simplificated version of ramon's cookie db.
         cookieDB = []
         
+        # Web application firewalls
+        cookieDB.append( ('st8id=','Teros web application firewall') )
+        cookieDB.append( ('ASINFO=','F5 TrafficShield') )
+        cookieDB.append( ('NCI__SessionId=','Netcontinuum') )
+        
         cookieDB.append( ('WebLogicSession=','BEA Logic') )
         cookieDB.append( ('SaneID=','Sane NetTracker') )
         cookieDB.append( ('ssuid=','Vignette') )
