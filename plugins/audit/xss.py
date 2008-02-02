@@ -104,7 +104,10 @@ class xss(baseAuditPlugin):
         ### TODO: analyze http://ha.ckers.org/xss.html and decide what to use
         
         # no quotes
-        # The number 2 is to inject in permanent xss and not "letting the user know we are testing the site"        
+        # The number 2 is to inject in permanent xss and not "letting the user know we are testing the site"
+        # And also please note that I don't have this: alert2('abc') ; this "failure" will let me find XSS in web applications
+        # that have magic_quotes enabled and will also "double" invalidate the JS code, because RANDOMIZE will be
+        # replaced by something like j0a9sf877 and that will be an undefined variables.
         xss_strings.append("<SCRIPT>alert2(RANDOMIZE)</SCRIPT>")
         
         # Single quotes
