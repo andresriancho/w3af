@@ -25,6 +25,7 @@ from core.controllers.w3afException import w3afException
 from random import choice, randint
 import urllib, urllib2
 import core.data.parsers.urlParser as urlParser
+import copy
 
 class modsecurity(baseEvasionPlugin):
     '''
@@ -52,9 +53,12 @@ class modsecurity(baseEvasionPlugin):
                 pass
             else:
                 data = '\x00' + data 
-        
-        new_req = urllib2.Request( request.get_full_url() , data, request.headers, request.get_origin_req_host() )
-        return new_req
+                headersCopy = copy.deepcopy(request.headers)
+                headersCopy['content-length'] = str(len(data))
+                
+                request = urllib2.Request( request.get_full_url() , data, headersCopy, request.get_origin_req_host() )
+                
+        return request
     
     def getOptionsXML(self):
         '''
