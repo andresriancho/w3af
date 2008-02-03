@@ -165,6 +165,8 @@ class collectCookies(baseGrepPlugin):
         cookieDB.append( ('NSES40Session=','Netscape Enterprise Server') )
         cookieDB.append( ('iPlanetUserId=','iPlanet') )
         cookieDB.append( ('RMID=','RealMedia OpenADStream') )
+        cookieDB.append( ('cftoken=','Coldfusion') )
+        cookieDB.append( ('PORTAL-PSJSESSIONID=','PeopleSoft') )
         cookieDB.append( ('JSESSIONID=','Jakarta Tomcat / Apache') )
         cookieDB.append( ('JServSessionIdroot=','Apache JServ') )
         cookieDB.append( ('WEBTRENDS_ID=','WebTrends') )
