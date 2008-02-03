@@ -86,6 +86,7 @@ class detectURLScan(baseDiscoveryPlugin):
         
     def _reportFinding( self, name, response ):
         i = info.info()
+        i.setName( name + 'installed')
         i.setURL( fuzzableRequest.getURL() )
         i.setDesc( 'The remote web server seems to have the '+name+' extension installed.' )
         i.setName('Found '+name+' installation')

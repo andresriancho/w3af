@@ -43,6 +43,7 @@ class blankBody(baseGrepPlugin):
         
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']:
             i = info.info()
+            i.setName('Blank body')
             i.setURL( response.getURL() )
             i.setId( response.id )
             i.setDesc( 'The URL : '+ response.getURL()  + ' returned an empty body. This could indicate an error.')

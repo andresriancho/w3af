@@ -65,6 +65,7 @@ class oracleDiscovery(baseDiscoveryPlugin):
                     dirs.extend( self._createFuzzableRequests( response ) )
                     if re.match( regexString , response.getBody(), re.DOTALL):
                         i = info.info()
+                        i.setName('Oracle application')
                         i.setURL( response.getURL() )
                         i.setDesc( self._parseFunction( url, response ) )
                         i.setId( response.id )

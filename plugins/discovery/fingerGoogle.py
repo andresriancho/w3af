@@ -133,9 +133,11 @@ class fingerGoogle(baseDiscoveryPlugin):
                 self._accounts.append( account )
                 
                 i = info.info()
+                mail = account + '@' + self._domainRoot
+                i.setName(mail)
                 i.setURL( response.getURI() )
-                i.setDesc( 'The mail account: "'+ account +'@' + self._domainRoot + '" was found in: "' + response.getURI() + '"' )
-                i['mail'] = account + '@' + self._domainRoot
+                i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + response.getURI() + '"' )
+                i['mail'] = mail
                 i['user'] = account
                 kb.kb.append( 'mails', 'mails', i )
                 kb.kb.append( self, 'mails', i )

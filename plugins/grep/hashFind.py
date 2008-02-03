@@ -50,6 +50,7 @@ class hashFind(baseGrepPlugin):
                 if hashType:
                     if self._hasHashDistribution( s ):
                         i = info.info()
+                        i.setName('Hash in HTML content')
                         i.setURL( response.getURL() )
                         i.setId( response.id )
                         i.setDesc( 'The URL: "'+ response.getURL()  + '" returned a response that may contain a '+hashType+' hash. The string is: "'+ s +'". This is uncommon and requires human verification.')

@@ -48,6 +48,7 @@ class motw (baseGrepPlugin):
             if not self.is404( response ):
                 motw = self._motw_re.search(response.getBody())
                 i = info.info()
+                i.setName('Mark of the web')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 

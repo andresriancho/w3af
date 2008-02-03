@@ -50,6 +50,7 @@ class wsdlGreper(baseGrepPlugin):
                     
                 if isWsdl:
                     i = info.info()
+                    i.setName('WSDL file')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                     i.setDesc( 'The URL : ' +  i.getURL() + ' is a Web Services Description Language page.' )

@@ -82,6 +82,7 @@ class phpEggs(baseDiscoveryPlugin):
                     if difflib.SequenceMatcher( None, originalResponse.getBody(), response.getBody() ).ratio() < 0.1:
                         # Found an egg, save it.
                         i = info.info()
+                        i.setName('PHP Egg')
                         i.setURL( eggURL )
                         i.setDesc( 'The PHP framework running on the remote server has an easter egg, example URL: '+  eggURL )
                         kb.kb.append( self, 'eggs', i )
@@ -112,6 +113,7 @@ class phpEggs(baseDiscoveryPlugin):
             
                 if len( cmpSet ) == len( cmpSet.intersection( versionHashes ) ):
                     i = info.info()
+                    i.setName('PHP Egg')
                     i.setDesc( 'The PHP framework version running on the remote server was identified as: '+  version )
                     i['version'] = version
                     kb.kb.append( self, 'version', i )

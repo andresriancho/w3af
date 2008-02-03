@@ -48,6 +48,7 @@ class objects(baseGrepPlugin):
             res = self._object.findall( response.getBody() )
             if res:
                 i = info.info()
+                i.setName('Object tag')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 i.setDesc( "The URL : " + i.getURL() + " has an object tag." )          
@@ -58,6 +59,7 @@ class objects(baseGrepPlugin):
             res = self._applet.findall( response.getBody() )
             if res:
                 i = info.info()
+                i.setName('Applet tag')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 i.setDesc( "The URL : " + v.getURL() + " has an applet tag." )          

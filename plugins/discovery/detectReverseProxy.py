@@ -73,6 +73,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         
     def _reportFinding( self, response ):
         i = info.info()
+        i.setName('Reverse proxy')
         i.setURL( fuzzableRequest.getURL() )
         i.setDesc( 'The remote web server seems to have a reverse proxy installed.' )
         i.setName('Found reverse proxy')

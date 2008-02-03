@@ -49,9 +49,10 @@ class getMails(baseGrepPlugin):
                 i = info.info()
                 i.setURL( response.getURL() )
                 i.setId( response.id )
-                i.setName( m + '@' + getDomain( response.getURL() ) )
-                i.setDesc( 'The mail account: "'+ m +'@' + getDomain( response.getURL() ) + '" was found in: "' + response.getURL() + '"' )
-                i['mail'] = m + '@' + getDomain( response.getURL() )
+                mail = m + '@' + getDomain( response.getURL() )
+                i.setName(mail)
+                i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + response.getURL() + '"' )
+                i['mail'] = mail
                 i['user'] = m
             
                 kb.kb.append( 'mails', 'mails', i ) 

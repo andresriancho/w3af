@@ -52,6 +52,7 @@ class collectCookies(baseGrepPlugin):
                 
                 # Load the cookie in the kb
                 i = info.info()
+                i.setName('Cookie')
                 i.setURL( response.getURL() )
                 i['cookie-string'] = headers[key]
                 
@@ -120,6 +121,7 @@ class collectCookies(baseGrepPlugin):
             if cookieObj.output(header='').count( cookie[0] ):
                 if cookie[1] not in self._alreadyReportedServer:
                     i = info.info()
+                    i.setName('Identified cookie')
                     i.setURL( response.getURL() )
                     i['cookie-string'] = cookieObj.output(header='')
                     i['cookie-object'] = cookieObj

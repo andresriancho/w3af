@@ -85,6 +85,7 @@ class crossDomain(baseDiscoveryPlugin):
                         om.out.vulnerability( v.getDesc() )
                     else:
                         i = info.info()
+                        i.setName('Crossdomain allow ACL')
                         i.setURL( response.getURL() )
                         i.setMethod( 'GET' )
                         i.setDesc( 'Crossdomain.xml file allows access from domain: ' + url )

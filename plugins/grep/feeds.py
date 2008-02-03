@@ -53,6 +53,7 @@ class feeds(baseGrepPlugin):
             if res:
                 resStr = res.groups()[0]
                 i = info.info()
+                i.setName(type +' feed')
                 i.setURL( response.getURL() )
                 i.setDesc( "The URL: " + i.getURL() + " is a " + type + " version " + resStr +" feed."  )
                 i.setId( response.id )

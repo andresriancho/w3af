@@ -176,6 +176,7 @@ class mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
         
         # Save the source email address to the kb
         i = info.info()
+        i.setName('Mailing address')
         i.setDesc( 'The email address: ' + mailfrom + ' is used by the application to send emails.' )
         i['mail'] = mailfrom
         i['user'] = mailfrom.split('@')[0]

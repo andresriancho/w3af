@@ -102,6 +102,7 @@ class afd(baseDiscoveryPlugin):
         '''
         if len( filtered ) >= len(self._getFilteredStrings()) / 5:
             i = info.info()
+            i.setName('Active filter detected')
             i.setDesc('The remote network has an active filter. IMPORTANT: The result of all the other plugins will be unaccurate, web applications could be vulnerable but "protected" by the active filter.')
             i['filtered'] = filtered
             kb.kb.append( self, 'afd', i )

@@ -81,6 +81,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         else:
             if modifiedResponse.getBody() != originalResponse.getBody():
                 i = info.info()
+                i.setName('DNS Wildcard')
                 i.setURL( modifiedResponse.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The contents of ' + modifiedResponse.getURI() + ' differ from the contents of ' + originalResponse.getURI() )
@@ -97,6 +98,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         except w3afException, w3:
             if 'Failed to resolve' in str(w3):
                 i = info.info()
+                i.setName('No DNS wildcard')
                 i.setURL( originalResponse.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The target site has no DNS wildcard.')
@@ -105,6 +107,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         else:
             if modifiedResponse.getBody() != originalResponse.getBody():
                 i = info.info()
+                i.setName('No DNS wildcard')
                 i.setURL( modifiedResponse.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The target site has no DNS wildcard, and the contents of ' + modifiedResponse.getURI() + ' differ from the contents of ' + originalResponse.getURI() )
@@ -113,6 +116,7 @@ class dnsWildcard(baseDiscoveryPlugin):
                 om.out.information( i.getDesc() )
             else:
                 i = info.info()
+                i.setName('DNS wildcard')
                 i.setURL( originalResponse.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The target site *has* a DNS wildcard configuration.' )

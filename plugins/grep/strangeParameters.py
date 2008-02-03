@@ -49,6 +49,7 @@ class strangeParameters(baseGrepPlugin):
             for param in qs:
                 if self._isStrange( param, qs[param] ):
                     i = info.info()
+                    i.setName('Strange parameter')
                     i.setURI( ref )
                     i.setId( response.id )
                     i.setDesc( 'The URI : ' +  i.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is quite odd.' )

@@ -70,8 +70,10 @@ class fingerPKS(baseDiscoveryPlugin):
                 for result in results:
                     i = info.info()
                     i.setURL( 'http://pgp.mit.edu:11371/' )
-                    i.setDesc( 'The mail account: "'+ result.username +'@' + self._domainRoot + '" was found in the MIT PKS server. ' )
-                    i['mail'] = result.username + '@' + self._domainRoot
+                    mail = result.username +'@' + self._domainRoot
+                    i.setName( mail )
+                    i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
+                    i['mail'] = mail
                     i['user'] = result.username
                     i['name'] = result.name
                     kb.kb.append( 'mails', 'mails', i )

@@ -51,6 +51,7 @@ class detectTransparentProxy(baseDiscoveryPlugin):
             
             if self._isProxyedConn( fuzzableRequest ):
                 i = info.info()
+                i.setName( 'Transparent proxy detected' )
                 i.setURL( fuzzableRequest.getURL() )
                 i.setDesc( 'Your ISP seems to have a transparent proxy installed, this can influence w3af results.' )
                 kb.kb.append( self, 'detectTransparentProxy', i )

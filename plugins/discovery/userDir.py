@@ -111,6 +111,7 @@ class userDir(baseDiscoveryPlugin):
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.getData( 'userDir', 'users') ]:
                     i = info.info()
+                    i.setName('User directory: ' + response.getURL() )
                     i.setId( response.id )
                     i.setDesc( 'A user directory was found at: ' + response.getURL() )
                     i['user'] = user
@@ -187,10 +188,12 @@ class userDir(baseDiscoveryPlugin):
                     if ident == 'os':
                         i.setDesc( 'The remote OS can be identified as "' + dataRelatedToUser + '" based on the remote user "'+ user +'".' )
                         i['rOS'] = dataRelatedToUser
+                        i.setName('Identified Operating System: ' + dataRelatedToUser )
                         kb.kb.append( self, 'os', i )
                     else:
                         i.setDesc( 'The remote server has "' + dataRelatedToUser + '" installed, w3af found this information based on the remote user "'+ user +'".' )
                         i['application'] = dataRelatedToUser
+                        i.setName('Identified application: ' + dataRelatedToUser )
                         kb.kb.append( self, 'applications', i )
     
     def _reportFindings( self ):

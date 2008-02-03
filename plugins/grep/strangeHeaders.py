@@ -42,6 +42,7 @@ class strangeHeaders(baseGrepPlugin):
         for headerName in response.getHeaders().keys():
             if headerName.upper() not in self._commonHeaders:
                 i = info.info()
+                i.setName('Strange header')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 i.setDesc( 'The URL : ' +  i.getURL() + ' sent the Header: "' + headerName + '" with value: "' + response.getHeaders()[headerName] + '"' )

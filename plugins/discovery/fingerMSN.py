@@ -104,8 +104,10 @@ class fingerMSN(baseDiscoveryPlugin):
 
                     i = info.info()
                     i.setURL( msnPage.URL )
-                    i.setDesc( 'The mail account: "'+ account +'@' + self._domainRoot + '" was found in: "' + msnPage.URL + '"' )
-                    i['mail'] = account + '@' + self._domainRoot
+                    mail = account +'@' + self._domainRoot
+                    i.setName( mail )
+                    i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + msnPage.URL + '"' )
+                    i['mail'] = mail
                     i['user'] = account
                     kb.kb.append( 'mails', 'mails', i )
                     kb.kb.append( 'fingerMSN', 'mails', i )

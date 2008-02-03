@@ -50,6 +50,7 @@ class newline(baseGrepPlugin):
             mac = self._mac.findall( response.getBody() )
             
             i = info.info()
+            i.setName('Newline information')
             i.setURL( response.getURL() )
             i.setId( response.id )
             

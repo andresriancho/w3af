@@ -44,6 +44,7 @@ class oracle(baseGrepPlugin):
                 if response.getBody().count( msg ) and response.getURL():
                     
                     i = info.info()
+                    i.setName('Oracle application')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                     i.setDesc( 'The URL : ' + response.getURL() + ' was created using Oracle Application server.' )

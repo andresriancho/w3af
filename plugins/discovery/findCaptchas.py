@@ -65,6 +65,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 
         for imgSrc in changedImagesList:
             i = info.info()
+            i.setName('Captcha image detected')
             i.setURL( imgSrc )
             i.setMethod( 'GET' )
             i.setDesc( 'Found a CAPTCHA image on URL: ' + imgSrc )

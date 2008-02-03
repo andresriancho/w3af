@@ -48,6 +48,7 @@ class fileUpload(baseGrepPlugin):
                 file_res = self._file.search(input_res.group())
                 if file_res:
                     i = info.info()
+                    i.setName('File upload form')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                     i.setDesc( "The URL : " + response.getURL() + " has form with file upload capabilities." )

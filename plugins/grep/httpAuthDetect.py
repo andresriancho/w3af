@@ -49,6 +49,7 @@ class httpAuthDetect(baseGrepPlugin):
                     wwwAuth = response.getHeaders()[ key ]
             
             i = info.info()
+            i.setName('HTTP Basic authentication')
             i.setURL( response.getURL() )
             i.setId( response.id )
             i.setDesc( 'The resource: '+ response.getURL() + ' requires authentication.' +
