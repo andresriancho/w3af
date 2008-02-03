@@ -25,7 +25,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.url.httpResponse as httpResponse
 
 import cStringIO
-import signal
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 
@@ -35,24 +34,6 @@ from core.data.getResponseType import *
 from core.controllers.daemons.proxy import *
 from core.controllers.w3afException import *
 import core.data.constants.w3afPorts as w3afPorts
-
-class sigCallback:
-    '''
-    The class object, when created, replaces current signal handler by itself.
-    When the signal appears, the callback function is called and the handler is restored back.
-    @author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
-    '''
-    def __init__(self, fun, sigCode):
-        self._fun = fun
-        self._code = sigCode
-        self._sigHandler = signal.getsignal(sigCode)
-        signal.signal(sigCode, self)
-
-    def __call__(self, *ignore):
-        self._fun.__call__()
-        signal.signal(self._code, self._sigHandler)
-
-
 
 class spiderMan(baseDiscoveryPlugin):
     '''
@@ -77,7 +58,6 @@ class spiderMan(baseDiscoveryPlugin):
 
     def extFuzzableRequests(self, response):                 
         self._fuzzableRequests.extend(self._createFuzzableRequests(response))
-
 
     def stopProxy(self):
         self._proxy.stop()
@@ -110,16 +90,10 @@ class spiderMan(baseDiscoveryPlugin):
             om.out.information('Please configure your browser to use these proxy settings and navigate the target site.')
             om.out.information('To exit spiderMan plugin please navigate to http://w3af/spiderMan?terminate or press ctrl+c .')
             
-            # Set the signal handler
-            sigCallback(self._proxy.stop, signal.SIGINT)
-
             # Run the server
             self._proxy.run()
             
-        
         return self._fuzzableRequests
-
-    
 
     def getOptionsXML(self):
         '''

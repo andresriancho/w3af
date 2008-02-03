@@ -113,6 +113,9 @@ class proxy(w3afThread):
             while self._go:
                 try:
                     self._server.handle_request()
+                except KeyboardInterrupt, ki:
+                    self._server.server_close()
+                    break
                 except:
                     self._server.server_close()
 
