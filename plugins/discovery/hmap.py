@@ -23,9 +23,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+
 import plugins.discovery.oHmap.hmap as originalHmap
+
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce
+import difflib
 
 class hmap(baseDiscoveryPlugin):
     '''
@@ -42,9 +46,16 @@ class hmap(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._execOneTime = True
+        
+        # Control flow
+        self._foundOS = False
+        self._runnedHmap = False
         self._exec = True
+        
+        # Constant
         self._matchCount = 1
+        
+        # User configured parameters
         self._genFpF = False
 
     def discover(self, fuzzableRequest ):
@@ -57,43 +68,83 @@ class hmap(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-    
-            if self._execOneTime:
+            
+            if self._foundOS and self._runnedHmap:
+                # Nothing else to do here.
                 self._exec = False
+                
+            if not self._foundOS:
+                self._findOS( fuzzableRequest )
             
-            om.out.information('Hmap plugin is starting. Fingerprinting may take a while.')
-            
-            ssl = False
-            url = fuzzableRequest.getURL()
-            protocol = urlParser.getProtocol( url )
-            server = urlParser.getDomain( url )
-            if server.count(':'):
-                port = int( server.split(':')[1] )
-                server = server.split(':')[0]
-            else:
-                if protocol == 'https':
-                    port = 443
-                    ssl = True
+            if not self._runnedHmap:
+                self._runnedHmap = True
+                
+                om.out.information('Hmap web server fingerprint is starting, this may take a while.')
+                
+                ssl = False
+                url = fuzzableRequest.getURL()
+                protocol = urlParser.getProtocol( url )
+                server = urlParser.getDomain( url )
+                if server.count(':'):
+                    port = int( server.split(':')[1] )
+                    server = server.split(':')[0]
                 else:
-                    port = 80
-            
-            results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
-            
-            server = results[0]
-            # Output the results
-            om.out.information('The most accurate fingerprint for this HTTP server is: ' + str(server) )
+                    if protocol == 'https':
+                        port = 443
+                        ssl = True
+                    else:
+                        port = 80
+                
+                results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
+                
+                server = results[0]
+                # Output the results
+                om.out.information('The most accurate fingerprint for this HTTP server is: ' + str(server) )
 
-            # Save the results in the KB so that other plugins can use this information
-            kb.kb.save( self , 'server' , server )
-            
-            # Fingerprint file generated
-            if self._genFpF:
-                om.out.information('Fingerprint file generated, please send a mail to w3af.project@gmail.com including'+
-                ' the fingerprint file, your name and what server you fingerprinted. New fingerprints make hmap plugin'+
-                ' more powerfull and accurate.')
+                # Save the results in the KB so that other plugins can use this information
+                kb.kb.save( self , 'server' , server )
+                
+                # Fingerprint file generated
+                if self._genFpF:
+                    om.out.information('Fingerprint file generated, please send a mail to w3af.project@gmail.com including'+
+                    ' the fingerprint file, your name and what server you fingerprinted. New fingerprints make hmap plugin'+
+                    ' more powerfull and accurate.')
             
         return []
-        
+    
+    def _findOS( self, fuzzableRequest ):
+        '''
+        Analyze responses and determine if remote web server runs on windows or *nix
+        @Return: None, the knowledge is saved in the knowledgeBase
+        '''
+        dirs = urlParser.getDirectories( fuzzableRequest.getURL() )
+        filename = urlParser.getFileName( fuzzableRequest.getURL() )
+        if len( dirs ) > 1 and filename:
+            last = dirs[-1]
+            windowsURL = last[0:-1] + '\\' + filename
+            windowsResponse = self._urlOpener.GET( windowsURL )
+            
+            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
+            
+            if difflib.SequenceMatcher( None, originalResponse.getBody(), windowsResponse.getBody() ).ratio() > 0.98:
+                i = info.info()
+                i.setName('Operating system')
+                i.setURL( windowsResponse.getURL() )
+                i.setMethod( 'GET' )
+                i.setDesc('Fingerprinted this host as a Microsoft Windows system.' )
+                i.setId( windowsResponse.id )
+                kb.kb.append( self, 'operatingSystem', 'windows' )
+                om.out.information( i.getDesc() )
+            else:
+                i = info.info()
+                i.setName('Operating system')
+                i.setURL( originalResponse.getURL() )
+                i.setMethod( 'GET' )
+                i.setDesc('Fingerprinted this host as a *nix system. Detection for this operating system is weak, "if not windows: is linux".' )
+                i.setId( originalResponse.id )
+                kb.kb.append( self, 'operatingSystem', 'unix' )
+                om.out.information( i.getDesc() )
+    
     def getOptionsXML(self):
         '''
         This method returns a XML containing the Options that the plugin has.
@@ -143,4 +194,7 @@ class hmap(baseDiscoveryPlugin):
         
         One configurable parameters exist:
             - genFpF
+            
+        if genFpF is set to True, a fingerprint file is generated. Fingerprint files are used to identify unknown web servers, if you
+        generate new files please send them to w3af.project@gmail.com so we can add them to the framework.
         '''
