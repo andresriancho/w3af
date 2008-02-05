@@ -54,7 +54,7 @@ class xss(baseAuditPlugin):
         self._checkPersistent = True
         self._numberOfChecks = 2
         
-        self._xss_strings_length = len( self._getXssStrings() )
+        self._xss_strings_length = len( self._getXssStrings(all=True) )
         
     def _fuzzRequests(self, freq ):
         '''
@@ -94,7 +94,7 @@ class xss(baseAuditPlugin):
                         targs = (mutant,)
                         self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
-    def _getXssStrings( self ):
+    def _getXssStrings( self, all=False ):
         '''
         Does a select to the DB for a list of XSS strings that will be tested agains the site.
         
@@ -129,7 +129,8 @@ class xss(baseAuditPlugin):
         # I need to identify everything I send to the web app
         self._rndValue = createRandAlNum()
         
-        xss_strings = xss_strings[:self._numberOfChecks]
+        if not all:
+            xss_strings = xss_strings[:self._numberOfChecks]
         xss_strings = [ x.replace( 'RANDOMIZE', self._rndValue ) for x in xss_strings ]
 
         return xss_strings
