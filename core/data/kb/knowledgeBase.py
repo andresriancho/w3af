@@ -54,12 +54,12 @@ class knowledgeBase:
         else:
             name = callingInstance.getName()
         
-        self._kbLock.acquire()
-        if name not in self._kb.keys():
-            self._kb[ name ] = {variableName: value}
-        else:
-            self._kb[ name ][ variableName ] = value
-        self._kbLock.release()
+        if self.getLock():
+            if name not in self._kb.keys():
+                self._kb[ name ] = {variableName: value}
+            else:
+                self._kb[ name ][ variableName ] = value
+            self.releaseLock()
         
     def append( self, callingInstance, variableName, value ):
         '''
@@ -70,45 +70,61 @@ class knowledgeBase:
         else:
             name = callingInstance.getName()
         
-        self._kbLock.acquire()
-        if name not in self._kb.keys():
-            self._kb[ name ] = {variableName:[value,]}
-        else:
-            if variableName in self._kb[ name ] :
-                self._kb[ name ][ variableName ].extend( [value,] )
+        if self.getLock():
+            if name not in self._kb.keys():
+                self._kb[ name ] = {variableName:[value,]}
             else:
-                self._kb[ name ][ variableName ] = [value,]
-        self._kbLock.release()
+                if variableName in self._kb[ name ] :
+                    self._kb[ name ][ variableName ].extend( [value,] )
+                else:
+                    self._kb[ name ][ variableName ] = [value,]
+            self.releaseLock()
         
     def getData( self, pluginWhoSavedTheData, variableName ):
         '''
         @return: Returns the data that was saved by another plugin.
         '''
         res = []
-        self._kbLock.acquire()
-        if pluginWhoSavedTheData not in self._kb.keys():
-            res = []
-        else:
-            if variableName not in self._kb[pluginWhoSavedTheData].keys():
+        if self.getLock():
+            if pluginWhoSavedTheData not in self._kb.keys():
                 res = []
             else:
-                res = self._kb[pluginWhoSavedTheData][variableName]
-        self._kbLock.release()
+                if variableName not in self._kb[pluginWhoSavedTheData].keys():
+                    res = []
+                else:
+                    res = self._kb[pluginWhoSavedTheData][variableName]
+            self.releaseLock()
         return res
     
+    def getLock(self):
+        try:
+            self._kbLock.acquire()
+        except:
+            return False
+        else:
+            return True
+    
+    def releaseLock(self):
+        try:
+            self._kbLock.release()
+        except:
+            return False
+        else:
+            return True
+
     def getAllEntriesOfClass( self, klass ):
         '''
         @return: A list of all objects of class == klass that are saved in the kb.
         '''
         res = []
-        self._kbLock.acquire()
-        for pluginName in self._kb:
-            for savedName in self._kb[ pluginName ]:
-                if isinstance( self._kb[ pluginName ][ savedName ], list ):
-                    for i in self._kb[ pluginName ][ savedName ]:
-                        if isinstance( i, klass ):
-                            res.append( i )
-        self._kbLock.release()
+        if self.getLock():
+            for pluginName in self._kb:
+                for savedName in self._kb[ pluginName ]:
+                    if isinstance( self._kb[ pluginName ][ savedName ], list ):
+                        for i in self._kb[ pluginName ][ savedName ]:
+                            if isinstance( i, klass ):
+                                res.append( i )
+            self.releaseLock()
         return res
     
     def getAllVulns( self ):
