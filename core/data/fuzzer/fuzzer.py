@@ -232,9 +232,9 @@ def _createFileNameMutants( freq, mutantClass, mutantStrList, fuzzableParamList 
                 # Special for filename fuzzing and some configurations of mod_rewrite
                 m.setDoubleEncoding( False )
                 
-                # The same but with double encoding!
+                # The same but with a different type of encoding! (mod_rewrite)
                 m2 = m.copy()
-                m2.setDoubleEncoding( True )
+                m2.setSafeEncodeChars('/')
                 
                 res.append( m )
                 res.append( m2 )

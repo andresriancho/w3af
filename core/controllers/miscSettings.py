@@ -166,20 +166,20 @@ class miscSettings(configurable):
                 <tabid>404 settings</tabid>\
             </Option>\
             <Option name="autodetect404">\
-                <default>'+','.join(cf.cf.getData('autodetect404'))+'</default>\
+                <default>'+str(cf.cf.getData('autodetect404'))+'</default>\
                 <desc>Perform 404 page autodetection.</desc>\
                 <type>boolean</type>\
                 <tabid>404 settings</tabid>\
             </Option>\
             <Option name="byDirectory404">\
-                <default>'+','.join(cf.cf.getData('byDirectory404'))+'</default>\
+                <default>'+str(cf.cf.getData('byDirectory404'))+'</default>\
                 <desc>Perform 404 page detection based on the knowledge found in the directory of the file</desc>\
                 <type>boolean</type>\
                 <help>Only used when autoDetect404 is False.</help>\
                 <tabid>404 settings</tabid>\
             </Option>\
             <Option name="byDirectoryAndExtension404">\
-                <default>'+','.join(cf.cf.getData('byDirectoryAndExtension404'))+'</default>\
+                <default>'+str(cf.cf.getData('byDirectoryAndExtension404'))+'</default>\
                 <desc>Perform 404 page detection based on the knowledge found in the directory of the file AND the file extension</desc>\
                 <help>Only used when autoDetect404 and byDirectory404 are False.</help>\
                 <type>boolean</type>\

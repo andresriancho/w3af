@@ -34,19 +34,28 @@ class mutantFileName(mutant):
         mutant.__init__(self, freq)
         
         self._doubleEncoding = False
+        self._safeEncodeChars = ''
 
     def getMutantType( self ):
         return 'filename'
 
     def setDoubleEncoding( self, trueFalse ):
         self._doubleEncoding = trueFalse
-        
+    
+    def setSafeEncodeChars( self, safeChars ):
+        '''
+        @parameter safeChars: A string with characters we don't want to URL encode in the filename. Example:
+            - '/&!'
+            - '/'
+        '''
+        self._safeEncodeChars = safeChars
+    
     def getURL( self ):
         url = self._freq.getURL()
         # Please note that this double encoding is needed if we want to work with mod_rewrite
-        encoded = urllib.quote_plus( self._dc['fuzzedFname'] )
+        encoded = urllib.quote_plus( self._dc['fuzzedFname'], self._safeEncodeChars )
         if self._doubleEncoding:
-            encoded = urllib.quote_plus( encoded )
+            encoded = urllib.quote_plus( encoded, safe=self._safeEncodeChars )
         return  url + self._dc['start'] + encoded + self._dc['end']
         
     getURI = getURL

@@ -38,12 +38,19 @@ class targetSettings(configurable):
     
     def __init__( self ):
         # User configured variables
-        if cf.cf.getData('targets') == None:
+        #if cf.cf.getData('targets') == None:
+        if True:
             # It's the first time I'm runned
             # Set the defaults in the config
             cf.cf.save('targets', [] )
+            cf.cf.save('targetOS', '' )
+            cf.cf.save('targetProgrammingFramework', '' )
             cf.cf.save('targetDomains', [] )
             cf.cf.save('baseURLs', [] )
+        
+        # Some internal variables
+        self._operatingSystems = ['unix','windows']
+        self._programmingFrameworks = ['php','asp','asp.net','java','jsp','cfm','ruby','perl']
 
         
     def getOptionsXML(self):
@@ -61,6 +68,16 @@ class targetSettings(configurable):
                 <default>'+','.join(cf.cf.getData('targets'))+'</default>\
                 <desc>A comma separated list of URLs</desc>\
                 <type>list</type>\
+            </Option>\
+            <Option name="targetOS">\
+                <default>'+cf.cf.getData('targetOS')+'</default>\
+                <desc>A comma separated list of URLs</desc>\
+                <type>string</type>\
+            </Option>\
+            <Option name="targetProgrammingFramework">\
+                <default>'+cf.cf.getData('targetProgrammingFramework')+'</default>\
+                <desc>A comma separated list of URLs</desc>\
+                <type>string</type>\
             </Option>\
         </OptionList>\
         '
@@ -98,6 +115,19 @@ class targetSettings(configurable):
         cf.cf.save('targets', targetUrls)
         cf.cf.save('targetDomains', [ urlParser.getDomain( i ) for i in targetUrls ] )
         cf.cf.save('baseURLs', [ urlParser.baseUrl( i ) for i in targetUrls ] )
+        
+        # Advanced target selection
+        os = optionsMap['targetOS']
+        if os in self._operatingSystems or os == '':
+            cf.cf.save('targetOS', os )
+        else:
+            raise w3afException('Unknown target operating system: ' + os)
+        
+        pf = optionsMap['targetProgrammingFramework']
+        if pf in self._programmingFrameworks or pf == '':
+            cf.cf.save('targetProgrammingFramework', pf )
+        else:
+            raise w3afException('Unknown target programming framework: ' + pf)
 
     def getName( self ):
         return 'targetSettings'
