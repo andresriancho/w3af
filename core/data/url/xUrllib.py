@@ -461,7 +461,7 @@ class xUrllib:
     def _grepResult(self, request, response):
         # The grep process is all done in another thread. This improved the
         # speed of all w3af.
-        if len( self._grepPlugins ):
+        if len( self._grepPlugins ) and urlParser.getDomain( request.get_full_url() ) in cf.cf.getData('targetDomains'):
             # I'll create a fuzzable request based on the urllib2 request object
             fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )
             targs = (fuzzReq, response)
