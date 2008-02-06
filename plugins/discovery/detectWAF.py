@@ -1,5 +1,5 @@
 '''
-detectURLScan.py
+detectWAF.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,9 +29,9 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import socket
 from core.controllers.w3afException import w3afRunOnce
 
-class detectURLScan(baseDiscoveryPlugin):
+class detectWAF(baseDiscoveryPlugin):
     '''
-    Find out if the remote web server URLScan installed.
+    Identify if a Web Application Firewall is present and if possible identify the vendor and version.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
@@ -47,49 +47,66 @@ class detectURLScan(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-            # detect using GET
-            # Get the original response
-            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
-            if originalResponse.getCode() != 404:
-                # I will only run this one time. All calls to detectURLScan return the same url's
-                self._run = False
-
-                # Now add the if header and try again
-                h = fuzzableRequest.getHeaders()
-                h['If'] = createRandAlpha(8)
-                ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-                
-                h = fuzzableRequest.getHeaders()
-                h['Translate'] = createRandAlpha(8)
-                translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-                
-                h = fuzzableRequest.getHeaders()
-                h['Lock-Token'] = createRandAlpha(8)
-                lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-                
-                h = fuzzableRequest.getHeaders()
-                h['Transfer-Encoding'] = createRandAlpha(8)
-                transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-            
-                if ifResponse.getCode() == 404 or translateResponse.getCode() == 404 or\
-                lockResponse.getCode() == 404 or transferEncodingResponse.getCode() == 404:
-                    self._reportFinding('URLScan', response)
-                    
-                # And now a final check for SecureIIS
-                h = fuzzableRequest.getHeaders()
-                h['Transfer-Encoding'] = createRandAlpha(1044)
-                lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-                if lockResponse2.getCode() == 404:
-                    self._reportFinding('SecureIIS', response)
+            # I will only run this one time. All calls to detectWAF return the same url's ( none! )
+            self._run = False
+            self._identifyURLScan( fuzzableRequest )
+            self._identifyModSecurity( fuzzableRequest )
+            self._identifySecureIIS( fuzzableRequest )
 
         return []
+    
+    def _identifySecureIIS(self,  fuzzableRequest):
+        '''
+        Try to verify if SecureIIS is installed or not.
+        '''
+        # And now a final check for SecureIIS
+        h = fuzzableRequest.getHeaders()
+        h['Transfer-Encoding'] = createRandAlpha(1024 + 1)
+        lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+        if lockResponse2.getCode() == 404:
+            self._reportFinding('SecureIIS', response)
         
+    def _identifyModSecurity(self,  fuzzableRequest):
+        '''
+        Try to verify if mod_security is installed or not AND try to get the installed version.
+        '''
+        pass
+    
+    def _identifyURLScan(self,  fuzzableRequest):
+        '''
+        Try to verify if URLScan is installed or not.
+        '''
+        # detect using GET
+        # Get the original response
+        originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        if originalResponse.getCode() != 404:
+            # Now add the if header and try again
+            h = fuzzableRequest.getHeaders()
+            h['If'] = createRandAlpha(8)
+            ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            
+            h = fuzzableRequest.getHeaders()
+            h['Translate'] = createRandAlpha(8)
+            translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            
+            h = fuzzableRequest.getHeaders()
+            h['Lock-Token'] = createRandAlpha(8)
+            lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            
+            h = fuzzableRequest.getHeaders()
+            h['Transfer-Encoding'] = createRandAlpha(8)
+            transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+        
+            if ifResponse.getCode() == 404 or translateResponse.getCode() == 404 or\
+            lockResponse.getCode() == 404 or transferEncodingResponse.getCode() == 404:
+                self._reportFinding('URLScan', response)
+
+    
     def _reportFinding( self, name, response ):
         i = info.info()
-        i.setName( name + 'installed')
         i.setURL( fuzzableRequest.getURL() )
-        i.setDesc( 'The remote web server seems to have the '+name+' extension installed.' )
-        i.setName('Found '+name+' installation')
+        i.setDesc( 'The remote web server seems to have a '+name+'.' )
+        i.setName('Found '+name)
         kb.kb.append( self, name, i )
         om.out.information( i.getDesc() )
     
@@ -129,5 +146,5 @@ class detectURLScan(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to determine if the remote web server has URLScan installed.
+        Identify if a Web Application Firewall is present and if possible identify the vendor and version.
         '''
