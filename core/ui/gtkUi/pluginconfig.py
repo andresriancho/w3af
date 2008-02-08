@@ -560,16 +560,28 @@ class PluginTree(gtk.TreeView):
         If the father gets activated/deactivated, all the children follow the
         same fate.
         '''
-        # path can be "?" if it's a father or "?:?" if it's a child
-        # invert the active state and make it consistant
+        # can not play with this particular plugin
         treerow = self.treestore[path]
+        if treerow[0] == "gtkOutput":
+            return
+
+        # invert the active state and make it consistant
         newvalue = not treerow[1]
         treerow[1] = newvalue
         treerow[2] = False
+
+        # path can be "?" if it's a father or "?:?" if it's a child
         if ":" not in path:
             # father: let's change the value of all children
-            for treerow in self._getChildren(path):
-                treerow[1] = newvalue
+            for childtreerow in self._getChildren(path):
+                if childtreerow[0] == "gtkOutput":
+                    childtreerow[1] = True
+                    if newvalue is False:
+                        # we're putting everything in false, except this plugin
+                        # so the father is inconsistant
+                        treerow[2] = True
+                else:
+                    childtreerow[1] = newvalue
         else:
             # child: let's change the father status
             vals = []
