@@ -14,7 +14,7 @@ url-settings
 set userAgent pepe
 back
 target
-set target http://localhost/
+set target http://localhost/w3af/index.html
 back
 start
 

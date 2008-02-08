@@ -112,7 +112,7 @@ class errorPages(baseGrepPlugin):
                             i.setName('Error page with information disclosure')
                             i.setURL( response.getURL() )
                             i.setId( response.id )
-                            i.setName( 'Error page' )
+                            i.setName( 'Error page with information disclosure' )
                             i.setDesc( 'An error page sent this ' + server +' version: ' + resStr  )
                             kb.kb.append( self , 'server' , i )
                             # Save the string

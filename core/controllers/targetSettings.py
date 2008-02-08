@@ -44,7 +44,7 @@ class targetSettings(configurable):
             # Set the defaults in the config
             cf.cf.save('targets', [] )
             cf.cf.save('targetOS', '' )
-            cf.cf.save('targetProgrammingFramework', '' )
+            cf.cf.save('targetFramework', '' )
             cf.cf.save('targetDomains', [] )
             cf.cf.save('baseURLs', [] )
         
@@ -71,12 +71,18 @@ class targetSettings(configurable):
             </Option>\
             <Option name="targetOS">\
                 <default>'+cf.cf.getData('targetOS')+'</default>\
-                <desc>A comma separated list of URLs</desc>\
+                <desc>Target operating system</desc>\
+                <help>This setting is here to enhance w3af performance. If you are not sure what the\
+                target operating system is, you can leave this value blank; otherwise please choose one from:\
+                '+','.join(self._operatingSystems)+'</help>\
                 <type>string</type>\
             </Option>\
-            <Option name="targetProgrammingFramework">\
-                <default>'+cf.cf.getData('targetProgrammingFramework')+'</default>\
-                <desc>A comma separated list of URLs</desc>\
+            <Option name="targetFramework">\
+                <default>'+cf.cf.getData('targetFramework')+'</default>\
+                <desc>Target programming framework</desc>\
+                <help>This setting is here to enhance w3af performance. If you are not sure what the\
+                target programming framework is, you can leave this value blank; otherwise please choose one from:\
+                '+','.join(self._programmingFrameworks)+'</help>\
                 <type>string</type>\
             </Option>\
         </OptionList>\
@@ -123,9 +129,9 @@ class targetSettings(configurable):
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
-        pf = optionsMap['targetProgrammingFramework']
+        pf = optionsMap['targetFramework']
         if pf in self._programmingFrameworks or pf == '':
-            cf.cf.save('targetProgrammingFramework', pf )
+            cf.cf.save('targetFramework', pf )
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
 

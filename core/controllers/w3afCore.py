@@ -459,7 +459,7 @@ class w3afCore:
                             # Nothing saved in the session about this tuple
                             om.out.debug('Running plugin: ' + plugin.getName() )
                             try:
-                                fuzzableRequestList.extend( plugin.discover( fr ) )
+                                pluginResult = plugin.discover( fr )
                             except w3afException,e:
                                 om.out.error( str(e) )
                                 tm.join( plugin )
@@ -470,6 +470,8 @@ class w3afCore:
                                 tm.join( plugin )
                             else:
                                 tm.join( plugin )
+                                for i in pluginResult:
+                                    fuzzableRequestList.append( (i, plugin.getName()) )
                                 self._session.save( (plugin.getName(), fr.dump(), self._count), fuzzableRequestList )
                             om.out.debug('Ending plugin: ' + plugin.getName() )
                         else:
@@ -484,7 +486,7 @@ class w3afCore:
             ##  The search has finished, now i'll some mangling with the requests
             ##
             newFR = []
-            for iFr in fuzzableRequestList:
+            for iFr, pluginWhoFoundIt in fuzzableRequestList:
                 # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
                 # so i'll remove fragments here
                 iFr.setURL( urlParser.removeFragment( iFr.getURL() ) )
@@ -497,7 +499,7 @@ class w3afCore:
                     newFR.append( iFr )
                     self._alreadyWalked.append( iFr )
                     if iFr.getURL() not in self._urls:
-                        om.out.information('New URL found by ' + plugin.getName() +' plugin: ' +  iFr.getURL() )
+                        om.out.information('New URL found by ' + pluginWhoFoundIt +' plugin: ' +  iFr.getURL() )
                         self._urls.append( iFr.getURL() )
             
             # Update the list / queue that lives in the KB
