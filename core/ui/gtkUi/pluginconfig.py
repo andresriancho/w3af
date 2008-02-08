@@ -106,20 +106,6 @@ class EasyTable(gtk.Table):
         self.auto_rowcounter += 1
 
 
-class ColorLabel(object):
-    '''Small helping class to create a label with a color background.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, color, title):
-        self.widg = gtk.EventBox()
-        self.label = gtk.Label(title)
-        self.label.set_alignment(0.0, 0.5)
-        self.label.show()
-        self.widg.add(self.label)
-        self.widg.show()
-
-
 class OptionsPanel(gtk.VBox):
     '''Panel with options for configuration.
 
@@ -142,9 +128,10 @@ class OptionsPanel(gtk.VBox):
         self.options = options
         
         # initial title
-        titl = ColorLabel("white", title)
-        titl.label.set_alignment(0.0, 0.5)
-        self.pack_start(titl.widg)
+        titl = gtk.Label(title)
+        titl.set_alignment(0.0, 0.5)
+        titl.show()
+        self.pack_start(titl)
 
         # middle table (the heart of the panel)
         tabbox = gtk.HBox()
@@ -343,9 +330,10 @@ class ConfigPanel(gtk.VBox):
         vbox.set_spacing(5)
 
         if title is not None:
-            titl = ColorLabel("white", title)
-            titl.label.set_alignment(0.0, 0.5)
-            vbox.pack_start(titl.widg)
+            titl = gtk.Label(title)
+            titl.set_alignment(0.0, 0.5)
+            titl.show()
+            vbox.pack_start(titl)
 
         labl = gtk.Label(label)
         labl.show()
