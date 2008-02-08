@@ -227,7 +227,7 @@ class WorkCrew:
         """Perform a parallel load-balancer scan.
         """
         self.working = True
-        self._setupSigHandler()
+        #self._setupSigHandler()
 
         self._initLocal()
 
@@ -246,7 +246,7 @@ class WorkCrew:
         manager.showStats()
         sys.stdout.write('\n\n')
 
-        self._restoreSigHandler()
+        #self._restoreSigHandler()
         self.working = False
 
         err = self.state.getError()

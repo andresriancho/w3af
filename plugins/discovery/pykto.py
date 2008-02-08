@@ -381,7 +381,10 @@ class pykto(baseDiscoveryPlugin):
             v = vuln.vuln()
             v.setURI( response.getURI() )
             v.setMethod( method )
-            v.setDesc( 'pykto plugin found a vulnerability at URL: ' + v.getURL() + ' . Vulnerability description: ' + desc.strip() )
+            vulnDesc = 'pykto plugin found a vulnerability at URL: ' + v.getURL() + ' . Vulnerability description: ' + desc.strip()
+            if not vulnDesc.endswith('.'):
+                vulnDesc += '.'
+            v.setDesc( vulnDesc )
             v.setId( response.id )
             v.setName( 'Insecure file' )
             v.setSeverity(severity.LOW)
