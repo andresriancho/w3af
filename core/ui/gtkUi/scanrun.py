@@ -25,63 +25,27 @@ import gtk, gobject
 
 import urllib2, time
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.kbtree as kbtree
 import core.ui.gtkUi.messages as messages
 import core.data.kb.knowledgeBase as kb
-import core.data.kb
 
-TYPES_OBJ = {
-    core.data.kb.vuln.vuln: "vuln",
-    core.data.kb.info.info: "info",
-}
 
-class KBTree(gtk.TreeView):
-    '''Show the Knowledge Base in a tree.
+class FullKBTree(kbtree.KBTree):
+    '''A tree showing all the info.
     
-    @param kbbrowser: the parent widget
-    @param filter: the initial filter
+    This also gives a long description of the element when clicked.
+
+    @param kbbrowser: The KB Browser
+    @param filter: The filter to show which elements
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, kbbrowser, filter):
+        super(FullKBTree,self).__init__(filter, 'Knowledge Base', strict=False)
+
         self.kbbrowser = kbbrowser
-
-        # simple empty Tree Store
-        # first column: the string to show; second column: the long description
-        self.treestore = gtk.TreeStore(str, str)
-        gtk.TreeView.__init__(self, self.treestore)
         self.connect('cursor-changed', self._showDesc)
-        #self.set_enable_tree_lines(True)
-
-        # the TreeView column
-        tvcolumn = gtk.TreeViewColumn('Knowledge Base')
-        cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, True)
-        tvcolumn.add_attribute(cell, "text", 0)
-        self.append_column(tvcolumn)
-
-        # this tree structure will keep the parents where to insert nodes
-        self.treeholder = {}
-
-        # initial filters
-        self.filter = filter
-
-        # get the knowledge base and go live
-        self.fullkb = kb.kb.dump()
-        gobject.timeout_add(500, self._updateTree, self.treestore, self.treeholder)
         self.show()
-
-    def setFilter(self, active):
-        '''Sets a new filter and update the tree.
-
-        @param active: which types should be shown.
-        '''
-        self.filter = active
-        new_treestore = gtk.TreeStore(str, str)
-        new_treeholder = {}
-        self._updateTree(new_treestore, new_treeholder)
-        self.set_model(new_treestore)
-        self.treestore = new_treestore
-        self.treeholder = new_treeholder
 
     def _showDesc(self, tv):
         '''Shows the description at the right
@@ -91,96 +55,15 @@ class KBTree(gtk.TreeView):
         (path, column) = tv.get_cursor()
         if path is None:
             return
-        longdesc = self.treestore[path][1]
-        if longdesc:
-            longdesc = str(longdesc)
+
+        instanckey = self.treestore[path][1]
+        instance = self.instances.get(instanckey)
+        if hasattr(instance, "getDesc"):
+            longdesc = str(instance.getDesc())
+        else:
+            longdesc = ""
         self.kbbrowser.explanation.set_text(longdesc)
 
-    def _getBestObjName(self,  obj):
-        '''
-        @return: The best obj name possible
-        '''
-        if hasattr(obj, "getName"):
-            name = obj.getName()
-        else:
-            name = repr(obj)
-        return name
-        
-    def _filterKB(self):
-        '''Filters the KB and prepares the diff to then update the GUI.
-        
-        @return: A dict with the diff to update the tree.
-        '''
-        # let's filter the real kb, to see what we should add
-        filteredkb = {}
-
-        # iterate the first layer, plugin names
-#        import pdb;pdb.set_trace()
-        for pluginname, plugvalues in self.fullkb.iteritems():
-            holdplugin = {}
-            
-            # iterate the second layer, variable names
-            for variabname, variabobjects in plugvalues.iteritems():
-                holdvariab = {}
-
-                # iterate the third layer, the variable objects
-                if isinstance(variabobjects, list):
-                    for obj in variabobjects:
-                        idobject = self._getBestObjName(obj)
-                        type_obj = TYPES_OBJ.get(type(obj), "misc")
-                        if idobject not in holdvariab and self.filter[type_obj]:
-                            if hasattr(obj, "getDesc"):
-                                longdesc = obj.getDesc()
-                            else:
-                                longdesc = ""
-                            holdvariab[idobject] = longdesc
-                else:
-                    # not a list, try to show it anyway (it's a misc)
-                    idobject = self._getBestObjName(variabobjects)
-                    if idobject not in holdvariab and self.filter["misc"]:
-                        holdvariab[idobject] = ""
-                
-                if holdvariab:
-                    holdplugin[variabname] = holdvariab
-            if holdplugin:
-                filteredkb[pluginname] = holdplugin
-        return filteredkb
-
-    def _updateTree(self, treestore, treeholder):
-        '''Updates the GUI with the KB.
-
-        @param treestore: the gui tree to updated.
-        @param treeholder: a helping structure to calculate the diff.
-
-        @return: True to keep being called by gobject.
-        '''
-        filteredKB = self._filterKB()
-
-        # iterate the first layer, plugin names
-        for pluginname, plugvalues in filteredKB.iteritems():
-            if pluginname in treeholder:
-                (treeplugin, holdplugin) = treeholder[pluginname]
-            else:
-                treeplugin = treestore.append(None, [pluginname, ""])
-                holdplugin = {}
-                treeholder[pluginname] = (treeplugin, holdplugin)
-
-            # iterate the second layer, variable names
-            for variabname, variabobjects in plugvalues.iteritems():
-                if variabname in holdplugin:
-                    (treevariab, holdvariab) = holdplugin[variabname]
-                else:
-                    treevariab = treestore.append(treeplugin, [variabname, ""])
-                    holdvariab = set()
-                    holdplugin[variabname] = (treevariab, holdvariab)
-
-                # iterate the third layer, the variable objects
-                for (name, longdesc) in variabobjects.iteritems():
-                    if name not in holdvariab:
-                        holdvariab.add(name)
-                        treestore.append(treevariab, [name, longdesc])
-        return True
-                        
 
 class KBBrowser(gtk.HPaned):
     '''Show the Knowledge Base, with the filter and the tree.
@@ -206,7 +89,7 @@ class KBBrowser(gtk.HPaned):
         filterbox.show()
 
         # the kb tree 
-        self.kbtree = KBTree(self, self.filters)
+        self.kbtree = FullKBTree(self, self.filters)
 
         # the filter and tree box
         treebox = gtk.VBox()
