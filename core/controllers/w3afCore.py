@@ -35,12 +35,12 @@ from core.controllers.misc.parseOptions import parseOptions
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import *
-from core.controllers.sessionManager import sessionManager
 from core.controllers.targetSettings import targetSettings as targetSettings
 
 import traceback
 import copy
 import Queue
+import time
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -61,8 +61,6 @@ class w3afCore:
 
     def __init__(self ):
         self.uriOpener = xUrllib()
-        self._session = sessionManager()
-        self._session.saveSession()
         
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
@@ -83,37 +81,7 @@ class w3afCore:
         # Init some values
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         self._isRunning = False
-    
-    def resumeSession( self, sessionName ):
-        '''
-        Resumes a session object.
-        
-        @parameter sessionName: The name of the session
-        @return: None
-        '''
-        self._session = sessionManager()
-        try:
-            self._session.loadSession( sessionName )
-        except w3afException, w3:
-            raise w3
-        except Exception, e:
-            om.out.error('Unhandled exception in sessionManager while resuming session. Error: ' + str(e) )
-        else:
-            self._pluginsOptions = self._session.getData('pluginsOptions')
-            self._strPlugins = self._session.getData('strPlugins')
-            om.out.console('Restoring saved session: ' + sessionName )
-            om.out.console('w3af>> start')
-            self.start()
-        
-    def saveSession( self, sessionName ):
-        '''
-        Creates a session object, to make it ready to write data to it.
-        
-        @parameter sessionName: The name of the session
-        @return: None
-        '''
-        self._session = sessionManager()
-        self._session.saveSession( sessionName )
+        self._paused = False
     
     def _rPlugFactory( self, strReqPlugins, PluginType ):
         '''
@@ -272,6 +240,9 @@ class w3afCore:
         self._count = 0
         
         while go:
+            # This is for the pause feature
+            self._sleepIfPaused()
+                
             discoveredFrList = self._discover( tmpList )
             successfullyBruteforced = self._bruteforce( discoveredFrList )
             if not successfullyBruteforced:
@@ -310,6 +281,21 @@ class w3afCore:
         #for v in kb.kb.getData( 'formAuthBrute' , 'auth' ):
         #   self.uriOpener.settings.setHeadersList( v['additionalHeaders'] )
     
+    def pause(self, trueFalse):
+        '''
+        Pauses/Un-Pauses scan.
+        @parameter trueFalse: True if the UI wants to pause the scan.
+        '''
+        self._paused = trueFalse
+        om.out.debug('Paused scan.')
+        
+    def _sleepIfPaused( self ):
+        '''
+        This method sleeps until self._paused is False.
+        '''
+        while self._paused:
+            time.sleep(0.5)
+            
     def start(self):
         '''
         Starts the work.
@@ -407,7 +393,6 @@ class w3afCore:
         return self._isRunning
     
     def _discover( self, toWalk ):
-        # The active session doesn't have a discovery result saved to it
         # Init some internal variables
         self._alreadyWalked = toWalk
         self._urls = []
@@ -443,7 +428,7 @@ class w3afCore:
         
         while len( toWalk ) and self._count < cf.cf.getData('maxDiscoveryLoops'):
         
-            # This variable is for session saving and LOOP evasion
+            # This variable is for LOOP evasion
             self._count += 1
             
             pluginsToRemoveList = []
@@ -451,34 +436,29 @@ class w3afCore:
             
             for plugin in self._plugins['discovery']:
                 for fr in toWalk:
-                    
+                    # This is for the pause feature
+                    self._sleepIfPaused()
+                
                     if fr.iterationNumber > cf.cf.getData('maxDepth'):
                         om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
                     else:
-                        if self._session.getData( (plugin.getName(), fr.dump(), self._count) ) == None:
-                            # Nothing saved in the session about this tuple
-                            om.out.debug('Running plugin: ' + plugin.getName() )
-                            try:
-                                pluginResult = plugin.discover( fr )
-                            except w3afException,e:
-                                om.out.error( str(e) )
-                                tm.join( plugin )
-                            except w3afRunOnce, rO:
-                                # Some plugins are ment to be run only once
-                                # that is implemented by raising a w3afRunOnce exception
-                                pluginsToRemoveList.append( plugin )
-                                tm.join( plugin )
-                            else:
-                                tm.join( plugin )
-                                for i in pluginResult:
-                                    fuzzableRequestList.append( (i, plugin.getName()) )
-                                self._session.save( (plugin.getName(), fr.dump(), self._count), fuzzableRequestList )
-                            om.out.debug('Ending plugin: ' + plugin.getName() )
+                        om.out.debug('Running plugin: ' + plugin.getName() )
+                        try:
+                            pluginResult = plugin.discover( fr )
+                        except w3afException,e:
+                            om.out.error( str(e) )
+                            tm.join( plugin )
+                        except w3afRunOnce, rO:
+                            # Some plugins are ment to be run only once
+                            # that is implemented by raising a w3afRunOnce exception
+                            pluginsToRemoveList.append( plugin )
+                            tm.join( plugin )
                         else:
-                            # The data saved in the session is usefull !
-                            om.out.debug('Restoring results from session for plugin: ' + plugin.getName() + '; dump:' + fr.dump().replace('\n', '') +' ; count: ' + str(self._count)  )
-                            fuzzableRequestList.extend( self._session.getData( (plugin.getName(), fr.dump(), self._count) ) )
-                    #end-if
+                            tm.join( plugin )
+                            for i in pluginResult:
+                                fuzzableRequestList.append( (i, plugin.getName()) )
+                        om.out.debug('Ending plugin: ' + plugin.getName() )
+                    #end-if fr.iterationNumber > cf.cf.getData('maxDepth'):
                 #end-for
             #end-for
             
@@ -536,32 +516,30 @@ class w3afCore:
         
         # This two for loops do all the audit magic [KISS]
         for plugin in self._plugins['audit']:
-            if not self._session.getData( plugin.getName() ):
-                om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
+            om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
+            
+            pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
+            
+            for fr in self._fuzzableRequestList:
+                # This is for the pause feature
+                self._sleepIfPaused()
                 
-                pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
-                
-                for fr in self._fuzzableRequestList:
-                    # Sends each fuzzable request to the plugin
-                    try:
-                        plugin.audit( fr )
-                    except w3afException, e:
-                        om.out.error( str(e) )
-                        tm.join( plugin )
-                    else:
-                        tm.join( plugin )
-                        # Update the progress bar
-                        pbar.inc()
-                        
-                # Let the plugin know that we are not going to use it anymore
+                # Sends each fuzzable request to the plugin
                 try:
-                    plugin.end()
+                    plugin.audit( fr )
                 except w3afException, e:
                     om.out.error( str(e) )
-                # Save to the session a flag saying : "the plugin xyz was runned"
-                self._session.save( plugin.getName(), True )
-            else:
-                om.out.information('Not running plugin: ' + plugin.getName() + ' , the plugin results are being read from the session information.')
+                    tm.join( plugin )
+                else:
+                    tm.join( plugin )
+                    # Update the progress bar
+                    pbar.inc()
+                    
+            # Let the plugin know that we are not going to use it anymore
+            try:
+                plugin.end()
+            except w3afException, e:
+                om.out.error( str(e) )
                 
     def _bruteforce(self, fuzzableRequestList):
         '''
@@ -573,27 +551,26 @@ class w3afCore:
         om.out.debug('Called _bruteforce()' )
         
         for plugin in self._plugins['bruteforce']:
-            if not self._session.getData( plugin.getName() ):
-                om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
-                for fr in fuzzableRequestList:
-                    # Sends each url to the plugin
-                    try:
-                        frList = plugin.bruteforce( fr )
-                        tm.join( plugin )
-                    except w3afException, e:
-                        tm.join( plugin )
-                        om.out.error( str(e) )
-                        
-                    try:
-                        plugin.end()
-                    except w3afException, e:
-                        om.out.error( str(e) )
-                        
-                    res.extend( frList )
+            om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
+            for fr in fuzzableRequestList:
+                # This is for the pause feature
+                self._sleepIfPaused()
                 
-                # Save to the session a flag saying : "the plugin xyz was runned"
-                self._session.save( plugin.getName(), True )
-        
+                # Sends each url to the plugin
+                try:
+                    frList = plugin.bruteforce( fr )
+                    tm.join( plugin )
+                except w3afException, e:
+                    tm.join( plugin )
+                    om.out.error( str(e) )
+                    
+                try:
+                    plugin.end()
+                except w3afException, e:
+                    om.out.error( str(e) )
+                    
+                res.extend( frList )
+                
         return res
 
     def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
@@ -605,7 +582,6 @@ class w3afCore:
         '''
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )         
         self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
-        self._session.save('pluginsOptions', self._pluginsOptions )
     
     def getPlugins( self, pluginType ):
         return self._strPlugins[ pluginType ]
@@ -637,7 +613,6 @@ class w3afCore:
         
         func = setMap[ pluginType ]
         func( pluginNames )
-        self._session.save( 'strPlugins', self._strPlugins )
         
     def getPluginTypesDesc( self, type ):
         '''

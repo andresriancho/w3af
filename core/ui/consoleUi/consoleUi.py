@@ -29,7 +29,6 @@ try:
     # Import all other menu's
     import core.ui.consoleUi.url as url
     import core.ui.consoleUi.tools as tools
-    import core.ui.consoleUi.session as session
     import core.ui.consoleUi.profiles as profiles
     import core.ui.consoleUi.plugins as plugins
     import core.ui.consoleUi.exploit as exploit
@@ -58,7 +57,7 @@ class consoleUi(consoleMenu):
         
         consoleMenu.__init__(self)
         self._menu = {'help':self._rootHelp, 'url-settings':self._url, 'misc-settings':self._misc,\
-        'session':self._session,'plugins':self._plugins,'start':self.start, 'assert': self._assert, \
+        'plugins':self._plugins,'start':self.start, 'assert': self._assert, \
         'profiles':self._profile,'exploit':self._exploit,'exit':self._exit,'target':self._target,'tools':self._tools, 'version': self._version}
         self._w3af = core.controllers.w3afCore.w3afCore()
         self._commands = commands
@@ -99,7 +98,6 @@ class consoleUi(consoleMenu):
             self.mprint('help','You are here. help [command] prints more specific help.')
             self.mprint('url-settings','Configure the URL opener.')
             self.mprint('misc-settings','Configure w3af misc settings.')
-            self.mprint('session','Load and save sessions.')
             self.mprint('plugins','Enable, disable and configure plugins.')
             self.mprint('profiles','List and start scan profiles.')
             self.mprint('start','Start site analysis.')
@@ -113,8 +111,6 @@ class consoleUi(consoleMenu):
             self.mprint('Enter the exploit configuration.','')
         elif parameters[0] == 'plugins':
             self.mprint('Enter the plugin configuration.','')
-        elif parameters[0] == 'session':
-            self.mprint('Enter the session configuration.','')
         elif parameters[0] == 'url-settings':
             self.mprint('Enter the url configuration.','')
         elif parameters[0] == 'profiles':
@@ -142,16 +138,6 @@ class consoleUi(consoleMenu):
         except KeyboardInterrupt,k:
             om.out.console('')
         
-    def _session( self, parameters  ):
-        '''
-        Opens a session config menu
-        '''
-        s = session.session( self._w3af, self._commands )
-        try:
-            s.sh()
-        except KeyboardInterrupt,k:
-            om.out.console('')
-    
     def _profile( self, parameters  ):
         '''
         Opens a profile config menu
