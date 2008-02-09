@@ -82,6 +82,7 @@ class w3afCore:
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         self._isRunning = False
         self._paused = False
+        self._mustStop = False
     
     def _rPlugFactory( self, strReqPlugins, PluginType ):
         '''
@@ -321,7 +322,7 @@ class w3afCore:
                         response = self.uriOpener.GET( url )
                         self._fuzzableRequestList.extend( createFuzzableRequests( response ) )
                     except KeyboardInterrupt:
-                        self.end()
+                        self._end()
                         raise
                     except w3afException, w3:
                         om.out.information( 'The target URL: ' + url + ' is unreachable.' )
@@ -329,7 +330,7 @@ class w3afCore:
                     except Exception, e:
                         om.out.information( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
                         om.out.information( 'Error description: ' + str(e) )
-                        om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                        om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
                 
                 self._fuzzableRequestList = self._discoverAndBF()
                     
@@ -352,39 +353,46 @@ class w3afCore:
                 
                     self._audit()
                     
-                self.end()
+                self._end()
                 ###########################
             
             except w3afFileException, e:
-                self.end()
+                self._end( e )
                 om.out.setOutputPlugins( ['console'] )
-                om.out.error( str(e) )
-                tm.join( joinAll=True )
-                tm.stopAllDaemons()
             except w3afException, e:
-                self.end()
-                om.out.error( str(e) )
-                tm.join( joinAll=True )
-                tm.stopAllDaemons()
+                self._end( e )
                 raise e
             except KeyboardInterrupt, e:
-                self.end()
-                tm.join( joinAll=True )
-                tm.stopAllDaemons()
+                self._end()
                 # I wont handle this. 
                 # The user interface must know what to do with it
                 raise e
     
-    def end( self ):
+    def stop( self ):
         '''
-        This method is called when the process ends.
+        This method is called by the user interface layer, when the user "clicks" on the stop button.
+        @return: None. The stop method can take some seconds to return.
         '''
-        self._isRunning = False
+        self._mustStop = True
+        self._end()
+    
+    def _end( self, exceptionInstance=None ):
+        '''
+        This method is called when the process ends normally or by an error.
+        '''
+        if exceptionInstance:
+            om.out.error( str(exceptionInstance) )
+
+        tm.join( joinAll=True )
+        tm.stopAllDaemons()
+        
         for plugin in self._plugins['grep']:
             plugin.end()
         
         om.out.endOutputPlugins()
         cf.cf.save('targets', [] )
+        # Now I'm definitly not running:
+        self._isRunning = False        
     
     def isRunning( self ):
         '''

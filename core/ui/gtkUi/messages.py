@@ -78,7 +78,9 @@ class _LineScroller(gtk.TextView):
             if mess is None:
                 yield True
                 continue
-            text = repr(mess.getMsg())[1:-1] + "\n"
+            # Messages are unicode, so the representation is u'abc';
+            # So I have to use [2:-1]
+            text = repr(mess.getMsg())[2:-1] + "\n"
             mtype = mess.getType()
             self.all_messages.append((mtype, text))
             if mtype in self.active_filter:

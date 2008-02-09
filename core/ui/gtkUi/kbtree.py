@@ -96,7 +96,7 @@ class KBTree(gtk.TreeView):
                 # iterate the third layer, the variable objects
                 if isinstance(variabobjects, list):
                     for obj in variabobjects:
-                        idobject = str(obj)
+                        idobject = self._getBestObjName(obj)
                         if idobject not in holdvariab:
                             type_obj = TYPES_OBJ.get(type(obj), "misc")
                             # the type must be in the filter, and be in True
