@@ -25,6 +25,7 @@ import core.data.kb.config as cf
 from core.controllers.misc.parseOptions import parseOptions
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+import time
 
 cf.cf.save('targets', [] )
 cf.cf.save('targetDomains', [] )
@@ -43,14 +44,15 @@ class targetSettings(configurable):
             # It's the first time I'm runned
             # Set the defaults in the config
             cf.cf.save('targets', [] )
-            cf.cf.save('targetOS', '' )
-            cf.cf.save('targetFramework', '' )
+            cf.cf.save('targetOS', 'unknown' )
+            cf.cf.save('targetFramework', 'unknown' )
             cf.cf.save('targetDomains', [] )
             cf.cf.save('baseURLs', [] )
+            cf.cf.save('sessionName', 'defaultSession' )
         
         # Some internal variables
-        self._operatingSystems = ['unix','windows']
-        self._programmingFrameworks = ['php','asp','asp.net','java','jsp','cfm','ruby','perl']
+        self._operatingSystems = ['unix','windows', 'unknown']
+        self._programmingFrameworks = ['php','asp','asp.net','java','jsp','cfm','ruby','perl','unknown']
 
         
     def getOptionsXML(self):
@@ -71,7 +73,7 @@ class targetSettings(configurable):
             </Option>\
             <Option name="targetOS">\
                 <default>'+cf.cf.getData('targetOS')+'</default>\
-                <desc>Target operating system</desc>\
+                <desc>Target operating system. Valid options: '+','.join(self._operatingSystems)+'</desc>\
                 <help>This setting is here to enhance w3af performance. If you are not sure what the\
                 target operating system is, you can leave this value blank; otherwise please choose one from:\
                 '+','.join(self._operatingSystems)+'</help>\
@@ -79,7 +81,7 @@ class targetSettings(configurable):
             </Option>\
             <Option name="targetFramework">\
                 <default>'+cf.cf.getData('targetFramework')+'</default>\
-                <desc>Target programming framework</desc>\
+                <desc>Target programming framework. Valid options: '+','.join(self._programmingFrameworks)+'</desc>\
                 <help>This setting is here to enhance w3af performance. If you are not sure what the\
                 target programming framework is, you can leave this value blank; otherwise please choose one from:\
                 '+','.join(self._programmingFrameworks)+'</help>\
@@ -121,17 +123,18 @@ class targetSettings(configurable):
         cf.cf.save('targets', targetUrls)
         cf.cf.save('targetDomains', [ urlParser.getDomain( i ) for i in targetUrls ] )
         cf.cf.save('baseURLs', [ urlParser.baseUrl( i ) for i in targetUrls ] )
+        cf.cf.save('sessionName', urlParser.getDomain(targetUrl) + '-' + time.ctime().replace(' ','-') )
         
         # Advanced target selection
         os = optionsMap['targetOS']
-        if os in self._operatingSystems or os == '':
-            cf.cf.save('targetOS', os )
+        if os.lower() in self._operatingSystems:
+            cf.cf.save('targetOS', os.lower() )
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
         pf = optionsMap['targetFramework']
-        if pf in self._programmingFrameworks or pf == '':
-            cf.cf.save('targetFramework', pf )
+        if pf.lower() in self._programmingFrameworks:
+            cf.cf.save('targetFramework', pf.lower() )
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
 

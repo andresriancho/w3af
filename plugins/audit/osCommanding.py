@@ -97,14 +97,19 @@ class osCommanding(baseAuditPlugin):
             
         commands = []
         for specialChar in ['','&&','|',';']:
-            commands.append( command( specialChar + ' ping -n 5 localhost','windows',specialChar))
-            commands.append( command( specialChar + ' ping -c 6 localhost','unix',specialChar))
-            
-        commands.append( command( '` ping -n 5 localhost`','windows',specialChar))
-        commands.append( command( '` ping -c 6 localhost`','unix',specialChar))
+            if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+                commands.append( command( specialChar + ' ping -n 5 localhost','windows',specialChar))
+            if cf.cf.getData('targetOS') in ['unix', 'unknown']:                
+                commands.append( command( specialChar + ' ping -c 6 localhost','unix',specialChar))
+        
+        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+            commands.append( command( '` ping -n 5 localhost`','windows',specialChar))
+        if cf.cf.getData('targetOS') in ['unix', 'unknown']:            
+            commands.append( command( '` ping -c 6 localhost`','unix',specialChar))
             
         # FoxPro uses run to run os commands. I found one of this vulns !!
-        commands.append( command( 'run ping -n 5 localhost','windows',specialChar))
+        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+            commands.append( command( 'run ping -n 5 localhost','windows',specialChar))
         
         return commands
         

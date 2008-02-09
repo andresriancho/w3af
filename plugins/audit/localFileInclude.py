@@ -68,14 +68,16 @@ class localFileInclude(baseAuditPlugin):
         # I will only try to open this files, they are easy to identify of they echoed by a vulnerable
         # web app and they are on all unix or windows default installs. Feel free to mail me ( Andres Riancho )
         # if you know about other default files that could be installed on AIX ? Solaris ? and are not /etc/passwd
-        localFiles.append("../../../../../../../../etc/passwd") 
-        localFiles.append("/etc/passwd")    
-        localFiles.append("/etc/passwd\0")  
-        localFiles.append("../../../../../../../../../../boot.ini\0")   
-        localFiles.append("C:\\boot.ini")
-        localFiles.append("C:\\boot.ini\0")
-        localFiles.append("%SYSTEMROOT%\\win.ini")
-        localFiles.append("%SYSTEMROOT%\\win.ini\0")
+        if cf.cf.getData('targetOS') in ['unix', 'unknown']:
+            localFiles.append("../../../../../../../../etc/passwd") 
+            localFiles.append("/etc/passwd")    
+            localFiles.append("/etc/passwd\0")  
+        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+            localFiles.append("../../../../../../../../../../boot.ini\0")           
+            localFiles.append("C:\\boot.ini")
+            localFiles.append("C:\\boot.ini\0")
+            localFiles.append("%SYSTEMROOT%\\win.ini")
+            localFiles.append("%SYSTEMROOT%\\win.ini\0")
         return localFiles
         
     def _analyzeResult( self, mutant, response ):
