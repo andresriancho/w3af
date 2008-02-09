@@ -98,7 +98,7 @@ class htmlFile(baseOutputPlugin):
             self._init()
             
         if self._reportDebug:
-            toPrint = str ( message )
+            toPrint = unicode ( message )
             self._aditionalInfo+= '<tr>\n<td class=content>debug: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
             self._flush()
 
@@ -119,7 +119,7 @@ class htmlFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = str ( message )
+        toPrint = unicode ( message )
         self._aditionalInfo+= '<tr>\n<td class=content>error: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
         self._flush()
 
@@ -136,7 +136,7 @@ class htmlFile(baseOutputPlugin):
         '''
         if not self._initialized:
             self._init()
-        toPrint = str ( message )
+        toPrint = unicode ( message )
         self._aditionalInfo+= '<tr>\n<td class=content>console: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
         self._flush()
         

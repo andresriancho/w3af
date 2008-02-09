@@ -25,7 +25,8 @@ from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import *
 
-# The output plugin must know the session name that is saved in the config object
+# The output plugin must know the session name that is saved in the config object,
+# the session name is assigned in the target settings
 import core.data.kb.config as cf
 
 import Queue
@@ -175,7 +176,7 @@ class gtkOutput(baseOutputPlugin):
 class message:
     def __init__( self, type, msg , newLine=True ):
         self._type = type
-        self._msg = msg
+        self._msg = unicode(msg)
         self._newLine = newLine
         
     def getMsg( self ):

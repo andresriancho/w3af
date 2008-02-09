@@ -25,6 +25,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afFileException
 import sys, os
 import time
+import codecs
 
 class textFile(baseOutputPlugin):
     '''
@@ -52,12 +53,12 @@ class textFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            self._file = open( self._filename, "w" )
+            self._file = codecs.open( self._filename, "w", "utf-8" )
         except:
             raise w3afFileException('Cant open file ' + self._filename + ' for output.')
             
         try:
-            self._http = open( self._httpFilename, "w" )
+            self._http = codecs.open( self._httpFilename, "w", "utf-8" )
         except:
             raise w3afFileException('Cant open file ' + self._httpFilename + ' for output.')
         
@@ -69,7 +70,7 @@ class textFile(baseOutputPlugin):
         try:
             self._file.write ( msg )
         except Exception, e:
-            print 'An exception was raised while trying to write to the output file.'
+            print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)
         
     def _writeToHTTPLog( self, msg ):
@@ -88,7 +89,7 @@ class textFile(baseOutputPlugin):
             self._init()
             
         if self.verbosity > 5:
-            toPrint = str ( message )
+            toPrint = unicode( message )
             
             now = time.localtime(time.time())
             theTime = time.strftime("%c", now)
@@ -114,7 +115,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
             
-        toPrint = str ( message )
+        toPrint = unicode( message )
     
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
@@ -142,7 +143,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = str ( message )
+        toPrint = unicode( message )
         if newLine == True:
             toPrint += '\n'
         
@@ -165,7 +166,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = str ( message )
+        toPrint = unicode( message )
         if newLine == True:
             toPrint += '\n'
         now = time.localtime(time.time())
@@ -184,7 +185,7 @@ class textFile(baseOutputPlugin):
         '''
         if not self._initialized:
             self._init()
-        toPrint = str ( message )
+        toPrint = unicode( message )
         if newLine == True:
             toPrint += '\n'
         now = time.localtime(time.time())

@@ -373,6 +373,9 @@ class pykto(baseDiscoveryPlugin):
         except Exception,e:
             om.out.error( 'Error when requesting: '+ url )
             om.out.error('Error: ' + str(e) )
+            print url
+            import traceback
+            om.out.debug( str(traceback.format_exc()) )
             return False
         
         if self._analyzeResult( response, expectedResponse, parameters, url ):
