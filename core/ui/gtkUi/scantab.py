@@ -78,12 +78,13 @@ class ScanTab(gtk.VBox):
         except w3afException:
             return
 
-        # start real work in background
+        # Verify that everything is ready to run
         try:
             helpers.coreWrap(self.w3af.initPlugins)
             helpers.coreWrap(self.w3af.verifyEnvironment)
-        except w3afException:
+        except w3afException, w3:
             return
+        # start real work in background
         threading.Thread(target=self.w3af.start).start()
 
         # create new panel

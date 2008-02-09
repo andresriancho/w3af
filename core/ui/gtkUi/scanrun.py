@@ -118,7 +118,8 @@ class KBBrowser(gtk.HPaned):
         # pack & show
         self.pack1(scrollwin21)
         self.pack2(scrollwin22)
-        self.set_position(150)
+        # FIXME: This set_position doesn't seem to work
+        self.set_position(250)
         self.show()
 
     def typeFilter(self, button, type):
@@ -236,6 +237,7 @@ class ScanRunBody(gtk.VPaned):
         # pack it all and show
         inner_hpan.pack1(scrollwin1)
         inner_hpan.pack2(scrollwin2)
+        # The horizonal pane that divides URLsTree with KB browser
         inner_hpan.set_position(250)
         inner_hpan.show()
         self.pack1(inner_hpan)
@@ -243,7 +245,8 @@ class ScanRunBody(gtk.VPaned):
         # bottom widget
         messag = messages.Messages()
         self.pack2(messag)
-
+        
+        # The vertical pane position
         self.set_position(250)
         self.show()
 
