@@ -82,6 +82,7 @@ class fingerprint404Page:
             if difflib.SequenceMatcher( None, responseBody, httpResponse.getBody() ).ratio() < 0.10:
                 return False
             else:
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).')
                 return True
         else:
             self._add404Knowledge( httpResponse )
@@ -99,10 +100,11 @@ class fingerprint404Page:
         if len( tmp ):
             # All items in this directory/extension combination should be the same...
             responseBody = tmp[0]
-            if difflib.SequenceMatcher( None, responseBody, httpResponse.getBody() ).ratio() < 0.10:
-                return False
-            else:
+            if difflib.SequenceMatcher( None, responseBody, httpResponse.getBody() ).ratio() > 0.90:
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension).')            
                 return True
+            else:
+                return False
         else:
             self._add404Knowledge( httpResponse )
             return self._byDirectoryAndExtension( httpResponse )
@@ -146,11 +148,13 @@ class fingerprint404Page:
             # Now return a response
             if kb.kb.getData('error404page', 'trust404'):
                 if httpResponse.getCode() == 404:
+                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting 404).')
                     return True
                 else:
                     return False
             elif kb.kb.getData('error404page', 'trustBody'):
                 if difflib.SequenceMatcher( None, httpResponse.getBody(), kb.kb.getData('error404page', 'trustBody') ).ratio() > 0.90:
+                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body).')
                     return True
                 else:
                     return False
@@ -170,9 +174,9 @@ class fingerprint404Page:
         def areEqual( tmp ):
             for respBody1 in tmp:
                 for respBody2 in tmp:
-                    if difflib.SequenceMatcher( None, respBody1, respBody2 ).ratio() < 0.10:
-                        return False
-            return True
+                    if difflib.SequenceMatcher( None, respBody1, respBody2 ).ratio() > 0.90:
+                        return True
+            return False
         
         tmp = [ response.getBody() for (response, randAlNumFile, extension) in self._404pageList ]
         if areEqual( tmp ):
