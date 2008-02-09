@@ -27,6 +27,6 @@ set target http://localhost/w3af/preg_replace/
 back
 start
 
-assert len(kb.kb.getData('preg_replace','preg_replace')) == 2
+assert len(kb.kb.getData('preg_replace','preg_replace')) >= 1
 
 exit

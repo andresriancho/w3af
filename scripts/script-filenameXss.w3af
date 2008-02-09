@@ -24,5 +24,5 @@ set target http://localhost/w3af/fuzzFileName/test/1.html
 back
 start
 
-assert len(kb.kb.getData('xss','xss')) == 2
+assert len(kb.kb.getData('xss','xss')) >= 1
 exit

@@ -16,15 +16,18 @@ set verbosity 0
 back
 discovery pykto,serverHeader
 discovery
-audit sqli
-audit
+
+discovery config pykto
+set mutateTests True
+back
+
 back
 target
-set target http://localhost/w3af/mod404error/
+set target http://localhost/w3af/
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 4
-assert len(kb.kb.getData('pykto','vuln')) == 3
+assert len(kb.kb.getData('urls','urlList')) == 8
+assert len(kb.kb.getData('pykto','vuln')) == 8
 
 exit

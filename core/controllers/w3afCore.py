@@ -281,12 +281,13 @@ class w3afCore:
         #for v in kb.kb.getData( 'formAuthBrute' , 'auth' ):
         #   self.uriOpener.settings.setHeadersList( v['additionalHeaders'] )
     
-    def pause(self, trueFalse):
+    def pause(self, pauseYesNo):
         '''
         Pauses/Un-Pauses scan.
         @parameter trueFalse: True if the UI wants to pause the scan.
         '''
-        self._paused = trueFalse
+        self._paused = pauseYesNo
+        self._isRunning = not pauseYesNo
         om.out.debug('Paused scan.')
         
     def _sleepIfPaused( self ):
