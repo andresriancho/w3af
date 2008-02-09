@@ -49,7 +49,7 @@ class knowledgeBase:
         '''
         This method saves the variableName value to a dict.
         '''
-        if isinstance( callingInstance, str ):
+        if isinstance( callingInstance, basestring ):
             name = callingInstance
         else:
             name = callingInstance.getName()
@@ -65,7 +65,7 @@ class knowledgeBase:
         '''
         This method appends the variableName value to a dict.
         '''
-        if isinstance( callingInstance, str ):
+        if isinstance( callingInstance, basestring ):
             name = callingInstance
         else:
             name = callingInstance.getName()

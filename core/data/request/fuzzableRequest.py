@@ -129,7 +129,7 @@ class fuzzableRequest:
         '''
         if isinstance( c, cookie):
             self._cookie = c
-        elif isinstance( c, str ):
+        elif isinstance( c, basestring ):
             self._cookie = cookie( c )
         elif c == None:
             self._cookie = None

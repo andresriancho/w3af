@@ -125,7 +125,7 @@ def _createJSONMutants( freq, mutantClass, mutantStrList, fuzzableParamList , ap
                     else:
                         res.append( int(mutantStr) )
         
-        elif isinstance(jsonPostData, str):
+        elif isinstance(jsonPostData, basestring):
             for mutantStr in mutantStrList:
                 if append:
                     res.append( jsonPostData +  mutantStr )
