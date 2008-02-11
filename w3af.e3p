@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-02-09, 10:18:11 -->
+<!-- Saved: 2008-02-11, 19:04:04 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -55,12 +55,6 @@
       <Dir>ui</Dir>
       <Dir>consoleUi</Dir>
       <Name>plugins.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>consoleUi</Dir>
-      <Name>session.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -383,11 +377,6 @@
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Name>w3afException.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Name>sessionManager.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>

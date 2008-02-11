@@ -60,6 +60,12 @@ class w3afCore:
     '''
 
     def __init__(self ):
+        self._initializeInternalVariables()
+        
+    def _initializeInternalVariables():
+        '''
+        Init some internal variables
+        '''
         self.uriOpener = xUrllib()
         
         # A dict with plugin types as keys and a list of plugin names as values
@@ -241,9 +247,6 @@ class w3afCore:
         self._count = 0
         
         while go:
-            # This is for the pause feature
-            self._sleepIfPaused()
-                
             discoveredFrList = self._discover( tmpList )
             successfullyBruteforced = self._bruteforce( discoveredFrList )
             if not successfullyBruteforced:
@@ -291,12 +294,21 @@ class w3afCore:
         self._isRunning = not pauseYesNo
         om.out.debug('Paused scan.')
         
-    def _sleepIfPaused( self ):
+    def _sleepIfPausedDieIfStopped( self ):
         '''
         This method sleeps until self._paused is False.
         '''
         while self._paused:
             time.sleep(0.5)
+            
+            # The user can pause and then STOP
+            if self._mustStop:
+                # hack!
+                raise KeyboardInterrupt
+        
+        # The user can simply STOP the scan
+        if self._mustStop:
+            raise KeyboardInterrupt
             
     def start(self):
         '''
@@ -368,13 +380,22 @@ class w3afCore:
                 # The user interface must know what to do with it
                 raise e
     
+    def cleanup( self ):
+        '''
+        The GTK user interface calls this when a scan has been stopped (or ended successfully) and the user wants
+        to start a new scan. All data from the kb and the cf are lost.
+        @return: None
+        '''
+        reload(kb)
+        reload(cf)
+        self._initializeInternalVariables()
+        
     def stop( self ):
         '''
         This method is called by the user interface layer, when the user "clicks" on the stop button.
         @return: None. The stop method can take some seconds to return.
         '''
         self._mustStop = True
-        self._end()
     
     def _end( self, exceptionInstance=None ):
         '''
@@ -445,14 +466,15 @@ class w3afCore:
             
             for plugin in self._plugins['discovery']:
                 for fr in toWalk:
-                    # This is for the pause feature
-                    self._sleepIfPaused()
                 
                     if fr.iterationNumber > cf.cf.getData('maxDepth'):
                         om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
                     else:
                         om.out.debug('Running plugin: ' + plugin.getName() )
                         try:
+                            # This is for the pause and stop feature
+                            self._sleepIfPausedDieIfStopped()
+                        
                             pluginResult = plugin.discover( fr )
                         except w3afException,e:
                             om.out.error( str(e) )
@@ -530,11 +552,11 @@ class w3afCore:
             pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
             
             for fr in self._fuzzableRequestList:
-                # This is for the pause feature
-                self._sleepIfPaused()
-                
                 # Sends each fuzzable request to the plugin
                 try:
+                    # This is for the pause and stop feature
+                    self._sleepIfPausedDieIfStopped()
+                
                     plugin.audit( fr )
                 except w3afException, e:
                     om.out.error( str(e) )
@@ -562,11 +584,12 @@ class w3afCore:
         for plugin in self._plugins['bruteforce']:
             om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
             for fr in fuzzableRequestList:
-                # This is for the pause feature
-                self._sleepIfPaused()
                 
                 # Sends each url to the plugin
                 try:
+                    # This is for the pause and stop feature
+                    self._sleepIfPausedDieIfStopped()
+                    
                     frList = plugin.bruteforce( fr )
                     tm.join( plugin )
                 except w3afException, e:
