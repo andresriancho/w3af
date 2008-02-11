@@ -23,7 +23,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk, gobject
 import xml.dom, sys
-import os
+import subprocess
 import core.ui.gtkUi.confpanel as confpanel
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.helpers as helpers
@@ -281,8 +281,8 @@ class PluginTree(gtk.TreeView):
         program = 'python'
         fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
         try:
-            os.spawnvpe(os.P_NOWAIT, 'python', ['python','core/ui/gtkUi/pluginEditor.py', fName, ''], os.environ)
-        except os.error:
+            subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py'])
+        except Exception, e:
             msg = 'Error while starting the w3af plugin editor.'
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Error')
