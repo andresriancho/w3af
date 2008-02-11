@@ -42,11 +42,13 @@ except:
         sys.exit( 1 )
 
 import core.controllers.w3afCore
+import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
 import core.ui.gtkUi.scantab as scantab
 import core.ui.gtkUi.exploittab as exploittab
 import core.ui.gtkUi.httpLogTab as httpLogTab
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.confpanel as confpanel
 try:
     import core.ui.gtkUi.mozillaTab as mozillaTab
     withMozillaTab = True
@@ -81,6 +83,50 @@ ui_menu = """
   </toolbar>
 </ui>
 """
+
+class ConfigDialog(gtk.Dialog):
+    '''Puts a Config panel inside a Dialog.
+    
+    @param title: the title of the window.
+    @param w3af: the Core instance
+    @param plugin: the plugin to configure
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, title, w3af, plugin):
+        super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+
+        # buttons and config panel
+        save_btn = self.add_button("Save configuration", 0)
+        rvrt_btn = self.add_button("Revert configuration", 0)
+        plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
+        panel = confpanel.OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn)
+        self.vbox.pack_start(panel)
+
+        self.like_initial = True
+        self.connect_after("delete_event", self.close)
+        self.show()
+
+    def configChanged(self, like_initial):
+        '''Propagates the change from the options.
+
+        @params like_initial: If the config is like the initial one
+        '''
+        self.like_initial = like_initial
+
+    def close(self, widget, event):
+        '''Handles the user trying to close the configuration.
+
+        If the config is not saved, just alert it.
+        '''
+        if self.like_initial:
+            return False
+
+        msg = "Do you want to quit without saving the changes?"
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        stayhere = dlg.run() != gtk.RESPONSE_YES
+        dlg.destroy()
+        return stayhere
 
 class MainApp:
     '''Main GTK application
@@ -117,8 +163,8 @@ class MainApp:
             ('LogWindow', None, '_Log Window', None, 'Toggle the Log Window', self.notyet),
             ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', self.notyet),
             ('ViewMenu', None, '_View'),
-            ('URLconfig', None, '_URL Config', None, 'URL configuration', self.notyet),
-            ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.notyet),
+            ('URLconfig', None, '_URL Config', None, 'URL configuration', self.menu_config_url),
+            ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
             ('Help', None, '_Help', None, 'Help regarding the framework', self.notyet),
             ('About', None, '_About', None, 'About the framework', self.notyet),
@@ -212,6 +258,14 @@ class MainApp:
         self.nb.remove_page(pos)
         self.nb.insert_page(self.exploit, label, pos)
         
+    def menu_config_url(self, action):
+        plugin = self.w3af.uriOpener.settings
+        ConfigDialog("Configure URL settings", self.w3af, plugin)
+
+    def menu_config_misc(self, action):
+        plugin = core.controllers.miscSettings.miscSettings()
+        ConfigDialog("Configure Misc settings", self.w3af, plugin)
+
 
 def main():
     MainApp()
