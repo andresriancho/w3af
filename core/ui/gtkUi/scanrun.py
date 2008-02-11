@@ -118,7 +118,6 @@ class KBBrowser(gtk.HPaned):
         # pack & show
         self.pack1(scrollwin21)
         self.pack2(scrollwin22)
-        # FIXME: This set_position doesn't seem to work
         self.set_position(250)
         self.show()
 
@@ -228,15 +227,13 @@ class ScanRunBody(gtk.VPaned):
         scrollwin1.show()
 
         # rigth
+        # this one does not go inside a scrolled window, because that's handled
+        # in each widget of itself
         kbbrowser = KBBrowser()
-        scrollwin2 = gtk.ScrolledWindow()
-        scrollwin2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin2.add_with_viewport(kbbrowser)
-        scrollwin2.show()
 
         # pack it all and show
         inner_hpan.pack1(scrollwin1)
-        inner_hpan.pack2(scrollwin2)
+        inner_hpan.pack2(kbbrowser)
         # The horizonal pane that divides URLsTree with KB browser
         inner_hpan.set_position(250)
         inner_hpan.show()
