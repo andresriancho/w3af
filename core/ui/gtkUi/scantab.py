@@ -84,8 +84,9 @@ class ScanTab(gtk.VBox):
             helpers.coreWrap(self.w3af.verifyEnvironment)
         except w3afException, w3:
             return
-        # start real work in background
+        # start real work in background, and start supervising if it ends
         threading.Thread(target=self.w3af.start).start()
+        gobject.timeout_add(500, self._stoppingScan)
 
         # create new panel
         scrun = scanrun.ScanRunBody()
@@ -115,7 +116,6 @@ class ScanTab(gtk.VBox):
         self.w3af.stop()
         self.gobtn.set_sensitive(False)
         self.gobtn.changeInternals("Stopping", gtk.STOCK_MEDIA_STOP)
-        gobject.timeout_add(500, self._stoppingScan)
 
     def _stoppingScan(self):
         '''Handles the waiting until core actually stopped.
@@ -123,7 +123,6 @@ class ScanTab(gtk.VBox):
         @return: True if needs to be called again, False if core stopped.
         '''
         if self.w3af.isRunning():
-            print "sleeping until actually the core stopped"
             return True
 
         # change the button to go back
