@@ -350,11 +350,13 @@ class urlOpenerSettings( configurable ):
                 <desc>Set the basic authentication username for HTTP requests</desc>\
                 <tabID>Basic Authentication</tabID>\
                 <type>string</type>\
-            </Option>\
+                <tabid>Authentication</tabid>\
+                </Option>\
             <Option name="basicAuthPass">\
                 <default>'+str(self._basicAuthPass)+'</default>\
                 <desc>Set the basic authentication password for HTTP requests</desc>\
                 <tabID>Basic Authentication</tabID>\
+                <tabid>Authentication</tabid>\
                 <type>string</type>\
             </Option>\
             <Option name="basicAuthDomain">\
@@ -362,32 +364,35 @@ class urlOpenerSettings( configurable ):
                 <desc>Set the basic authentication domain for HTTP requests</desc>\
                 <help>This configures on which request to send the authentication settings configured in basicAuthPass and basicAuthUser.</help>\
                 <tabID>Basic Authentication</tabID>\
+                <tabid>Authentication</tabid>\
                 <type>string</type>\
             </Option>\
             <Option name="cookieJarFile">\
                 <default>'+str(self._cookieJarFile)+'</default>\
                 <desc>Set the cookiejar filename.</desc>\
                 <help>The cookiejar file must be in mozilla format</help>\
+                <tabid>Cookies</tabid>\
                 <type>string</type>\
             </Option>\
             <Option name="ignoreSessCookies">\
                 <default>'+str(self._ignoreSessCookies)+'</default>\
                 <desc>Ignore session cookies</desc>\
                 <help>If set to True, w3af will ignore all session cookies sent by the web application.</help>\
+                <tabid>Cookies</tabid>\
                 <type>boolean</type>\
             </Option>\
             <Option name="proxyPort">\
                 <default>'+str(self._proxyPort)+'</default>\
                 <desc>Proxy TCP port</desc>\
                 <help>TCP port for the remote proxy server to use.</help>\
-                <tabID>Proxy</tabID>\
+                <tabid>Proxy</tabid>\
                 <type>integer</type>\
             </Option>\
             <Option name="proxyAddress">\
                 <default>'+str(self._proxyAddress)+'</default>\
                 <desc>Proxy IP address</desc>\
                 <help>IP address for the remote proxy server to use.</help>\
-                <tabID>Proxy</tabID>\
+                <tabid>Proxy</tabid>\
                 <type>string</type>\
             </Option>\
             <Option name="userAgent">\
