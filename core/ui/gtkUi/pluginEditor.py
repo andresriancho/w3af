@@ -37,6 +37,8 @@ import gnomevfs
 import pango
 import gnomeprint.ui
 
+import subprocess
+
 import time
 
 ######################################################################
@@ -46,7 +48,24 @@ MARKER_TYPE_1 = 'one'
 MARKER_TYPE_2 = 'two'
 DATADIR = '/usr/share'
 
-
+######################################################################
+##### Plugin editor starter function
+def editPlugin( widget, pluginName, pluginType ):
+    '''
+    I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
+    This method calls the plugin editor as a separate process and exists.
+    '''
+    program = 'python'
+    fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
+    try:
+        subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py', fName])
+    except Exception, e:
+        msg = 'Error while starting the w3af plugin editor.'
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+        dlg.set_title('Error')
+        dlg.run()
+        dlg.destroy()
+        
 ######################################################################
 ##### error dialog
 def error_dialog(parent, msg):
@@ -484,10 +503,7 @@ def main(args):
     buffer.set_data('languages-manager', lm)
 
     # parse arguments
-    if len(args) > 2:
-        open_file(buffer, args[1])
-    else:
-        open_file(buffer, args[0])
+    open_file(buffer, args[1])
         
     # create first window
     window = create_main_window(buffer)

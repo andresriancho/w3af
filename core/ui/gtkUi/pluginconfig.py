@@ -23,10 +23,11 @@ import pygtk
 pygtk.require('2.0')
 import gtk, gobject
 import xml.dom, sys
-import subprocess
+
 import core.ui.gtkUi.confpanel as confpanel
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.helpers as helpers
+from core.ui.gtkUi.pluginEditor import editPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 
@@ -273,22 +274,6 @@ class PluginTree(gtk.TreeView):
         self.plugin_instances[path] = plugin
         return plugin
 
-    def editPlugin( self, widget, pluginName, pluginType ):
-        '''
-        I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
-        This method calls the plugin editor as a separate process and exists.
-        '''
-        program = 'python'
-        fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
-        try:
-            subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py'])
-        except Exception, e:
-            msg = 'Error while starting the w3af plugin editor.'
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-            dlg.set_title('Error')
-            dlg.run()
-            dlg.destroy()
-        
     def popup_menu( self, tv, event ):
         '''Shows a menu when you right click on a plugin.
         
@@ -313,7 +298,7 @@ class PluginTree(gtk.TreeView):
                 
                 # And the items
                 e = gtk.MenuItem("Edit plugin...")
-                e.connect('activate', self.editPlugin, pname, ptype )
+                e.connect('activate', editPlugin, pname, ptype )
                 gm.append( e )
                 gm.show_all()
                 
