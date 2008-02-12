@@ -62,7 +62,7 @@ class w3afCore:
     def __init__(self ):
         self._initializeInternalVariables()
         
-    def _initializeInternalVariables():
+    def _initializeInternalVariables(self):
         '''
         Init some internal variables
         '''
