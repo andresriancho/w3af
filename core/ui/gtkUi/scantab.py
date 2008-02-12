@@ -89,14 +89,15 @@ class ScanTab(gtk.VBox):
         gobject.timeout_add(500, self._stoppingScan)
 
         # create new panel
-        scrun = scanrun.ScanRunBody()
+        scnew = scanrun.ScanRunBody()
 
         # replace previous panel for new one
         self.remove(self.gobox)
         self.remove(self.pcbody)
-        self.pack_start(scrun, padding=5)
+        self.pack_start(scnew, padding=5)
         self.pack_start(self.gobox, expand=False, fill=False)
-        scrun.show()
+        scnew.show()
+        self.pcbody = scnew
 
         # change the button to a "stop" one
         self.gobtn.disconnect(self.gobtnconn)
@@ -104,8 +105,7 @@ class ScanTab(gtk.VBox):
         self.gobtn.changeInternals("Stop scan", gtk.STOCK_MEDIA_STOP)
 
         # activate exploit tab
-        # FIXME: review this, I'm not sure *when* activate this
-        self.mainwin.activateExploit()
+        self.mainwin.setSensitiveExploit(True)
 
     def _stopScan(self, widg):
         '''Stops the scanning.
@@ -137,5 +137,21 @@ class ScanTab(gtk.VBox):
 
         @param widg: the widget that generated the signal.
         '''
-        print "RESUME!"
-        print "running?", self.w3af.isRunning()
+        self.w3af.cleanup()
+        self.gobtn.disconnect(self.gobtnconn)
+        self.gobtnconn = self.gobtn.connect("clicked", self._startScan)
+        self.gobtn.changeInternals("Start scan", gtk.STOCK_MEDIA_PLAY)
+        self.gobtn.set_sensitive(True)
+        self.gobtnconn = self.gobtn.connect("clicked", self._startScan)
+
+        # create new panel & replace previous panel for new one
+        scnew = pluginconfig.PluginConfigBody(self, self.w3af)
+        self.remove(self.gobox)
+        self.remove(self.pcbody)
+        self.pack_start(scnew, padding=5)
+        self.pack_start(self.gobox, expand=False, fill=False)
+        scnew.show()
+        self.pcbody = scnew
+
+        # deactivate exploit tab
+        self.mainwin.setSensitiveExploit(False)

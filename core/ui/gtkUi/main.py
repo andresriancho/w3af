@@ -209,12 +209,12 @@ class MainApp:
         # FIXME: missing, put a placeholder
 
         # exploit tab
-        self.dummy = gtk.Label("No scan info is gathered yet")
+        self.exploit = gtk.Label("No scan info is gathered yet")
         label = gtk.Label("Exploit")
         label.set_sensitive(False)
-        self.dummy.set_sensitive(False)
-        self.nb.append_page(self.dummy, label)
-        self.dummy.show()
+        self.exploit.set_sensitive(False)
+        self.nb.append_page(self.exploit, label)
+        self.exploit.show()
 
 #        # status bar
 #        # FIXME implement in a future
@@ -247,17 +247,30 @@ class MainApp:
         '''Just a not yet implemented message to stdout.'''
         print "This functionality is not implemented yet!"
 
-    def activateExploit(self):
-        '''Creates the exploit tab.'''
-        # create the exploit and label
-        self.exploit = exploittab.ExploitBody(self.w3af)
-        label = gtk.Label("Exploit")
-
-        # remove old page and insert this one
-        pos = self.nb.page_num(self.dummy)
-        self.nb.remove_page(pos)
-        self.nb.insert_page(self.exploit, label, pos)
+    def setSensitiveExploit(self, sensit):
+        '''Set the exploit tab or a dummy one. 
         
+        @param sensit: if it's active or not
+        
+        '''
+        # create the exploit and label
+        label = gtk.Label("Exploit")
+        if sensit:
+            newexploit = exploittab.ExploitBody(self.w3af)
+        else:
+            newexploit = gtk.Label("No scan info is gathered yet")
+            newexploit.show()
+            label.set_sensitive(False)
+            newexploit.set_sensitive(False)
+        
+        # remove old page and insert this one
+        pos = self.nb.page_num(self.exploit)
+        print "pos", pos
+        self.nb.remove_page(pos)
+        self.nb.insert_page(newexploit, label, pos)
+        print ":)"
+        self.exploit = newexploit
+
     def menu_config_url(self, action):
         plugin = self.w3af.uriOpener.settings
         ConfigDialog("Configure URL settings", self.w3af, plugin)
