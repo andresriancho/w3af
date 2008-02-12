@@ -107,4 +107,36 @@ class ScanTab(gtk.VBox):
         self.mainwin.activateExploit()
 
     def _stopScan(self, widg):
-        print "FIXME: Stop not implemented yet!"
+        '''Stops the scanning.
+
+        @param widg: the widget that generated the signal.
+        '''
+        # stop and wait until really stopped
+        self.w3af.stop()
+        self.gobtn.set_sensitive(False)
+        self.gobtn.changeInternals("Stopping", gtk.STOCK_MEDIA_STOP)
+        gobject.timeout_add(500, self._stoppingScan)
+
+    def _stoppingScan(self):
+        '''Handles the waiting until core actually stopped.
+
+        @return: True if needs to be called again, False if core stopped.
+        '''
+        if self.w3af.isRunning():
+            print "sleeping until actually the core stopped"
+            return True
+
+        # change the button to go back
+        self.gobtn.disconnect(self.gobtnconn)
+        self.gobtnconn = self.gobtn.connect("clicked", self._resumeScan)
+        self.gobtn.changeInternals("Back to config", gtk.STOCK_GO_BACK)
+        self.gobtn.set_sensitive(True)
+        return False
+
+    def _resumeScan(self, widg):
+        '''Goes back to the configuration pane.
+
+        @param widg: the widget that generated the signal.
+        '''
+        print "RESUME!"
+        print "running?", self.w3af.isRunning()
