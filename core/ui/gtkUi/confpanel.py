@@ -162,6 +162,8 @@ class OnlyOptions(gtk.VBox):
         nb = gtk.Notebook()
         for tab in tabs:
             options = [x for x in self.options if x.tabid == tab]
+            if not tab:
+                tab = "General"
             label = gtk.Label(tab)
             prop = helpers.PropagateBufferPayload(self._changedLabelNotebook, label, tab)
             table = self._makeTable(options, prop)
