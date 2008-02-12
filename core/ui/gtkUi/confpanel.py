@@ -49,7 +49,7 @@ class Option(object):
     '''
     def __init__(self, option):
         self.name = option.getAttribute('name')
-        for tag in "default desc help type".split():
+        for tag in "default desc help type tabid".split():
             try:
                 value = option.getElementsByTagName(tag)[0].childNodes[0].data
             except:
@@ -117,6 +117,10 @@ class OnlyOptions(gtk.VBox):
         self.set_spacing(5)
         self.w3af = w3af
         self.parentwidg = parentwidg
+        self.widgets_status = {}
+        self.tab_widget = {}
+        self.propagAnyWidgetChanged = helpers.PropagateBuffer(self._changedAnyWidget)
+        self.propagLabels = {}
 
         # options
         self.options = []
@@ -134,18 +138,42 @@ class OnlyOptions(gtk.VBox):
         self.save_btn = save_btn
         self.rvrt_btn = rvrt_btn
         
-        # middle table (the heart of the panel)
+        # middle (the heart of the panel)
         if self.options:
             tabbox = gtk.HBox()
-            table = self._makeTable()
-            tabbox.pack_start(table, expand=False)
+            heart = self._createNotebook()
+            tabbox.pack_start(heart, expand=False)
             tabbox.show()
             self.pack_start(tabbox, expand=True, fill=False)
         self.show()
 
-    def _makeTable(self):
-        '''Creates the table in which all the options are shown.
+    def _createNotebook(self):
+        '''This create the notebook with all the options.
 
+        @return: The created notebook if more than one grouping
+        '''
+        # see if we have more than a tab to create a nb
+        tabs = set(o.tabid for o in self.options)
+        if len(tabs) < 2:
+            table = self._makeTable(self.options, None)
+            return table
+
+        # the notebook
+        nb = gtk.Notebook()
+        for tab in tabs:
+            options = [x for x in self.options if x.tabid == tab]
+            label = gtk.Label(tab)
+            prop = helpers.PropagateBufferPayload(self._changedLabelNotebook, label, tab)
+            table = self._makeTable(options, prop)
+            nb.append_page(table, label)
+        nb.show()
+        return nb
+
+    def _makeTable(self, options, prop):
+        '''Creates the table in which the options are shown.
+
+        @param options: The options to show
+        @param prop: The propagation function for this options
         @return: The created table
 
         For each row, it will put:
@@ -156,14 +184,11 @@ class OnlyOptions(gtk.VBox):
 
         Also, the configurable widget gets a tooltip for a small description.
         '''
-        table = EasyTable(len(self.options), 3)
-        self.widgets_status = {}
-        self.propagAnyWidgetChanged = helpers.PropagateBuffer(self._changedAnyWidget)
+        table = EasyTable(len(options), 3)
         tooltips = gtk.Tooltips()
-        for i,opt in enumerate(self.options):
+        for i,opt in enumerate(options):
             titl = gtk.Label(opt.name)
             titl.set_alignment(0.0, 0.5)
-#            propagWidgetChanged = helpers.PropagateBuffer(self._changedWidget)
             widg = wrapperWidgets[opt.type](self._changedWidget, opt.default)
             opt.widg = widg
             tooltips.set_tip(widg, opt.desc)
@@ -175,6 +200,7 @@ class OnlyOptions(gtk.VBox):
                 helpbtn = None
             table.autoAddRow(titl, widg, helpbtn)
             self.widgets_status[widg] = (titl, opt.name, "<b>%s</b>" % opt.name)
+            self.propagLabels[widg] = prop
         table.show()
         return table
 
@@ -189,6 +215,12 @@ class OnlyOptions(gtk.VBox):
         self.save_btn.set_sensitive(not like_initial)
         self.rvrt_btn.set_sensitive(not like_initial)
         self.parentwidg.configChanged(like_initial)
+
+    def _changedLabelNotebook(self, like_initial, label, text):
+        if like_initial:
+            label.set_text(text)
+        else:
+            label.set_markup("<b>%s</b>" % text)
 
     def _changedWidget(self, widg, like_initial):
         '''Receives signal when a widget changed or not.
@@ -205,6 +237,9 @@ class OnlyOptions(gtk.VBox):
         else:
             labl.set_markup(chng)
         self.propagAnyWidgetChanged.change(widg, like_initial)
+        propag = self.propagLabels[widg]
+        if propag is not None:
+            propag.change(widg, like_initial)
 
     def _showHelp(self, widg, helpmsg):
         '''Shows a dialog with the help message of the config option.

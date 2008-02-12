@@ -86,6 +86,41 @@ class PropagateBuffer(object):
         return
 
 
+class PropagateBufferPayload(object):
+    '''Equal to PropagateBuffer, but sending a payload
+
+    @param target: the target to alert when the change *is* propagated.
+    @param payload: anything to transmit
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, target, *payload):
+        self.target = target
+        self.alerted = {}
+        self.last_notified = None
+        self.payload = payload
+
+    def change(self, widg, status):
+        '''A change enters the buffer.
+
+        @param widg: the widget that changed
+        @param status: the new status of the widget
+        '''
+        # if the widget didn't change anything, we do not propagate
+        if self.alerted.get(widg) == status:
+            return
+        
+        # something changed, let's see our message
+        self.alerted[widg] = status
+        message = all(self.alerted.values())
+
+        # save and propagate if different
+        if message != self.last_notified:
+            self.last_notified = message
+            self.target(message, *self.payload)
+        return
+
+
 def cleanDescription(desc):
     '''Cleans a description.
 
