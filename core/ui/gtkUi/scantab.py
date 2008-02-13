@@ -69,7 +69,7 @@ class ScanTab(gtk.VBox):
         for type,plugins in self.pcbody.getActivatedPlugins():
             self.w3af.setPlugins(plugins, type)
 
-        # save the URL
+        # save the URL, the rest of the options are saved in the "Advanced" dialog
         options = parseOptions.parseXML(self.w3af.target.getOptionsXML())
         url = self.pcbody.target.get_text()
         options['target'].update(default=url)

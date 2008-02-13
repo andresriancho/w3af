@@ -30,6 +30,7 @@ import core.ui.gtkUi.helpers as helpers
 from core.ui.gtkUi.pluginEditor import editPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.misc import parseOptions
 
 # support for <2.5
 if sys.version_info[:2] < (2,5):
@@ -417,6 +418,7 @@ class PluginConfigBody(gtk.VBox):
     '''
     def __init__(self, scantab, w3af):
         super(PluginConfigBody,self).__init__()
+        self.w3af = w3af
 
         # the paned window
         pan = gtk.HPaned()
@@ -447,15 +449,37 @@ class PluginConfigBody(gtk.VBox):
         targetbox = gtk.HBox()
         lab = gtk.Label("Target:")
         lab.show()
-        targetbox.pack_start(lab, expand=False, fill=False, padding=10)
+        targetbox.pack_start(lab, expand=False, fill=False, padding=5)
         self.target = entries.AdvisedEntry("Insert the target URL here", scantab.scanok)
         self.target.connect("activate", scantab._startScan)
         self.target.show()
-        targetbox.pack_start(self.target, expand=True, fill=True, padding=10)
-        self.pack_start(targetbox, expand=False, fill=False)
+        targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
+        advbut = gtk.Button("Advanced")
+        advbut.connect("clicked", self._advancedTarget)
+        advbut.show()
+        targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
         targetbox.show()
+        self.pack_start(targetbox, expand=False, fill=False)
 
         self.show()
+
+    def _advancedTarget(self, widg):
+        # update the plugin with Entry info
+        plugin = self.w3af.target
+        options = parseOptions.parseXML(plugin.getOptionsXML())
+        url = self.target.get_text()
+        options['target'].update(default=url)
+        try:
+            helpers.coreWrap(plugin.setOptions, options)
+        except w3afException:
+            return
+
+        # open config
+        confpanel.ConfigDialog("Advanced target settings", self.w3af, plugin)
+
+        # update the Entry with plugin info
+        options = parseOptions.parseXML(plugin.getOptionsXML())
+        self.target.set_text(options['target']['default'])
 
     def getActivatedPlugins(self):
         '''Return the activated plugins.

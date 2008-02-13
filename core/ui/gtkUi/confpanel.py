@@ -298,3 +298,60 @@ class OnlyOptions(gtk.VBox):
         '''Revert all widgets to their initial state.'''
         for widg in self.widgets_status:
             widg.revertValue()
+
+
+class ConfigDialog(gtk.Dialog):
+    '''Puts a Config panel inside a Dialog.
+    
+    @param title: the title of the window.
+    @param w3af: the Core instance
+    @param plugin: the plugin to configure
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, title, w3af, plugin):
+        super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+
+        # buttons and config panel
+        save_btn = self._button("Save configuration")
+        rvrt_btn = self._button("Revert configuration")
+        plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
+        panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn)
+        self.vbox.pack_start(panel)
+
+        self.like_initial = True
+        self.connect("event", self.close)
+        self.run()
+        self.destroy()
+
+    def _button(self, text):
+        b = gtk.Button(text)
+        b.show()
+        self.action_area.pack_start(b)
+        return b
+
+    def configChanged(self, like_initial):
+        '''Propagates the change from the options.
+
+        @params like_initial: If the config is like the initial one
+        '''
+        self.like_initial = like_initial
+
+    def close(self, widget, event):
+        '''Handles the user trying to close the configuration.
+
+        If the config is not saved, just alert it.
+        '''
+        if event.type != gtk.gdk.DELETE:
+            return False
+
+        if self.like_initial:
+            return False
+
+        msg = "Do you want to quit without saving the changes?"
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        stayhere = dlg.run() != gtk.RESPONSE_YES
+        dlg.destroy()
+        return stayhere
+
+
