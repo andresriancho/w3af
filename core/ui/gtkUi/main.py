@@ -128,6 +128,29 @@ class ConfigDialog(gtk.Dialog):
         dlg.destroy()
         return stayhere
 
+
+class Throbber(gtk.ToolButton):
+    '''Creates the throbber widget.
+    
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self):
+        self.img_static = gtk.Image()
+        self.img_static.set_from_file('core/ui/gtkUi/data/throbber_static.gif')
+        self.img_static.show()
+        self.img_animat = gtk.Image()
+        self.img_animat.set_from_file('core/ui/gtkUi/data/throbber_animat.gif')
+        self.img_animat.show()
+
+        super(Throbber,self).__init__(self.img_static, "")
+        self.show()
+
+    def start(self):
+        self.set_icon_widget(self.img_animat)
+
+    def stop(self):
+        self.set_icon_widget(self.img_static)
+
 class MainApp:
     '''Main GTK application
 
@@ -139,7 +162,6 @@ class MainApp:
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.window.connect("delete_event", self.quit)
         self.window.set_title("w3af - Web Application Attack and Audit Framework")
-#        self.window.set_border_width(2)
         self.window.resize(800, 600)
         mainvbox = gtk.VBox()
         self.window.add(mainvbox)
@@ -182,6 +204,15 @@ class MainApp:
         mainvbox.pack_start(menubar, False)
         toolbar = uimanager.get_widget('/Toolbar')
         mainvbox.pack_start(toolbar, False)
+
+        # the throbber  
+        self.throbber = Throbber()
+        separat = gtk.SeparatorToolItem()
+        separat.set_draw(False)
+        separat.set_expand(True)
+        separat.show()
+        toolbar.insert(separat, -1)
+        toolbar.insert(self.throbber, -1)
 
         # notebook
         self.nb = gtk.Notebook()
@@ -265,10 +296,8 @@ class MainApp:
         
         # remove old page and insert this one
         pos = self.nb.page_num(self.exploit)
-        print "pos", pos
         self.nb.remove_page(pos)
         self.nb.insert_page(newexploit, label, pos)
-        print ":)"
         self.exploit = newexploit
 
     def menu_config_url(self, action):

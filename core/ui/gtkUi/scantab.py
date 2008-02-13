@@ -103,6 +103,7 @@ class ScanTab(gtk.VBox):
         self.gobtn.disconnect(self.gobtnconn)
         self.gobtnconn = self.gobtn.connect("clicked", self._stopScan)
         self.gobtn.changeInternals("Stop scan", gtk.STOCK_MEDIA_STOP)
+        self.mainwin.throbber.start()
 
         # activate exploit tab
         self.mainwin.setSensitiveExploit(True)
@@ -130,6 +131,7 @@ class ScanTab(gtk.VBox):
         self.gobtnconn = self.gobtn.connect("clicked", self._resumeScan)
         self.gobtn.changeInternals("Back to config", gtk.STOCK_GO_BACK)
         self.gobtn.set_sensitive(True)
+        self.mainwin.throbber.stop()
         return False
 
     def _resumeScan(self, widg):
