@@ -454,7 +454,7 @@ class PluginConfigBody(gtk.VBox):
         self.target.connect("activate", scantab._startScan)
         self.target.show()
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
-        advbut = gtk.Button("Advanced")
+        advbut = entries.SemiStockButton("Advanced", gtk.STOCK_PREFERENCES)
         advbut.connect("clicked", self._advancedTarget)
         advbut.show()
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
