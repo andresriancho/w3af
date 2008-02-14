@@ -61,13 +61,12 @@ class w3afCore:
 
     def __init__(self ):
         self._initializeInternalVariables()
+        self.uriOpener = xUrllib()
         
     def _initializeInternalVariables(self):
         '''
         Init some internal variables
         '''
-        self.uriOpener = xUrllib()
-        
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
         'evasion':[], 'mangle':[], 'output':['console']}
@@ -383,11 +382,24 @@ class w3afCore:
     def cleanup( self ):
         '''
         The GTK user interface calls this when a scan has been stopped (or ended successfully) and the user wants
-        to start a new scan. All data from the kb and the cf are lost.
+        to start a new scan. All data from the kb is deleted.
         @return: None
         '''
+        # Clean all data that is stored in the kb
         reload(kb)
+        
+        # Not cleaning the config is a FEATURE, because the user is most likely going to start a new
+        # scan to the same target, and he wants the proxy, timeout and other configs to remain configured
+        # as he did it the first time.
+        '''
         reload(cf)
+        
+        # Set some defaults for the core
+        #import core.controllers.miscSettings as miscSettings
+        #miscSettings.miscSettings()
+        '''
+        
+        # Zero internal variables from the core
         self._initializeInternalVariables()
         
     def stop( self ):
