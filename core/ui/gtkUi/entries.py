@@ -298,9 +298,11 @@ class SemiStockButton(gtk.Button):
 class AdvisedEntry(gtk.Entry):
     '''Entry that cleans its helping text the first time it's used.
     
-    @param alertb: the button to activate when it was used
+    @param alertb: the function to call to activate when it was used
     @param message: the message to show in the entry at first and in
                     the tooltip
+
+    The alertb calling is ready to work with the PropagationBuffer helper.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
@@ -311,7 +313,7 @@ class AdvisedEntry(gtk.Entry):
         self.set_text(message)
         self.alertb = alertb
         if self.alertb is not None:
-            self.alertb.change(self, False)
+            self.alertb(self, False)
         tooltips = gtk.Tooltips()
         tooltips.set_tip(self, message)
         self.show()
@@ -320,7 +322,7 @@ class AdvisedEntry(gtk.Entry):
         '''Cleans it own text.'''
         if self.firstfocus:
             if self.alertb is not None:
-                self.alertb.change(self, True)
+                self.alertb(self, True)
             self.firstfocus = False
             self.set_text("")
 

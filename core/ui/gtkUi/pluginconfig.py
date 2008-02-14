@@ -450,7 +450,7 @@ class PluginConfigBody(gtk.VBox):
         lab = gtk.Label("Target:")
         lab.show()
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
-        self.target = entries.AdvisedEntry("Insert the target URL here", scantab.scanok)
+        self.target = entries.AdvisedEntry("Insert the target URL here", scantab.scanok.change)
         self.target.connect("activate", scantab._startScan)
         self.target.show()
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
