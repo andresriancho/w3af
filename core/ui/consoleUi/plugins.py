@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.w3afCore
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-import core.controllers.sessionManager as sessionManager
 from core.ui.consoleUi.pluginConfig import pluginConfig
 from core.ui.consoleUi.consoleMenu import consoleMenu
 from core.controllers.misc.parseOptions import parseXML
@@ -41,7 +40,6 @@ class plugins(consoleMenu):
         for i in w3af.getPluginTypes():
             self._menu[ i ] = ''
         self._w3af = w3af
-        self._sm = sessionManager.sessionManager()
         self._commands = commands
         self._plugins = {}
     
