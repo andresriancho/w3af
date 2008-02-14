@@ -28,6 +28,7 @@ import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.scanrun as scanrun
 from core.controllers.w3afException import w3afException
 from core.controllers.misc import parseOptions
+import core.controllers.outputManager as om
 
 class ScanTab(gtk.VBox):
     '''Tab for all related to Scanning.
@@ -84,8 +85,16 @@ class ScanTab(gtk.VBox):
             helpers.coreWrap(self.w3af.verifyEnvironment)
         except w3afException, w3:
             return
-        # start real work in background, and start supervising if it ends
-        threading.Thread(target=self.w3af.start).start()
+
+        ### FIXME: Maybe implement this with helpers.coreWrap ?!
+        def startScanWrap():
+            try:
+                self.w3af.start()
+            except KeyboardInterrupt, ke:
+                om.out.debug('The user stopped the scan.')
+        
+        # start real work in background, and start supervising if it ends                
+        threading.Thread(target=startScanWrap).start()
         gobject.timeout_add(500, self._stoppingScan)
 
         # create new panel
