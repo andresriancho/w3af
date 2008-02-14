@@ -112,7 +112,7 @@ class OnlyOptions(gtk.VBox):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn):
+    def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter={}):
         super(OnlyOptions,self).__init__()
         self.set_spacing(5)
         self.w3af = w3af
@@ -128,6 +128,8 @@ class OnlyOptions(gtk.VBox):
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
         for xmlOpt in xmlDoc.getElementsByTagName('Option'):
             option = Option(xmlOpt)
+            if option.name in overwriter:
+                option.default = overwriter[option.name]
             self.options.append(option)
 
         # buttons
@@ -306,26 +308,30 @@ class ConfigDialog(gtk.Dialog):
     @param title: the title of the window.
     @param w3af: the Core instance
     @param plugin: the plugin to configure
+    @param overwriter: a dict of pair (config, value) to overwrite the plugin
+                       actual value
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, w3af, plugin):
+    def __init__(self, title, w3af, plugin, overwriter={}):
         super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
 
         # buttons and config panel
         save_btn = self._button("Save configuration")
         rvrt_btn = self._button("Revert configuration")
+        close_btn = self._button(stock=gtk.STOCK_CLOSE)
+        close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
-        panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn)
+        panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn, overwriter)
         self.vbox.pack_start(panel)
 
         self.like_initial = True
-        self.connect("event", self.close)
+        self.connect("event", self._evt_close)
         self.run()
         self.destroy()
 
-    def _button(self, text):
-        b = gtk.Button(text)
+    def _button(self, text="", stock=None):
+        b = gtk.Button(text, stock)
         b.show()
         self.action_area.pack_start(b)
         return b
@@ -337,14 +343,22 @@ class ConfigDialog(gtk.Dialog):
         '''
         self.like_initial = like_initial
 
-    def close(self, widget, event):
+    def _evt_close(self, widget, event):
         '''Handles the user trying to close the configuration.
 
-        If the config is not saved, just alert it.
+        Filters by event.
         '''
         if event.type != gtk.gdk.DELETE:
             return False
+        return self._close()
 
+    def _btn_close(self, widget):
+        '''Handles the user trying to close the configuration.'''
+        if not self._close():
+            self.emit("delete_event", gtk.gdk.Event(gtk.gdk.DELETE))
+
+    def _close(self):
+        '''Generic close.'''
         if self.like_initial:
             return False
 

@@ -464,18 +464,13 @@ class PluginConfigBody(gtk.VBox):
         self.show()
 
     def _advancedTarget(self, widg):
-        # update the plugin with Entry info
+        # overwrite the plugin info with the target url
         plugin = self.w3af.target
         options = parseOptions.parseXML(plugin.getOptionsXML())
         url = self.target.get_text()
-        options['target'].update(default=url)
-        try:
-            helpers.coreWrap(plugin.setOptions, options)
-        except w3afException:
-            return
 
         # open config
-        confpanel.ConfigDialog("Advanced target settings", self.w3af, plugin)
+        confpanel.ConfigDialog("Advanced target settings", self.w3af, plugin, {"target":url})
 
         # update the Entry with plugin info
         options = parseOptions.parseXML(plugin.getOptionsXML())
