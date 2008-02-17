@@ -1,13 +1,24 @@
 This is the list of people that contributed with w3af, a small summary of what they have done follows their name.
 
-Mariano Nuñez DiCroce -  webUi
-Juan Pablo Perez Etchegoyen - htmlFile output plugin
-Lucas Freije - Testing and bug reporting
-Victor Montero - Moral and political support
-Alexander Berezhnoy - spiderMan refactoring
-Mike Harbison - Documentation review
-Andy Bach - Documentation review
-Ulises Cuñe - Bug reports and ideas
+Main contributors:
+    Alexander Berezhnoy - spiderMan refactoring, new console user interface, plugins
+    Facundo Batista - pyGTK user interface
+
+Contributors from Cybsec:
+    Mariano Nuñez DiCroce -  webUi
+    Juan Pablo Perez Etchegoyen - htmlFile output plugin
+    Lucas Freije - Testing and bug reporting
+    Victor Montero - Moral and political support
+
+Plugin contributors:
+    Ulises Cuñe - Bug reports and ideas
+    Sharad Ganapathy - Mark of the web plugin
+    Francisco Amato - mod_security evasion plugin
+    Josh Summitt - xst plugin
+
+Documentation:
+    Mike Harbison - Documentation review
+    Andy Bach - Documentation review
 
 w3af also has one big sponsor, Cybsec, www.cybsec.com
 
