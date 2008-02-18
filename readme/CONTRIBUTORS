@@ -1,5 +1,8 @@
 This is the list of people that contributed with w3af, a small summary of what they have done follows their name.
 
+Project leader:
+    Andres Riancho
+    
 Main contributors:
     Alexander Berezhnoy - spiderMan refactoring, new console user interface, plugins
     Facundo Batista - pyGTK user interface
