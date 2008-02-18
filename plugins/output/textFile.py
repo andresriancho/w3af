@@ -77,7 +77,7 @@ class textFile(baseOutputPlugin):
         try:
             self._http.write ( msg )
         except Exception, e:
-            print 'An exception was raised while trying to write to the output file.'
+            print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)
             
     def debug(self, message, newLine = True ):

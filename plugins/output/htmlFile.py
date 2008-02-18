@@ -79,14 +79,14 @@ class htmlFile(baseOutputPlugin):
         try:
             self._file.write( msg )
         except Exception, e:
-            print 'An exception was raised while trying to write to the output file.'
+            print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)
         
     def _writeToHTTPLog( self, msg ):
         try:
             self._http.write( msg )
         except Exception, e:
-            print 'An exception was raised while trying to write to the output file.'
+            print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)
 
     def debug(self, message, newLine = True ):
