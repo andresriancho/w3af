@@ -144,35 +144,71 @@ class userDir(baseDiscoveryPlugin):
             @return: A list of tuples with ('app-name', 'username-that-only-exists-if-app-is-installed')
             '''
             res = []
+            # Mail
             res.append( ('Exim','Debian-exim') )
-            res.append( ('Snort','snort') )
             res.append( ('Fetchmail','fetchmail') )
-            res.append( ('Gnome','gdm') )
-            res.append( ('SSH','sshd') )
+            res.append( ('Sendmail','smmsp') )
+            res.append( ('Exim','eximuser') )
+
+            # Security
+            res.append( ('Snort','snort') )
             res.append( ('TOR (The Onion Router)','debian-tor') )
             res.append( ('Privoxy (generally installed with TOR)','privoxy') )
+            res.append( ('logwatch','logwatch') )
+            res.append( ('Email filtering application using sendmail\'s milter interface','defang') )
+            res.append( ('OpenVPN Daemon','openvpn') )
+            res.append( ('Nagios','nagios') )
+            res.append( ('ntop','ntop') )
+            res.append( ('Big Sister is a network and system monitor','bigsis') )
+            res.append( ('Packet Fence (not the openbsd pf)','pf') )
+            res.append( ('A port scan detection tool','iplog') )
+            res.append( ('A tool to detect and log TCP port scans','scanlogd') )
+            
+            # X and related stuff
+            res.append( ('Gnome','gdm') )
+            res.append( ('Gnats Bug-Reporting System (admin)','gnats') )
+            res.append( ('X Font server','xfs') )
+            
+            # Clients
+            res.append( ('NTP Time Synchronization Client','_ntp') )
+            res.append( ('NTP Time Synchronization Client','ntp') )
+
+            # Common services
             res.append( ('Apache web server','www-data') )
             res.append( ('Apache web server','apache') )
-            res.append( ('Gnats Bug-Reporting System (admin)','gnats') )
-            res.append( ('Tinysnmp','tinysnmp') )
-            res.append( ('TinyDNS','tinydns') )
-            res.append( ('Plone','plone') )
-            res.append( ('X Font server','xfs') )
-            res.append( ('Openfire','jive') )
-            res.append( ('Kapersky antivirus SMTP Gateway','kavuser') )
-            res.append( ('AMaViS A mail virus scanner','amavis') )
-            res.append( ('Sendmail','smmsp') )
+            res.append( ('SSH','sshd') )
             res.append( ('Bind','named') )
             res.append( ('MySQL','mysql') )
             res.append( ('PostgreSQL','postgres') )
+            res.append( ('FreeRadius','radiusd') )
+            res.append( ('IRCD-Hybrid is an Internet Relay Chat server','ircd') )
+
+            # Strange services
+            res.append( ('heartbeat subsystem for High-Availability Linux','hacluster') )
+            res.append( ('Tinysnmp','tinysnmp') )
+            res.append( ('TinyDNS','tinydns') )
+            res.append( ('Plone','plone') )
+            res.append( ('Rbldnsd is a small authoritate-only DNS nameserver','rbldns') )
+            res.append( ('Zope, the open source web application server','zope') )
             res.append( ('LDAPdns','ldapdns') )
-            res.append( ('OpenCM','opencm') )
             res.append( ('dnsbl','dnsbl') )
-            res.append( ('logwatch','logwatch') )
-            res.append( ('OpenVPN Daemon','openvpn') )
-            res.append( ('Nagios','nagios') )
-            res.append( ('Packet Fence (not the openbsd pf)','pf') )
             res.append( ('pwhois','pwhois') )
+            res.append( ('Interchange web application platform','interch') )
+            res.append( ('A DHCP relay agent','dhcp-fwd') )
+            res.append( ('Extensible Web+Application server written in Tcl','tclhttpd') )
+            res.append( ('A simple personal server for the WorldForge project','cyphesis') )
+            res.append( ('LDAP Update Monitor','lum') )
+
+
+
+            # Web apps
+            res.append( ('OpenCM','opencm') )
+            res.append( ('The Open Ticket Request System','otrs') )
+            
+            # Anti virus
+            res.append( ('Openfire','jive') )
+            res.append( ('Kapersky antivirus SMTP Gateway','kavuser') )
+            res.append( ('AMaViS A mail virus scanner','amavis') )
             return res
         
         if ident == 'os':
@@ -255,7 +291,7 @@ class userDir(baseDiscoveryPlugin):
             res.append( i['user'] )
         
         # Add some common users:
-        res.extend( ['www-data', 'www', 'nobody', 'root' , 'admin' , 'test', 'ftp'] )
+        res.extend( ['www-data', 'www', 'nobody', 'root' , 'admin' , 'test', 'ftp', 'backup'] )
             
         return res
         
