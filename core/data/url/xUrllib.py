@@ -277,7 +277,7 @@ class xUrllib:
                 if self._xurllib._isBlacklisted( uri ):
                     return httpResponse( NO_CONTENT, '', {}, uri, uri )
             
-                if 'data' in keywords:
+                if 'data' in keywords and keywords['data'] != None:
                     req = self.methodRequest( uri, keywords['data'] )
                     keywords.pop('data')
                 else:

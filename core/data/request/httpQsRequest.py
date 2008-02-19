@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.request.fuzzableRequest import fuzzableRequest
+import core.data.parsers.urlParser as urlParser
 
 class httpQsRequest(fuzzableRequest):
     '''
@@ -35,7 +36,17 @@ class httpQsRequest(fuzzableRequest):
     def __init__(self):
         fuzzableRequest.__init__(self)
         self._method = 'GET'
-
+    
+    def setURL( self , url ):
+        url = urlParser.uri2url( url )
+        self._url = url.replace(' ', '%20')
+        self._uri = self._url
+    
+    def setURI( self, uri ):
+        self._dc = urlParser.getQueryString(uri)
+        self._uri = uri.replace(' ', '%20')
+        self._url = urlParser.uri2url( uri )
+        
     def getURI( self ):
         if self._dc:
             res = self._url + '?' + str(self._dc)
@@ -47,7 +58,8 @@ class httpQsRequest(fuzzableRequest):
         pass
         
     def getData( self ):
-        return str(self._dc)
+        # The postdata
+        return None
     
     def __repr__( self ):
         return '<QS fuzzable request | '+ self.getMethod() +' | '+ self.getURI() +' >'

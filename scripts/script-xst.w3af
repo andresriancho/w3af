@@ -18,7 +18,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/xss/
+set target http://localhost/w3af/xss/1.html?a=b
 back
 start
 

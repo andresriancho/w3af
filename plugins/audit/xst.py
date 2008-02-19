@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.fuzzer.fuzzer import *
 import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afRunOnce
+import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
 from core.data.fuzzer.mutant import mutant
@@ -54,15 +54,16 @@ class xst(baseAuditPlugin):
             self._exec = False  
             
             # Create a mutant based on a fuzzable request
-            myMutant = mutant(freq)
-            
-            # set the Method to TRACE
-            myMutant.setMethod('TRACE')
-            
+            # It is really important to use A COPY of the fuzzable request, and not the original.
+            # The reason: I'm changing the method and the URL !
+            frCopy = freq.copy()
+            frCopy.setURL( urlParser.getDomainPath( frCopy.getURL() ) )
+            frCopy.setMethod('TRACE')
+            myMutant = mutant(frCopy)
+           
             # Add a header. I search for this value to determine if XST is valid
             myheader = { 'FalseHeader': 'XST'}
             myMutant.setHeaders(myheader)
-            
             
             # send the request to the server and recode the response
             response = self._sendMutant( myMutant, analyze=False )

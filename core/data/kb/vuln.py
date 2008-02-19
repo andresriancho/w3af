@@ -98,6 +98,8 @@ class vuln(info):
         
     def getDesc( self ):
         if self._id != None and self._id != 0:
+            if not self._desc.endswith('.'):
+                self._desc += '.'        
             return self._desc + ' The vulnerability was found in the request with id ' + str(self._id) + '.'
         else:
             return self._desc

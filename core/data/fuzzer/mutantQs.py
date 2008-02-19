@@ -33,4 +33,6 @@ class mutantQs(mutant):
     def getMutantType( self ):
         return 'query string'
     
+    def printModValue( self ):
+        return 'The sent URI was '+ self.getURI() +' .'
     

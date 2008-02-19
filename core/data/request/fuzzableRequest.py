@@ -145,9 +145,16 @@ class fuzzableRequest:
         return self._uri
         
     def setData( self, d ):
+        '''
+        The data is the string representation of the dataContainer, in most cases it wont be set.
+        '''
         self._data = d
         
     def getData( self ):
+        '''
+        The data is the string representation of the dataContainer, in most cases it will be used as the POSTDATA for requests.
+        Sometimes it is also used as the query string data.
+        '''
         return self._data
         
     def getMethod( self ):
