@@ -24,6 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.configurable import configurable
+import core.data.kb.vuln as vuln
 
 class basePlugin(configurable):
     '''
@@ -109,40 +110,45 @@ class basePlugin(configurable):
         '''
         raise w3afException('Plugin is not implementing required method getLongDesc' )
     
-    def printUniq( self, vulnList, unique ):
+    def printUniq( self, infoObjList, unique ):
         '''
-        Print to the user interface the list of vulns ( vulnList )
+        Print the items of infoObjList to the user interface
         
-        @parameter vulnList: A list of vuln objects
+        @parameter infoObjList: A list of info objects
         @parameter unique: Defines whats unique:
             - 'URL': The URL must be unique
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
         '''
+
+        # Create the list of things to inform
         inform = []
         if unique == 'URL':
             reportedURLs = []
-            for v in vulnList:
-                if v.getURL() not in reportedURLs:
-                    reportedURLs.append( v.getURL() )
-                    inform.append( v.getDesc() )
+            for i in infoObjList:
+                if i.getURL() not in reportedURLs:
+                    reportedURLs.append( i.getURL() )
+                    inform.append( i )
         
         elif unique == 'VAR':
             reportedVARs = []
-            for v in vulnList:
-                if (v.getURL(), v.getVar()) not in reportedVARs:
-                    reportedVARs.append( (v.getURL(), v.getVar()) )
-                    inform.append( v.getDesc() )    
+            for i in infoObjList:
+                if (i.getURL(), i.getVar()) not in reportedVARs:
+                    reportedVARs.append( (i.getURL(), i.getVar()) )
+                    inform.append( i )
         
         elif unique == None:
-            inform = [ v.getDesc() for v in vulnList ]
+            inform = infoObjList
             
         else:
             om.out.error('basePlugin.printUniq(): Unknown unique parameter value.')
-            
-        inform.sort()
-        for v in inform:
-            om.out.vulnerability( v )
+
+        # Print the list            
+        for i in inform:
+            if isinstance(i, vuln.vuln):
+                om.out.vulnerability( i.getDesc() )
+            else:
+                om.out.information( i.getDesc() )
             
     def _sendMutant( self, mutant, analyze=True, grepResult=True ):
         '''

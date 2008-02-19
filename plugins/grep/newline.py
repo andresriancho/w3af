@@ -55,7 +55,7 @@ class newline(baseGrepPlugin):
             i.setId( response.id )
             
             msg = ''
-            if len( unix ) > 0:
+            if len( unix ) > 0 and len(unix) >= len(windows) and len(unix) >= len(mac):
                 if len( windows ) == 0 and len( mac ) == 0:
                     msg = 'The body of the URL: '  + response.getURL() + ' was created using a unix editor.'
                     i.setDesc( msg )
@@ -71,7 +71,7 @@ class newline(baseGrepPlugin):
             
             # Maybe I should think about doing this in a for loop or something...
             
-            if len( windows ) > 0:
+            elif len( windows ) > 0 and len(windows) >= len(unix) and len(windows) >= len(mac):
                 if len( unix ) == 0 and len( mac ) == 0:
                     msg = 'The body of the URL: '  + response.getURL() + ' was created using a windows editor.'
                     i.setDesc( msg )
@@ -85,7 +85,7 @@ class newline(baseGrepPlugin):
                     i.setDesc( msg )
                     kb.kb.append( self, 'windows_mac', i )
             
-            if len( mac ) > 0:
+            elif len( mac ) > 0 and len(mac) >= len(unix) and len(mac) >= len(windows):
                 if len( windows ) == 0 and len( unix ) == 0:
                     msg = 'The body of the URL: '  + response.getURL() + ' was created using a mac editor.'
                     i.setDesc( msg )
@@ -98,17 +98,13 @@ class newline(baseGrepPlugin):
                     msg = 'The body of the URL: '  + response.getURL() + ' was mainly created using a mac editor but newlines with unix style also were found.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'mac_unix', i )
-            
+
+            # This is a mess!            
             if len( mac ) > 0 and len( windows ) > 0 and len( unix ) > 0:
-                # This is a mess!
                 msg = 'The body of the URL: '  + response.getURL() + ' has the three types of newline style, unix, mac and windows.'
                 i.setDesc( msg )
                 kb.kb.append( self, 'all', i )
-            
-            if len( mac ) == 0 and len( windows ) == 0 and len( unix ) == 0:
-                msg = 'The body of the URL: '  + response.getURL() + ' has no newlines.'
-                i.setDesc( msg )
-                kb.kb.append( self, 'none', i )
+
                 
     def setOptions( self, OptionList ):
         pass
@@ -141,10 +137,8 @@ class newline(baseGrepPlugin):
         prettyMsg['mac_windows'] = 'The body of the following URLs was mainly created using a mac editor but newlines with windows style also were found:'
         prettyMsg['mac_unix'] = 'The body of the following URLs was mainly created using a mac editor but newlines with unix style also were found:'
         prettyMsg['all'] = 'The body of the following URLs has the three types of newline style, unix, mac and windows:'
-        prettyMsg['none'] = 'The body of the following URLs has no newlines:'
     
-        for type in ['unix', 'unix_mac', 'unix_windows', 'windows', 'windows_unix', 'windows_mac',\
-        'mac', 'mac_windows', 'mac_unix', 'all', 'none']:
+        for type in prettyMsg.keys():
             inform = []
             for v in kb.kb.getData( 'newline', type ):
                 inform.append( v.getURL() )

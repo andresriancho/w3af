@@ -72,7 +72,7 @@ class passwordProfiling(baseGrepPlugin):
             self.lang = 'unknown'
 
         if not self.is404( response ) and request.getMethod() in ['POST', 'GET'] and \
-        response.getCode() != 500:
+        response.getCode() not in [500,401,403]:
             data = self._runPpPlugins( response )
             oldData = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
             # "merge" both maps and update the repetitions
