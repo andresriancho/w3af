@@ -181,6 +181,8 @@ class _web20Spider(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
+        **PLUGIN UNDER DEVELOPMENT**
+
         This plugin is a web spider on anabolics, it will search through the DOM tree of the loaded
         HTML for tags that have an onClick, onChange or onMouseOver and it will call them. The javascript
         will be executed just as if you would have *really* clicked on the link using your favorite browser.

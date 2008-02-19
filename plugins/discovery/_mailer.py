@@ -287,6 +287,8 @@ class _mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
+        **PLUGIN UNDER DEVELOPMENT**
+
         This plugin tries to find new URLs by filling up forms that have an email input, receiving the email,
         and then analyzing the email. This plugin also tries to identify the private IP address of the remote
         web server using SMTP header analysis.
