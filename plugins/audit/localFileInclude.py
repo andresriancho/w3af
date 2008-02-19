@@ -55,7 +55,10 @@ class localFileInclude(baseAuditPlugin):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs , ownerObj=self )
+                # I don't grep the result, because if I really find a local file inclusion, I will be requesting
+                # /etc/passwd and that would generate A LOT of false positives in the grep.pathDisclosure plugin
+                kwds = {'grepResult':False}
+                self._tm.startFunction( target=self._sendMutant, args=targs , kwds=kwds, ownerObj=self )
         
             
     def _getLocalFileList( self ):

@@ -2,6 +2,7 @@
 
 plugins
 audit localFileInclude
+grep pathDisclosure
 output console,textFile
 output
 output config textFile
