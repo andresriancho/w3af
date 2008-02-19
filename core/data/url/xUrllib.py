@@ -441,7 +441,12 @@ class xUrllib:
         self._grepPlugins = grepPlugins
     
     def setEvasionPlugins( self, evasionPlugins ):
-        evasionPlugins.sort()
+        # I'm sorting evasion plugins based on priority
+        def sortFunc(x, y):
+            return cmp(x.getPriority(), y.getPriority())
+        evasionPlugins.sort(sortFunc)
+
+        # Save the info
         self._evasionPlugins = evasionPlugins
         
     def _evasion( self, request ):

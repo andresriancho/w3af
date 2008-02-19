@@ -119,7 +119,7 @@ class w3afCore:
                 
         for pluginName in strReqPlugins:
             plugin = factory( 'plugins.' + PluginType + '.' + pluginName )
-            
+
             # Now we are going to check if the plugin dependencies are met
             for dep in plugin.getPluginDeps():
                 try:
@@ -160,7 +160,7 @@ class w3afCore:
             plugin.setUrlOpener( self.uriOpener )
             # Append the plugin to the list
             requestedPluginsList.append ( plugin )
-            
+
         # The plugins are all on the requestedPluginsList, now I need to order them
         # based on the module dependencies. For example, if A depends on B , then
         # B must be runned first.
@@ -169,15 +169,21 @@ class w3afCore:
         for plugin in requestedPluginsList:
             deps = plugin.getPluginDeps()
             if len( deps ) != 0:
-                # This plugin has dependencies I should add the plugins in order
+                # This plugin has dependencies, I should add the plugins in order
                 for plugin2 in requestedPluginsList:
-                    if PluginType+'.'+plugin2.__class__.__name__ in deps:
+                    if PluginType+'.'+plugin2.getName() in deps:
                         orderedPluginList.insert( 1, plugin2)
 
-            # Check if I was added because of a dep
+            # Check if I was added because of a dep, if I wasnt, add me.
             if plugin not in orderedPluginList:
                 orderedPluginList.insert( 100, plugin )
         
+        # This should never happend.
+        if len(orderedPluginList) != len(requestedPluginsList):
+            om.out.error('There is an error in the way w3afCore orders plugins. The ordered plugin list length is not equal to the requested plugin list.')
+            om.out.error('Please report this bug to the developers including a complete list of commands that you run to get to this error.')
+            sys.exit(-1)
+
         return orderedPluginList
     
     def initPlugins( self ):

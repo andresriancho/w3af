@@ -51,30 +51,6 @@ class baseEvasionPlugin(basePlugin):
     def setUrlOpener(self, foo):
         pass
         
-    def __gt__( self, other ):
-        '''
-        This function is called when sorting evasion plugins.
-        '''
-        if self.getPriority() > other.getPriority():
-            return True
-        else:
-            return False
-        
-    def __lt__( self, other ):
-        '''
-        This function is called when sorting evasion plugins.
-        '''
-        return not self.__gt__( other )
-    
-    def __eq__( self, other ):
-        '''
-        This function is called when sorting evasion plugins.
-        '''
-        if self.getPriority() == other.getPriority():
-            return True
-        else:
-            return False
-        
     def getPriority( self ):
         '''
         This function is called when sorting evasion plugins.
