@@ -171,7 +171,7 @@ class w3afCore:
             if len( deps ) != 0:
                 # This plugin has dependencies, I should add the plugins in order
                 for plugin2 in requestedPluginsList:
-                    if PluginType+'.'+plugin2.getName() in deps:
+                    if PluginType+'.'+plugin2.getName() in deps and plugin2 not in orderedPluginList:
                         orderedPluginList.insert( 1, plugin2)
 
             # Check if I was added because of a dep, if I wasnt, add me.
@@ -180,8 +180,18 @@ class w3afCore:
         
         # This should never happend.
         if len(orderedPluginList) != len(requestedPluginsList):
-            om.out.error('There is an error in the way w3afCore orders plugins. The ordered plugin list length is not equal to the requested plugin list.')
+            om.out.error('There is an error in the way w3afCore orders plugins. The ordered plugin list length is not equal to the requested plugin list. ', newLine=False)
+            om.out.error('The error was found sorting plugins of type: '+ PluginType +'.')
             om.out.error('Please report this bug to the developers including a complete list of commands that you run to get to this error.')
+
+            om.out.error('Ordered plugins:')
+            for plugin in orderedPluginList:
+                om.out.error('- ' + plugin.getName() )
+
+            om.out.error('\nRequested plugins:')
+            for plugin in requestedPluginsList:
+                om.out.error('- ' + plugin.getName() )
+
             sys.exit(-1)
 
         return orderedPluginList
