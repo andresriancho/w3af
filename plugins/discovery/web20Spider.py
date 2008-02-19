@@ -37,9 +37,9 @@ try:
 except Exception, e:
     om.out.error('You won\'t be able to use the web20Spider without zc.testbrowser.real library installed. Exception: ' + str(e) )
     
-class web20Spider(baseDiscoveryPlugin):
+class _web20Spider(baseDiscoveryPlugin):
     '''
-    A web spider with javascript support (beta).
+    A web spider with javascript support **PLUGIN UNDER DEVELOPMENT**.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''

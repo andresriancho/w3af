@@ -40,9 +40,9 @@ import smtpd, os, time, asyncore
 import smtplib
 import time
 
-class mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
+class _mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
     '''
-    Start a smtpd, sends forms that have an email field in it, and waits to see if a mail arrives.
+    Start a smtpd, sends forms that have an email field in it, and waits to see if a mail arrives. **PLUGIN UNDER DEVELOPMENT**
     
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
