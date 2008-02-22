@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<project name="moth" default="createxpi">
+
+  <target name="createjar">
+    <zip destfile="moth.jar" basedir="." 
+         includes="content/**" />
+  </target>
+
+  <target name="createxpi" depends="createjar">
+    <zip destfile="moth.xpi">
+      <zipfileset dir="." includes="moth.jar" 
+                  prefix="chrome" />
+	   <zipfileset dir="." includes="install.rdf" />
+	 </zip>
+  </target>
+							 
+</project>
+

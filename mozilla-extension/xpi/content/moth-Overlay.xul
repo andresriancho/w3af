@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 
+
+
 <overlay id="mothOverlay" 
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+  <script src="moth-Overlay.js"/>
 
   <menupopup id="menu_ToolsPopup">
-    <menuitem label="Moth" position="1" />
+    <menuitem label="Moth" position="1" oncommand="startMoth(event);" />
   </menupopup>
 
 </overlay>
