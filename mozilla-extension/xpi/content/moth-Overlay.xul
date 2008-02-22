@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<overlay id="mothOverlay" 
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <menupopup id="menu_ToolsPopup">
+    <menuitem label="Moth" position="1" />
+  </menupopup>
+
+</overlay>

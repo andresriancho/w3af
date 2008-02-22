@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-02-11, 19:04:04 -->
+<!-- Saved: 2008-02-21, 07:14:40 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2457,14 +2457,6 @@
       <Name>script-spiderMan.w3af</Name>
     </Source>
     <Source>
-      <Dir>scripts</Dir>
-      <Name>script-resume.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-save.w3af</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>audit</Dir>
       <Name>phishingVector.py</Name>
@@ -2493,10 +2485,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-pyktoMutate.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-save-2.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -3738,11 +3726,6 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>findBackdoor.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>detectURLScan.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
