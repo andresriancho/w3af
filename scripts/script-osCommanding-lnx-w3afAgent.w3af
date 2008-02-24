@@ -28,5 +28,11 @@ back
 start
 exploit
 exploit osCommandingShell
+
+interact 0
+
 start w3afAgent
+
+exit
+
 
