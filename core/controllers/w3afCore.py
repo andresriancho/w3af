@@ -356,7 +356,7 @@ class w3afCore:
                         om.out.information( 'Error description: ' + str(w3) )
                     except Exception, e:
                         om.out.information( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
-                        om.out.information( 'Error description: ' + str(e) )
+                        om.out.information( 'Error description: "' + str(e) + '". See debug output for more information.')
                         om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
                 
                 self._fuzzableRequestList = self._discoverAndBF()
