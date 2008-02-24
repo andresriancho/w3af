@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-02-21, 07:14:40 -->
+<!-- Saved: 2008-02-23, 20:14:29 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2902,11 +2902,6 @@
     </Source>
     <Source>
       <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>mailer.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
       <Dir>grep</Dir>
       <Name>codeDisclosure.py</Name>
     </Source>
@@ -3143,11 +3138,6 @@
       <Dir>extlib</Dir>
       <Dir>pyrijndael</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>web20Spider.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
