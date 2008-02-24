@@ -106,6 +106,7 @@ import httplib
 import socket
 import thread
 import traceback
+import urllib
 
 if __name__ != '__main__':
     import core.controllers.outputManager as om
@@ -117,6 +118,147 @@ import sys
 if sys.version_info < (2, 4): HANDLE_ERRORS = 1
 else: HANDLE_ERRORS = 0
     
+class HTTPResponse(httplib.HTTPResponse):
+    # we need to subclass HTTPResponse in order to
+    # 1) add readline() and readlines() methods
+    # 2) add close_connection() methods
+    # 3) add info() and geturl() methods
+
+    # in order to add readline(), read must be modified to deal with a
+    # buffer.  example: readline must read a buffer and then spit back
+    # one line at a time.  The only real alternative is to read one
+    # BYTE at a time (ick).  Once something has been read, it can't be
+    # put back (ok, maybe it can, but that's even uglier than this),
+    # so if you THEN do a normal read, you must first take stuff from
+    # the buffer.
+
+    # the read method wraps the original to accomodate buffering,
+    # although read() never adds to the buffer.
+    # Both readline and readlines have been stolen with almost no
+    # modification from socket.py
+    
+
+    def __init__(self, sock, debuglevel=0, strict=0, method=None):
+        if method: # the httplib in python 2.3 uses the method arg
+            httplib.HTTPResponse.__init__(self, sock, debuglevel, method)
+        else: # 2.2 doesn't
+            httplib.HTTPResponse.__init__(self, sock, debuglevel)
+        self.fileno = sock.fileno
+        self.code = None
+        self._rbuf = ''
+        self._rbufsize = 8096
+        self._handler = None # inserted by the handler later
+        self._host = None   # (same)
+        self._url = None     # (same)
+        self._connection = None # (same)
+        self._method = method
+        
+        self._multiread = None
+
+    def _raw_read(self, amt=None):
+        if self.fp is None:
+            return ''
+
+        if self.chunked:
+            return self._read_chunked(amt)
+
+        if amt is None:
+            # unbounded read
+            if self.length is None:
+                s = self.fp.read()
+            else:
+                s = self._safe_read(self.length)
+                self.length = 0
+            self.close()        # we read everything
+            return s
+
+        if self.length is not None:
+            if amt > self.length:
+                # clip the read to the "end of response"
+                amt = self.length
+
+        # we do not use _safe_read() here because this may be a .will_close
+        # connection, and the user is reading more bytes than will be provided
+        # (for example, reading in 1k chunks)
+        s = self.fp.read(amt)
+        if self.length is not None:
+            self.length -= len(s)
+
+        return s
+
+    def close(self):
+        if self.fp:
+            self.fp.close()
+            self.fp = None
+            if self._handler:
+                self._handler._request_closed(self, self._host, self._connection)
+
+    def close_connection(self):
+        self._handler._remove_connection(self._host, self._connection, close=1)
+        self.close()
+        
+    def info(self):
+        return self.headers
+
+    def geturl(self):
+        return self._url
+
+    def read(self, amt=None):
+        # w3af does always read all the content of the response...
+        # and I also need to do multiple reads to this response...
+        if self._method == 'HEAD':
+            return ''
+            
+        if self._multiread == None:
+            #read all
+            self._multiread = self._raw_read()  
+            
+        if not amt is None:
+            L = len(self._rbuf)
+            if amt > L:
+                amt -= L
+            else:
+                s = self._rbuf[:amt]
+                self._rbuf = self._rbuf[amt:]
+                return s
+        else:
+            s = self._rbuf + self._multiread
+            self._rbuf = ''
+            return s
+
+    def readline(self, limit=-1):
+        data = ""
+        i = self._rbuf.find('\n')
+        while i < 0 and not (0 < limit <= len(self._rbuf)):
+            new = self._raw_read(self._rbufsize)
+            if not new: break
+            i = new.find('\n')
+            if i >= 0: i = i + len(self._rbuf)
+            self._rbuf = self._rbuf + new
+        if i < 0: i = len(self._rbuf)
+        else: i = i+1
+        if 0 <= limit < len(self._rbuf): i = limit
+        data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
+        return data
+
+    def readlines(self, sizehint = 0):
+        total = 0
+        list = []
+        while 1:
+            line = self.readline()
+            if not line: break
+            list.append(line)
+            total += len(line)
+            if sizehint and total >= sizehint:
+                break
+        return list
+
+    def setBody( self, data ):
+        '''
+        This was added to make my life a lot simpler while implementing mangle plugins
+        '''
+        self._multiread = data
+
 class ConnectionManager:
     """
     The connection manager must be able to:
@@ -258,6 +400,11 @@ class KeepAliveHandler:
             else:
                 # no (working) free connections were found.  Create a new one.
                 h = self._get_connection(host)
+                
+                # First of all, call the request method. This is needed for HTTPS Proxy
+                if isinstance(h, ProxyHTTPConnection):
+                    h.proxy_setup( req.get_full_url() )
+                
                 if DEBUG: DEBUG.info("creating new connection to %s (%d)", host, id(h))
                 self._cm.add(host, h, 0)
                 self._start_transaction(h, req)
@@ -370,158 +517,85 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
         return HTTPConnection(host)
 
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
-    def __init__(self):
+    def __init__(self, proxy):
         KeepAliveHandler.__init__(self)
+        self._proxy = proxy
             
     def https_open(self, req):
         return self.do_open(req)
 
     def _get_connection(self, host):
-        # If I change HTTPSConnection to HTTPConnection while using a proxy, the https protocol works on proxies.
-        # The only bad thing, is that the connection between w3af and the proxy is clear-text and the connection from the 
-        # proxy to the server is https. The correct way is to use CONNECT, and both connections are SSL
-        return HTTPSConnection(host)
-
-class HTTPResponse(httplib.HTTPResponse):
-    # we need to subclass HTTPResponse in order to
-    # 1) add readline() and readlines() methods
-    # 2) add close_connection() methods
-    # 3) add info() and geturl() methods
-
-    # in order to add readline(), read must be modified to deal with a
-    # buffer.  example: readline must read a buffer and then spit back
-    # one line at a time.  The only real alternative is to read one
-    # BYTE at a time (ick).  Once something has been read, it can't be
-    # put back (ok, maybe it can, but that's even uglier than this),
-    # so if you THEN do a normal read, you must first take stuff from
-    # the buffer.
-
-    # the read method wraps the original to accomodate buffering,
-    # although read() never adds to the buffer.
-    # Both readline and readlines have been stolen with almost no
-    # modification from socket.py
-    
-
-    def __init__(self, sock, debuglevel=0, strict=0, method=None):
-        if method: # the httplib in python 2.3 uses the method arg
-            httplib.HTTPResponse.__init__(self, sock, debuglevel, method)
-        else: # 2.2 doesn't
-            httplib.HTTPResponse.__init__(self, sock, debuglevel)
-        self.fileno = sock.fileno
-        self.code = None
-        self._rbuf = ''
-        self._rbufsize = 8096
-        self._handler = None # inserted by the handler later
-        self._host = None   # (same)
-        self._url = None     # (same)
-        self._connection = None # (same)
-        self._method = method
-        
-        self._multiread = None
-
-    def _raw_read(self, amt=None):
-        if self.fp is None:
-            return ''
-
-        if self.chunked:
-            return self._read_chunked(amt)
-
-        if amt is None:
-            # unbounded read
-            if self.length is None:
-                s = self.fp.read()
-            else:
-                s = self._safe_read(self.length)
-                self.length = 0
-            self.close()        # we read everything
-            return s
-
-        if self.length is not None:
-            if amt > self.length:
-                # clip the read to the "end of response"
-                amt = self.length
-
-        # we do not use _safe_read() here because this may be a .will_close
-        # connection, and the user is reading more bytes than will be provided
-        # (for example, reading in 1k chunks)
-        s = self.fp.read(amt)
-        if self.length is not None:
-            self.length -= len(s)
-
-        return s
-
-    def close(self):
-        if self.fp:
-            self.fp.close()
-            self.fp = None
-            if self._handler:
-                self._handler._request_closed(self, self._host, self._connection)
-
-    def close_connection(self):
-        self._handler._remove_connection(self._host, self._connection, close=1)
-        self.close()
-        
-    def info(self):
-        return self.headers
-
-    def geturl(self):
-        return self._url
-
-    def read(self, amt=None):
-        # w3af does always read all the content of the response...
-        # and I also need to do multiple reads to this response...
-        if self._method == 'HEAD':
-            return ''
-            
-        if self._multiread == None:
-            #read all
-            self._multiread = self._raw_read()  
-            
-        if not amt is None:
-            L = len(self._rbuf)
-            if amt > L:
-                amt -= L
-            else:
-                s = self._rbuf[:amt]
-                self._rbuf = self._rbuf[amt:]
-                return s
+        if self._proxy:
+            host, port = self._proxy.split(':')
+            return ProxyHTTPSConnection(host, port)
         else:
-            s = self._rbuf + self._multiread
-            self._rbuf = ''
-            return s
+            return HTTPSConnection(host)
 
-    def readline(self, limit=-1):
-        data = ""
-        i = self._rbuf.find('\n')
-        while i < 0 and not (0 < limit <= len(self._rbuf)):
-            new = self._raw_read(self._rbufsize)
-            if not new: break
-            i = new.find('\n')
-            if i >= 0: i = i + len(self._rbuf)
-            self._rbuf = self._rbuf + new
-        if i < 0: i = len(self._rbuf)
-        else: i = i+1
-        if 0 <= limit < len(self._rbuf): i = limit
-        data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
-        return data
+class ProxyHTTPConnection(httplib.HTTPConnection):
+    '''
+    this class is used to provide HTTPS CONNECT support.
+    '''
+    _ports = {'http' : 80, 'https' : 443}
+    
+    def __init__(self, host, port=None, strict=None):
+        httplib.HTTPConnection.__init__(self, host, port, strict)
+        
+    def proxy_setup(self, url):
+        #request is called before connect, so can interpret url and get
+        #real host/port to be used to make CONNECT request to proxy
+        proto, rest = urllib.splittype(url)
+        if proto is None:
+            raise ValueError, "unknown URL type: %s" % url
+        #get host
+        host, rest = urllib.splithost(rest)
+        #try to get port
+        host, port = urllib.splitport(host)
+        #if port is not defined try to get from proto
+        if port is None:
+            try:
+                port = self._ports[proto]
+            except KeyError:
+                raise ValueError, "unknown protocol for: %s" % url
+        self._real_host = host
+        self._real_port = port
+       
+    def connect(self):
+        httplib.HTTPConnection.connect(self)
+        #send proxy CONNECT request
+        self.send("CONNECT %s:%d HTTP/1.0\r\n\r\n" % (self._real_host, self._real_port))
+        #expect a HTTP/1.0 200 Connection established
+        response = self.response_class(self.sock, strict=self.strict, method=self._method)
+        (version, code, message) = response._read_status()
+        #probably here we can handle auth requests...
+        if code != 200:
+            #proxy returned and error, abort connection, and raise exception
+            self.close()
+            raise socket.error, "Proxy connection failed: %d %s" % (code, message.strip())
+        #eat up header block from proxy....
+        while True:
+            #should not use directly fp probablu
+            line = response.fp.readline()
+            if line == '\r\n': break
 
-    def readlines(self, sizehint = 0):
-        total = 0
-        list = []
-        while 1:
-            line = self.readline()
-            if not line: break
-            list.append(line)
-            total += len(line)
-            if sizehint and total >= sizehint:
-                break
-        return list
-
-    def setBody( self, data ):
-        '''
-        This was added to make my life a lot simpler while implementing mangle plugins
-        '''
-        self._multiread = data
+class ProxyHTTPSConnection(ProxyHTTPConnection):
+    '''
+    this class is used to provide HTTPS CONNECT support.
+    '''
+    default_port = 443
+    
+    # Customized response class
+    response_class = HTTPResponse
+    
+    def __init__(self, host, port = None, key_file = None, cert_file = None, strict = None):
+        ProxyHTTPConnection.__init__(self, host, port)
+        self.key_file = key_file
+        self.cert_file = cert_file
+    
+    def connect(self):
+        ProxyHTTPConnection.connect(self)
+        #make the sock ssl-aware
+        ssl = socket.ssl(self.sock, self.key_file, self.cert_file)
+        self.sock = httplib.FakeSocket(self.sock, ssl)    
 
 class HTTPConnection(httplib.HTTPConnection):
     # use the modified response class

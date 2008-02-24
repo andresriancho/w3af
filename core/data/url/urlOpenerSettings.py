@@ -62,10 +62,7 @@ class urlOpenerSettings( configurable ):
         self._httpsHandler = None
         self._mangleHandler = None
         self._cookieHandler = None
-        
-        #self._keepAliveHandler = None
-        self._kAHTTP = kAHTTP()
-        self._kAHTTPS = kAHTTPS()
+        # Keep alive handlers are created on buildOpeners()
         
         # Openers
         self._nonCacheOpener = None
@@ -95,7 +92,9 @@ class urlOpenerSettings( configurable ):
         self._maxFileSize = 400000
         self._maxRetrys = 2
         
+        # Some internal variables
         self.needUpdate = True
+        self._proxy = None
         
         # By default, dont mangle any request/responses
         self._manglePlugins = []
@@ -213,7 +212,11 @@ class urlOpenerSettings( configurable ):
         self._proxyPort = port
         self._proxyAddress = ip
         
-        proxyMap = { 'http' : "http://" + ip + ":" + str(port) , 'https' : "https://" + ip + ":" + str(port) }
+        # Remember that this line:
+        #proxyMap = { 'http' : "http://" + ip + ":" + str(port) , 'https' : "https://" + ip + ":" + str(port) }
+        # makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
+        # The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
+        proxyMap = { 'http' : "http://" + ip + ":" + str(port) }
         self._proxyHandler = self._ulib.ProxyHandler( proxyMap )
         self._proxy = ip + ":" + str(port) 
 
@@ -251,6 +254,10 @@ class urlOpenerSettings( configurable ):
         if self._cookieHandler == None and not self._ignoreSessCookies:
             cj = self._cookielib.MozillaCookieJar()
             self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
+        
+        # Instanciate the handlers passing the proxy as parameter
+        self._kAHTTP = kAHTTP()
+        self._kAHTTPS = kAHTTPS(self._proxy)
         
         # Prepare the list of handlers
         handlers = []

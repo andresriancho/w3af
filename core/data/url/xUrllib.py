@@ -359,15 +359,20 @@ class xUrllib:
             # also possible when a proxy is configured and not available
             # also possible when auth credentials are wrong for the URI
             if hasattr(e, 'reason'):
-                if e.reason[0] == -2:
-                    raise w3afException('Failed to resolve domain name for URL: ' + req.get_full_url() )
-                if e.reason[0] == 111:
-                    raise w3afException('Connection refused while requesting: ' + req.get_full_url() )
+                try:
+                    e.reason[0]
+                except:
+                    raise w3afException('Unexpected error in urllib2 / httplib: ' + repr(e.reason) )                    
                 else:
-                    om.out.debug( 'w3af failed to reach the server while requesting: "'+originalUrl+'".\nReason: "' + str(e.reason) + '" , Exception: "'+ str(e)+'"; going to retry.')
-                    #om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
-                    req._Request__original = originalUrl
-                    return self._retry( req, useCache )
+                    if e.reason[0] == -2:
+                        raise w3afException('Failed to resolve domain name for URL: ' + req.get_full_url() )
+                    if e.reason[0] == 111:
+                        raise w3afException('Connection refused while requesting: ' + req.get_full_url() )
+                    else:
+                        om.out.debug( 'w3af failed to reach the server while requesting: "'+originalUrl+'".\nReason: "' + str(e.reason) + '" , Exception: "'+ str(e)+'"; going to retry.')
+                        #om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                        req._Request__original = originalUrl
+                        return self._retry( req, useCache )
             elif hasattr(e, 'code'):
                 om.out.debug( req.get_method() + ' ' + originalUrl +' returned HTTP code "' + str(e.code) + '"' )
                 # Return this info to the caller
