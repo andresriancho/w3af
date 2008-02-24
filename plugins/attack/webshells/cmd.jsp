@@ -8,7 +8,10 @@
 	String output = "";
 	Process p = null;
 	
-	if(cmd != null) {
+	if(cmd == null) {
+        out.println( "w3" + "af" );
+    }
+    else{
 		String s = null;
 		try {
 			if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1) 

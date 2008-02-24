@@ -28,7 +28,9 @@ back
 exploit remoteFileIncludeShell
 interact 0
 
-ls /var/www/w3af/osCommanding/
+ls
+whoami
+
 
 endInteraction
 back
