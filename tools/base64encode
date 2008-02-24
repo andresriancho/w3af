@@ -41,7 +41,7 @@ def usage():
     om.out.information('    -h  Print this help message.')
     om.out.information('    -e  String to be encoded.')
     om.out.information('')
-    om.out.information('Example: base64encode -s &% -e encodeMeNow')
+    om.out.information('Example: base64encode -e encodeMeNow')
     
 def main():
     
