@@ -26,6 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import sys, os
 import cgi 
+import codecs
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -52,15 +53,16 @@ class htmlFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            self._file = open( self._filename, "w" )
-        except:
-            raise w3afException('Cant open Report file ' + self._filename + ' for output.')
+            self._file = codecs.open( self._filename, "w", "utf-8", 'replace' )            
+        except Exception, e:
+            raise w3afException('Cant open report file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
             self._error = True
         
         try:
-            self._http = open( self._httpFilename, "w" )
-        except:
-            raise w3afException('Cant open file ' + self._httpFilename + ' for output.')
+            # Images aren't ascii, so this file that logs every request/response, will be binary
+            self._http = file( self._httpFilename, "wb" )
+        except Exception, e:
+            raise w3afException('Cant open file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
             self._error = True      
         try:
             self._style = open( self._styleFilename, "r" )
