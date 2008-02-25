@@ -91,8 +91,8 @@ class ScanTab(gtk.VBox):
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
-                helpers.endThreads()
 #                print 'Ctrl+C found, exiting!'
+                pass
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()
