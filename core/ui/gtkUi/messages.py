@@ -27,11 +27,15 @@ import core.ui.gtkUi.helpers as helpers
 import core.data.kb.knowledgeBase as kb
 
 
-def _getQueueDiverter(instance=[]):
+def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
+    if reset:
+        if instance:
+            del instance[:]
+        return
     if not instance:
         q = kb.kb.getData("gtkOutput", "queue")
         inst = helpers.IteratedQueue(q)
@@ -52,7 +56,7 @@ class _LineScroller(gtk.TextView):
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.textbuffer = self.get_buffer()
         self.show()
-        self.messages = _getQueueDiverter()
+        self.messages = getQueueDiverter()
         self.all_messages = []
         self.active_filter = active_filter
         gobject.timeout_add(500, self.addMessage().next)

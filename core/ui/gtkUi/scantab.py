@@ -25,6 +25,7 @@ import gtk, gobject, threading
 import core.ui.gtkUi.entries as entries 
 import core.ui.gtkUi.helpers as helpers 
 import core.ui.gtkUi.pluginconfig as pluginconfig
+import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.scanrun as scanrun
 from core.controllers.w3afException import w3afException
 from core.controllers.misc import parseOptions
@@ -153,12 +154,15 @@ class ScanTab(gtk.VBox):
 
         @param widg: the widget that generated the signal.
         '''
+        # clean core and some widgets/infrastructure
         self.w3af.cleanup()
+        messages.getQueueDiverter(reset=True)
+
+        # change the button
         self.gobtn.disconnect(self.gobtnconn)
         self.gobtnconn = self.gobtn.connect("clicked", self._startScan)
         self.gobtn.changeInternals("Start scan", gtk.STOCK_MEDIA_PLAY)
         self.gobtn.set_sensitive(True)
-        self.gobtnconn = self.gobtn.connect("clicked", self._startScan)
 
         # create new panel & replace previous panel for new one
         scnew = pluginconfig.PluginConfigBody(self, self.w3af)
