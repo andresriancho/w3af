@@ -65,16 +65,6 @@ class htmlParser(sgmlParser):
 
         # Now we are ready to work
         self._parse ( HTMLDocument )
-    
-    def unknown_endtag(self, tag):         
-        '''
-        called for each end tag, e.g. for </pre>, tag will be "pre"
-        '''
-        if tag.lower() == 'form' :
-            self._insideForm = False
-        
-        if tag.lower() == 'select' :
-            self._insideSelect = False
         
     def _findForms(self, tag, attrs):
         '''

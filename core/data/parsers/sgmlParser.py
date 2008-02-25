@@ -86,7 +86,9 @@ class sgmlParser(abstractParser, SGMLParser):
         self._forms = []
         self._insideForm = False
         self._insideSelect = False
+        self._insideScript = False
         self._commentsInDocument = []
+        self._scriptsInDocument = []
         
         # mail accounts
         self._accounts = []
@@ -99,7 +101,20 @@ class sgmlParser(abstractParser, SGMLParser):
         
         # Now we are ready to work
         self._preParse( document )
-
+    
+    def unknown_endtag(self, tag):         
+        '''
+        called for each end tag, e.g. for </pre>, tag will be "pre"
+        '''
+        if tag.lower() == 'form' :
+            self._insideForm = False
+        
+        if tag.lower() == 'select' :
+            self._insideSelect = False
+            
+        if tag.lower() == 'script':
+            self._insideScript = False
+            
     def unknown_starttag(self, tag, attrs):
         '''
         Called for each start tag
@@ -111,6 +126,9 @@ class sgmlParser(abstractParser, SGMLParser):
         All non-HTML code must be enclosed in HTML comment tags (<!-- code -->)
         to ensure that it will pass through this parser unaltered (in handle_comment).
         '''
+        if tag.lower() == 'script':
+            self._insideScript = True
+            
         try:
             self._findReferences(tag, attrs)
             self._findForms(tag, attrs)
@@ -228,6 +246,12 @@ class sgmlParser(abstractParser, SGMLParser):
         '''
         return set( self._commentsInDocument )
     
+    def getScripts( self ):
+        '''
+        @return: Returns list of scripts (mainly javascript, but can be anything)
+        '''
+        return set( self._scriptsInDocument )
+        
     def getMetaRedir( self ):
         '''
         @return: Returns list of meta redirections.
@@ -244,5 +268,8 @@ class sgmlParser(abstractParser, SGMLParser):
         '''
         This method is called by parse when a comment is found.
         '''
-        self._commentsInDocument.append( text )
+        if self._insideScript:
+            self._scriptsInDocument.append( text )
+        else:
+            self._commentsInDocument.append( text )
         

@@ -57,6 +57,9 @@ class wmlParser(sgmlParser):
         
         if tag == 'select' :
             self._insideSelect = False
+            
+        if tag.lower() == 'script':
+            self._insideScript = False            
         
     def _findForms(self, tag, attrs):
         '''

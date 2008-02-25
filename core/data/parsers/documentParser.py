@@ -75,6 +75,9 @@ class documentParser:
     
     def getComments( self ):
         return self._parser.getComments()
+    
+    def getScripts( self ):
+        return self._parser.getScripts()
         
     def getMetaRedir( self ):
         return self._parser.getMetaRedir()

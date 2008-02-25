@@ -76,6 +76,9 @@ class abstractParser:
         
     def getComments( self ):
         raise Exception('You should create your own parser class and implement the getComments() method.')
+    
+    def getScripts( self ):
+        raise Exception('You should create your own parser class and implement the getScripts() method.')
         
     def getMetaRedir( self ):
         '''
