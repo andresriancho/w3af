@@ -29,7 +29,6 @@ import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.scanrun as scanrun
 from core.controllers.w3afException import w3afException
 from core.controllers.misc import parseOptions
-import core.controllers.outputManager as om
 import sys
 
 class ScanTab(gtk.VBox):
@@ -88,16 +87,12 @@ class ScanTab(gtk.VBox):
         except w3afException, w3:
             return
 
-        ### FIXME: Maybe implement this with helpers.coreWrap ?!
         def startScanWrap():
             try:
                 self.w3af.start()
-            except KeyboardInterrupt, ke:
-                om.out.debug('The user stopped the scan.')
+            except KeyboardInterrupt:
                 helpers.endThreads()
-                print 'Ctrl+C found, exiting!'
-                sys.exit(0)
-                
+#                print 'Ctrl+C found, exiting!'
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()
