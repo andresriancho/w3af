@@ -1,0 +1,3 @@
+GET,http://localhost/w3af/,
+GET,http://localhost/w4af/,
+POST,http://localhost/w3af/xss-forms/dataReceptor.php,firstname=abc
