@@ -188,9 +188,11 @@ class MainApp:
             self.nb.append_page(browser, label)
         
         # Request Response navigator
-        htl = httpLogTab.httpLogTab(self.w3af)
+        self.httplog = gtk.Label("No HTTP traffic was logued yet")
         label = gtk.Label("HTTP Log")
-        self.nb.append_page(htl, label)
+        label.set_sensitive(False)
+        self.nb.append_page(self.httplog, label)
+        self.httplog.show()
 
         # FIXME: missing, put a placeholder
         # third tab
@@ -236,12 +238,28 @@ class MainApp:
         print "This functionality is not implemented yet!"
 
     def setSensitiveExploit(self, sensit):
-        '''Set the exploit tab or a dummy one. 
+        '''Set the exploits tabs to real window or dummies labels. 
         
         @param sensit: if it's active or not
         
         '''
-        # create the exploit and label
+        # create window or label for HTTPLog tab
+        label = gtk.Label("HTTP Log")
+        if sensit:
+            newhttplog = httpLogTab.httpLogTab(self.w3af)
+        else:
+            newhttplog = gtk.Label("No HTTP traffic was logued yet")
+            newhttplog.show()
+            label.set_sensitive(False)
+            newhttplog.set_sensitive(False)
+        
+        # remove old page and insert this one
+        pos = self.nb.page_num(self.httplog)
+        self.nb.remove_page(pos)
+        self.nb.insert_page(newhttplog, label, pos)
+        self.httplog = newhttplog
+
+        # create window or label for Exploit tab
         label = gtk.Label("Exploit")
         if sensit:
             newexploit = exploittab.ExploitBody(self.w3af)
