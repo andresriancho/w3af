@@ -89,13 +89,6 @@ class vuln(info):
     def getSeverity( self ):
         return self._severity
         
-    def getId( self ):
-        '''
-        This is is the one from the response object that uniquely identifies all 
-        requests and responses.
-        '''
-        return self._id
-        
     def getDesc( self ):
         if self._id != None and self._id != 0:
             if not self._desc.endswith('.'):

@@ -106,8 +106,15 @@ class info(dict):
         This is is the one from the response object that uniquely identifies all 
         requests and responses.
         '''
-        self._id = id       
+        self._id = id
     
+    def getId( self ):
+        '''
+        This is is the one from the response object that uniquely identifies all 
+        requests and responses.
+        '''
+        return self._id
+        
     def setVar( self, variable ):
         self._variable = variable
         
