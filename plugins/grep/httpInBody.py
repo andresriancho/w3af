@@ -1,0 +1,110 @@
+''''
+httpInBody.py
+
+Copyright 2008 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+'''
+import core.controllers.outputManager as om
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+import core.data.parsers.urlParser as uparser
+from core.data.getResponseType import *
+import re
+
+class httpInBody (baseGrepPlugin):
+    """
+    Search for HTTP request/response string in response body.
+    @author: Andres Riancho ( andres.riancho@gmail.com )
+    """
+    def __init__(self):
+        baseGrepPlugin.__init__(self)
+        
+        # re that searches for
+        #GET / HTTP/1.0
+        self._re_request = re.compile('[a-zA-Z] .*? HTTP/1.[01]')
+        
+        # re that searches for
+        #HTTP/1.1 200 OK
+        self._re_response = re.compile('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*')
+        
+        # re that remove tags
+        self._re_removeTags = re.compile('(<.*?>|</.*?>)')
+        
+    def _testResponse(self, request, response):
+        if isTextOrHtml(response.getHeaders()):
+            
+            # First if, mostly for performance.
+            if 'HTTP/1.' in response.getBody():
+                
+                # Now, remove tags
+                bodyWithoutTags = self._re_removeTags.sub('', response.getBody() )
+                
+                if self._re_request.search( bodyWithoutTags ):
+                    i = info.info()
+                    i.setName('HTTP Request in HTTP body')
+                    i.setURI( response.getURI() )
+                    i.setId( response.id )
+                    i.setDesc( 'A HTTP request was found in the HTTP body of a response' )
+                    kb.kb.append( self, 'httpInBody', i )
+                    
+                if self._re_response.search( bodyWithoutTags ):
+                    i = info.info()
+                    i.setName('HTTP Response in HTTP body')
+                    i.setURI( response.getURI() )
+                    i.setId( response.id )
+                    i.setDesc( 'A HTTP response was found in the HTTP body of a response' )
+                    kb.kb.append( self, 'httpInBody', i )
+
+    def setOptions( self, optionsMap ):
+        pass
+            
+    def getOptionsXML(self):
+        '''
+        This method returns a XML containing the Options that the plugin has.
+        Using this XML the framework will build a window, a menu, or some other input method to retrieve
+        the info from the user. The XML has to validate against the xml schema file located at :
+        w3af/core/output.xsd
+        '''
+        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
+        <OptionList>\
+        </OptionList>\
+       '
+    def end(self):
+        '''
+        This method is called when the plugin wont be used anymore.
+        '''
+        if kb.kb.getData('httpInBody', 'httpInBody'):
+            om.out.information('The following URLs have a HTTP request or response in the HTTP response body:')
+            for i in kb.kb.getData('httpInBody', 'httpInBody'):
+                om.out.information('- ' + i.getURI() + '  (id:' + str(i.getId()) + ')' )
+            
+    
+    def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''
+        return []
+    
+    def getLongDesc( self ):
+        '''
+        @return: A DETAILED description of the plugin functions and features.
+        '''
+        return '''
+        '''

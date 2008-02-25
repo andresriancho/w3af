@@ -1,0 +1,24 @@
+# grep demo that find HTTP dump in response body
+
+plugins
+output console
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 5
+back
+grep httpInBody
+back
+
+target
+set target http://localhost/w3af/httpInBody/body.html
+back
+
+start
+
+assert len( kb.kb.getData( 'httpInBody', 'httpInBody' ) ) == 1
+
+exit
