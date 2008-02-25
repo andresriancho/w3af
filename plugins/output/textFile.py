@@ -90,7 +90,7 @@ class textFile(baseOutputPlugin):
             self._init()
             
         if self.verbosity > 5:
-            toPrint = unicode( message )
+            toPrint = message
             
             now = time.localtime(time.time())
             theTime = time.strftime("%c", now)
@@ -116,7 +116,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
             
-        toPrint = unicode( message )
+        toPrint = message
     
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
@@ -144,7 +144,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = unicode( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\n'
         
@@ -167,7 +167,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = unicode( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\n'
         now = time.localtime(time.time())
@@ -186,7 +186,7 @@ class textFile(baseOutputPlugin):
         '''
         if not self._initialized:
             self._init()
-        toPrint = unicode( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\n'
         now = time.localtime(time.time())
