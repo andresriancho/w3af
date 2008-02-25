@@ -188,7 +188,7 @@ class MainApp:
             self.nb.append_page(browser, label)
         
         # Request Response navigator
-        self.httplog = gtk.Label("No HTTP traffic was logued yet")
+        self.httplog = gtk.Label("No HTTP traffic was logged yet")
         label = gtk.Label("HTTP Log")
         label.set_sensitive(False)
         self.nb.append_page(self.httplog, label)
