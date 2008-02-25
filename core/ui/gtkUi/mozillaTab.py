@@ -58,7 +58,7 @@ class mozillaTab(gtk.HPaned):
         urlbarbox = gtk.HBox(spacing=5)
 
         # go button
-        self.gobtn = gtk.Button(stock=gtk.STOCK_MEDIA_PLAY)
+        self.gobtn = entries.SemiStockButton("Go!", gtk.STOCK_MEDIA_PLAY)
         self.gobtn.connect("clicked", self.go)
 
         # url entry
@@ -98,6 +98,7 @@ class mozillaTab(gtk.HPaned):
         self.mozilla.load_url(url)
 
     def go_back(self, widg):
-        print "FIXME: go back!"
+        self.mozilla.go_back()
+
     def go_fwrd(self, widg):
-        print "FIXME: go forward!"
+        self.mozilla.go_forward()
