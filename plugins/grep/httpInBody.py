@@ -107,4 +107,9 @@ class httpInBody (baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
+        This plugin searches for HTTP responses that contain other HTTP request/responses in their response body. This
+        situation is mostly seen when programmers enable some kind of debugging for the web application, and print the
+        original request in the response HTML as a comment.
+        
+        No configurable parameters exist.
         '''
