@@ -26,6 +26,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 from core.data.getResponseType import *
+import re
 
 class findComments(baseGrepPlugin):
     '''
@@ -48,7 +49,7 @@ class findComments(baseGrepPlugin):
         self._alreadyReportedInteresting = []
         
     def _testResponse(self, request, response):
-            
+        
         if isTextOrHtml(response.getHeaders()):
             
             self.is404 = kb.kb.getData( 'error404page', '404' )
@@ -82,6 +83,18 @@ class findComments(baseGrepPlugin):
                             om.out.information( i.getDesc() )
                             self._alreadyReportedInteresting.append( ( word, response.getURL() ) )
                     
+                    if re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment) and ( comment, response.getURL() ) not in self._alreadyReportedInteresting:
+                        # There is HTML code in the comment.
+                        i = info.info()
+                        i.setName('HTML comment contains HTML code')
+                        i.setDesc( 'A comment with the string "' +comment + '" was found in: ' + response.getURL() + ' . This could be interesting.' )
+                        i.setId( response.id )
+                        i.setDc( request.getDc )
+                        i.setURI( response.getURI() )
+                        kb.kb.append( self, 'htmlCommentsHideHtml', i )
+                        om.out.information( i.getDesc() )
+                        self._alreadyReportedInteresting.append( ( comment, response.getURL() ) )
+                            
     def setOptions( self, optionsMap ):
         self._search404 = optionsMap['search404']
     

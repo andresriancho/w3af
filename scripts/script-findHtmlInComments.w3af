@@ -1,0 +1,23 @@
+# grep that finds comments
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+grep findComments
+back
+target
+set target http://localhost/w3af/grepPlugins/htmlInComments.html
+back
+start
+
+assert len(kb.kb.getData('findComments','htmlCommentsHideHtml')) == 1
+
+exit
+
