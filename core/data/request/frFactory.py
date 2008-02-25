@@ -120,6 +120,11 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
     '''
     Creates a fuzzable request based on a query sent FROM the browser. This is used in
     plugins like spiderMan.
+    
+    @parameter method: A string that represents the method ('GET', 'POST', etc)
+    @parameter url: A string that represents the URL
+    @parameter postData: A string that represents the postdata, if its a GET request, set to None.
+    @parameter headers: A dict that holds the headers
     '''
     res = None
     if postData and len( postData ):
@@ -153,7 +158,7 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
                 except:
                     om.out.debug('Failed to create a data container that can store this data: "' + postData + '".')
             else:
-                # It's json! welcome to the party man!
+                # It's json! welcome to the party dude!
                 pdr = jsonPostDataRequest.jsonPostDataRequest()
                 pdr.setURL( url )
                 pdr.setMethod( method )
