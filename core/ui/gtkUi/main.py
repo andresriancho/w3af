@@ -130,6 +130,7 @@ class MainApp:
         mainvbox.show()
 
         self.w3af = core.controllers.w3afCore.w3afCore()
+        self.w3af.mainwin = self
         self.isRunning = False
 
         # Create a UIManager instance

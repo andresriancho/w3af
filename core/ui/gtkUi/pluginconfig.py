@@ -283,8 +283,6 @@ class PluginTree(gtk.TreeView):
         '''
         if event.button == 3:
             # It's a right click !
-            _x = int(event.x)
-            _y = int(event.y)
             _time = event.time
             (path, column) = tv.get_cursor()
             # Is it over a plugin name ?

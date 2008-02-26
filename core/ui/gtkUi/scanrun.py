@@ -40,8 +40,8 @@ class FullKBTree(kbtree.KBTree):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, kbbrowser, filter):
-        super(FullKBTree,self).__init__(filter, 'Knowledge Base', strict=False)
+    def __init__(self, w3af, kbbrowser, filter):
+        super(FullKBTree,self).__init__(w3af, filter, 'Knowledge Base', strict=False)
 
         self.kbbrowser = kbbrowser
         self.connect('cursor-changed', self._showDesc)
@@ -70,7 +70,7 @@ class KBBrowser(gtk.HPaned):
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, w3af):
         super(KBBrowser,self).__init__()
 
         # the filter to the tree
@@ -89,7 +89,7 @@ class KBBrowser(gtk.HPaned):
         filterbox.show()
 
         # the kb tree 
-        self.kbtree = FullKBTree(self, self.filters)
+        self.kbtree = FullKBTree(w3af, self, self.filters)
 
         # the filter and tree box
         treebox = gtk.VBox()
@@ -213,7 +213,7 @@ class ScanRunBody(gtk.VPaned):
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, w3af):
         super(ScanRunBody,self).__init__()
         self.panels = {}
 
@@ -232,7 +232,7 @@ class ScanRunBody(gtk.VPaned):
         # rigth
         # this one does not go inside a scrolled window, because that's handled
         # in each widget of itself
-        kbbrowser = KBBrowser()
+        kbbrowser = KBBrowser(w3af)
 
         # pack it all and show
         inner_hpan.pack1(scrollwin1)

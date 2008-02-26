@@ -193,6 +193,7 @@ class httpLogTab(gtk.HPaned):
         This method should be called by other tabs when they want to show what request/response pair
         is related to the vulnerability.
         '''
+        print "http tab", id
         try:
             res = [ res for res in self._db_res if res.id == id ][0]
             req = [ req for req in self._db_req if req.id == id ][0]

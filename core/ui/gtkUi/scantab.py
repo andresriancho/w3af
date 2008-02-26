@@ -99,7 +99,7 @@ class ScanTab(gtk.VBox):
         gobject.timeout_add(500, self._stoppingScan)
 
         # create new panel
-        scnew = scanrun.ScanRunBody()
+        scnew = scanrun.ScanRunBody(self.w3af)
 
         # replace previous panel for new one
         self.remove(self.gobox)

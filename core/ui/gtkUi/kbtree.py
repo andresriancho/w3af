@@ -45,8 +45,9 @@ class KBTree(gtk.TreeView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, filter, title, strict):
+    def __init__(self, w3af, filter, title, strict):
         self.strict = strict
+        self.w3af = w3af
 
         # simple empty Tree Store
         # columns: the string to show; the key for the plugin instance
@@ -69,6 +70,9 @@ class KBTree(gtk.TreeView):
 
         # initial filters
         self.filter = filter
+
+        # button-press-event, to handle right click
+        self.connect('button-release-event', self._popup)
 
         # get the knowledge base and go live
         self.fullkb = kb.kb.dump()
@@ -180,3 +184,48 @@ class KBTree(gtk.TreeView):
 
         return True
                         
+    def _popup(self, tv, event):
+        '''Shows a menu when you right click on a plugin.
+        
+        @param tv: the treeview.
+        @parameter event: The GTK event 
+        '''
+        if event.button != 3:
+            return
+
+        # is it over a vulnerability?
+        (path, column) = tv.get_cursor()
+        if path is None:
+            return
+
+        # pop up menu        
+        menu = gtk.Menu()
+        opc = gtk.MenuItem("Show HTTP request and response")
+        menu.append(opc)
+        menu.popup(None, None, None, event.button, event.time)
+
+        # get instance
+        vuln = self.getInstance(path)
+        if vuln is not None:
+            vulnid = vuln.getId()
+        
+            def goLog(w):
+                self.w3af.mainwin.httplog.showReqResById(vulnid)
+                self.w3af.mainwin.nb.set_current_page(2)
+            opc.connect('activate', goLog)
+        else:
+            opc.set_sensitive(False)
+
+        menu.show_all()
+
+    def getInstance(self, path):
+        '''Extracts the instance from the tree.
+
+        @param path: where the user is in the tree
+        @return The instance
+        '''
+        instanckey = self.treestore[path][1]
+        instance = self.instances.get(instanckey)
+        return instance
+
+
