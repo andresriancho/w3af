@@ -123,7 +123,14 @@ class targetSettings(configurable):
         cf.cf.save('targets', targetUrls)
         cf.cf.save('targetDomains', [ urlParser.getDomain( i ) for i in targetUrls ] )
         cf.cf.save('baseURLs', [ urlParser.baseUrl( i ) for i in targetUrls ] )
-        cf.cf.save('sessionName', urlParser.getDomain(targetUrl) + '-' + time.ctime().replace(' ','-') )
+        
+        if targetUrls:
+            sessName = [ urlParser.getDomain(x) for x in targetUrls ]
+            sessName = '-'.join(sessName)
+        else:
+            sessName = 'noTarget'
+
+        cf.cf.save('sessionName', sessName + '-' + time.ctime().replace(' ','-') )
         
         # Advanced target selection
         os = optionsMap['targetOS']
