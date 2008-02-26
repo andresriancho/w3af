@@ -170,3 +170,14 @@ class ScanTab(gtk.VBox):
 
         # deactivate exploit tab
         self.mainwin.setSensitiveExploit(False)
+
+    def togglePanels(self, panel, active):
+        '''Turn on and off the panels.
+
+        @param panel: The panel to turn on and off
+        @param active: If it should be activated or deactivated
+        '''
+        # this pcbody must be the ScanRunBody panel... it also
+        # can be the initial window, but in this case we will never 
+        # be here because the View menu should be in gray
+        self.pcbody.togglePanels(panel, active)

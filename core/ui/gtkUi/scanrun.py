@@ -215,9 +215,11 @@ class ScanRunBody(gtk.VPaned):
     '''
     def __init__(self):
         super(ScanRunBody,self).__init__()
+        self.panels = {}
 
         # the paned window
         inner_hpan = gtk.HPaned()
+        self.panels["upperpanel"] = inner_hpan
         
         # left
         urlstree = URLsTree()
@@ -225,6 +227,7 @@ class ScanRunBody(gtk.VPaned):
         scrollwin1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin1.add_with_viewport(urlstree)
         scrollwin1.show()
+        self.panels["urltree"] = scrollwin1
 
         # rigth
         # this one does not go inside a scrolled window, because that's handled
@@ -238,12 +241,34 @@ class ScanRunBody(gtk.VPaned):
         inner_hpan.set_position(250)
         inner_hpan.show()
         self.pack1(inner_hpan)
+        self.panels["kbexplorer"] = kbbrowser
 
         # bottom widget
         messag = messages.Messages()
         self.pack2(messag)
+        self.panels["messagelog"] = messag
         
         # The vertical pane position
         self.set_position(250)
+        self.panactiv = dict((x,True) for x in self.panels)
         self.show()
 
+    def togglePanels(self, panel, active):
+        '''Turn on and off the panels.
+
+        @param panel: The panel to turn on and off
+        @param active: If it should be activated or deactivated
+        '''
+        widg = self.panels[panel]
+        if active:
+            widg.show()
+        else:
+            widg.hide()
+        self.panactiv[panel] = active
+#        import pdb;pdb.set_trace()
+
+        # if both upper widgets are off, we must hide the scroll window
+        if not self.panactiv["urltree"] and not self.panactiv["kbexplorer"]:
+            self.panels["upperpanel"].hide()
+        else:
+            self.panels["upperpanel"].show()

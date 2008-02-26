@@ -63,10 +63,15 @@ ui_menu = """
       <menuitem action="Save"/>
       <menuitem action="Resume"/>
     </menu>
-    <menu action="ViewMenu">
-      <menuitem action="KBExplorer"/>
-      <menuitem action="LogWindow"/>
+    <menu action="ViewMenuScan">
       <menuitem action="URLWindow"/>
+      <menuitem action="KBExplorer"/>
+      <menuitem action="LogWindowS"/>
+    </menu>
+    <menu action="ViewMenuExploit">
+      <menuitem action="ExploitVuln"/>
+      <menuitem action="Interactive"/>
+      <menuitem action="LogWindowE"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -138,10 +143,8 @@ class MainApp:
             ('Save', gtk.STOCK_SAVE, '_Save session', None, 'Save actual session to continue later', self.notyet),
             ('Resume', gtk.STOCK_OPEN, '_Restore session', None, 'Restore a previously saved session', self.notyet),
             ('SessionMenu', None, '_Session'),
-            ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer', self.notyet),
-            ('LogWindow', None, '_Log Window', None, 'Toggle the Log Window', self.notyet),
-            ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', self.notyet),
-            ('ViewMenu', None, '_View'),
+            ('ViewMenuScan', None, '_View'),
+            ('ViewMenuExploit', None, '_View'),
             ('URLconfig', None, '_URL Config', None, 'URL configuration', self.menu_config_url),
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
@@ -149,6 +152,33 @@ class MainApp:
             ('About', None, '_About', None, 'About the framework', self.notyet),
             ('HelpMenu', None, '_Help'),
         ])
+
+        # the view menu for scanning
+        actiongroup.add_toggle_actions([
+            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
+            ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
+                           lambda w: self.dynPanels(w, "kbexplorer"), True),
+            ('LogWindowS', None, '_Log Window', None, 'Toggle the Log Window', 
+                           lambda w: self.dynPanels(w, "messagelog"), True),
+            ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
+                           lambda w: self.dynPanels(w, "urltree"), True),
+        ])
+        self.viewMenuScan = actiongroup.get_action("ViewMenuScan")
+        self.viewMenuScan.set_sensitive(False)
+
+        # the view menu for exploit
+        actiongroup.add_toggle_actions([
+            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
+            ('ExploitVuln', None, '_Exploit Vulns', None, 'Toggle the Exploit Vulns panel',
+                           lambda w: self.dynPanels(w, "exploitvuln"), True),
+            ('Interactive', None, '_Interactive', None, 'Toggle the Interactive Window', 
+                           lambda w: self.dynPanels(w, "interac"), True),
+            ('LogWindowE', None, '_Log Window', None, 'Toggle the Log Window', 
+                           lambda w: self.dynPanels(w, "messagelog"), True),
+        ])
+        self.viewMenuExploit = actiongroup.get_action("ViewMenuExploit")
+        self.viewMenuExploit.set_sensitive(False)
+        self.viewMenuExploit.set_visible(False)
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
@@ -173,13 +203,15 @@ class MainApp:
 
         # notebook
         self.nb = gtk.Notebook()
+        self.nb.connect("switch-page", self.nbChangedPage)
         mainvbox.pack_start(self.nb, True)
         self.nb.show()
 
         # scan tab
-        scan = scantab.ScanTab(self, self.w3af)
+        self.scantab = scantab.ScanTab(self, self.w3af)
         label = gtk.Label("Scan")
-        self.nb.append_page(scan, label)
+        self.nb.append_page(self.scantab, label)
+        self.viewSignalRecipient = self.scantab
 
         # mozilla tab
         if withMozillaTab:
@@ -243,6 +275,10 @@ class MainApp:
         @param sensit: if it's active or not
         
         '''
+        # the View menu
+        self.viewMenuScan.set_sensitive(sensit)
+        self.viewMenuExploit.set_sensitive(sensit)
+
         # create window or label for HTTPLog tab
         label = gtk.Label("HTTP Log")
         if sensit:
@@ -283,6 +319,33 @@ class MainApp:
         plugin = core.controllers.miscSettings.miscSettings()
         confpanel.ConfigDialog("Configure Misc settings", self.w3af, plugin)
 
+    def dynPanels(self, widget, panel):
+        '''Turns on and off the Log Panel.'''
+        active = widget.get_active()
+        self.viewSignalRecipient.togglePanels(panel, active)
+
+    def nbChangedPage(self, notebook, page, page_num):
+        '''Changed the page in the Notebook.
+        
+        It manages which View will be visible in the Menu, and
+        to which recipient the signal of that View should be 
+        directed.
+        '''
+        if page_num == 0:
+            # scan page
+            self.viewMenuScan.set_visible(True)
+            self.viewMenuExploit.set_visible(False)
+            self.viewSignalRecipient = self.scantab
+        elif page_num == 3:
+            # exploit page
+            self.viewMenuScan.set_visible(False)
+            self.viewMenuExploit.set_visible(True)
+            self.viewSignalRecipient = self.exploit
+        else:
+            # the rest, :p
+            self.viewMenuScan.set_visible(False)
+            self.viewMenuExploit.set_visible(False)
+            self.viewSignalRecipient = None
 
 def main():
     MainApp()
