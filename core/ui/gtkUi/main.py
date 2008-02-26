@@ -130,6 +130,7 @@ class MainApp:
         mainvbox.show()
 
         self.w3af = core.controllers.w3afCore.w3afCore()
+        self.isRunning = False
 
         # Create a UIManager instance
         uimanager = gtk.UIManager()
@@ -182,8 +183,6 @@ class MainApp:
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
-
-        # Add a UI description
         uimanager.add_ui_from_string(ui_menu)
 
         # menubar and toolbar
@@ -223,6 +222,7 @@ class MainApp:
         self.httplog = gtk.Label("No HTTP traffic was logged yet")
         label = gtk.Label("HTTP Log")
         label.set_sensitive(False)
+        self.httplog.set_sensitive(False)
         self.nb.append_page(self.httplog, label)
         self.httplog.show()
 
@@ -278,6 +278,7 @@ class MainApp:
         # the View menu
         self.viewMenuScan.set_sensitive(sensit)
         self.viewMenuExploit.set_sensitive(sensit)
+        self.isRunning = sensit
 
         # create window or label for HTTPLog tab
         label = gtk.Label("HTTP Log")
@@ -334,17 +335,19 @@ class MainApp:
         if page_num == 0:
             # scan page
             self.viewMenuScan.set_visible(True)
+            self.viewMenuScan.set_sensitive(self.isRunning)
             self.viewMenuExploit.set_visible(False)
             self.viewSignalRecipient = self.scantab
         elif page_num == 3:
             # exploit page
             self.viewMenuScan.set_visible(False)
             self.viewMenuExploit.set_visible(True)
+            self.viewMenuExploit.set_sensitive(self.isRunning)
             self.viewSignalRecipient = self.exploit
         else:
             # the rest, :p
-            self.viewMenuScan.set_visible(False)
-            self.viewMenuExploit.set_visible(False)
+            self.viewMenuScan.set_sensitive(False)
+            self.viewMenuExploit.set_sensitive(False)
             self.viewSignalRecipient = None
 
 def main():
