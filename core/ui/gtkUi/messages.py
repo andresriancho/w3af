@@ -24,6 +24,7 @@ pygtk.require('2.0')
 import gtk, gobject
 
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.entries as entries
 import core.data.kb.knowledgeBase as kb
 
 
@@ -130,9 +131,15 @@ class Messages(gtk.VBox):
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
 
+        # settings for the search machinery
         self.key_f = gtk.gdk.keyval_from_name("f")
-        self.connect("key-release-event", self._key)
+        self.connect("key-press-event", self._key)
         self.sclines.connect("populate-popup", self._populate_popup)
+        self.textbuf = self.sclines.get_buffer()
+        self.textbuf.create_tag("yellow-background", background="yellow")
+        self.search_stt = "no"
+        self.actualfound = 0
+
         self.show()
 
     def typeFilter(self, button, type):
@@ -158,10 +165,125 @@ class Messages(gtk.VBox):
         opc = gtk.MenuItem("Find...")
         menu.append(opc)
         opc.connect("activate", self._build_search)
-
-        # FIXME: add support for "Find Next"
-        # FIXME: add support for "Find Previous"
         menu.show_all()
 
     def _build_search(self, widget=None):
         print "build_search"
+        if self.search_stt == "builded":
+            self.srchtab.show()
+            return
+            
+        if self.search_stt != "no":
+            return
+
+        tooltips = gtk.Tooltips()
+        self.srchtab = gtk.HBox()
+
+        # label
+        label = gtk.Label("Find:")
+        self.srchtab.pack_start(label, expand=False, fill=False, padding=3)
+
+        # entry
+        self.search_entry = gtk.Entry()
+        tooltips.set_tip(self.search_entry, "Type here the phrase you want to find")
+        self.search_entry.connect("activate", self._find_next)
+        self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
+
+        # find next button
+        butn = entries.SemiStockButton("Next", gtk.STOCK_GO_DOWN)
+        butn.connect("clicked", self._find_next)
+        tooltips.set_tip(butn, "Find the next ocurrence of the phrase")
+        self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
+
+        # find previous button
+        butp = entries.SemiStockButton("Previous", gtk.STOCK_GO_UP)
+        butp.connect("clicked", self._find_previous)
+        tooltips.set_tip(butp, "Find the previous ocurrence of the phrase")
+        self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
+
+        # make last two buttons equally width
+        wn,hn = butn.size_request()
+        wp,hp = butp.size_request()
+        newwidth = max(wn, wp)
+        butn.set_size_request(newwidth, hn)
+        butp.set_size_request(newwidth, hp)
+
+        # close button
+        close = entries.SemiStockButton("", gtk.STOCK_CLOSE)
+        close.connect("clicked", self._close)
+        self.srchtab.pack_end(close, expand=False, fill=False, padding=3)
+
+        self.srchtab.show_all()
+        self.pack_start(self.srchtab, expand=False, fill=False)
+        self.search_stt = "builded"
+        self.search_entry.grab_focus()
+
+    # 
+    # the functions that actually find the text
+    #
+
+    def _find_next(self, widg):
+        self._find("next")
+    def _find_previous(self, widg):
+        self._find("previous")
+    # FIXME: remove this two
+                
+    def _find(self, direction):
+        print "_find", direction
+        # get widgets and info
+        tosearch = self.search_entry.get_text()
+        textbuf = self.sclines.get_buffer()
+        (ini, fin) = textbuf.get_bounds()
+        alltext = textbuf.get_text(ini, fin)
+
+        # find the positions where the phrase is found
+        positions = []
+        pos = 0
+        while True:
+            try:
+                pos = alltext.index(tosearch, pos)
+                fin = pos + len(tosearch)
+                iterini = textbuf.get_iter_at_offset(pos)
+                iterfin = textbuf.get_iter_at_offset(fin)
+                positions.append((pos, fin, iterini, iterfin))
+            except ValueError:
+                break
+            pos += 1
+        if not positions:
+            return
+
+        # highlight them all
+        for (ini, fin, iterini, iterfin) in positions:
+            textbuf.apply_tag_by_name("yellow-background", iterini, iterfin)
+        print "lenpos", len(positions)
+
+        # find where the index in positions of actualfound
+        for ind, (ini, fin, iterini, iterfin) in enumerate(positions):
+            if ini > self.actualfound:
+                keypos = ind
+                break
+        else:
+            keypos = 0
+        # FIXME: tratar de reemplazar actualFound por la posicion del cursor
+        print "keypos", keypos
+        if direction == "previous":
+            keypos -= 2
+            if keypos < 0:
+                keypos = len(positions) + keypos
+            print "newk", keypos
+        
+        (ini, fin, iterini, iterfin) = positions[keypos]
+        textbuf.select_range(iterini, iterfin)
+        self.sclines.scroll_to_iter(iterini, 0, False)
+        self.actualfound = ini
+
+        # FIXME: probar que pasa cuando lo hacemos en movimiento
+        # FIXME: probar que pasa cuando no encuentra nada
+        # FIXME: ver que pasa con mucho texto (prender debug)
+
+    def _close(self, widget):
+        '''Hides the search bar, and cleans the background.'''
+        self.srchtab.hide()
+        (ini, fin) = self.textbuf.get_bounds()
+        self.textbuf.remove_tag_by_name("yellow-background", ini, fin)
+
