@@ -130,6 +130,9 @@ class Messages(gtk.VBox):
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
 
+        self.key_f = gtk.gdk.keyval_from_name("f")
+        self.connect("key-release-event", self._key)
+        self.sclines.connect("populate-popup", self._populate_popup)
         self.show()
 
     def typeFilter(self, button, type):
@@ -138,3 +141,27 @@ class Messages(gtk.VBox):
         active_types = [k for k,v in self.filters.items() if v]
         self.sclines.filter(active_types)
 
+    # machinery to start the search:
+    #   _key: to supervise the ctrl-F and F3
+    #   _populate_popup: to alter the standard popup menu
+    #   _build_search: add the search widgets at the bottom
+    def _key(self, widg, event):
+        if event.keyval == self.key_f and event.state & gtk.gdk.CONTROL_MASK:
+            self._build_search()
+            return True
+        # FIXME: add support for "Find Next (ctrl F)"
+        # FIXME: add support for "Find Previous (ctrl G)"
+        return False
+
+    def _populate_popup(self, textview, menu):
+        menu.append(gtk.SeparatorMenuItem())
+        opc = gtk.MenuItem("Find...")
+        menu.append(opc)
+        opc.connect("activate", self._build_search)
+
+        # FIXME: add support for "Find Next"
+        # FIXME: add support for "Find Previous"
+        menu.show_all()
+
+    def _build_search(self, widget=None):
+        print "build_search"
