@@ -71,7 +71,7 @@ class KBTree(gtk.TreeView):
         # initial filters
         self.filter = filter
 
-        # button-press-event, to handle right click
+        # button-release-event, to handle right click
         self.connect('button-release-event', self._popup)
 
         # get the knowledge base and go live

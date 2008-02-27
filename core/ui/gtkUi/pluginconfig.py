@@ -196,8 +196,8 @@ class PluginTree(gtk.TreeView):
         super(PluginTree,self).__init__(self.treestore)
         self.connect('cursor-changed', self.configure_plugin)
         
-        # button-press-event, to handle right click
-        self.connect('button-press-event', self.popup_menu)
+        # button-release-event, to handle right click
+        self.connect('button-release-event', self.popup_menu)
 
         # create a TreeViewColumn for the text
         tvcolumn = gtk.TreeViewColumn('Plugin')
