@@ -197,6 +197,7 @@ class Messages(gtk.VBox):
         # entry
         self.search_entry = gtk.Entry()
         tooltips.set_tip(self.search_entry, "Type here the phrase you want to find")
+        self.search_entry.connect("activate", self._find, "next")
         self.search_entry.connect("changed", self._find, "find")
         self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
 
