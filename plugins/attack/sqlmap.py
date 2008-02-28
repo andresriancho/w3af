@@ -323,7 +323,7 @@ class sqlShellObj(shell):
         c = command.split(' ')[0]
         params = command.split(' ')[1:]
         return c, params
-        
+
     def setDriver( self, d ):
         self._driver = d
     
@@ -421,9 +421,13 @@ class sqlShellObj(shell):
         return res
     
     def _identifyOs( self ):
-        self._dbms = self._driver.getFingerprint()
+        # hmmm....
+        self._rSystem = self._rSystemName = self._dbms = self._driver.getFingerprint()
         self._rUser = self._driver.getCurrentUser()
     
+    def getRemoteSystem( self ):
+        return self._dbms
+
     def __repr__( self ):
         if not self._rOS:
             self._identifyOs()

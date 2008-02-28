@@ -113,9 +113,6 @@ class proxy(w3afThread):
             while self._go:
                 try:
                     self._server.handle_request()
-                except KeyboardInterrupt, ki:
-                    self._server.server_close()
-                    break
                 except:
                     self._server.server_close()
 
@@ -199,10 +196,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     do_GET = do_POST = do_HEAD = doAll
     
     class TimeoutError (Exception): pass
-    def SIGALRM_handler(sig, stack): raise TimeoutError()
+    def SIGALRM_handler(sig, stack): raise self.TimeoutError()
     # Windows signal.SIGALRM doesn't exist
     try:
-        signal.signal(signal.SIGALRM, SIGALRM_handler)
+        signal.signal(signal.SIGALRM, self.SIGALRM_handler)
     except:
         pass
     
@@ -305,8 +302,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         This method is called by _read_write and should be implemented by plugins that would like to
         analyze what happends on the proxy ( like spiderMan ).
         '''
-        print 'len req:',len(request)
-        print 'len res:', len(response)
+        print request
+        print response[0:400]
+        print 'Response length:', len(response)
+        pass
         
     def _read_write(self, browserConnection, siteConnection, max_idling=20, sslSocket=None):
         '''
@@ -327,19 +326,15 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 try:
                     request += browserConnection.recv(8192)
                     count = 0
-                    print 'got request part'
+                    break
                 except SSL.WantReadError:
-                    print 'wr'
                     count += 1
                     select.select([browserConnection],[],[],3)
                 except SSL.WantWriteError:
-                    print 'ww'
                     count += 1
                     select.select([],[browserConnection],[],3)
-                except SSL.ZeroReturnError:
-                    #nothing else to be read
-                    print 'zero'
-                    break
+                except KeyboardInterrupt, k:
+                    raise k
                 except Exception, e:
                     om.out.debug('Closing browserConnection because of exception:' + str(e) )
                     browserConnection.close()
@@ -367,6 +362,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 except SSL.WantReadError:
                     count += 1
                     select.select([siteConnection],[],[],3)
+                except KeyboardInterrupt, k:
+                    raise k
                 except Exception, e:
                     om.out.debug('Closing siteConnection because of exception:' + str(e) )
                     browserConnection.close()
@@ -387,16 +384,19 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             while count < max_idling:
                 try:
                     response += siteConnection.recv(8192)
+                    print 'Read from remote website:', len(response)
                     count = 0
+                    break
                 except SSL.WantReadError:
+                    print 'Remote website wants to read'
                     count += 1
                     select.select([siteConnection],[],[],3)
                 except SSL.WantWriteError:
+                    print 'Remote website wants to write'
                     count += 1
                     select.select([],[siteConnection],[],3)
-                except SSL.ZeroReturnError:
-                    #nothing else to be read
-                    break
+                except KeyboardInterrupt, k:
+                    raise k
                 except Exception, e:
                     om.out.debug('Closing siteConnection because of exception:' + str(e) )
                     browserConnection.close()
@@ -425,6 +425,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 except SSL.WantReadError:
                     count += 1
                     select.select([],[browserConnection],[],3)
+                except KeyboardInterrupt, k:
+                    raise k
                 except Exception, e:
                     om.out.debug('Closing browserConnection because of exception:' + str(e) )
                     browserConnection.close()
