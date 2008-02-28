@@ -386,6 +386,8 @@ class sqlShellObj(shell):
             res = apply( method, args )
         except TypeError, t:
             res = 'Invalid number of parameters for command.'
+        except KeyboardInterrupt, k:
+            raise k
         except Exception, e:
             res = 'An unexpected error was found while trying to run the specified command.\n'
             res +='Exception: "' + str(e) + '"'
@@ -396,7 +398,7 @@ class sqlShellObj(shell):
         # Always stop the good samaritan
         self._driver.stopGoodSamaritan() 
         om.out.console( '\r\n' + res )
-        om.out.console('abc>>>')
+        om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getShellId())+'>>>', newLine = False)
 
     def _help( self ):
         '''

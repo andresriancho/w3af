@@ -42,6 +42,7 @@ class shell(vuln, commonAttackMethods):
         self._rSystem = None
         self._rUser = None
         self._rSystemName = None
+        self.id = 0
         
     def getRemoteOs( self ):
         return self._rOS
@@ -137,6 +138,16 @@ class shell(vuln, commonAttackMethods):
         '''
         raise w3afException('You should implement the end method of classes that inherit from "shell"')
     
+    def setShellId( self, id ):
+        '''
+        Each shell is identified by an unique number.
+        @parameter id: The integer that identifies the shell
+        '''
+        self._id = id
+
+    def getShellId( self ):
+        return self._id
+
     def getName( self ):
         '''
         This method is called when the shell is used, in order to create a prompt for the user.
