@@ -51,8 +51,8 @@ class dbDriver(dbDriverFunctions, basePlugin):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self , urlOpener, cmpFunction, readLoop, vuln ):
-        dbDriverFunctions.__init__( self, cmpFunction, readLoop )
+    def __init__( self , urlOpener, cmpFunction, vuln ):
+        dbDriverFunctions.__init__( self, cmpFunction )
         
         self._urlOpener = urlOpener
         self._cmpFunction = cmpFunction

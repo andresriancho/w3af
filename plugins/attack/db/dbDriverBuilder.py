@@ -35,13 +35,12 @@ class dbDriverBuilder:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self , urlOpener, cmpFunction, readLoop ):
+    def __init__( self , urlOpener, cmpFunction ):
         '''
         cmpFunction is the function to be used to compare two strings.
         '''
         self._urlOpener = urlOpener
         self._cmpFunction = cmpFunction
-        self._readLoop = readLoop
     
     def _getType( self, vuln ):
         '''
@@ -73,9 +72,9 @@ class dbDriverBuilder:
                 return None
         
         driverList = []
-        driverList.append( mysqlmap( self._urlOpener, self._cmpFunction, self._readLoop, vuln ) )
-        driverList.append( postgresqlmap( self._urlOpener, self._cmpFunction, self._readLoop, vuln ) )
-        driverList.append( mssqlservermap( self._urlOpener, self._cmpFunction, self._readLoop,  vuln ) )
+        driverList.append( mysqlmap( self._urlOpener, self._cmpFunction, vuln ) )
+        driverList.append( postgresqlmap( self._urlOpener, self._cmpFunction, vuln ) )
+        driverList.append( mssqlservermap( self._urlOpener, self._cmpFunction,  vuln ) )
         #driverList.append( db2( self._urlOpener, vuln ) )
 
         for driver in driverList:

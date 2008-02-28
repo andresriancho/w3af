@@ -459,6 +459,6 @@ class MSSQLServerMap(Common):
             return False
 
 
-    def __init__(self, urlOpener, cmpFunction, readLoop, vuln):
-        Common.__init__( self, urlOpener, cmpFunction, readLoop, vuln )
+    def __init__(self, urlOpener, cmpFunction, vuln):
+        Common.__init__( self, urlOpener, cmpFunction, vuln )
 

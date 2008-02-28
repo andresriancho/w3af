@@ -641,6 +641,6 @@ class MySQLMap(Common):
 
                             return value
     
-    def __init__(self, urlOpener, cmpFunction, readLoop, vuln):
-        Common.__init__( self, urlOpener, cmpFunction, readLoop, vuln )
+    def __init__(self, urlOpener, cmpFunction, vuln):
+        Common.__init__( self, urlOpener, cmpFunction, vuln )
 

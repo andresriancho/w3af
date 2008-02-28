@@ -266,7 +266,7 @@ class consoleUi(consoleMenu):
             self._tm.join( joinAll=True )
             # Let them die ...
             try:
-                time.sleep(0.3)
+                time.sleep(0.5)
             except:
                 pass
         except w3afException, w3:

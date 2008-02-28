@@ -36,14 +36,12 @@ from core.controllers.w3afException import w3afException
 
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 from core.controllers.sqlTools.blindSqli import blindSqli as blindSqliTools
-from core.ui.consoleUi.consoleMenu import consoleMenu
+
+from core.controllers.threads.threadManager import threadManagerObj as tm
 
 SQLMAPCREATORS = 'sqlmap coded by inquis <bernardo.damele@gmail.com> and belch <daniele.bellucci@gmail.com>'
 
-# FIXME!!!!!
-# If I inherit from consoleMenu ; I won't be able to run in gtkUi
-# but I need the _mainloop to be able to do the good samaritan !!
-class sqlmap(baseAttackPlugin, consoleMenu):
+class sqlmap(baseAttackPlugin):
     '''
     Exploits [blind] sql injections using sqlmap ( http://sqlmap.sf.net ).
     '''
@@ -59,7 +57,6 @@ class sqlmap(baseAttackPlugin, consoleMenu):
         
     def __init__(self):
         baseAttackPlugin.__init__(self)
-        consoleMenu.__init__(self)
         
         # Internal variables
         self._vuln = None
@@ -192,7 +189,7 @@ class sqlmap(baseAttackPlugin, consoleMenu):
         bsql.setEqualLimit( self._equalLimit )
         bsql.setEquAlgorithm( self._equAlgorithm )
             
-        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal, self._mainloop )
+        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal )
         driver = dbBuilder.getDriverForVuln( vuln )
         if driver == None:
             return None
@@ -201,7 +198,6 @@ class sqlmap(baseAttackPlugin, consoleMenu):
             s = sqlShellObj( vuln )
             s.setGoodSamaritan( self._goodSamaritan )
             s.setDriver( driver )
-            s.setParseMethod( self._parse )
             kb.kb.append( self, 'shells', s )
             
             return s
@@ -323,8 +319,10 @@ class sqlmap(baseAttackPlugin, consoleMenu):
         '''
 
 class sqlShellObj(shell):
-    def setParseMethod( self, pm ):
-        self._parse = pm
+    def _parse( self, command ):
+        c = command.split(' ')[0]
+        params = command.split(' ')[1:]
+        return c, params
         
     def setDriver( self, d ):
         self._driver = d
@@ -358,45 +356,48 @@ class sqlShellObj(shell):
         _methodMap['help'] = self._help
     
         commandList = command.split(' ')
-        if len( commandList ):
+        if not len( commandList ):
+            return 'Unknown command. Please read the help: \n' + self._help()
+        else:
             cmd = commandList[0]
             method = ''
             if commandList[0] in _methodMap:
                 method = _methodMap[ cmd ]
             else:
-                return 'Unknown command. Please read the help: \n' + self._help()
+                if self._goodSamaritan and self._driver.isRunningGoodSamaritan():
+                    self._driver.goodSamaritanContribution( command )
+                    return None
+                else:
+                    return 'Unknown command. Please read the help: \n' + self._help()
+
+            tm.startFunction( target=self._runCommand, args=(method, command,), ownerObj=self, restrict=False )
+            return None
+
             
-            # Parse this, separate user and command
-            command, parameterList = self._parse( command )
-            args = tuple( parameterList )
-            
-            if self._goodSamaritan and cmd.strip() != 'help':
-                self._driver.startGoodSamaritan()
-            
-            try:
-                res = apply( method, args )
-            except Exception, e:
-                om.out.error('An unexpected error was found while trying to run the specified command.')
-                om.out.error('Exception: "' + str(e) + '"' )
-                res = ''
-            else:
-            
-                if self._goodSamaritan and cmd.strip() != 'help':
-                    om.out.console('\r\nResults are ready, press Ctrl+D to exit the good samaritan and display the results.')
-                    self._driver.stopGoodSamaritan()
-                
-                res = self._driver.dump.dump( cmd, args, res )
-            return res
-            
-            #except TypeError, t:
-            #   return 'Invalid number of parameters for command.'
-            #except Exception, e:
-            #   return str(e)
-            
-        else:
-            return 'Unknown command. Please read the help: \n' + self._help()
-            
-    
+    def _runCommand( self, method, command ):
+        # Parse this, separate user and command
+        command, parameterList = self._parse( command )
+        args = tuple( parameterList )
+
+        if self._goodSamaritan and command.strip() != 'help':
+            self._driver.startGoodSamaritan()
+        
+        try:
+            res = apply( method, args )
+        except TypeError, t:
+            res = 'Invalid number of parameters for command.'
+        except Exception, e:
+            res = 'An unexpected error was found while trying to run the specified command.\n'
+            res +='Exception: "' + str(e) + '"'
+        else:            
+            res = self._driver.dump.dump( command, args, res )
+            res = res.replace('\n','\r\n')
+
+        # Always stop the good samaritan
+        self._driver.stopGoodSamaritan() 
+        om.out.console( '\r\n' + res )
+        om.out.console('abc>>>')
+
     def _help( self ):
         '''
         Print the help to the user.
@@ -428,14 +429,7 @@ class sqlShellObj(shell):
         
     __str__ = __repr__
     def end( self ):
-        om.out.debug('davShellObj is going to delete the webshell that was uploaded before.')
-        urlToDel = urlParser.uri2url( self._exploit )
-        try:
-            self._urlOpener.DELETE( urlToDel )
-        except Exception, e:
-            om.out.error('davShellObj cleanup failed with exception: ' + str(e) )
-        else:
-            om.out.debug('davShellObj cleanup complete.')
+        om.out.debug('sqlmap cleanup complete.')
             
     def getName( self ):
         return 'sqlmap'

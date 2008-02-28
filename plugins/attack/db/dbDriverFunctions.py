@@ -20,24 +20,24 @@ class dbDriverFunctions:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, cmpFunction, readLoop ):
+    def __init__(self, cmpFunction):
         self._cmpFunction = cmpFunction
         
         # All needed for the good samaritan
         self._goodSamaritan = []
-        self._readLoop = readLoop
         self._tm = tm
         self._runningGS = False
     
+    def isRunningGoodSamaritan( self ):
+        return self._runningGS
+
     def startGoodSamaritan( self ):
-        om.out.console('Starting good samaritan module, please help the blind man find his way.')
-        targs = ('goodSamaritan>>>', self.goodSamaritanContribution)
-        self._tm.startFunction( target=self._readLoop, args=targs, restrict=False, ownerObj=self )
+        om.out.debug('\r\nStarting good samaritan module, please help the blind man find his way.')
         self._runningGS = True
     
     def stopGoodSamaritan( self ):
         if self._runningGS:
-            self.log('Stopping good samaritan module.')
+            om.out.debug('\r\nStopping good samaritan module.')
             self._tm.join( self )
             self._runningGS = False
         
@@ -128,7 +128,7 @@ class dbDriverFunctions:
                         
                     evilUrl = exactBaseUrl % (expr, index, len(tt2) , tt2)
                     evilResult = self.queryPage(evilUrl)
-                    if not self._cmpFunction( evilResult, self.args.trueResult ):
+                    if self._cmpFunction( evilResult, self.args.trueResult ):
                         value += tt2
                         index += len(tt2)
                         om.out.console('\r\nGOOD guess: "%s", current blind string is: "%s"' % (value, value))
