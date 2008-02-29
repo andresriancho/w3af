@@ -137,6 +137,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('odbc_exec\\(\\)', MSSQL ) )
         errors.append( ('Microsoft JET Database Engine error', ACCESS ))
         errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', MSSQL ))
+        errors.append( ('Incorrect syntax near', MSSQL ) )
         
         # ORACLE
         errors.append( ('ORA-[0-9][0-9][0-9][0-9]', ORACLE ) )
@@ -144,23 +145,26 @@ class sqli(baseAuditPlugin):
         # POSTGRE
         errors.append( ('PostgreSQL query failed:', POSTGRE ) )
         errors.append( ('supplied argument is not a valid PostgreSQL result', POSTGRE ) )
+        
+        # MYSQL
         errors.append( ('supplied argument is not a valid MySQL', MYSQL ) )
         errors.append( ('mysql_fetch_array\\(\\)', MYSQL ) )
         errors.append( ('mysql_', MYSQL ) )
         errors.append( ('on MySQL result index', MYSQL ) )
         errors.append( ('You have an error in your SQL syntax;', MYSQL ) )
         errors.append( ('MySQL server version for the right syntax to use', MYSQL ) )
-        errors.append( ('Incorrect syntax near', MSSQL ) )
-        errors.append( ('com.informix.jdbc', INFORMIX ))
-        errors.append( ('Dynamic Page Generation Error:', INFORMIX ))
         errors.append( ('\\[MySQL\\]\\[ODBC', MYSQL ))
         errors.append( ("Column count doesn't match", MYSQL ))
+        
+        # Informix
+        errors.append( ('com\\.informix\\.jdbc', INFORMIX ))
+        errors.append( ('Dynamic Page Generation Error:', INFORMIX ))
         errors.append( ('<b>Warning</b>:  ibase_', INTERBASE ))
         
         # DML
         errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', DMLDATABASE ))
         errors.append( ('has occurred in the vicinity of:', DMLDATABASE ))
-        errors.append( ('A Parser Error (syntax error)', DMLDATABASE ))
+        errors.append( ('A Parser Error \\(syntax error\\)', DMLDATABASE ))
         
         # Java
         errors.append( ('java\\.sql\\.SQLException', JAVA ))
