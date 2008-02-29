@@ -85,6 +85,9 @@ ui_menu = """
   <toolbar name="Toolbar">
     <toolitem action="Save"/>
     <toolitem action="Resume"/>
+    <separator name="s1"/>
+    <toolitem action="StartStop"/>
+    <toolitem action="Pause"/>
   </toolbar>
 </ui>
 """
@@ -142,7 +145,7 @@ class MainApp:
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
-            ('Save', gtk.STOCK_SAVE, '_Save session', None, 'Save actual session to continue later', self.notyet),
+            ('Save', gtk.STOCK_SAVE, '_ave session', None, 'Save actual session to continue later', self.notyet),
             ('Resume', gtk.STOCK_OPEN, '_Restore session', None, 'Restore a previously saved session', self.notyet),
             ('SessionMenu', None, '_Session'),
             ('ViewMenuScan', None, '_View'),
@@ -153,11 +156,14 @@ class MainApp:
             ('Help', None, '_Help', None, 'Help regarding the framework', self.notyet),
             ('About', None, '_About', None, 'About the framework', self.notyet),
             ('HelpMenu', None, '_Help'),
+            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'FIXME: will be enabled after tab refactoring', self.notyet),
         ])
 
         # the view menu for scanning
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
+            ('Pause', gtk.STOCK_MEDIA_PAUSE, '_Pause', None, 'Pause scan',
+                           self._scan_pause, False),
             ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
                            lambda w: self.dynPanels(w, "kbexplorer"), True),
             ('LogWindowS', None, '_Log viewer', None, 'Toggle the Log viewer', 
@@ -191,6 +197,12 @@ class MainApp:
         mainvbox.pack_start(menubar, False)
         toolbar = uimanager.get_widget('/Toolbar')
         mainvbox.pack_start(toolbar, False)
+
+        # get toolbar items
+        self.toolbut_startstop = toolbar.get_nth_item(3)
+        self.toolbut_pause = toolbar.get_nth_item(4)
+        self.toolbut_startstop.set_sensitive(False)
+        self.toolbut_pause.set_sensitive(False)
 
         # the throbber  
         self.throbber = Throbber()
@@ -270,6 +282,15 @@ class MainApp:
         '''Just a not yet implemented message to stdout.'''
         print "This functionality is not implemented yet!"
 
+    def _scan_pause(self, widget):
+        print "pause", widget
+#(Pdb) it.set_tooltip_text("modificado")
+#(Pdb) it.set_label("mod")
+#        import pdb;pdb.set_trace()
+        shall_pause = widget.get_active()
+        self.w3af.pause(shall_pause)
+
+
     def setSensitiveExploit(self, sensit):
         '''Set the exploits tabs to real window or dummies labels. 
         
@@ -280,6 +301,10 @@ class MainApp:
         self.viewMenuScan.set_sensitive(sensit)
         self.viewMenuExploit.set_sensitive(sensit)
         self.isRunning = sensit
+
+        # the toolbar buttons
+#        self.toolbut_startstop.set_sensitive(sensit)
+        self.toolbut_pause.set_sensitive(sensit)
 
         # create window or label for HTTPLog tab
         label = gtk.Label("HTTP Log")
