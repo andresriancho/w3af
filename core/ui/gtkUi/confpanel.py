@@ -318,7 +318,7 @@ class ConfigDialog(gtk.Dialog):
 
         # buttons and config panel
         save_btn = self._button("Save configuration")
-        rvrt_btn = self._button("Revert configuration")
+        rvrt_btn = self._button("Revert to previous configuration")
         close_btn = self._button(stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()

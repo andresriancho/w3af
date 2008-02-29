@@ -68,7 +68,7 @@ class OptionsPanel(gtk.VBox):
         save_btn = gtk.Button("Save configuration")
         save_btn.show()
         hbox.pack_start(save_btn, expand=False, fill=False)
-        rvrt_btn = gtk.Button("Revert values")
+        rvrt_btn = gtk.Button("Revert to previous values")
         rvrt_btn.show()
         hbox.pack_start(rvrt_btn, expand=False, fill=False)
         hbox.show()
