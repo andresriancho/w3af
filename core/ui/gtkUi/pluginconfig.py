@@ -157,14 +157,14 @@ class ConfigPanel(gtk.VBox):
 class PluginTree(gtk.TreeView):
     '''A tree showing all the plugins grouped by type.
 
-    @param scantab: The scantab where the scanok button leaves.
+    @param mainwin: The mainwin where the scanok button leaves.
     @param w3af: The main core class.
     @param config_panel: The configuration panel, to handle each plugin config
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, scantab, w3af, config_panel):
-        self.scantab = scantab 
+    def __init__(self, mainwin, w3af, config_panel):
+        self.mainwin = mainwin 
         self.w3af = w3af
         self.config_panel = config_panel
 
@@ -249,7 +249,7 @@ class PluginTree(gtk.TreeView):
 
         # if anything is changed, you can not start scanning
         isallok = all([all(children.values()) for children in self.config_status.values()])
-        self.scantab.scanok.change(self, isallok)
+        self.mainwin.scanok.change(self, isallok)
 
     def _getPluginInstance(self, path):
         '''Caches the plugin instance.
@@ -409,19 +409,35 @@ class PluginTree(gtk.TreeView):
 class PluginConfigBody(gtk.VBox):
     '''The main Plugin Configuration Body.
     
-    @param scantab: the tab of the main notepad
+    @param mainwin: the tab of the main notepad
     @param w3af: the main core class
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, scantab, w3af):
+    def __init__(self, mainwin, w3af):
         super(PluginConfigBody,self).__init__()
         self.w3af = w3af
+
+        # target url
+        targetbox = gtk.HBox()
+        lab = gtk.Label("Target:")
+        lab.show()
+        targetbox.pack_start(lab, expand=False, fill=False, padding=5)
+        self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change)
+        self.target.connect("activate", mainwin._scan_director)
+        self.target.show()
+        targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
+        advbut = entries.SemiStockButton("Advanced", gtk.STOCK_PREFERENCES)
+        advbut.connect("clicked", self._advancedTarget)
+        advbut.show()
+        targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
+        targetbox.show()
+        self.pack_start(targetbox, expand=False, fill=False)
 
         # the paned window
         pan = gtk.HPaned()
         a2 = ConfigPanel()
-        self.plugin_tree = PluginTree(scantab, w3af, a2)
+        self.plugin_tree = PluginTree(mainwin, w3af, a2)
         a2.plugin_tree = self.plugin_tree
         
         # left
@@ -442,22 +458,6 @@ class PluginConfigBody(gtk.VBox):
         pan.set_position(250)
         pan.show()
         self.pack_start(pan, padding=5)
-
-        # target url
-        targetbox = gtk.HBox()
-        lab = gtk.Label("Target:")
-        lab.show()
-        targetbox.pack_start(lab, expand=False, fill=False, padding=5)
-        self.target = entries.AdvisedEntry("Insert the target URL here", scantab.scanok.change)
-        self.target.connect("activate", scantab._startScan)
-        self.target.show()
-        targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
-        advbut = entries.SemiStockButton("Advanced", gtk.STOCK_PREFERENCES)
-        advbut.connect("clicked", self._advancedTarget)
-        advbut.show()
-        targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
-        targetbox.show()
-        self.pack_start(targetbox, expand=False, fill=False)
 
         self.show()
 

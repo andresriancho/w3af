@@ -41,28 +41,33 @@ except:
         print 'You have to install the buzhug database module to be able to run the GTK user interface. Available at: http://buzhug.sourceforge.net/'
         sys.exit( 1 )
 
+import threading
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
-import core.ui.gtkUi.scantab as scantab
+import core.ui.gtkUi.scanrun as scanrun
 import core.ui.gtkUi.exploittab as exploittab
 import core.ui.gtkUi.httpLogTab as httpLogTab
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.entries as entries
+import core.ui.gtkUi.messages as messages
+import core.ui.gtkUi.logtab as logtab
+import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.confpanel as confpanel
-try:
-    import core.ui.gtkUi.mozillaTab as mozillaTab
-    withMozillaTab = True
-except Exception, e:
-    withMozillaTab = False
+from core.controllers.misc import parseOptions
     
+#    <menu action="SessionMenu">
+#      <menuitem action="Save"/>
+#      <menuitem action="Resume"/>
+#    </menu>
+
+#    <toolitem action="Save"/>
+#    <toolitem action="Resume"/>
+#    <separator name="s1"/>
 
 ui_menu = """
 <ui>
   <menubar name="MenuBar">
-    <menu action="SessionMenu">
-      <menuitem action="Save"/>
-      <menuitem action="Resume"/>
-    </menu>
     <menu action="ViewMenuScan">
       <menuitem action="URLWindow"/>
       <menuitem action="KBExplorer"/>
@@ -83,9 +88,6 @@ ui_menu = """
     </menu>
   </menubar>
   <toolbar name="Toolbar">
-    <toolitem action="Save"/>
-    <toolitem action="Resume"/>
-    <separator name="s1"/>
     <toolitem action="StartStop"/>
     <toolitem action="Pause"/>
   </toolbar>
@@ -110,11 +112,11 @@ class Throbber(gtk.ToolButton):
         self.set_sensitive(False)
         self.show()
 
-    def start(self):
-        self.set_icon_widget(self.img_animat)
-
-    def stop(self):
-        self.set_icon_widget(self.img_static)
+    def running(self, spin):
+        if spin:
+            self.set_icon_widget(self.img_animat)
+        else:
+            self.set_icon_widget(self.img_static)
 
 class MainApp:
     '''Main GTK application
@@ -135,6 +137,7 @@ class MainApp:
         self.w3af = core.controllers.w3afCore.w3afCore()
         self.w3af.mainwin = self
         self.isRunning = False
+        self.scanShould = "start"
 
         # Create a UIManager instance
         uimanager = gtk.UIManager()
@@ -145,9 +148,9 @@ class MainApp:
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
-            ('Save', gtk.STOCK_SAVE, '_ave session', None, 'Save actual session to continue later', self.notyet),
-            ('Resume', gtk.STOCK_OPEN, '_Restore session', None, 'Restore a previously saved session', self.notyet),
-            ('SessionMenu', None, '_Session'),
+#            ('Save', gtk.STOCK_SAVE, '_ave session', None, 'Save actual session to continue later', self.notyet),
+#            ('Resume', gtk.STOCK_OPEN, '_Restore session', None, 'Restore a previously saved session', self.notyet),
+#            ('SessionMenu', None, '_Session'),
             ('ViewMenuScan', None, '_View'),
             ('ViewMenuExploit', None, '_View'),
             ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
@@ -156,7 +159,7 @@ class MainApp:
             ('Help', None, '_Help', None, 'Help regarding the framework', self.notyet),
             ('About', None, '_About', None, 'About the framework', self.notyet),
             ('HelpMenu', None, '_Help'),
-            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'FIXME: will be enabled after tab refactoring', self.notyet),
+            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
         ])
 
         # the view menu for scanning
@@ -199,10 +202,12 @@ class MainApp:
         mainvbox.pack_start(toolbar, False)
 
         # get toolbar items
-        self.toolbut_startstop = toolbar.get_nth_item(3)
-        self.toolbut_pause = toolbar.get_nth_item(4)
-        self.toolbut_startstop.set_sensitive(False)
+        assert toolbar.get_n_items() == 2
+        self.toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 0)
+        self.toolbut_pause = toolbar.get_nth_item(1)
+#        self.toolbut_startstop.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
+        self.scanok = helpers.PropagateBuffer(self.toolbut_startstop.set_sensitive)
 
         # the throbber  
         self.throbber = Throbber()
@@ -219,32 +224,31 @@ class MainApp:
         mainvbox.pack_start(self.nb, True)
         self.nb.show()
 
-        # scan tab
-        self.scantab = scantab.ScanTab(self, self.w3af)
-        label = gtk.Label("Scan")
-        self.nb.append_page(self.scantab, label)
-        self.viewSignalRecipient = self.scantab
+        # scan config tab
+        self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
+        label = gtk.Label("Scan config")
+        self.nb.append_page(self.pcbody, label)
+        self.viewSignalRecipient = self.pcbody
 
-        # mozilla tab
-        if withMozillaTab:
-            browser = mozillaTab.mozillaTab(self.w3af)
-            label = gtk.Label("Browser")
-            self.nb.append_page(browser, label)
-        
-        # Request Response navigator
-        self.httplog = gtk.Label("No HTTP traffic was logged yet")
-        label = gtk.Label("HTTP Log")
+        # results tab
+        self.results = gtk.Label("The scan has not started: no info yet")
+        label = gtk.Label("Results")
         label.set_sensitive(False)
-        self.httplog.set_sensitive(False)
-        self.nb.append_page(self.httplog, label)
-        self.httplog.show()
-
-        # FIXME: missing, put a placeholder
-        # third tab
-        # FIXME: missing, put a placeholder
+        self.results.set_sensitive(False)
+        self.nb.append_page(self.results, label)
+        self.results.show()
+        
+        # log tab
+        # FIXME. ver de "reducir" estos tabs a algo comun
+        self.log = gtk.Label("The scan has not started: no info yet")
+        label = gtk.Label("Log")
+        label.set_sensitive(False)
+        self.log.set_sensitive(False)
+        self.nb.append_page(self.log, label)
+        self.log.show()
 
         # exploit tab
-        self.exploit = gtk.Label("No scan info is gathered yet")
+        self.exploit = gtk.Label("The scan has not started: no info yet")
         label = gtk.Label("Exploit")
         label.set_sensitive(False)
         self.exploit.set_sensitive(False)
@@ -282,16 +286,108 @@ class MainApp:
         '''Just a not yet implemented message to stdout.'''
         print "This functionality is not implemented yet!"
 
+
+    def _scan_director(self, widget):
+        action = "_scan_" + self.scanShould
+        func = getattr(self, action)
+        func()
+
     def _scan_pause(self, widget):
         print "pause", widget
-#(Pdb) it.set_tooltip_text("modificado")
-#(Pdb) it.set_label("mod")
-#        import pdb;pdb.set_trace()
         shall_pause = widget.get_active()
+        # FIXME: el pause anda mal
+
+        # stop/start core and throbber
         self.w3af.pause(shall_pause)
+        self.throbber.running(not shall_pause)
+
+        # start the status supervisor
+        if not shall_pause:
+            gobject.timeout_add(500, self._scan_superviseStatus)
+
+    def _scan_start(self):
+        '''Starts the actual scanning.
+
+        @param widget: the widget that generated the signal.
+        '''
+        print "start"
+        # save the activated plugins
+        for type,plugins in self.pcbody.getActivatedPlugins():
+            self.w3af.setPlugins(plugins, type)
+
+        # save the URL, the rest of the options are saved in the "Advanced" dialog
+        options = parseOptions.parseXML(self.w3af.target.getOptionsXML())
+        url = self.pcbody.target.get_text()
+        options['target'].update(default=url)
+        try:
+            helpers.coreWrap(self.w3af.target.setOptions, options)
+        except w3afException:
+            return
+
+        # Verify that everything is ready to run
+        try:
+            helpers.coreWrap(self.w3af.initPlugins)
+            helpers.coreWrap(self.w3af.verifyEnvironment)
+        except w3afException, w3:
+            return
+
+        def startScanWrap():
+            try:
+                self.w3af.start()
+            except KeyboardInterrupt:
+#                print 'Ctrl+C found, exiting!'
+                pass
+        
+        # start real work in background, and start supervising if it ends                
+        threading.Thread(target=startScanWrap).start()
+        gobject.timeout_add(500, self._scan_superviseStatus)
+
+        self.setSensitiveTabs(True)
+        self.throbber.running(True)
+        self.toolbut_pause.set_sensitive(True)
+        self.toolbut_startstop.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
+        self.scanShould = "stop"
+        # FIXME: go automatically to results
+
+    def _scan_stop(self):
+        '''Stops the scanning.'''
+        # stop and wait until really stopped
+        # FIXME: esto no anda del todo
+        self.w3af.stop()
+        self.toolbut_startstop.set_sensitive(False)
+        self.scanShould = "clear"
+
+    def _scan_clear(self):
+        # cleanup
+        self.w3af.cleanup()
+        messages.getQueueDiverter(reset=True)
+        self.setSensitiveTabs(False)
+
+        # put the button in start
+        self.toolbut_startstop.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
+        # FIXME: este boton no queda bien al ponerlo!
+        self.scanShould = "start"
+
+    def _scan_superviseStatus(self):
+        '''Handles the waiting until core actually stopped.
+
+        @return: True to be called again
+        '''
+        print "supervise",
+        if self.w3af.isRunning():
+            print "running"
+            return True
+
+        # core is stopped, we had it in on, stop all
+        print "stopped!"
+        self.toolbut_startstop.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
+        self.throbber.running(False)
+        self.toolbut_pause.set_sensitive(False)
+        self.scanShould = "clear"
+        return False
 
 
-    def setSensitiveExploit(self, sensit):
+    def setSensitiveTabs(self, sensit):
         '''Set the exploits tabs to real window or dummies labels. 
         
         @param sensit: if it's active or not
@@ -302,41 +398,28 @@ class MainApp:
         self.viewMenuExploit.set_sensitive(sensit)
         self.isRunning = sensit
 
-        # the toolbar buttons
-#        self.toolbut_startstop.set_sensitive(sensit)
-        self.toolbut_pause.set_sensitive(sensit)
+        # ok, the tabs, :p
+        self._sensitivTab(sensit, "Results", scanrun.ScanRunBody,    "results")
+        self._sensitivTab(sensit, "Log",     logtab.LogBody,         "log")
+        self._sensitivTab(sensit, "Exploit", exploittab.ExploitBody, "exploit")
 
-        # create window or label for HTTPLog tab
-        label = gtk.Label("HTTP Log")
+    def _sensitivTab(self, sensit, title, realWidget, pointername):
+        # create title and window/label
+        label = gtk.Label(title)
         if sensit:
-            newhttplog = httpLogTab.httpLogTab(self.w3af)
+            newone = realWidget(self.w3af)
         else:
-            newhttplog = gtk.Label("No HTTP traffic was logued yet")
-            newhttplog.show()
+            newone = gtk.Label("The scan has not started: no info yet")
+            newone.show()
             label.set_sensitive(False)
-            newhttplog.set_sensitive(False)
-        
-        # remove old page and insert this one
-        pos = self.nb.page_num(self.httplog)
-        self.nb.remove_page(pos)
-        self.nb.insert_page(newhttplog, label, pos)
-        self.httplog = newhttplog
+            newone.set_sensitive(False)
 
-        # create window or label for Exploit tab
-        label = gtk.Label("Exploit")
-        if sensit:
-            newexploit = exploittab.ExploitBody(self.w3af)
-        else:
-            newexploit = gtk.Label("No scan info is gathered yet")
-            newexploit.show()
-            label.set_sensitive(False)
-            newexploit.set_sensitive(False)
-        
         # remove old page and insert this one
-        pos = self.nb.page_num(self.exploit)
+        pointer = getattr(self, pointername)
+        pos = self.nb.page_num(pointer)
         self.nb.remove_page(pos)
-        self.nb.insert_page(newexploit, label, pos)
-        self.exploit = newexploit
+        self.nb.insert_page(newone, label, pos)
+        setattr(self, pointername, newone)
 
     def menu_config_http(self, action):
         configurable = self.w3af.uriOpener.settings
@@ -363,7 +446,7 @@ class MainApp:
             self.viewMenuScan.set_visible(True)
             self.viewMenuScan.set_sensitive(self.isRunning)
             self.viewMenuExploit.set_visible(False)
-            self.viewSignalRecipient = self.scantab
+            self.viewSignalRecipient = self.pcbody
         elif page_num == 3:
             # exploit page
             self.viewMenuScan.set_visible(False)
@@ -376,5 +459,8 @@ class MainApp:
             self.viewMenuExploit.set_sensitive(False)
             self.viewSignalRecipient = None
 
+
+
+        
 def main():
     MainApp()

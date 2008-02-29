@@ -295,6 +295,39 @@ class SemiStockButton(gtk.Button):
         self.image.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
 
 
+class ToolbuttonWrapper(object):
+    '''Wraps a tool button from a toolbar, and offer helpers.
+    
+    @param toolbar: the toolbar to extract the toolbutton
+    @param position: the position where it is
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, toolbar, position):
+        self.toolbut = toolbar.get_nth_item(position)
+        if self.toolbut is None:    
+            raise ValueError("The toolbar does not have a button in position %d" % position)
+
+        but = self.toolbut.get_children()[0]
+        box = but.get_children()[0]
+        self.image = box.get_children()[0]
+
+    def changeInternals(self, newlabel, newimage, newtooltip):
+        '''Changes the image and label of the widget.
+    
+        @param newlabel: the text that will be used for the label
+        @param newimage: the stock widget from where extract the image
+        @param newtooltip: the text for the tooltip
+        '''
+        self.toolbut.set_tooltip_text(newtooltip)
+        self.toolbut.set_label(newlabel)
+        box = self.toolbut.get_children()[0].get_children()[0]
+        img = box.get_children()[0]
+        img.set_from_icon_name(newimage, gtk.ICON_SIZE_SMALL_TOOLBAR)
+
+    def set_sensitive(self, sensit):
+        self.toolbut.set_sensitive(sensit)
+
 class AdvisedEntry(gtk.Entry):
     '''Entry that cleans its helping text the first time it's used.
     
