@@ -140,7 +140,7 @@ class Messages(gtk.VBox):
         self.sclines.connect("populate-popup", self._populate_popup)
         self.textbuf = self.sclines.get_buffer()
         self.textbuf.create_tag("yellow-background", background="yellow")
-        self._build_search()
+        self._build_search(None)
 
         # color handling for the background of the entry
         colormap = self.get_colormap()
@@ -185,7 +185,7 @@ class Messages(gtk.VBox):
         opc.connect("activate", self._build_search)
         menu.show_all()
 
-    def _build_search(self):
+    def _build_search(self, widget):
         '''Builds the search bar.'''
         tooltips = gtk.Tooltips()
         self.srchtab = gtk.HBox()
