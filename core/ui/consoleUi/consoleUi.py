@@ -56,7 +56,7 @@ class consoleUi(consoleMenu):
         self._scriptFileName = scriptFile
         
         consoleMenu.__init__(self)
-        self._menu = {'help':self._rootHelp, 'url-settings':self._url, 'misc-settings':self._misc,\
+        self._menu = {'help':self._rootHelp, 'http-settings':self._httpSettings, 'misc-settings':self._misc,\
         'plugins':self._plugins,'start':self.start, 'assert': self._assert, \
         'profiles':self._profile,'exploit':self._exploit,'exit':self._exit,'target':self._target,'tools':self._tools, 'version': self._version}
         self._w3af = core.controllers.w3afCore.w3afCore()
@@ -96,7 +96,7 @@ class consoleUi(consoleMenu):
         if len(parameters) == 0 :
             self.mprint('The following commands are available:','')
             self.mprint('help','You are here. help [command] prints more specific help.')
-            self.mprint('url-settings','Configure the URL opener.')
+            self.mprint('http-settings','Configure the URL opener.')
             self.mprint('misc-settings','Configure w3af misc settings.')
             self.mprint('plugins','Enable, disable and configure plugins.')
             self.mprint('profiles','List and start scan profiles.')
@@ -111,7 +111,7 @@ class consoleUi(consoleMenu):
             self.mprint('Enter the exploit configuration.','')
         elif parameters[0] == 'plugins':
             self.mprint('Enter the plugin configuration.','')
-        elif parameters[0] == 'url-settings':
+        elif parameters[0] == 'http-settings':
             self.mprint('Enter the url configuration.','')
         elif parameters[0] == 'profiles':
             self.mprint('Enter the profiles configuration. Here you will be able to run predefined scans.','')
@@ -128,7 +128,7 @@ class consoleUi(consoleMenu):
         except KeyboardInterrupt,k:
             om.out.console('')
     
-    def _url( self, parameters  ):
+    def _httpSettings( self, parameters  ):
         '''
         Opens a URL config menu
         '''

@@ -1,6 +1,6 @@
 # This is a simple xss detection demo:
 
-url-settings
+http-settings
 set proxyAddress 127.0.0.1
 set proxyPort 8081
 back

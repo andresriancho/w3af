@@ -1,6 +1,6 @@
 # This is a test for the 404 fingerprinting of the core
 
-#url-settings
+#http-settings
 #set proxyAddress 127.0.0.1
 #set proxyPort 8081
 #back

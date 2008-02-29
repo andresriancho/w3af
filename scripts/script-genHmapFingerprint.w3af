@@ -10,9 +10,11 @@ output config console
 set verbosity 0
 back
 back
-url-settings
+
+http-settings
 set userAgent pepe
 back
+
 target
 set target http://localhost/w3af/index.html
 back
