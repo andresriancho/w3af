@@ -160,7 +160,7 @@ class MainApp:
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
             ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
                            lambda w: self.dynPanels(w, "kbexplorer"), True),
-            ('LogWindowS', None, '_Log Window', None, 'Toggle the Log Window', 
+            ('LogWindowS', None, '_Log viewer', None, 'Toggle the Log viewer', 
                            lambda w: self.dynPanels(w, "messagelog"), True),
             ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
                            lambda w: self.dynPanels(w, "urltree"), True),
@@ -171,11 +171,11 @@ class MainApp:
         # the view menu for exploit
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('ExploitVuln', None, '_Exploit Vulns', None, 'Toggle the Exploit Vulns panel',
+            ('ExploitVuln', None, '_Plugins', None, 'Toggle the plugins panel',
                            lambda w: self.dynPanels(w, "exploitvuln"), True),
-            ('Interactive', None, '_Interactive', None, 'Toggle the Interactive Window', 
+            ('Interactive', None, '_Shells and Proxies', None, 'Toggle the shells and proxies window', 
                            lambda w: self.dynPanels(w, "interac"), True),
-            ('LogWindowE', None, '_Log Window', None, 'Toggle the Log Window', 
+            ('LogWindowE', None, '_Log viewer', None, 'Toggle the Log viewer', 
                            lambda w: self.dynPanels(w, "messagelog"), True),
         ])
         self.viewMenuExploit = actiongroup.get_action("ViewMenuExploit")
