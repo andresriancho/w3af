@@ -61,7 +61,9 @@ class httpLogTab(gtk.HPaned):
         mainvbox = gtk.VBox()
         
         # Create the req/res viewer
-        reqResViewer = gtk.Notebook()
+        reqResViewer = gtk.HPaned()
+        resultNotebook = gtk.Notebook()
+        requestNotebook = gtk.Notebook()
         
         reqLabel = gtk.Label("Request")
         self._reqPaned = requestPaned()
@@ -71,9 +73,12 @@ class httpLogTab(gtk.HPaned):
         # TODO: Replace me with a gtkmozembed!
         self._renderedPaned = gtk.TextView()
         
-        reqResViewer.append_page(self._reqPaned, reqLabel)
-        reqResViewer.append_page(self._resPaned, resLabel)
-        reqResViewer.append_page(self._renderedPaned, renderedLabel)
+        requestNotebook.append_page(self._reqPaned, reqLabel)
+        reqResViewer.pack1(requestNotebook)
+        resultNotebook.append_page(self._resPaned, resLabel)
+        resultNotebook.append_page(self._renderedPaned, renderedLabel)
+        reqResViewer.pack2(resultNotebook)
+        reqResViewer.set_position(400)
         reqResViewer.show_all()
         
         # Create the req/res selector (when a search with more than one result is done, this window appears)
