@@ -147,7 +147,7 @@ class MainApp:
             ('SessionMenu', None, '_Session'),
             ('ViewMenuScan', None, '_View'),
             ('ViewMenuExploit', None, '_View'),
-            ('URLconfig', None, '_URL Config', None, 'URL configuration', self.menu_config_url),
+            ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
             ('Help', None, '_Help', None, 'Help regarding the framework', self.notyet),
@@ -313,13 +313,13 @@ class MainApp:
         self.nb.insert_page(newexploit, label, pos)
         self.exploit = newexploit
 
-    def menu_config_url(self, action):
-        plugin = self.w3af.uriOpener.settings
-        confpanel.ConfigDialog("Configure URL settings", self.w3af, plugin)
+    def menu_config_http(self, action):
+        configurable = self.w3af.uriOpener.settings
+        confpanel.ConfigDialog("Configure HTTP settings", self.w3af, configurable)
 
     def menu_config_misc(self, action):
-        plugin = core.controllers.miscSettings.miscSettings()
-        confpanel.ConfigDialog("Configure Misc settings", self.w3af, plugin)
+        configurable = core.controllers.miscSettings.miscSettings()
+        confpanel.ConfigDialog("Configure Misc settings", self.w3af, configurable)
 
     def dynPanels(self, widget, panel):
         '''Turns on and off the Log Panel.'''
