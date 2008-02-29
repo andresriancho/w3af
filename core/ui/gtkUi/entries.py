@@ -373,3 +373,187 @@ class TextDialog(gtk.Dialog):
         '''Actives the OK button, waits for user, and close self.'''
         self.butt_ok.set_sensitive(True)
         self.run()
+
+
+class Findable(object):
+    '''Class that gives the machinery to search to a TextView.
+
+    Just inheritate it.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self):
+        # key definitions
+        self.key_f = gtk.gdk.keyval_from_name("f")
+        self.key_g = gtk.gdk.keyval_from_name("g")
+        self.key_G = gtk.gdk.keyval_from_name("G")
+        self.key_F3 = gtk.gdk.keyval_from_name("F3")
+
+        # signals
+        self.connect("key-press-event", self._key)
+        self.sclines.connect("populate-popup", self._populate_popup)
+
+        # colors for textview and entry backgrounds
+        self.textbuf = self.sclines.get_buffer()
+        self.textbuf.create_tag("yellow-background", background="yellow")
+        colormap = self.get_colormap()
+        self.bg_normal = colormap.alloc_color("white")
+        self.bg_notfnd = colormap.alloc_color("red")
+
+        # build the search tab
+        self._build_search(None)
+
+    def _key(self, widg, event):
+        '''Handles keystrokes.'''
+        # ctrl-something
+        if event.state & gtk.gdk.CONTROL_MASK:
+            if event.keyval == self.key_f:   # -f
+                self._show_search()
+            elif event.keyval == self.key_g:   # -g
+                self._find(None, "next")
+            elif event.keyval == self.key_G:   # -G (with shift)
+                self._find(None, "previous")
+            return True
+
+        # F3
+        if event.keyval == self.key_F3:
+            if event.state & gtk.gdk.SHIFT_MASK:
+                self._find(None, "previous")
+            else:
+                self._find(None, "next")
+        return False
+
+    def _populate_popup(self, textview, menu):
+        '''Populates the menu with the Find item.'''
+        menu.append(gtk.SeparatorMenuItem())
+        opc = gtk.MenuItem("Find...")
+        menu.append(opc)
+        opc.connect("activate", self._show_search)
+        menu.show_all()
+
+    def _show_search(self, widget=None):
+        self.srchtab.show_all()
+        self.search_entry.grab_focus()
+        self.searching = True
+
+    def _build_search(self, widget):
+        '''Builds the search bar.'''
+        tooltips = gtk.Tooltips()
+        self.srchtab = gtk.HBox()
+
+        # label
+        label = gtk.Label("Find:")
+        self.srchtab.pack_start(label, expand=False, fill=False, padding=3)
+
+        # entry
+        self.search_entry = gtk.Entry()
+        tooltips.set_tip(self.search_entry, "Type here the phrase you want to find")
+        self.search_entry.connect("activate", self._find, "next")
+        self.search_entry.connect("changed", self._find, "find")
+        self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
+
+        # find next button
+        butn = SemiStockButton("Next", gtk.STOCK_GO_DOWN)
+        butn.connect("clicked", self._find, "next")
+        tooltips.set_tip(butn, "Find the next ocurrence of the phrase")
+        self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
+
+        # find previous button
+        butp = SemiStockButton("Previous", gtk.STOCK_GO_UP)
+        butp.connect("clicked", self._find, "previous")
+        tooltips.set_tip(butp, "Find the previous ocurrence of the phrase")
+        self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
+
+        # make last two buttons equally width
+        wn,hn = butn.size_request()
+        wp,hp = butp.size_request()
+        newwidth = max(wn, wp)
+        butn.set_size_request(newwidth, hn)
+        butp.set_size_request(newwidth, hp)
+
+        # close button
+        close = gtk.Image()
+        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR)
+        eventbox = gtk.EventBox()
+        eventbox.add(close)
+        eventbox.connect("button-release-event", self._close)
+        self.srchtab.pack_end(eventbox, expand=False, fill=False, padding=3)
+
+        self.pack_start(self.srchtab, expand=False, fill=False)
+        self.searching = False
+
+    def _find(self, widget, direction):
+        '''Actually find the text, and handle highlight and selection.'''
+        # if not searching, don't do anything
+        if not self.searching:
+            return
+
+        # get widgets and info
+        self._clean()
+        tosearch = self.search_entry.get_text()
+        if not tosearch:
+            return
+        (ini, fin) = self.textbuf.get_bounds()
+        alltext = self.textbuf.get_text(ini, fin)
+
+        # find the positions where the phrase is found
+        positions = []
+        pos = 0
+        while True:
+            try:
+                pos = alltext.index(tosearch, pos)
+            except ValueError:
+                break
+            fin = pos + len(tosearch)
+            iterini = self.textbuf.get_iter_at_offset(pos)
+            iterfin = self.textbuf.get_iter_at_offset(fin)
+            positions.append((pos, fin, iterini, iterfin))
+            pos += 1
+        if not positions:
+            self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_notfnd)
+            self.textbuf.select_range(ini, ini)
+            return
+
+        # highlight them all
+        for (ini, fin, iterini, iterfin) in positions:
+            self.textbuf.apply_tag_by_name("yellow-background", iterini, iterfin)
+
+        # find where's the cursor in the found items
+        cursorpos = self.textbuf.get_property("cursor-position")
+        for ind, (ini, fin, iterini, iterfin) in enumerate(positions):
+            if ini >= cursorpos:
+                keypos = ind
+                break
+        else:
+            keypos = 0
+
+        # go next or previos, and adjust in the border
+        if direction == "next":
+            keypos += 1
+            if keypos >= len(positions):
+                keypos = 0
+        elif direction == "previous":
+            keypos -= 1
+            if keypos < 0:
+                keypos = len(positions) - 1
+        
+        # mark and show it
+        (ini, fin, iterini, iterfin) = positions[keypos]
+        self.textbuf.select_range(iterini, iterfin)
+        self.sclines.scroll_to_iter(iterini, 0, False)
+
+    def _close(self, widget, event):
+        '''Hides the search bar, and cleans the background.'''
+        self.srchtab.hide()
+        self._clean()
+        self.searching = False
+
+    def _clean(self):
+        # highlights
+        (ini, fin) = self.textbuf.get_bounds()
+        self.textbuf.remove_tag_by_name("yellow-background", ini, fin)
+
+        # entry background
+        self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_normal)
+
+
