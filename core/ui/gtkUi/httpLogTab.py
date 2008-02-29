@@ -62,12 +62,18 @@ class httpLogTab(gtk.HPaned):
         
         # Create the req/res viewer
         reqResViewer = gtk.Notebook()
+        
         reqLabel = gtk.Label("Request")
         self._reqPaned = requestPaned()
         resLabel = gtk.Label("Response")
         self._resPaned = responsePaned()
+        renderedLabel = gtk.Label("Rendered response")
+        # TODO: Replace me with a gtkmozembed!
+        self._renderedPaned = gtk.TextView()
+        
         reqResViewer.append_page(self._reqPaned, reqLabel)
         reqResViewer.append_page(self._resPaned, resLabel)
+        reqResViewer.append_page(self._renderedPaned, renderedLabel)
         reqResViewer.show_all()
         
         # Create the req/res selector (when a search with more than one result is done, this window appears)
@@ -86,8 +92,8 @@ class httpLogTab(gtk.HPaned):
         
         # I want all sections to be resizable
         self._vpan = gtk.VPaned()
-        self._vpan.pack1( reqResViewer )
-        self._vpan.pack2( self._sw )
+        self._vpan.pack1( self._sw )
+        self._vpan.pack2( reqResViewer )
         self._vpan.show()
         
         # Add the menuHbox, the request/response viewer and the r/r selector on the bottom
