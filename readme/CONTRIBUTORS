@@ -7,6 +7,9 @@ Main contributors:
     Alexander Berezhnoy - spiderMan refactoring, new console user interface, plugins
     Facundo Batista - pyGTK user interface
 
+GUI design and usability contributors:
+    Eduardo Mercovich - *Incredible* work in design and usability of the GTK user interface. Most of his recommendations still need to be coded.
+    
 Contributors from Cybsec:
     Mariano Nuñez DiCroce -  webUi
     Juan Pablo Perez Etchegoyen - htmlFile output plugin
