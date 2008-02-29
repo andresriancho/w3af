@@ -66,8 +66,9 @@ class PromptView(gtk.TextView):
     def _proc(self, text):
         '''Process the user input.'''
         result = self.procfunc(text)
-        iter = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iter, result+"\n")
+        if result != None:
+            iter = self.textbuffer.get_end_iter()
+            self.textbuffer.insert(iter, result+"\n")
         self._prompt()
         
     def _prompt(self):
