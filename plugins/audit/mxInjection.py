@@ -27,6 +27,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+import re
 
 class mxInjection(baseAuditPlugin):
     '''
@@ -67,14 +68,15 @@ class mxInjection(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        foundPattern = self._findmxError( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setName( 'MX injection vulnerability' )
-            v.setSeverity(severity.MEDIUM)
-            v.setDesc( 'MX injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            v.setId( response.id )
-            kb.kb.append( self, 'mxInjection', v )
+        mxErrorList = self._findmxError( response )
+        for mxError in mxErrorList:
+            if not re.search( mxError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setName( 'MX injection vulnerability' )
+                v.setSeverity(severity.MEDIUM)
+                v.setDesc( 'MX injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setId( response.id )
+                kb.kb.append( self, 'mxInjection', v )
     
     def end(self):
         '''
@@ -95,19 +97,20 @@ class mxInjection(baseAuditPlugin):
         mxInjectionStrings.append('')
         return mxInjectionStrings
 
-    def _findmxError( self, htmlString ):
+    def _findmxError( self, response ):
         '''
         This method searches for mx errors in html's.
         
-        @parameter htmlString: The html string where the method searches for mx errors
-        @return: True if a mx was found on the site, False otherwise.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
+        res = []
         for mxError in self._getmxErrors():
-            position = htmlString.find( mxError )
-            if  position != -1:
-                om.out.vulnerability('Found MX injection. The error showed by the web application is (only a fragment is shown): "' + mxError  + '".')
-                return mxError
-        return False
+            match = re.search( mxError, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found MX injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append(mxError)
+        return res
 
     def _getmxErrors(self):
         errors = []

@@ -27,6 +27,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+import re
 
 class preg_replace(baseAuditPlugin):
     '''
@@ -61,14 +62,15 @@ class preg_replace(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        foundPattern = self._findpregError( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setId( response.id )
-            v.setSeverity(severity.HIGH)
-            v.setName( 'Unsafe usage of preg_replace' )
-            v.setDesc( 'Unsafe usage of preg_replace was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            kb.kb.append( self, 'preg_replace', v )
+        pregErrorList = self._findpregError( response )
+        for pregError in pregErrorList:
+            if not re.search( pregError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setId( response.id )
+                v.setSeverity(severity.HIGH)
+                v.setName( 'Unsafe usage of preg_replace' )
+                v.setDesc( 'Unsafe usage of preg_replace was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                kb.kb.append( self, 'preg_replace', v )
         
     def end(self):
         '''
@@ -77,27 +79,25 @@ class preg_replace(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
     
-    def _findpregError( self, htmlString ):
+    def _findpregError( self, response ):
         '''
         This method searches for preg_replace errors in html's.
         
-        @parameter htmlString: The html string where the method searches for preg_replace errors
-        @return: pregError if a preg_replace was found on the site, False otherwise.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
-        pregErrorList = self._getPregError()
-
-        for pregError in pregErrorList:
-            position = htmlString.find( pregError )
-            if  position != -1:
-                om.out.vulnerability('Found unsafe usage of preg_replace(). The error showed by the web application is (only a fragment is shown): "' + pregError + '".')
-                return pregError
-                
-        return False
+        res = []
+        for pregError in self._getPregError():
+            match = re.search( pregError, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found unsafe usage of preg_replace(). The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append(pregError)
+        return res
 
     def _getPregError(self):
         errors = []
         errors.append( 'Compilation failed: unmatched parentheses at offset' )
-        errors.append( '<b>Warning</b>:  preg_replace() [<a' )
+        errors.append( '<b>Warning</b>:  preg_replace\\(\\) \\[<a' )
         return errors
         
     def getOptionsXML(self):

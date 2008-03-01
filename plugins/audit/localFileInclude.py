@@ -27,6 +27,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
+import re
 
 class localFileInclude(baseAuditPlugin):
     '''
@@ -87,15 +88,16 @@ class localFileInclude(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        foundPattern = self._findFile( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setId( response.id )
-            v.setName( 'Local file inclusion vulnerability' )
-            v.setSeverity(severity.MEDIUM)
-            v.setDesc( 'Local File Inclusion was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            v['filePattern'] = foundPattern
-            kb.kb.append( 'localFileInclude', 'localFileInclude', v )
+        fileContentList = self._findFile( response )
+        for fileContent in fileContentList:
+            if not re.search( fileContent, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setId( response.id )
+                v.setName( 'Local file inclusion vulnerability' )
+                v.setSeverity(severity.MEDIUM)
+                v.setDesc( 'Local File Inclusion was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v['filePattern'] = fileContent
+                kb.kb.append( 'localFileInclude', 'localFileInclude', v )
     
     def end(self):
         '''
@@ -128,20 +130,21 @@ class localFileInclude(baseAuditPlugin):
         ''' 
         pass
         
-    def _findFile( self, htmlString ):
+    def _findFile( self, response ):
         '''
         This method finds out if the local file has been successfully included in 
         the resulting HTML.
         
-        @return: True / False.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
+        res = []
         for filePattern in self._getFilePatterns():
-            position = htmlString.find( filePattern )
-            if  position != -1:
-                om.out.debug('Found local file include. The section where the file is included is (only a fragment is shown): "' + htmlString[ position : position + 20]  + '".')
-                return filePattern
-                
-        return None
+            match = re.search( filePattern, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found file fragment. The section where the file is included is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append( filePattern ) 
+        return res
     
     def _getFilePatterns(self):
         '''
@@ -156,17 +159,17 @@ class localFileInclude(baseAuditPlugin):
         filePatterns.append(":/bin/sh")
         
         # boot.ini
-        filePatterns.append("[boot loader]")
-        filePatterns.append("default=multi(")
-        filePatterns.append("[operating systems]")
+        filePatterns.append("\\[boot loader\\]")
+        filePatterns.append("default=multi\\(")
+        filePatterns.append("\\[operating systems\\]")
         
         # win.ini
-        filePatterns.append("[fonts]")
+        filePatterns.append("\\[fonts\\]")
         
         # Inclusion errors
         filePatterns.append("java.io.FileNotFoundException:")
-        filePatterns.append("fread():")
-        filePatterns.append("for inclusion (include_path=")
+        filePatterns.append("fread\\(\\):")
+        filePatterns.append("for inclusion '\\(include_path=")
         filePatterns.append("Failed opening required")
         
         return filePatterns

@@ -76,7 +76,7 @@ class sqli(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        sqlErrorList = self._findSqlError( response.getBody() )
+        sqlErrorList = self._findSqlError( response )
         for sqlError in sqlErrorList:
             if not re.search( sqlError[0], mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
@@ -106,18 +106,18 @@ class sqli(baseAuditPlugin):
         sqliStrings.append("d'z\"0")
         return sqliStrings
 
-    def _findSqlError( self, htmlString ):
+    def _findSqlError( self, response ):
         '''
         This method searches for SQL errors in html's.
         
-        @parameter htmlString: The html string where the method searches for sql errors
-        @return: True if a SQL was found on the site, False otherwise.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
         res = []
         for sqlError in self._getSqlErrors():
-            match = re.search( sqlError[0] , htmlString , re.IGNORECASE )
+            match = re.search( sqlError[0] , response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('A SQL error was found in the response supplied by the web application, the error is (only a fragment is shown): "' + htmlString[match.start():match.end()]  + '".')
+                om.out.information('A SQL error was found in the response supplied by the web application, the error is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.' )
                 res.append( sqlError )
         return res
 

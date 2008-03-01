@@ -28,6 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
+import re
 
 class xpath(baseAuditPlugin):
     '''
@@ -73,14 +74,15 @@ class xpath(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        foundPattern = self._findXpathError( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setName( 'XPATH injection vulnerability' )
-            v.setSeverity(severity.MEDIUM)
-            v.setDesc( 'XPATH injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            v.setId( response.id )
-            kb.kb.append( self, 'xpath', v )
+        XpathErrorList = self._findXpathError( response )
+        for xpathError in XpathErrorList:
+            if not re.search( xpathError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setName( 'XPATH injection vulnerability' )
+                v.setSeverity(severity.MEDIUM)
+                v.setDesc( 'XPATH injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setId( response.id )
+                kb.kb.append( self, 'xpath', v )
     
     def end(self):
         '''
@@ -89,21 +91,20 @@ class xpath(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
     
-    def _findXpathError( self, htmlString ):
+    def _findXpathError( self, response ):
         '''
         This method searches for xpath errors in html's.
         
-        @parameter code: The response code for the test.
-        @parameter htmlString: The html string where the method searches for sql errors
-        @return: True if a xpath was found on the site, False otherwise.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
+        res = []
         for xpathError in  self._getxpathErrors():
-            position = htmlString.lower().find( xpathError )
-            if  position != -1:
-                om.out.vulnerability('Found xpath injection. The error showed by the web application is (only a fragment is shown): "' + xpathError + '".')
-                return xpathError
-                
-        return False
+            match = re.search( xpathError, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found xpath injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append( xpathError )
+        return res
         
     def _getxpathErrors( self ):
         errorStr = []
@@ -116,7 +117,7 @@ class xpath(baseAuditPlugin):
         errorStr.append( 'Empty Path Expression' )
         errorStr.append( 'Empty Relative Location Path' )
         errorStr.append( 'Empty Union Expression' )
-        errorStr.append( "Expected ')' in" )
+        errorStr.append( "Expected '\\)' in" )
         errorStr.append( 'Expected node test or name specification after axis operator' )
         errorStr.append( 'Incompatible XPath key' )
         errorStr.append( 'Incorrect Variable Binding' )
@@ -127,7 +128,7 @@ class xpath(baseAuditPlugin):
         errorStr.append( "error '80004005'" )
         errorStr.append( "A document must contain exactly one root element." )
         errorStr.append( '<font face="Arial" size=2>Expression must evaluate to a node-set.' )
-        errorStr.append( "Expected token ']'" )
+        errorStr.append( "Expected token '\\]'" )
         errorStr.append( "<p>msxml4.dll</font>" )
         errorStr.append( "<p>msxml3.dll</font>" )
         

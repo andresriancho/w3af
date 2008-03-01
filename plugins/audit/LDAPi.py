@@ -28,6 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
+import re
 
 class LDAPi(baseAuditPlugin):
     '''
@@ -71,14 +72,15 @@ class LDAPi(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        foundPattern = self._findLDAPError( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setId( response.id )
-            v.setSeverity(severity.HIGH)
-            v.setName( 'LDAP injection vulnerability' )
-            v.setDesc( 'LDAP injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            kb.kb.append( self, 'LDAPi', v )
+        LDAPErrorList = self._findLDAPError( response )
+        for ldapError in LDAPErrorList:
+            if not re.search( ldapError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setId( response.id )
+                v.setSeverity(severity.HIGH)
+                v.setName( 'LDAP injection vulnerability' )
+                v.setDesc( 'LDAP injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                kb.kb.append( self, 'LDAPi', v )
     
     def end(self):
         '''
@@ -87,22 +89,20 @@ class LDAPi(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'LDAPi', 'LDAPi' ), 'VAR' )
         
-    def _findLDAPError( self, htmlString ):
+    def _findLDAPError( self, response ):
         '''
         This method searches for LDAP errors in html's.
         
-        @parameter htmlString: The html string where the method searches for ldap errors
-        @return: The error string if a LDAP was found on the site, False otherwise.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
-        ldapErrors = self._getLDAPErrors()
-
-        for ldapError in ldapErrors:
-            position = htmlString.lower().find( ldapError )
-            if  position != -1:
-                om.out.vulnerability('Found LDAP injection. The error returned by the web application is (only a fragment is shown): "' + ldapError + '".')
-                return ldapError
-                
-        return False
+        res = []
+        for ldapError in self._getLDAPErrors():
+            match = re.search( ldapError, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found LDAP injection. The error returned by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append( ldapError )
+        return res
         
     def _getLDAPErrors( self ):
         errorStr = []

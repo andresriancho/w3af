@@ -29,6 +29,7 @@ from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+import re
 
 class ssi(baseAuditPlugin):
     '''
@@ -80,14 +81,15 @@ class ssi(baseAuditPlugin):
         return localFiles
     
     def _analyzeResult( self, mutant, response ):
-        foundPattern = self._findFile( response.getBody() )
-        if foundPattern and foundPattern not in mutant.getOriginalResponseBody():
-            v = vuln.vuln( mutant )
-            v.setName( 'Server side include vulnerability' )
-            v.setSeverity(severity.HIGH)
-            v.setDesc( 'Server Side Include was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            v.setId( response.id )
-            kb.kb.append( self, 'ssi', v )
+        ssiErrorList = self._findFile( response )
+        for ssiError in ssiErrorList:
+            if not re.search( ssiError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                v = vuln.vuln( mutant )
+                v.setName( 'Server side include vulnerability' )
+                v.setSeverity(severity.HIGH)
+                v.setDesc( 'Server Side Include was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setId( response.id )
+                kb.kb.append( self, 'ssi', v )
     
     def end(self):
         '''
@@ -137,18 +139,21 @@ class ssi(baseAuditPlugin):
         ''' 
         pass
         
-    def _findFile( self, htmlString ):
+    def _findFile( self, response ):
         '''
         This method finds out if the server side has been successfully included in 
         the resulting HTML.
         
-        @return: True / False.
+        @parameter response: The HTTP response object
+        @return: A list of errors found on the page
         '''
+        res = []
         for filePattern in self._getFilePatterns():
-            if  htmlString.find( filePattern ) != -1:
-                om.out.vulnerability('Found server side include. The section where the file is included is (only a fragment is shown): "' + filePattern + '".')
-                return filePattern
-        return False
+            match = re.search( filePattern, response.getBody() , re.IGNORECASE )
+            if  match:
+                om.out.information('Found server side include. The section where the file is included is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                res.append(filePattern)
+        return res
     
     def _getFilePatterns(self):
         '''
