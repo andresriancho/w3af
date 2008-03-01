@@ -240,7 +240,12 @@ class httpLogTab(gtk.HPaned):
             self._lstore.set(iter,
                 0, item.id,
                 1, item.uri)
-        self._vpan.set_position(300)
+                
+        if len(results) < 10:
+            position = 13 + 48 * len(results)
+        else:
+            position = 13 + 120
+        self._vpan.set_position(position)
         self._sw.show_all()
             
 class searchEntry(ValidatedEntry):
