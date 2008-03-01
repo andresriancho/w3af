@@ -164,9 +164,9 @@ class ssi(baseAuditPlugin):
         filePatterns.append("daemon:x:1:1:")
         filePatterns.append(":/bin/bash")
         filePatterns.append(":/bin/sh")
-        filePatterns.append("[boot loader]")
-        filePatterns.append("default=multi(")
-        filePatterns.append("[operating systems]")
+        filePatterns.append("\\[boot loader\\]")
+        filePatterns.append("default=multi\\(")
+        filePatterns.append("\\[operating systems\\]")
         return filePatterns
         
     def getPluginDeps( self ):
