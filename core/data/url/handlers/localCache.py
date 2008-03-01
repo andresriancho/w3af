@@ -55,11 +55,11 @@ class CacheHandler(urllib2.BaseHandler):
     '''
     
     def __init__( self ):
-        self.cacheLocation = '.urllib2cache'
+        self.cacheLocation = os.environ["HOME"] + os.path.sep + '.w3af' + os.path.sep + 'urllib2cache'
         if not os.path.exists(self.cacheLocation):
-            os.mkdir(self.cacheLocation)
+            os.makedirs(self.cacheLocation)
         
-        self.cacheLocation += os.path.sep + str(id(self))
+        self.cacheLocation += os.path.sep + str(os.getpid())
         if not os.path.exists(self.cacheLocation):
             os.mkdir(self.cacheLocation)
         
@@ -188,21 +188,3 @@ class CachedResponse(StringIO.StringIO):
     def get_full_url(self):
         return self.url
         
-
-class Tests(unittest.TestCase):
-    def setUp(self):
-        # Clearing cache
-        if os.path.exists(".urllib2cache"):
-            for f in os.listdir(".urllib2cache"):
-                os.unlink( ".urllib2cache" + os.path.sep + f)
-
-    def testCache(self):
-        opener = urllib2.build_opener(CacheHandler(".urllib2cache"))
-        resp = opener.open("http://www.python.org/")
-        self.assert_('x-cache' not in resp.info())
-        resp = opener.open("http://www.python.org/")
-        self.assert_('x-cache' in resp.info())
-
-if __name__ == "__main__":
-    unittest.main()
-

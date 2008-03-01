@@ -75,18 +75,16 @@ class xUrllib:
         self._grepPlugins = []
         self._evasionPlugins = []
         
-        self._checkLocalCache()
-        
-    def _checkLocalCache( self ):
+    def end( self ):
         '''
-        Clearing cache used by localCache
+        This method is called when the xUrllib is not going to be used anymore.
         '''
         try:
-            for dir in os.listdir('.urllib2cache'):
-                fileList = os.listdir('.urllib2cache' + os.path.sep + dir )
-                for file in fileList:
-                    os.unlink( '.urllib2cache' + os.path.sep + dir + os.path.sep +file )
-                os.rmdir( '.urllib2cache' + os.path.sep + dir )
+            cacheLocation = os.environ["HOME"] + os.path.sep + '.w3af' + os.path.sep + 'urllib2cache' + os.path.sep + str(os.getpid())
+            if os.path.exists(cacheLocation):
+                for f in os.listdir(cacheLocation):
+                    os.unlink( cacheLocation + os.path.sep + f)
+                os.rmdir(cacheLocation)
         except Exception, e:
             om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e) )
         else:

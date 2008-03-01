@@ -441,7 +441,11 @@ class w3afCore:
         om.out.endOutputPlugins()
         cf.cf.save('targets', [] )
         # Now I'm definitly not running:
-        self._isRunning = False        
+        self._isRunning = False
+        
+        # End the xUrllib
+        self.uriOpener.end()
+        self.uriOpener = xUrllib()
     
     def isRunning( self ):
         '''
