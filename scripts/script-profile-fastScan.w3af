@@ -3,7 +3,7 @@
 profiles
 list
 
-use fastScan
+use fast_scan
 
 plugins
 output config textFile
@@ -18,5 +18,5 @@ back
 
 assert 1==1
 
-start
-exit
+#start
+#exit

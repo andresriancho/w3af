@@ -51,6 +51,9 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.coreHelpers.progressBar import progressBar
 from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
 
+# Profile objects
+from core.data.profile.profile import profile as profile
+
 class w3afCore:
     '''
     This is the core of the framework, it calls all plugins, handles exceptions,
@@ -696,7 +699,7 @@ class w3afCore:
         '''
         @return: A list with all plugin types.
         '''
-        pluginTypes = [ f for f in os.listdir('plugins/') if f.count('.py') == 0 ]
+        pluginTypes = [ f for f in os.listdir('plugins' + os.path.sep) if f.count('.py') == 0 ]
         pluginTypes.remove( 'attack' )
         if '.svn' in pluginTypes:
             pluginTypes.remove('.svn')
@@ -778,25 +781,25 @@ class w3afCore:
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        strPluginList = self._getListOfFiles( 'plugins/' + PluginType + '/' )
+        strPluginList = self._getListOfFiles( 'plugins' + os.path.sep + PluginType + os.path.sep )
         return strPluginList
         
     def getProfileList( self ):
         '''
         @return: A string list of the names of all available profiles.
         '''
-        strProfileList = self._getListOfFiles( 'profiles/' )
-        strProfileList = [ p for p in strProfileList if p != 'profile' ]
-        instanceList = [ factory('profiles.' + p ) for p in strProfileList ]
+        strProfileList = self._getListOfFiles( 'profiles' + os.path.sep, extension='.ini' )
+        instanceList = [ profile('profiles' + os.path.sep + p + '.ini' ) for p in strProfileList ]
         return instanceList
         
-    def _getListOfFiles( self, directory ):
+    def _getListOfFiles( self, directory, extension='.py' ):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
         fileList = [ f for f in os.listdir( directory ) ]
-        strFileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == '.py' ]
-        strFileList.remove ( '__init__' )
+        strFileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == extension ]
+        if '__init__' in strFileList:
+            strFileList.remove ( '__init__' )
         strFileList.sort()
         return strFileList
         
@@ -804,7 +807,7 @@ class w3afCore:
         '''
         @return: An instance of a plugin.
         '''
-        fileList = [ f for f in os.listdir('plugins/' + pluginType +'/') ]    
+        fileList = [ f for f in os.listdir('plugins' + os.path.sep + pluginType  + os.path.sep) ]    
         fileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == '.py' ]
         fileList.remove ( '__init__' )
         if pluginName in fileList:
@@ -830,17 +833,22 @@ class w3afCore:
         '''
         Gets all the information from the profile, and runs it.
         '''
-        profile = factory('profiles.' + profileName ) 
+        if not profileName.endswith('.ini'):
+            profileName += '.ini'
+        if not profileName.startswith('profiles' + os.path.sep):
+            profileName = 'profiles' + os.path.sep + profileName
+            
+        profileInstance = profile( profileName ) 
         for pluginType in self._plugins.keys():
-            pluginNames = profile.getEnabledPlugins( pluginType )
+            pluginNames = profileInstance.getEnabledPlugins( pluginType )
             self.setPlugins( pluginNames, pluginType )
             '''
             def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
                 @parameter PluginsOptions: A dict with the options for a plugin. For example:\
                 { 'LICENSE_KEY':'AAAA' }
             '''
-            for pluginName in profile.getEnabledPlugins( pluginType ):
-                pluginOptions = profile.getPluginOptions( pluginName, pluginType )
+            for pluginName in profileInstance.getEnabledPlugins( pluginType ):
+                pluginOptions = profileInstance.getPluginOptions( pluginName, pluginType )
                 self.setPluginOptions( pluginName, pluginType, pluginOptions )
     
     def getVersion( self ):
@@ -848,7 +856,7 @@ class w3afCore:
         import re
         revision = '0'
         try:
-            for line in file('.svn/entries'):
+            for line in file('.svn' + os.path.sep +'entries'):
                 line = line.strip()
                 if re.match('^\d+$', line ):
                     if int(line) > int(revision):

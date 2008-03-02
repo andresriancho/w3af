@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-02-24, 09:14:24 -->
+<!-- Saved: 2008-02-28, 18:50:02 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -89,18 +89,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
-    <Created>2008-01-31, 22:57:43</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>passwordProfiling.py</Name>
-      </Filename>
-      <Linenumber>47</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here</Description>
     <Created>2008-02-03, 18:26:36</Created>
     <Resource>
@@ -136,19 +124,6 @@
         <Name>main.py</Name>
       </Filename>
       <Linenumber>163</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-02-08, 18:24:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>httpLogTab.py</Name>
-      </Filename>
-      <Linenumber>284</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -216,58 +191,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: See how we can make that library path setup automatically...</Description>
-    <Created>2008-02-17, 20:47:38</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>44</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
-    <Created>2008-02-17, 20:47:38</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>53</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: go back!"</Description>
-    <Created>2008-02-17, 20:47:38</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>101</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: go forward!"</Description>
-    <Created>2008-02-17, 20:47:38</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>103</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
     <Created>2008-02-18, 20:07:33</Created>
     <Resource>
@@ -293,19 +216,6 @@
       <Linenumber>225</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: this list should be updated from time to time, automatically.</Description>
-    <Created>2008-02-18, 21:10:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>urlParser.py</Name>
-      </Filename>
-      <Linenumber>200</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: This sends plugin options from output plugins to w3afCore</Description>
     <Created>2008-02-23, 19:46:10</Created>
@@ -319,9 +229,34 @@
       <Linenumber>144</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This is duplicated code!! see above.</Description>
+    <Created>2008-02-24, 13:46:34</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>remoteFileIncludeShell.py</Name>
+      </Filename>
+      <Linenumber>347</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: this list should be updated from time to time, automatically.</Description>
+    <Created>2008-02-24, 21:59:23</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>200</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Not thread safe</Description>
-    <Created>2008-02-23, 22:21:25</Created>
+    <Created>2008-02-24, 22:16:10</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -334,7 +269,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-02-23, 22:21:25</Created>
+    <Created>2008-02-24, 22:16:10</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -343,6 +278,57 @@
         <Name>xUrllib.py</Name>
       </Filename>
       <Linenumber>316</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
+    <Created>2008-02-25, 07:34:08</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>passwordProfiling.py</Name>
+      </Filename>
+      <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: See how we can make that library path setup automatically...</Description>
+    <Created>2008-02-25, 20:10:06</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>44</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
+    <Created>2008-02-25, 20:10:06</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>53</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-02-26, 19:43:39</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>httpLogTab.py</Name>
+      </Filename>
+      <Linenumber>285</Linenumber>
     </Resource>
   </Task>
 </Tasks>
