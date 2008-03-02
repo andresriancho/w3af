@@ -45,11 +45,20 @@ class profile:
         except:
             raise w3afException('Unknown format in profile: ' + profile_file_name )
         else:
-            if len(self._config.sections()) < 1:
-                raise w3afException('Unknown format in profile: ' + profile_file_name )
+            # If i create a new profile, I have no configuration sections, so I can't really test
+            # anything here.
+            pass
     
-    
-    
+    def setEnabledPlugins( self, pluginType, pluginNameList ):
+        '''
+        Set the enabled plugins of type pluginType.
+        @parameter pluginType: 'audit', 'output', etc.
+        @parameter pluginNameList: ['xss', 'sqli'] ...
+        @return: None
+        '''
+        for plugin in pluginNameList:
+            self._config.add_section(pluginType + "." + plugin )
+        
     def getEnabledPlugins( self, pluginType ):
         '''
         @return: A list of enabled plugins of type pluginType
@@ -65,7 +74,22 @@ class profile:
                 if type == pluginType:
                     res.append(name)
         return res
-        
+    
+    def setPluginOptions( self, pluginType, pluginName, options ):
+        '''
+        Set the plugin options.
+        @parameter pluginType: 'audit', 'output', etc.
+        @parameter pluginName: 'xss', 'sqli', etc.
+        @parameter options: {'a':True, 'b':1}
+        @return: None
+        '''
+        section = pluginType + "." + pluginName
+        if section not in self._config.sections():
+            self._config.add_section( section )
+            
+        for option in options.keys():
+            self._config.set( section, option, options[ option ] )
+    
     def getPluginOptions( self, pluginName, pluginType ):
         '''
         @return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
@@ -86,6 +110,17 @@ class profile:
                     for option in self._config.options(section):
                         parsedOptions[option]['default'] = self._config.get(section, option)
         return parsedOptions
+    
+    def setDesc( self, name ):
+        '''
+        Set the name of the profile.
+        @parameter name: The description of the profile
+        @return: None
+        '''
+        section = 'profile'
+        if section not in self._config.sections():
+            self._config.add_section( section )
+        self._config.set( section, 'name', name )
         
     def getName( self ):
         '''
@@ -101,7 +136,18 @@ class profile:
         
         # Something went wrong
         return None
-        
+    
+    def setDesc( self, desc ):
+        '''
+        Set the description of the profile.
+        @parameter desc: The description of the profile
+        @return: None
+        '''
+        section = 'profile'
+        if section not in self._config.sections():
+            self._config.add_section( section )
+        self._config.set( section, 'description', desc )
+            
     def getDesc( self ):
         '''
         @return: The profile description; as stated in the [profile] section
@@ -116,3 +162,15 @@ class profile:
         
         # Something went wrong
         return None
+    
+    def save( self, fileName ):
+        '''
+        Saves the profile to fileName
+        @return: None
+        '''
+        try:
+            f = open(fileName, 'w')
+        except:
+            raise w3afException('Failed to open profile file: ' + fileName)
+        else:
+            self._config.write( f )
