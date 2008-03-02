@@ -408,7 +408,7 @@ class TextDialog(gtk.Dialog):
         self.run()
 
 
-class Findable(object):
+class Searchable(object):
     '''Class that gives the machinery to search to a TextView.
 
     Just inheritate it.
