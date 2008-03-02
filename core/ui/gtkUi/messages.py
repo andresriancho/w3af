@@ -46,11 +46,12 @@ def getQueueDiverter(reset=False, instance=[]):
 class _LineScroller(gtk.TextView):
     '''The text view of the Messages window.
 
-    @param active_filter: the filter active at startup.
-
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, active_filter):
+        '''
+        @param active_filter: the filter active at startup.
+        '''
         gtk.TextView.__init__(self)
         self.set_editable(False)
         self.set_cursor_visible(False)
@@ -96,7 +97,7 @@ class _LineScroller(gtk.TextView):
         yield False
 
 
-class Messages(gtk.VBox, entries.Findable):
+class Messages(gtk.VBox, entries.Searchable):
     '''The Messages window.
 
     It contains the checkboxes to filter and the messages theirselves.
@@ -131,7 +132,7 @@ class Messages(gtk.VBox, entries.Findable):
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
 
-        entries.Findable.__init__(self)
+        entries.Searchable.__init__(self)
         self.show()
 
     def typeFilter(self, button, type):
