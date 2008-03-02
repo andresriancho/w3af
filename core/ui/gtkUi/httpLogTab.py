@@ -27,6 +27,21 @@ import core.controllers.outputManager as om
 import re
 from core.ui.gtkUi.entries import ValidatedEntry
 
+useMozilla = False
+useGTKHtml2 = True
+
+try:
+    import gtkmozembed
+    withMozillaTab = True
+except Exception, e:
+    withMozillaTab = False
+
+try:
+    import gtkhtml2
+    withGtkHtml2 = True
+except Exception, e:
+    withGtkHtml2 = False
+   
 class httpLogTab(gtk.HPaned):
     '''
     A tab that shows all HTTP requests and responses made by the framework.    
@@ -34,6 +49,7 @@ class httpLogTab(gtk.HPaned):
     '''
     def __init__(self, w3af):
         super(httpLogTab,self).__init__()
+        self.w3af = w3af
         
         # Show the information message about long searchs only one time
         self._alreadyReported = True
@@ -69,14 +85,25 @@ class httpLogTab(gtk.HPaned):
         self._reqPaned = requestPaned()
         resLabel = gtk.Label("Response")
         self._resPaned = responsePaned()
-        renderedLabel = gtk.Label("Rendered response")
-        # TODO: Replace me with a gtkmozembed!
-        self._renderedPaned = gtk.TextView()
+        
+        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
+            swRenderedHTML = gtk.ScrolledWindow()
+            renderedLabel = gtk.Label("Rendered response")
+            
+            if withMozillaTab and useMozilla:
+                self._renderedPaned = gtkmozembed.MozEmbed()
+            if withGtkHtml2 and useGTKHtml2:
+                self._renderedPaned = gtkhtml2.View()
+                
+            swRenderedHTML.add(self._renderedPaned)
         
         requestNotebook.append_page(self._reqPaned, reqLabel)
         reqResViewer.pack1(requestNotebook)
         resultNotebook.append_page(self._resPaned, resLabel)
-        resultNotebook.append_page(self._renderedPaned, renderedLabel)
+        
+        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
+            resultNotebook.append_page(swRenderedHTML, renderedLabel)
+            
         reqResViewer.pack2(resultNotebook)
         reqResViewer.set_position(400)
         reqResViewer.show_all()
@@ -184,7 +211,7 @@ class httpLogTab(gtk.HPaned):
                 self._showListView( resultList )
             elif len( resultList ) == 1:
                 # I got only one response to the database query!
-                self._showReqRes( condition, resultList )
+                self.showReqResById( resultList[0].id )
             else:
                 self._showDialog('No results', 'The search you performed returned no results.' )
         
@@ -213,20 +240,17 @@ class httpLogTab(gtk.HPaned):
         else:
             self._reqPaned.show( req.method, req.uri, req.http_version, req.headers, req.data )
             self._resPaned.show( res.http_version, res.code, res.msg, res.headers, res.body )
-        
-    def _showReqRes( self, condition, resultList ):
-        '''
-        Show the data in the requestPaned and responsePaned
-        '''
-        if 'req.' in condition:
-            req = resultList[0]
-            res = [ res for res in self._db_res if res.id == req.id ][0]
-        else:
-            res = resultList[0]
-            req = [ req for req in self._db_req if req.id == res.id ][0]
-        
-        self._reqPaned.show( req.method, req.uri, req.http_version, req.headers, req.data )
-        self._resPaned.show( res.http_version, res.code, res.msg, res.headers, res.body )
+            
+            if withGtkHtml2 and useGTKHtml2:
+                document = gtkhtml2.Document()
+                document.clear()
+                document.open_stream('text/html')
+                document.write_stream(res.body)
+                document.close_stream()
+                self._renderedPaned.set_document(document)
+                
+            if withMozillaTab and useMozilla:
+                self._renderedPaned.render_data( res.body,long(len(res.body)), req.uri , 'text/html')
         
     def _showListView( self, results ):
         '''

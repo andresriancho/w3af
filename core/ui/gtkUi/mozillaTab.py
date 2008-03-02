@@ -38,6 +38,9 @@ class mozillaTab(gtk.HPaned):
         https://bugs.launchpad.net/ubuntu/+source/firefox/+bug/26436
         https://bugzilla.mozilla.org/show_bug.cgi?id=325884
     
+    Given that gtkmozembed sucks *soooo* much; this is another way to do the same task with gtkhtml2
+    http://www.koders.com/python/fid18C1D30A62B6E205BAB5B871CD143BEF7167F457.aspx?s=gtk#L1
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     @author: Facundo Batista ( facundo@taniquetil.com.ar )
     '''
