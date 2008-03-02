@@ -1,7 +1,7 @@
 '''
 gtkOutput.py
 
-Copyright 2006 Andres Riancho
+Copyright 2008 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -51,29 +51,24 @@ class gtkOutput(baseOutputPlugin):
         baseOutputPlugin.__init__(self)
         
         sessionName = cf.cf.getData('sessionName')
-        db_req_dirName = os.path.join('sessions', 'db_req_' + sessionName )
-        db_res_dirName = os.path.join('sessions', 'db_res_' + sessionName )
+        db_req_res_dirName = os.path.join('sessions', 'db_req_' + sessionName )
         
         try:
-            self._del_dir(db_req_dirName)
-            self._del_dir(db_res_dirName)
+            self._del_dir(db_req_res_dirName)
         except Exception, e:
             # I get here when the session directory for this db wasn't created
             # and when the user has no permissions to remove the directory
             pass
             
         try:
-            self._db_req = Base( db_req_dirName )
-            self._db_res = Base( db_res_dirName )
+            self._db_req_res = Base( db_req_res_dirName )
             # Create the database
-            #CREATE TABLE request (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT)
-            self._db_req.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('headers', str), ('data', str) )
-            #CREATE TABLE response (id INTEGER PRIMARY KEY, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
-            self._db_res.create( ('id',int), ('http_version', str), ('code', int), ('msg', str), ('headers', str), ('body', str) )
+            #CREATE TABLE request_response (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
+            self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), ('code', int), ('msg', str), ('response_headers', str), ('body', str) )
         except Exception, e:
             raise w3afException('An exception was raised while creating the gtkOutput database: ' + str(e) )
         else:
-            kb.kb.save('gtkOutput', 'db', (self._db_req, self._db_res) )
+            kb.kb.save('gtkOutput', 'db', self._db_req_res )
     
     def _del_dir(self,path):
         for file in os.listdir(path):
@@ -103,7 +98,6 @@ class gtkOutput(baseOutputPlugin):
         ''' 
         m = message( 'information', msgString , newLine )
         self._addToQueue( m )
-
 
     def error(self, msgString , newLine = True ):
         '''
@@ -136,11 +130,8 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            #   CREATE TABLE request (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT )
-            self._db_req.insert(response.id, request.getMethod(), request.getURI(), '1.1', request.dumpHeaders(), request.getData() )
-        
-            #   CREATE TABLE response (id INTEGER PRIMARY KEY, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
-            self._db_res.insert(response.id, '1.1', response.getCode(), response.getMsg(), response.dumpHeaders(), response.getBody() )
+            #CREATE TABLE request_response (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
+            self._db_req_res.insert(response.id, request.getMethod(), request.getURI(), '1.1', request.dumpHeaders(), request.getData(), response.getCode(), response.getMsg(), response.dumpHeaders(), response.getBody() )
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:

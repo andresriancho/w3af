@@ -58,7 +58,7 @@ class httpLogTab(gtk.HPaned):
         searchLabel = gtk.Label("Search:")
         
         # The search entry
-        self._searchText = searchEntry('req.id == 1')
+        self._searchText = searchEntry('r.id == 1')
         self._searchText.connect("activate", self._findRequestResponse )
         
         # The button that is used to search
@@ -112,7 +112,7 @@ class httpLogTab(gtk.HPaned):
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING)
+        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT)
         # create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -145,30 +145,28 @@ class httpLogTab(gtk.HPaned):
         column.set_sort_column_id(0)
         treeview.append_column(column)
 
-        # columns for severities
-        column = gtk.TreeViewColumn('URI', gtk.CellRendererText(),text=1)
+        # columns for METHOD
+        column = gtk.TreeViewColumn('Method', gtk.CellRendererText(),text=1)
         column.set_sort_column_id(1)
+        treeview.append_column(column)
+
+        # columns for URI
+        column = gtk.TreeViewColumn('URI', gtk.CellRendererText(),text=2)
+        column.set_sort_column_id(2)
+        treeview.append_column(column)
+        
+        # columns for Code
+        column = gtk.TreeViewColumn('Code', gtk.CellRendererText(),text=3)
+        column.set_sort_column_id(3)
         treeview.append_column(column)
         
     def _initDB( self ):
         try:
-            self._db_req, self._db_res = kb.kb.getData('gtkOutput', 'db')
+            self._db_req_res = kb.kb.getData('gtkOutput', 'db')
         except:
             return False
         else:
             return True
-    
-    def _doComplexSearch( self, condition ):
-        '''
-        
-        '''
-        if not self._alreadyReported:
-            self._alreadyReported = True
-            msg = 'The search that you are trying to do is going to take a lot of time. Are you sure you want to do it?'
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK|gtk.BUTTONS_CANCEL, msg)
-            dlg.set_title('Information')
-            dlg.run()
-            dlg.destroy()
     
     def _findRequestResponse( self, widget):
         if self._initDB():
@@ -177,10 +175,7 @@ class httpLogTab(gtk.HPaned):
                 # The text that was entered by the user is not a valid search!
                 pass
             else:
-                if 'req.' in condition and 'res.' in condition:
-                    self._doComplexSearch( condition )
-                else:
-                    self._doSimpleSearch( condition )
+                    self._doSearch( condition )
         else:
             self._showDialog('No results', 'The database engine has no rows at this moment. Please start a scan.' )
     
@@ -190,23 +185,17 @@ class httpLogTab(gtk.HPaned):
         dlg.run()
         dlg.destroy()            
     
-    def _doSimpleSearch( self, condition ):
+    def _doSearch( self, condition ):
         '''
         Perform a search where only one (request of response) database is involved
         '''
-        if 'req.' in condition:
-            toExec = 'resultList = [ req for req in self._db_req if %s ]' % condition
-        else:
-            toExec = 'resultList = [ res for res in self._db_res if %s ]' % condition
+        toExec = 'resultList = [ r for r in self._db_req_res if %s ]' % condition
         
         try:
             exec( toExec )
         except:
             self._showDialog('Error', 'Invalid search string, please try again.', gtkLook=gtk.MESSAGE_ERROR )
         else:
-            self._resultList = resultList
-            self._condition = condition
-            
             if len( resultList ) > 1:
                 self._showListView( resultList )
             elif len( resultList ) == 1:
@@ -231,21 +220,19 @@ class httpLogTab(gtk.HPaned):
         This method should be called by other tabs when they want to show what request/response pair
         is related to the vulnerability.
         '''
-        print "http tab", id
         try:
-            res = [ res for res in self._db_res if res.id == id ][0]
-            req = [ req for req in self._db_req if req.id == id ][0]
+            result = [ r for r in self._db_req_res if r.id == id ][0]
         except Exception, e:
             om.out.error('An exception was found while searching for the request with id: ' + str(id) + '. Exception: ' +str(e) )
         else:
-            self._reqPaned.show( req.method, req.uri, req.http_version, req.headers, req.data )
-            self._resPaned.show( res.http_version, res.code, res.msg, res.headers, res.body )
+            self._reqPaned.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
+            self._resPaned.show( result.http_version, result.code, result.msg, result.response_headers, result.body )
             
             if withGtkHtml2 and useGTKHtml2:
                 document = gtkhtml2.Document()
                 document.clear()
                 document.open_stream('text/html')
-                document.write_stream(res.body)
+                document.write_stream(result.body)
                 document.close_stream()
                 self._renderedPaned.set_document(document)
                 
@@ -260,15 +247,14 @@ class httpLogTab(gtk.HPaned):
         self._lstore.clear()
         
         for item in results:
-            iter = self._lstore.append()
-            self._lstore.set(iter,
-                0, item.id,
-                1, item.uri)
-                
+            iter = self._lstore.append( [item.id, item.method, item.uri, item.code] )
+        
+        # Size search results
         if len(results) < 10:
             position = 13 + 48 * len(results)
         else:
             position = 13 + 120
+            
         self._vpan.set_position(position)
         self._sw.show_all()
             
@@ -289,7 +275,7 @@ class searchEntry(ValidatedEntry):
         '''
         ### WARNING !!!!
         ### Remember that this regex controls what goes into a exec() function, so, THINK about what you are doing before allowing some characters
-        self._match = re.match('^(?:((?:req\\.(?:id|method|uri|http_version|headers|data)|res\\.(?:id|http_version|code|msg|headers|body))) (==|>|>=|<=|<|!=) ([\w\'\" /:\.]+)( (and|or) )?)*$', text )
+        self._match = re.match('^(?:((?:r\\.(?:id|method|uri|http_version|request_headers|data|code|msg|response_headers|body))) (==|>|>=|<=|<|!=) ([\w\'\" /:\.]+)( (and|or) )?)*$', text )
         ### WARNING !!!!
         if self._match:
             return True

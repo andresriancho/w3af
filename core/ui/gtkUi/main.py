@@ -255,6 +255,14 @@ class MainApp:
         self.nb.append_page(self.exploit, label)
         self.exploit.show()
 
+        # Request Response navigator
+        self.httplog = httpLogTab.httpLogTab(self.w3af)
+        label = gtk.Label("Request response navigator")
+        #label.set_sensitive(False)
+        #self.httplog.set_sensitive(False)
+        self.nb.append_page(self.httplog, label)
+        self.httplog.show()
+  
 #        # status bar
 #        # FIXME implement in a future
 #        self._sb = gtk.Statusbar()
