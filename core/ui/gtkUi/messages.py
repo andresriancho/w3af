@@ -132,7 +132,7 @@ class Messages(gtk.VBox, entries.Searchable):
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
 
-        entries.Searchable.__init__(self)
+        entries.Searchable.__init__(self, self.sclines)
         self.show()
 
     def typeFilter(self, button, type):

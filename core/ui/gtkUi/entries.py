@@ -417,11 +417,15 @@ class TextDialog(gtk.Dialog):
 class Searchable(object):
     '''Class that gives the machinery to search to a TextView.
 
-    Just inheritate it.
+    Just inheritate it from the box that has the textview to extend.
+
+    @param textview: the textview to extend
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, textview):
+        self.textview = textview
+
         # key definitions
         self.key_f = gtk.gdk.keyval_from_name("f")
         self.key_g = gtk.gdk.keyval_from_name("g")
@@ -430,10 +434,10 @@ class Searchable(object):
 
         # signals
         self.connect("key-press-event", self._key)
-        self.sclines.connect("populate-popup", self._populate_popup)
+        self.textview.connect("populate-popup", self._populate_popup)
 
         # colors for textview and entry backgrounds
-        self.textbuf = self.sclines.get_buffer()
+        self.textbuf = self.textview.get_buffer()
         self.textbuf.create_tag("yellow-background", background="yellow")
         colormap = self.get_colormap()
         self.bg_normal = colormap.alloc_color("white")
@@ -579,7 +583,7 @@ class Searchable(object):
         # mark and show it
         (ini, fin, iterini, iterfin) = positions[keypos]
         self.textbuf.select_range(iterini, iterfin)
-        self.sclines.scroll_to_iter(iterini, 0, False)
+        self.textview.scroll_to_iter(iterini, 0, False)
 
     def _close(self, widget, event):
         '''Hides the search bar, and cleans the background.'''
