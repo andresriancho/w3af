@@ -208,7 +208,7 @@ class URLsTree(gtk.TreeView):
         return holder
 
 
-class ScanRunBody(gtk.VPaned):
+class ScanRunBody(gtk.HPaned):
     '''The whole body of scan run.
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
@@ -235,21 +235,12 @@ class ScanRunBody(gtk.VPaned):
         kbbrowser = KBBrowser(w3af)
 
         # pack it all and show
-        inner_hpan.pack1(scrollwin1)
-        inner_hpan.pack2(kbbrowser)
-        # The horizonal pane that divides URLsTree with KB browser
-        inner_hpan.set_position(250)
-        inner_hpan.show()
-        self.pack1(inner_hpan)
+        self.pack1(scrollwin1)
+        self.pack2(kbbrowser)
+        self.set_position(250)
         self.panels["kbexplorer"] = kbbrowser
 
-        # bottom widget
-        messag = messages.Messages()
-        self.pack2(messag)
-        self.panels["messagelog"] = messag
-        
         # The vertical pane position
-        self.set_position(250)
         self.panactiv = dict((x,True) for x in self.panels)
         self.show()
 
@@ -266,9 +257,3 @@ class ScanRunBody(gtk.VPaned):
             widg.hide()
         self.panactiv[panel] = active
 #        import pdb;pdb.set_trace()
-
-        # if both upper widgets are off, we must hide the scroll window
-        if not self.panactiv["urltree"] and not self.panactiv["kbexplorer"]:
-            self.panels["upperpanel"].hide()
-        else:
-            self.panels["upperpanel"].show()

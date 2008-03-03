@@ -71,12 +71,10 @@ ui_menu = """
     <menu action="ViewMenuScan">
       <menuitem action="URLWindow"/>
       <menuitem action="KBExplorer"/>
-      <menuitem action="LogWindowS"/>
     </menu>
     <menu action="ViewMenuExploit">
       <menuitem action="ExploitVuln"/>
       <menuitem action="Interactive"/>
-      <menuitem action="LogWindowE"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -171,8 +169,6 @@ class MainApp:
                            self._scan_pause, False),
             ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
                            lambda w: self.dynPanels(w, "kbexplorer"), True),
-            ('LogWindowS', None, '_Log viewer', None, 'Toggle the Log viewer', 
-                           lambda w: self.dynPanels(w, "messagelog"), True),
             ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
                            lambda w: self.dynPanels(w, "urltree"), True),
         ])
@@ -187,8 +183,6 @@ class MainApp:
                            lambda w: self.dynPanels(w, "exploitvuln"), True),
             ('Interactive', None, '_Shells and Proxies', None, 'Toggle the shells and proxies window', 
                            lambda w: self.dynPanels(w, "interac"), True),
-            ('LogWindowE', None, '_Log viewer', None, 'Toggle the Log viewer', 
-                           lambda w: self.dynPanels(w, "messagelog"), True),
         ])
         ag = actiongroup.get_action("ViewMenuExploit")
         ag.set_sensitive(False)
@@ -463,7 +457,7 @@ class MainApp:
             if name == page:
                 menu.set_sensitive(self.isRunning)
                 menu.set_visible(True)
-                self.viewSignalRecipient = menu
+                self.viewSignalRecipient = self.notetabs[name]
             else:
                 menu.set_visible(False)
 
