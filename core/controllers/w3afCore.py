@@ -65,6 +65,22 @@ class w3afCore:
     def __init__(self ):
         self._initializeInternalVariables()
         self.uriOpener = xUrllib()
+
+        # Create .w3af inside home directory
+        if 'HOME' not in os.environ:
+            # This should never happen
+            import tempfile
+            self._homeLocation = tempfile.mkdtemp()
+        else:
+            self._homeLocation = os.environ["HOME"] + os.path.sep + '.w3af'
+            if not os.path.exists(self._homeLocation):
+                os.makedirs(self._homeLocation)
+    
+    def getHomePath( self ):
+        '''
+        @return: The location of the w3af directory inside the home directory of the current user.
+        '''
+        return self._homeLocation
         
     def _initializeInternalVariables(self):
         '''
