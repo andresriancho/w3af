@@ -139,6 +139,7 @@ class MainApp:
         self.isRunning = False
         self.paused = False
         self.scanShould = "start"
+        self.menuViews = {}
 
         # Create a UIManager instance
         uimanager = gtk.UIManager()
@@ -175,8 +176,9 @@ class MainApp:
             ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
                            lambda w: self.dynPanels(w, "urltree"), True),
         ])
-        self.viewMenuScan = actiongroup.get_action("ViewMenuScan")
-        self.viewMenuScan.set_sensitive(False)
+        ag = actiongroup.get_action("ViewMenuScan")
+        ag.set_sensitive(False)
+        self.menuViews["Results"] = ag
 
         # the view menu for exploit
         actiongroup.add_toggle_actions([
@@ -188,9 +190,10 @@ class MainApp:
             ('LogWindowE', None, '_Log viewer', None, 'Toggle the Log viewer', 
                            lambda w: self.dynPanels(w, "messagelog"), True),
         ])
-        self.viewMenuExploit = actiongroup.get_action("ViewMenuExploit")
-        self.viewMenuExploit.set_sensitive(False)
-        self.viewMenuExploit.set_visible(False)
+        ag = actiongroup.get_action("ViewMenuExploit")
+        ag.set_sensitive(False)
+        ag.set_visible(False)
+        self.menuViews["Exploit"] = ag
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
@@ -234,8 +237,6 @@ class MainApp:
         self.nb.append_page(self.pcbody, label)
         self.viewSignalRecipient = self.pcbody
 
-#        # this goes here, after PluginConfigBody, for the wrapper to has both buttons
-
         # dummy tabs creation for notebook, real ones are done in setTabs
         self.notetabs = {}
         for title in ("Results", "Log", "Exploit"):
@@ -243,7 +244,7 @@ class MainApp:
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
         self.setTabs(False)
-
+        
         # Request Response navigator
         self.httplog = httpLogTab.httpLogTab(self.w3af)
         label = gtk.Label("Request response navigator")
@@ -373,7 +374,6 @@ class MainApp:
         self.setTabs(False)
 
         # put the button in start
-#        import pdb;pdb.set_trace()
         self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
         self.scanShould = "start"
 
@@ -403,8 +403,8 @@ class MainApp:
         
         '''
         # the View menu
-        self.viewMenuScan.set_sensitive(sensit)
-        self.viewMenuExploit.set_sensitive(sensit)
+        for menu in self.menuViews.values():
+            menu.set_sensitive(sensit)
         self.isRunning = sensit
 
         # ok, the tabs, :p
@@ -450,26 +450,29 @@ class MainApp:
         to which recipient the signal of that View should be 
         directed.
         '''
-        if page_num == 0:
-            # scan page
-            self.viewMenuScan.set_visible(True)
-            self.viewMenuScan.set_sensitive(self.isRunning)
-            self.viewMenuExploit.set_visible(False)
-            self.viewSignalRecipient = self.pcbody
+#        import pdb;pdb.set_trace()
+        if page_num == 1:
+            page = "Results"
         elif page_num == 3:
-            # exploit page
-            self.viewMenuScan.set_visible(False)
-            self.viewMenuExploit.set_visible(True)
-            self.viewMenuExploit.set_sensitive(self.isRunning)
-            self.viewSignalRecipient = self.exploit
+            page = "Exploit"
         else:
-            # the rest, :p
-            self.viewMenuScan.set_sensitive(False)
-            self.viewMenuExploit.set_sensitive(False)
-            self.viewSignalRecipient = None
+            page = None
 
+        self.viewSignalRecipient = None
+        for name,menu in self.menuViews.items():
+            if name == page:
+                menu.set_sensitive(self.isRunning)
+                menu.set_visible(True)
+                self.viewSignalRecipient = menu
+            else:
+                menu.set_visible(False)
 
-
+        if page not in self.menuViews:
+            # even when we don't have no view, we should put 
+            # anyone, but disabled
+            fake = self.menuViews.items()[0][1]
+            fake.set_sensitive(False)
+            fake.set_visible(True)
         
 def main():
     MainApp()
