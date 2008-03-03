@@ -137,6 +137,7 @@ class MainApp:
         self.w3af = core.controllers.w3afCore.w3afCore()
         self.w3af.mainwin = self
         self.isRunning = False
+        self.paused = False
         self.scanShould = "start"
 
         # Create a UIManager instance
@@ -300,25 +301,11 @@ class MainApp:
         func = getattr(self, action)
         func()
 
-    def _scan_pause(self, widget):
-        print "pause", widget
-        shall_pause = widget.get_active()
-        # FIXME: el pause anda mal
-
-        # stop/start core and throbber
-        self.w3af.pause(shall_pause)
-        self.throbber.running(not shall_pause)
-
-        # start the status supervisor
-        if not shall_pause:
-            gobject.timeout_add(500, self._scan_superviseStatus)
-
     def _scan_start(self):
         '''Starts the actual scanning.
 
         @param widget: the widget that generated the signal.
         '''
-        print "start"
         # save the activated plugins
         for type,plugins in self.pcbody.getActivatedPlugins():
             self.w3af.setPlugins(plugins, type)
@@ -355,25 +342,51 @@ class MainApp:
         self.toolbut_pause.set_sensitive(True)
         self.toolbut_startstop.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
         self.scanShould = "stop"
-        # FIXME: go automatically to results
+        self.nb.set_current_page(1)
+
+    def _scan_pause(self, widget):
+        shall_pause = widget.get_active()
+
+        # stop/start core and throbber
+        self.w3af.pause(shall_pause)
+        self.toolbut_startstop.set_sensitive(not shall_pause)
+        self.toolbut_pause.set_sensitive(not shall_pause)
+        self.throbber.running(not shall_pause)
+        self.paused = shall_pause
+
+        # start the status supervisor
+        if not shall_pause:
+            gobject.timeout_add(500, self._scan_superviseStatus)
 
     def _scan_stop(self):
         '''Stops the scanning.'''
-        # stop and wait until really stopped
-        # FIXME: esto no anda del todo
         self.w3af.stop()
         self.toolbut_startstop.set_sensitive(False)
+        self.toolbut_pause.set_sensitive(False)
+
+    def _scan_stopfeedback(self):
+        '''Visual elements when stopped.
+
+        This is separated because it's called when the process finishes by
+        itself or by the user click.
+        '''
+        self.toolbut_startstop.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
+        self.throbber.running(False)
+        self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
+        self.toolbut_startstop.set_sensitive(True)
 
     def _scan_clear(self):
+        '''Clears core and gtkUi, and fixes button to next step.'''
         # cleanup
+        self.nb.set_current_page(0)
         self.w3af.cleanup()
         messages.getQueueDiverter(reset=True)
         self.setSensitiveTabs(False)
 
         # put the button in start
+#        import pdb;pdb.set_trace()
         self.toolbut_startstop.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
-        # FIXME: este boton no queda bien al ponerlo!
         self.scanShould = "start"
 
     def _scan_superviseStatus(self):
@@ -381,17 +394,17 @@ class MainApp:
 
         @return: True to be called again
         '''
-        print "supervise",
         if self.w3af.isRunning():
-            print "running"
+            return True
+
+        if self.paused:
+            # stop checking, but don't change any feedback, only
+            # turn on the pause button
+            self.toolbut_pause.set_sensitive(True)
             return True
 
         # core is stopped, we had it in on, stop all
-        print "stopped!"
-        self.toolbut_startstop.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
-        self.throbber.running(False)
-        self.toolbut_pause.set_sensitive(False)
-        self.scanShould = "clear"
+        self._scan_stopfeedback()
         return False
 
 

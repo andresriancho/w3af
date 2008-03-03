@@ -323,7 +323,7 @@ class ToolbuttonWrapper(object):
         self.toolbut.set_label(newlabel)
         box = self.toolbut.get_children()[0].get_children()[0]
         img = box.get_children()[0]
-        img.set_from_icon_name(newimage, gtk.ICON_SIZE_SMALL_TOOLBAR)
+        img.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
 
     def set_sensitive(self, sensit):
         self.toolbut.set_sensitive(sensit)
