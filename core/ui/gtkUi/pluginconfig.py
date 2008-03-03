@@ -427,7 +427,7 @@ class PluginConfigBody(gtk.VBox):
         self.target.connect("activate", mainwin._scan_director)
         self.target.show()
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
-        advbut = entries.SemiStockButton("Advanced", gtk.STOCK_PREFERENCES)
+        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, "Advanced Target URL configuration")
         advbut.connect("clicked", self._advancedTarget)
         advbut.show()
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
