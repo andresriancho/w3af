@@ -231,30 +231,13 @@ class MainApp:
         self.nb.append_page(self.pcbody, label)
         self.viewSignalRecipient = self.pcbody
 
-        # results tab
-        self.results = gtk.Label("The scan has not started: no info yet")
-        label = gtk.Label("Results")
-        label.set_sensitive(False)
-        self.results.set_sensitive(False)
-        self.nb.append_page(self.results, label)
-        self.results.show()
-        
-        # log tab
-        # FIXME. ver de "reducir" estos tabs a algo comun
-        self.log = gtk.Label("The scan has not started: no info yet")
-        label = gtk.Label("Log")
-        label.set_sensitive(False)
-        self.log.set_sensitive(False)
-        self.nb.append_page(self.log, label)
-        self.log.show()
-
-        # exploit tab
-        self.exploit = gtk.Label("The scan has not started: no info yet")
-        label = gtk.Label("Exploit")
-        label.set_sensitive(False)
-        self.exploit.set_sensitive(False)
-        self.nb.append_page(self.exploit, label)
-        self.exploit.show()
+        # dummy tabs creation for notebook, real ones are done in setTabs
+        self.notetabs = {}
+        for title in ("Results", "Log", "Exploit"):
+            dummy = gtk.Label("dummy")
+            self.notetabs[title] = dummy
+            self.nb.append_page(dummy, gtk.Label())
+        self.setTabs(False)
 
         # Request Response navigator
         self.httplog = httpLogTab.httpLogTab(self.w3af)
@@ -337,7 +320,7 @@ class MainApp:
         threading.Thread(target=startScanWrap).start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
-        self.setSensitiveTabs(True)
+        self.setTabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
         self.toolbut_startstop.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
@@ -382,7 +365,7 @@ class MainApp:
         self.nb.set_current_page(0)
         self.w3af.cleanup()
         messages.getQueueDiverter(reset=True)
-        self.setSensitiveTabs(False)
+        self.setTabs(False)
 
         # put the button in start
 #        import pdb;pdb.set_trace()
@@ -408,7 +391,7 @@ class MainApp:
         return False
 
 
-    def setSensitiveTabs(self, sensit):
+    def setTabs(self, sensit):
         '''Set the exploits tabs to real window or dummies labels. 
         
         @param sensit: if it's active or not
@@ -420,11 +403,11 @@ class MainApp:
         self.isRunning = sensit
 
         # ok, the tabs, :p
-        self._sensitivTab(sensit, "Results", scanrun.ScanRunBody,    "results")
-        self._sensitivTab(sensit, "Log",     logtab.LogBody,         "log")
-        self._sensitivTab(sensit, "Exploit", exploittab.ExploitBody, "exploit")
+        self._setTab(sensit, "Results", scanrun.ScanRunBody)
+        self._setTab(sensit, "Log",     logtab.LogBody)
+        self._setTab(sensit, "Exploit", exploittab.ExploitBody)
 
-    def _sensitivTab(self, sensit, title, realWidget, pointername):
+    def _setTab(self, sensit, title, realWidget):
         # create title and window/label
         label = gtk.Label(title)
         if sensit:
@@ -436,11 +419,11 @@ class MainApp:
             newone.set_sensitive(False)
 
         # remove old page and insert this one
-        pointer = getattr(self, pointername)
+        pointer = self.notetabs[title]
         pos = self.nb.page_num(pointer)
         self.nb.remove_page(pos)
         self.nb.insert_page(newone, label, pos)
-        setattr(self, pointername, newone)
+        self.notetabs[title] = newone
 
     def menu_config_http(self, action):
         configurable = self.w3af.uriOpener.settings
