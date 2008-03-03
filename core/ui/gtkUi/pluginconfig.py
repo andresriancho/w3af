@@ -420,18 +420,24 @@ class PluginConfigBody(gtk.VBox):
 
         # target url
         targetbox = gtk.HBox()
+        # label
         lab = gtk.Label("Target:")
-        lab.show()
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
+        # entry
         self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change)
         self.target.connect("activate", mainwin._scan_director)
-        self.target.show()
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
+        # start/stop button
+        startstop = entries.SemiStockButton("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
+        startstop.set_sensitive(False)
+        startstop.connect("clicked", mainwin._scan_director)
+        mainwin.startstopbtns.addWidget(startstop)
+        targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
+        # advanced config
         advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, "Advanced Target URL configuration")
         advbut.connect("clicked", self._advancedTarget)
-        advbut.show()
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
-        targetbox.show()
+        targetbox.show_all()
         self.pack_start(targetbox, expand=False, fill=False)
 
         # the paned window

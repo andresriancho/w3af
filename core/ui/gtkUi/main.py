@@ -202,13 +202,16 @@ class MainApp:
         toolbar = uimanager.get_widget('/Toolbar')
         mainvbox.pack_start(toolbar, False)
 
+        # put both start/stop buttons inside the wrapper
+        self.startstopbtns = helpers.BroadcastWrapper()
+
         # get toolbar items
         assert toolbar.get_n_items() == 2
-        self.toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 0)
+        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 0)
+        self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(1)
-#        self.toolbut_startstop.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
-        self.scanok = helpers.PropagateBuffer(self.toolbut_startstop.set_sensitive)
+        self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
 
         # the throbber  
         self.throbber = Throbber()
@@ -230,6 +233,8 @@ class MainApp:
         label = gtk.Label("Scan config")
         self.nb.append_page(self.pcbody, label)
         self.viewSignalRecipient = self.pcbody
+
+#        # this goes here, after PluginConfigBody, for the wrapper to has both buttons
 
         # dummy tabs creation for notebook, real ones are done in setTabs
         self.notetabs = {}
@@ -323,7 +328,7 @@ class MainApp:
         self.setTabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
-        self.toolbut_startstop.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
+        self.startstopbtns.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
         self.scanShould = "stop"
         self.nb.set_current_page(1)
 
@@ -332,7 +337,7 @@ class MainApp:
 
         # stop/start core and throbber
         self.w3af.pause(shall_pause)
-        self.toolbut_startstop.set_sensitive(not shall_pause)
+        self.startstopbtns.set_sensitive(not shall_pause)
         self.toolbut_pause.set_sensitive(not shall_pause)
         self.throbber.running(not shall_pause)
         self.paused = shall_pause
@@ -344,7 +349,7 @@ class MainApp:
     def _scan_stop(self):
         '''Stops the scanning.'''
         self.w3af.stop()
-        self.toolbut_startstop.set_sensitive(False)
+        self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
 
     def _scan_stopfeedback(self):
@@ -353,11 +358,11 @@ class MainApp:
         This is separated because it's called when the process finishes by
         itself or by the user click.
         '''
-        self.toolbut_startstop.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
+        self.startstopbtns.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
-        self.toolbut_startstop.set_sensitive(True)
+        self.startstopbtns.set_sensitive(True)
 
     def _scan_clear(self):
         '''Clears core and gtkUi, and fixes button to next step.'''
@@ -369,7 +374,7 @@ class MainApp:
 
         # put the button in start
 #        import pdb;pdb.set_trace()
-        self.toolbut_startstop.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
+        self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
         self.scanShould = "start"
 
     def _scan_superviseStatus(self):

@@ -325,3 +325,27 @@ class IteratedQueue(RegistThread):
                 idx += 1
             yield msg
 
+
+class BroadcastWrapper(object):
+    '''Broadcast methods access to several widgets.
+    
+    Wraps objects to be able to have n widgets, and handle them
+    as one.
+    '''
+    def __init__(self, *values):
+        self.initvalues = values
+        self.widgets = []
+    
+    def __addWidget(self, widg):
+        self.widgets.append(widg)
+
+    def __getattr__(self, attr):
+        if attr == "addWidget":
+            return self.__addWidget
+
+        def call(*args, **kwargs):
+            for w in self.widgets:
+                realmeth = getattr(w, attr)
+                realmeth(*args, **kwargs)
+        return call
+
