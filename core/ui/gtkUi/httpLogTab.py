@@ -112,7 +112,7 @@ class httpLogTab(gtk.HPaned):
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT)
+        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_STRING)
         # create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -145,19 +145,24 @@ class httpLogTab(gtk.HPaned):
         column.set_sort_column_id(0)
         treeview.append_column(column)
 
-        # columns for METHOD
+        # column for METHOD
         column = gtk.TreeViewColumn('Method', gtk.CellRendererText(),text=1)
         column.set_sort_column_id(1)
         treeview.append_column(column)
 
-        # columns for URI
+        # column for URI
         column = gtk.TreeViewColumn('URI', gtk.CellRendererText(),text=2)
         column.set_sort_column_id(2)
         treeview.append_column(column)
         
-        # columns for Code
+        # column for Code
         column = gtk.TreeViewColumn('Code', gtk.CellRendererText(),text=3)
         column.set_sort_column_id(3)
+        treeview.append_column(column)
+
+        # column for response message
+        column = gtk.TreeViewColumn('Message', gtk.CellRendererText(),text=4)
+        column.set_sort_column_id(4)
         treeview.append_column(column)
         
     def _initDB( self ):
@@ -247,7 +252,7 @@ class httpLogTab(gtk.HPaned):
         self._lstore.clear()
         
         for item in results:
-            iter = self._lstore.append( [item.id, item.method, item.uri, item.code] )
+            iter = self._lstore.append( [item.id, item.method, item.uri, item.code, item.msg] )
         
         # Size search results
         if len(results) < 10:
