@@ -26,22 +26,10 @@ import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
 from core.ui.gtkUi.entries import ValidatedEntry
+from core.ui.gtkUi.reqResViewer import reqResViewer
+from core.ui.gtkUi.reqResDBHandler import reqResDBHandler
+from core.controllers.w3afException import w3afException
 
-useMozilla = False
-useGTKHtml2 = True
-
-try:
-    import gtkmozembed
-    withMozillaTab = True
-except Exception, e:
-    withMozillaTab = False
-
-try:
-    import gtkhtml2
-    withGtkHtml2 = True
-except Exception, e:
-    withGtkHtml2 = False
-   
 class httpLogTab(gtk.HPaned):
     '''
     A tab that shows all HTTP requests and responses made by the framework.    
@@ -77,36 +65,10 @@ class httpLogTab(gtk.HPaned):
         mainvbox = gtk.VBox()
         
         # Create the req/res viewer
-        reqResViewer = gtk.HPaned()
-        resultNotebook = gtk.Notebook()
-        requestNotebook = gtk.Notebook()
+        self._reqResViewer = reqResViewer()
         
-        reqLabel = gtk.Label("Request")
-        self._reqPaned = requestPaned()
-        resLabel = gtk.Label("Response")
-        self._resPaned = responsePaned()
-        
-        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
-            swRenderedHTML = gtk.ScrolledWindow()
-            renderedLabel = gtk.Label("Rendered response")
-            
-            if withMozillaTab and useMozilla:
-                self._renderedPaned = gtkmozembed.MozEmbed()
-            if withGtkHtml2 and useGTKHtml2:
-                self._renderedPaned = gtkhtml2.View()
-                
-            swRenderedHTML.add(self._renderedPaned)
-        
-        requestNotebook.append_page(self._reqPaned, reqLabel)
-        reqResViewer.pack1(requestNotebook)
-        resultNotebook.append_page(self._resPaned, resLabel)
-        
-        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
-            resultNotebook.append_page(swRenderedHTML, renderedLabel)
-            
-        reqResViewer.pack2(resultNotebook)
-        reqResViewer.set_position(400)
-        reqResViewer.show_all()
+        # Create the database handler
+        self._dbHandler = reqResDBHandler()
         
         # Create the req/res selector (when a search with more than one result is done, this window appears)
         self._sw = gtk.ScrolledWindow()
@@ -125,7 +87,7 @@ class httpLogTab(gtk.HPaned):
         # I want all sections to be resizable
         self._vpan = gtk.VPaned()
         self._vpan.pack1( self._sw )
-        self._vpan.pack2( reqResViewer )
+        self._vpan.pack2( self._reqResViewer )
         self._vpan.show()
         
         # Add the menuHbox, the request/response viewer and the r/r selector on the bottom
@@ -164,50 +126,29 @@ class httpLogTab(gtk.HPaned):
         column = gtk.TreeViewColumn('Message', gtk.CellRendererText(),text=4)
         column.set_sort_column_id(4)
         treeview.append_column(column)
-        
-    def _initDB( self ):
-        try:
-            self._db_req_res = kb.kb.getData('gtkOutput', 'db')
-        except:
-            return False
-        else:
-            return True
     
     def _findRequestResponse( self, widget):
-        if self._initDB():
-            condition = self._searchText.get_text()
-            if not self._searchText.validate( condition ):
-                # The text that was entered by the user is not a valid search!
-                pass
-            else:
-                    self._doSearch( condition )
+        try:
+            searchResultObjects = self._dbHandler.searchByString( self._searchText.get_text() )
+        except w3afException, w3:
+            self._showDialog('No results', str(w3) )
         else:
-            self._showDialog('No results', 'The database engine has no rows at this moment. Please start a scan.' )
-    
+            # Now show the results
+            print searchResultObjects
+            print searchResultObjects[0].id
+            if len( searchResultObjects ) > 1:
+                self._showListView( searchResultObjects )
+            elif len( searchResultObjects ) == 1:
+                # I got only one response to the database query!
+                self.showReqResById( searchResultObjects[0].id )
+            else:
+                self._showDialog('No results', 'The search you performed returned no results.' )
+
     def _showDialog( self, title, msg, gtkLook=gtk.MESSAGE_INFO ):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
         dlg.set_title( title )
         dlg.run()
         dlg.destroy()            
-    
-    def _doSearch( self, condition ):
-        '''
-        Perform a search where only one (request of response) database is involved
-        '''
-        toExec = 'resultList = [ r for r in self._db_req_res if %s ]' % condition
-        
-        try:
-            exec( toExec )
-        except:
-            self._showDialog('Error', 'Invalid search string, please try again.', gtkLook=gtk.MESSAGE_ERROR )
-        else:
-            if len( resultList ) > 1:
-                self._showListView( resultList )
-            elif len( resultList ) == 1:
-                # I got only one response to the database query!
-                self.showReqResById( resultList[0].id )
-            else:
-                self._showDialog('No results', 'The search you performed returned no results.' )
         
     def _viewInReqResViewer( self, widget ):
         '''
@@ -220,29 +161,17 @@ class httpLogTab(gtk.HPaned):
         id = self._lstore[ itemNumber ][0]
         self.showReqResById( id )
     
-    def showReqResById( self, id ):
+    def showReqResById( self, search_id ):
         '''
         This method should be called by other tabs when they want to show what request/response pair
         is related to the vulnerability.
         '''
-        try:
-            result = [ r for r in self._db_req_res if r.id == id ][0]
-        except Exception, e:
-            om.out.error('An exception was found while searching for the request with id: ' + str(id) + '. Exception: ' +str(e) )
+        result = self._dbHandler.searchById( search_id )
+        if result:
+            self._reqResViewer.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
+            self._reqResViewer.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri, 'text/html' )
         else:
-            self._reqPaned.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
-            self._resPaned.show( result.http_version, result.code, result.msg, result.response_headers, result.body )
-            
-            if withGtkHtml2 and useGTKHtml2:
-                document = gtkhtml2.Document()
-                document.clear()
-                document.open_stream('text/html')
-                document.write_stream(result.body)
-                document.close_stream()
-                self._renderedPaned.set_document(document)
-                
-            if withMozillaTab and useMozilla:
-                self._renderedPaned.render_data( res.body,long(len(res.body)), req.uri , 'text/html')
+            self._showDialog('Error', 'The id ' + str(id) + 'is not inside the database.')
         
     def _showListView( self, results ):
         '''
@@ -266,110 +195,16 @@ class httpLogTab(gtk.HPaned):
 class searchEntry(ValidatedEntry):
     '''Class that inherits from validate entry in order to turn yellow if the text is not valid'''
     def __init__(self, value):
-        ValidatedEntry.__init__(self, value)
-        self.default_value = "id == 1"
+        self.default_value = "r.id == 1"
         self._match = None
+        self.rrh = reqResDBHandler()
+        ValidatedEntry.__init__(self, value)
 
     def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
+        '''
+        Validates if the text matches the regular expression
+        
         @param text: the text to validate
         @return True if the text is ok.
-
-        Validates if the text matches the regular expression
         '''
-        ### WARNING !!!!
-        ### Remember that this regex controls what goes into a exec() function, so, THINK about what you are doing before allowing some characters
-        self._match = re.match('^(?:((?:r\\.(?:id|method|uri|http_version|request_headers|data|code|msg|response_headers|body))) (==|>|>=|<=|<|!=) ([\w\'\" /:\.]+)( (and|or) )?)*$', text )
-        ### WARNING !!!!
-        if self._match:
-            return True
-        else:
-            return False
-
-class requestResponsePaned:
-    def __init__( self ):
-        # The textview where a part of the req/res is showed
-        self._upTv = gtk.TextView()
-        self._upTv.set_border_width(5)
-        
-        # Scroll where the textView goes
-        sw1 = gtk.ScrolledWindow()
-        sw1.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        
-        # The textview where a part of the req/res is showed
-        self._downTv = gtk.TextView()
-        self._downTv.set_border_width(5)
-        
-        # Scroll where the textView goes
-        sw2 = gtk.ScrolledWindow()
-        sw2.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        
-        # Add everything to the scroll views
-        sw1.add(self._upTv)
-        sw2.add(self._downTv)
-        
-        # vertical pan (allows resize of req/res texts)
-        vpan = gtk.VPaned()
-        ### TODO: This should be centered
-        vpan.set_position( 200 )
-        vpan.pack1( sw1 )
-        vpan.pack2( sw2 )
-        vpan.show_all()
-        
-        self.add( vpan )
-        
-    def _clear( self, textView ):
-        '''
-        Clears a text view.
-        '''
-        buffer = textView.get_buffer()
-        start, end = buffer.get_bounds()
-        buffer.delete(start, end)
-        
-class requestPaned(gtk.HPaned, requestResponsePaned):
-    def __init__(self):
-        gtk.HPaned.__init__(self)
-        requestResponsePaned.__init__( self )
-        
-    def show( self, method, uri, version, headers, postData ):
-        '''
-        Show the data in the corresponding order in self._upTv and self._downTv
-        '''
-        # Clear previous results
-        self._clear( self._upTv )
-        self._clear( self._downTv )
-        
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, method + ' ' + uri + ' ' + 'HTTP/' + version + '\n')
-        buffer.insert( iter, headers )
-        
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, postData )
-    
-class responsePaned(gtk.HPaned, requestResponsePaned):
-    def __init__(self):
-        gtk.HPaned.__init__(self)
-        requestResponsePaned.__init__( self )
-        
-    def show( self, version, code, msg, headers, body ):
-        '''
-        Show the data in the corresponding order in self._upTv and self._downTv
-        '''
-        # Clear previous results
-        self._clear( self._upTv )
-        self._clear( self._downTv )
-
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, 'HTTP/' + version + ' ' + str(code) + ' ' + str(msg) + '\n')
-        buffer.insert( iter, headers )
-        
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, body )
-    
+        return self.rrh.validate( text )
