@@ -95,17 +95,16 @@ class KBTree(gtk.TreeView):
             
             # iterate the second layer, variable names
             for variabname, variabobjects in plugvalues.iteritems():
-                holdvariab = {}
+                holdvariab = []
 
                 # iterate the third layer, the variable objects
                 if isinstance(variabobjects, list):
                     for obj in variabobjects:
                         idobject = self._getBestObjName(obj)
-                        if idobject not in holdvariab:
-                            type_obj = TYPES_OBJ.get(type(obj), "misc")
-                            # the type must be in the filter, and be in True
-                            if self.filter.get(type_obj,False): 
-                                holdvariab[idobject] = obj
+                        type_obj = TYPES_OBJ.get(type(obj), "misc")
+                        # the type must be in the filter, and be in True
+                        if self.filter.get(type_obj,False): 
+                            holdvariab.append((idobject, obj))
                 else:
                     # Not a list, try to show it anyway
                     # This is an ugly hack, because these structures in the core
@@ -114,8 +113,8 @@ class KBTree(gtk.TreeView):
                     # as possible, or want to be strict regarding the type here
                     if not self.strict:
                         idobject = self._getBestObjName(variabobjects)
-                        if idobject not in holdvariab and self.filter["misc"]:
-                            holdvariab[idobject] = None
+                        if self.filter["misc"]:
+                            holdvariab.append((idobject, obj))
 
                 if holdvariab:
                     holdplugin[variabname] = holdvariab
@@ -140,6 +139,7 @@ class KBTree(gtk.TreeView):
         '''
         @return: The best obj name possible
         '''
+
         if hasattr(obj, "getName"):
             name = obj.getName()
         else:
@@ -175,10 +175,10 @@ class KBTree(gtk.TreeView):
                     holdplugin[variabname] = (treevariab, holdvariab)
 
                 # iterate the third layer, the variable objects
-                for name,instance in variabobjects.items():
-                    if name not in holdvariab:
-                        holdvariab.add(name)
-                        idinstance = str(id(instance))
+                for name,instance in variabobjects:
+                    idinstance = str(id(instance))
+                    if idinstance not in holdvariab:
+                        holdvariab.add(idinstance)
                         treestore.append(treevariab, [name, idinstance])
                         self.instances[idinstance] = instance
 
