@@ -125,6 +125,7 @@ class hmap(baseDiscoveryPlugin):
             windowsResponse = self._urlOpener.GET( windowsURL )
             
             originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
+            self._foundOS = True
             
             if difflib.SequenceMatcher( None, originalResponse.getBody(), windowsResponse.getBody() ).ratio() > 0.98:
                 i = info.info()

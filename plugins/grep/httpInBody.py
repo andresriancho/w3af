@@ -47,7 +47,10 @@ class httpInBody (baseGrepPlugin):
         self._re_removeTags = re.compile('(<.*?>|</.*?>)')
         
     def _testResponse(self, request, response):
-        if isTextOrHtml(response.getHeaders()):
+        # 501 Code is "Not Implemented" which in some cases responds with this in the body:
+        # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
+        # Which creates a false positive.
+        if response.getCode() != 501 and isTextOrHtml(response.getHeaders()):
             
             # First if, mostly for performance.
             if 'HTTP/1.' in response.getBody():

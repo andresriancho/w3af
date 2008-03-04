@@ -49,7 +49,10 @@ class httpAuthDetect(baseGrepPlugin):
                     wwwAuth = response.getHeaders()[ key ]
             
             i = info.info()
-            i.setName('HTTP Basic authentication')
+            if 'ntlm' in wwwAuth.lower():
+                i.setName('NTLM authentication')
+            else:
+                i.setName('HTTP Basic authentication')
             i.setURL( response.getURL() )
             i.setId( response.id )
             i.setDesc( 'The resource: '+ response.getURL() + ' requires authentication.' +
@@ -57,10 +60,10 @@ class httpAuthDetect(baseGrepPlugin):
             i['message'] = wwwAuth
             
             kb.kb.append( self , 'auth' , i )
-            om.out.vulnerability( i.getDesc() )
+            om.out.information( i.getDesc() )
             
         else:
-            if re.match( '.*://(.*?):(.*?)@.*' , response.getURI() ):
+            if re.match( '.*://(.*?):(.*?)@.*?/' , response.getURI() ):
                 # An authentication URI was found!
                 
                 v = vuln.vuln()

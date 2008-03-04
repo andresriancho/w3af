@@ -165,7 +165,7 @@ class fingerprint404Page:
     def _analyzeData( self ):
         # Check if all are 404
         tmp = [ (response, randAlNumFile, extension) for (response, randAlNumFile, extension) in self._404pageList if response.getCode() == 404 ]
-        if len(tmp) == self._404pageList:
+        if len(tmp) == len(self._404pageList):
             om.out.debug('The remote web site uses 404 as 404.')
             kb.kb.save('error404page', 'trust404', True)
             return

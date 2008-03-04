@@ -92,7 +92,7 @@ class findBackdoor(baseDiscoveryPlugin):
         res.extend( ['perlcmd.cgi','cmd.pl'] )
         
         # JSP
-        res.extend( ['jsp-reverse.jsp','cmdjsp.jsp','cmd.jsp','cmd_win32.jsp','JspWebshell.jsp','JspWebshell 1.2.jsp'] )
+        res.extend( ['jsp-reverse.jsp','cmdjsp.jsp','cmd.jsp','cmd_win32.jsp','JspWebshell.jsp','JspWebshell1.2.jsp'] )
         
         # ASP
         res.extend( ['cmd.asp','cmdasp.aspx','cmdasp.asp','cmd-asp-5.1.asp','cmd.aspx','ntdaddy.asp'] )
