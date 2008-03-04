@@ -318,14 +318,14 @@ class mysqlWebShell(baseAttackPlugin):
                 <type>boolean</type>\
             </Option>\
             <Option name="equAlgorithm">\
-                <default>'+self._equAlgorithm+'</default>\
+                <default>'+str(self._equAlgorithm)+'</default>\
                 <desc>The algorithm to use in the comparison of true and false response for blind sql.</desc>\
                 <help>The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.</help>\
                 <type>string</type>\
                 <tabid>Blind SQL Options</tabid>\
             </Option>\
             <Option name="equalLimit">\
-                <default>'+self._equalLimit+'</default>\
+                <default>'+str(self._equalLimit)+'</default>\
                 <desc>Set the equal limit variable</desc>\
                 <help>Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.</help>\
                 <type>float</type>\

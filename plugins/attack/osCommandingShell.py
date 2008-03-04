@@ -143,7 +143,7 @@ class osCommandingShell(baseAttackPlugin):
             </Option>\
             <Option name="data">\
                 <default>'+self._data+'</default>\
-                <desc>The data, like: \'f00=bar&spam=eggs\'</desc>\
+                <desc>The data, like: f00=bar&amp;spam=eggs</desc>\
                 <type>string</type>\
             </Option>\
             <Option name="separator">\
