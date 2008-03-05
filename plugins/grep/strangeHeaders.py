@@ -121,6 +121,8 @@ class strangeHeaders(baseGrepPlugin):
         headers.append("CONTENT-LANGUAGE")
         headers.append("VARY")
         headers.append("LOCATION")
+        headers.append("PUBLIC")
+        headers.append("AGE")
         return headers
 
     def getPluginDeps( self ):
