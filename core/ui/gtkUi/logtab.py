@@ -24,6 +24,7 @@ pygtk.require('2.0')
 import gtk
 
 import core.ui.gtkUi.messages as messages
+from core.ui.gtkUi.logVisualization import logVisualization
 
 class LogBody(gtk.VPaned):
     '''Body of the exploit tab.
@@ -45,8 +46,11 @@ class LogBody(gtk.VPaned):
         self.pack1(messag)
 
         # bottom widget
-        label = gtk.Label("A graphic log in the future (we hope!)")
-        self.pack2(label)
+        # The log visualization
+        logImageWidget = logVisualization()
+        logImageWidget.show()
+        #logImageWidget.draw_point(30, 30, severity.HIGH )
+        self.pack2(logImageWidget)
 
         self.set_position(300)
         self.show()

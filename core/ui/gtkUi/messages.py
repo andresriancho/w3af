@@ -27,6 +27,7 @@ import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 import core.data.kb.knowledgeBase as kb
 
+import core.data.constants.severity as severity
 
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
@@ -129,7 +130,7 @@ class Messages(gtk.VBox, entries.Searchable):
         sw_mess.add(self.sclines)
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
-
+        
         entries.Searchable.__init__(self, self.sclines)
         self.show()
 
