@@ -8,7 +8,7 @@ set fileName output-w3af.txt
 set verbosity 10
 back
 output config console
-set verbosity 0
+set verbosity 10
 back
 discovery spiderMan
 discovery
