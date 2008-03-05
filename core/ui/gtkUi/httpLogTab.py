@@ -26,6 +26,8 @@ import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
 from core.ui.gtkUi.entries import ValidatedEntry
+
+# The elements to create the req/res viewer
 from core.ui.gtkUi.reqResViewer import reqResViewer
 from core.ui.gtkUi.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
@@ -169,7 +171,7 @@ class httpLogTab(gtk.HPaned):
         result = self._dbHandler.searchById( search_id )
         if result:
             self._reqResViewer.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
-            self._reqResViewer.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri, 'text/html' )
+            self._reqResViewer.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
         else:
             self._showDialog('Error', 'The id ' + str(id) + 'is not inside the database.')
         

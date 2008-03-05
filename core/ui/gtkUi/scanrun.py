@@ -29,6 +29,9 @@ import core.ui.gtkUi.kbtree as kbtree
 import core.ui.gtkUi.messages as messages
 import core.data.kb.knowledgeBase as kb
 
+# To show request and responses
+from core.ui.gtkUi.reqResViewer import reqResViewer
+from core.ui.gtkUi.reqResDBHandler import reqResDBHandler
 
 class FullKBTree(kbtree.KBTree):
     '''A tree showing all the info.
@@ -42,7 +45,7 @@ class FullKBTree(kbtree.KBTree):
     '''
     def __init__(self, w3af, kbbrowser, filter):
         super(FullKBTree,self).__init__(w3af, filter, 'Knowledge Base', strict=False)
-
+        self._dbHandler = reqResDBHandler()
         self.kbbrowser = kbbrowser
         self.connect('cursor-changed', self._showDesc)
         self.show()
@@ -63,6 +66,15 @@ class FullKBTree(kbtree.KBTree):
         else:
             longdesc = ""
         self.kbbrowser.explanation.set_text(longdesc)
+        
+        if hasattr(instance, "getId" ):
+            if instance.getId() != None:
+                # The request and response that generated the vulnerability
+                result = self._dbHandler.searchById( instance.getId() )
+                if result:
+                    self.kbbrowser.rrV.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
+                    self.kbbrowser.rrV.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
+            
 
 
 class KBBrowser(gtk.HPaned):
@@ -113,11 +125,19 @@ class KBBrowser(gtk.HPaned):
         scrollwin22 = gtk.ScrolledWindow()
         scrollwin22.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin22.add_with_viewport(explan_tv)
-        scrollwin22.show()
-
+        scrollwin22.show()        
+        
+        # The request/response viewer
+        self.rrV = reqResViewer()
+        vpanedExplainAndView = gtk.VPaned()
+        vpanedExplainAndView.pack1( scrollwin22 )
+        vpanedExplainAndView.pack2( self.rrV )
+        vpanedExplainAndView.set_position(100)
+        vpanedExplainAndView.show_all()
+        
         # pack & show
         self.pack1(scrollwin21)
-        self.pack2(scrollwin22)
+        self.pack2(vpanedExplainAndView)
         self.set_position(250)
         self.show()
 

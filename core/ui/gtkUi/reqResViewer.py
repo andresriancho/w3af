@@ -156,7 +156,7 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
         requestResponsePaned.__init__( self )
         self._renderingWidget = renderingWidget
         
-    def show( self, version, code, msg, headers, body, baseURI, mimeType ):
+    def show( self, version, code, msg, headers, body, baseURI ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
         '''
@@ -173,6 +173,20 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
         iter = buffer.get_end_iter()
         buffer.insert( iter, body )
         
+        # Get the mimeType from the response headers
+        mimeType = 'text/html'
+        headers = headers.split('\n')
+        for h in headers:
+            if 'content-type' in h.lower():
+                h_name, h_value = h.split(':')
+                mimeType = h_value.strip()
+                break
+        
+        ### TODO: Make this work FOR REAL!!!
+        if mimeType not in ['text/html']:
+            mimeType = 'text/html'
+        
+        # Show it rendered
         if withGtkHtml2 and useGTKHtml2:
             document = gtkhtml2.Document()
             document.clear()
