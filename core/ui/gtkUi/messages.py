@@ -27,8 +27,6 @@ import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 import core.data.kb.knowledgeBase as kb
 
-import core.data.constants.severity as severity
-
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
     
