@@ -114,7 +114,7 @@ class KBTree(gtk.TreeView):
                     if not self.strict:
                         idobject = self._getBestObjName(variabobjects)
                         if self.filter["misc"]:
-                            holdvariab.append((idobject, obj))
+                            holdvariab.append((idobject, variabobjects))
 
                 if holdvariab:
                     holdplugin[variabname] = holdvariab
