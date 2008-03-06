@@ -108,7 +108,8 @@ class mxInjection(baseAuditPlugin):
         for mxError in self._getmxErrors():
             match = re.search( mxError, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found MX injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
+                # Commented because of false positives with the A000 and A001 strings
+                #om.out.information('Found MX injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
                 res.append(mxError)
         return res
 

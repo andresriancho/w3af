@@ -45,10 +45,11 @@ class osCommanding(baseAuditPlugin):
         '''
         om.out.debug( 'osCommanding plugin is testing: ' + freq.getURL() )
         
+        # Prepare the strings to create the mutants
         cList = self._getCommandList()
         onlyCommands = [ v.getCommand() for v in cList ]
         mutants = createMutants( freq , onlyCommands )
-            
+        
         for mutant in mutants:
             if self._hasNoBug( 'osCommanding','osCommanding',mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable

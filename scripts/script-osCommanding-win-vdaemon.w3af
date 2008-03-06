@@ -25,5 +25,8 @@ back
 start
 exploit
 exploit osCommandingShell
+
+interact 0
+
 start vdaemon
 
