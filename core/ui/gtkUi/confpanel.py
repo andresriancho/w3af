@@ -127,7 +127,8 @@ class OnlyOptions(gtk.VBox):
         xmloptions = plugin.getOptionsXML()
         print "Options", plugin
         print xmloptions
-        # FIXME: no veo los cambios aca
+        # FIXME: there's a problem here, changes does not appear!
+        # opened bug #1908973 for this
 #        import pdb;pdb.set_trace()
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
         for xmlOpt in xmlDoc.getElementsByTagName('Option'):
