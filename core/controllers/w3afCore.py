@@ -667,6 +667,13 @@ class w3afCore:
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )         
         self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
     
+    def getPluginOptions(self, pluginName, pluginType):
+        '''
+        Get the options for a plugin.
+        @return: A map with the plugin options.
+        '''
+        return self._pluginsOptions[ pluginType ][ pluginName ]
+        
     def getEnabledPlugins( self, pluginType ):
         return self._strPlugins[ pluginType ]
     
