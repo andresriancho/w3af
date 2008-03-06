@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-02-28, 18:50:02 -->
+<!-- Saved: 2008-03-06, 08:07:40 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -65,18 +65,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Add mod_perl ssi injection support</Description>
-    <Created>2008-01-31, 18:12:24</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>ssi.py</Name>
-      </Filename>
-      <Linenumber>77</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: review this code !!</Description>
     <Created>2008-01-31, 22:55:06</Created>
     <Resource>
@@ -86,56 +74,6 @@
         <Name>urlFuzzer.py</Name>
       </Filename>
       <Linenumber>147</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: verify if I need to add more values here</Description>
-    <Created>2008-02-03, 18:26:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>strangeHeaders.py</Name>
-      </Filename>
-      <Linenumber>100</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: missing, put a placeholder</Description>
-    <Created>2008-02-08, 18:15:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>main.py</Name>
-      </Filename>
-      <Linenumber>161</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: missing, put a placeholder</Description>
-    <Created>2008-02-08, 18:15:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>main.py</Name>
-      </Filename>
-      <Linenumber>163</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
-    <Created>2008-02-08, 18:32:14</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>xss.py</Name>
-      </Filename>
-      <Linenumber>104</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -191,32 +129,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-02-18, 20:07:33</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>exploittab.py</Name>
-      </Filename>
-      <Linenumber>217</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-02-18, 20:07:33</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>exploittab.py</Name>
-      </Filename>
-      <Linenumber>225</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: This sends plugin options from output plugins to w3afCore</Description>
     <Created>2008-02-23, 19:46:10</Created>
     <Resource>
@@ -254,32 +166,6 @@
       <Linenumber>200</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Not thread safe</Description>
-    <Created>2008-02-24, 22:16:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-02-24, 22:16:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>316</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
     <Created>2008-02-25, 07:34:08</Created>
@@ -292,43 +178,144 @@
       <Linenumber>47</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Add mod_perl ssi injection support</Description>
+    <Created>2008-03-01, 15:57:47</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>78</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: See how we can make that library path setup automatically...</Description>
-    <Created>2008-02-25, 20:10:06</Created>
+    <Description>FIXME: Not thread safe</Description>
+    <Created>2008-03-01, 16:50:07</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
       </Filename>
-      <Linenumber>44</Linenumber>
+      <Linenumber>66</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
-    <Created>2008-02-25, 20:10:06</Created>
+    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
+    <Created>2008-03-01, 16:50:07</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
       </Filename>
-      <Linenumber>53</Linenumber>
+      <Linenumber>314</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
+    <Created>2008-03-01, 22:04:40</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>xss.py</Name>
+      </Filename>
+      <Linenumber>104</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: This should be centered</Description>
-    <Created>2008-02-26, 19:43:39</Created>
+    <Created>2008-03-04, 21:19:40</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>ui</Dir>
         <Dir>gtkUi</Dir>
-        <Name>httpLogTab.py</Name>
+        <Name>reqResViewer.py</Name>
       </Filename>
-      <Linenumber>285</Linenumber>
+      <Linenumber>115</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Make this work FOR REAL!!!</Description>
+    <Created>2008-03-04, 21:19:40</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>185</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: See how we can make that library path setup automatically...</Description>
+    <Created>2008-03-04, 21:36:21</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
+    <Created>2008-03-04, 21:36:21</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>56</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: decide what message to show here</Description>
+    <Created>2008-03-04, 22:35:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>exploittab.py</Name>
+      </Filename>
+      <Linenumber>216</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: decide what message to show here</Description>
+    <Created>2008-03-04, 22:35:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>exploittab.py</Name>
+      </Filename>
+      <Linenumber>224</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here</Description>
+    <Created>2008-03-05, 21:52:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>100</Linenumber>
     </Resource>
   </Task>
 </Tasks>

@@ -850,6 +850,12 @@ class w3afCore:
         '''
         Gets all the information from the profile, and runs it.
         '''
+        # Clear all enabled plugins if profileName is None
+        if profileName == None:
+            self._initializeInternalVariables()
+            return
+        
+        # Do something with the profile if it is specified
         if not profileName.endswith('.ini'):
             profileName += '.ini'
         if not profileName.startswith('profiles' + os.path.sep):
