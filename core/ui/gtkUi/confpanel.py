@@ -125,6 +125,10 @@ class OnlyOptions(gtk.VBox):
         # options
         self.options = []
         xmloptions = plugin.getOptionsXML()
+        print "Options", plugin
+        print xmloptions
+        # FIXME: no veo los cambios aca
+#        import pdb;pdb.set_trace()
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
         for xmlOpt in xmlDoc.getElementsByTagName('Option'):
             option = Option(xmlOpt)

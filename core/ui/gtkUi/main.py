@@ -49,6 +49,7 @@ import core.ui.gtkUi.scanrun as scanrun
 import core.ui.gtkUi.exploittab as exploittab
 import core.ui.gtkUi.httpLogTab as httpLogTab
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.profiles as profiles
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.logtab as logtab
@@ -56,18 +57,16 @@ import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.confpanel as confpanel
 from core.controllers.misc import parseOptions
     
-#    <menu action="SessionMenu">
-#      <menuitem action="Save"/>
-#      <menuitem action="Resume"/>
-#    </menu>
-
-#    <toolitem action="Save"/>
-#    <toolitem action="Resume"/>
-#    <separator name="s1"/>
 
 ui_menu = """
 <ui>
   <menubar name="MenuBar">
+    <menu action="ProfilesMenu">
+      <menuitem action="Save"/>
+      <menuitem action="SaveAs"/>
+      <menuitem action="Revert"/>
+      <menuitem action="Delete"/>
+    </menu>
     <menu action="ViewMenuScan">
       <menuitem action="URLWindow"/>
       <menuitem action="KBExplorer"/>
@@ -86,6 +85,8 @@ ui_menu = """
     </menu>
   </menubar>
   <toolbar name="Toolbar">
+    <toolitem action="Save"/>
+    <separator name="s1"/>
     <toolitem action="StartStop"/>
     <toolitem action="Pause"/>
   </toolbar>
@@ -148,9 +149,11 @@ class MainApp:
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
-#            ('Save', gtk.STOCK_SAVE, '_ave session', None, 'Save actual session to continue later', self.notyet),
-#            ('Resume', gtk.STOCK_OPEN, '_Restore session', None, 'Restore a previously saved session', self.notyet),
-#            ('SessionMenu', None, '_Session'),
+            ('Save', gtk.STOCK_SAVE, '_Save', None, 'Save this configuration', lambda w: self.profileAction("save")),
+            ('SaveAs', gtk.STOCK_SAVE_AS, 'Save _as...', None, 'Save this configuration in a new profile', lambda w: self.profileAction("saveAs")),
+            ('Revert', gtk.STOCK_REVERT_TO_SAVED, '_Revert', None, 'Revert the profile to its saved state', lambda w: self.profileAction("revert")),
+            ('Delete', gtk.STOCK_DELETE, '_Delete', None, 'Delete this profile', lambda w: self.profileAction("delete")),
+            ('ProfilesMenu', None, '_Profiles'),
             ('ViewMenuScan', None, '_View'),
             ('ViewMenuExploit', None, '_View'),
             ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
@@ -203,10 +206,10 @@ class MainApp:
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 2
-        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 0)
+        assert toolbar.get_n_items() == 4
+        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
-        self.toolbut_pause = toolbar.get_nth_item(1)
+        self.toolbut_pause = toolbar.get_nth_item(3)
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
 
@@ -226,9 +229,15 @@ class MainApp:
         self.nb.show()
 
         # scan config tab
+        pan = gtk.HPaned()
+        self.profiles = profiles.ProfileList(self.w3af)
         self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
+        pan.pack1(self.profiles)
+        pan.pack2(self.pcbody)
+        pan.set_position(150)
+        pan.show_all()
         label = gtk.Label("Scan config")
-        self.nb.append_page(self.pcbody, label)
+        self.nb.append_page(pan, label)
         self.viewSignalRecipient = self.pcbody
 
         # dummy tabs creation for notebook, real ones are done in setTabs
@@ -467,6 +476,12 @@ class MainApp:
             fake = self.menuViews.items()[0][1]
             fake.set_sensitive(False)
             fake.set_visible(True)
+
+    def profileAction(self, action):
+        print "action", action
+        methname = action + "Profile"
+        method = getattr(self.profiles, methname)
+        method()
         
 def main():
     MainApp()

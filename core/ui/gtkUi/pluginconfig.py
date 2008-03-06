@@ -163,8 +163,8 @@ class PluginTree(gtk.TreeView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, mainwin, w3af, config_panel):
-        self.mainwin = mainwin 
+    def __init__(self, w3af, config_panel):
+        self.mainwin = w3af.mainwin 
         self.w3af = w3af
         self.config_panel = config_panel
 
@@ -178,10 +178,25 @@ class PluginTree(gtk.TreeView):
         # just build the tree with the plugin names
         # gtkOutput plugin is enabled at start
         for plugintype in sorted(w3af.getPluginTypes()):
-            incons = int(plugintype == "output")
-            father = self.treestore.append(None, [plugintype, 0, incons, plugintype])
+
+            # let's see if some of the children are activated or not
+            pluginlist = w3af.getPluginList(plugintype)
+            activated = set(w3af.getEnabledPlugins(plugintype))
+            if plugintype == "output":
+                activated.add("gtkOutput")
+            if not activated:
+                activ = 0
+                incons = 0
+            elif len(activated) == len(pluginlist):
+                activ = 1
+                incons = 0
+            else:
+                activ = 0
+                incons = 1
+            father = self.treestore.append(None, [plugintype, activ, incons, plugintype])
+
             for plugin in sorted(w3af.getPluginList(plugintype)):
-                activ = int(plugin == "gtkOutput")
+                activ = int(plugin in activated)
                 self.treestore.append(father, [plugin, activ, 0, plugin])
 
         # we will not ask for the plugin instances until needed, we'll
@@ -215,8 +230,6 @@ class PluginTree(gtk.TreeView):
         tvcolumn.add_attribute(cell, 'active', 1)
         tvcolumn.add_attribute(cell, 'inconsistent', 2)
         self.append_column(tvcolumn)
-
-        #self.set_enable_tree_lines(True)
 
         self.show()
 
@@ -270,6 +283,7 @@ class PluginTree(gtk.TreeView):
         pname = self.treestore[path][3]
         ptype = self.treestore[path[:1]][3]
         plugin = self.w3af.getPluginInstance(pname, ptype)
+        print plugin
         plugin.pname = pname
         plugin.ptype = ptype
         self.plugin_instances[path] = plugin
@@ -404,6 +418,11 @@ class PluginTree(gtk.TreeView):
                 result.append((type, plugins))
         return result
 
+    def reload(self):
+        '''Reloads all the configurations.'''
+        print "plugin reload"
+        print "FIXME: esto es necesario?"
+        
 
 
 class PluginConfigBody(gtk.VBox):
@@ -440,11 +459,18 @@ class PluginConfigBody(gtk.VBox):
         targetbox.show_all()
         self.pack_start(targetbox, expand=False, fill=False)
 
+        # the pan with all the configs
+        self.pan = self._buildpan()
+        self.pack_start(self.pan, padding=5)
+
+        self.show()
+
+    def _buildpan(self):
         # the paned window
         pan = gtk.HPaned()
-        a2 = ConfigPanel()
-        self.plugin_tree = PluginTree(mainwin, w3af, a2)
-        a2.plugin_tree = self.plugin_tree
+        self.config_panel = ConfigPanel()
+        self.plugin_tree = PluginTree(self.w3af, self.config_panel)
+        self.config_panel.plugin_tree = self.plugin_tree
         
         # left
         scrollwin1 = gtk.ScrolledWindow()
@@ -455,7 +481,7 @@ class PluginConfigBody(gtk.VBox):
         # rigth
         scrollwin2 = gtk.ScrolledWindow()
         scrollwin2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin2.add_with_viewport(a2)
+        scrollwin2.add_with_viewport(self.config_panel)
         scrollwin2.show()
 
         # pack it all and show
@@ -463,9 +489,7 @@ class PluginConfigBody(gtk.VBox):
         pan.pack2(scrollwin2)
         pan.set_position(250)
         pan.show()
-        self.pack_start(pan, padding=5)
-
-        self.show()
+        return pan
 
     def _advancedTarget(self, widg):
         # overwrite the plugin info with the target url
@@ -486,3 +510,20 @@ class PluginConfigBody(gtk.VBox):
         @return: all the plugins that are active.
         '''
         return self.plugin_tree.getActivatedPlugins()
+
+
+    def reload(self):
+        '''Reloads all the configurations.'''
+        print "reload!!"
+        # FIXME: target url!
+#        import pdb;pdb.set_trace()
+
+        pan = self.get_children()[0]
+        newpan = self._buildpan()
+        self.remove(self.pan)
+        self.pack_start(newpan)
+        self.pan = newpan
+
+        # plugins
+        self.plugin_tree.reload()
+#        self.config_panel.reload()
