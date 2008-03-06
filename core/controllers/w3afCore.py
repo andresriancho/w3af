@@ -326,7 +326,7 @@ class w3afCore:
         '''
         self._paused = pauseYesNo
         self._isRunning = not pauseYesNo
-        om.out.debug('Paused scan.')
+        om.out.debug('The user paused/unpaused the scan.')
         
     def _sleepIfPausedDieIfStopped( self ):
         '''
@@ -442,6 +442,7 @@ class w3afCore:
         This method is called by the user interface layer, when the user "clicks" on the stop button.
         @return: None. The stop method can take some seconds to return.
         '''
+        om.out.debug('The user stopped the core.')
         self._mustStop = True
     
     def _end( self, exceptionInstance=None ):
