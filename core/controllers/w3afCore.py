@@ -667,7 +667,7 @@ class w3afCore:
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )         
         self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
     
-    def getPlugins( self, pluginType ):
+    def getEnabledPlugins( self, pluginType ):
         return self._strPlugins[ pluginType ]
     
     def setPlugins( self, pluginNames, pluginType ):

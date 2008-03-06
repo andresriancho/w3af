@@ -128,9 +128,9 @@ class plugins(consoleMenu):
                 om.out.console( 'Enabled ' +type +' plugins:' )
                 for plugin in self._plugins[ type ]:
                     om.out.console( plugin )
-            elif self._w3af.getPlugins( type ):
+            elif self._w3af.getEnabledPlugins( type ):
                 om.out.console( 'Enabled ' +type +' plugins:' )
-                for plugin in self._w3af.getPlugins( type ):
+                for plugin in self._w3af.getEnabledPlugins( type ):
                     om.out.console( plugin )
             else:
                 om.out.console( 'No '+ type +' plugins configured' )
@@ -208,7 +208,7 @@ class plugins(consoleMenu):
         
     def _back( self, parameters ):
         # This is done here so output plugin options are applied.
-        if 'console' not in self._w3af.getPlugins('output') and 'output' in self._plugins.keys()\
+        if 'console' not in self._w3af.getEnabledPlugins('output') and 'output' in self._plugins.keys()\
         and 'all' not in self._plugins['output']:
             self._plugins['output'].append( 'console' )
             self._w3af.setPlugins( self._plugins['output'] , 'output' )
