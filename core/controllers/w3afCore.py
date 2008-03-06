@@ -30,6 +30,7 @@ dependencyCheck()
 import core.controllers.miscSettings as miscSettings
 
 import os,sys
+import user
 from core.controllers.misc.factory import factory
 from core.controllers.misc.parseOptions import parseOptions
 from core.data.url.xUrllib import xUrllib
@@ -67,14 +68,9 @@ class w3afCore:
         self.uriOpener = xUrllib()
 
         # Create .w3af inside home directory
-        if 'HOME' not in os.environ:
-            # This should never happen
-            import tempfile
-            self._homeLocation = tempfile.mkdtemp()
-        else:
-            self._homeLocation = os.environ["HOME"] + os.path.sep + '.w3af'
-            if not os.path.exists(self._homeLocation):
-                os.makedirs(self._homeLocation)
+        self._homeLocation = user.home + os.path.sep + '.w3af'
+        if not os.path.exists(self._homeLocation):
+            os.makedirs(self._homeLocation)
     
     def getHomePath( self ):
         '''
@@ -660,7 +656,7 @@ class w3afCore:
     def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
         '''
         @parameter PluginsOptions: A dict with the options for a plugin. For example:\
-        {'LICENSE_KEY':'AAAA'}
+        { 'script':'AAAA', 'timeout': 10 }
             
         @return: No value is returned.
         '''
@@ -875,7 +871,7 @@ class w3afCore:
             '''
             def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
                 @parameter PluginsOptions: A dict with the options for a plugin. For example:\
-                { 'LICENSE_KEY':'AAAA' }
+                { 'script':'AAAA', 'timeout': 10 }
             '''
             for pluginName in profileInstance.getEnabledPlugins( pluginType ):
                 pluginOptions = profileInstance.getPluginOptions( pluginName, pluginType )

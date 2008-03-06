@@ -26,6 +26,7 @@ import urllib2
 import httplib
 import unittest
 import md5
+import user
 
 import StringIO
 import core.controllers.outputManager as om
@@ -55,7 +56,7 @@ class CacheHandler(urllib2.BaseHandler):
     '''
     
     def __init__( self ):
-        self.cacheLocation = os.environ["HOME"] + os.path.sep + '.w3af' + os.path.sep + 'urllib2cache'
+        self.cacheLocation = user.home + os.path.sep + '.w3af' + os.path.sep + 'urllib2cache'
         if not os.path.exists(self.cacheLocation):
             os.makedirs(self.cacheLocation)
         
