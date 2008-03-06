@@ -37,10 +37,6 @@ class findComments(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        # This is nicer, but htmlParser inherits from SGMLParser that AINT
-        # thread safe, So i have to create an instance of htmlParser for every
-        # call to testResponse
-        #self._htmlParser = htmlParser.htmlParser()
         self._comments = {}
         self._search404 = False
         self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
@@ -67,7 +63,7 @@ class findComments(baseGrepPlugin):
                     if comment not in self._comments.keys():
                         self._comments[ comment ] = [ (response.getURL(), response.id), ]
                     else:
-                        if response.getURL() not in self._comments[ comment ]:
+                        if response.getURL() not in [ x[0] for x in self._comments[ comment ] ]:
                             self._comments[ comment ].append( (response.getURL(), response.id) )
                     
                     comment = comment.lower()
