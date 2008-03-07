@@ -51,6 +51,9 @@ class ProfileList(gtk.TreeView):
 
         # create the TreeView using liststore
         super(ProfileList,self).__init__(self.liststore)
+
+        # select the first one (default)
+        self.set_cursor(0)
         
         # callbacks for right button and select
         self.connect('button-release-event', self._popupMenu)
@@ -71,7 +74,7 @@ class ProfileList(gtk.TreeView):
         #    save as  (estando seleccionado
         #    revert (idem grabar)
         #    delete  (idem save as)
-        # FIXME: Que el primero, el default arranque "seleccionado"
+        # FIXME: que cuando modifico la config, el profile se ponga en negrita como modificado
         self.show()
         
     def _popupMenu( self, tv, event ):
@@ -129,25 +132,29 @@ class ProfileList(gtk.TreeView):
         profile = self._getProfileName()
         self.w3af.useProfile(profile)
         self.w3af.mainwin.pcbody.reload()
-
-        print "FIXME: use profile", profile
+        # FIXME: Que se cargue todo ok al usar el profile
 
     def saveProfile(self):
         '''Saves the selected profile.'''
         profile = self._getProfileName()
+        # FIXME: que efectivamente grabe
+        #    Si quiere grabar en el default, automaticamente tiene que ir al Save As
         print "FIXME: save profile", profile
 
     def saveAsProfile(self):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
-        print "FIXME: save as profile", profile
+        # FIXME: que efectivamente grabe
+        print "save as profile", profile
 
     def revertProfile(self):
         '''Reverts the selected profile to its saved state.'''
         profile = self._getProfileName()
-        print "FIXME: revert profile", profile
+        # FIXME: que cargue lo anterior
+        print "revert profile", profile
 
     def deleteProfile(self):
         '''Deletes the selected profile.'''
         profile = self._getProfileName()
-        print "FIXME: delete profile", profile
+        # FIXME: que borre el profile
+        print "delete profile", profile
