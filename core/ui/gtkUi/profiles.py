@@ -56,6 +56,7 @@ class ProfileList(gtk.TreeView):
 
         # select the first one (default)
         self.set_cursor(0)
+        self.selectedProfile = None
         
         # callbacks for right button and select
         self.connect('button-release-event', self._popupMenu)
@@ -81,11 +82,10 @@ class ProfileList(gtk.TreeView):
         #    save as  (estando seleccionado
         #    revert (idem grabar)
         #    delete  (idem save as)
-        # FIXME: que cuando modifico la config, el profile se ponga en negrita como modificado
         self.show()
         
-    def _selectChanged(self, *w):
-        print "selectChanged", w
+    def mmmm(self, *a):
+        print "mmmm", a
 
     def pluginChanged(self, plugin):
         '''Get executed when a plugin is changed.
@@ -119,6 +119,9 @@ class ProfileList(gtk.TreeView):
             row[0] = "<b>%s</b>" % row[4]
         else:
             row[0] = row[4]
+
+        # update the mainwin buttons
+        self.w3af.mainwin.activateProfileActions(changed)
 
     def pluginConfig(self, plugin):
         '''Get executed when a plugin config panel is created.
@@ -160,34 +163,35 @@ class ProfileList(gtk.TreeView):
         if event.button != 3:
             return
 
-        # FIXME: que estos esten prendidos o apagados como correspondan
-        print "FIXME: this should present a menu with the following options:"
-        print "  Save this configuration"
-        print "  Revert to saved profile state"
-        print "  Save this profile to a new one"
-        print "  Delete this profile"
+        (path, column) = tv.get_cursor()
+        # Is it over a plugin name ?
+        if path != None and len(path) == 1:
+            row = self.liststore[path]
+            gm = gtk.Menu()
+            
+            # And the items
+            e = gtk.MenuItem("Save this configuration")
+            e.connect('activate', self.saveProfile)
+            gm.append(e)
+            if not row[3]:
+                e.set_sensitive(False)
 
-#        (path, column) = tv.get_cursor()
-#        # Is it over a plugin name ?
-#        if path != None and len(path) == 1:
-#            # Get the information about the click
-#            plugin = self.getPluginInstance(path)
-#            pname = self.liststore[path][0]
-#            
-#            # Ok, now I show the popup menu !
-#            # Create the popup menu
-#            gm = gtk.Menu()
-#            
-#            # And the items
-#            e = gtk.MenuItem("Edit plugin...")
-#            e.connect('activate', editPlugin, pname, 'attack' )
-#            gm.append( e )
-#            e = gtk.MenuItem("Configure plugin...")
-#            e.connect('activate', self._configureExploit, plugin, pname)
-#            gm.append( e )
-#            gm.show_all()
-#            
-#            gm.popup( None, None, None, event.button, event.time)
+            e = gtk.MenuItem("Revert to saved profile state")
+            e.connect('activate', self.revertProfile)
+            gm.append(e)
+            if not row[3]:
+                e.set_sensitive(False)
+
+            e = gtk.MenuItem("Save this profile to a new one")
+            e.connect('activate', self.saveAsProfile)
+            gm.append(e)
+
+            e = gtk.MenuItem("Delete this profile")
+            e.connect('activate', self.deleteProfile)
+            gm.append(e)
+                
+            gm.show_all()
+            gm.popup( None, None, None, event.button, event.time)
 
     def _getProfileName(self):
         '''Gets the actual profile instance.
@@ -204,8 +208,14 @@ class ProfileList(gtk.TreeView):
     def _useProfile(self, widget):
         '''Uses the selected profile.'''
         profile = self._getProfileName()
+        if profile == self.selectedProfile:
+            return
+        self.selectedProfile = profile
+
         if profile in self.pluginsConfigsLast:
             print "profile ya usado"
+            # let's clean and overwrite core info
+            self.w3af.useProfile(None)
             self.w3af._pluginsOptions = self.pluginsConfigsLast[profile]
         else:
             print "profile nuevo"

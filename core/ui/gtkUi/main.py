@@ -192,6 +192,10 @@ class MainApp:
         ag.set_visible(False)
         self.menuViews["Exploit"] = ag
 
+        # the sensitive options for profiles
+        self.profileSensitOptions = [actiongroup.get_action("Save"), actiongroup.get_action("Revert")]
+        self.activateProfileActions(False)
+
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
         uimanager.add_ui_from_string(ui_menu)
@@ -482,6 +486,16 @@ class MainApp:
         methname = action + "Profile"
         method = getattr(self.profiles, methname)
         method()
+
+    def activateProfileActions(self, changed):
+        '''Activate profiles buttons.
+
+        @param activ: if the profile changed or not.
+        '''
+        # FIXME: implement this
+        print "activateProfileActions", changed
+        for opt in self.profileSensitOptions:
+            opt.set_sensitive(changed)
         
 def main():
     MainApp()
