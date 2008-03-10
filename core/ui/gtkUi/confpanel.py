@@ -130,9 +130,18 @@ class OnlyOptions(gtk.VBox):
         # FIXME: there's a problem here, changes does not appear!
         # opened bug #1908973 for this
 #        import pdb;pdb.set_trace()
+        # let's use the info from the core
+        coreopts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
+        if coreopts is None:
+            coreopts = {}
+        print "core", coreopts
+
+        # let's get the real info
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
         for xmlOpt in xmlDoc.getElementsByTagName('Option'):
             option = Option(xmlOpt)
+            if option.name in coreopts:
+                option.default = str(coreopts[option.name])
             if option.name in overwriter:
                 option.default = overwriter[option.name]
             self.options.append(option)
@@ -294,6 +303,7 @@ class OnlyOptions(gtk.VBox):
         try:
             if isinstance(plugin, basePlugin):
                 helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, tosave)
+                print "GRABADO!"
             else:
                 helpers.coreWrap(plugin.setOptions, tosave)
         except w3afException:

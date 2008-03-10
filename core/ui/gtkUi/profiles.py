@@ -23,6 +23,8 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 
+import core.ui.gtkUi.helpers as helpers
+from core.controllers.misc import parseOptions
 
 class ProfileList(gtk.TreeView):
     '''A list showing all the profiles.
@@ -34,20 +36,20 @@ class ProfileList(gtk.TreeView):
     def __init__(self, w3af):
         self.w3af = w3af
 
-        # create the ListStore, with the plugin name
-        self.liststore = gtk.ListStore(str, str, str)
+        # create the ListStore, with the info listed below
+        self.liststore = gtk.ListStore(str, str, str, int, str)
 
         # we will keep the profile instances here
         self.profile_instances = {None:None}
 
-        # build the list with the profiles name, description, and id
-        self.liststore.append(["Empty profile", "Clean profile with nothing configured", None])
+        # build the list with the profiles name, description, id, changed, permanentname
+        self.liststore.append(["Empty profile", "Clean profile with nothing configured", None, 0, "Empty profile"])
         for profile in sorted(w3af.getProfileList()):
             nom = profile.getName()
             desc = profile.getDesc()
             prfid = str(id(profile))
             self.profile_instances[prfid] = profile
-            self.liststore.append([nom, desc, prfid])
+            self.liststore.append([nom, desc, prfid, 0, nom])
 
         # create the TreeView using liststore
         super(ProfileList,self).__init__(self.liststore)
@@ -63,11 +65,16 @@ class ProfileList(gtk.TreeView):
         tvcolumn = gtk.TreeViewColumn('Profiles')
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
-        tvcolumn.add_attribute(cell, 'text', 0)
+        tvcolumn.add_attribute(cell, 'markup', 0)
         self.append_column(tvcolumn)
 
         # put the tooltips
         self.set_tooltip_column(1)
+
+        # here we keep the info exactly like the core, to change it
+        # easily to it
+        self.pluginsConfigsOrig = {None:{}}
+        self.pluginsConfigsLast = {None:{}}
 
         # FIXME: que los botones se apaguen y prendan si hay algo para 
         #    grabar (en funcion de que este modificado o no)
@@ -77,6 +84,73 @@ class ProfileList(gtk.TreeView):
         # FIXME: que cuando modifico la config, el profile se ponga en negrita como modificado
         self.show()
         
+    def _selectChanged(self, *w):
+        print "selectChanged", w
+
+    def pluginChanged(self, plugin):
+        '''Get executed when a plugin is changed.
+
+        @param plugin: The plugin which changed.
+
+        When executed, this check if the saved config is equal or not to the 
+        original one, and enables color and buttons.
+        '''
+        profile = self._getProfileName()
+        opts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
+        self.pluginsConfigsLast[profile][plugin.ptype][plugin.pname] = opts
+        print "controlling change", opts
+
+        # let's compare
+        savedconfig = self.pluginsConfigsOrig[profile]
+        for (k, origv) in savedconfig[plugin.ptype][plugin.pname].items():
+            newv = str(opts[k])
+            if newv != origv:
+                changed = 1
+                break
+        else:
+            changed = 0
+        print "changed", changed
+
+        # update boldness and info
+        path = self.get_cursor()[0]
+        row = self.liststore[path]
+        row[3] = changed
+        if changed:
+            row[0] = "<b>%s</b>" % row[4]
+        else:
+            row[0] = row[4]
+
+    def pluginConfig(self, plugin):
+        '''Get executed when a plugin config panel is created.
+
+        @param plugin: The plugin which will be configured.
+
+        When executed, takes a snapshot of the original plugin configuration.
+        '''
+        # only stores the original one
+        profile = self._getProfileName()
+        print "Orig", self.pluginsConfigsOrig
+        print "Last", self.pluginsConfigsLast
+        try:
+            self.pluginsConfigsOrig[profile][plugin.ptype][plugin.pname]
+            print "second time!"
+            return
+        except KeyError:
+            pass
+
+        # Bug #1911124: we adapt this information to a only-options dict, 
+        # as that's the information that we can get later from the core
+        xmlopts = plugin.getOptionsXML()
+        if xmlopts is not None:
+            opts = parseOptions.parseXML(xmlopts)
+        else:
+            opts = None
+        realopts = {}
+        for nom,config in opts.items():
+            realopts[nom] = config["default"]
+        self.pluginsConfigsOrig[profile].setdefault(plugin.ptype, {})[plugin.pname] = realopts
+        self.pluginsConfigsLast[profile].setdefault(plugin.ptype, {})[plugin.pname] = realopts
+
     def _popupMenu( self, tv, event ):
         '''Shows a menu when you right click on a plugin.
         
@@ -130,7 +204,14 @@ class ProfileList(gtk.TreeView):
     def _useProfile(self, widget):
         '''Uses the selected profile.'''
         profile = self._getProfileName()
-        self.w3af.useProfile(profile)
+        if profile in self.pluginsConfigsLast:
+            print "profile ya usado"
+            self.w3af._pluginsOptions = self.pluginsConfigsLast[profile]
+        else:
+            print "profile nuevo"
+            self.pluginsConfigsLast[profile] = {}
+            self.pluginsConfigsOrig[profile] = {}
+            self.w3af.useProfile(profile)
         self.w3af.mainwin.pcbody.reload()
         # FIXME: Que se cargue todo ok al usar el profile
 

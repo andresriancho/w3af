@@ -249,6 +249,10 @@ class PluginTree(gtk.TreeView):
         row = self.treestore[path]
         if like_initial:
             row[0] = row[3]
+            # we just alert the changing here, as if it's not saved, the
+            # profile shouldn't really be changed
+            plugin = self._getPluginInstance(path)
+            self.mainwin.profiles.pluginChanged(plugin)
         else:
             row[0] = "<b>%s</b>" % row[3]
 
@@ -337,6 +341,7 @@ class PluginTree(gtk.TreeView):
             plugin = self._getPluginInstance(path)
             longdesc = plugin.getLongDesc()
             longdesc = helpers.cleanDescription(longdesc)
+            self.mainwin.profiles.pluginConfig(plugin)
             self.config_panel.config(plugin, longdesc)
 
     def _getChildren(self, path):
