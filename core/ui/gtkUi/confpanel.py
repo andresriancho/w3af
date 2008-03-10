@@ -293,7 +293,7 @@ class OnlyOptions(gtk.VBox):
 
         try:
             if isinstance(plugin, basePlugin):
-                helpers.coreWrap(self.w3af.setPluginOptions, plugin.pname, plugin.ptype, tosave)
+                helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, tosave)
             else:
                 helpers.coreWrap(plugin.setOptions, tosave)
         except w3afException:

@@ -131,7 +131,7 @@ class plugins(webMenu):
                                 options4plugin[opt]['default'] = 'True'
                                 
                     #FIXME: Pass options better!
-                    self._w3afCore.setPluginOptions( pluginName, type, options4plugin )
+                    self._w3afCore.setPluginOptions( type, pluginName, options4plugin )
                     om.out.setPluginOptions( pluginName, options4plugin )
                     # Add to temp execution pool
                     self._plugins[type].append(pluginName)

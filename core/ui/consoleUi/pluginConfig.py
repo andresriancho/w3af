@@ -145,7 +145,7 @@ class pluginConfig(consoleMenu):
         ### and plugin options from [audit|grep|disc] plugins to output manager
         ### not really a problem... but it aint nice.
         if isinstance( self._object, basePlugin ):
-            self._w3af.setPluginOptions( self._object.getName() , self._object.getType(), self._Options )
+            self._w3af.setPluginOptions( self._object.getType(),self._object.getName() , self._Options )
             om.out.setPluginOptions( self._object.getName() , self._Options )
         else:
             try:

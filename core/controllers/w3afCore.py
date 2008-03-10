@@ -168,8 +168,9 @@ class w3afCore:
                         self._strPlugins[depType].insert( 0, depPlugin )
             
             # Now we set the plugin options
-            if pluginName in self._pluginsOptions[ PluginType ].keys():
-                plugin.setOptions( self._pluginsOptions[ PluginType ][pluginName] )
+            pOptions = self.getPluginOptions(PluginType, pluginName)
+            if pOptions:
+                plugin.setOptions( self.getPluginOptions(PluginType, pluginName) )
                 
             # This sets the url opener for each module that is called inside the for loop
             plugin.setUrlOpener( self.uriOpener )
@@ -653,8 +654,10 @@ class w3afCore:
                 
         return res
 
-    def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
+    def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
         '''
+        @parameter pluginType: The plugin type, like 'audit' or 'discovery'
+        @parameter pluginName: The plugin name, like 'sqli' or 'webSpider'
         @parameter PluginsOptions: A dict with the options for a plugin. For example:\
         { 'script':'AAAA', 'timeout': 10 }
             
@@ -663,12 +666,15 @@ class w3afCore:
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )         
         self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
     
-    def getPluginOptions(self, pluginName, pluginType):
+    def getPluginOptions(self, pluginType, pluginName):
         '''
         Get the options for a plugin.
         @return: A map with the plugin options.
         '''
-        return self._pluginsOptions[ pluginType ][ pluginName ]
+        if pluginType in self._pluginsOptions:
+            if pluginName in self._pluginsOptions[pluginType]:
+                return self._pluginsOptions[ pluginType ][ pluginName ]
+        return None
         
     def getEnabledPlugins( self, pluginType ):
         return self._strPlugins[ pluginType ]
@@ -869,13 +875,16 @@ class w3afCore:
             pluginNames = profileInstance.getEnabledPlugins( pluginType )
             self.setPlugins( pluginNames, pluginType )
             '''
-            def setPluginOptions(self, pluginName, pluginType, PluginsOptions ):
+            def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
                 @parameter PluginsOptions: A dict with the options for a plugin. For example:\
                 { 'script':'AAAA', 'timeout': 10 }
             '''
             for pluginName in profileInstance.getEnabledPlugins( pluginType ):
-                pluginOptions = profileInstance.getPluginOptions( pluginName, pluginType )
-                self.setPluginOptions( pluginName, pluginType, pluginOptions )
+                pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
+                self.setPluginOptions( pluginType, pluginName, pluginOptions )
+                
+        # Set the target settings of the profile to the core
+        self.target.setOptions( profileInstance.getTarget() )
     
     def getVersion( self ):
         # Let's check if the user is using a version from SVN

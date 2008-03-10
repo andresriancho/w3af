@@ -90,7 +90,7 @@ class profile:
         for option in options.keys():
             self._config.set( section, option, options[ option ] )
     
-    def getPluginOptions( self, pluginName, pluginType ):
+    def getPluginOptions( self, pluginType, pluginName ):
         '''
         @return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
         '''
@@ -136,6 +136,24 @@ class profile:
         
         # Something went wrong
         return None
+    
+    def getTarget( self ):
+        '''
+        @return: The profile target with the options (targetOS, targetFramework, etc.)
+        '''
+        # Get the plugin defaults with their types
+        targetInstance = factory('core.controllers.targetSettings')
+        optionsXML = targetInstance.getOptionsXML()
+        parsedOptions = parseXML( optionsXML )
+
+        for section in self._config.sections():
+            # Section is something like audit.xss or discovery.webSpider
+            # or [profile] or [target]
+            if section == 'target':
+                for option in self._config.options(section):
+                    parsedOptions[option]['default'] = self._config.get(section, option)
+        
+        return parsedOptions
     
     def setDesc( self, desc ):
         '''
