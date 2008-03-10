@@ -69,8 +69,9 @@ class ProfileList(gtk.TreeView):
         tvcolumn.add_attribute(cell, 'markup', 0)
         self.append_column(tvcolumn)
 
-        # put the tooltips
-        self.set_tooltip_column(1)
+        # put the tooltips if supported
+        if hasattr(self, "set_tooltip_column"):
+            self.set_tooltip_column(1)
 
         # here we keep the info exactly like the core, to change it
         # easily to it
