@@ -59,6 +59,7 @@ class ProfileList(gtk.TreeView):
         self.selectedProfile = None
         
         # callbacks for right button and select
+        self.connect('button-press-event', self._changeAtempt)
         self.connect('button-release-event', self._popupMenu)
         self.connect('cursor-changed', self._useProfile)
         
@@ -75,19 +76,18 @@ class ProfileList(gtk.TreeView):
 
         # here we keep the info exactly like the core, to change it
         # easily to it
-        self.pluginsConfigsOrig = {None:{}}
-        self.pluginsConfigsLast = {None:{}}
+        self.pluginsConfigs = {None:{}}
 
         # FIXME: que los botones se apaguen y prendan si hay algo para 
         #    grabar (en funcion de que este modificado o no)
         #    save as  (estando seleccionado
         #    revert (idem grabar)
         #    delete  (idem save as)
+
+        # FIXME: que tambien este "modificado" el profile cuando los plugins
+        # se activan y desactivan
         self.show()
         
-    def mmmm(self, *a):
-        print "mmmm", a
-
     def pluginChanged(self, plugin):
         '''Get executed when a plugin is changed.
 
@@ -96,14 +96,12 @@ class ProfileList(gtk.TreeView):
         When executed, this check if the saved config is equal or not to the 
         original one, and enables color and buttons.
         '''
-        profile = self._getProfileName()
         opts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
-        self.pluginsConfigsLast[profile][plugin.ptype][plugin.pname] = opts
         print "controlling change", opts
 
         # let's compare
-        savedconfig = self.pluginsConfigsOrig[profile]
-        for (k, origv) in savedconfig[plugin.ptype][plugin.pname].items():
+        savedconfig = self.pluginsConfigs[id(plugin)]
+        for (k, origv) in savedconfig.items():
             newv = str(opts[k])
             if newv != origv:
                 changed = 1
@@ -132,18 +130,11 @@ class ProfileList(gtk.TreeView):
         When executed, takes a snapshot of the original plugin configuration.
         '''
         # only stores the original one
-        profile = self._getProfileName()
-        print "Orig", self.pluginsConfigsOrig
-        print "Last", self.pluginsConfigsLast
-        try:
-            self.pluginsConfigsOrig[profile][plugin.ptype][plugin.pname]
-            print "second time!"
+        if id(plugin) in self.pluginsConfigs:
             return
-        except KeyError:
-            pass
 
-        # Bug #1911124: we adapt this information to a only-options dict, 
-        # as that's the information that we can get later from the core
+        # we adapt this information to a only-options dict, as that's
+        # the information that we can get later from the core
         xmlopts = plugin.getOptionsXML()
         if xmlopts is not None:
             opts = parseOptions.parseXML(xmlopts)
@@ -152,8 +143,17 @@ class ProfileList(gtk.TreeView):
         realopts = {}
         for nom,config in opts.items():
             realopts[nom] = config["default"]
-        self.pluginsConfigsOrig[profile].setdefault(plugin.ptype, {})[plugin.pname] = realopts
-        self.pluginsConfigsLast[profile].setdefault(plugin.ptype, {})[plugin.pname] = realopts
+        self.pluginsConfigs[id(plugin)] = realopts
+
+    def _changeAtempt(self, widget, event):
+        '''Let the user change profile if the actual is saved.'''
+        path = self.get_cursor()[0]
+        row = self.liststore[path]
+        if row[3]:
+            # FIXME: aca tiene que salir un cartel de "grabar o descartar?"
+            print "changed!"
+            return True
+        return False
 
     def _popupMenu( self, tv, event ):
         '''Shows a menu when you right click on a plugin.
@@ -164,6 +164,13 @@ class ProfileList(gtk.TreeView):
         if event.button != 3:
             return
 
+        # don't allow right button in other widget if actual is not saved
+        path = self.get_cursor()[0]
+        row = self.liststore[path]
+        clickpath = self.get_path_at_pos(int(event.x), int(event.y))[0]
+        if row[3] and clickpath != path:
+            return True
+        
         (path, column) = tv.get_cursor()
         # Is it over a plugin name ?
         if path != None and len(path) == 1:
@@ -213,39 +220,29 @@ class ProfileList(gtk.TreeView):
             return
         self.selectedProfile = profile
 
-        if profile in self.pluginsConfigsLast:
-            print "profile ya usado"
-            # let's clean and overwrite core info
-            self.w3af.useProfile(None)
-            self.w3af._pluginsOptions = self.pluginsConfigsLast[profile]
-        else:
-            print "profile nuevo"
-            self.pluginsConfigsLast[profile] = {}
-            self.pluginsConfigsOrig[profile] = {}
-            self.w3af.useProfile(profile)
+        self.w3af.useProfile(profile)
         self.w3af.mainwin.pcbody.reload()
-        # FIXME: Que se cargue todo ok al usar el profile
 
-    def saveProfile(self):
+    def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
         profile = self._getProfileName()
         # FIXME: que efectivamente grabe
         #    Si quiere grabar en el default, automaticamente tiene que ir al Save As
         print "FIXME: save profile", profile
 
-    def saveAsProfile(self):
+    def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
         # FIXME: que efectivamente grabe
         print "save as profile", profile
 
-    def revertProfile(self):
+    def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
         profile = self._getProfileName()
         # FIXME: que cargue lo anterior
         print "revert profile", profile
 
-    def deleteProfile(self):
+    def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
         profile = self._getProfileName()
         # FIXME: que borre el profile

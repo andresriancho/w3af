@@ -305,7 +305,6 @@ class OnlyOptions(gtk.VBox):
                 helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, tosave)
             else:
                 helpers.coreWrap(plugin.setOptions, tosave)
-            print "GRABADO!"
         except w3afException:
             return
         for opt in self.options:

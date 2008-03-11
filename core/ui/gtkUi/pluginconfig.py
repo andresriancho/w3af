@@ -182,9 +182,6 @@ class PluginTree(gtk.TreeView):
             # let's see if some of the children are activated or not
             pluginlist = w3af.getPluginList(plugintype)
             activated = set(w3af.getEnabledPlugins(plugintype))
-            print "Activated plugins:", activated
-            # FIXME: at program start "console" should not be here
-            # opened bug #1908975 for this
             if plugintype == "output":
                 activated.add("gtkOutput")
             if not activated:
