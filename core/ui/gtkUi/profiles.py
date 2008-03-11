@@ -78,12 +78,6 @@ class ProfileList(gtk.TreeView):
         # easily to it
         self.pluginsConfigs = {None:{}}
 
-        # FIXME: que los botones se apaguen y prendan si hay algo para 
-        #    grabar (en funcion de que este modificado o no)
-        #    save as  (estando seleccionado
-        #    revert (idem grabar)
-        #    delete  (idem save as)
-
         # FIXME: que tambien este "modificado" el profile cuando los plugins
         # se activan y desactivan
         self.show()
@@ -97,7 +91,6 @@ class ProfileList(gtk.TreeView):
         original one, and enables color and buttons.
         '''
         opts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
-        print "controlling change", opts
 
         # let's compare
         savedconfig = self.pluginsConfigs[id(plugin)]
@@ -108,7 +101,6 @@ class ProfileList(gtk.TreeView):
                 break
         else:
             changed = 0
-        print "changed", changed
 
         # update boldness and info
         path = self.get_cursor()[0]
@@ -184,15 +176,15 @@ class ProfileList(gtk.TreeView):
             if not row[3]:
                 e.set_sensitive(False)
 
+            e = gtk.MenuItem("Save this profile to a new one")
+            e.connect('activate', self.saveAsProfile)
+            gm.append(e)
+
             e = gtk.MenuItem("Revert to saved profile state")
             e.connect('activate', self.revertProfile)
             gm.append(e)
             if not row[3]:
                 e.set_sensitive(False)
-
-            e = gtk.MenuItem("Save this profile to a new one")
-            e.connect('activate', self.saveAsProfile)
-            gm.append(e)
 
             e = gtk.MenuItem("Delete this profile")
             e.connect('activate', self.deleteProfile)

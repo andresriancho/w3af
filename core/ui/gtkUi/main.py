@@ -492,8 +492,6 @@ class MainApp:
 
         @param activ: if the profile changed or not.
         '''
-        # FIXME: implement this
-        print "activateProfileActions", changed
         for opt in self.profileSensitOptions:
             opt.set_sensitive(changed)
         

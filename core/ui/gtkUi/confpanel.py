@@ -125,16 +125,10 @@ class OnlyOptions(gtk.VBox):
         # options
         self.options = []
         xmloptions = plugin.getOptionsXML()
-        print "Options", plugin
-        print xmloptions
-        # FIXME: there's a problem here, changes does not appear!
-        # opened bug #1908973 for this
-#        import pdb;pdb.set_trace()
         # let's use the info from the core
         coreopts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
         if coreopts is None:
             coreopts = {}
-        print "core", coreopts
 
         # let's get the real info
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
