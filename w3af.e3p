@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-03-06, 08:07:39 -->
+<!-- Saved: 2008-03-06, 16:57:00 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3551,12 +3551,6 @@
       <Dir>core</Dir>
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
-      <Name>scantab.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>gtkUi</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
@@ -3586,22 +3580,10 @@
       <Name>motw.py</Name>
     </Source>
     <Source>
-      <Dir>profiles</Dir>
-      <Name>fastScan.py</Name>
-    </Source>
-    <Source>
       <Dir>core</Dir>
       <Dir>ui</Dir>
       <Dir>consoleUi</Dir>
       <Name>profiles.py</Name>
-    </Source>
-    <Source>
-      <Dir>profiles</Dir>
-      <Name>profile.py</Name>
-    </Source>
-    <Source>
-      <Dir>profiles</Dir>
-      <Name>__init__.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>

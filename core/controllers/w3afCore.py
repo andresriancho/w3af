@@ -84,7 +84,7 @@ class w3afCore:
         '''
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
-        'evasion':[], 'mangle':[], 'output':['console']}
+        'evasion':[], 'mangle':[], 'output':[]}
         
         # A dict with plugin types as keys and a list of plugin instances as values
         self._plugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\

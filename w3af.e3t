@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-06, 08:07:40 -->
+<!-- Saved: 2008-03-07, 16:03:11 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -190,32 +190,6 @@
       <Linenumber>78</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Not thread safe</Description>
-    <Created>2008-03-01, 16:50:07</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-03-01, 16:50:07</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>314</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
     <Created>2008-03-01, 22:04:40</Created>
@@ -280,9 +254,47 @@
       <Linenumber>56</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here</Description>
+    <Created>2008-03-05, 21:52:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>100</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Not thread safe</Description>
+    <Created>2008-03-06, 16:52:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>67</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
+    <Created>2008-03-06, 16:52:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>315</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-03-04, 22:35:24</Created>
+    <Created>2008-03-07, 15:27:44</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -295,7 +307,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-03-04, 22:35:24</Created>
+    <Created>2008-03-07, 15:27:44</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -304,18 +316,6 @@
         <Name>exploittab.py</Name>
       </Filename>
       <Linenumber>224</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: verify if I need to add more values here</Description>
-    <Created>2008-03-05, 21:52:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>strangeHeaders.py</Name>
-      </Filename>
-      <Linenumber>100</Linenumber>
     </Resource>
   </Task>
 </Tasks>

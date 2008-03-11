@@ -125,7 +125,7 @@ class ProfileList(gtk.TreeView):
         self.w3af.mainwin.activateProfileActions(changed)
 
     def pluginConfig(self, plugin):
-        '''Get executed when a plugin config panel is created.
+        '''Gets executed when a plugin config panel is created.
 
         @param plugin: The plugin which will be configured.
 
