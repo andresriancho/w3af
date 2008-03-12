@@ -467,6 +467,10 @@ class PluginConfigBody(gtk.VBox):
         self.pan = self._buildpan()
         self.pack_start(self.pan, padding=5)
 
+        # key binding
+        self.key_l = gtk.gdk.keyval_from_name("l")
+        mainwin.window.connect("key-press-event", self._key)
+
         self.show()
 
     def _buildpan(self):
@@ -531,3 +535,14 @@ class PluginConfigBody(gtk.VBox):
         # plugins
         self.plugin_tree.reload()
 #        self.config_panel.reload()
+
+    def _key(self, widg, event):
+        '''Handles keystrokes.'''
+        # ctrl-something
+        if event.state & gtk.gdk.CONTROL_MASK:
+            if event.keyval == self.key_l:   # -l
+                self.target.grab_focus()
+            return True
+
+        # let the key pass through
+        return False
