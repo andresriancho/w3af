@@ -100,7 +100,6 @@ class EasyTable(gtk.Table):
                 widg.show()
         self.auto_rowcounter += 1
 
-
 class OnlyOptions(gtk.VBox):
     '''Only the options for configuration.
 
@@ -134,9 +133,10 @@ class OnlyOptions(gtk.VBox):
         # I show the opts I received when asking the core
         print coreopts
         # Now I ask the core for the plugin, and make it show its config
-        coreplugin = self.w3af.getPluginInstance(plugin.pname, plugin.ptype)
-        coreplugopts = coreplugin.getOptionsXML()
-        print coreplugopts
+        if isinstance(plugin, basePlugin):
+            coreplugin = self.w3af.getPluginInstance(plugin.pname, plugin.ptype)
+            coreplugopts = coreplugin.getOptionsXML()
+            print coreplugopts
         # I think something is wrong, or at least I'm not understanding it...
 
         # let's get the real info
@@ -161,7 +161,7 @@ class OnlyOptions(gtk.VBox):
         if self.options:
             tabbox = gtk.HBox()
             heart = self._createNotebook()
-            tabbox.pack_start(heart, expand=False)
+            tabbox.pack_start(heart, expand=True)
             tabbox.show()
             self.pack_start(tabbox, expand=True, fill=False)
         self.show()
