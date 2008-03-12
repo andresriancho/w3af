@@ -9,16 +9,17 @@ def usage():
     om.out.information('w3af - Web Application Attack and Audit Framework')
     om.out.information('')
     om.out.information('Options:')
-    om.out.information('    -h          Print this help message.')
+    om.out.information('    -h              Print this help message.')
     om.out.information('    -s <file>       Execute a script file.')
-    om.out.information('    -g          Run GTK user interface.')
+    om.out.information('    -g              Run GTK user interface.')
     om.out.information('    -i <dir>        Directory where MSF is installed (only used to install the virtual daemon).')
+    om.out.information('    -p <profile>    Run with the selected profile')
     om.out.information('')
     om.out.information('http://w3af.sourceforge.net/')
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "i:hs:wget", [] )
+        opts, args = getopt.getopt(sys.argv[1:], "p:i:hs:wget", [] )
     except getopt.GetoptError:
         # print help information and exit:
         usage()
@@ -26,6 +27,7 @@ def main():
     scriptFile = None
     web = False
     gtkui = False
+    profile = None
     for o, a in opts:
         if o in ( "-e"  ):
             # easter egg
@@ -45,6 +47,9 @@ def main():
         if o == '-g':
             # Go with GTK
             gtkui = True
+        if o in ('-p', '--profile'):
+            # selected profile
+            profile = a
         if o == '-w':
             # Go web
             web = True
@@ -61,7 +66,7 @@ def main():
     elif gtkui:
         # go with GTK!
         import core.ui.gtkUi.main
-        core.ui.gtkUi.main.main()
+        core.ui.gtkUi.main.main(profile)
     else:
         # console
         from core.ui.consoleUi.consoleUi import consoleUi

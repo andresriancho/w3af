@@ -122,7 +122,7 @@ class MainApp:
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, profile):
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
@@ -234,8 +234,8 @@ class MainApp:
 
         # scan config tab
         pan = gtk.HPaned()
-        self.profiles = profiles.ProfileList(self.w3af)
         self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
+        self.profiles = profiles.ProfileList(self.w3af, initial=profile)
         pan.pack1(self.profiles)
         pan.pack2(self.pcbody)
         pan.set_position(150)
@@ -495,5 +495,5 @@ class MainApp:
         for opt in self.profileSensitOptions:
             opt.set_sensitive(changed)
         
-def main():
-    MainApp()
+def main(profile):
+    MainApp(profile)

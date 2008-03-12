@@ -30,10 +30,11 @@ class ProfileList(gtk.TreeView):
     '''A list showing all the profiles.
 
     @param w3af: The main core class.
+    @param initial: The profile to start
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af):
+    def __init__(self, w3af, initial=None):
         self.w3af = w3af
 
         # create the ListStore, with the info listed below
@@ -54,9 +55,18 @@ class ProfileList(gtk.TreeView):
         # create the TreeView using liststore
         super(ProfileList,self).__init__(self.liststore)
 
-        # select the first one (default)
-        self.set_cursor(0)
+        # select the indicated one
         self.selectedProfile = None
+        if initial is None:
+            self.set_cursor(0)
+        else:
+            for i, (nom, desc, prfid, changed, perm) in enumerate(self.liststore):
+                if initial == nom:
+                    self.set_cursor(i)
+                    self._useProfile(None)
+                    break
+            else:
+                raise SystemExit("The profile %r does not exists!" % initial)
         
         # callbacks for right button and select
         self.connect('button-press-event', self._changeAtempt)
