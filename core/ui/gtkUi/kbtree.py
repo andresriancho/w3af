@@ -206,12 +206,12 @@ class KBTree(gtk.TreeView):
 
         # get instance
         vuln = self.getInstance(path)
-        if vuln is not None:
+        if isinstance(vuln, core.data.kb.vuln.vuln):
             vulnid = vuln.getId()
         
             def goLog(w):
                 self.w3af.mainwin.httplog.showReqResById(vulnid)
-                self.w3af.mainwin.nb.set_current_page(2)
+                self.w3af.mainwin.nb.set_current_page(4)
             opc.connect('activate', goLog)
         else:
             opc.set_sensitive(False)
