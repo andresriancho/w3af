@@ -159,7 +159,10 @@ class ProfileList(gtk.TreeView):
         # don't allow right button in other widget if actual is not saved
         path = self.get_cursor()[0]
         row = self.liststore[path]
-        clickpath = self.get_path_at_pos(int(event.x), int(event.y))[0]
+        posic = self.get_path_at_pos(int(event.x), int(event.y))
+        if posic is None:
+            return
+        clickpath = posic[0]
         if row[3] and clickpath != path:
             return True
         
