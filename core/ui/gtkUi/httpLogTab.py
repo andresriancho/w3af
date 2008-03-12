@@ -136,8 +136,6 @@ class httpLogTab(gtk.HPaned):
             self._showDialog('No results', str(w3) )
         else:
             # Now show the results
-            print searchResultObjects
-            print searchResultObjects[0].id
             if len( searchResultObjects ) > 1:
                 self._showListView( searchResultObjects )
             elif len( searchResultObjects ) == 1:
