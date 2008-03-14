@@ -864,27 +864,27 @@ class w3afCore:
             self._initializeInternalVariables()
             return
         
-        # Do something with the profile if it is specified
-        if not profileName.endswith('.ini'):
-            profileName += '.ini'
-        if not profileName.startswith('profiles' + os.path.sep):
-            profileName = 'profiles' + os.path.sep + profileName
-            
-        profileInstance = profile( profileName ) 
-        for pluginType in self._plugins.keys():
-            pluginNames = profileInstance.getEnabledPlugins( pluginType )
-            self.setPlugins( pluginNames, pluginType )
-            '''
-            def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
-                @parameter PluginsOptions: A dict with the options for a plugin. For example:\
-                { 'script':'AAAA', 'timeout': 10 }
-            '''
-            for pluginName in profileInstance.getEnabledPlugins( pluginType ):
-                pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
-                self.setPluginOptions( pluginType, pluginName, pluginOptions )
-                
-        # Set the target settings of the profile to the core
-        self.target.setOptions( profileInstance.getTarget() )
+        try:            
+            profileInstance = profile( profileName ) 
+        except w3afException, w3:
+            # The profile doesn't exist!
+            raise w3
+        else:
+            # It exists, work with it!
+            for pluginType in self._plugins.keys():
+                pluginNames = profileInstance.getEnabledPlugins( pluginType )
+                self.setPlugins( pluginNames, pluginType )
+                '''
+                def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
+                    @parameter PluginsOptions: A dict with the options for a plugin. For example:\
+                    { 'script':'AAAA', 'timeout': 10 }
+                '''
+                for pluginName in profileInstance.getEnabledPlugins( pluginType ):
+                    pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
+                    self.setPluginOptions( pluginType, pluginName, pluginOptions )
+                    
+            # Set the target settings of the profile to the core
+            self.target.setOptions( profileInstance.getTarget() )
     
     def getVersion( self ):
         # Let's check if the user is using a version from SVN

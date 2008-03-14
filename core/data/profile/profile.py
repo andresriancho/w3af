@@ -24,6 +24,7 @@ from core.controllers.w3afException import w3afException
 import ConfigParser
 from core.controllers.misc.parseOptions import *
 from core.controllers.misc.factory import *
+import os
 
 class profile:
     '''
@@ -32,6 +33,19 @@ class profile:
     @author: Andres Riancho ( andres.riancho@gmail.com )    
     '''
     def __init__( self, profile_file_name ):
+
+        # Verify if I can find the file
+        if not os.path.exists(profile_file_name):
+
+            # The file isn't there, let's try with a .ini ...
+            profile_file_name += '.ini'
+            if not os.path.exists(profile_file_name):
+            
+                # Search in the default path...        
+                profile_file_name = 'profiles' + os.path.sep + profile_file_name
+                if not os.path.exists(profile_file_name):
+                    raise w3afException('The profile "' + profile_file_name + '" wasn\'t found.')
+
         # The default optionxform transforms the option to lower case; w3af needs the value as it is
         def optionxform( option ):
             return option
