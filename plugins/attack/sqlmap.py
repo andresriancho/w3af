@@ -120,15 +120,20 @@ class sqlmap(baseAttackPlugin):
         
     def getAttackType(self):
         return 'shell'
-        
+    
+    def getExploitableVulns(self):
+        vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
+        vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+        return vulns
+
     def canExploit( self, vulnToExploit=None ):
         '''
         Searches the kb for vulnerabilities that the plugin can exploit.
 
         @return: True if plugin knows how to exploit a found vuln.
         '''
-        vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
-        vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+        vulns = self.getExploitableVulns()
+
         if vulnToExploit != None:
             vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
             

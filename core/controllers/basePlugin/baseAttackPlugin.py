@@ -57,7 +57,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         '''
         raise w3afException('Plugin is not implementing required method _generateShell' )
         
-    def getVulns(self):
+    def getExploitableVulns(self):
         return kb.kb.getData( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
         
     def canExploit(self, vulnToExploit=None):
@@ -67,7 +67,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         @parameter vulnToExploit: The vulnerability id to exploit
         @return: True if we can exploit a vuln stored in the kb.
         '''
-        vulns = self.getVulns()
+        vulns = self.getExploitableVulns()
         if vulnToExploit != None:
             vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
             if vulns:
@@ -142,7 +142,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         if not self.canExploit():
             raise w3afException('No '+ self.getVulnName2Exploit() + ' vulnerabilities have been found.')
 
-        for vuln in self.getVulns():
+        for vuln in self.getExploitableVulns():
             
             if vulnToExploit != None:
                 if vulnToExploit != vuln.getId():
