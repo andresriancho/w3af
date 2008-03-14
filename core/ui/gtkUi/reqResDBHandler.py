@@ -54,7 +54,7 @@ class reqResDBHandler:
             try:
                 result = [ r for r in self._db_req_res if r.id == search_id ][0]
             except Exception, e:
-                raise w3afException('An exception was found while searching for the request with id: ' + str(id) + '. Exception: ' +str(e) )
+                return None
             else:
                 return result
             
