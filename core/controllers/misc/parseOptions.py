@@ -101,6 +101,7 @@ def parseXML( xmlString ):
         setParameter( optionName, 'help' )
         setParameter( optionName, 'type' )
         setParameter( optionName, 'required' )
+        setParameter( optionName, 'tabid' )
         
     xmlDoc.unlink()
     return options
