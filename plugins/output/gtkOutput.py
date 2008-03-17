@@ -57,8 +57,10 @@ class gtkOutput(baseOutputPlugin):
         
         try:
             os.mkdir(os.path.join(getHomeDir() , 'sessions'))
-        except:
-            raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
+        except OSError, oe:
+            # [Errno 17] File exists
+            if oe.errno != 17:
+                raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
             
         try:
             self._del_dir(db_req_res_dirName)
