@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 
 # To show request and responses
 from core.ui.gtkUi.reqResViewer import reqResViewer
-from core.ui.gtkUi.reqResDBHandler import reqResDBHandler
+from core.data.db.reqResDBHandler import reqResDBHandler
 
 class FullKBTree(kbtree.KBTree):
     '''A tree showing all the info.

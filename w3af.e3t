@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-07, 16:03:11 -->
+<!-- Saved: 2008-03-16, 11:03:05 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -13,18 +13,6 @@
         <Name>directoryIndexing.py</Name>
       </Filename>
       <Linenumber>75</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a proxy object instead.</Description>
-    <Created>2008-01-18, 19:33:34</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>googleProxy.py</Name>
-      </Filename>
-      <Linenumber>67</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -316,6 +304,148 @@
         <Name>exploittab.py</Name>
       </Filename>
       <Linenumber>224</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: que los botones se apaguen y prendan si hay algo para</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>80</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Que se cargue todo ok al usar el profile</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>226</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: que efectivamente grabe</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>231</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: save profile", profile</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>233</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: que efectivamente grabe</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>238</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: que cargue lo anterior</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>244</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: que borre el profile</Description>
+    <Created>2008-03-10, 19:22:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>250</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: at program start "console" should not be here</Description>
+    <Created>2008-03-10, 21:16:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>pluginconfig.py</Name>
+      </Filename>
+      <Linenumber>186</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: esto es necesario?"</Description>
+    <Created>2008-03-10, 21:16:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>pluginconfig.py</Name>
+      </Filename>
+      <Linenumber>431</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: target url!</Description>
+    <Created>2008-03-10, 21:16:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>pluginconfig.py</Name>
+      </Filename>
+      <Linenumber>525</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a proxy object instead.</Description>
+    <Created>2008-03-13, 19:15:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>googleProxy.py</Name>
+      </Filename>
+      <Linenumber>67</Linenumber>
     </Resource>
   </Task>
 </Tasks>

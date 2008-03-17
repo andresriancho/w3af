@@ -29,7 +29,7 @@ from core.ui.gtkUi.entries import ValidatedEntry
 
 # The elements to create the req/res viewer
 from core.ui.gtkUi.reqResViewer import reqResViewer
-from core.ui.gtkUi.reqResDBHandler import reqResDBHandler
+from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
 class httpLogTab(gtk.HPaned):

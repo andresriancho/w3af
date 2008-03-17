@@ -30,7 +30,8 @@ dependencyCheck()
 import core.controllers.miscSettings as miscSettings
 
 import os,sys
-import user
+
+from core.controllers.misc.homeDir import createHomeDir, getHomeDir
 from core.controllers.misc.factory import factory
 from core.controllers.misc.parseOptions import parseOptions
 from core.data.url.xUrllib import xUrllib
@@ -68,15 +69,13 @@ class w3afCore:
         self.uriOpener = xUrllib()
 
         # Create .w3af inside home directory
-        self._homeLocation = user.home + os.path.sep + '.w3af'
-        if not os.path.exists(self._homeLocation):
-            os.makedirs(self._homeLocation)
+        createHomeDir()
     
     def getHomePath( self ):
         '''
         @return: The location of the w3af directory inside the home directory of the current user.
         '''
-        return self._homeLocation
+        return getHomeDir()
         
     def _initializeInternalVariables(self):
         '''
@@ -104,18 +103,18 @@ class w3afCore:
         self._paused = False
         self._mustStop = False
     
-    def _rPlugFactory( self, strReqPlugins, PluginType ):
+    def _rPlugFactory( self, strReqPlugins, pluginType ):
         '''
         This method creates the requested modules list.
         
         @parameter strReqPlugins: A string list with the requested plugins to be executed.
-        @parameter PluginType: [audit|discovery|grep]
+        @parameter pluginType: [audit|discovery|grep]
         @return: A list with plugins to be executed, this list is ordered using the exec priority.
         '''     
         requestedPluginsList = []
         
         if 'all' in strReqPlugins:
-            fileList = [ f for f in os.listdir('plugins' + os.path.sep+ PluginType + os.path.sep ) ]    
+            fileList = [ f for f in os.listdir('plugins' + os.path.sep+ pluginType + os.path.sep ) ]    
             allPlugins = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == '.py' ]
             allPlugins.remove ( '__init__' )
             
@@ -129,11 +128,11 @@ class w3afCore:
             
             # Update the plugin list
             # This update is usefull for cases where the user selected "all" plugins,
-            # the self._strPlugins[PluginType] is useless if it says 'all'.
-            self._strPlugins[PluginType] = strReqPlugins
+            # the self._strPlugins[pluginType] is useless if it says 'all'.
+            self._strPlugins[pluginType] = strReqPlugins
                 
         for pluginName in strReqPlugins:
-            plugin = factory( 'plugins.' + PluginType + '.' + pluginName )
+            plugin = factory( 'plugins.' + pluginType + '.' + pluginName )
 
             # Now we are going to check if the plugin dependencies are met
             for dep in plugin.getPluginDeps():
@@ -142,11 +141,11 @@ class w3afCore:
                 except:
                     raise w3afException('Plugin dependencies must be indicated using pluginType.pluginName notation.\
                     This is an error in ' + pluginName +'.getPluginDeps() .')
-                if depType == PluginType:
+                if depType == pluginType:
                     if depPlugin not in strReqPlugins:
                         if cf.cf.getData('autoDependencies'):
                             strReqPlugins.append( depPlugin )
-                            om.out.information('Auto-enabling plugin: ' + PluginType + '.' + depPlugin)
+                            om.out.information('Auto-enabling plugin: ' + pluginType + '.' + depPlugin)
                             # nice recursive call, this solves the "dependency of dependency" problem =)
                             return self._rPlugFactory( strReqPlugins, depType )
                         else:
@@ -168,9 +167,9 @@ class w3afCore:
                         self._strPlugins[depType].insert( 0, depPlugin )
             
             # Now we set the plugin options
-            pOptions = self.getPluginOptions(PluginType, pluginName)
-            if pOptions:
-                plugin.setOptions( self.getPluginOptions(PluginType, pluginName) )
+            if pluginName in self._pluginsOptions[ pluginType ]:
+                pOptions = self._pluginsOptions[ pluginType ][ pluginName ]
+                plugin.setOptions( pOptions )
                 
             # This sets the url opener for each module that is called inside the for loop
             plugin.setUrlOpener( self.uriOpener )
@@ -187,7 +186,7 @@ class w3afCore:
             if len( deps ) != 0:
                 # This plugin has dependencies, I should add the plugins in order
                 for plugin2 in requestedPluginsList:
-                    if PluginType+'.'+plugin2.getName() in deps and plugin2 not in orderedPluginList:
+                    if pluginType+'.'+plugin2.getName() in deps and plugin2 not in orderedPluginList:
                         orderedPluginList.insert( 1, plugin2)
 
             # Check if I was added because of a dep, if I wasnt, add me.
@@ -197,7 +196,7 @@ class w3afCore:
         # This should never happend.
         if len(orderedPluginList) != len(requestedPluginsList):
             om.out.error('There is an error in the way w3afCore orders plugins. The ordered plugin list length is not equal to the requested plugin list. ', newLine=False)
-            om.out.error('The error was found sorting plugins of type: '+ PluginType +'.')
+            om.out.error('The error was found sorting plugins of type: '+ pluginType +'.')
             om.out.error('Please report this bug to the developers including a complete list of commands that you run to get to this error.')
 
             om.out.error('Ordered plugins:')

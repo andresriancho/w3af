@@ -31,8 +31,10 @@ import core.data.kb.config as cf
 
 import Queue
 
-# The database
+# The database handler class
 from extlib.buzhug.buzhug import Base
+
+from core.controllers.misc.homeDir import getHomeDir
 
 # Only to be used with care.
 import core.controllers.outputManager as om
@@ -51,13 +53,19 @@ class gtkOutput(baseOutputPlugin):
         baseOutputPlugin.__init__(self)
         
         sessionName = cf.cf.getData('sessionName')
-        db_req_res_dirName = os.path.join('sessions', 'db_req_' + sessionName )
+        db_req_res_dirName = os.path.join(getHomeDir(), 'sessions', 'db_req_' + sessionName )
         
+        try:
+            os.mkdir(os.path.join(getHomeDir() , 'sessions'))
+        except:
+            raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
+            
         try:
             self._del_dir(db_req_res_dirName)
         except Exception, e:
             # I get here when the session directory for this db wasn't created
             # and when the user has no permissions to remove the directory
+            # FIXME: handle those errors!
             pass
             
         try:
