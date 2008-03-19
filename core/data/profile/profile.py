@@ -122,7 +122,11 @@ class profile:
             else:
                 if type == pluginType and name == pluginName:
                     for option in self._config.options(section):
-                        parsedOptions[option]['default'] = self._config.get(section, option)
+                        try:
+                            parsedOptions[option]['default'] = self._config.get(section, option)
+                        except KeyError,k:
+                            raise w3afException('The option "' + option + '" is unknown for the "'+ pluginName + '" plugin.')
+
         return parsedOptions
     
     def setDesc( self, name ):
