@@ -17,7 +17,7 @@ grep pathDisclosure
 
 back
 target
-set target http://localhost/w3af/
+set target http://localhost/w3af/w3af.html
 back
 
 start

@@ -12,13 +12,13 @@ output config console
 set verbosity 0
 back
 
-audit sqli
-discovery webSpider
+audit sqli, blindSqli
+#discovery webSpider
 #grep pathDisclosure
 
 back
 target
-set target http://localhost/w3af/
+set target http://localhost/w3af/blindSqli/blindSqli-str.php?email=f00nes , http://localhost/w3af/img/w3af.png
 back
 start
 exploit

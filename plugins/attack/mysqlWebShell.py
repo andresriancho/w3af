@@ -74,6 +74,11 @@ class mysqlWebShell(baseAttackPlugin):
         
     def getAttackType(self):
         return 'shell'
+    
+    def getExploitableVulns(self):
+        vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
+        vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+        return vulns
         
     def canExploit( self, vulnToExploit=None ):
         '''
@@ -91,7 +96,7 @@ class mysqlWebShell(baseAttackPlugin):
         else:
             return True
                 
-    def exploit(self ):
+    def exploit(self, vulnToExploit=None ):
         '''
         Exploits a [blind] sql injection vulns that was found and stored in the kb.
 
@@ -104,16 +109,17 @@ class mysqlWebShell(baseAttackPlugin):
             om.out.information( 'Hint #1: Try to find vulnerabilities using the audit plugins.' )
             om.out.information( 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.' )
         else:
-            vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
-            vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+            vulns = self.getExploitableVulns()
             
-            bsql = blindSqliTools()
-            bsql.setUrlOpener( self._urlOpener )
-            bsql.setEqualLimit( self._equalLimit )
-            bsql.setEquAlgorithm( self._equAlgorithm )
+            # Create the blind sql handler
+            self._bsql = blindSqliTools()
+            self._bsql.setUrlOpener( self._urlOpener )
+            self._bsql.setEqualLimit( self._equalLimit )
+            self._bsql.setEquAlgorithm( self._equAlgorithm )
+            
             vulns2 = []
             for v in vulns:
-                vulns2.extend( bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
+                vulns2.extend( self._bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
             vulns = vulns2
             
             for vuln in vulns:
@@ -134,7 +140,7 @@ class mysqlWebShell(baseAttackPlugin):
         @return: True if mysqlWebShell could fingerprint the database.
         '''
         om.out.information('Creating database driver.')
-        dbBuilder = dbDriverBuilder( self._urlOpener )
+        dbBuilder = dbDriverBuilder( self._urlOpener, self._bsql.equal )
         self._driver = dbBuilder.getDriverForVuln( vuln )
         
         if self._driver == None:

