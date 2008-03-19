@@ -83,7 +83,18 @@ class _LineScroller(gtk.TextView):
             if mess is None:
                 yield True
                 continue
-            text = mess.getMsg() + "\n"
+            # This try/except code is here to debug the bug #1909854
+            # it should be removed after fixing it
+            try:
+                text = mess.getMsg() + "\n"
+            except:
+                print 'You hitted bug #1909854 !!'
+                print 'Please navigate to https://sourceforge.net/tracker/index.php?func=detail&aid=1909854&group_id=170274&atid=853652'
+                print 'And add this string to the bug: ', mess[0:20]
+                print 'This will help us fix the bug !!'
+                import sys
+                sys.exit(1)
+                
             mtype = mess.getType()
             self.all_messages.append((mtype, text))
             if mtype in self.active_filter:
