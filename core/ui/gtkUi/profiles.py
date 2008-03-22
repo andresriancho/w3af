@@ -63,7 +63,7 @@ class ProfileList(gtk.TreeView):
             for i, (nom, desc, prfid, changed, perm) in enumerate(self.liststore):
                 if initial == nom:
                     self.set_cursor(i)
-                    self._useProfile(None)
+                    self._useProfile()
                     break
             else:
                 raise SystemExit("The profile %r does not exists!" % initial)
@@ -250,7 +250,7 @@ class ProfileList(gtk.TreeView):
             return None
         return profile.getName()
 
-    def _useProfile(self, widget):
+    def _useProfile(self, widget=None):
         '''Uses the selected profile.'''
         profile = self._getProfileName()
         if profile == self.selectedProfile:
@@ -277,15 +277,24 @@ class ProfileList(gtk.TreeView):
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
-        profile = self._getProfileName()
-        # FIXME: que cargue lo anterior
-        print "revert profile", profile
+        msg = "Do you really want to discard the changes in the the profile and load the previous saved configuration?"
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        opt = dlg.run()
+        dlg.destroy()
+
+        if opt == gtk.RESPONSE_YES:
+            self.selectedProfile = -1
+            path = self.get_cursor()[0]
+            row = self.liststore[path]
+            row[0] = row[4]
+            row[3] = False
+            self._useProfile()
 
     def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
         profile = self._getProfileName()
 
-        msg = "Do you really want to DELETE the Profile '%s'?" % profile
+        msg = "Do you really want to DELETE the profile '%s'?" % profile
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
