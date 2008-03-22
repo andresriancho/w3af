@@ -425,12 +425,6 @@ class PluginTree(gtk.TreeView):
                 result.append((type, plugins))
         return result
 
-    def reload(self):
-        '''Reloads all the configurations.'''
-        print "plugin reload"
-        print "FIXME: esto es necesario?"
-        
-
 
 class PluginConfigBody(gtk.VBox):
     '''The main Plugin Configuration Body.
@@ -525,19 +519,19 @@ class PluginConfigBody(gtk.VBox):
 
     def reload(self):
         '''Reloads all the configurations.'''
-        print "reload!!"
-        # FIXME: target url!
-#        import pdb;pdb.set_trace()
+        # target url
+        plugin = self.w3af.target
+        options = parseOptions.parseXML(plugin.getOptionsXML())
+        newurl = options['target']['default']
+        if newurl:
+            self.target.set_text(newurl)
 
+        # replace panel
         pan = self.get_children()[0]
         newpan = self._buildpan()
         self.remove(self.pan)
         self.pack_start(newpan)
         self.pan = newpan
-
-        # plugins
-        self.plugin_tree.reload()
-#        self.config_panel.reload()
 
     def _key(self, widg, event):
         '''Handles keystrokes.'''

@@ -89,8 +89,7 @@ class ProfileList(gtk.TreeView):
         self.pluginsConfigs = {None:{}}
         self.origActPlugins = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
 
-        # FIXME: que tambien este "modificado" el profile cuando los plugins
-        # se activan y desactivan
+        # FIXME: que para Default, no aparezca Delete ni Save en los botones arriba
         self.show()
 
     def _controlDifferences(self):
@@ -209,6 +208,7 @@ class ProfileList(gtk.TreeView):
             return True
         
         (path, column) = tv.get_cursor()
+        # FIXME: que si es Default, no aparezca Delete ni Save
         # Is it over a plugin name ?
         if path != None and len(path) == 1:
             row = self.liststore[path]
@@ -267,7 +267,6 @@ class ProfileList(gtk.TreeView):
         '''Saves the selected profile.'''
         profile = self._getProfileName()
         # FIXME: que efectivamente grabe
-        #    Si quiere grabar en el default, automaticamente tiene que ir al Save As
         print "FIXME: save profile", profile
 
     def saveAsProfile(self, widget=None):
@@ -285,5 +284,12 @@ class ProfileList(gtk.TreeView):
     def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
         profile = self._getProfileName()
-        # FIXME: que borre el profile
-        print "delete profile", profile
+
+        msg = "Do you really want to DELETE the Profile '%s'?" % profile
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        opt = dlg.run()
+        dlg.destroy()
+
+        if opt == gtk.RESPONSE_YES:
+            # FIXME: que borre el profile (falta funcionalidad core)
+            print "The profile should be deleted!"
