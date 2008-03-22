@@ -176,9 +176,17 @@ class ProfileList(gtk.TreeView):
                 return True
 
             # Clicked with left button
-            # FIXME: aca tiene que salir un cartel de "grabar o descartar?"
-            print "changed!"
-            return True
+            msg = "Do you want to discard the changes in the Profile?"
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+            stayhere = dlg.run() != gtk.RESPONSE_YES
+            dlg.destroy()
+            if not stayhere:
+                # even if it's modified, we're leaving it: when we come back, the previous
+                # configuration will be loaded... so here we just unbold it and set it as 
+                # not modified 
+                row[0] = row[4]
+                row[3] = False
+            return stayhere
         return False
 
     def _popupMenu( self, tv, event ):
