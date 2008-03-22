@@ -542,7 +542,7 @@ class PluginConfigBody(gtk.VBox):
         if event.state & gtk.gdk.CONTROL_MASK:
             if event.keyval == self.key_l:   # -l
                 self.target.grab_focus()
-            return True
+                return True
 
         # let the key pass through
         return False

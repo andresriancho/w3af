@@ -152,6 +152,11 @@ class ProfileList(gtk.TreeView):
         path = self.get_cursor()[0]
         row = self.liststore[path]
         if row[3]:
+            # The profile is changed
+            if event.button != 1:
+                return True
+
+            # Clicked with left button
             # FIXME: aca tiene que salir un cartel de "grabar o descartar?"
             print "changed!"
             return True
