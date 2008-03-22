@@ -285,7 +285,9 @@ class SemiStockButton(gtk.Button):
         box = align.get_children()[0]
         (self.image, self.label) = box.get_children()
         self.label.set_text(text)
-        if tooltip is not None:
+        # support for GTK versions previous to 2.12 where 
+        # set_tooltip_text was not available
+        if tooltip is not None and hasattr(self, "set_tooltip_text"):
             self.set_tooltip_text(tooltip)
 
     def changeInternals(self, newtext, newimage, tooltip=None):
