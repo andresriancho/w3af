@@ -405,6 +405,9 @@ class PluginTree(gtk.TreeView):
             else:
                 father[2] = True
 
+        # alert the profiles that something changed here
+        self.mainwin.profiles.pluginChanged()
+
     def getActivatedPlugins(self):
         '''Return the activated plugins.
 

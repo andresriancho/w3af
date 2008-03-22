@@ -87,12 +87,41 @@ class ProfileList(gtk.TreeView):
         # here we keep the info exactly like the core, to change it
         # easily to it
         self.pluginsConfigs = {None:{}}
+        self.origActPlugins = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
 
         # FIXME: que tambien este "modificado" el profile cuando los plugins
         # se activan y desactivan
         self.show()
-        
-    def pluginChanged(self, plugin):
+
+    def _controlDifferences(self):
+        '''Returns if something is different agains initial state.'''
+        # Always check activation status
+        nowActive = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
+        if nowActive != self.origActPlugins:
+            return True
+
+        # Check plugins config
+        for ptype in self.w3af.getPluginTypes():
+            for pname in self.w3af.getPluginList(ptype):
+                opts = self.w3af.getPluginOptions(ptype, pname)
+                if not opts:
+                    continue
+
+                # let's see if we have it (if we don't, it means
+                # we never got into that plugin, therefore it's ok
+                if (ptype,pname) not in self.pluginsConfigs:
+                    continue
+
+                # compare it
+                savedconfig = self.pluginsConfigs[(ptype,pname)]
+                for (k, origv) in savedconfig.items():
+                    newv = str(opts[k])
+                    if newv != origv:
+                        return True
+
+        return False
+
+    def pluginChanged(self, plugin=None):
         '''Get executed when a plugin is changed.
 
         @param plugin: The plugin which changed.
@@ -100,17 +129,7 @@ class ProfileList(gtk.TreeView):
         When executed, this check if the saved config is equal or not to the 
         original one, and enables color and buttons.
         '''
-        opts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
-
-        # let's compare
-        savedconfig = self.pluginsConfigs[id(plugin)]
-        for (k, origv) in savedconfig.items():
-            newv = str(opts[k])
-            if newv != origv:
-                changed = 1
-                break
-        else:
-            changed = 0
+        changed = self._controlDifferences()
 
         # update boldness and info
         path = self.get_cursor()[0]
@@ -132,7 +151,7 @@ class ProfileList(gtk.TreeView):
         When executed, takes a snapshot of the original plugin configuration.
         '''
         # only stores the original one
-        if id(plugin) in self.pluginsConfigs:
+        if (plugin.ptype,plugin.pname) in self.pluginsConfigs:
             return
 
         # we adapt this information to a only-options dict, as that's
@@ -145,7 +164,7 @@ class ProfileList(gtk.TreeView):
         realopts = {}
         for nom,config in opts.items():
             realopts[nom] = config["default"]
-        self.pluginsConfigs[id(plugin)] = realopts
+        self.pluginsConfigs[(plugin.ptype,plugin.pname)] = realopts
 
     def _changeAtempt(self, widget, event):
         '''Let the user change profile if the actual is saved.'''
@@ -232,6 +251,9 @@ class ProfileList(gtk.TreeView):
 
         self.w3af.useProfile(profile)
         self.w3af.mainwin.pcbody.reload()
+
+        # get the activated plugins
+        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
 
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
