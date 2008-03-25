@@ -193,8 +193,8 @@ class MainApp:
         self.menuViews["Exploit"] = ag
 
         # the sensitive options for profiles
-        self.profileSensitOptions = [actiongroup.get_action("Save"), actiongroup.get_action("Revert")]
-        self.activateProfileActions(False)
+        self.profileActions = [actiongroup.get_action(x) for x in "Save SaveAs Revert Delete".split()]
+        self.activateProfileActions([False,True,False,False])
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
@@ -487,13 +487,13 @@ class MainApp:
         method = getattr(self.profiles, methname)
         method()
 
-    def activateProfileActions(self, changed):
+    def activateProfileActions(self, newstatus):
         '''Activate profiles buttons.
 
-        @param activ: if the profile changed or not.
+        @param newstatus: if the profile changed or not.
         '''
-        for opt in self.profileSensitOptions:
-            opt.set_sensitive(changed)
+        for opt,stt in zip(self.profileActions, newstatus):
+            opt.set_sensitive(stt)
         
 def main(profile):
     MainApp(profile)

@@ -23,6 +23,8 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 
+import core.ui.gtkUi.history as history
+
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
     
@@ -347,7 +349,7 @@ class AdvisedEntry(gtk.Entry):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, message, alertb=None):
+    def __init__(self, message, alertb=None, historyfile=None):
         super(AdvisedEntry,self).__init__()
         self.connect("focus-in-event", self._focus)
         self.firstfocus = True
@@ -357,6 +359,12 @@ class AdvisedEntry(gtk.Entry):
             self.alertb(self, False)
         tooltips = gtk.Tooltips()
         tooltips.set_tip(self, message)
+
+        if historyfile is not None:
+            self.history = history.HistorySuggestion(historyfile)
+            self.connect("key-release-event", self._key)
+        else:
+            self.history = None
         self.show()
 
     def _focus(self, *vals):
@@ -366,6 +374,63 @@ class AdvisedEntry(gtk.Entry):
                 self.alertb(self, True)
             self.firstfocus = False
             self.set_text("")
+
+    def _key(self, widget, event):
+        '''Shows suggestions.'''
+        txt = self.get_text()
+        sug = self.history.suggest(txt)
+        print sug
+        # FIXME: it should make the suggestions appear!
+        return False
+
+    def insertURL(self, *w):
+        '''Saves the URL in the history infrastructure.'''
+        if self.history is not None:
+            print "saving"
+            self.history.insert(self.get_text())
+            self.history.save()
+
+
+class EntryDialog(gtk.Dialog):
+    '''A dialog with a textentry.
+
+    @param title: The title of the window
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, title):
+        super(EntryDialog,self).__init__(title, None, gtk.DIALOG_MODAL,
+                      (gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE_AS,gtk.RESPONSE_OK))
+        # the textentry
+        self.entry = gtk.Entry()
+        self.entry.connect("changed", self._checkEntry)
+        self.entry.connect("activate", self._setInputText, True)
+        self.vbox.pack_start(self.entry)
+
+        # the cancel button
+        self.butt_cancel = self.action_area.get_children()[1]
+        self.butt_cancel.connect("clicked", lambda x: self.destroy())
+
+        # the saveas button
+        self.butt_saveas = self.action_area.get_children()[0]
+        self.butt_saveas.set_sensitive(False)
+        self.butt_saveas.connect("clicked", self._setInputText)
+
+        self.inputtext = None
+        self.show_all()
+
+    def _setInputText(self, widget, close=False):
+        '''Checks the entry to see if it has text.
+        
+        @param close: If True, the Dialog will be closed.
+        '''
+        self.inputtext = self.entry.get_text()
+        if close:
+            self.response(gtk.RESPONSE_OK)
+
+    def _checkEntry(self, *w):
+        '''Checks the entry to see if it has text.'''
+        self.butt_saveas.set_sensitive(bool(self.entry.get_text()))
 
 
 class TextDialog(gtk.Dialog):

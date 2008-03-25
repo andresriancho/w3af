@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk
 pygtk.require('2.0')
 import gtk, gobject
-import xml.dom, sys
+import xml.dom, sys, os
 
 import core.ui.gtkUi.confpanel as confpanel
 import core.ui.gtkUi.entries as entries
@@ -31,6 +31,7 @@ from core.ui.gtkUi.pluginEditor import editPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.misc import parseOptions
+from core.controllers.misc.homeDir import getHomeDir
 
 # support for <2.5
 if sys.version_info[:2] < (2,5):
@@ -444,13 +445,16 @@ class PluginConfigBody(gtk.VBox):
         lab = gtk.Label("Target:")
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
         # entry
-        self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change)
+        histfile = os.path.join(getHomeDir(),  "urlhistory.pkl")
+        self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change, histfile)
         self.target.connect("activate", mainwin._scan_director)
+        self.target.connect("activate", self.target.insertURL)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
         # start/stop button
         startstop = entries.SemiStockButton("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
         startstop.set_sensitive(False)
         startstop.connect("clicked", mainwin._scan_director)
+        startstop.connect("clicked", self.target.insertURL)
         mainwin.startstopbtns.addWidget(startstop)
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
         # advanced config

@@ -331,6 +331,8 @@ class BroadcastWrapper(object):
     
     Wraps objects to be able to have n widgets, and handle them
     as one.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, *values):
         self.initvalues = values

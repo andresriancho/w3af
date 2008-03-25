@@ -24,6 +24,7 @@ pygtk.require('2.0')
 import gtk
 
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.entries as entries
 from core.controllers.misc import parseOptions
 
 class ProfileList(gtk.TreeView):
@@ -72,6 +73,7 @@ class ProfileList(gtk.TreeView):
         self.connect('button-press-event', self._changeAtempt)
         self.connect('button-release-event', self._popupMenu)
         self.connect('cursor-changed', self._useProfile)
+        self._rightButtonMenu = None
         
         # create a TreeViewColumn for the text
         tvcolumn = gtk.TreeViewColumn('Profiles')
@@ -89,7 +91,6 @@ class ProfileList(gtk.TreeView):
         self.pluginsConfigs = {None:{}}
         self.origActPlugins = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
 
-        # FIXME: que para Default, no aparezca Delete ni Save en los botones arriba
         self.show()
 
     def _controlDifferences(self):
@@ -140,7 +141,8 @@ class ProfileList(gtk.TreeView):
             row[0] = row[4]
 
         # update the mainwin buttons
-        self.w3af.mainwin.activateProfileActions(changed)
+        newstatus = self._getActionsSensitivity(path)
+        self.w3af.mainwin.activateProfileActions(newstatus)
 
     def pluginConfig(self, plugin):
         '''Gets executed when a plugin config panel is created.
@@ -206,37 +208,59 @@ class ProfileList(gtk.TreeView):
         clickpath = posic[0]
         if row[3] and clickpath != path:
             return True
-        
-        (path, column) = tv.get_cursor()
-        # FIXME: que si es Default, no aparezca Delete ni Save
-        # Is it over a plugin name ?
-        if path != None and len(path) == 1:
-            row = self.liststore[path]
+
+        # creates the whole menu only once
+        if self._rightButtonMenu is None:
             gm = gtk.Menu()
-            
-            # And the items
+            self._rightButtonMenu = gm
+        
+            # the items
             e = gtk.MenuItem("Save this configuration")
             e.connect('activate', self.saveProfile)
             gm.append(e)
-            if not row[3]:
-                e.set_sensitive(False)
-
             e = gtk.MenuItem("Save this profile to a new one")
             e.connect('activate', self.saveAsProfile)
             gm.append(e)
-
             e = gtk.MenuItem("Revert to saved profile state")
             e.connect('activate', self.revertProfile)
             gm.append(e)
-            if not row[3]:
-                e.set_sensitive(False)
-
             e = gtk.MenuItem("Delete this profile")
             e.connect('activate', self.deleteProfile)
             gm.append(e)
-                
             gm.show_all()
+        else:
+            gm = self._rightButtonMenu
+        
+        (path, column) = tv.get_cursor()
+        # Is it over a plugin name ?
+        if path != None and len(path) == 1:
+            # Enable/disable the options in function of state
+            newstatus = self._getActionsSensitivity(path)
+            children = gm.get_children()
+            for child,stt in zip(children, newstatus):
+                child.set_sensitive(stt)
+                
             gm.popup( None, None, None, event.button, event.time)
+
+    def _getActionsSensitivity(self, path):
+        '''Returns which actions must be activated or not
+
+        @param path: where the cursor is located
+        @return: four booleans indicating the state for each option
+        '''
+        vals = []
+        row = self.liststore[path]
+
+        # save: enabled if it's modified and it's not the Default
+        vals.append(row[3] and path[0] != 0)
+        # save as: always enabled
+        vals.append(True)
+        # revert: enabled if it's modified
+        vals.append(row[3])
+        # delete: enabled if it's not the Default
+        vals.append(path[0] != 0)
+
+        return vals
 
     def _getProfileName(self):
         '''Gets the actual profile instance.
@@ -263,17 +287,27 @@ class ProfileList(gtk.TreeView):
         # get the activated plugins
         self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
 
+        # update the mainwin buttons
+        path = self.get_cursor()[0]
+        newstatus = self._getActionsSensitivity(path)
+        self.w3af.mainwin.activateProfileActions(newstatus)
+
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
         profile = self._getProfileName()
-        # FIXME: que efectivamente grabe
-        print "FIXME: save profile", profile
+        # FIXME: que efectivamente grabe el profile (falta funcionalidad core)
+        print "The profile should be saved!"
 
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
-        # FIXME: que efectivamente grabe
-        print "save as profile", profile
+        dlg = entries.EntryDialog("Save as...")
+        dlg.run()
+        filename = dlg.inputtext
+        dlg.destroy()
+        if filename is not None:
+            # FIXME: que efectivamente copie el profile al otro (falta funcionalidad core)
+            print "The profile should be saved as", filename
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
