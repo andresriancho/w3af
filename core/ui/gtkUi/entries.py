@@ -389,13 +389,11 @@ class AdvisedEntry(gtk.Entry):
 
     def _match_completion(self, completion, entrystr, iter):
         texto = self.liststore[iter][0]
-        print texto
         return entrystr in texto
 
     def insertURL(self, *w):
         '''Saves the URL in the history infrastructure.'''
         if self.hist is not None:
-            print "saving"
             txt = self.get_text()
             if txt not in self.histtexts:
                 self.liststore.insert(0, [txt])
