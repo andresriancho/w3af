@@ -185,7 +185,7 @@ class KBTree(gtk.TreeView):
         return True
                         
     def _popup(self, tv, event):
-        '''Shows a menu when you right click on a plugin.
+        '''Shows a menu when you right click on an object inside the kb.
         
         @param tv: the treeview.
         @parameter event: The GTK event 
@@ -198,7 +198,10 @@ class KBTree(gtk.TreeView):
         if path is None:
             return
 
-        # pop up menu        
+        # pop up menu
+        # I'm leaving this commented because I know that in the future I'll want to
+        # do something similar. The code that is commented here, pop-ups a menu
+        '''
         menu = gtk.Menu()
         opc = gtk.MenuItem("Show HTTP request and response")
         menu.append(opc)
@@ -217,6 +220,7 @@ class KBTree(gtk.TreeView):
             opc.set_sensitive(False)
 
         menu.show_all()
+        '''
 
     def getInstance(self, path):
         '''Extracts the instance from the tree.
