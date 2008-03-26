@@ -66,7 +66,11 @@ class errorPages(baseGrepPlugin):
         mesg.append('<b>Warning</b>: ')
         mesg.append('No row with the given identifier')
         mesg.append("eval()'d code</b> on line <b>")
-
+        
+        # python
+        mesg.append("PythonHandler django.core.handlers.modpython")
+        mesg.append("t = loader.get_template(template_name) # You need to create a 404.html template.")
+        
         # Java
         mesg.append('[java.lang.')
         mesg.append('class java.lang.')
