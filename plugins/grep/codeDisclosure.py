@@ -41,11 +41,13 @@ class codeDisclosure(baseGrepPlugin):
         php = re.compile( '<\?.*\?>' ,re.IGNORECASE | re.DOTALL)
         asp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
         jsp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
+        jsp2 = re.compile( '<jsp:.*>' ,re.IGNORECASE | re.DOTALL)
         
         self._regexs = []
         self._regexs.append( (php, 'PHP') )
         self._regexs.append( (asp, 'ASP') )
         self._regexs.append( (jsp, 'JSP') )
+        self._regexs.append( (jsp2, 'JSP') )
         
         self._alreadyAdded = []
 
