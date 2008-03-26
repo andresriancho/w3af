@@ -76,7 +76,7 @@ class httpLogTab(gtk.HPaned):
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_STRING)
+        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_FLOAT)
         # create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -127,6 +127,11 @@ class httpLogTab(gtk.HPaned):
         # column for response message
         column = gtk.TreeViewColumn('Message', gtk.CellRendererText(),text=4)
         column.set_sort_column_id(4)
+        treeview.append_column(column)
+        
+        # column for response time
+        column = gtk.TreeViewColumn('Time (ms)', gtk.CellRendererText(),text=5)
+        column.set_sort_column_id(5)
         treeview.append_column(column)
     
     def _findRequestResponse( self, widget):
@@ -181,7 +186,7 @@ class httpLogTab(gtk.HPaned):
         self._lstore.clear()
         
         for item in results:
-            iter = self._lstore.append( [item.id, item.method, item.uri, item.code, item.msg] )
+            iter = self._lstore.append( [item.id, item.method, item.uri, item.code, item.msg, item.time] )
         
         # Size search results
         if len(results) < 10:
