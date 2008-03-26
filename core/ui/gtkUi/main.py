@@ -307,7 +307,10 @@ class MainApp:
             self.w3af.setPlugins(plugins, type)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
-        options = parseOptions.parseXML(self.w3af.target.getOptionsXML())
+        info = self.w3af.target.getOptionsXML()
+        # FIXME: bug here! (url with &, start, activ plugin, start)
+        print repr(info)
+        options = parseOptions.parseXML(info)
         url = self.pcbody.target.get_text()
         options['target'].update(default=url)
         try:

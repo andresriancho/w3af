@@ -360,11 +360,23 @@ class AdvisedEntry(gtk.Entry):
         tooltips = gtk.Tooltips()
         tooltips.set_tip(self, message)
 
+        # suggestion handling if history file is passed
         if historyfile is not None:
-            self.history = history.HistorySuggestion(historyfile)
-            self.connect("key-release-event", self._key)
+            self.hist = history.HistorySuggestion(historyfile)
+
+            completion = gtk.EntryCompletion()
+            self.liststore = gtk.ListStore(str)
+            self.histtexts = self.hist.getTexts()
+            for s in self.histtexts:
+                self.liststore.append([s])
+
+            completion.set_model(self.liststore)
+            completion.set_match_func(self._match_completion)
+            completion.set_text_column(0)
+            self.set_completion(completion)
         else:
-            self.history = None
+            self.hist = None
+
         self.show()
 
     def _focus(self, *vals):
@@ -375,20 +387,20 @@ class AdvisedEntry(gtk.Entry):
             self.firstfocus = False
             self.set_text("")
 
-    def _key(self, widget, event):
-        '''Shows suggestions.'''
-        txt = self.get_text()
-        sug = self.history.suggest(txt)
-        print sug
-        # FIXME: it should make the suggestions appear!
-        return False
+    def _match_completion(self, completion, entrystr, iter):
+        texto = self.liststore[iter][0]
+        print texto
+        return entrystr in texto
 
     def insertURL(self, *w):
         '''Saves the URL in the history infrastructure.'''
-        if self.history is not None:
+        if self.hist is not None:
             print "saving"
-            self.history.insert(self.get_text())
-            self.history.save()
+            txt = self.get_text()
+            if txt not in self.histtexts:
+                self.liststore.insert(0, [txt])
+            self.hist.insert(txt)
+            self.hist.save()
 
 
 class EntryDialog(gtk.Dialog):

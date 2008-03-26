@@ -38,15 +38,12 @@ class HistorySuggestion(object):
             self.history = cPickle.load(fileh)
             fileh.close()
 
-    def suggest(self, hint):
-        '''Suggest several different texts for the received hint.
+    def getTexts(self):
+        '''Provides the texts, ordered by relevance.
 
-        @param hint: the text to search in the history.
-        @return: a list with the suggestions.
+        @return: a generator with the texts
         '''
-        match = ((v,k) for k,v in self.history.items() if hint in k)
-        ordered =  sorted(match)
-        return [x[1] for x in ordered]
+        return [k for k,v in sorted(self.history.items(), key=operator.itemgetter(1))]
 
     def insert(self, newtext):
         self.history[newtext] = self.history.get(newtext, 0) + 1
@@ -75,20 +72,6 @@ if __name__ == "__main__":
     for txt in texts:
         his.insert(txt)
     print "%.1f mseg/element" % ((time.time() - tini) * 1000 / QUANT)
-
-    print "Asking for suggestions:",
-    # create what to ask
-    toask = []
-    for i in xrange(1000):
-        txt = random.choice(texts)[random.randint(0,LENGTH-1):random.randint(0,LENGTH-1)]
-        toask.append(txt)
-    # ask them!
-    for txt in toask:
-        res = his.suggest(txt)
-    # Uncomment the following when testing functionality, not speed
-    #   for x in res:
-    #       assert txt in x
-    print "%.1f mseg/element" % ((time.time() - tini) * 1000 / 1000)
 
     print "Saving to disk:",
     tini = time.time()
