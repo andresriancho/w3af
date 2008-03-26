@@ -59,7 +59,11 @@ class consoleUi(consoleMenu):
         self._menu = {'help':self._rootHelp, 'http-settings':self._httpSettings, 'misc-settings':self._misc,\
         'plugins':self._plugins,'start':self.start, 'assert': self._assert, \
         'profiles':self._profile,'exploit':self._exploit,'exit':self._exit,'target':self._target,'tools':self._tools, 'version': self._version}
+        
         self._w3af = core.controllers.w3afCore.w3afCore()
+        # Fixes bug #1921520
+        self._w3af.setPlugins( ['console'] , 'output' )
+        
         self._commands = commands
         # I will use pop(), so I need a reversed list.
         self._commands.reverse()
