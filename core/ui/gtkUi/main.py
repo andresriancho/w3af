@@ -41,7 +41,7 @@ except:
         print 'You have to install the buzhug database module to be able to run the GTK user interface. Available at: http://buzhug.sourceforge.net/'
         sys.exit( 1 )
 
-import threading, cgi
+import threading
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
@@ -310,8 +310,6 @@ class MainApp:
         info = self.w3af.target.getOptionsXML()
         options = parseOptions.parseXML(info)
         url = self.pcbody.target.get_text()
-        # we sanitize here as the core is not doing it (bug #1926462)
-        url = cgi.escape(url)
         options['target'].update(default=url)
         try:
             helpers.coreWrap(self.w3af.target.setOptions, options)
