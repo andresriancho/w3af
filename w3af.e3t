@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-16, 11:03:05 -->
+<!-- Saved: 2008-03-24, 16:50:06 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -13,30 +13,6 @@
         <Name>directoryIndexing.py</Name>
       </Filename>
       <Linenumber>75</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: I dont like globals, please see TODO below.</Description>
-    <Created>2008-01-18, 19:33:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>42</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: I really dislike this, if someone knows how to send variables to</Description>
-    <Created>2008-01-18, 19:33:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>177</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -127,18 +103,6 @@
         <Name>pluginConfig.py</Name>
       </Filename>
       <Linenumber>144</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This is duplicated code!! see above.</Description>
-    <Created>2008-02-24, 13:46:34</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>remoteFileIncludeShell.py</Name>
-      </Filename>
-      <Linenumber>347</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -446,6 +410,67 @@
         <Name>googleProxy.py</Name>
       </Filename>
       <Linenumber>67</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: handle those errors!</Description>
+    <Created>2008-03-16, 23:05:09</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>output</Dir>
+        <Name>gtkOutput.py</Name>
+      </Filename>
+      <Linenumber>70</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This is duplicated code!! see above.</Description>
+    <Created>2008-03-17, 07:41:09</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>remoteFileIncludeShell.py</Name>
+      </Filename>
+      <Linenumber>347</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I dont like globals, please see TODO below.</Description>
+    <Created>2008-03-17, 07:41:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>42</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I really dislike this, if someone knows how to send variables to</Description>
+    <Created>2008-03-17, 07:41:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>177</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: How to handle this case ?!</Description>
+    <Created>2008-03-17, 09:09:50</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>mysqlmap.py</Name>
+      </Filename>
+      <Linenumber>501</Linenumber>
     </Resource>
   </Task>
 </Tasks>

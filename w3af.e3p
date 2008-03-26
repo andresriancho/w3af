@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-03-16, 11:03:03 -->
+<!-- Saved: 2008-03-20, 05:54:08 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3744,12 +3744,6 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>logtab.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>gtkUi</Dir>
-      <Name>reqResDBHandler.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
