@@ -39,8 +39,11 @@ class ssn(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._ssnResponses = []
+        # match numbers of the form: 'nnn-nn-nnnn', 'nnnnnnnnn', 'nnn nn nnnn'
         regex = '(?:^|[^\d])(\d{3})(?:[\- ]?)(\d{2})(?:[\- ]?)(\d{4})(?:[^\d]|$)'
         self._regex = re.compile(regex)
+        # re that removes tags
+        self._re_removeTags = re.compile('(<.*?>|</.*?>)')
         
     def _testResponse(self, request, response):
         if isTextOrHtml(response.getHeaders()) and response.getCode()==200:
@@ -54,13 +57,16 @@ class ssn(baseGrepPlugin):
                 kb.kb.append( self, 'ssn', v )
      
     def _findSsn(self, body):
-        '''regex_res = self._regex.search(body)'''
+        # Now, remove html tags
+        bodyWithoutTags = self._re_removeTags.sub('', body)
         validate_res = False
-        ssn_list = self._regex.findall(body)
-        for number in ssn_list:
-            validate_res = self._validSsn(number)
-            if (validate_res == True):
-                break
+        lines = str(bodyWithoutTags).split('\n')
+        for line in lines:
+            res = self._regex.search(str(line))
+            if (res != None):
+                validate_res = self._validSsn(res)
+                if (validate_res == True):
+                    break
         return validate_res
     
     def _validSsn(self, potential_ssn):
@@ -77,10 +83,9 @@ class ssn(baseGrepPlugin):
 
         Source of information: wikipedia and socialsecurity.gov
        '''
-       area_code        = int(potential_ssn[0])
-       group_number     = int(potential_ssn[1])
-       serial_number    = int(potential_ssn[2])
-
+       area_code        = int(potential_ssn.group(1))
+       group_number     = int(potential_ssn.group(2))
+       serial_number    = int(potential_ssn.group(3))
        '''Checks'''
        if ((area_code > 772) or (area_code == 0) or (area_code == 666)):
             om.out.debug("area_code erred out: " + str(area_code) )
@@ -99,6 +104,7 @@ class ssn(baseGrepPlugin):
             return False
        '''If none of above conditions, then we have a valid ssn in the
        document. So, return true'''
+       om.out.debug(" " + str(area_code)+str(group_number)+str(serial_number) )
        return True
 
 
