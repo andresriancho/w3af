@@ -854,6 +854,59 @@ class w3afCore:
                 
         raise w3afException('Plugin not found')
     
+    def copyProfile( self, originalProfileName, copyProfileName ):
+        '''
+        @parameter originalProfileName: The profile to cloneProfile
+        @parameter copyProfileName: The cloned profile name
+        
+        @return: An instance of the copied profile, exceptions may raise on errors.
+        '''
+        profileInstance = profile( originalProfileName )
+        profileInstance.copy( copyProfileName )
+        return profile( copyProfileName )
+
+    def saveCurrentToProfile( self, profileName, profileDesc='' ):
+        '''
+        Save the current configuration of the core to the profile called profileName.
+        
+        @return: True if the profile was successfully saved. Else, raise a w3afException.
+        '''
+        # Create the empty profile
+        newProfile = profile(profileName)
+        
+        # Config the enabled plugins
+        for pType in self.getPluginTypes():
+            enabledPlugins = []
+            for pName in self.getEnabledPlugins(pType):
+                enabledPlugins.append( pName )
+            newProfile.setEnabledPlugins( pType, enabledPlugins )
+        
+        # Config the profile options
+        for pType in self.getPluginTypes():
+            for pName in self.getEnabledPlugins(pType):
+                newProfile.setPluginOptions( pType, pName, self.getPluginOptions( pType, pName ) )
+                
+        # Config the profile target
+        if cf.cf.getData('targets'):
+            newProfile.setTarget( ' , '.join(cf.cf.getData('targets')) )
+        
+        # Config the profile name and description
+        newProfile.setDesc( profileDesc )
+        newProfile.setName( profileName )
+        
+        # Save the profile to the file
+        newProfile.save( profileName )
+        
+        return True
+        
+    def removeProfile( self, profileName ):
+        '''
+        @return: True if the profile was successfully removed. Else, raise a w3afException.
+        '''
+        profileInstance = profile( profileName )
+        profileInstance.remove()
+        return True
+        
     def useProfile( self, profileName ):
         '''
         Gets all the information from the profile, and runs it.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-03-20, 05:54:08 -->
+<!-- Saved: 2008-03-26, 14:48:56 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3750,6 +3750,25 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>profiles.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>grep</Dir>
+      <Name>ssn.py</Name>
+    </Source>
+    <Source>
+      <Dir>scripts</Dir>
+      <Name>script-grep-ssn.w3af</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>grep</Dir>
+      <Name>creditCards.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>detectWAF.py</Name>
     </Source>
   </Sources>
   <Forms>

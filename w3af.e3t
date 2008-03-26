@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-24, 16:50:06 -->
+<!-- Saved: 2008-03-26, 14:48:56 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -270,136 +270,6 @@
       <Linenumber>224</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: que los botones se apaguen y prendan si hay algo para</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>80</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Que se cargue todo ok al usar el profile</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>226</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: que efectivamente grabe</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>231</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: save profile", profile</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>233</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: que efectivamente grabe</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>238</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: que cargue lo anterior</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>244</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: que borre el profile</Description>
-    <Created>2008-03-10, 19:22:46</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>250</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: at program start "console" should not be here</Description>
-    <Created>2008-03-10, 21:16:11</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>pluginconfig.py</Name>
-      </Filename>
-      <Linenumber>186</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: esto es necesario?"</Description>
-    <Created>2008-03-10, 21:16:11</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>pluginconfig.py</Name>
-      </Filename>
-      <Linenumber>431</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: target url!</Description>
-    <Created>2008-03-10, 21:16:11</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>pluginconfig.py</Name>
-      </Filename>
-      <Linenumber>525</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: Create a proxy object instead.</Description>
     <Created>2008-03-13, 19:15:15</Created>
@@ -471,6 +341,71 @@
         <Name>mysqlmap.py</Name>
       </Filename>
       <Linenumber>501</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: There is a problem here! When I click on a plugin to enable it (on the gtk ui)</Description>
+    <Created>2008-03-26, 13:11:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>298</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Saving the profile should put the name of the profile back to non-bold and</Description>
+    <Created>2008-03-26, 13:11:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>302</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Add a status bar message that says: "Profile saved", or something like that.</Description>
+    <Created>2008-03-26, 13:11:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>305</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Here you should reload the profile list</Description>
+    <Created>2008-03-26, 13:11:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>316</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Here you should reload the profile list</Description>
+    <Created>2008-03-26, 13:11:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>345</Linenumber>
     </Resource>
   </Task>
 </Tasks>

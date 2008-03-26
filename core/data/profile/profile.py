@@ -25,6 +25,7 @@ import ConfigParser
 from core.controllers.misc.parseOptions import *
 from core.controllers.misc.factory import *
 import os
+import shutil
 
 class profile:
     '''
@@ -32,20 +33,13 @@ class profile:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )    
     '''
-    def __init__( self, profile_file_name ):
-
-        # Verify if I can find the file
-        if not os.path.exists(profile_file_name):
-
-            # The file isn't there, let's try with a .ini ...
-            profile_file_name += '.ini'
-            if not os.path.exists(profile_file_name):
-            
-                # Search in the default path...        
-                profile_file_name = 'profiles' + os.path.sep + profile_file_name
-                if not os.path.exists(profile_file_name):
-                    raise w3afException('The profile "' + profile_file_name + '" wasn\'t found.')
-
+    def __init__( self, profile_file_name=None ):
+        '''
+        Creating a profile instance like p = profile() is done in order to be able to create a new profile from scratch and then
+        call save( profile_file_name ).
+        
+        When reading a profile, you should use p = profile( profile_file_name ).
+        '''
         # The default optionxform transforms the option to lower case; w3af needs the value as it is
         def optionxform( option ):
             return option
@@ -54,14 +48,68 @@ class profile:
         # Set the new optionxform function
         self._config.optionxform = optionxform
         
+        # Save the profile_file_name variable
+        self._profile_file_name = profile_file_name
+    
+        if profile_file_name != None:
+            # Verify if I can find the file
+            if not os.path.exists(profile_file_name):
+
+                # The file isn't there, let's try with a .ini ...
+                if not profile_file_name.endswith('.ini'):
+                    profile_file_name += '.ini'
+                if not os.path.exists(profile_file_name):
+                
+                    # Search in the default path...        
+                    profile_file_name = 'profiles' + os.path.sep + profile_file_name
+                    if not os.path.exists(profile_file_name):
+                        raise w3afException('The profile "' + profile_file_name + '" wasn\'t found.')
+           
+            try:
+                self._config.read(profile_file_name)
+            except:
+                raise w3afException('Unknown format in profile: ' + profile_file_name )
+            else:
+                # Save the profile_file_name variable
+                self._profile_file_name = profile_file_name            
+    
+    def remove( self ):
+        '''
+        Removes the profile file which was used to create this instance.
+        '''
         try:
-            self._config.read(profile_file_name)
-        except:
-            raise w3afException('Unknown format in profile: ' + profile_file_name )
+            os.unlink( self._profile_file_name )
+        except Exception, e:
+            raise w3afException('An exception ocurred while removing the profile. Exception: ' + str(e))
         else:
-            # If i create a new profile, I have no configuration sections, so I can't really test
-            # anything here.
-            pass
+            return True
+            
+    def copy( self, copyProfileName ):
+        '''
+        Create a copy of the profile file into copyProfileName. The directory of the profile is kept unless specified.
+        '''
+        newProfilePathAndName = copyProfileName
+        
+        # Check path
+        if os.path.sep not in copyProfileName:
+            dir = os.path.dirname( self._profile_file_name )
+            newProfilePathAndName = os.path.join( dir, copyProfileName )
+        
+        # Check extension
+        if not newProfilePathAndName.endswith('.ini'):
+            newProfilePathAndName += '.ini'
+        
+        try:
+            shutil.copyfile( self._profile_file_name, newProfilePathAndName )
+        except Exception, e:
+            raise w3afException('An exception ocurred while copying the profile. Exception: ' + str(e))
+        else:
+            # Now I have to change the data inside the copied profile, to reflect the changes.
+            pNew = profile(newProfilePathAndName)
+            pNew.setName( copyProfileName )
+            pNew.save(newProfilePathAndName)
+            
+            return True
     
     def setEnabledPlugins( self, pluginType, pluginNameList ):
         '''
@@ -71,7 +119,10 @@ class profile:
         @return: None
         '''
         for plugin in pluginNameList:
-            self._config.add_section(pluginType + "." + plugin )
+            try:
+                self._config.add_section(pluginType + "." + plugin )
+            except ConfigParser.DuplicateSectionError, ds:
+                pass
         
     def getEnabledPlugins( self, pluginType ):
         '''
@@ -129,7 +180,7 @@ class profile:
 
         return parsedOptions
     
-    def setDesc( self, name ):
+    def setName( self, name ):
         '''
         Set the name of the profile.
         @parameter name: The description of the profile
@@ -155,6 +206,17 @@ class profile:
         # Something went wrong
         return None
     
+    def setTarget( self, target ):
+        '''
+        Set the target of the profile.
+        @parameter target: The target URL of the profile
+        @return: None
+        '''
+        section = 'target'
+        if section not in self._config.sections():
+            self._config.add_section( section )
+        self._config.set( section, 'target', target )
+        
     def getTarget( self ):
         '''
         @return: The profile target with the options (targetOS, targetFramework, etc.)
@@ -204,6 +266,8 @@ class profile:
         Saves the profile to fileName
         @return: None
         '''
+        self._profile_file_name = fileName
+        
         try:
             f = open(fileName, 'w')
         except:
