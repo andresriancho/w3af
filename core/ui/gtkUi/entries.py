@@ -301,7 +301,9 @@ class SemiStockButton(gtk.Button):
         '''
         self.label.set_text(newtext)
         self.image.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
-        if tooltip is not None:
+        # support for GTK versions previous to 2.12 where 
+        # set_tooltip_text was not available
+        if tooltip is not None and hasattr(self, "set_tooltip_text"):
             self.set_tooltip_text(tooltip)
 
 
@@ -329,7 +331,10 @@ class ToolbuttonWrapper(object):
         @param newimage: the stock widget from where extract the image
         @param newtooltip: the text for the tooltip
         '''
-        self.toolbut.set_tooltip_text(newtooltip)
+        # support for GTK versions previous to 2.12 where 
+        # set_tooltip_text was not available
+        if hasattr(self.toolbut, "set_tooltip_text"):
+            self.set_tooltip_text(tooltip)
         self.toolbut.set_label(newlabel)
         box = self.toolbut.get_children()[0].get_children()[0]
         img = box.get_children()[0]
