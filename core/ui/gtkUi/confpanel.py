@@ -339,8 +339,10 @@ class ConfigDialog(gtk.Dialog):
         close_btn = self._button(stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
-        panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn, overwriter)
-        self.vbox.pack_start(panel)
+        # Save it , I need it when I inherit from this class
+        self._plugin = plugin
+        self._panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn, overwriter)
+        self.vbox.pack_start(self._panel)
 
         self.like_initial = True
         self.connect("event", self._evt_close)
@@ -385,4 +387,32 @@ class ConfigDialog(gtk.Dialog):
         dlg.destroy()
         return stayhere
 
+class advancedTargetConfigDialog(ConfigDialog):
+    '''Inherits from the config dialog and overwrites the close method
+    
+    @param title: the title of the window.
+    @param w3af: the Core instance
+    @param plugin: the plugin to configure
+    @param overwriter: a dict of pair (config, value) to overwrite the plugin
+                       actual value
 
+    @author: Andres Riancho
+    '''
+    def __init__(self, title, w3af, plugin, overwriter={}):
+        ConfigDialog.__init__(self, title, w3af, plugin, overwriter)
+        
+    def _close(self):
+        '''Advanced target close that makes more sense.'''
+        if self.like_initial:
+            return False
+
+        msg = "Do you want to save the configuration?"
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        saveConfig = dlg.run() == gtk.RESPONSE_YES
+        dlg.destroy()
+        
+        if saveConfig:
+            self._panel._savePanel( self._panel, self._plugin )
+            
+        return False
+    

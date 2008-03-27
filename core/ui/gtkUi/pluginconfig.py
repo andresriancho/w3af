@@ -502,15 +502,15 @@ class PluginConfigBody(gtk.VBox):
 
     def _advancedTarget(self, widg):
         # overwrite the plugin info with the target url
-        plugin = self.w3af.target
-        options = parseOptions.parseXML(plugin.getOptionsXML())
+        configurableTarget = self.w3af.target
+        options = parseOptions.parseXML(configurableTarget.getOptionsXML())
         url = self.target.get_text()
 
         # open config
-        confpanel.ConfigDialog("Advanced target settings", self.w3af, plugin, {"target":url})
+        confpanel.advancedTargetConfigDialog("Advanced target settings", self.w3af, configurableTarget, {"target":url})
 
         # update the Entry with plugin info
-        options = parseOptions.parseXML(plugin.getOptionsXML())
+        options = parseOptions.parseXML(configurableTarget.getOptionsXML())
         self.target.set_text(options['target']['default'])
 
     def getActivatedPlugins(self):
