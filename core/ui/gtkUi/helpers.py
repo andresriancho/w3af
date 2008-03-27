@@ -351,3 +351,11 @@ class BroadcastWrapper(object):
                 realmeth(*args, **kwargs)
         return call
 
+# This is a helper for debug, you just should connect the
+# 'event' event to this debugHandler
+
+event_types = [i for i in vars(gtk.gdk).values() if type(i) is gtk.gdk.EventType]
+
+def debugHandler(widget, event, *a):
+    if event.type in event_types:
+        print event.type.value_nick

@@ -24,6 +24,7 @@ pygtk.require('2.0')
 import gtk
 
 import core.ui.gtkUi.history as history
+import core.ui.gtkUi.helpers as helpers
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
@@ -334,7 +335,7 @@ class ToolbuttonWrapper(object):
         # support for GTK versions previous to 2.12 where 
         # set_tooltip_text was not available
         if hasattr(self.toolbut, "set_tooltip_text"):
-            self.set_tooltip_text(tooltip)
+            self.toolbut.set_tooltip_text(tooltip)
         self.toolbut.set_label(newlabel)
         box = self.toolbut.get_children()[0].get_children()[0]
         img = box.get_children()[0]
