@@ -60,7 +60,7 @@ class formatString(baseAuditPlugin):
         '''
         for error in self._getErrors():
             # hmmm...
-            if response.getBody().count( error ) or response.getCode() == 500:
+            if response.getBody().count( error ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)

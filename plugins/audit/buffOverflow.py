@@ -128,7 +128,7 @@ class buffOverflow(baseAuditPlugin):
         '''
         for error in self._getErrors():
             # hmmm...
-            if response.getBody().count( error ) or response.getCode() == 500:
+            if response.getBody().count( error ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)
@@ -146,6 +146,7 @@ class buffOverflow(baseAuditPlugin):
     def _getErrors( self ):
         res = []
         res.append('<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>Internal Server Error</h1>')
+        res.append('*** stack smashing detected ***:')
         return res
     
     def getOptionsXML(self):
