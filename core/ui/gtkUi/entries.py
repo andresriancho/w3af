@@ -335,7 +335,7 @@ class ToolbuttonWrapper(object):
         # support for GTK versions previous to 2.12 where 
         # set_tooltip_text was not available
         if hasattr(self.toolbut, "set_tooltip_text"):
-            self.toolbut.set_tooltip_text(tooltip)
+            self.toolbut.set_tooltip_text(newtooltip)
         self.toolbut.set_label(newlabel)
         box = self.toolbut.get_children()[0].get_children()[0]
         img = box.get_children()[0]
