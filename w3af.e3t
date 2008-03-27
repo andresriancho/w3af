@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-26, 14:48:56 -->
+<!-- Saved: 2008-03-27, 11:17:15 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -282,18 +282,6 @@
       <Linenumber>67</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: handle those errors!</Description>
-    <Created>2008-03-16, 23:05:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>output</Dir>
-        <Name>gtkOutput.py</Name>
-      </Filename>
-      <Linenumber>70</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: This is duplicated code!! see above.</Description>
     <Created>2008-03-17, 07:41:09</Created>
@@ -406,6 +394,18 @@
         <Name>profiles.py</Name>
       </Filename>
       <Linenumber>345</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: handle those errors!</Description>
+    <Created>2008-03-26, 16:05:00</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>output</Dir>
+        <Name>gtkOutput.py</Name>
+      </Filename>
+      <Linenumber>70</Linenumber>
     </Resource>
   </Task>
 </Tasks>
