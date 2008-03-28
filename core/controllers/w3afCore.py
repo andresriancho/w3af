@@ -662,8 +662,19 @@ class w3afCore:
             
         @return: No value is returned.
         '''
-        pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )         
-        self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
+        pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )
+        
+        # The following lines make sure that the plugin will accept the options
+        # that the user is setting to it.
+        pI = self.getPluginInstance( pluginName, pluginType )
+        try:
+            pI.setOptions( PluginsOptions )
+        except Exception, e:
+            raise e
+        else:
+            # Now that we are sure that this options are valid, lets save them
+            # so we can use them later!
+            self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
     
     def getPluginOptions(self, pluginType, pluginName):
         '''
