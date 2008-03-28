@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-27, 11:17:15 -->
+<!-- Saved: 2008-03-27, 21:52:05 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -152,58 +152,6 @@
         <Name>xss.py</Name>
       </Filename>
       <Linenumber>104</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-03-04, 21:19:40</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>115</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Make this work FOR REAL!!!</Description>
-    <Created>2008-03-04, 21:19:40</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>185</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: See how we can make that library path setup automatically...</Description>
-    <Created>2008-03-04, 21:36:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>47</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
-    <Created>2008-03-04, 21:36:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>56</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -396,9 +344,61 @@
       <Linenumber>345</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-03-27, 13:30:08</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>115</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Make this work FOR REAL!!!</Description>
+    <Created>2008-03-27, 13:30:08</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>185</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: See how we can make that library path setup automatically...</Description>
+    <Created>2008-03-27, 13:31:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
+    <Created>2008-03-27, 13:31:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>56</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: handle those errors!</Description>
-    <Created>2008-03-26, 16:05:00</Created>
+    <Created>2008-03-27, 14:54:44</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>

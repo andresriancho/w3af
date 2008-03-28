@@ -73,7 +73,6 @@ class gtkOutput(baseOutputPlugin):
         try:
             self._db_req_res = Base( db_req_res_dirName )
             # Create the database
-            #CREATE TABLE request_response (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
             self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
         except Exception, e:
             raise w3afException('An exception was raised while creating the gtkOutput database: ' + str(e) )
@@ -140,7 +139,6 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            #CREATE TABLE request_response (id INTEGER PRIMARY KEY, method TEXT, uri TEXT, http_version TEXT, headers TEXT, data TEXT, http_version TEXT, code INTEGER, msg TEXT, headers TEXT, body TEXT)
             self._db_req_res.insert(response.id, request.getMethod(), request.getURI(), '1.1', request.dumpHeaders(), request.getData(), response.getCode(), response.getMsg(), response.dumpHeaders(), response.getBody(), response.getWaitTime() )
         except KeyboardInterrupt, k:
             raise k

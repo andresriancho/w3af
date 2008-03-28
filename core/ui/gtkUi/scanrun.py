@@ -74,7 +74,6 @@ class FullKBTree(kbtree.KBTree):
                 if result:
                     self.kbbrowser.rrV.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
                     self.kbbrowser.rrV.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
-            
 
 
 class KBBrowser(gtk.HPaned):

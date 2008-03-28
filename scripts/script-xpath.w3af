@@ -14,7 +14,7 @@ set target http://localhost/w3af/xpath/xpath.php?i=a
 back
 start
 
-assert len(kb.kb.getData('xpath','xpath')) == 1
+assert len(kb.kb.getData('xpath','xpath')) == 2
 
 exit
 
