@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-27, 21:52:05 -->
+<!-- Saved: 2008-03-28, 17:06:15 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
@@ -140,18 +140,6 @@
         <Name>ssi.py</Name>
       </Filename>
       <Linenumber>78</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
-    <Created>2008-03-01, 22:04:40</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>xss.py</Name>
-      </Filename>
-      <Linenumber>104</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -396,9 +384,21 @@
       <Linenumber>56</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
+    <Created>2008-03-28, 04:59:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>xss.py</Name>
+      </Filename>
+      <Linenumber>104</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: handle those errors!</Description>
-    <Created>2008-03-27, 14:54:44</Created>
+    <Created>2008-03-28, 15:23:41</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
@@ -406,6 +406,18 @@
         <Name>gtkOutput.py</Name>
       </Filename>
       <Linenumber>70</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Bug #1928152 is here!</Description>
+    <Created>2008-03-28, 15:23:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>output</Dir>
+        <Name>gtkOutput.py</Name>
+      </Filename>
+      <Linenumber>73</Linenumber>
     </Resource>
   </Task>
 </Tasks>

@@ -69,7 +69,9 @@ class gtkOutput(baseOutputPlugin):
             # and when the user has no permissions to remove the directory
             # FIXME: handle those errors!
             pass
-            
+        
+        # FIXME: Bug #1928152 is here!
+        # https://sourceforge.net/tracker/index.php?func=detail&aid=1928152&group_id=170274&atid=853652
         try:
             self._db_req_res = Base( db_req_res_dirName )
             # Create the database
