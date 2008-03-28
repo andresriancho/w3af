@@ -166,6 +166,7 @@ class MainApp:
         ])
 
         # the view menu for scanning
+        # (this is different to the others because this one is the first one)
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
             ('Pause', gtk.STOCK_MEDIA_PAUSE, '_Pause', None, 'Pause scan',
@@ -260,21 +261,19 @@ class MainApp:
         self.nb.append_page(self.httplog, label)
         self.httplog.show()
   
-#        # status bar
-#        # FIXME implement in a future
-#        self._sb = gtk.Statusbar()
-#        mainvbox.pack_start(self._sb, False)
-#        self._sb_context = self._sb.get_context_id("unique_sb")
-#        self._sb.show()
-#        self.sb("Program started ok")
+        # status bar
+        self._sb = gtk.Statusbar()
+        mainvbox.pack_start(self._sb, False)
+        self._sb_context = self._sb.get_context_id("unique_sb")
+        self._sb.show()
+        self.sb("Program started ok")
 
         self.window.show()
         helpers.init(self.window)
         gtk.main()
 
-#    def sb(self, text):
-#        # FIXME implement in a future
-#        self._sb.push(self._sb_context, text)
+    def sb(self, text):
+        self._sb.push(self._sb_context, text)
 
     def quit(self, widget, event, data=None):
         '''Main quit.
@@ -334,6 +333,7 @@ class MainApp:
         threading.Thread(target=startScanWrap).start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
+        self.sb("The scan has started")
         self.setTabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
@@ -351,15 +351,19 @@ class MainApp:
         self.throbber.running(not shall_pause)
         self.paused = shall_pause
 
-        # start the status supervisor
         if not shall_pause:
+            self.sb("Resuming the scan...")
+            # start the status supervisor
             gobject.timeout_add(500, self._scan_superviseStatus)
+        else:
+            self.sb("The scan is paused")
 
     def _scan_stop(self):
         '''Stops the scanning.'''
         self.w3af.stop()
         self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
+        self.sb("Stopping the scan...")
 
     def _scan_stopfeedback(self):
         '''Visual elements when stopped.
@@ -372,6 +376,7 @@ class MainApp:
         self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
         self.startstopbtns.set_sensitive(True)
+        self.sb("The scan has stopped")
 
     def _scan_clear(self):
         '''Clears core and gtkUi, and fixes button to next step.'''
@@ -380,6 +385,7 @@ class MainApp:
         self.w3af.cleanup()
         messages.getQueueDiverter(reset=True)
         self.setTabs(False)
+        self.sb("Scan results cleared")
 
         # put the button in start
         self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")

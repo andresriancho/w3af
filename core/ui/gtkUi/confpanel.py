@@ -312,11 +312,13 @@ class OnlyOptions(gtk.VBox):
             return
         for opt in self.options:
             opt.widg.save()
+        self.w3af.mainwin.sb("The plugin configuration was saved ok :)")
 
     def _revertPanel(self, *vals):
         '''Revert all widgets to their initial state.'''
         for widg in self.widgets_status:
             widg.revertValue()
+        self.w3af.mainwin.sb("The plugin configuration was reverted to its last saved state")
 
 
 class ConfigDialog(gtk.Dialog):
@@ -387,7 +389,7 @@ class ConfigDialog(gtk.Dialog):
         dlg.destroy()
         return stayhere
 
-class advancedTargetConfigDialog(ConfigDialog):
+class AdvancedTargetConfigDialog(ConfigDialog):
     '''Inherits from the config dialog and overwrites the close method
     
     @param title: the title of the window.

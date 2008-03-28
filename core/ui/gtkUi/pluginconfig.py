@@ -507,7 +507,7 @@ class PluginConfigBody(gtk.VBox):
         url = self.target.get_text()
 
         # open config
-        confpanel.advancedTargetConfigDialog("Advanced target settings", self.w3af, configurableTarget, {"target":url})
+        confpanel.AdvancedTargetConfigDialog("Advanced target settings", self.w3af, configurableTarget, {"target":url})
 
         # update the Entry with plugin info
         options = parseOptions.parseXML(configurableTarget.getOptionsXML())
