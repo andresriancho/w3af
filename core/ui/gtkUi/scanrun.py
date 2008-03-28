@@ -59,8 +59,7 @@ class FullKBTree(kbtree.KBTree):
         if path is None:
             return
 
-        instanckey = self.treestore[path][1]
-        instance = self.instances.get(instanckey)
+        instance = self.getInstance(path)
         if hasattr(instance, "getDesc"):
             longdesc = str(instance.getDesc())
         else:
