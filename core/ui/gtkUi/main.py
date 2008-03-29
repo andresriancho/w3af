@@ -41,7 +41,7 @@ except:
         print 'You have to install the buzhug database module to be able to run the GTK user interface. Available at: http://buzhug.sourceforge.net/'
         sys.exit( 1 )
 
-import threading
+import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
@@ -56,6 +56,7 @@ import core.ui.gtkUi.logtab as logtab
 import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.confpanel as confpanel
 from core.controllers.misc import parseOptions
+from core.controllers.misc.homeDir import getHomeDir
     
 
 ui_menu = """
@@ -127,8 +128,14 @@ class MainApp:
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.window.connect("delete_event", self.quit)
+
+        # title and positions
         self.window.set_title("w3af - Web Application Attack and Audit Framework")
-        self.window.resize(800, 600)
+        genconfigfile = os.path.join(getHomeDir(),  "generalconfig.pkl") 
+        self.generalconfig = shelve.open(genconfigfile)
+        self.window.resize(*self.generalconfig.get("mainwindow-size", (800, 600)))
+        self.window.move(*self.generalconfig.get("mainwindow-position", (50, 50)))
+
         mainvbox = gtk.VBox()
         self.window.add(mainvbox)
         mainvbox.show()
@@ -285,6 +292,11 @@ class MainApp:
             return True
         helpers.endThreads()
         self.sb.clear()
+
+        # saving windows config
+        self.generalconfig["mainwindow-size"] = self.window.get_size()
+        self.generalconfig["mainwindow-position"] = self.window.get_position()
+        self.generalconfig.close()
         gtk.main_quit()
         return False
 
