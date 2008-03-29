@@ -171,8 +171,14 @@ class OnlyOptions(gtk.VBox):
 
         @return: The created notebook if more than one grouping
         '''
+        # let's get the tabs, but in order!
+        tabs = []
+        for o in self.options:
+            t = o.tabid
+            if t not in tabs:
+                tabs.append(t)
+
         # see if we have more than a tab to create a nb
-        tabs = set(o.tabid for o in self.options)
         if len(tabs) < 2:
             table = self._makeTable(self.options, None)
             return table
