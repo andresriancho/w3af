@@ -359,3 +359,29 @@ event_types = [i for i in vars(gtk.gdk).values() if type(i) is gtk.gdk.EventType
 def debugHandler(widget, event, *a):
     if event.type in event_types:
         print event.type.value_nick
+
+
+class StatusBar(gtk.Statusbar):
+    '''All status bar functionality.
+    
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, initmsg=None):
+        super(StatusBar,self).__init__()
+        self._context = self.get_context_id("unique_sb")
+        self.show()
+        self._timer = None
+
+        if initmsg is not None:
+            self.__call__(initmsg)
+        
+    def __call__(self, msg, timeout=5):
+        if self._timer is not None:
+            self._timer.cancel()
+        self.push(self._context, msg)
+        self._timer = threading.Timer(timeout, self.clear, ())
+        self._timer.start()
+
+    def clear(self):
+        self.push(self._context, "")
+        

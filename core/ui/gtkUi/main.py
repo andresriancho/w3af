@@ -262,18 +262,12 @@ class MainApp:
         self.httplog.show()
   
         # status bar
-        self._sb = gtk.Statusbar()
-        mainvbox.pack_start(self._sb, False)
-        self._sb_context = self._sb.get_context_id("unique_sb")
-        self._sb.show()
-        self.sb("Program started ok")
+        self.sb = helpers.StatusBar("Program started ok")
+        mainvbox.pack_start(self.sb, False)
 
         self.window.show()
         helpers.init(self.window)
         gtk.main()
-
-    def sb(self, text):
-        self._sb.push(self._sb_context, text)
 
     def quit(self, widget, event, data=None):
         '''Main quit.

@@ -187,6 +187,7 @@ class ProfileList(gtk.TreeView):
                 # not modified 
                 row[0] = row[4]
                 row[3] = False
+                self.w3af.mainwin.sb("The previous profile configuration was discarded")
             return stayhere
         return False
 
@@ -283,6 +284,7 @@ class ProfileList(gtk.TreeView):
 
         self.w3af.useProfile(profile)
         self.w3af.mainwin.pcbody.reload()
+        self.w3af.mainwin.sb("Profile changed")
 
         # get the activated plugins
         self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
@@ -302,7 +304,7 @@ class ProfileList(gtk.TreeView):
         #FIXME: Saving the profile should put the name of the profile back to non-bold and
         # let me navigate away from the profile.
         
-        #FIXME: Add a status bar message that says: "Profile saved", or something like that.
+        self.w3af.mainwin.sb("Profile saved")
 
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
@@ -315,6 +317,7 @@ class ProfileList(gtk.TreeView):
             self.w3af.copyProfile(profile, filename)
             # FIXME: Here you should reload the profile list
             # remember that copyProfile returns a profile instance (the newly copied profile instance)
+            self.w3af.mainwin.sb("New profile created")
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
@@ -330,6 +333,7 @@ class ProfileList(gtk.TreeView):
             row[0] = row[4]
             row[3] = False
             self._useProfile()
+            self.w3af.mainwin.sb("The profile configuration was reverted to its last saved state")
 
     def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
@@ -343,3 +347,4 @@ class ProfileList(gtk.TreeView):
         if opt == gtk.RESPONSE_YES:
             self.w3af.removeProfile( profile )
             # FIXME: Here you should reload the profile list
+            self.w3af.mainwin.sb("The profile was deleted")
