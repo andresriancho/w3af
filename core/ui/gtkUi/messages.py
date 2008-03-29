@@ -86,7 +86,7 @@ class _LineScroller(gtk.TextView):
             # This try/except code is here to debug the bug #1909854
             # it should be removed after fixing it
             try:
-                text = "%s: %s\n" % (mess.getTime(), mess.getMsg())
+                text = "[%s] %s\n" % (mess.getTime(), mess.getMsg())
             except:
                 print 'You hitted bug #1909854 !!'
                 print 'Please navigate to https://sourceforge.net/tracker/index.php?func=detail&aid=1909854&group_id=170274&atid=853652'
