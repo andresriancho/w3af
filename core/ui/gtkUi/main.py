@@ -261,17 +261,6 @@ class MainApp:
         self.nb.append_page(self.httplog, label)
         self.httplog.show()
 
-        # fixes notebook tabs width
-        maxwidth = 0
-        for i in xrange(self.nb.get_n_pages()):
-            nbchild = self.nb.get_nth_page(i) 
-            label = self.nb.get_tab_label(nbchild)
-            maxwidth = max(maxwidth, len(label.get_text()))
-        for i in xrange(self.nb.get_n_pages()):
-            nbchild = self.nb.get_nth_page(i) 
-            label = self.nb.get_tab_label(nbchild)
-            label.set_width_chars(maxwidth)
-  
         # status bar
         self.sb = helpers.StatusBar("Program started ok")
         mainvbox.pack_start(self.sb, False)
