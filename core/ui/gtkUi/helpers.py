@@ -265,7 +265,9 @@ def _crash(type, value, tb):
     dlg.set_title('Bug detected!')
     dlg.run()
     dlg.destroy()
-    sys.exit()
+    endThreads()
+    gtk.main_quit()
+    sys.exit(-1)
     
 sys.excepthook = _crash
 
