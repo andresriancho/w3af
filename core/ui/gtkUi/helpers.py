@@ -242,7 +242,6 @@ coreWrap = _Wrapper(w3afException)
 def _crash(type, value, tb):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(type, KeyboardInterrupt ):
-        ### FIXME: Do I need to call gtk.quit ?
         endThreads()
         import core.controllers.outputManager as om
         om.out.console('Thanks for using w3af.')
@@ -384,4 +383,7 @@ class StatusBar(gtk.Statusbar):
 
     def clear(self):
         self.push(self._context, "")
+        if self._timer is not None:
+            self._timer.cancel()
+            self._timer = None
         

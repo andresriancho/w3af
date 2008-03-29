@@ -276,7 +276,15 @@ class MainApp:
         @param event: the event that happened
         @param data: optional data to receive.
         '''
+        msg = "Do you really want to quit?"
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+        opt = dlg.run()
+        dlg.destroy()
+
+        if opt != gtk.RESPONSE_YES:
+            return True
         helpers.endThreads()
+        self.sb.clear()
         gtk.main_quit()
         return False
 
