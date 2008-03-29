@@ -104,7 +104,7 @@ class ConfigPanel(gtk.VBox):
         self.show()
         self.created_panels = {}
 
-    def config(self, plugin, longdesc):
+    def config(self, plugin_tree, plugin, longdesc):
         '''Creates and shows the configuration panel.
         
         @param plugin: the plugin to configure
@@ -115,7 +115,7 @@ class ConfigPanel(gtk.VBox):
         try:
             newwidg = self.created_panels[idplugin]
         except KeyError:
-            newwidg = OptionsPanel(self.plugin_tree, plugin, longdesc)
+            newwidg = OptionsPanel(plugin_tree, plugin, longdesc)
             if not newwidg.options.options:
                 newwidg = None
             self.created_panels[idplugin] = newwidg
@@ -164,7 +164,7 @@ class PluginTree(gtk.TreeView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, config_panel):
+    def __init__(self, w3af, style, config_panel):
         self.mainwin = w3af.mainwin 
         self.w3af = w3af
         self.config_panel = config_panel
@@ -176,9 +176,19 @@ class PluginTree(gtk.TreeView):
         # 4. the plugin name, just to store and bold it or not
         self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, str)
 
+        # decide which type in function of style
+        if style == "standard":
+            plugins_toshow = sorted(x for x in w3af.getPluginTypes() if x != "output")
+            col_title = "Plugin"
+        elif style == "output":
+            plugins_toshow = ("output",)
+            col_title = "Output"
+        else:
+            raise ValueError("Invalid PluginTree style: %r" % style)
+
         # just build the tree with the plugin names
         # gtkOutput plugin is enabled at start
-        for plugintype in sorted(w3af.getPluginTypes()):
+        for plugintype in plugins_toshow:
 
             # let's see if some of the children are activated or not
             pluginlist = w3af.getPluginList(plugintype)
@@ -216,7 +226,7 @@ class PluginTree(gtk.TreeView):
         self.connect('button-release-event', self.popup_menu)
 
         # create a TreeViewColumn for the text
-        tvcolumn = gtk.TreeViewColumn('Plugin')
+        tvcolumn = gtk.TreeViewColumn(col_title)
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
         tvcolumn.add_attribute(cell, 'markup', 0)
@@ -340,7 +350,7 @@ class PluginTree(gtk.TreeView):
             longdesc = plugin.getLongDesc()
             longdesc = helpers.cleanDescription(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
-            self.config_panel.config(plugin, longdesc)
+            self.config_panel.config(self, plugin, longdesc)
 
     def _getChildren(self, path):
         '''Finds the children of a path.
@@ -475,17 +485,29 @@ class PluginConfigBody(gtk.VBox):
         self.show()
 
     def _buildpan(self):
-        # the paned window
         pan = gtk.HPaned()
+        leftpan = gtk.VPaned()
         self.config_panel = ConfigPanel()
-        self.plugin_tree = PluginTree(self.w3af, self.config_panel)
-        self.config_panel.plugin_tree = self.plugin_tree
         
-        # left
-        scrollwin1 = gtk.ScrolledWindow()
-        scrollwin1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin1.add_with_viewport(self.plugin_tree)
-        scrollwin1.show()
+        # upper left
+        scrollwin1u = gtk.ScrolledWindow()
+        scrollwin1u.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.std_plugin_tree = PluginTree(self.w3af, "standard", self.config_panel)
+        scrollwin1u.add_with_viewport(self.std_plugin_tree)
+        scrollwin1u.show()
+
+        # lower left
+        scrollwin1l = gtk.ScrolledWindow()
+        scrollwin1l.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.out_plugin_tree = PluginTree(self.w3af, "output", self.config_panel)
+        scrollwin1l.add_with_viewport(self.out_plugin_tree)
+        scrollwin1l.show()
+
+        # pack the left part
+        leftpan.pack1(scrollwin1u)
+        leftpan.pack2(scrollwin1l)
+        leftpan.set_position(280)
+        leftpan.show()
 
         # rigth
         scrollwin2 = gtk.ScrolledWindow()
@@ -494,7 +516,7 @@ class PluginConfigBody(gtk.VBox):
         scrollwin2.show()
 
         # pack it all and show
-        pan.pack1(scrollwin1)
+        pan.pack1(leftpan)
         pan.pack2(scrollwin2)
         pan.set_position(250)
         pan.show()
@@ -518,7 +540,7 @@ class PluginConfigBody(gtk.VBox):
 
         @return: all the plugins that are active.
         '''
-        return self.plugin_tree.getActivatedPlugins()
+        return self.std_plugin_tree.getActivatedPlugins() + self.out_plugin_tree.getActivatedPlugins()
 
 
     def reload(self):
