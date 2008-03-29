@@ -341,6 +341,7 @@ class MainApp:
         self.toolbut_pause.set_sensitive(True)
         self.startstopbtns.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
         self.scanShould = "stop"
+        self.stoppedByUser = False
         self.nb.set_current_page(1)
 
     def _scan_pause(self, widget):
@@ -365,7 +366,8 @@ class MainApp:
         self.w3af.stop()
         self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
-        self.sb("Stopping the scan...")
+        self.sb("Stopping the scan...", 15)
+        self.stoppedByUser = True
 
     def _scan_stopfeedback(self):
         '''Visual elements when stopped.
@@ -378,7 +380,10 @@ class MainApp:
         self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
         self.startstopbtns.set_sensitive(True)
-        self.sb("The scan has stopped")
+        if self.stoppedByUser:
+            self.sb("The scan has stopped by user request")
+        else:
+            self.sb("The scan has finished")
 
     def _scan_clear(self):
         '''Clears core and gtkUi, and fixes button to next step.'''
