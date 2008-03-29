@@ -106,7 +106,7 @@ class gtkOutput(baseOutputPlugin):
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
         
-        m = message( 'debug', msgString , theTime, newLine )
+        m = message( 'debug', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
     
     def information(self, msgString , newLine = True ):
@@ -117,7 +117,7 @@ class gtkOutput(baseOutputPlugin):
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
 
-        m = message( 'information', msgString , theTime, newLine )
+        m = message( 'information', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
 
     def error(self, msgString , newLine = True ):
@@ -128,7 +128,7 @@ class gtkOutput(baseOutputPlugin):
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
         
-        m = message( 'error', msgString , theTime, newLine )
+        m = message( 'error', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
 
     def vulnerability(self, msgString , newLine = True ):
@@ -139,7 +139,7 @@ class gtkOutput(baseOutputPlugin):
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
         
-        m = message( 'vulnerability', msgString , theTime, newLine )
+        m = message( 'vulnerability', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
         
     def console( self, msgString, newLine = True ):
@@ -149,7 +149,7 @@ class gtkOutput(baseOutputPlugin):
         now = time.localtime(time.time())
         theTime = time.strftime("%c", now)
         
-        m = message( 'console', msgString , theTime, newLine )
+        m = message( 'console', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
     
     def _addToQueue( self, m ):

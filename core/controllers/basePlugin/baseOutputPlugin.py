@@ -137,6 +137,14 @@ class baseOutputPlugin(basePlugin):
         runned before the current one.
         '''
         return []
+    
+    def _cleanString( self, stringToClean ):
+        '''
+        @parameter stringToClean: A string that should be cleaned before using it in a message object.
+        '''
+        for char, replace in [('\0','\\0'),('\t','\\t')]: #('\n','\\n'),('\r','\\r'),
+            stringToClean = stringToClean.replace(char,replace)
+        return stringToClean
 
     def getCaller( self, whatStackItem=4 ):
         '''

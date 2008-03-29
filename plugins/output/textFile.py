@@ -69,7 +69,7 @@ class textFile(baseOutputPlugin):
     
     def _writeToFile( self, msg ):
         try:
-            self._file.write( msg )
+            self._file.write( self._cleanString(msg) )
         except Exception, e:
             print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)

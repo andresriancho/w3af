@@ -44,7 +44,7 @@ class console(baseOutputPlugin):
             toPrint = unicode ( message )
             if newLine == True:
                 toPrint += '\r\n'
-            sys.stdout.write( toPrint )
+            sys.stdout.write( self._cleanString(toPrint) )
             sys.stdout.flush()
 
     
@@ -56,7 +56,7 @@ class console(baseOutputPlugin):
         toPrint = unicode ( message )
         if newLine == True:
             toPrint += '\r\n'
-        sys.stdout.write( toPrint )
+        sys.stdout.write( self._cleanString(toPrint) )
         sys.stdout.flush()
 
 
@@ -68,7 +68,7 @@ class console(baseOutputPlugin):
         toPrint = unicode ( message )
         if newLine == True:
             toPrint += '\r\n'
-        sys.stderr.write( toPrint )
+        sys.stderr.write( self._cleanString(toPrint) )
         sys.stdout.flush()
 
     def vulnerability(self, message , newLine = True ):
@@ -79,7 +79,7 @@ class console(baseOutputPlugin):
         toPrint = unicode ( message )
         if newLine == True:
             toPrint += '\r\n'
-        sys.stdout.write( toPrint )
+        sys.stdout.write( self._cleanString(toPrint) )
         sys.stdout.flush()
         
     def console( self, message, newLine = True ):
@@ -89,7 +89,7 @@ class console(baseOutputPlugin):
         toPrint = unicode( message )
         if newLine == True:
             toPrint += '\r\n'
-        sys.stdout.write( toPrint )
+        sys.stdout.write( self._cleanString(toPrint) )
         sys.stdout.flush()
 
     def logHttp( self, request, response):
