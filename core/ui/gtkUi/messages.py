@@ -60,6 +60,18 @@ class _LineScroller(gtk.TextView):
         self.messages = getQueueDiverter()
         self.all_messages = []
         self.active_filter = active_filter
+        self.text_position = 0
+
+        # colors
+        self.textbuffer.create_tag("red-fg",  foreground="red")
+        self.textbuffer.create_tag("blue-fg", foreground="blue")
+        self.textbuffer.create_tag("grey-fg", foreground="grey")
+        self.bg_colors = {
+            "vulnerability": "red-fg",
+            "information": "blue-fg",
+            "debug": "grey-fg",
+        }
+
         gobject.timeout_add(500, self.addMessage().next)
 
     def filter(self, filter):
@@ -68,8 +80,13 @@ class _LineScroller(gtk.TextView):
         @param filter: the new filter
         '''
         self.active_filter = filter
-        newtxt = "".join(x[1] for x in self.all_messages if x[0] in filter)
-        self.textbuffer.set_text(newtxt)
+        self.textbuffer.set_text("")
+        for (mtype, text) in self.all_messages:
+            if mtype in filter:
+                colortag = self.bg_colors[mtype]
+                iter = self.textbuffer.get_end_iter()
+                self.textbuffer.insert_with_tags_by_name(iter, text, colortag)
+        self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def addMessage(self):
         '''Adds a message to the textview.
@@ -97,11 +114,15 @@ class _LineScroller(gtk.TextView):
                 
             mtype = mess.getType()
             self.all_messages.append((mtype, text))
+            antpos = self.text_position
+            self.text_position += len(text)
+
             if mtype in self.active_filter:
                 iter = self.textbuffer.get_end_iter()
-                self.textbuffer.insert(iter, text)
-                iter = self.textbuffer.get_end_iter()
-                self.scroll_to_iter(iter, False)
+                colortag = self.bg_colors[mtype]
+                self.textbuffer.insert_with_tags_by_name(iter, text, colortag)
+                self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+
         yield False
 
 
