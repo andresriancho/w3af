@@ -182,7 +182,7 @@ class PluginTree(gtk.TreeView):
             col_title = "Plugin"
         elif style == "output":
             plugins_toshow = ("output",)
-            col_title = "Output"
+            col_title = "Plugin"
         else:
             raise ValueError("Invalid PluginTree style: %r" % style)
 
