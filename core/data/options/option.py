@@ -38,7 +38,7 @@ class option:
         @parameter tabid: The tab id of the option
         '''
         self._name = name
-        self._defaultValue = defaultValue
+        self._value = self._defaultValue = defaultValue
         self._desc = desc
         self._type = type
         self._help = help
@@ -47,6 +47,10 @@ class option:
     def getName( self ): return self._name
     def getDesc( self ): return self._desc
     def getDefaultValue( self ): return self._defaultValue
+    # This is the value configured by the user; this is the only variable that 
+    # ain't put in the __str__
+    def getValue( self ): return self._value
+    
     def getType( self ): return self._type
     def getHelp( self ): return self._help
     def getTabId( self ): return self._tabid
@@ -54,6 +58,7 @@ class option:
     def setName( self, v ): self._name = v
     def setDesc( self, v ): self._desc = v
     def setDefaultValue( self, v ): self._defaultValue = v
+    def setValue( self, v ): self._value = v
     def setType( self, v ): self._type = v
     def setHelp( self, v ): self._help = v
     def setTabId( self, v ): self._tabid = v
@@ -79,6 +84,7 @@ class option:
         if self._tabid:
             res += '    <tabid>'+self._sanitize(str(self._tabid))+'</tabid>\n'
         res +='</Option>'
+        return res
         
     def _sanitize( self, value ):
         '''

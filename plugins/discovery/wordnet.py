@@ -32,6 +32,10 @@ import re
 from extlib.pywordnet.wordnet import *
 from extlib.pywordnet.wntools import *
 
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 class wordnet(baseDiscoveryPlugin):
     '''
     Use the wordnet lexical database to find new URLs.
@@ -292,16 +296,18 @@ class wordnet(baseDiscoveryPlugin):
         
         @return: XML with the plugin options.
         ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="wnResults">\
-                <default>'+str(self._wnResults)+'</default>\
-                <desc>Only use the first wnResults (wordnet results) from each category.</desc>\
-                <type>integer</type>\
-                <help></help>\
-            </Option>\
-        </OptionList>\
-        '
+        return str(self.getOptions())
+    
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Only use the first wnResults (wordnet results) from each category.'
+        o1 = option('wnResults', self._wnResults, d1, 'integer')
+        
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''

@@ -32,6 +32,10 @@ from core.data.fuzzer.formFiller import smartFill
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 import re
 
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 class webSpider(baseDiscoveryPlugin):
     '''
     Crawl the whole site to find new URLs
@@ -180,26 +184,27 @@ class webSpider(baseDiscoveryPlugin):
         
         @return: XML with the plugin options.
         ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="onlyForward">\
-                <default>'+str(self._onlyForward)+'</default>\
-                <desc>When spidering, only search directories inside the one that was given as a parameter</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="followRegex">\
-                <default>'+self._followRegex+'</default>\
-                <desc>When spidering, only follow links that match this regular expression (ignoreRegex has precedence over followRegex)</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="ignoreRegex">\
-                <default>'+self._ignoreRegex+'</default>\
-                <desc>When spidering, DO NOT follow links that match this regular expression (has precedence over followRegex)</desc>\
-                <type>string</type>\
-            </Option>\
-        </OptionList>\
-        '
-
+        return str(self.getOptions())
+        
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'When spidering, only search directories inside the one that was given as a parameter'
+        o1 = option('onlyForward', self._onlyForward, d1, 'boolean')
+        
+        d2 = 'When spidering, only follow links that match this regular expression (ignoreRegex has precedence over followRegex)'
+        o2 = option('followRegex', self._followRegex, d2, 'string')
+        
+        d3 = 'When spidering, DO NOT follow links that match this regular expression (has precedence over followRegex)'
+        o3 = option('ignoreRegex', self._ignoreRegex, d3, 'string')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        return ol
+        
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 
