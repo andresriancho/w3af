@@ -26,6 +26,7 @@ import gtk, gobject
 import core.data.kb.knowledgeBase as kb
 import core.ui.gtkUi.helpers as helpers
 import core.data.kb
+import core.data.constants.severity as severity
 
 TYPES_OBJ = {
     core.data.kb.vuln.vuln: "vuln",
@@ -33,8 +34,10 @@ TYPES_OBJ = {
 }
 
 OBJ_ICONS = {
-    "vuln": helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability.png'),
-    "info": helpers.loadPixbuf('core/ui/gtkUi/data/information.png'),
+    ("vuln", severity.LOW):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_l.png'),
+    ("vuln", severity.MEDIUM):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_m.png'),
+    ("vuln", severity.HIGH):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_h.png'),
+    ("info", None): helpers.loadPixbuf('core/ui/gtkUi/data/information.png'),
 }
 
 
@@ -112,9 +115,13 @@ class KBTree(gtk.TreeView):
                     for obj in variabobjects:
                         idobject = self._getBestObjName(obj)
                         type_obj = TYPES_OBJ.get(type(obj), "misc")
+                        if type_obj == "vuln":
+                            severity = obj.getSeverity()
+                        else:
+                            severity = None
                         # the type must be in the filter, and be in True
                         if self.filter.get(type_obj,False): 
-                            holdvariab.append((idobject, obj, type_obj))
+                            holdvariab.append((idobject, obj, type_obj, severity))
                 else:
                     # Not a list, try to show it anyway
                     # This is an ugly hack, because these structures in the core
@@ -124,7 +131,7 @@ class KBTree(gtk.TreeView):
                     if not self.strict:
                         idobject = self._getBestObjName(variabobjects)
                         if self.filter["misc"]:
-                            holdvariab.append((idobject, variabobjects, "misc"))
+                            holdvariab.append((idobject, variabobjects, "misc", None))
 
                 if holdvariab:
                     holdplugin[variabname] = holdvariab
@@ -185,11 +192,11 @@ class KBTree(gtk.TreeView):
                     holdplugin[variabname] = (treevariab, holdvariab)
 
                 # iterate the third layer, the variable objects
-                for name,instance,obtype in variabobjects:
+                for name,instance,obtype,severity in variabobjects:
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
-                        icon = OBJ_ICONS.get(obtype)
+                        icon = OBJ_ICONS.get((obtype, severity))
                         treestore.append(treevariab, [name, idinstance, icon])
                         self.instances[idinstance] = instance
 
