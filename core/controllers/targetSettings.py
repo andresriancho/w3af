@@ -27,6 +27,10 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 import time
 
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 cf.cf.save('targets', [] )
 cf.cf.save('targetDomains', [] )
 cf.cf.save('baseURLs', [] )
@@ -64,32 +68,34 @@ class targetSettings(configurable):
         
         @return: XML with the plugin options.
         ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="target" required="true">\
-                <default>'+','.join(cf.cf.getData('targets'))+'</default>\
-                <desc>A comma separated list of URLs</desc>\
-                <type>list</type>\
-            </Option>\
-            <Option name="targetOS">\
-                <default>'+cf.cf.getData('targetOS')+'</default>\
-                <desc>Target operating system. Valid options: '+','.join(self._operatingSystems)+'</desc>\
-                <help>This setting is here to enhance w3af performance. If you are not sure what the\
-                target operating system is, you can leave this value blank; otherwise please choose one from:\
-                '+','.join(self._operatingSystems)+'</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="targetFramework">\
-                <default>'+cf.cf.getData('targetFramework')+'</default>\
-                <desc>Target programming framework. Valid options: '+','.join(self._programmingFrameworks)+'</desc>\
-                <help>This setting is here to enhance w3af performance. If you are not sure what the\
-                target programming framework is, you can leave this value blank; otherwise please choose one from:\
-                '+','.join(self._programmingFrameworks)+'</help>\
-                <type>string</type>\
-            </Option>\
-        </OptionList>\
-        '
+        return str(self.getOptions())
         
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''        
+        d1 = 'A comma separated list of URLs'
+        o1 = option('target', ','.join(cf.cf.getData('targets')), d1, 'list')
+        
+        d2 = 'Target operating system. Valid options: '+','.join(self._operatingSystems)
+        h2 = 'This setting is here to enhance w3af performance. If you are not sure what the\
+          target operating system is, you can leave this value blank; otherwise please choose one from:\
+          '+','.join(self._operatingSystems)
+        o2 = option('targetOS', cf.cf.getData('targetOS'), d2, 'string', help=h2)
+
+        d3 = 'Target programming framework. Valid options: '+','.join(self._programmingFrameworks)
+        h3 = 'This setting is here to enhance w3af performance. If you are not sure what the\
+          target programming framework is, you can leave this value blank; otherwise please choose one from:\
+          '+','.join(self._programmingFrameworks)
+        o3 = option('targetFramework', cf.cf.getData('targetFramework'), d3, 'string', help=h3)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        return ol
+    
+    
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 

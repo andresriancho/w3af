@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import copy
+import cgi
 
 class option:
     '''
@@ -83,13 +84,18 @@ class option:
             res += '    <help>'+self._sanitize(str(self._help))+'</help>\n'
         if self._tabid:
             res += '    <tabid>'+self._sanitize(str(self._tabid))+'</tabid>\n'
-        res +='</Option>'
+        res +='</Option>\n'
         return res
         
     def _sanitize( self, value ):
         '''
         Encode some values that can't be used in XML
         '''
+        # FIXME: Not 100% sure about this...
+        # I should also kill the \a and other strange escapes...
+        # Maybe there is already a function that does this!
+        value = cgi.escape(value)
+        value = value.replace('"', '&quot;')
         return value
         
     def copy(self):

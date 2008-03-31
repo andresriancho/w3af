@@ -27,6 +27,9 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.request.frFactory import createFuzzableRequests
 import core.data.kb.knowledgeBase as kb
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 import os.path
 
@@ -116,56 +119,51 @@ class baseBruteforcePlugin(baseAuditPlugin):
         
         @return: XML with the plugin options.
         ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="usersFile">\
-                <default>'+str(self._usersFile)+'</default>\
-                <desc>Users file to use in bruteforcing</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="passwdFile">\
-                <default>'+str(self._passwdFile)+'</default>\
-                <desc>Passwords file to use in bruteforcing</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="useMailUsers">\
-                <default>'+str(self._useMailUsers)+'</default>\
-                <desc>This indicates if we will use usernames from emails collected by w3af plugins in bruteforce.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="useSvnUsers">\
-                <default>'+str(self._useSvnUsers)+'</default>\
-                <desc>This indicates if we will use usernames from SVN headers collected by w3af plugins in bruteforce.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="stopOnFirst">\
-                <default>'+str(self._stopOnFirst)+'</default>\
-                <desc>This indicates if the bruteforce should stop after finding the first correct user and password.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="passEqUser">\
-                <default>'+str(self._passEqUser)+'</default>\
-                <desc>This indicates if the bruteforce should try password equal user in logins.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="useMails">\
-                <default>'+str(self._useMails)+'</default>\
-                <desc>This indicates if the bruteforcer should use usernames collected by w3af plugins.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="useProfiling">\
-                <default>'+str(self._useProfiling)+'</default>\
-                <desc>This indicates if the bruteforce should use password profiling to collect new passwords.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="profilingNumber">\
-                <default>'+str(self._profilingNumber)+'</default>\
-                <desc>This indicates how many passwords from profiling will be used.</desc>\
-                <type>integer</type>\
-            </Option>\
-        </OptionList>\
-        '
-
+        return str(self.getOptions())
+        
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Users file to use in bruteforcing'
+        o1 = option('usersFile', self._usersFile, d1, 'string')
+        
+        d2 = 'Passwords file to use in bruteforcing'
+        o2 = option('passwdFile', self._passwdFile, d2, 'string')
+        
+        d3 = 'This indicates if we will use usernames from emails collected by w3af plugins in bruteforce.'
+        o3 = option('useMailUsers', self._useMailUsers, d3, 'boolean')
+        
+        d4 = 'This indicates if we will use usernames from SVN headers collected by w3af plugins in bruteforce.'
+        o4 = option('useSvnUsers', self._useSvnUsers, d4, 'boolean')
+        
+        d5 = 'This indicates if the bruteforce should stop after finding the first correct user and password.'
+        o5 = option('stopOnFirst', self._stopOnFirst, d5, 'boolean')
+        
+        d6 = 'This indicates if the bruteforce should try password equal user in logins.'
+        o6 = option('passEqUser', self._passEqUser, d6, 'boolean')
+        
+        d7 = 'This indicates if the bruteforcer should use usernames collected by w3af plugins.'
+        o7 = option('useMails', self._useMails, d7, 'boolean')
+        
+        d8 = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
+        o8 = option('useProfiling', self._useProfiling, d8, 'boolean')
+        
+        d9 = 'This indicates how many passwords from profiling will be used.'
+        o9 = option('profilingNumber', self._profilingNumber, d9, 'integer')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        ol.add(o7)
+        ol.add(o8)
+        ol.add(o9)        
+        return ol
+        
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 

@@ -70,20 +70,24 @@ class basePlugin(configurable):
         ''' 
         raise w3afException('Plugin "'+self.getName()+'" is not implementing required method setOptions' )
         
-
     def getOptionsXML(self):
         '''
         This method returns a XML containing the Options that the plugin has.
         Using this XML the framework will build a window, a menu, or some other input method to retrieve
         the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
+        w3af/core/ui/userInterface.dtd
         
-        This method MUST be implemented on every plugin. 
+        This method is just here for back compatibility; please use getOptions.
         
-        @return: XML String
-        @see: core/display.xsd
+        @return: XML with the plugin options.
+        ''' 
+        return  str(self.getOptions())
+
+    def getOptions(self):
         '''
-        raise w3afException('Plugin is not implementing required method getOptionsXML' )
+        @return: A list of option objects for this plugin.
+        '''
+        raise w3afException('Plugin is not implementing required method getOptions' )
 
     def getPluginDeps( self ):
         '''

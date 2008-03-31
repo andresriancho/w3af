@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseManglePlugin import *
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -46,6 +49,7 @@ class sed(baseManglePlugin):
         # User options
         self._userOptionfixContentLen = True
         self._priority = 20
+        self._expressions = ''
         
     def mangleRequest(self, request ):
         '''
@@ -127,39 +131,27 @@ class sed(baseManglePlugin):
                     else:
                         self._resHeadManglers.append( (regex, exp[3]) )
 
-            
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="priority">\
-                <default>'+str(self._priority)+'</default>\
-                <desc>Execution priority</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="fixContentLen">\
-                <default>'+str(self._userOptionfixContentLen)+'</default>\
-                <desc>Fix the content length header after mangling</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="expressions">\
-                <default></default>\
-                <desc>Stream edition expressions</desc>\
-                <help>Stream edition expressions are strings that tell the sed plugin what to change.\
-                Sed plugin uses regular expressions, some examples: \n - qh/User/NotLuser/ ; This will make sed\
-                search in the the re[q]uest [h]eader for the string User and replace it with NotLuser.\
-                \n - sb/[fF]orm/form ; This will make sed search in the re[s]ponse [b]ody for the strings\
-                form or Form and replace it with form. Multiple expressions can be specified separated by commas.</help>\
-                <type>list</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'Stream edition expressions'
+        h1 = 'Stream edition expressions are strings that tell the sed plugin what to change. Sed plugin uses regular expressions, some examples: \n - qh/User/NotLuser/ ; This will make sed search in the the re[q]uest [h]eader for the string User and replace it with NotLuser.\n - sb/[fF]orm/form ; This will make sed search in the re[s]ponse [b]ody for the strings form or Form and replace it with form. Multiple expressions can be specified separated by commas.'
+        o1 = option('expressions', self._expressions, d1, 'list', help=h1)
+        
+        d2 = 'Fix the content length header after mangling'
+        o2 = option('fixContentLen', self._fixContentLen, d2, 'boolean')
 
+        d3 = 'Plugin execution priority'
+        h3 = 'Mangle plugins are ordered using the priority parameter'
+        o3 = option('priority', self._priority, d3, 'integer', help=h3)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        return ol
+  
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the

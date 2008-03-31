@@ -26,6 +26,9 @@ RFI_SEPARATOR = createRandAlNum( 25 )
 URLOPENER = None
 
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException

@@ -22,10 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 import sys
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 
 class webOutput(baseOutputPlugin):
     '''
-    Print all messages to the web user interface.
+    Print all messages to the web user interface -  this plugin and the web user interface are DEPRECATED.
     
     @author: Mariano Nuñez Di Croce <mnunez@cybsec.com>
     '''
@@ -115,9 +119,21 @@ class webOutput(baseOutputPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
+        ***IMPORTANT*** This plugin and the web user interface are DEPRECATED.
+        
         This plugin writes the framework messages to a cache, where the webUI can then read the data
         to show to the user in the client browser. This plugin is the "glue" that joins w3af and the client browser.
         You should only enable it if you are running a webUI or testing something wierd. 
         
         Note: When you run w3af with the "-w" flag ( web ), this plugin is auto-enabled.
         '''
+    
+    def setOptions( self, OptionList ):
+        pass
+        
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''    
+        ol = optionList()
+        return ol

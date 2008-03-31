@@ -94,43 +94,7 @@ class baseOutputPlugin(basePlugin):
         @return: No value is returned.
         '''
         raise w3afException('Plugin is not implementing required method logHttp.' )
-        
-    def setOptions( self, OptionList ):
-        '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptionsXML()
-        
-        This method MUST be implemented on every plugin. 
-        
-        @return: No value is returned.
-        ''' 
-        if 'verbosity' in OptionList.keys():
-            self.verbosity = OptionList['verbosity']
-        
 
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
-        
-        This method MUST be implemented on every plugin. 
-        
-        @return: XML String
-        @see: core/display.xsd
-        '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="verbosity">\
-                <default>0</default>\
-                <desc>Verbosity level for this plugin.</desc>\
-                <type>integer</type>\
-            </Option>\
-        </OptionList>\
-        '
-        
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be 

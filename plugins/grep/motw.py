@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -72,23 +75,18 @@ class motw (baseGrepPlugin):
 
     def setOptions( self, optionsMap ):
         self._withoutMOTW = optionsMap['withoutMOTW']
+        
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'List the pages that don\'t have a MOTW'
+        o1 = option('withoutMOTW', self._withoutMOTW, d1, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        return ol
             
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
-        '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-          <Option name="withoutMOTW">\
-                <default>'+str(self._withoutMOTW)+'</default>\
-                <desc>List the pages that don\'t have a MOTW</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-       '
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.

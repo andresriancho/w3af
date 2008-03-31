@@ -42,6 +42,10 @@ import os
 
 # I'm timestamping the messages
 import time
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 
 
 class gtkOutput(baseOutputPlugin):
@@ -175,23 +179,13 @@ class gtkOutput(baseOutputPlugin):
         Saves messages to kb.kb.getData('gtkOutput', 'queue'), messages are saved in the form of objects. This plugin
         was created to be able to communicate with the gtkUi and should be enabled if you are using it.
         '''
-
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
         
-        This method MUST be implemented on every plugin. 
-        
-        @return: XML String
-        @see: core/display.xsd
+    def getOptions( self ):
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-        </OptionList>\
-        '
+        @return: A list of option objects for this plugin.
+        '''    
+        ol = optionList()
+        return ol
 
 class message:
     def __init__( self, type, msg , time, newLine=True ):

@@ -23,6 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 import sys
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 class console(baseOutputPlugin):
     '''
@@ -102,3 +105,26 @@ class console(baseOutputPlugin):
         return '''
         This plugin writes the framework messages to the console.
         '''
+
+    def setOptions( self, OptionList ):
+        '''
+        Sets the Options given on the OptionList to self. The options are the result of a user
+        entering some data on a window that was constructed using the XML Options that was
+        retrieved from the plugin using getOptions()
+        
+        This method MUST be implemented on every plugin. 
+        
+        @return: No value is returned.
+        ''' 
+        self.verbosity = OptionList['verbosity']
+
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Verbosity level for this plugin.'
+        o1 = option('verbosity', self.verbosity, d1, 'integer')
+        
+        ol = optionList()
+        ol.add(o1)
+        return ol

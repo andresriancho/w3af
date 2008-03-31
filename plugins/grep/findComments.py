@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.data.parsers.dpCache as dpCache
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -94,22 +97,16 @@ class findComments(baseGrepPlugin):
     def setOptions( self, optionsMap ):
         self._search404 = optionsMap['search404']
     
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="search404">\
-                <default>'+str(self._search404)+'</default>\
-                <desc>Search comments on 404 pages.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'Search for HTML comments in 404 pages.'
+        o1 = option('search404', self._search404, d1, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def end(self):
         '''

@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-29, 19:02:55 -->
+<!-- Saved: 2008-03-30, 21:08:28 -->
 <Tasks version="3.8">
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
-    <Created>2008-01-15, 23:08:06</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>directoryIndexing.py</Name>
-      </Filename>
-      <Linenumber>75</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Do I need to call gtk.quit ?</Description>
     <Created>2008-01-29, 21:49:12</Created>
@@ -26,18 +14,6 @@
         <Name>helpers.py</Name>
       </Filename>
       <Linenumber>210</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: review this code !!</Description>
-    <Created>2008-01-31, 22:55:06</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>urlFuzzer.py</Name>
-      </Filename>
-      <Linenumber>147</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -118,42 +94,6 @@
       <Linenumber>200</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
-    <Created>2008-02-25, 07:34:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>passwordProfiling.py</Name>
-      </Filename>
-      <Linenumber>47</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Add mod_perl ssi injection support</Description>
-    <Created>2008-03-01, 15:57:47</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>ssi.py</Name>
-      </Filename>
-      <Linenumber>78</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: verify if I need to add more values here</Description>
-    <Created>2008-03-05, 21:52:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>strangeHeaders.py</Name>
-      </Filename>
-      <Linenumber>100</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: decide what message to show here</Description>
     <Created>2008-03-07, 15:27:44</Created>
@@ -178,54 +118,6 @@
         <Name>exploittab.py</Name>
       </Filename>
       <Linenumber>224</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a proxy object instead.</Description>
-    <Created>2008-03-13, 19:15:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>googleProxy.py</Name>
-      </Filename>
-      <Linenumber>67</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This is duplicated code!! see above.</Description>
-    <Created>2008-03-17, 07:41:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>remoteFileIncludeShell.py</Name>
-      </Filename>
-      <Linenumber>347</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: I dont like globals, please see TODO below.</Description>
-    <Created>2008-03-17, 07:41:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>42</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: I really dislike this, if someone knows how to send variables to</Description>
-    <Created>2008-03-17, 07:41:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>177</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -358,18 +250,6 @@
       <Linenumber>56</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
-    <Created>2008-03-28, 04:59:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>xss.py</Name>
-      </Filename>
-      <Linenumber>104</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Not thread safe</Description>
     <Created>2008-03-29, 15:50:12</Created>
@@ -396,28 +276,161 @@
       <Linenumber>315</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a proxy object instead.</Description>
+    <Created>2008-03-30, 17:19:36</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>googleProxy.py</Name>
+      </Filename>
+      <Linenumber>70</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This is duplicated code!! see above.</Description>
+    <Created>2008-03-30, 17:19:55</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>remoteFileIncludeShell.py</Name>
+      </Filename>
+      <Linenumber>350</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I dont like globals, please see TODO below.</Description>
+    <Created>2008-03-30, 17:20:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>45</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: I really dislike this, if someone knows how to send variables to</Description>
+    <Created>2008-03-30, 17:20:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>180</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Not 100% sure about this...</Description>
+    <Created>2008-03-30, 18:21:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>options</Dir>
+        <Name>option.py</Name>
+      </Filename>
+      <Linenumber>94</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Add mod_perl ssi injection support</Description>
+    <Created>2008-03-30, 18:48:12</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>82</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
+    <Created>2008-03-30, 18:48:14</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>xss.py</Name>
+      </Filename>
+      <Linenumber>108</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here, IIS !!!</Description>
+    <Created>2008-03-30, 18:55:27</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>directoryIndexing.py</Name>
+      </Filename>
+      <Linenumber>73</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Description>
+    <Created>2008-03-30, 18:57:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>passwordProfiling.py</Name>
+      </Filename>
+      <Linenumber>50</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: verify if I need to add more values here</Description>
+    <Created>2008-03-30, 18:58:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>98</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: handle those errors!</Description>
-    <Created>2008-03-29, 16:02:36</Created>
+    <Created>2008-03-30, 19:14:53</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
         <Dir>output</Dir>
         <Name>gtkOutput.py</Name>
       </Filename>
-      <Linenumber>74</Linenumber>
+      <Linenumber>78</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Bug #1928152 is here!</Description>
-    <Created>2008-03-29, 16:02:36</Created>
+    <Created>2008-03-30, 19:14:53</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
         <Dir>output</Dir>
         <Name>gtkOutput.py</Name>
       </Filename>
-      <Linenumber>77</Linenumber>
+      <Linenumber>81</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: review this code !!</Description>
+    <Created>2008-03-30, 20:58:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>urlFuzzer.py</Name>
+      </Filename>
+      <Linenumber>151</Linenumber>
     </Resource>
   </Task>
 </Tasks>

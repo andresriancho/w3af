@@ -22,6 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
@@ -275,55 +279,43 @@ class localProxy(baseDiscoveryPlugin):
         self._proxyd = proxy( self._proxyAddress, self._proxyPort , self._urlOpener, proxyHandler=self.proxyHandler )
         self._proxyd.start2()
         
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="proxyPort">\
-                <default>'+str(self._proxyPort)+'</default>\
-                <desc>Local TCP port where the proxy will listen on.</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="proxyAddress">\
-                <default>'+str(self._proxyAddress)+'</default>\
-                <desc>Local IP Address where the proxy will listen on.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="fixContentLen">\
-                <default>'+str(self._userOptionfixContentLen)+'</default>\
-                <desc>Fix the content length header after mangling</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="interceptRegex">\
-                <default>.*</default>\
-                <desc>Regular expression that defines what requests will be intercepted</desc>\
-                <help>This regular expression is applied only to the URI part of the request.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="interceptImages">\
-                <default>'+str(self._interceptImages)+'</default>\
-                <desc>Indicate if images are going to be intercepted or not.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="w3afMarker">\
-                <default>'+self._w3afMarker+'</default>\
-                <desc>This option sets the w3afMarker that is going to be used internally to identify requests that have been already mangled.</desc>\
-                <help>In most cases, this should be left as it is.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="css">\
-                <default>'+self._css+'</default>\
-                <desc>CSS filename to use while editing request with the browser</desc>\
-                <type>string</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'This option sets the w3afMarker that is going to be used internally to identify requests that have been already mangled.'
+        h1 = 'In most cases, this should be left as it is.'
+        o1 = option('w3afMarker', self._w3afMarker, d1, 'string', help=h1)
+        
+        d2 = 'Regular expression that defines what requests will be intercepted'
+        h2 = 'This regular expression is applied only to the URI part of the request.'
+        o2 = option('interceptRegex', '.*', d2, 'string', help=h2)
+        
+        d3 = 'Local IP Address where the proxy will listen on'
+        o3 = option('proxyAddress', self._proxyAddress, d3, 'string')
 
+        d4 = 'Local TCP port where the proxy will listen on.'
+        o4 = option('proxyPort', self._proxyPort, d4, 'integer')
+
+        d5 = 'Fix the content length header after mangling'
+        o5 = option('fixContentLen', self._userOptionfixContentLen, d5, 'boolean')
+        
+        d6 = 'Regular expression that defines what requests will be intercepted'
+        o6 = option('interceptImages', self._interceptImages, d6, 'boolean')
+        
+        d7 = 'CSS filename to use while editing request with the browser'
+        o7 = option('css', self._css, d7, 'string')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        ol.add(o7)
+        return ol
+        
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the

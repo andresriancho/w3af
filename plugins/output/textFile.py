@@ -26,6 +26,10 @@ from core.controllers.w3afException import w3afFileException
 import sys, os
 import time
 import codecs
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 
 class textFile(baseOutputPlugin):
     '''
@@ -38,8 +42,8 @@ class textFile(baseOutputPlugin):
         baseOutputPlugin.__init__(self)
         
         # User configured parameters
-        self._filename = 'output.txt'
-        self._httpFilename = 'output-http.txt'
+        self._fileName = 'output.txt'
+        self._httpFileName = 'output-http.txt'
         self._showCaller = True
         self.verbosity = 10
         
@@ -53,15 +57,15 @@ class textFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            self._file = codecs.open( self._filename, "w", "utf-8", 'replace' )
+            self._file = codecs.open( self._fileName, "w", "utf-8", 'replace' )
         except Exception, e:
-            raise w3afException('Cant open report file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
+            raise w3afException('Cant open report file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
             
         try:
             # Images aren't ascii, so this file that logs every request/response, will be binary
-            self._http = file( self._httpFilename, "wb" )
+            self._http = file( self._httpFileName, "wb" )
         except Exception, e:
-            raise w3afException('Cant open HTTP log file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
+            raise w3afException('Cant open HTTP log file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
         
     def __del__(self):
         if self._file != None:
@@ -212,53 +216,39 @@ class textFile(baseOutputPlugin):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptionsXML()
+        retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every plugin. 
         
         @return: No value is returned.
         ''' 
         self.verbosity = OptionList['verbosity']
-        self._filename = OptionList['fileName']
-        self._httpFilename = OptionList['httpFileName']
+        self._fileName = OptionList['fileName']
+        self._httpFileName = OptionList['httpFileName']
         self._showCaller = OptionList['showCaller']
-        
-    def getOptionsXML(self):
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
-        
-        This method MUST be implemented on every plugin. 
-        
-        @return: XML String
-        @see: core/display.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="verbosity">\
-                <default>'+str(self.verbosity)+'</default>\
-                <desc>Verbosity level for this plugin.</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="fileName">\
-                <default>'+str(self._filename)+'</default>\
-                <desc>File name where this plugin will write to</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="httpFileName">\
-                <default>'+str(self._httpFilename)+'</default>\
-                <desc>File name where this plugin will write HTTP requests and responses</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="showCaller">\
-                <default>'+str(self._showCaller)+'</default>\
-                <desc>Enables a slightly more verbose output that shows who called the output manager</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'Verbosity level for this plugin.'
+        o1 = option('verbosity', self.verbosity, d1, 'integer')
+        
+        d2 = 'File name where this plugin will write to'
+        o2 = option('fileName', self._fileName, d2, 'string')
+        
+        d3 = 'File name where this plugin will write HTTP requests and responses'
+        o3 = option('httpFileName', self._httpFileName, d3, 'string')
+        
+        d4 = 'Enables a slightly more verbose output that shows who called the output manager'
+        o4 = option('showCaller', self._showCaller, d4, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        return ol
 
     def logHttp( self, request, response):
         '''

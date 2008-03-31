@@ -27,6 +27,9 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 class xssBeef(baseAttackPlugin):
     '''

@@ -27,6 +27,10 @@ import core.data.kb.config as cf
 import sys, os
 import cgi 
 import codecs
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -38,9 +42,9 @@ class htmlFile(baseOutputPlugin):
     '''
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        self._filename = 'report.html'
+        self._fileName = 'report.html'
         self._styleFilename = 'plugins' + os.path.sep + 'output' + os.path.sep + 'htmlFile' + os.path.sep +'style.css'
-        self._httpFilename = 'output-http.txt'
+        self._httpFileName = 'output-http.txt'
         self._flushCounter = 0
         self._flushNumber = 10
         self._initialized = False
@@ -53,16 +57,16 @@ class htmlFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            self._file = codecs.open( self._filename, "w", "utf-8", 'replace' )            
+            self._file = codecs.open( self._fileName, "w", "utf-8", 'replace' )            
         except Exception, e:
-            raise w3afException('Cant open report file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
+            raise w3afException('Cant open report file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
             self._error = True
         
         try:
             # Images aren't ascii, so this file that logs every request/response, will be binary
-            self._http = file( self._httpFilename, "wb" )
+            self._http = file( self._httpFileName, "wb" )
         except Exception, e:
-            raise w3afException('Cant open file ' + self._httpFilename + ' for output. Exception: ' + str(e) )
+            raise w3afException('Cant open file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
             self._error = True      
         try:
             self._style = open( self._styleFilename, "r" )
@@ -154,53 +158,34 @@ class htmlFile(baseOutputPlugin):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptionsXML()
+        retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every plugin. 
         
         @return: No value is returned.
         ''' 
-        self.verbosity = OptionList['verbosity']            
-        self._filename = OptionList['fileName']
-        self._httpFilename = OptionList['httpFileName']     
+        self._fileName = OptionList['fileName']
+        self._httpFileName = OptionList['httpFileName']     
         self._reportDebug = OptionList['reportDebug']
         
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
-        
-        This method MUST be implemented on every plugin. 
-        
-        @return: XML String
-        @see: core/display.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="verbosity">\
-                <default>'+str(self.verbosity)+'</default>\
-                <desc>Verbosity level for this plugin.</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="fileName">\
-                <default>'+str(self._filename)+'</default>\
-                <desc>File name where this plugin will write to</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="httpFileName">\
-                <default>'+str(self._httpFilename)+'</default>\
-                <desc>File name where this plugin will write HTTP requests and responses</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="reportDebug">\
-                <default>'+str(self._reportDebug)+'</default>\
-                <desc>True if debug information will be appended to the report.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'File name where this plugin will write to'
+        o1 = option('fileName', self._fileName, d1, 'string')
+        
+        d2 = 'File name where this plugin will write HTTP requests and responses'
+        o2 = option('httpFileName', self._httpFileName, d2, 'string')
+        
+        d3 = 'True if debug information will be appended to the report.'
+        o3 = option('reportDebug', self._reportDebug, d3, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        return ol
 
     def logHttp( self, request, response):
         '''
@@ -294,6 +279,4 @@ class htmlFile(baseOutputPlugin):
             - fileName
             - httpFileName
             - reportDebug
-            - verbosity
-            
         '''

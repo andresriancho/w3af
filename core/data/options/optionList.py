@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import copy
+from core.controllers.w3afException import w3afException
 
 class optionList:
     '''
@@ -40,3 +41,17 @@ class optionList:
             res += str(o)
         res += '</OptionList>'
         return res
+        
+    def __getitem__( self, itemName ):
+        '''
+        This method is used when on any configurable object the developer does something like:
+        
+        def setOptions( self, optionsList ):
+            self._checkPersistent = optionsList['checkPersistent']
+            
+        @return: The value of the item that was selected
+        '''
+        for o in self._oList:
+            if o.getName() == itemName:
+                return o.getValue()
+        raise w3afException('The optionList object doesn\'t contain an option with the name: ' + itemName )

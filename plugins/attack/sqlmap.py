@@ -39,6 +39,10 @@ from core.controllers.sqlTools.blindSqli import blindSqli as blindSqliTools
 
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 SQLMAPCREATORS = 'sqlmap coded by inquis <bernardo.damele@gmail.com> and belch <daniele.bellucci@gmail.com>'
 
 class sqlmap(baseAttackPlugin):

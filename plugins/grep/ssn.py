@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -116,17 +119,12 @@ class ssn(baseGrepPlugin):
         self.printUniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
 
 
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns an XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
-        '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-        </OptionList>\
-        '
+        @return: A list of option objects for this plugin.
+        '''    
+        ol = optionList()
+        return ol
      
     def getLongDesc( self ):
         '''

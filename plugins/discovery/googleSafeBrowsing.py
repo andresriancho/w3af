@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.knowledgeBase as kb
@@ -123,24 +127,18 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
         
     def setOptions( self, OptionsMap ):
         self._googleSafeBrowsingDB = OptionsMap['dbURL']
-            
-    def getOptionsXML(self):
+        
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
+        @return: A list of option objects for this plugin.
         '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="dbURL">\
-                <default>' + self._googleSafeBrowsingDB +'</default>\
-                <desc>The URL to the google Safe Browsing database.</desc>\
-                <type>string</type>\
-                <help>The default is ok in most cases.</help>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'The URL to the google Safe Browsing database.'
+        h1 = 'The default is ok in most cases.'
+        o1 = option('dbURL', self._googleSafeBrowsingDB, d1, 'string', help=h1)
+        
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def _getDB(self):
         '''
