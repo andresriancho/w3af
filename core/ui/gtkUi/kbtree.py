@@ -24,12 +24,19 @@ pygtk.require('2.0')
 import gtk, gobject
 
 import core.data.kb.knowledgeBase as kb
+import core.ui.gtkUi.helpers as helpers
 import core.data.kb
 
 TYPES_OBJ = {
     core.data.kb.vuln.vuln: "vuln",
     core.data.kb.info.info: "info",
 }
+
+OBJ_ICONS = {
+    "vuln": helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability.png'),
+    "info": helpers.loadPixbuf('core/ui/gtkUi/data/information.png'),
+}
+
 
 class KBTree(gtk.TreeView):
     '''Show the Knowledge Base in a tree.
@@ -50,15 +57,18 @@ class KBTree(gtk.TreeView):
         self.w3af = w3af
 
         # simple empty Tree Store
-        # columns: the string to show; the key for the plugin instance
-        self.treestore = gtk.TreeStore(str, str)
+        # columns: the string to show; the key for the plugin instance, and the icon
+        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
 
-        # the TreeView column
+        # the text & icon column
         tvcolumn = gtk.TreeViewColumn(title)
+        cell = gtk.CellRendererPixbuf()
+        tvcolumn.pack_start(cell, expand=False)
+        tvcolumn.add_attribute(cell, "pixbuf", 2)
         cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, True)
+        tvcolumn.pack_start(cell, expand=True)
         tvcolumn.add_attribute(cell, "text", 0)
         self.append_column(tvcolumn)
 
@@ -104,7 +114,7 @@ class KBTree(gtk.TreeView):
                         type_obj = TYPES_OBJ.get(type(obj), "misc")
                         # the type must be in the filter, and be in True
                         if self.filter.get(type_obj,False): 
-                            holdvariab.append((idobject, obj))
+                            holdvariab.append((idobject, obj, type_obj))
                 else:
                     # Not a list, try to show it anyway
                     # This is an ugly hack, because these structures in the core
@@ -114,7 +124,7 @@ class KBTree(gtk.TreeView):
                     if not self.strict:
                         idobject = self._getBestObjName(variabobjects)
                         if self.filter["misc"]:
-                            holdvariab.append((idobject, variabobjects))
+                            holdvariab.append((idobject, variabobjects, "misc"))
 
                 if holdvariab:
                     holdplugin[variabname] = holdvariab
@@ -128,7 +138,7 @@ class KBTree(gtk.TreeView):
         @param active: which types should be shown.
         '''
         self.filter = active
-        new_treestore = gtk.TreeStore(str, str)
+        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf)
         new_treeholder = {}
         self._updateTree(new_treestore, new_treeholder)
         self.set_model(new_treestore)
@@ -161,7 +171,7 @@ class KBTree(gtk.TreeView):
             if pluginname in treeholder:
                 (treeplugin, holdplugin) = treeholder[pluginname]
             else:
-                treeplugin = treestore.append(None, [pluginname, 0])
+                treeplugin = treestore.append(None, [pluginname, 0, None])
                 holdplugin = {}
                 treeholder[pluginname] = (treeplugin, holdplugin)
 
@@ -170,16 +180,17 @@ class KBTree(gtk.TreeView):
                 if variabname in holdplugin:
                     (treevariab, holdvariab) = holdplugin[variabname]
                 else:
-                    treevariab = treestore.append(treeplugin, [variabname, 0])
+                    treevariab = treestore.append(treeplugin, [variabname, 0, None])
                     holdvariab = set()
                     holdplugin[variabname] = (treevariab, holdvariab)
 
                 # iterate the third layer, the variable objects
-                for name,instance in variabobjects:
+                for name,instance,obtype in variabobjects:
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
-                        treestore.append(treevariab, [name, idinstance])
+                        icon = OBJ_ICONS.get(obtype)
+                        treestore.append(treevariab, [name, idinstance, icon])
                         self.instances[idinstance] = instance
 
         return True

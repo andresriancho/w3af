@@ -389,3 +389,14 @@ class StatusBar(gtk.Statusbar):
             self._timer.cancel()
             self._timer = None
         
+
+def loadPixbuf(filename):
+    '''Loads a pixbuf from disk.
+
+    @param filename: the file name, full path
+    @returns: The pixbuf from the image.
+    '''
+    im = gtk.Image()
+    im.set_from_file(filename)
+    im.show()
+    return im.get_pixbuf()
