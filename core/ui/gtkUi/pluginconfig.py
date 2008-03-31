@@ -174,7 +174,7 @@ class PluginTree(gtk.TreeView):
         # 2. checkbox status, active or not
         # 3. checkbox status, inconsistant or not
         # 4. the plugin name, just to store and bold it or not
-        self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, str)
+        self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, str, gtk.gdk.Pixbuf)
 
         # decide which type in function of style
         if style == "standard":
@@ -204,11 +204,17 @@ class PluginTree(gtk.TreeView):
             else:
                 activ = 0
                 incons = 1
-            father = self.treestore.append(None, [plugintype, activ, incons, plugintype])
+            father = self.treestore.append(None, [plugintype, activ, incons, plugintype, None])
 
+            dlg = gtk.Dialog()
+            editpixbuf = dlg.render_icon(gtk.STOCK_EDIT, gtk.ICON_SIZE_MENU)
             for plugin in sorted(w3af.getPluginList(plugintype)):
                 activ = int(plugin in activated)
-                self.treestore.append(father, [plugin, activ, 0, plugin])
+                if self._getEditablePlugin(plugin, plugintype):
+                    thispixbuf = editpixbuf
+                else:
+                    thispixbuf = None
+                self.treestore.append(father, [plugin, activ, 0, plugin, thispixbuf])
 
         # we will not ask for the plugin instances until needed, we'll
         # keep them here:
@@ -225,8 +231,11 @@ class PluginTree(gtk.TreeView):
         # button-release-event, to handle right click
         self.connect('button-release-event', self.popup_menu)
 
-        # create a TreeViewColumn for the text
+        # create a TreeViewColumn for the text and icon
         tvcolumn = gtk.TreeViewColumn(col_title)
+        cell = gtk.CellRendererPixbuf()
+        tvcolumn.pack_start(cell, expand=False)
+        tvcolumn.add_attribute(cell, "pixbuf", 4)
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
         tvcolumn.add_attribute(cell, 'markup', 0)
@@ -243,6 +252,13 @@ class PluginTree(gtk.TreeView):
         self.append_column(tvcolumn)
 
         self.show()
+
+    def _getEditablePlugin(self, pname, ptype):
+        plugin = self.w3af.getPluginInstance(pname, ptype)
+        xmloptions = plugin.getOptionsXML()
+        node = xml.dom.minidom.parseString(xmloptions)
+        cant = len([x for x in node.getElementsByTagName('Option')])
+        return bool(cant)
 
     def configChanged(self, like_initial):
         '''Shows in the tree when a plugin configuration changed.
