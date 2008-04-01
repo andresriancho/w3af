@@ -59,6 +59,13 @@ from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
     
 
+# Threading initializer
+if sys.platform == "win32":
+    gobject.threads_init()
+else:
+    gtk.gdk.threads_init()
+
+
 ui_menu = """
 <ui>
   <menubar name="MenuBar">
@@ -118,16 +125,57 @@ class Throbber(gtk.ToolButton):
         else:
             self.set_icon_widget(self.img_static)
 
-class MainApp:
+
+class Splash(gtk.Window):
+    '''Builds the Splash window.
+    
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self):
+        super(Splash,self).__init__()
+        vbox = gtk.VBox()
+        self.add(vbox)
+
+        # content
+        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+        vbox.pack_start(img)
+        hbox = gtk.HBox()
+        self.label = gtk.Label()
+        hbox.pack_start(self.label)
+        vbox.pack_start(hbox)
+
+        # color and position
+        self.set_decorated(False)
+        color = gtk.gdk.color_parse('#f2f2ff')
+        self.modify_bg(gtk.STATE_NORMAL, color)
+        self.set_position(gtk.WIN_POS_CENTER)
+
+        # ensure it is rendered immediately
+        self.show_all()
+        while gtk.events_pending():
+            gtk.main_iteration()
+
+    def push(self, text):
+        '''New text to be shown in the Splash.'''
+        self.label.set_text(text)
+        gtk.gdk.window_process_all_updates() 
+
+
+class MainApp(object):
     '''Main GTK application
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
+
     def __init__(self, profile):
+        # splash!
+        splash = Splash()
+
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.window.connect("delete_event", self.quit)
+        splash.push("Loading...")
 
         # title and positions
         self.window.set_title("w3af - Web Application Attack and Audit Framework")
@@ -140,6 +188,7 @@ class MainApp:
         self.window.add(mainvbox)
         mainvbox.show()
 
+        splash.push("Initializing core...")
         self.w3af = core.controllers.w3afCore.w3afCore()
         self.w3af.mainwin = self
         self.isRunning = False
@@ -148,6 +197,7 @@ class MainApp:
         self.menuViews = {}
 
         # Create a UIManager instance
+        splash.push("Creating menu and toolbar...")
         uimanager = gtk.UIManager()
         accelgroup = uimanager.get_accel_group()
         self.window.add_accel_group(accelgroup)
@@ -225,7 +275,14 @@ class MainApp:
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
 
+        # FIXME: remove this code!!
+        import time
+        splash.push("This is to see how nice the splash is :)")
+        time.sleep(5)
+        # (remove until here)
+
         # the throbber  
+        splash.push("Building the throbber...")
         self.throbber = Throbber()
         separat = gtk.SeparatorToolItem()
         separat.set_draw(False)
@@ -235,6 +292,7 @@ class MainApp:
         toolbar.insert(self.throbber, -1)
 
         # notebook
+        splash.push("Building the main screen...")
         self.nb = gtk.Notebook()
         self.nb.connect("switch-page", self.nbChangedPage)
         mainvbox.pack_start(self.nb, True)
@@ -269,11 +327,12 @@ class MainApp:
         self.httplog.show()
 
         # status bar
+        splash.push("Building the status bar...")
         self.sb = helpers.StatusBar("Program started ok")
         mainvbox.pack_start(self.sb, False)
 
         self.window.show()
-        helpers.init(self.window)
+        splash.destroy()
         gtk.main()
 
     def quit(self, widget, event, data=None):
@@ -519,6 +578,7 @@ class MainApp:
         '''
         for opt,stt in zip(self.profileActions, newstatus):
             opt.set_sensitive(stt)
-        
+
+
 def main(profile):
     MainApp(profile)

@@ -271,18 +271,6 @@ def _crash(type, value, tb):
     
 sys.excepthook = _crash
 
-#-- 
-
-def init(mainwin):
-    '''Initialize threads and anything needed.
-
-    This is called from the main appl at start.
-    '''
-    if sys.platform == "win32":
-        gobject.threads_init()
-    else:
-        gtk.gdk.threads_init()
-
 
 #--
 # Trying to not use threads anymore, but still need to 

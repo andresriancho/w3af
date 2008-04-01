@@ -43,7 +43,8 @@ class HistorySuggestion(object):
 
         @return: a generator with the texts
         '''
-        return [k for k,v in sorted(self.history.items(), key=operator.itemgetter(1))]
+        info = sorted(self.history.items(), key=operator.itemgetter(1), reverse=True)
+        return [k for k,v in info]
 
     def insert(self, newtext):
         self.history[newtext] = self.history.get(newtext, 0) + 1
