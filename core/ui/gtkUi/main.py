@@ -32,6 +32,16 @@ except:
     print 'You have to install pygtk version >=2 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
     sys.exit( 1 )
 
+# Threading initializer
+if sys.platform == "win32":
+    gobject.threads_init()
+else:
+    gtk.gdk.threads_init()
+
+# splash!
+from core.ui.gtkUi.splash import Splash
+splash = Splash()
+
 try:
     import buzhug
 except:
@@ -58,14 +68,6 @@ import core.ui.gtkUi.confpanel as confpanel
 from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
     
-
-# Threading initializer
-if sys.platform == "win32":
-    gobject.threads_init()
-else:
-    gtk.gdk.threads_init()
-
-
 ui_menu = """
 <ui>
   <menubar name="MenuBar">
@@ -126,41 +128,6 @@ class Throbber(gtk.ToolButton):
             self.set_icon_widget(self.img_static)
 
 
-class Splash(gtk.Window):
-    '''Builds the Splash window.
-    
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self):
-        super(Splash,self).__init__()
-        vbox = gtk.VBox()
-        self.add(vbox)
-
-        # content
-        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
-        vbox.pack_start(img)
-        hbox = gtk.HBox()
-        self.label = gtk.Label()
-        hbox.pack_start(self.label)
-        vbox.pack_start(hbox)
-
-        # color and position
-        self.set_decorated(False)
-        color = gtk.gdk.color_parse('#f2f2ff')
-        self.modify_bg(gtk.STATE_NORMAL, color)
-        self.set_position(gtk.WIN_POS_CENTER)
-
-        # ensure it is rendered immediately
-        self.show_all()
-        while gtk.events_pending():
-            gtk.main_iteration()
-
-    def push(self, text):
-        '''New text to be shown in the Splash.'''
-        self.label.set_text(text)
-        gtk.gdk.window_process_all_updates() 
-
-
 class MainApp(object):
     '''Main GTK application
 
@@ -168,9 +135,6 @@ class MainApp(object):
     '''
 
     def __init__(self, profile):
-        # splash!
-        splash = Splash()
-
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
@@ -275,11 +239,11 @@ class MainApp(object):
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
 
-        # FIXME: remove this code!!
-        import time
-        splash.push("This is to see how nice the splash is :)")
-        time.sleep(5)
-        # (remove until here)
+#        # FIXME: remove this code!!
+#        import time
+#        splash.push("This is to see how nice the splash is :)")
+#        time.sleep(5)
+#        # (remove until here)
 
         # the throbber  
         splash.push("Building the throbber...")
