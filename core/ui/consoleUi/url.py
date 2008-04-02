@@ -50,7 +50,7 @@ class url(consoleMenu):
         '''
         try:
             pConf = pluginConfig( self._w3af, self._commands )
-            prompt = 'w3af/url-settings>>> '
+            prompt = 'w3af/http-settings>>> '
             pConf.sh( prompt, self._w3af.uriOpener.settings )
         except KeyboardInterrupt:
             om.out.console( '' )
