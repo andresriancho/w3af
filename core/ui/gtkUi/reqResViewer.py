@@ -188,12 +188,16 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
         
         # Show it rendered
         if withGtkHtml2 and useGTKHtml2:
-            document = gtkhtml2.Document()
-            document.clear()
-            document.open_stream(mimeType)
-            document.write_stream(body)
-            document.close_stream()
-            self._renderingWidget.set_document(document)
+            try:
+                document = gtkhtml2.Document()
+                document.clear()
+                document.open_stream(mimeType)
+                document.write_stream(body)
+                document.close_stream()
+                self._renderingWidget.set_document(document)
+            except:
+                print 'I think you hitted bug #1933524'
+                print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
         
         if withMozillaTab and useMozilla:
             self._renderingWidget.render_data( body,long(len(body)), baseURI , mimeType)
