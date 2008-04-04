@@ -38,15 +38,42 @@ class PromptView(gtk.TextView):
         self.procfunc = procfunc
         super(PromptView,self).__init__()
 
-        self.key_return = gtk.gdk.keyval_from_name("Return")
+        # keys
+        self.keys = {
+            gtk.gdk.keyval_from_name("Return"): self._key_enter,
+            gtk.gdk.keyval_from_name("Up"): self._key_up,
+            gtk.gdk.keyval_from_name("Down"): self._key_down,
+            gtk.gdk.keyval_from_name("BackSpace"): self._key_backspace,
+        }
+
         self.textbuffer = self.get_buffer()
         self.user_started = None
+        self.all_lines = []
+        self.cursorPosInitLine = 0
 
         self.connect("key-press-event", self._key)
         self.show()
         gobject.idle_add(self._prompt)
 
-    def _enter(self):
+        # FIXME: que el mouse no pueda dejar el cursor en cualquier lado
+        # FIXME: poner un toolbar, un boton save ahi, y que grabe a disco
+        # FIXME: que haga wrap cuando escribimos mucho
+
+    def _key_up(self):
+        print "boo"
+        # FIXME implementar esto!
+
+    def _key_down(self):
+        print "boo"
+        # FIXME implementar esto!
+
+    def _key_backspace(self):
+        cursor_pos = self.textbuffer.get_property("cursor-position")
+        if cursor_pos <= self.cursorLimit:
+            return True
+        return False
+
+    def _key_enter(self):
         '''The user pressed Return.'''
         cursor_pos = self.textbuffer.get_property("cursor-position")
         iter_end = self.textbuffer.get_end_iter()
@@ -62,6 +89,7 @@ class PromptView(gtk.TextView):
             self._proc(text)
         else:
             self._prompt()
+        return True
 
     def _proc(self, text):
         '''Process the user input.'''
@@ -70,6 +98,7 @@ class PromptView(gtk.TextView):
             iter = self.textbuffer.get_end_iter()
             self.textbuffer.insert(iter, result+"\n")
         self._prompt()
+        # FIXME: que ajuste el scrollbar para abajo de todo
         
     def _prompt(self):
         '''Show the prompt.'''
@@ -77,13 +106,15 @@ class PromptView(gtk.TextView):
         self.textbuffer.insert(iter, self.promptText + "> ")
         iter = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iter)
+        self.cursorLimit = self.textbuffer.get_property("cursor-position")
         self.user_started = self.textbuffer.create_mark("user-input", iter, True)
 
     def _key(self, widg, event):
         '''Separates the special keys from the other.'''
-        if event.keyval == self.key_return:
-            self._enter()
-            return True
+        if event.keyval in self.keys:
+            func = self.keys[event.keyval]
+            return func()
+        print gtk.gdk.keyval_name(event.keyval)
         return False
 
 class PromptDialog(gtk.Dialog):
@@ -136,6 +167,6 @@ if __name__ == "__main__":
             gtk.main()
 
         def prompt(self, widg):
-            prompt = PromptDialog("Just a test", procFunc)
+            prompt = PromptDialog("Just a test", "test", procFunc)
 
     Test()
