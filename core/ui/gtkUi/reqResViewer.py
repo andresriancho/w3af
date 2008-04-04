@@ -187,7 +187,7 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
             mimeType = 'text/html'
         
         # Show it rendered
-        if withGtkHtml2 and useGTKHtml2:
+        if withGtkHtml2 and useGTKHtml2 and body:
             try:
                 document = gtkhtml2.Document()
                 document.clear()
@@ -199,5 +199,6 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
                 print 'I think you hitted bug #1933524'
                 print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
         
-        if withMozillaTab and useMozilla:
+        if withMozillaTab and useMozilla and body:
             self._renderingWidget.render_data( body,long(len(body)), baseURI , mimeType)
+
