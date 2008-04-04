@@ -57,7 +57,6 @@ import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
 import core.ui.gtkUi.scanrun as scanrun
 import core.ui.gtkUi.exploittab as exploittab
-import core.ui.gtkUi.httpLogTab as httpLogTab
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.profiles as profiles
 import core.ui.gtkUi.entries as entries
@@ -239,12 +238,6 @@ class MainApp(object):
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
 
-#        # FIXME: remove this code!!
-#        import time
-#        splash.push("This is to see how nice the splash is :)")
-#        time.sleep(5)
-#        # (remove until here)
-
         # the throbber  
         splash.push("Building the throbber...")
         self.throbber = Throbber()
@@ -282,14 +275,6 @@ class MainApp(object):
             self.nb.append_page(dummy, gtk.Label())
         self.setTabs(False)
         
-        # Request Response navigator
-        self.httplog = httpLogTab.httpLogTab(self.w3af)
-        label = gtk.Label("Request response navigator")
-        #label.set_sensitive(False)
-        #self.httplog.set_sensitive(False)
-        self.nb.append_page(self.httplog, label)
-        self.httplog.show()
-
         # status bar
         splash.push("Building the status bar...")
         self.sb = helpers.StatusBar("Program started ok")
@@ -506,9 +491,9 @@ class MainApp(object):
         to which recipient the signal of that View should be 
         directed.
         '''
-        if page_num == 1:
-            page = "Results"
-        elif page_num == 3:
+#        if page_num == 1:
+#            page = "Results"
+        if page_num == 3:
             page = "Exploit"
         else:
             page = None

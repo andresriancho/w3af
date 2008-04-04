@@ -27,6 +27,7 @@ import urllib2, time
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.kbtree as kbtree
 import core.ui.gtkUi.messages as messages
+import core.ui.gtkUi.httpLogTab as httpLogTab
 import core.data.kb.knowledgeBase as kb
 
 # To show request and responses
@@ -226,52 +227,33 @@ class URLsTree(gtk.TreeView):
         return holder
 
 
-class ScanRunBody(gtk.HPaned):
+class ScanRunBody(gtk.Notebook):
     '''The whole body of scan run.
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(ScanRunBody,self).__init__()
-        self.panels = {}
 
-        # the paned window
-        inner_hpan = gtk.HPaned()
-        self.panels["upperpanel"] = inner_hpan
-        
-        # left
+        # urlstree
         urlstree = URLsTree()
         scrollwin1 = gtk.ScrolledWindow()
         scrollwin1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin1.add_with_viewport(urlstree)
         scrollwin1.show()
-        self.panels["urltree"] = scrollwin1
+        l = gtk.Label("URLs")
+        self.append_page(scrollwin1, l)
 
-        # rigth
+        # KB Browser
         # this one does not go inside a scrolled window, because that's handled
         # in each widget of itself
         kbbrowser = KBBrowser(w3af)
+        l = gtk.Label("KB Browser")
+        self.append_page(kbbrowser, l)
 
-        # pack it all and show
-        self.pack1(scrollwin1)
-        self.pack2(kbbrowser)
-        self.set_position(250)
-        self.panels["kbexplorer"] = kbbrowser
+        # Request Response navigator
+        httplog = httpLogTab.httpLogTab(w3af)
+        l = gtk.Label("Request response navigator")
+        self.append_page(httplog, l)
 
-        # The vertical pane position
-        self.panactiv = dict((x,True) for x in self.panels)
-        self.show()
-
-    def togglePanels(self, panel, active):
-        '''Turn on and off the panels.
-
-        @param panel: The panel to turn on and off
-        @param active: If it should be activated or deactivated
-        '''
-        widg = self.panels[panel]
-        if active:
-            widg.show()
-        else:
-            widg.hide()
-        self.panactiv[panel] = active
-#        import pdb;pdb.set_trace()
+        self.show_all()
