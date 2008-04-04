@@ -234,7 +234,14 @@ class ScanRunBody(gtk.Notebook):
     '''
     def __init__(self, w3af):
         super(ScanRunBody,self).__init__()
-
+        
+        # KB Browser
+        # this one does not go inside a scrolled window, because that's handled
+        # in each widget of itself
+        kbbrowser = KBBrowser(w3af)
+        l = gtk.Label("KB Browser")
+        self.append_page(kbbrowser, l)
+        
         # urlstree
         urlstree = URLsTree()
         scrollwin1 = gtk.ScrolledWindow()
@@ -243,13 +250,6 @@ class ScanRunBody(gtk.Notebook):
         scrollwin1.show()
         l = gtk.Label("URLs")
         self.append_page(scrollwin1, l)
-
-        # KB Browser
-        # this one does not go inside a scrolled window, because that's handled
-        # in each widget of itself
-        kbbrowser = KBBrowser(w3af)
-        l = gtk.Label("KB Browser")
-        self.append_page(kbbrowser, l)
 
         # Request Response navigator
         httplog = httpLogTab.httpLogTab(w3af)
