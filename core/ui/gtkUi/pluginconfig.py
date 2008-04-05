@@ -99,8 +99,14 @@ class ConfigPanel(gtk.VBox):
     '''
     def __init__(self):
         super(ConfigPanel,self).__init__(False, 0)
-        self.widg = None
-        self.clear()
+        
+        # put image
+        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+        self.widg = img
+        img.show()
+        img.set_sensitive(False)
+        self.add(img)
+
         self.show()
         self.created_panels = {}
 
