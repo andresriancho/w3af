@@ -61,6 +61,8 @@ class errorPages(baseGrepPlugin):
         # ASP error I found during a pentest, the ASP used a foxpro db, not a SQL injection
         mesg.append('<font face="Arial" size=2>error \'800a0005\'</font>')
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
+        # ASPX
+        mesg.append('<b> Description: </b>An unhandled exception occurred during the execution of the current web request. Please review the stack trace')
         
         # Struts
         mesg.append('] does not contain handler parameter named')
