@@ -99,7 +99,7 @@ class ProfileList(gtk.TreeView):
                     self._useProfile()
                     break
             else:
-                raise SystemExit("The profile %r does not exists!" % initial)
+                raise SystemExit("The profile %r does not exists!" % selected)
         
     def _controlDifferences(self):
         '''Returns if something is different agains initial state.'''
@@ -306,7 +306,6 @@ class ProfileList(gtk.TreeView):
         profileName = self._getProfileName()
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
-        print "Saved!", profileName
         self.w3af.saveCurrentToProfile( profileName )
         self.w3af.mainwin.sb("Profile saved")
         path = self.get_cursor()[0]
