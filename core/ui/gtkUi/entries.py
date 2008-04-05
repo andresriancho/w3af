@@ -414,14 +414,23 @@ class EntryDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title):
+    def __init__(self, title, options):
         super(EntryDialog,self).__init__(title, None, gtk.DIALOG_MODAL,
                       (gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE_AS,gtk.RESPONSE_OK))
-        # the textentry
-        self.entry = gtk.Entry()
-        self.entry.connect("changed", self._checkEntry)
-        self.entry.connect("activate", self._setInputText, True)
-        self.vbox.pack_start(self.entry)
+
+        # the text entries
+        self.entries = []
+        table = gtk.Table(len(options), 2)
+        for row,tit in enumerate(options):
+            titlab = gtk.Label(tit)
+            titlab.set_alignment(0.0, 0.5)
+            table.attach(titlab, 0,1,row,row+1)
+            entry = gtk.Entry()
+            entry.connect("changed", self._checkEntry)
+            entry.connect("activate", self._setInputText, True)
+            table.attach(entry, 1,2,row,row+1)
+            self.entries.append(entry)
+        self.vbox.pack_start(table)
 
         # the cancel button
         self.butt_cancel = self.action_area.get_children()[1]
@@ -432,7 +441,7 @@ class EntryDialog(gtk.Dialog):
         self.butt_saveas.set_sensitive(False)
         self.butt_saveas.connect("clicked", self._setInputText)
 
-        self.inputtext = None
+        self.inputtexts = None
         self.show_all()
 
     def _setInputText(self, widget, close=False):
@@ -440,13 +449,25 @@ class EntryDialog(gtk.Dialog):
         
         @param close: If True, the Dialog will be closed.
         '''
-        self.inputtext = self.entry.get_text()
+        if not self._allWithText():
+            return
+        self.inputtexts = [x.get_text() for x in self.entries]
         if close:
             self.response(gtk.RESPONSE_OK)
 
+    def _allWithText(self):
+        '''Checks if the entries has text.
+
+        @return: True if all have text.
+        '''
+        for e in self.entries:
+            if not e.get_text():
+                return False
+        return True
+
     def _checkEntry(self, *w):
         '''Checks the entry to see if it has text.'''
-        self.butt_saveas.set_sensitive(bool(self.entry.get_text()))
+        self.butt_saveas.set_sensitive(self._allWithText())
 
 
 class TextDialog(gtk.Dialog):

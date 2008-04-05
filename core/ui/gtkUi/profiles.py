@@ -297,9 +297,8 @@ class ProfileList(gtk.TreeView):
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
         profileName = self._getProfileName()
-        #FIXME: There is a problem here! When I click on a plugin to enable it (on the gtk ui)
-        # the ui doesn't tell that to the core, so when I call saveCurrentToProfile; the core doesn't
-        # have that plugin enabled and it won't save that to the profile!!
+        if not self.w3af.mainwin.saveStateToCore():
+            return
         self.w3af.saveCurrentToProfile( profileName )
         #FIXME: Saving the profile should put the name of the profile back to non-bold and
         # let me navigate away from the profile.
@@ -309,14 +308,15 @@ class ProfileList(gtk.TreeView):
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
-        # FIXME: Please also ask for a profile description and use it !
-        profileDescription = ''
-        dlg = entries.EntryDialog("Save as...")
+        if not self.w3af.mainwin.saveStateToCore():
+            return
+
+        dlg = entries.EntryDialog("Save as...", ["Name:", "Description:"])
         dlg.run()
-        filename = dlg.inputtext
+        filename,description = dlg.inputtexts
         dlg.destroy()
         if filename is not None:
-            self.w3af.saveCurrentToNewProfile( filename , profileDescription )
+            self.w3af.saveCurrentToNewProfile(filename , description)
             # FIXME: Here you should reload the profile list
             self.w3af.mainwin.sb("New profile created")
 

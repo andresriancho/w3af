@@ -318,10 +318,10 @@ class MainApp(object):
         func = getattr(self, action)
         func()
 
-    def _scan_start(self):
-        '''Starts the actual scanning.
-
-        @param widget: the widget that generated the signal.
+    def saveStateToCore(self):
+        '''Save the actual state to the core.
+        
+        @return: True if all went ok
         '''
         # save the activated plugins
         for type,plugins in self.pcbody.getActivatedPlugins():
@@ -335,6 +335,16 @@ class MainApp(object):
         try:
             helpers.coreWrap(self.w3af.target.setOptions, options)
         except w3afException:
+            return False
+        return True
+        
+
+    def _scan_start(self):
+        '''Starts the actual scanning.
+
+        @param widget: the widget that generated the signal.
+        '''
+        if not self.saveStateToCore():
             return
 
         # Verify that everything is ready to run
