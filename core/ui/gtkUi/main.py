@@ -66,6 +66,7 @@ import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.confpanel as confpanel
 from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
+import webbrowser
     
 ui_menu = """
 <ui>
@@ -126,6 +127,38 @@ class Throbber(gtk.ToolButton):
         else:
             self.set_icon_widget(self.img_static)
 
+class AboutDialog(gtk.Dialog):
+    '''A dialog with the About information.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af):
+        super(AboutDialog,self).__init__("About...", None, gtk.DIALOG_MODAL,
+                      ("Check the web site",gtk.RESPONSE_CANCEL,gtk.STOCK_OK,gtk.RESPONSE_OK))
+
+        # content
+        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+        self.vbox.pack_start(img)
+        version = w3af.getVersion()
+        self.label = gtk.Label(version)
+        self.label.set_justify(gtk.JUSTIFY_CENTER)
+        self.vbox.pack_start(self.label)
+
+        # the home button
+        self.butt_home = self.action_area.get_children()[1]
+        self.butt_home.connect("clicked", self._goWeb)
+
+        # the ok button
+        self.butt_saveas = self.action_area.get_children()[0]
+        self.butt_saveas.connect("clicked", lambda x: self.destroy())
+
+        self.show_all()
+
+    def _goWeb(self, w):
+        '''Opens the web site and closes the dialog.'''
+        webbrowser.open("http://w3af.sourceforge.net/")
+        self.destroy()
+
 
 class MainApp(object):
     '''Main GTK application
@@ -179,8 +212,8 @@ class MainApp(object):
             ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
-            ('Help', None, '_Help', None, 'Help regarding the framework', self.notyet),
-            ('About', None, '_About', None, 'About the framework', self.notyet),
+            ('Help', None, '_Help', None, 'Help regarding the framework', self.menu_help),
+            ('About', None, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
             ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
         ])
@@ -307,11 +340,6 @@ class MainApp(object):
         self.generalconfig.close()
         gtk.main_quit()
         return False
-
-    def notyet(self, widget):
-        '''Just a not yet implemented message to stdout.'''
-        print "This functionality is not implemented yet!"
-
 
     def _scan_director(self, widget):
         action = "_scan_" + self.scanShould
@@ -537,6 +565,18 @@ class MainApp(object):
         '''
         for opt,stt in zip(self.profileActions, newstatus):
             opt.set_sensitive(stt)
+
+    def menu_help(self, action):
+        '''Shows the help message.'''
+        helpfile = os.path.join(os.getcwd(), "readme/w3afUsersGuide.xhtml")
+        webbrowser.open("file://" + helpfile)
+
+    def menu_about(self, action):
+        '''Shows the about message.'''
+        dlg = AboutDialog(self.w3af)
+        dlg.run()
+
+
 
 
 def main(profile):
