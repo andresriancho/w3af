@@ -261,16 +261,24 @@ class profile:
         # Something went wrong
         return None
     
-    def save( self, fileName ):
+    def save( self, fileName = '' ):
         '''
         Saves the profile to fileName
         @return: None
         '''
-        self._profile_file_name = fileName
-        
+        if fileName == '' and self._profile_file_name == None:
+            raise w3afException('Error while saving profile, you didn\'t specified the filename.')
+        elif fileName != '' and self._profile_file_name == None:
+            # The user is specifiyng a filename!
+            if not fileName.endswith('.ini'):
+                fileName += '.ini'
+            if os.path.sep not in fileName:
+                fileName = 'profiles' + os.path.sep + fileName
+            self._profile_file_name = fileName
+            
         try:
-            f = open(fileName, 'w')
+            f = open( self._profile_file_name, 'w')
         except:
-            raise w3afException('Failed to open profile file: ' + fileName)
+            raise w3afException('Failed to open profile file: ' + self._profile_file_name)
         else:
             self._config.write( f )

@@ -216,10 +216,10 @@ class ProfileList(gtk.TreeView):
             self._rightButtonMenu = gm
         
             # the items
-            e = gtk.MenuItem("Save this configuration")
+            e = gtk.MenuItem("Save configuration to profile")
             e.connect('activate', self.saveProfile)
             gm.append(e)
-            e = gtk.MenuItem("Save this profile to a new one")
+            e = gtk.MenuItem("Save configuration to a new profile")
             e.connect('activate', self.saveAsProfile)
             gm.append(e)
             e = gtk.MenuItem("Revert to saved profile state")
@@ -309,14 +309,15 @@ class ProfileList(gtk.TreeView):
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
+        # FIXME: Please also ask for a profile description and use it !
+        profileDescription = ''
         dlg = entries.EntryDialog("Save as...")
         dlg.run()
         filename = dlg.inputtext
         dlg.destroy()
         if filename is not None:
-            self.w3af.copyProfile(profile, filename)
+            self.w3af.saveCurrentToNewProfile( filename , profileDescription )
             # FIXME: Here you should reload the profile list
-            # remember that copyProfile returns a profile instance (the newly copied profile instance)
             self.w3af.mainwin.sb("New profile created")
 
     def revertProfile(self, widget=None):

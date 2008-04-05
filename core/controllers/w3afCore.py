@@ -865,16 +865,23 @@ class w3afCore:
                 
         raise w3afException('Plugin not found')
     
-    def copyProfile( self, originalProfileName, copyProfileName ):
+    def saveCurrentToNewProfile( self, profileName, profileDesc='' ):
         '''
-        @parameter originalProfileName: The profile to cloneProfile
-        @parameter copyProfileName: The cloned profile name
+        Saves current config to a newly created profile.
         
-        @return: An instance of the copied profile, exceptions may raise on errors.
+        @parameter profileName: The profile to cloneProfile
+        @parameter profileDesc: The description of the new profile
+        
+        @return: True if the profile was successfully saved. Else, raise a w3afException.
         '''
-        profileInstance = profile( originalProfileName )
-        profileInstance.copy( copyProfileName )
-        return profile( copyProfileName )
+        # Create the new profile.
+        profileInstance = profile()
+        profileInstance.setDesc( profileDesc )
+        profileInstance.setName( profileName )
+        profileInstance.save( profileName )
+        
+        # Save current to profile
+        return self.saveCurrentToProfile( profileName, profileDesc )
 
     def saveCurrentToProfile( self, profileName, profileDesc='' ):
         '''
@@ -882,7 +889,7 @@ class w3afCore:
         
         @return: True if the profile was successfully saved. Else, raise a w3afException.
         '''
-        # Create the empty profile
+        # Open the already existing profile
         newProfile = profile(profileName)
         
         # Config the enabled plugins
