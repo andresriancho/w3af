@@ -269,7 +269,7 @@ class MainApp(object):
 
         # dummy tabs creation for notebook, real ones are done in setTabs
         self.notetabs = {}
-        for title in ("Results", "Log", "Exploit"):
+        for title in ("Log","Results", "Exploit"):
             dummy = gtk.Label("dummy")
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
@@ -449,8 +449,8 @@ class MainApp(object):
         self.isRunning = sensit
 
         # ok, the tabs, :p
-        self._setTab(sensit, "Results", scanrun.ScanRunBody)
         self._setTab(sensit, "Log",     logtab.LogBody)
+        self._setTab(sensit, "Results", scanrun.ScanRunBody)
         self._setTab(sensit, "Exploit", exploittab.ExploitBody)
 
     def _setTab(self, sensit, title, realWidget):
