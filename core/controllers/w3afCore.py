@@ -902,7 +902,9 @@ class w3afCore:
         # Config the profile options
         for pType in self.getPluginTypes():
             for pName in self.getEnabledPlugins(pType):
-                newProfile.setPluginOptions( pType, pName, self.getPluginOptions( pType, pName ) )
+                pOptions = self.getPluginOptions( pType, pName )
+                if pOptions:
+                    newProfile.setPluginOptions( pType, pName, pOptions )
                 
         # Config the profile target
         if cf.cf.getData('targets'):

@@ -186,7 +186,10 @@ class gtkOutput(baseOutputPlugin):
         '''    
         ol = optionList()
         return ol
-
+    
+    def setOptions( self, OptionList ):
+        pass
+        
 class message:
     def __init__( self, type, msg , time, newLine=True ):
         '''
