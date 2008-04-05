@@ -184,6 +184,10 @@ class MainApp(object):
         self.window.add(mainvbox)
         mainvbox.show()
 
+        # status bar
+        splash.push("Building the status bar...")
+        self.sb = helpers.StatusBar("Program started ok")
+
         splash.push("Initializing core...")
         self.w3af = core.controllers.w3afCore.w3afCore()
         self.w3af.mainwin = self
@@ -309,8 +313,6 @@ class MainApp(object):
         self.setTabs(False)
         
         # status bar
-        splash.push("Building the status bar...")
-        self.sb = helpers.StatusBar("Program started ok")
         mainvbox.pack_start(self.sb, False)
 
         self.window.show()
