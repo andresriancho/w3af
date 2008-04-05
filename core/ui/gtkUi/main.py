@@ -346,9 +346,10 @@ class MainApp(object):
         func = getattr(self, action)
         func()
 
-    def saveStateToCore(self):
+    def saveStateToCore(self, relaxedTarget=False):
         '''Save the actual state to the core.
-        
+
+        @param relaxedTarget: if True, return OK even if the target wasn't saved ok
         @return: True if all went ok
         '''
         # save the activated plugins
@@ -360,6 +361,12 @@ class MainApp(object):
         options = parseOptions.parseXML(info)
         url = self.pcbody.target.get_text()
         options['target'].update(default=url)
+        if relaxedTarget:
+            try:
+                self.w3af.target.setOptions(options)
+            except:
+                pass
+            return True
         try:
             helpers.coreWrap(self.w3af.target.setOptions, options)
         except w3afException:

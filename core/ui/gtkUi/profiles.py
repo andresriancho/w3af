@@ -46,9 +46,12 @@ class ProfileList(gtk.TreeView):
 
         # build the list with the profiles name, description, id, changed, permanentname
         self.liststore.append(["Empty profile", "Clean profile with nothing configured", None, 0, "Empty profile"])
-        for profile in sorted(w3af.getProfileList()):
+        tmpprofiles = []
+        for profile in w3af.getProfileList():
             nom = profile.getName()
             desc = profile.getDesc()
+            tmpprofiles.append((nom, desc, profile))
+        for nom,desc,profile in sorted(tmpprofiles):
             prfid = str(id(profile))
             self.profile_instances[prfid] = profile
             self.liststore.append([nom, desc, prfid, 0, nom])
@@ -297,7 +300,7 @@ class ProfileList(gtk.TreeView):
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
         profileName = self._getProfileName()
-        if not self.w3af.mainwin.saveStateToCore():
+        if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
         self.w3af.saveCurrentToProfile( profileName )
         #FIXME: Saving the profile should put the name of the profile back to non-bold and
@@ -308,7 +311,7 @@ class ProfileList(gtk.TreeView):
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
         profile = self._getProfileName()
-        if not self.w3af.mainwin.saveStateToCore():
+        if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
 
         dlg = entries.EntryDialog("Save as...", ["Name:", "Description:"])
