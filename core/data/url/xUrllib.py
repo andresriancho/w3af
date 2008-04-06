@@ -486,7 +486,7 @@ class xUrllib:
                 # Correct control+c handling...
                 raise
             except Exception, e:
-                om.out.error( 'Error in grep plugin, "' + grepPlugin.getName() + '" raised the exception: ' + str(e) + '. Please report this bug.' )
+                om.out.error( 'Error in grep plugin, "' + grepPlugin.getName() + '" raised the exception: ' + str(e) + '. Please report this bug. Exception: ' + str(traceback.format_exc(1)) )
                 om.out.debug( str(traceback.format_exc()) )
         
         om.out.debug('Finished grepWorker for response: ' + repr(response) )

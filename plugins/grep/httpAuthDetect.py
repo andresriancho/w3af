@@ -83,11 +83,11 @@ class httpAuthDetect(baseGrepPlugin):
             # I know that by doing this I loose the chance of finding hashes in PDF files, but...
             # This is much faster
             if isTextOrHtml( response.getHeaders() ):
-                for authURI in re.findall( '\w{2,10}://(.*?):(.*?)@' , response.getBody() ):
+                for authURI in re.findall( '\w{2,10}://.*?:.*?@' , response.getBody() ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )
-                    v.setDesc( 'The resource: '+ response.getURL() + ' has a user and password in the body. The offending code is: "' + authURI + '".')
+                    v.setDesc( 'The resource: '+ response.getURL() + ' has a user and password in the body. The offending URL is: "' + authURI + '".')
                     
                     v.setSeverity(severity.HIGH)
                     v.setName( 'Basic HTTP credentials' )
