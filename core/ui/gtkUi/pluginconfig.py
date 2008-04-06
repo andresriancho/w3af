@@ -564,7 +564,25 @@ class PluginConfigBody(gtk.VBox):
         '''
         return self.std_plugin_tree.getActivatedPlugins() + self.out_plugin_tree.getActivatedPlugins()
 
+    def editSelectedPlugin(self):
+        treeToUse = None
+        if self.out_plugin_tree.is_focus():
+            treeToUse = self.out_plugin_tree
+        elif self.std_plugin_tree.is_focus():
+            treeToUse = self.std_plugin_tree
+        else:
+            return None
 
+        #self.out_plugin_tree
+        (path, column) = treeToUse.get_cursor()
+        # Is it over a plugin name ?
+        if path != None and len(path) > 1:
+            # Get the information about the click
+            pname = treeToUse.treestore[path][3]
+            ptype = treeToUse.treestore[path[:1]][3]
+            # Launch the editor
+            editPlugin( None, pname, ptype )
+        
     def reload(self):
         '''Reloads all the configurations.'''
         # target url

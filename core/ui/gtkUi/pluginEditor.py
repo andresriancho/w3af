@@ -271,20 +271,20 @@ class EditWindow(gtk.Window):
         return
 
 def editPlugin( widget, pluginName, pluginType ):
-     '''
-     I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
-     This method calls the plugin editor as a separate process and exists.
-     '''
-     program = 'python'
-     fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
-     try:
-         subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py', fName])
-     except Exception, e:
-         msg = 'Error while starting the w3af plugin editor. Exception: ' + str(e)
-         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-         dlg.set_title('Error')
-         dlg.run()
-         dlg.destroy()
+    '''
+    I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
+    This method calls the plugin editor as a separate process and exists.
+    '''
+    program = 'python'
+    fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
+    try:
+        subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py', fName])
+    except Exception, e:
+        msg = 'Error while starting the w3af plugin editor. Exception: ' + str(e)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+        dlg.set_title('Error')
+        dlg.run()
+        dlg.destroy()
 
 def edit(fname, mainwin=False):
     if mainwin: quit_cb = lambda w: gtk.main_quit()

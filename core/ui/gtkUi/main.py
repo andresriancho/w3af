@@ -81,6 +81,9 @@ ui_menu = """
       <menuitem action="URLWindow"/>
       <menuitem action="KBExplorer"/>
     </menu>
+    <menu action="EditMenuScan">
+      <menuitem action="EditPlugin"/>
+    </menu>
     <menu action="ViewMenuExploit">
       <menuitem action="ExploitVuln"/>
       <menuitem action="Interactive"/>
@@ -201,7 +204,7 @@ class MainApp(object):
         uimanager = gtk.UIManager()
         accelgroup = uimanager.get_accel_group()
         self.window.add_accel_group(accelgroup)
-        actiongroup = gtk.ActionGroup('UIManager')
+        self._actiongroup = actiongroup = gtk.ActionGroup('UIManager')
 
         # Create actions
         actiongroup.add_actions([
@@ -213,9 +216,14 @@ class MainApp(object):
             ('ProfilesMenu', None, '_Profiles'),
             ('ViewMenuScan', None, '_View'),
             ('ViewMenuExploit', None, '_View'),
+            
+            ('EditPlugin', gtk.STOCK_EDIT, '_Edit plugin', None, 'Edit selected plugin', self._editSelectedPlugin),
+            ('EditMenuScan', None, '_Edit', None, 'Edit', self._editMenu),
+            
             ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
+            
             ('Help', None, '_Help', None, 'Help regarding the framework', self.menu_help),
             ('About', None, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
@@ -253,6 +261,10 @@ class MainApp(object):
         # the sensitive options for profiles
         self.profileActions = [actiongroup.get_action(x) for x in "Save SaveAs Revert Delete".split()]
         self.activateProfileActions([False,True,False,False])
+
+        # the sensitive options for edit
+        ag = actiongroup.get_action("EditPlugin")
+        ag.set_sensitive(False)
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
@@ -319,6 +331,35 @@ class MainApp(object):
         splash.destroy()
         gtk.main()
 
+    def _editMenu( self, widget ):
+        '''
+        This handles the click action of the user over the edit menu.
+        The main objective of this function is to disable the "Edit Plugin" option, if the user isn't focused over a plugin.
+        '''
+        treeToUse = None
+        if self.pcbody.out_plugin_tree.is_focus():
+            treeToUse = self.pcbody.out_plugin_tree
+        elif self.pcbody.std_plugin_tree.is_focus():
+            treeToUse = self.pcbody.std_plugin_tree
+        else:
+            # No focus, we should keep the option disabled
+            return None
+        
+        # We know that we have focus.... but... is the selection a plugin ?
+        (path, column) = treeToUse.get_cursor()
+        if path != None and len(path) > 1:
+            # Excellent! it is over a plugin!
+            # enable the menu option
+            ag = self._actiongroup.get_action("EditPlugin")
+            ag.set_sensitive(True)
+
+        
+    def _editSelectedPlugin( self, widget ):
+        '''
+        This is the handler for the "Edit Plugin" menu option.
+        '''
+        self.pcbody.editSelectedPlugin()
+        
     def quit(self, widget, event, data=None):
         '''Main quit.
 
@@ -562,7 +603,6 @@ class MainApp(object):
             fake.set_visible(True)
 
     def profileAction(self, action):
-        print "action", action
         methname = action + "Profile"
         method = getattr(self.profiles, methname)
         method()
