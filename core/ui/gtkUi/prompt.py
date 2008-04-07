@@ -37,35 +37,68 @@ class PromptView(gtk.TextView):
         self.promptText = promptText
         self.procfunc = procfunc
         super(PromptView,self).__init__()
+        self.set_wrap_mode(gtk.WRAP_CHAR)
 
         # keys
         self.keys = {
             gtk.gdk.keyval_from_name("Return"): self._key_enter,
+            gtk.gdk.keyval_from_name("KP_Enter"): self._key_enter,
             gtk.gdk.keyval_from_name("Up"): self._key_up,
             gtk.gdk.keyval_from_name("Down"): self._key_down,
             gtk.gdk.keyval_from_name("BackSpace"): self._key_backspace,
+            gtk.gdk.keyval_from_name("Control_L"): lambda:False,
+            gtk.gdk.keyval_from_name("Control_R"): lambda:False,
         }
 
         self.textbuffer = self.get_buffer()
         self.user_started = None
         self.all_lines = []
-        self.cursorPosInitLine = 0
+        self.cursorPosition = None
+        self.historyCount = 0
 
         self.connect("key-press-event", self._key)
+        self.connect("button-press-event", self._button_press)
+        self.connect("button-release-event", self._button_release)
         self.show()
         gobject.idle_add(self._prompt)
 
-        # FIXME: que el mouse no pueda dejar el cursor en cualquier lado
         # FIXME: poner un toolbar, un boton save ahi, y que grabe a disco
-        # FIXME: que haga wrap cuando escribimos mucho
+
+    def _button_press(self, widg, event):
+        if self.cursorPosition is None:
+            self.cursorPosition = self.textbuffer.get_property("cursor-position")
+        print self.cursorPosition
+        return False
+
+    def _button_release(self, widg, event):
+        return False
 
     def _key_up(self):
-        print "boo"
-        # FIXME implementar esto!
+        self.historyCount -= 1
+        if self.historyCount < 0:
+            self.historyCount = 0
+        line = self.all_lines[self.historyCount]
+        self._showHistory(line)
+        return True
 
     def _key_down(self):
-        print "boo"
-        # FIXME implementar esto!
+        self.historyCount += 1
+        if self.historyCount >= len(self.all_lines):
+            self.historyCount = len(self.all_lines) - 1
+        line = self.all_lines[self.historyCount]
+        self._showHistory(line)
+        return True
+
+    def _showHistory(self, text):
+        # delete all the line content
+        iterini = self.textbuffer.get_iter_at_offset(self.cursorLimit)
+        iterend = self.textbuffer.get_end_iter()
+        self.textbuffer.delete(iterini, iterend)
+
+        # insert the text
+        iter = self.textbuffer.get_end_iter()
+        self.textbuffer.insert(iter, text)
+        self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def _key_backspace(self):
         cursor_pos = self.textbuffer.get_property("cursor-position")
@@ -78,7 +111,7 @@ class PromptView(gtk.TextView):
         cursor_pos = self.textbuffer.get_property("cursor-position")
         iter_end = self.textbuffer.get_end_iter()
         if cursor_pos != iter_end.get_offset():
-            return
+            return True
 
         self.textbuffer.insert(iter_end, "\n")
         iter_start = self.textbuffer.get_iter_at_mark(self.user_started)
@@ -86,9 +119,11 @@ class PromptView(gtk.TextView):
         self.user_started = None
         text = text.strip()
         if text:
+            self.all_lines.append(text)
             self._proc(text)
         else:
             self._prompt()
+        self.historyCount = len(self.all_lines)
         return True
 
     def _proc(self, text):
@@ -97,13 +132,14 @@ class PromptView(gtk.TextView):
         if result != None:
             iter = self.textbuffer.get_end_iter()
             self.textbuffer.insert(iter, result+"\n")
+            self.scroll_to_mark(self.textbuffer.get_insert(), 0)
         self._prompt()
-        # FIXME: que ajuste el scrollbar para abajo de todo
         
     def _prompt(self):
         '''Show the prompt.'''
         iter = self.textbuffer.get_end_iter()
         self.textbuffer.insert(iter, self.promptText + "> ")
+        self.scroll_to_mark(self.textbuffer.get_insert(), 0)
         iter = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iter)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
@@ -111,9 +147,20 @@ class PromptView(gtk.TextView):
 
     def _key(self, widg, event):
         '''Separates the special keys from the other.'''
+        # analyze which key was pressed
         if event.keyval in self.keys:
             func = self.keys[event.keyval]
             return func()
+
+        # reset the cursor after moving it with the mouse
+        if self.cursorPosition is not None:
+            # special: don't reset for ctrl-C, as we want to copy the selected stuff
+            if event.state & gtk.gdk.CONTROL_MASK and event.keyval == gtk.gdk.keyval_from_name("c"):
+                return False
+            iter = self.textbuffer.get_iter_at_offset(self.cursorPosition)
+            self.textbuffer.place_cursor(iter)
+            self.cursorPosition = None
+
         print gtk.gdk.keyval_name(event.keyval)
         return False
 
@@ -148,6 +195,7 @@ class PromptDialog(gtk.Dialog):
 if __name__ == "__main__":
 
     def procFunc(x):
+        x = x.decode("utf8")
         return x[::-1]
 
     class Test(object):
