@@ -75,12 +75,18 @@ class googleSpider(baseDiscoveryPlugin):
             if self._google.isPrivate( domain ):
                 raise w3afException('There is no point in searching google for "site:'+ domain + '" . Google doesnt index private pages.')
 
-            results = self._google.getNResults('site:'+ domain, self._resultLimit)
-                
-            for res in results:
-                targs = (res.URL,)
-                self._tm.startFunction( target=self._generateFuzzableRequests, args=targs, ownerObj=self )          
-            self._tm.join( self )
+            try:
+                results = self._google.getNResults('site:'+ domain, self._resultLimit)
+            except w3afException, w3:
+                om.out.error(str(w3))
+                # If I found an error, I don't want to be run again
+                raise w3afRunOnce()
+            else:
+                # Happy happy joy, no error here!
+                for res in results:
+                    targs = (res.URL,)
+                    self._tm.startFunction( target=self._generateFuzzableRequests, args=targs, ownerObj=self )          
+                self._tm.join( self )
         return self._fuzzableRequests
     
     def _generateFuzzableRequests( self, url ):

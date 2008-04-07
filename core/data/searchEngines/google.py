@@ -118,7 +118,7 @@ class google(searchEngine):
         _query = urllib.urlencode({'q':query, 'start':start, 'num':count})
 
         response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
-        if response.getRedirURL().startswith('http://www.google.com/sorry/'):
+        if 'href="http://www.google.com/support/bin/answer.py?answer=86640">' in response.getBody():
             raise w3afException('Google is telling us to stop doing automated tests.')
             
         resPages.append( response )

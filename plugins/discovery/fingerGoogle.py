@@ -91,20 +91,32 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         Only search for mail addresses in the google result page.
         '''
-        resultPageObjects = self._google.getNResultPages( '@'+ self._domainRoot , self._resultLimit )
-        
-        for result in resultPageObjects:
-            self._parseDocument( result )
+        try:
+            resultPageObjects = self._google.getNResultPages( '@'+ self._domainRoot , self._resultLimit )
+        except w3afException, w3:
+            om.out.error(str(w3))
+            # If I found an error, I don't want to be run again
+            raise w3afRunOnce()
+        else:
+            # Happy happy joy, no error here!
+            for result in resultPageObjects:
+                self._parseDocument( result )
         
     def _doCompleteSearch( self, domain ):
         '''
         Performs a complete search for email addresses.
         '''
-        results = self._google.getNResults( '@'+ self._domainRoot , self._resultLimit )
-        
-        for result in results:
-            targs = (result,)
-            self._tm.startFunction( target=self._findAccounts, args=targs, ownerObj=self )
+        try:
+            resultPageObjects = self._google.getNResultPages( '@'+ self._domainRoot , self._resultLimit )
+        except w3afException, w3:
+            om.out.error(str(w3))
+            # If I found an error, I don't want to be run again
+            raise w3afRunOnce()
+        else:
+            # Happy happy joy, no error here!
+            for result in results:
+                targs = (result,)
+                self._tm.startFunction( target=self._findAccounts, args=targs, ownerObj=self )
             
     def _findAccounts(self, googlePage ):
         '''
