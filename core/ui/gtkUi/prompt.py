@@ -61,13 +61,17 @@ class PromptView(gtk.TextView):
         self.connect("button-release-event", self._button_release)
         self.show()
         gobject.idle_add(self._prompt)
+        gobject.idle_add(self.grab_focus)
 
-        # FIXME: poner un toolbar, un boton save ahi, y que grabe a disco
+    def getText(self):
+        iterini = self.textbuffer.get_start_iter()
+        iterend = self.textbuffer.get_end_iter()
+        text = self.textbuffer.get_text(iterini, iterend)
+        return text
 
     def _button_press(self, widg, event):
         if self.cursorPosition is None:
             self.cursorPosition = self.textbuffer.get_property("cursor-position")
-        print self.cursorPosition
         return False
 
     def _button_release(self, widg, event):
@@ -161,8 +165,9 @@ class PromptView(gtk.TextView):
             self.textbuffer.place_cursor(iter)
             self.cursorPosition = None
 
-        print gtk.gdk.keyval_name(event.keyval)
+#        print gtk.gdk.keyval_name(event.keyval)
         return False
+
 
 class PromptDialog(gtk.Dialog):
     '''Puts the Prompt widget inside a Dialog.
@@ -175,22 +180,38 @@ class PromptDialog(gtk.Dialog):
     def __init__(self, title, promptText, procfunc):
         super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
 
-        # A vertical box that contains the prompt...
+        # the toolbar
+        box = gtk.HBox()
+        but = gtk.Button(stock=gtk.STOCK_SAVE)
+        but.set_property("image-position", gtk.POS_TOP)
+        but.connect("clicked", self._save)
+        box.pack_start(but, False, False)
+        self.vbox.pack_start(box, False, False)
+        self.vbox.pack_start(gtk.HSeparator(), False, False, padding=5)
+
+        # the prompt in an scrolled window
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        sw.show()
-        
-        # the prompt itself
-        prompt = PromptView(promptText, procfunc)
-        prompt.show()
-        
-        sw.add(prompt)
+        self.prompt = PromptView(promptText, procfunc)
+        sw.add(self.prompt)
         self.vbox.pack_start(sw)
 
         self.resize(600,300)
-        self.show()
+        self.show_all()
 
+    def _save(self, widg):
+        text = self.prompt.getText()
+        dlg = gtk.FileChooserDialog(title="Choose a file...", action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        resp = dlg.run()
+        fname = dlg.get_filename()
+        dlg.destroy()
+        if resp == gtk.RESPONSE_OK and fname is not None:
+            fh = open(fname, "w")
+            fh.write(text)
+            fh.close()
+        return
 
 if __name__ == "__main__":
 
