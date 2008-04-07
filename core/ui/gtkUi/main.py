@@ -335,6 +335,8 @@ class MainApp(object):
         '''
         This handles the click action of the user over the edit menu.
         The main objective of this function is to disable the "Edit Plugin" option, if the user isn't focused over a plugin.
+        
+        @parameter widget: Not used
         '''
         treeToUse = None
         if self.pcbody.out_plugin_tree.is_focus():
@@ -352,11 +354,12 @@ class MainApp(object):
             # enable the menu option
             ag = self._actiongroup.get_action("EditPlugin")
             ag.set_sensitive(True)
-
         
     def _editSelectedPlugin( self, widget ):
         '''
         This is the handler for the "Edit Plugin" menu option.
+        
+        @parameter widget: Not used
         '''
         self.pcbody.editSelectedPlugin()
         
