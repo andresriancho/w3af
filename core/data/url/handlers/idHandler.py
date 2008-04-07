@@ -73,6 +73,8 @@ class idHandler(urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
             # from the user (of urllib2, in this case).  In practice,
             # essentially all clients do redirect in this case, so we
             # do the same.
+            
+            # This path correctly assigns a id for the request/response
             newurl = newurl.replace(' ', '%20')
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')

@@ -32,7 +32,6 @@ from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 import core.data.url.handlers.certHTTPSHandler as certHTTPSHandler
 import core.data.url.handlers.logHandler as logHandler
-import core.data.url.handlers.idHandler as idHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 
 from core.controllers.configurable import configurable
@@ -265,7 +264,7 @@ class urlOpenerSettings( configurable ):
                                 self._cookieHandler, \
                                 MultipartPostHandler.MultipartPostHandler, \
                                 self._kAHTTP, self._kAHTTPS, logHandler.logHandler, \
-                                idHandler.idHandler, mangleHandler.mangleHandler( self._manglePlugins ) ]:
+                                mangleHandler.mangleHandler( self._manglePlugins ) ]:
             if handler:
                 handlers.append(handler)
         
