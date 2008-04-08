@@ -108,6 +108,7 @@ class consoleUi(consoleMenu):
             self.mprint('exploit','Exploit a vulnerability.')
             self.mprint('tools','Enter the tools section.')
             self.mprint('target','Set the target URL.')
+            self.mprint('version','Show the w3af version.')
             self.mprint('exit','Exit w3af.')
         elif parameters[0] == 'target':
             self.mprint('Enter the target configuration. Here you will configure the target URL.','')
