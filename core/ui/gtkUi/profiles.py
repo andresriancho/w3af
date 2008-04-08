@@ -26,6 +26,7 @@ import gtk
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 from core.controllers.misc import parseOptions
+from core.controllers.w3afException import *
 
 class ProfileList(gtk.TreeView):
     '''A list showing all the profiles.
@@ -290,16 +291,22 @@ class ProfileList(gtk.TreeView):
             return
         self.selectedProfile = profile
 
-        self.w3af.useProfile(profile)
-        self.w3af.mainwin.pcbody.reload()
+        try:
+            self.w3af.useProfile(profile)
+        except w3afException, w3:
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
+            opt = dlg.run()
+            dlg.destroy()
+        else:
+            self.w3af.mainwin.pcbody.reload()
 
-        # get the activated plugins
-        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
+            # get the activated plugins
+            self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
 
-        # update the mainwin buttons
-        path = self.get_cursor()[0]
-        newstatus = self._getActionsSensitivity(path)
-        self.w3af.mainwin.activateProfileActions(newstatus)
+            # update the mainwin buttons
+            path = self.get_cursor()[0]
+            newstatus = self._getActionsSensitivity(path)
+            self.w3af.mainwin.activateProfileActions(newstatus)
 
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''

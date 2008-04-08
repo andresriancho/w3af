@@ -930,6 +930,7 @@ class w3afCore:
     def useProfile( self, profileName ):
         '''
         Gets all the information from the profile, and runs it.
+        Raise a w3afException if the profile to load has some type of problem.
         '''
         # Clear all enabled plugins if profileName is None
         if profileName == None:
@@ -953,7 +954,12 @@ class w3afCore:
                 '''
                 for pluginName in profileInstance.getEnabledPlugins( pluginType ):
                     pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
-                    self.setPluginOptions( pluginType, pluginName, pluginOptions )
+                    try:
+                        self.setPluginOptions( pluginType, pluginName, pluginOptions )
+                    except Exception, e:
+                        # This is because of an invalid plugin, or something like that...
+                        # Added as a part of the fix of bug #1937272
+                        raise w3afException('The profile you are trying to load seems to be corrupt, or one of the enabled plugins has a bug. If your profile is ok, please report this as a bug to the w3af sourceforge page: Exception while setting '+ pluginName +' plugin options: "' + str(e) + '"' )
                     
             # Set the target settings of the profile to the core
             self.target.setOptions( profileInstance.getTarget() )
