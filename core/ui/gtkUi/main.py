@@ -224,8 +224,8 @@ class MainApp(object):
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
             
-            ('Help', None, '_Help', None, 'Help regarding the framework', self.menu_help),
-            ('About', None, '_About', None, 'About the framework', self.menu_about),
+            ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
+            ('About', gtk.STOCK_ABOUT, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
             ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
         ])
