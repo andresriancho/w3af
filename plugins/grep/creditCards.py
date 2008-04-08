@@ -107,7 +107,7 @@ class creditCards(baseGrepPlugin):
         ol = optionList()
         return ol
         
-    def setOptions( self ):
+    def setOptions( self, opt ):
         pass
      
     def getLongDesc( self ):
