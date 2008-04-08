@@ -114,7 +114,7 @@ class fingerGoogle(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             # Happy happy joy, no error here!
-            for result in results:
+            for result in resultPageObjects:
                 targs = (result,)
                 self._tm.startFunction( target=self._findAccounts, args=targs, ownerObj=self )
             
