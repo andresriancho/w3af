@@ -125,6 +125,9 @@ class ssn(baseGrepPlugin):
         '''    
         ol = optionList()
         return ol
+        
+    def setOptions( self ):
+        pass
      
     def getLongDesc( self ):
         '''
