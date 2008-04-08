@@ -27,10 +27,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+
 import core.data.parsers.urlParser as urlParser
+
+# kb stuff
 import core.data.kb.vuln as vuln
+import core.data.kb.info as info
 import core.data.constants.severity as severity
+import core.data.kb.knowledgeBase as kb
 
 class osCommanding(baseAuditPlugin):
     '''
@@ -40,6 +44,8 @@ class osCommanding(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        self._waitTime = 7
+        self._secondWaitTime = 2
 
     def _fuzzRequests(self, freq ):
         '''
@@ -66,18 +72,37 @@ class osCommanding(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        if response.getWaitTime() > 4 and response.getWaitTime() < 6:
-            v = vuln.vuln( mutant )
-            # Search for the correct command and separator
-            for comm in self._getCommandList():
-                if comm.getCommand() == mutant.getModValue():
-                    v['os'] = comm.getOs()
-                    v['separator'] = comm.getSeparator()
-            v.setName( 'OS commanding vulnerability' )
-            v.setSeverity(severity.HIGH)
-            v.setDesc( 'OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
-            v.setId( response.id )
-            kb.kb.append( self, 'osCommanding', v )
+        if response.getWaitTime() > (self._waitTime-1) and response.getWaitTime() < (self._waitTime+1):
+
+            # This could be because of an osCommanding vuln, or because of an error that generates a delay
+            # in the response; so I'll resend changing the time and see what happens
+            moreWaitParam = mutant.getModValue().replace( str(self._waitTime), str(self._secondWaitTime) )
+            mutant.setModValue( moreWaitParam )
+            response = self._sendMutant( mutant, analyze=False )
+
+            if False and response.getWaitTime() > (self._secondWaitTime-1) and response.getWaitTime() < (self._secondWaitTime+1):
+                # Now I can be sure that I found a vuln, I control the time of the response.
+                v = vuln.vuln( mutant )
+                # Search for the correct command and separator
+                for comm in self._getCommandList():
+                    if comm.getCommand() == mutant.getModValue():
+                        v['os'] = comm.getOs()
+                        v['separator'] = comm.getSeparator()
+                v.setName( 'OS commanding vulnerability' )
+                v.setSeverity(severity.HIGH)
+                v.setDesc( 'OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setId( response.id )
+                v.setURI( response.getURI() )
+                kb.kb.append( self, 'osCommanding', v )
+
+            else:
+                # The first delay existed... I must report something...
+                i = info.info()
+                i.setName('Possible OS commanding vulnerability')
+                i.setId( response.id )
+                i.setMethod( mutant.getMethod() )
+                i.setDesc( 'A possible OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + mutant.getMethod() + '. The data sent was: ' + str(mutant.getDc()) +' . Please review manually.' )
+                kb.kb.append( self, 'osCommanding', i )
     
     def end(self):
         '''
@@ -103,18 +128,18 @@ class osCommanding(baseAuditPlugin):
         commands = []
         for specialChar in ['','&&','|',';']:
             if cf.cf.getData('targetOS') in ['windows', 'unknown']:
-                commands.append( command( specialChar + ' ping -n 5 localhost','windows',specialChar))
+                commands.append( command( specialChar + ' ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
             if cf.cf.getData('targetOS') in ['unix', 'unknown']:                
-                commands.append( command( specialChar + ' ping -c 6 localhost','unix',specialChar))
+                commands.append( command( specialChar + ' ping -c '+str(self._waitTime)+' localhost','unix',specialChar))
         
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
-            commands.append( command( '` ping -n 5 localhost`','windows',specialChar))
+            commands.append( command( '` ping -n '+str(self._waitTime -1)+' localhost`','windows',specialChar))
         if cf.cf.getData('targetOS') in ['unix', 'unknown']:            
-            commands.append( command( '` ping -c 6 localhost`','unix',specialChar))
+            commands.append( command( '` ping -c '+str(self._waitTime)+' localhost`','unix',specialChar))
             
         # FoxPro uses run to run os commands. I found one of this vulns !!
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
-            commands.append( command( 'run ping -n 5 localhost','windows',specialChar))
+            commands.append( command( 'run ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
         
         return commands
         
