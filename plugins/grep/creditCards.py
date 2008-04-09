@@ -48,10 +48,7 @@ def luhnCheck(value):
     else:
         arr = []
         for c in value:
-            try:
-                arr.append(int(c))
-            except:
-                pass
+            arr.append(int(c))
 
     arr.reverse()
     even = False
@@ -76,8 +73,10 @@ class creditCards(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._cardResponses = []
-        regex = '(?:^|[^\d])(\d{4}[\- ]?\d{4}[\- ]?\d{2}[\- ]?\d{2}[\- ]?\d{1,4})(?:[^\d]|$)'
+        regex = '(?:^|[^\d])((?:<.*>)?\d{4}(?:</.*>)?[\- ]?(?:</.*>)?\d{4}(?:</.*>)?[\- ]?(?:<.*>)?\d{2}(?:</.*>)?[\- ]?(?:<.*>)?\d{2}(?:</.*>)?[\- ]?(?:<.*>)?\d{1,4}(?:</.*>)?)(?:[^\d]|$)'
+        markupRegex = '(<.*?>)|(</.*?>)|\-'
         self._regex = re.compile(regex)
+        self._markupRegex = re.compile(markupRegex)
         
     def _testResponse(self, request, response):
         
@@ -95,7 +94,8 @@ class creditCards(baseGrepPlugin):
         res = self._regex.findall(body)
          
         for c in res:
-            if luhnCheck(c):
+            payload = self._markupRegex.sub('', c)
+            if luhnCheck(payload):
                 return True
 
         return False
