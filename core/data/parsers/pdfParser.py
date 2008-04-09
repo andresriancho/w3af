@@ -97,6 +97,13 @@ class pdfParser(abstractParser):
     def getReferences( self ):
         return self._urlsInDocument
     
+    def getReferencesOfTag( self, tagType ):
+        '''
+        @return: A list of the URLs that the parser found in a tag of tagType = "tagType" (i.e img, a)
+        '''
+        # I have no tags.
+        return []
+        
     def _returnEmptyList( self ):
         return []
         
