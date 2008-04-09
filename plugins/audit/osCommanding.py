@@ -44,8 +44,8 @@ class osCommanding(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._waitTime = 7
-        self._secondWaitTime = 2
+        self._waitTime = 6
+        self._secondWaitTime = 3
 
     def _fuzzRequests(self, freq ):
         '''
@@ -73,23 +73,26 @@ class osCommanding(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         '''
         if response.getWaitTime() > (self._waitTime-1) and response.getWaitTime() < (self._waitTime+1):
-
+            # Retrieve the data I need to create the vuln and the info objects
+            for comm in self._getCommandList():
+                if comm.getCommand() == mutant.getModValue():
+                    sentOs = comm.getOs()
+                    sentSeparator = comm.getSeparator()
+                    
             # This could be because of an osCommanding vuln, or because of an error that generates a delay
             # in the response; so I'll resend changing the time and see what happens
             moreWaitParam = mutant.getModValue().replace( str(self._waitTime), str(self._secondWaitTime) )
             mutant.setModValue( moreWaitParam )
             response = self._sendMutant( mutant, analyze=False )
-
-            if False and response.getWaitTime() > (self._secondWaitTime-1) and response.getWaitTime() < (self._secondWaitTime+1):
+            
+            if response.getWaitTime() > (self._secondWaitTime-1) and response.getWaitTime() < (self._secondWaitTime+1):
                 # Now I can be sure that I found a vuln, I control the time of the response.
                 v = vuln.vuln( mutant )
                 # Search for the correct command and separator
-                for comm in self._getCommandList():
-                    if comm.getCommand() == mutant.getModValue():
-                        v['os'] = comm.getOs()
-                        v['separator'] = comm.getSeparator()
                 v.setName( 'OS commanding vulnerability' )
                 v.setSeverity(severity.HIGH)
+                v['os'] = sentOs
+                v['separator'] = sentSeparator
                 v.setDesc( 'OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
                 v.setId( response.id )
                 v.setURI( response.getURI() )
@@ -101,6 +104,8 @@ class osCommanding(baseAuditPlugin):
                 i.setName('Possible OS commanding vulnerability')
                 i.setId( response.id )
                 i.setMethod( mutant.getMethod() )
+                i['os'] = sentOs
+                i['separator'] = sentSeparator
                 i.setDesc( 'A possible OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + mutant.getMethod() + '. The data sent was: ' + str(mutant.getDc()) +' . Please review manually.' )
                 kb.kb.append( self, 'osCommanding', i )
     
