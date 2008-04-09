@@ -328,9 +328,10 @@ class ProfileList(gtk.TreeView):
 
         dlg = entries.EntryDialog("Save as...", ["Name:", "Description:"])
         dlg.run()
-        filename,description = dlg.inputtexts
+        dlgResponse = dlg.inputtexts
         dlg.destroy()
-        if filename is not None:
+        if dlgResponse is not None:
+            filename,description = dlgResponse
             self.w3af.saveCurrentToNewProfile(filename , description)
             self.w3af.mainwin.sb("New profile created")
             self.loadProfiles(filename)
