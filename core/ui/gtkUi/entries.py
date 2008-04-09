@@ -480,22 +480,25 @@ class TextDialog(gtk.Dialog):
     def __init__(self, title):
         super(TextDialog,self).__init__(title, None, gtk.DIALOG_MODAL,
                                             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        # the textview
-        textview = gtk.TextView()
-        textview.set_editable(False)
-        textview.set_cursor_visible(False)
-        textview.set_wrap_mode(gtk.WRAP_WORD)
-        self.textbuffer = textview.get_buffer()
-        self.vbox.pack_start(textview)
-        textview.show()
+        # the textview inside scrollbars
+        sw = gtk.ScrolledWindow()
+        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.textview = gtk.TextView()
+        self.textview.set_editable(False)
+        self.textview.set_cursor_visible(False)
+        self.textview.set_wrap_mode(gtk.WRAP_WORD)
+        self.textbuffer = self.textview.get_buffer()
+        sw.add(self.textview)
+        self.vbox.pack_start(sw)
 
         # the ok button
         self.butt_ok = self.action_area.get_children()[0]
         self.butt_ok.connect("clicked", lambda x: self.destroy())
         self.butt_ok.set_sensitive(False)
 
-        self.resize(300,200)
-        self.show()
+        self.resize(300,300)
+        self.show_all()
         self.flush()
 
     def flush(self):
@@ -510,6 +513,7 @@ class TextDialog(gtk.Dialog):
         '''
         iter = self.textbuffer.get_end_iter()
         self.textbuffer.insert(iter, text+"\n")
+        self.textview.scroll_to_mark(self.textbuffer.get_insert(), 0)
         self.flush()
         
     def done(self):
