@@ -180,6 +180,7 @@ class PluginTree(gtk.TreeView):
         # 2. checkbox status, active or not
         # 3. checkbox status, inconsistant or not
         # 4. the plugin name, just to store and bold it or not
+        # 5. a image to show if the plugin is configurable
         self.treestore = gtk.TreeStore(str, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, str, gtk.gdk.Pixbuf)
 
         # decide which type in function of style
@@ -474,6 +475,8 @@ class PluginConfigBody(gtk.VBox):
         # target url
         targetbox = gtk.HBox()
         # label
+        # FIXME: cuando recibo un profile, el target no se tiene que borrar al primer click
+        # FIXME: cuando recibo un profile con lo correcto, el "start" deberia quedar activado
         lab = gtk.Label("Target:")
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
         # entry

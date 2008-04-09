@@ -388,3 +388,24 @@ def loadPixbuf(filename):
     im.set_from_file(filename)
     im.show()
     return im.get_pixbuf()
+
+
+class SensitiveAnd(object):
+    ''''AND's some sensitive info for a widget.
+    
+    If all says it should be enable it is. If only one says it shouldn't
+    it's off.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, target, falseDefaults=[]):
+        self.target = target
+        self.opinions = dict.fromkeys(falseDefaults, False)
+
+    def set_sensitive(self, how, whosays=None):
+        self.opinions[whosays] = how
+        sensit = all(self.opinions.values())
+        self.target.set_sensitive(sensit)
+            
+        
+

@@ -102,6 +102,8 @@ ui_menu = """
     <separator name="s1"/>
     <toolitem action="StartStop"/>
     <toolitem action="Pause"/>
+    <separator name="s1"/>
+    <toolitem action="ExploitAll"/>
   </toolbar>
 </ui>
 """
@@ -228,6 +230,7 @@ class MainApp(object):
             ('About', gtk.STOCK_ABOUT, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
             ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
+            ('ExploitAll', gtk.STOCK_EXECUTE, '_Multiple Exploit', None, 'Exploit all vulns', self._exploit_all),
         ])
 
         # the view menu for scanning
@@ -280,12 +283,17 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 4
+        assert toolbar.get_n_items() == 5
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
+        exploitall = toolbar.get_nth_item(4)
+        self.exploitallsens = helpers.SensitiveAnd(exploitall, ("stopstart", "tabinfo"))
+        
+        # tab dependant widgets
+        self.tabDependant = [ (self.exploitallsens, ('Exploit',)) ]
 
         # the throbber  
         splash.push("Building the throbber...")
@@ -454,6 +462,7 @@ class MainApp(object):
         self.scanShould = "stop"
         self.stoppedByUser = False
         self.nb.set_current_page(1)
+        self.exploitallsens.set_sensitive(True, "stopstart")
 
     def _scan_pause(self, widget):
         shall_pause = widget.get_active()
@@ -504,6 +513,7 @@ class MainApp(object):
         messages.getQueueDiverter(reset=True)
         self.setTabs(False)
         self.sb("Scan results cleared")
+        self.exploitallsens.set_sensitive(False, "stopstart")
 
         # put the button in start
         self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
@@ -605,6 +615,10 @@ class MainApp(object):
             fake.set_sensitive(False)
             fake.set_visible(True)
 
+        # generic tab dependant widgets
+        for widg, where in self.tabDependant:
+            widg.set_sensitive( page in where, "tabinfo" )
+
     def profileAction(self, action):
         methname = action + "Profile"
         method = getattr(self.profiles, methname)
@@ -628,7 +642,10 @@ class MainApp(object):
         dlg = AboutDialog(self.w3af)
         dlg.run()
 
-
+    def _exploit_all(self, action):
+        '''Exploits all vulns.'''
+        exploitpage = self.notetabs["Exploit"]
+        exploitpage.exploitAll()
 
 
 def main(profile):
