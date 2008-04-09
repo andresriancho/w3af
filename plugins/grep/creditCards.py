@@ -48,7 +48,10 @@ def luhnCheck(value):
     else:
         arr = []
         for c in value:
-            arr.append(int(c))
+            try:
+                arr.append(int(c))
+            except:
+                pass
 
     arr.reverse()
     even = False
@@ -89,8 +92,14 @@ class creditCards(baseGrepPlugin):
                 kb.kb.append( self, 'creditCards', v )
      
     def _findCard(self, body):
-        res = self._regex.search(body)
-        return res and luhnCheck(res.group(1))
+        res = self._regex.findall(body)
+         
+        for c in res:
+            if luhnCheck(c):
+                return True
+
+        return False
+
     
     def end(self):
         '''
