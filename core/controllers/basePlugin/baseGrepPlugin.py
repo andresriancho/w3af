@@ -71,7 +71,10 @@ class baseGrepPlugin(basePlugin):
         
         if request.getMethod().upper() == 'POST':
             sentData = request.getData()
-            sentData = urllib.unquote( sentData )
+            if sentData == None:
+                sentData = ''
+            else:
+                sentData = urllib.unquote( sentData )
         else:
             url = urllib.unquote( request.getURL() )
             dp = urlParser.getDomainPath( url )
