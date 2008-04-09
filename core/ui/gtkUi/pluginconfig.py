@@ -471,20 +471,19 @@ class PluginConfigBody(gtk.VBox):
     def __init__(self, mainwin, w3af):
         super(PluginConfigBody,self).__init__()
         self.w3af = w3af
-
-        # target url
         targetbox = gtk.HBox()
+
         # label
-        # FIXME: cuando recibo un profile, el target no se tiene que borrar al primer click
-        # FIXME: cuando recibo un profile con lo correcto, el "start" deberia quedar activado
         lab = gtk.Label("Target:")
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
+
         # entry
         histfile = os.path.join(getHomeDir(),  "urlhistory.pkl")
         self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change, histfile)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insertURL)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
+
         # start/stop button
         startstop = entries.SemiStockButton("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
         startstop.set_sensitive(False)
@@ -492,6 +491,7 @@ class PluginConfigBody(gtk.VBox):
         startstop.connect("clicked", self.target.insertURL)
         mainwin.startstopbtns.addWidget(startstop)
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
+
         # advanced config
         advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, "Advanced Target URL configuration")
         advbut.connect("clicked", self._advancedTarget)
@@ -593,7 +593,11 @@ class PluginConfigBody(gtk.VBox):
         options = parseOptions.parseXML(plugin.getOptionsXML())
         newurl = options['target']['default']
         if newurl:
-            self.target.set_text(newurl)
+            self.target.setText(newurl)
+            self.w3af.mainwin.scanok.change(self.target, True)
+        else:
+            self.target.reset()
+            self.w3af.mainwin.scanok.change(self.target, False)
 
         # replace panel
         pan = self.get_children()[0]

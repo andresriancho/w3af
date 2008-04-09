@@ -359,6 +359,7 @@ class AdvisedEntry(gtk.Entry):
         super(AdvisedEntry,self).__init__()
         self.connect("focus-in-event", self._focus)
         self.firstfocus = True
+        self.origMessage = message
         self.set_text(message)
         self.alertb = alertb
         if self.alertb is not None:
@@ -397,6 +398,14 @@ class AdvisedEntry(gtk.Entry):
         texto = self.liststore[iter][0]
         return entrystr in texto
 
+    def setText(self, message):
+        self.firstfocus = False
+        self.set_text(message)
+        
+    def reset(self):
+        self.firstfocus = True
+        self.set_text(self.origMessage)
+        
     def insertURL(self, *w):
         '''Saves the URL in the history infrastructure.'''
         if self.hist is not None:
