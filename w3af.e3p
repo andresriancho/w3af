@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-03-30, 05:17:00 -->
+<!-- Saved: 2008-04-12, 09:40:43 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -190,13 +190,6 @@
       <Dir>url</Dir>
       <Dir>handlers</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>data</Dir>
-      <Dir>url</Dir>
-      <Dir>handlers</Dir>
-      <Name>idHandler.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -3811,6 +3804,12 @@
       <Dir>data</Dir>
       <Dir>options</Dir>
       <Name>optionList.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>splash.py</Name>
     </Source>
   </Sources>
   <Forms>
