@@ -978,7 +978,7 @@ class w3afCore:
             pass
     
         res = 'w3af - Web Application Attack and Audit Framework'
-        res += '\nVersion: beta6'
+        res += '\nVersion: beta7'
         if revision != 0:
             res += '\nRevision: ' + str(revision)
         res += '\nAuthor: Andres Riancho and the w3af team.'
