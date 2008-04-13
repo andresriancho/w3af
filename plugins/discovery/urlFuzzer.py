@@ -284,25 +284,17 @@ class urlFuzzer(baseDiscoveryPlugin):
     def _headEnabled(self):
         return self._head
     
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
+        h1 = 'Don\'t change this unless you read the plugin code.'
+        o1 = option('fuzzImages', str(self._fuzzImages), d1, 'boolean', help=h1)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="fuzzImages">\
-                <default>'+str(self._fuzzImages)+'</default>\
-                <desc>Apply URL fuzzing to all URLs, including images, videos, zip, etc.</desc>\
-                <type>boolean</type>\
-                <help>It\'s safe to leave this option as the default.</help>\
-            </Option>\
-        </OptionList>\
-        '
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''

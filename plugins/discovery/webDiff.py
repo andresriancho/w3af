@@ -208,7 +208,7 @@ class webDiff(baseDiscoveryPlugin):
         o3 = option('remotePath', str(self._remotePath), d3, 'string')
 
         d4 = 'When comparing content of two files, ignore files with this extensions.'
-        o4 = option('banUrl', str(self._banUrl), d4, 'list')
+        o4 = option('banUrl', ','.join(self._banUrl), d4, 'list')
         
         ol = optionList()
         ol.add(o1)
