@@ -1,0 +1,25 @@
+<html>
+<head>
+<link rel="stylesheet" href="buzhug.css">
+</head>
+<body>
+buzhug can work on client-server mode, using an asynchronous HTTP server. If the database is used by several processes or threads, you should use this mode to ensure the consistency of the data
+<p>To use this mode :
+<ul>
+<li>start the script buzhug_server on the command line :
+<pre class="console">>python buzhug_server.py [-H host] [-P port]</pre>
+This will start an asynchronous HTTP server on the specified host and port. Default values are host = "localhost" and port = 3456<p>
+<li>in the program using the database, instead of
+<pre class="python">
+from buzhug import Base
+db = Base('teams')
+</pre>
+use the ProxyBase class :
+<pre class="python">
+from buzhug import ProxyBase
+db = ProxyBase('teams'[,host=<i>host</i>[,port=<i>port</i>]])
+</pre>
+</ul>
+You can use the ProxyBase instance exactly like a buzhug.Base instance. Method calls result in an HTTP request to the server ; this makes client-server mode slower than embedded mode
+</body>
+</html>

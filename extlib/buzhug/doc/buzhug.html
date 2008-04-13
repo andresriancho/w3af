@@ -1,0 +1,318 @@
+<html>
+<head>
+<link rel="stylesheet" href="buzhug.css">
+</head>
+<body>
+<a name="install"></a><p><h3>Installing</h3>
+To install buzhug, <a href="http://sourceforge.net/project/showfiles.php?group_id=167078">download</a> the package, unzip it in a directory, open a console window and run
+<pre class = "console">python setup.py install
+</pre>
+<p>Python version must be 2.3 or above
+<p>
+<a name="create"></a><p><h3> Creating a database</h3>
+<pre class = "python">from buzhug import Base
+db = Base(<i>path</i>)
+db.create((<i>name1,type1</i>)[,(<i>name2,type2</i>),...])
+</pre>
+<p>
+<p><i>path</i> is the name of the database. Since the contents of the base is stored in a directory of the same name, the only constraint on <i>path</i> is that it must be a valid directory name
+<p>
+<p>The fields of the base are defined by a field name and a field type. The field names must be valid Python names, beginning with a letter (not the underscore)
+<p>
+<p>The field type must be :
+<ul>
+<li> one of the built-in types <b>str, unicode, int</b> or <b>float</b>
+<li> one of the classes <b>date</b> or <b>datetime</b> in the module datetime
+<li> the name of another buzhug base (see the chapter on links between bases)
+</ul>
+
+<p>Additionaly, you can add another keyword argument, <CODE>mode</CODE>, which can take one of two values :
+<ul>
+<li>"override" : if a base exists in the specified path, erase it and replace it with the new field definition
+<li>"open" : if a base already exists in the specified path, open it as it is
+</ul>
+
+<p><EM>create()</EM> raises IOError if a base of the same name already exists and the keyword <CODE>mode</CODE> is not provided
+<p>
+<a name="open"></a><p><h3> Opening an existing database</h3>
+<pre class = "python">from buzhug import Base
+db = Base(<i>path</i>)
+db.open()
+</pre>
+<p>or on one line :
+<pre class = "python">from buzhug import Base
+db = Base(<i>path</i>).open()
+</pre>
+<p>Raises IOError if the base doesn't exist
+<p>
+<a name="close"></a><p><h3>Closing a database</h3>
+<pre class = "python">db.close()
+</pre>
+<p>Closes all the files open for the database
+<p>
+<a name="insert"></a><p><h3> Inserting a record in a database</h3>
+<a name="insertbykeyword"></a><p><h4>1) insertion by keyword</h4>
+<pre class = "python">record_id = db.insert(<i>name1=val1</i>[,<i>name2=val2</i>,...])
+</pre>
+<p>
+<p>The keys of the keyword arguments must be the field names defined in the <EM>create()</EM> method. If some of the fields are missing, the default value will be set to None. The values of the keyword arguments must be of the type defined in the <EM>create()</EM> method, otherwise an exception is raised
+<p><EM>insert()</EM> returns an integer, the record identifier. Each record in the base has an identifier, and two different records have different identifiers. The identifier is set internally by buzhug and cannot be modified by the programmer
+<p>
+<a name="insertbylist"></a><p><h4>2) insertion by list</h4>
+<pre class = "python">db.insert(<i>val1</i>,<i>val2,...</i>)
+</pre>
+<p>The values must be provided in the order defined in the <EM>create()</EM> method. An exception is raised if the number of arguments is not exactly the same as the number of fields in the base, and if a value is not of the expected type
+<p>
+<a name="insertasstrings"></a><p><h4>3) insertion as strings</h4>
+<p>If the database is managed through a network, the data provided by the user will be sent as strings. The management program can convert the strings back to their original type, but since it is a common task buzhug provides functions for this case
+<p>
+<p>The first step is to define how the string must be converted into the original type
+<p>
+<p>For the type <b>str</b> there is of course no conversion to make. For the type <b>int</b> the conversion uses the built-in <EM>int()</EM> and for <b>float</b> the built-in <EM>float()</EM>
+<p>For unicode strings, the programmer must define the encoding that was used to convert the original unicode string into a Python bytestring :
+<p>
+<pre class = "python">db.set_string_format(unicode,<i>encoding</i>)
+</pre>
+<p>
+<p><i>encoding</i> is a string defining the encoding, such as 'latin-1','utf-8', etc. If an invalid encoding is provided, an exception is raised
+<p>
+<p>For date and datetime, the programmer must define a format with the syntax specified for the function <a href="http://docs.python.org/lib/module-time.html#l2h-1955" target="_blank">strftime</a> in the built-in <CODE>time</CODE> module :
+<pre class = "python">db.set_string_format(date,<i>format</i>)
+db.set_string_format(datetime,<i>format</i>)
+</pre>
+<p>
+<p>For instance if the date is provided in the form YYYY-MM-AA the format is '%Y-%m-%d'
+<p>
+<p>Once all the string formats have been specified, the insertion is made by
+<p>
+<pre class = "python">db.insert_as_strings(<i>name1=string1</i>[,<i>name2=string2</i>,...])
+</pre>
+<p>or
+<pre class = "python">db.insert_as_strings(<i>string1</i>[,<i>string2</i>,...])
+</pre>
+<p>
+<a name="select"></a><h3> Selecting a record</h3>
+<a name="selectbyid"></a><p><h4>1. Selection by identifier</h4>
+<pre class = "python">record = db[rec_id]
+</pre>
+<p>The database supports lookup by record identifier, exactly as if it was a list. The returned value is an object with attributes matching the fields defined in <EM>create()</EM>
+<p>
+<a name="selectbylc"></a><p><h4>2. Selection by list comprehension or generator expression</h4>
+<p>The database supports the iterator protocol. Its <EM>next()</EM> method returns records (objects with attributes matching the fields of the database)
+<p>Instead of SQL, the query language is the one used in Python list comprehensions or generator expressions :
+<pre class = "python">result = [ record for record in db if <i>condition</i> ]
+</pre>
+<p>or
+<pre class = "python">for record in (record for record in db if <i>condition</i>):
+    (...do anything with record...)
+</pre>
+<p>
+<p>where <i>condition</i> is a condition on the object "record" yielded during the iteration on the database
+<p>With this simple syntax you can create complex queries, for instance if you want to find all the records whose field 'name' matches a regular expression pattern :
+<p>
+<pre class = "python">import re
+print [ r for r in db if re.match(pattern,r.name) ]
+</pre>
+
+<a name="selectbyfunc"></a><p><h4>3. Selection by the select() method</h4>
+<p>The selection by list comprehension described above should be used preferably for clarity and its ability to write complex selection conditions
+<p>Its drawback is that it is not very efficient ; so for a much better performance you can use the <EM>select()</EM> method instead
+<p>
+<p><h5>3.1 Equality test</h5>
+<p>To select the records whose fields are equal to a value, the syntax is
+<pre class = "python">result_set = db.select(<i>field_list,name_i=val_i</i>[,<i>name_j=val_j...</i>)
+</pre>
+<p><i>field_list</i> is a list of fields (a sublist of the fields defined in the base)
+<p>The result is a set of records whose field name_i has the value val_i, name_j has the value val_j, etc ; only the fields provided in field_list are set for these records
+<p>
+<p>For instance if we have a base of persons and we want to know the name of those who are 30 years old :
+<pre class = "python">result_set = db.select(['name'],age = 30)
+# print the result
+for record in result_set:
+    print record.name
+</pre>
+<p><h5>3.2 Tests with minimum and maximum values</h5>
+<p>To test the records where an integer, float, date or datetime field must be between a minimum value and a maximum value, you pass a 2-item list as argument value :
+<p>
+<pre class = "python">result_set = db.select(<i>field_list,field=[vmin,vmax]</i>)
+</pre>
+<p>For instance, to get the persons aged between 30 and 35 :
+<pre class = "python">result_set = db.select(['name'],age = [30,35])
+# print the result
+for record in result_set:
+    print record.name
+</pre>
+
+<p><h5>3.3 Complex tests</h5>
+<p>If the condition is more complex (field greater or lesser than a value, alternative conditions with OR, etc) the syntax is
+<pre class = "python">result_set = db.select(<i>field_list,predicate_string,kw_arguments</i>)
+</pre>
+<p><i>field_list</i> is a list of fields (a sublist of the fields defined in the base)
+<p><i>predicate_string</i> is string with a Python expression returning True or False, expressed with variable names (not literal values) which can be fields of the database or the keys in the kw_arguments. Only the records for which the evaluation of the predicate string returns True are appended to result_set
+<p><i>kw_arguments</i> are keyword arguments, where the keys are the names used in the predicate
+
+<p>Since this syntax is a little complex I will give a number of examples
+<p>If we have a base of persons and we want to know the name of those between 30 and 35 years old:
+<pre class = "python">result_set = db.select(['name'],<b>"age_min &lt;= age &lt; age_max"</b>,age_min=30,age_max=36)
+</pre>
+<p>Note that you <b>can't</b> express this condition with literals inside the predicate string, like in :
+<p><pre class = "python">result_set = db.select(['name'],<b>"30 &lt;= age &lt; 36"</b>)
+</pre>
+<p>It would seem much more natural, but for implementation reasons it would not work. The values are stored as strings in the database files ; instead of converting these strings into Python types (integers, dates etc) they are left as they are, and it is the values of the keyword arguments which are converted into strings and compared to the string found in the file. This is obviouly much more efficient, because there is only one conversion to make (argument value to string) instead of as many conversions (string to argument type) as there are records in the base
+<p>In the example above, the expression compares the string representation of age to the string representation of 30 and 36. If the predicate was expressed as ""30 &lt;= age &lt; 36" buzhug would have to parse the string and replace 30 and 36 by their string representation. Implementing a parser of this kind would be difficult, so the choice is to have a less natural syntax, for the sake of the speed of selection operations
+<p>Some more examples :
+<p>To find the people who have this age and live in London or Paris :
+<pre class = "python">result_set = db.select(['name'],
+    <b>"age_min &lt;= age &lt; age_max and city in city_list"</b>,
+    age_min=30,age_max=36,city_list=('London','Paris'))
+</pre>
+<p>
+<p>The same, but returning all the fields and not only the name :
+<pre class = "python">result_set = db.select(None,
+    <b>"age_min &lt;= age &lt; age_max and city in city_list"</b>,
+    age_min=30,age_max=36,city_list=('London','Paris'))
+</pre>
+<p>Returning the name of all the records :
+<pre class = "python">result_set = db.select(['name'])
+</pre>
+<p>Returning the records with all arguments set :
+<pre class = "python">result_set = db.select()
+</pre>
+
+<a name="regexp"></a><p><h4>4. Using regular expressions</h4>
+<p>For selection using regular expressions, you use <EM>select</EM> and pass it a compiled regular expression object, returned by <EM>re.compile()</EM> ; you can use this object in the predicate string with its methods <EM>match()</EM> and <EM>search()</EM>
+<p>For instance to find all the people whose first name begins with a vowel :
+<pre class="python">
+import re
+pattern = re.compile('^[AEIOUY]')
+result_set = db.select(['name','age'],'p.match(name)',p=pattern)
+</pre>
+
+<a name="sorting"></a><p><h4>5. Sorting the result</h4>
+<p>The value returned by <EM>select()</EM> is an object which supports a method <EM>sort_by()</EM>
+<pre class = "python">results = result_set.sort_by(<i>order_string</i>)
+</pre>
+<p><i>order_string</i> is a Python expression using the field names and the operators + and -
+<p>+ indicates that the field name that follows must be sorted by ascending order
+<p> - indicates that the field name that follows must be sorted by decreasing order
+<p>
+<p>For instance if you want to sort a set of results first by decreasing age, then by ascending name of those who have the same age :
+<pre class = "python">results = result_set.sort_by(<b>"-age+name"</b>)
+</pre>
+<p>
+<p>You can combine the selection and sort operations in one line :
+<pre class = "python">results = db.select(['name','age'],
+	<b>"age &gt; age_min"</b>,age_min=30).sort_by(<b>"-age+name"</b>)
+</pre>
+<p>
+<a name="selectforupdate"></a><p><h4>6. Selection by the select_for_update() method</h4>
+<p>This method must be used instead of <EM>select()</EM> if you have to update the selected records (see next section about updating)
+<p>There are 2 methods because <EM>select()</EM> is faster than <EM>select_for_update()</EM>
+<p>
+<a name="update"></a><h3>Updating a record</h3>
+<p>
+<a name="select4up"></a><p><h4>1. Selecting for update</h4>
+<p>The values of fields of a record can be modified by the <EM>update()</EM> method
+<pre class = "python">record.update(<i>name1=newval1</i>[,<i>name2=newval2,...</i>)
+</pre>
+<p><i>record</i> is a record <b><i>that has been previously selected for update</b></i>
+<p>The records selected by their identifier or by iteration (list comprehension or generator expression) are already selected for update. But for performance reasons, the records returned by <EM>select()</EM> are selected only for reading, not for update ; if you want to select records and update them, you must use the method <EM>select_for_update()</EM>, with exactly the same syntax as <EM>select()</EM>
+<p>
+<a name="concurrency"></a><p><h4>2. Concurrency control</h4>
+<p>When many users access the same database at the same time and are allowed to update records (which is the case in a web application), conflicts can occur if two users want to update the same record
+<p>
+<p>Buzhug uses a version number to detect the conflicts. Each record has a version number (an integer). When a record is selected for update, the version number at selection time is provided as the attribute <CODE>__version__</CODE> ; when <EM>update()</EM> is called, the program first looks at the version number of the record with the same identifier in the database. If the version number has changed, this is because another user has updated the record in the meantime
+<p>
+<p>In this case, an exception (buzhug.ConflictError) is raised. It is up to the programmer to decide how to manage the conflict
+<p>In a web environment, updates usually follow these steps :
+<ol>
+<li>a page is used to show a list of the records, or to enter data to find the record
+<li>on a second page, the record is shown, the fields that can be modified are inserted in INPUT tags
+<li>when data is submitted, control is transfered to a script which will validate the input, then update the records in the database
+</ol>
+<p>The script will call <EM>select_for_update()</EM> in step 2 and <EM>update()</EM> in step 3
+<p>To identify the record between steps 2 and 3, the record identifier can be passed as a hidden form field ; but if we only pass it and get the record at step 3 by db[record_id], the version number will be the one when step 3 is reached, and not when the record was selected (step 2)
+<p>To handle this, the version number must also be passed as a hidden form field ; on step 3, the program will have to compare <CODE>db[record_id].__version__</CODE> to the value of the form field
+<p>For instance, in step 2 :
+<pre class="python">
+&lt;input type="hidden" name="record_id" value="$record.__id__"&gt;
+&lt;input type="hidden" name="record_version" value="$record.__version__"&gt;
+&lt;input name="name" value="$record.name"&gt;
+</pre>
+<p>where $record.__id__ is a pseudo code, to be replaced by the way your web framework allows insertion of dynamic values
+<p>The code in step 3 will then look like this :
+<pre class="python">
+old_record = db[int($record_id)]
+if old_record.__version__ != int($record_version):
+    print "Error - the record was updated by someone else since you selected it"
+else:
+    db.update(old_record,name=$name)
+</pre>
+<p>Here, you replace $record_id by the syntax used by your framework to retrieve the form field record_id (don't forget to convert to integers)
+<p>
+<a name="delete"></a><p><h3>Deleting records</h3>
+<pre class = "python">db.delete(record)
+</pre>
+<p>removes an individual record
+<p>
+<pre class = "python">db.delete(records)
+</pre>
+<p>removes a list (or any other iterator) of records
+<p>If you know the identifier of a record, you can delete it by:
+<pre class = "python">del db[record_id]
+</pre>
+<p><h3><a name="number"></a>Number of records</h3>
+<pre class = "python">len(db)
+</pre>
+returns the number of items in the base. It is increased by 1 when a record is inserted and decreased by 1 when a record is deleted
+<p><h3><a name="fields">Field names and types</h3>
+<pre class = "python">db.field_names
+</pre>
+is the list of the field names in the base, in the order specified upon creation
+<p><pre class = "python">db.fields
+</pre>
+is a dictionary mapping field names to their type
+<a name="cleanup"></a><p><h3>Cleanup</h3>
+<pre class = "python">db.cleanup()
+</pre>
+When a record is deleted or updated, the old version is marked as deleted, but physically it remains on disk. When you have made many deletions or updates, the old records take useless space on disk, and their presence can alter the performance of selections
+<p>You can use the <EM>cleanup()</EM> function to physically remove these records
+<h3><a name="links"></a>Links between bases</h3>
+<p>A reference to a database can be used as a type in another base
+<p>Suppose you have a table with cities and zip codes :
+<pre class = "python">cities = Base('cities').create(('name',str),('zip',int))
+cities.insert('Rennes',35000)
+cities.insert('Bordeaux',33000)
+</pre>
+<p>If you want to create a base of persons living in these cities, you can use cities as the field type for the field 'city' :
+<pre class = "python">persons = Base('persons')
+persons.create(('name',str),('street',str),<b>('city',cities)</b>)
+persons.insert('Jean Dupont','12 rue Montaigne',cities[1])
+persons.insert('Pierre Martin','2 avenue Voltaire',cities[0])
+</pre>
+<p>The value for the field 'city' must be a record of the base cities. If you want to get the zip code of Jean Dupont :
+<pre class = "python">print persons[0].city.zip
+&gt;&gt; 33000
+</pre>
+<p>
+<p>If a record is deleted in the base cities, the value returned in the base persons will be set to None
+<p>
+<pre class = "python">del cities[0]
+print persons[1].city
+&gt;&gt; None
+</pre>
+<p>
+<a name="modifstruct"></a><p><h3>Modifying the database structure</h3>
+<a name="addfield"></a><p><h4>1. Adding a new field</h4>
+<pre class = "python">db.add_field(<i>field_name,field_type</i>[,<i>after</i>[,<i>default</i>]])
+</pre>
+<p>Add a new field with the specified name and type after the specified field. Each existing record will have a field of this name, initialized to the value specified in <i>default</i>
+<p><i>after</i> defaults to None, in which case the field becomes the first
+<p><i>default</i> defauts to None
+<p>
+<a name="removefield"></a><p><h4>2. Removing a field</h4>
+<pre class = "python">db.drop_field(<i>field_name</i>)
+</pre>
+<p>Removes the specified field from the database. The existing records will no longer have this field set
+</body>
+</html>
