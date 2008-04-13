@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 # This module is a collection of useful code snippets for the GTK gui
 
-import threading, re, sys
+import threading, re, sys, Queue
 import gtk, gobject
 
 RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
@@ -173,14 +173,10 @@ def endThreads():
         if not t.isAlive():
             continue
         t.my_thread_ended = True
-        if t.queue is not None:
-            t.queue.put("Terminated")
 
 class RegistThread(threading.Thread):
     '''Class to provide registered threads.
     
-    @parameter queue: Queue used [optional].
-
     If the class that inherits this will get locked listening a queue, it
     should pass it here, at thread termination it will receive there a
     'Terminated' message.
@@ -193,10 +189,9 @@ class RegistThread(threading.Thread):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, queue=None):
+    def __init__(self):
         _threadPool.append(self)
         self.my_thread_ended = False
-        self.queue = queue
         super(RegistThread,self).__init__()
         self.start()
 
@@ -293,15 +288,17 @@ class IteratedQueue(RegistThread):
     def __init__(self, queue):
         self.inputqueue = queue
         self.repository = []
-        RegistThread.__init__(self, self.inputqueue)
+        RegistThread.__init__(self)
 
     def run(self):
         '''The initial function of the thread.'''
-        while True:
-            text = self.inputqueue.get()
-            self.repository.append(text)
-            if self.my_thread_ended:
-                break
+        while not self.my_thread_ended:
+            try:
+                msg = self.inputqueue.get(timeout=1)
+            except Queue.Empty:
+                pass
+            else:
+                self.repository.append(msg)
 
     def get(self):
         '''Serves the elements taken from the queue.'''
