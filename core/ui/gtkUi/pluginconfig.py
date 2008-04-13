@@ -59,7 +59,8 @@ class OptionsPanel(gtk.VBox):
         self.plugin_tree = plugin_tree
         
         # initial title
-        titl = gtk.Label(title)
+        titl = gtk.Label()
+        titl.set_markup( title )
         titl.set_alignment(0.0, 0.5)
         titl.show()
         self.pack_start(titl)
@@ -117,6 +118,10 @@ class ConfigPanel(gtk.VBox):
         @param xmloptions: the options in xml
         @param longdesc: the long description of the plugin
         '''
+        # A title with the name of the plugin in bold and with a bigger font
+        pluginName = "<b><big>"+plugin.getName()+"</big></b>\n\n"
+        longdesc = pluginName + longdesc
+        
         idplugin = id(plugin)
         try:
             newwidg = self.created_panels[idplugin]
@@ -145,7 +150,8 @@ class ConfigPanel(gtk.VBox):
         vbox.set_spacing(5)
 
         if title is not None:
-            titl = gtk.Label(title)
+            titl = gtk.Label()
+            titl.set_markup(title)
             titl.set_alignment(0.0, 0.5)
             titl.show()
             vbox.pack_start(titl)
