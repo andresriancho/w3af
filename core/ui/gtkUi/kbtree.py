@@ -26,20 +26,11 @@ import gtk, gobject
 import core.data.kb.knowledgeBase as kb
 import core.ui.gtkUi.helpers as helpers
 import core.data.kb
-import core.data.constants.severity as severity
 
 TYPES_OBJ = {
     core.data.kb.vuln.vuln: "vuln",
     core.data.kb.info.info: "info",
 }
-
-OBJ_ICONS = {
-    ("vuln", severity.LOW):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_l.png'),
-    ("vuln", severity.MEDIUM):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_m.png'),
-    ("vuln", severity.HIGH):  helpers.loadPixbuf('core/ui/gtkUi/data/vulnerability_h.png'),
-    ("info", None): helpers.loadPixbuf('core/ui/gtkUi/data/information.png'),
-}
-
 
 class KBTree(gtk.TreeView):
     '''Show the Knowledge Base in a tree.
@@ -196,7 +187,7 @@ class KBTree(gtk.TreeView):
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
-                        icon = OBJ_ICONS.get((obtype, severity))
+                        icon = helpers.KB_ICONS.get((obtype, severity))
                         treestore.append(treevariab, [name, idinstance, icon])
                         self.instances[idinstance] = instance
 

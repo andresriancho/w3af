@@ -408,4 +408,11 @@ class SensitiveAnd(object):
         self.target.set_sensitive(sensit)
             
         
+import core.data.constants.severity as severity
+KB_ICONS = {
+    ("vuln", severity.LOW):  loadPixbuf('core/ui/gtkUi/data/vulnerability_l.png'),
+    ("vuln", severity.MEDIUM):  loadPixbuf('core/ui/gtkUi/data/vulnerability_m.png'),
+    ("vuln", severity.HIGH):  loadPixbuf('core/ui/gtkUi/data/vulnerability_h.png'),
+    ("info", None): loadPixbuf('core/ui/gtkUi/data/information.png'),
+}
 
