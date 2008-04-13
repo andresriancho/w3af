@@ -81,26 +81,17 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
             fuzzReqs = self._createFuzzableRequests( response )
             self._fuzzableRequests.extend( fuzzReqs )
     
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
-        
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="resultLimit">\
-                <default>'+str(self._resultLimit)+'</default>\
-                <desc>Fetch the first "resultLimit" results from the Google search</desc>\
-                <type>integer</type>\
-                <help></help>\
-            </Option>\
-        </OptionList>\
-        '
-
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Fetch the first "resultLimit" results from yahoo search'
+        o1 = option('resultLimit', str(self._resultLimit), d1, 'integer')
+                
+        ol = optionList()
+        ol.add(o1)
+        return ol
+    
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 

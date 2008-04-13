@@ -211,35 +211,24 @@ class phishtank(baseDiscoveryPlugin):
 
         
     def setOptions( self, OptionList ):
-        if 'dbFile' in OptionList.keys(): 
-            self._phishtankDB = OptionList['dbFile']
-            
-        if 'updateDB' in OptionList.keys(): 
-            self._updateDB = OptionList['updateDB']
-            
-    def getOptionsXML(self):
+        self._phishtankDB = OptionList['dbFile']
+        self._updateDB = OptionList['updateDB']
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
-        '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="dbFile">\
-                <default>' + self._phishtankDB +'</default>\
-                <desc>The path to the phishtank database file.</desc>\
-                <type>string</type>\
-                <help>The default is ok in most cases.</help>\
-            </Option>\
-            <Option name="updateDB">\
-                <default>'+str(self._updateDB)+'</default>\
-                <desc>Update the local phishtank database.</desc>\
-                <type>boolean</type>\
-                <help>If True, the plugin will download the phishtank database from http://www.phishtank.com/ .</help>\
-            </Option>\
-        </OptionList>\
-        '
+        @return: A list of option objects for this plugin.
+        '''    
+        d1 = 'The path to the phishtank database file.'
+        o1 = option('dbFile', self._phishtankDB, d1, 'string')
+        
+        d2 = 'Update the local phishtank database.'
+        h2 = 'If True, the plugin will download the phishtank database from http://www.phishtank.com/ .'
+        o2 = option('updateDB', self._updateDB, d2, 'boolean', help=h2)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        return ol
 
     def _doUpdate(self):
         '''

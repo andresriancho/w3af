@@ -299,30 +299,20 @@ class userDir(baseDiscoveryPlugin):
             
         return res
         
-    
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Try to identify the remote operating system based on the remote users'
+        o1 = option('identifyOS', str(self._identifyOS), d1, 'boolean')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="identifyOS">\
-                <default>'+str(self._identifyOS)+'</default>\
-                <desc>Try to identify the remote operating system based on the remote users</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="identifyApplications">\
-                <default>'+str(self._identifyApplications)+'</default>\
-                <desc>Try to identify applications installed remotely using the available users</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'Try to identify applications installed remotely using the available users'
+        o2 = option('identifyApplications', str(self._identifyApplications), d2, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''

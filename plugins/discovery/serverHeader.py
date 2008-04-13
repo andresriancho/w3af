@@ -116,28 +116,19 @@ class serverHeader(baseDiscoveryPlugin):
                 # I will save the server header as the poweredBy, its the best choice I have right now
                 if kb.kb.getData( 'serverHeader' , 'server' ) not in kb.kb.getData( 'serverHeader', 'poweredBy' ):
                     kb.kb.append( self , 'poweredBy' , kb.kb.getData( 'serverHeader' , 'server' ) )
-        
-    def getOptionsXML(self):
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'Execute plugin only one time'
+        h1 = 'Generally the server header wont change during a scan to \
+    a same site, so executing this plugin only one time is a safe choice.'
+        o1 = option('execOneTime', str(self._execOneTime), d1, 'boolean', help=h1)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="execOneTime">\
-                <default>'+str(self._execOneTime)+'</default>\
-                <desc>Execute plugin only one time</desc>\
-                <type>boolean</type>\
-                <help>Generally the server header wont change during a scan to \
-                a same site, so executing this plugin only one \
-                time is a safe choice.</help>\
-            </Option>\
-        </OptionList>\
-        '
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
