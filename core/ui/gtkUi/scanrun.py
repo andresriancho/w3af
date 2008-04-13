@@ -254,6 +254,7 @@ class ScanRunBody(gtk.Notebook):
         # Request Response navigator
         httplog = httpLogTab.httpLogTab(w3af)
         l = gtk.Label("Request response navigator")
+        l.show()
         self.append_page(httplog, l)
 
-        self.show_all()
+        self.show()
