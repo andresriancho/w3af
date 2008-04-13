@@ -193,40 +193,29 @@ class webDiff(baseDiscoveryPlugin):
             raise e
         else:
             return response
-        
-    def getOptionsXML(self):
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'When comparing, also compare the content of files.'
+        o1 = option('content', str(self._content), d1, 'boolean')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="content">\
-                <default>'+str(self._content)+'</default>\
-                <desc>When comparing, also compare the content of files.</desc>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="localDir">\
-                <default>'+str(self._localDir)+'</default>\
-                <desc>The local directory used in the comparison.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="remotePath">\
-                <default>'+str(self._remotePath)+'</default>\
-                <desc>The remote directory used in the comparison.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="banUrl">\
-                <default>'+str(self._banUrl)+'</default>\
-                <desc>When comparing content of two files, ignore files with this extensions.</desc>\
-                <type>list</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'The local directory used in the comparison.'
+        o2 = option('localDir', str(self._localDir), d2, 'string')
+
+        d3 = 'The remote directory used in the comparison.'
+        o3 = option('remotePath', str(self._remotePath), d3, 'string')
+
+        d4 = 'When comparing content of two files, ignore files with this extensions.'
+        o4 = option('banUrl', str(self._banUrl), d4, 'list')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
