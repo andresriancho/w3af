@@ -68,6 +68,11 @@ from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser
     
+#    Commented out: this has no sense after Results reorganizing
+#    <menu action="ViewMenuScan">
+#      <menuitem action="URLWindow"/>
+#      <menuitem action="KBExplorer"/>
+#    </menu>
 ui_menu = """
 <ui>
   <menubar name="MenuBar">
@@ -76,10 +81,6 @@ ui_menu = """
       <menuitem action="SaveAs"/>
       <menuitem action="Revert"/>
       <menuitem action="Delete"/>
-    </menu>
-    <menu action="ViewMenuScan">
-      <menuitem action="URLWindow"/>
-      <menuitem action="KBExplorer"/>
     </menu>
     <menu action="EditMenuScan">
       <menuitem action="EditPlugin"/>
@@ -233,20 +234,25 @@ class MainApp(object):
             ('ExploitAll', gtk.STOCK_EXECUTE, '_Multiple Exploit', None, 'Exploit all vulns', self._exploit_all),
         ])
 
-        # the view menu for scanning
-        # (this is different to the others because this one is the first one)
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
             ('Pause', gtk.STOCK_MEDIA_PAUSE, '_Pause', None, 'Pause scan',
                            self._scan_pause, False),
-            ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
-                           lambda w: self.dynPanels(w, "kbexplorer"), True),
-            ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
-                           lambda w: self.dynPanels(w, "urltree"), True),
         ])
-        ag = actiongroup.get_action("ViewMenuScan")
-        ag.set_sensitive(False)
-        self.menuViews["Results"] = ag
+
+#        Commented out: this has no sense after Results reorganizing
+#        # the view menu for scanning
+#        # (this is different to the others because this one is the first one)
+#        actiongroup.add_toggle_actions([
+#            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
+#            ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
+#                           lambda w: self.dynPanels(w, "kbexplorer"), True),
+#            ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
+#                           lambda w: self.dynPanels(w, "urltree"), True),
+#        ])
+#        ag = actiongroup.get_action("ViewMenuScan")
+#        ag.set_sensitive(False)
+#        self.menuViews["Results"] = ag
 
         # the view menu for exploit
         actiongroup.add_toggle_actions([
@@ -293,7 +299,9 @@ class MainApp(object):
         self.exploitallsens = helpers.SensitiveAnd(exploitall, ("stopstart", "tabinfo"))
         
         # tab dependant widgets
-        self.tabDependant = [ (self.exploitallsens, ('Exploit',)) ]
+        self.tabDependant = [ (lambda x: self.exploitallsens.set_sensitive(x, "tabinfo"), ('Exploit',)),
+                              (actiongroup.get_action("EditMenuScan").set_sensitive, ('Scan config')),
+                            ]
 
         # the throbber  
         splash.push("Building the throbber...")
@@ -592,12 +600,8 @@ class MainApp(object):
         to which recipient the signal of that View should be 
         directed.
         '''
-#        if page_num == 1:
-#            page = "Results"
-        if page_num == 3:
-            page = "Exploit"
-        else:
-            page = None
+        ch = notebook.get_nth_page(page_num)
+        page = notebook.get_tab_label(ch).get_text()
 
         self.viewSignalRecipient = None
         for name,menu in self.menuViews.items():
@@ -617,7 +621,7 @@ class MainApp(object):
 
         # generic tab dependant widgets
         for widg, where in self.tabDependant:
-            widg.set_sensitive( page in where, "tabinfo" )
+            widg(page in where)
 
     def profileAction(self, action):
         methname = action + "Profile"
