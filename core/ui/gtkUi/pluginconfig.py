@@ -96,17 +96,25 @@ class ConfigPanel(gtk.VBox):
 
     Handles the creation of each configuration panel for each plugin.
 
+    @param profileDescription: The description of the selected profile, if any
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, profileDescription=None):
         super(ConfigPanel,self).__init__(False, 0)
         
-        # put image
-        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
-        self.widg = img
-        img.show()
-        img.set_sensitive(False)
-        self.add(img)
+        if profileDescription is not None:
+            # put the description
+            lab = gtk.Label(profileDescription)
+            lab.show()
+            self.add(lab)
+        else:
+            # put image
+            img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+            self.widg = img
+            img.show()
+            img.set_sensitive(False)
+            self.add(img)
 
         self.show()
         self.created_panels = {}
@@ -515,10 +523,10 @@ class PluginConfigBody(gtk.VBox):
 
         self.show()
 
-    def _buildpan(self):
+    def _buildpan(self, profileDescription=None):
         pan = gtk.HPaned()
         leftpan = gtk.VPaned()
-        self.config_panel = ConfigPanel()
+        self.config_panel = ConfigPanel(profileDescription)
         
         # upper left
         scrollwin1u = gtk.ScrolledWindow()
@@ -592,7 +600,7 @@ class PluginConfigBody(gtk.VBox):
             # Launch the editor
             editPlugin( None, pname, ptype )
         
-    def reload(self):
+    def reload(self, profileDescription):
         '''Reloads all the configurations.'''
         # target url
         plugin = self.w3af.target
@@ -607,7 +615,7 @@ class PluginConfigBody(gtk.VBox):
 
         # replace panel
         pan = self.get_children()[0]
-        newpan = self._buildpan()
+        newpan = self._buildpan(profileDescription)
         self.remove(self.pan)
         self.pack_start(newpan)
         self.pan = newpan

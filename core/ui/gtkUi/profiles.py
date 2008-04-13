@@ -272,7 +272,7 @@ class ProfileList(gtk.TreeView):
 
         return vals
 
-    def _getProfileName(self):
+    def _getProfile(self):
         '''Gets the actual profile instance.
 
         @return: The profile instance for the actual cursor position.
@@ -280,33 +280,47 @@ class ProfileList(gtk.TreeView):
         (path, focus) = self.get_cursor()
         prfid = self.liststore[path][2]
         profile = self.profile_instances[prfid]
+        return profile
+
+    def _getProfileName(self):
+        '''Gets the actual profile name.
+
+        @return: The profile name for the actual cursor position.
+        '''
+        profile = self._getProfile()
         if profile is None:
             return None
         return profile.getName()
 
     def _useProfile(self, widget=None):
         '''Uses the selected profile.'''
-        profile = self._getProfileName()
-        if profile == self.selectedProfile:
+        profile = self._getProfile()
+        profileName = self._getProfileName()
+        if profileName == self.selectedProfile:
             return
-        self.selectedProfile = profile
+        self.selectedProfile = profileName
 
         try:
-            self.w3af.useProfile(profile)
+            self.w3af.useProfile(profileName)
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
-            opt = dlg.run()
+            dlg.run()
             dlg.destroy()
+            return
+
+        if profile is not None:
+            profdesc = profile.getDesc()
         else:
-            self.w3af.mainwin.pcbody.reload()
+            profdesc = None
+        self.w3af.mainwin.pcbody.reload(profdesc)
 
-            # get the activated plugins
-            self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
+        # get the activated plugins
+        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
 
-            # update the mainwin buttons
-            path = self.get_cursor()[0]
-            newstatus = self._getActionsSensitivity(path)
-            self.w3af.mainwin.activateProfileActions(newstatus)
+        # update the mainwin buttons
+        path = self.get_cursor()[0]
+        newstatus = self._getActionsSensitivity(path)
+        self.w3af.mainwin.activateProfileActions(newstatus)
 
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
