@@ -1,7 +1,4 @@
-import pygtk
-pygtk.require('2.0')
-import gtk
-
+import pygtk, gtk
 import os
 
 def InputBox(title, label, parent, text=''):

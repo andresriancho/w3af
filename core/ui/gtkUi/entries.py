@@ -19,10 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk
-pygtk.require('2.0')
-import gtk
-
+import pygtk, gtk
 import core.ui.gtkUi.history as history
 import core.ui.gtkUi.helpers as helpers
 
@@ -288,9 +285,7 @@ class SemiStockButton(gtk.Button):
         box = align.get_children()[0]
         (self.image, self.label) = box.get_children()
         self.label.set_text(text)
-        # support for GTK versions previous to 2.12 where 
-        # set_tooltip_text was not available
-        if tooltip is not None and hasattr(self, "set_tooltip_text"):
+        if tooltip is not None:
             self.set_tooltip_text(tooltip)
 
     def changeInternals(self, newtext, newimage, tooltip=None):
@@ -302,9 +297,7 @@ class SemiStockButton(gtk.Button):
         '''
         self.label.set_text(newtext)
         self.image.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
-        # support for GTK versions previous to 2.12 where 
-        # set_tooltip_text was not available
-        if tooltip is not None and hasattr(self, "set_tooltip_text"):
+        if tooltip is not None:
             self.set_tooltip_text(tooltip)
 
 
@@ -332,10 +325,7 @@ class ToolbuttonWrapper(object):
         @param newimage: the stock widget from where extract the image
         @param newtooltip: the text for the tooltip
         '''
-        # support for GTK versions previous to 2.12 where 
-        # set_tooltip_text was not available
-        if hasattr(self.toolbut, "set_tooltip_text"):
-            self.toolbut.set_tooltip_text(newtooltip)
+        self.toolbut.set_tooltip_text(newtooltip)
         self.toolbut.set_label(newlabel)
         box = self.toolbut.get_children()[0].get_children()[0]
         img = box.get_children()[0]

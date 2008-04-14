@@ -19,9 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import pygtk, gtk
 import xml.dom
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.helpers as helpers

@@ -19,9 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk
-pygtk.require('2.0')
-import gtk, gobject
+import pygtk, gtk, gobject
 import xml.dom, sys, os
 
 import core.ui.gtkUi.confpanel as confpanel

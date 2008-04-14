@@ -20,14 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import sys
-
-try:
-    import pygtk
-    pygtk.require('2.0')
-    import gtk, gobject
-except:
-    print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
-    sys.exit( 1 )
+import pygtk, gtk
 
 class Splash(gtk.Window):
     '''Builds the Splash window.
@@ -40,26 +33,22 @@ class Splash(gtk.Window):
         self.add(vbox)
 
         # content
-        try:
-            img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
-        except:
-            print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
-        else:
-            vbox.pack_start(img)
-            self.label = gtk.Label()
-            vbox.pack_start(self.label)
+        img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+        vbox.pack_start(img)
+        self.label = gtk.Label()
+        vbox.pack_start(self.label)
 
-            # color and position
-            self.set_decorated(False)
-            color = gtk.gdk.color_parse('#f2f2ff')
-            self.modify_bg(gtk.STATE_NORMAL, color)
-            self.set_position(gtk.WIN_POS_CENTER)
-            self.set_size_request(505,260)
+        # color and position
+        self.set_decorated(False)
+        color = gtk.gdk.color_parse('#f2f2ff')
+        self.modify_bg(gtk.STATE_NORMAL, color)
+        self.set_position(gtk.WIN_POS_CENTER)
+        self.set_size_request(505,260)
 
-            # ensure it is rendered immediately
-            self.show_all()
-            while gtk.events_pending():
-                gtk.main_iteration()
+        # ensure it is rendered immediately
+        self.show_all()
+        while gtk.events_pending():
+            gtk.main_iteration()
 
     def push(self, text):
         '''New text to be shown in the Splash.'''
