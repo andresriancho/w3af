@@ -106,7 +106,10 @@ class buffOverflow(baseAuditPlugin):
         except w3afException, w3:
             i = info.info( mutant )
             i.setName( 'Possible buffer overflow vulnerability' )
-            i.setDesc( 'A possible (most probably a false positive than a bug) buffer overflow was found when requesting: ' + url + ' . Using method: ' + method + '. The data sent was: ' + data )
+            if data:
+                i.setDesc( 'A possible (most probably a false positive than a bug) buffer overflow was found when requesting: ' + url + ' . Using method: ' + method + '. The data sent was: ' + data )
+            else:
+                i.setDesc( 'A possible (most probably a false positive than a bug) buffer overflow was found when requesting: ' + url + ' . Using method: ' + method )              
             kb.kb.append( self, 'buffOverflow', i )
         else:
             if analyze:
