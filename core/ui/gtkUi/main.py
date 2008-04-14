@@ -28,6 +28,7 @@ try:
     import pygtk
     pygtk.require('2.0')
     import gtk, gobject
+    assert gtk.gtk_version >= (2, 12) 
 except:
     print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
     sys.exit( 1 )
