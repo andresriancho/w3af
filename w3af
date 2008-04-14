@@ -65,10 +65,11 @@ def main():
         console.sh()
     elif gtkui:
         # go with GTK, but first check about DISPLAY environment variable
-        display = os.getenv("DISPLAY").strip()
-        if not display:
-            om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
-            sys.exit(-1)
+        if sys.platform != "win32":
+            display = os.getenv("DISPLAY").strip()
+            if not display:
+                om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
+                sys.exit(-1)
         import core.ui.gtkUi.main
         core.ui.gtkUi.main.main(profile)
     else:
