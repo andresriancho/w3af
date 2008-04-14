@@ -118,6 +118,15 @@ class profile:
         @parameter pluginNameList: ['xss', 'sqli'] ...
         @return: None
         '''
+        # First, get the enabled plugins of the current profile
+        currentEnabledPlugins = self.getEnabledPlugins( pluginType )
+        for alreadyEnabledPlugin in currentEnabledPlugins:
+            if alreadyEnabledPlugin not in pluginNameList:
+                # The plugin was disabled!
+                # I should remove the section from the config
+                self._config.remove_section( pluginType+'.'+ alreadyEnabledPlugin)
+                
+        # Now enable the plugins that the user wants to run
         for plugin in pluginNameList:
             try:
                 self._config.add_section(pluginType + "." + plugin )

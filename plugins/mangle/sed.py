@@ -137,7 +137,7 @@ class sed(baseManglePlugin):
         '''
         d1 = 'Stream edition expressions'
         h1 = 'Stream edition expressions are strings that tell the sed plugin what to change. Sed plugin uses regular expressions, some examples: \n - qh/User/NotLuser/ ; This will make sed search in the the re[q]uest [h]eader for the string User and replace it with NotLuser.\n - sb/[fF]orm/form ; This will make sed search in the re[s]ponse [b]ody for the strings form or Form and replace it with form. Multiple expressions can be specified separated by commas.'
-        o1 = option('expressions', self._expressions, d1, 'list', help=h1)
+        o1 = option('expressions', ','.join(self._expressions), d1, 'list', help=h1)
         
         d2 = 'Fix the content length header after mangling'
         o2 = option('fixContentLen', self._fixContentLen, d2, 'boolean')
