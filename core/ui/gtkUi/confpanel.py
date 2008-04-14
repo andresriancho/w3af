@@ -127,16 +127,6 @@ class OnlyOptions(gtk.VBox):
         if coreopts is None:
             coreopts = {}
 
-        # --- This code is only to test bug #1911124 ---
-        # I show the opts I received when asking the core
-        print coreopts
-        # Now I ask the core for the plugin, and make it show its config
-        if isinstance(plugin, basePlugin):
-            coreplugin = self.w3af.getPluginInstance(plugin.pname, plugin.ptype)
-            coreplugopts = coreplugin.getOptionsXML()
-            print coreplugopts
-        # I think something is wrong, or at least I'm not understanding it...
-
         # let's get the real info
         xmlDoc = xml.dom.minidom.parseString(xmloptions)
         for xmlOpt in xmlDoc.getElementsByTagName('Option'):
