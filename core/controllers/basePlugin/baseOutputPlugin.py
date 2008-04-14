@@ -21,7 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.controllers.basePlugin.basePlugin import basePlugin
+# import inspect to get the caller
 import inspect
+# severity constants for vuln messages
+import core.data.constants.severity as severity
 
 class baseOutputPlugin(basePlugin):
     '''
@@ -68,7 +71,7 @@ class baseOutputPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method error' )
 
-    def vulnerability(self, message ):
+    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output managerobject. The OM object was called from a plugin
         or from the framework. This method should take an action for vulnerability messages.

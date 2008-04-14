@@ -81,7 +81,7 @@ class xst(baseAuditPlugin):
                 v.setSeverity(severity.LOW)
                 v.setName( 'Cross site tracing vulnerability' )
                 v.setDesc( 'The web server at "'+ response.getURL() +'" is vulnerable to Cross Site Tracing.' )
-                om.out.vulnerability( v.getDesc() )
+                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 kb.kb.append( self, 'xst', v )
             
     def getPluginDeps( self ):

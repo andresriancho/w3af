@@ -31,6 +31,8 @@ import codecs
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+# severity constants for vuln messages
+import core.data.constants.severity as severity
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -129,7 +131,7 @@ class htmlFile(baseOutputPlugin):
         self._aditionalInfo+= '<tr>\n<td class=content>error: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
         self._flush()
 
-    def vulnerability(self, message , newLine = True ):
+    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.

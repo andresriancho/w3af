@@ -99,11 +99,11 @@ class serverStatus(baseDiscoveryPlugin):
                     v.setSeverity(severity.MEDIUM)
                     
                     kb.kb.append( self, 'sharedHosting', v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 
-                    om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same server:' )
+                    om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same server:', severity=severity.MEDIUM )
                     for url in self._sharedHostingHosts:
-                        om.out.vulnerability('- ' + url )
+                        om.out.vulnerability('- ' + url, severity=severity.MEDIUM )
                 # Check if well parsed
                 elif 'apache' in response.getBody().lower():
                     om.out.information('Couldn\'t find any URLs in the apache server status page. Two things can trigger this: \

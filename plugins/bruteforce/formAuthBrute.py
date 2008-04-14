@@ -205,6 +205,6 @@ class formAuthBrute(baseBruteforcePlugin):
                     v['additionalHeaders'] = additionalHeaders
                     
                     kb.kb.append( self , 'auth' , v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                     break
                 

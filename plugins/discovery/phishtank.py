@@ -82,7 +82,7 @@ class phishtank(baseDiscoveryPlugin):
                 v.setSeverity(severity.LOW)
                 v.setDesc( ptm.url + ' seems to be involved in a phishing scam. Please see ' + ptm.moreInfoURL + ' for more info.' )
                 kb.kb.append( self, 'phishtank', v )
-                om.out.vulnerability( v.getDesc() )
+                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 
         return self._fuzzableRequests
         

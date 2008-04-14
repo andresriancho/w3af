@@ -86,7 +86,7 @@ class crossDomain(baseDiscoveryPlugin):
                         v.setDesc( 'The crossdomain.xml file at ' +  urlParser.baseUrl( fuzzableRequest.getURL() ) + '/crossdomain.xml allows flash access from any site.')
                         v.setId( response.id )
                         kb.kb.append( self, 'vuln', v )
-                        om.out.vulnerability( v.getDesc() )
+                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                     else:
                         i = info.info()
                         i.setName('Crossdomain allow ACL')

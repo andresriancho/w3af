@@ -87,7 +87,7 @@ class htaccessMethods(baseAuditPlugin):
             v['methods'] = allowedMethods
             
             kb.kb.append( self , 'auth' , v )
-            om.out.vulnerability( v.getDesc() )             
+            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )             
                 
     def getOptions( self ):
         '''

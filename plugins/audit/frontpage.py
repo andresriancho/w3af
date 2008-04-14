@@ -131,7 +131,7 @@ class frontpage(baseAuditPlugin):
                 v.setName( 'Insecure Frontpage extensions configuration' )
                 v.setMethod( 'POST' )
                 v.setDesc( 'An insecure configuration in the frontpage extensions allows unauthenticated users to upload files to the remote web server.' )
-                om.out.vulnerability(v.getDesc())
+                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
                 kb.kb.append( self, 'fileUpload', v )
             else:
                 om.out.debug('The file that was uploaded using the POST method isn\'t there!')

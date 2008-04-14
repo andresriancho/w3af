@@ -42,11 +42,13 @@ import os
 
 # I'm timestamping the messages
 import time
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-
+# severity constants
+import core.data.constants.severity as severity
 
 class gtkOutput(baseOutputPlugin):
     '''
@@ -135,7 +137,7 @@ class gtkOutput(baseOutputPlugin):
         m = message( 'error', self._cleanString(msgString) , theTime, newLine )
         self._addToQueue( m )
 
-    def vulnerability(self, msgString , newLine = True ):
+    def vulnerability(self, msgString , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
@@ -144,6 +146,7 @@ class gtkOutput(baseOutputPlugin):
         theTime = time.strftime("%c", now)
         
         m = message( 'vulnerability', self._cleanString(msgString) , theTime, newLine )
+        m.setSeverity( severity )
         self._addToQueue( m )
         
     def console( self, msgString, newLine = True ):
@@ -202,7 +205,14 @@ class message:
         self._msg = unicode(msg)
         self._newLine = newLine
         self._time = time
+        self._severity = None
+    
+    def getSeverity( self ):
+        return self._severity
         
+    def setSeverity( self, s ):
+        self._severity = s
+    
     def getMsg( self ):
         return self._msg
     

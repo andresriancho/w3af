@@ -71,7 +71,7 @@ class findBackdoor(baseDiscoveryPlugin):
                     v.setURL( response.getURL() )
                     v.setDesc( 'A web backdoor was found at: ' + v.getURL() + ' ; this could indicate that your server was hacked.' )
                     kb.kb.append( self, 'backdoors', v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                     
                     fuzzableRequestsToReturn.extend( self._createFuzzableRequests( response ) )
                     

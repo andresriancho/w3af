@@ -93,11 +93,11 @@ class sharedHosting(baseDiscoveryPlugin):
                     v.setSeverity(severity.MEDIUM)
                     
                     kb.kb.append( self, 'sharedHosting', v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                     
-                    om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same IP address (%s):' % ip )
+                    om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same IP address (%s):' % ip, severity=severity.MEDIUM )
                     for url in results:
-                        om.out.vulnerability('- ' + url )
+                        om.out.vulnerability('- ' + url , severity=severity.MEDIUM)
                         kb.kb.append( self, 'domains', urlParser.getDomain(url) )
                 
         return []

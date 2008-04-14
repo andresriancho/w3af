@@ -121,7 +121,7 @@ class basicAuthBrute(baseBruteforcePlugin):
                         v.setName( 'Guessable credentials' )
                 
                         kb.kb.append( self , 'auth' , v )
-                        om.out.vulnerability( v.getDesc() )
+                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                         break
                 
     def getLongDesc( self ):

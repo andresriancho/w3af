@@ -397,7 +397,7 @@ class pykto(baseDiscoveryPlugin):
             v.setSeverity(severity.LOW)
 
             kb.kb.append( self, 'vuln', v )
-            om.out.vulnerability( v.getDesc() )
+            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
             self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
         

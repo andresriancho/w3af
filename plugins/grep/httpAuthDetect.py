@@ -77,7 +77,7 @@ class httpAuthDetect(baseGrepPlugin):
                 v.setName( 'Basic HTTP credentials' )
                 
                 kb.kb.append( self , 'userPassUri' , v )
-                om.out.vulnerability( v.getDesc() )
+                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 
             # I also search for authentication URI's in the body
             # I know that by doing this I loose the chance of finding hashes in PDF files, but...
@@ -93,7 +93,7 @@ class httpAuthDetect(baseGrepPlugin):
                     v.setName( 'Basic HTTP credentials' )
                     
                     kb.kb.append( self , 'userPassUri' , v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
     def setOptions( self, OptionList ):
         pass

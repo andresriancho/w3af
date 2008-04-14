@@ -123,7 +123,7 @@ class ghdb(baseDiscoveryPlugin):
                         v.setDesc( 'ghdb plugin found a vulnerability at URL: ' + v.getURL() + ' . Vulnerability description: ' + gh.desc )
                         v.setId( response.id )
                         kb.kb.append( self, 'vuln', v )
-                        om.out.vulnerability( v.getDesc() )
+                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                         
                         # Create the fuzzable requests
                         self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
@@ -207,7 +207,7 @@ class ghdb(baseDiscoveryPlugin):
                     v.setDesc( 'ghdb plugin found a vulnerability at URL: ' + result.URL + ' . Vulnerability description: ' + gh.desc )
                     v.setId( response.id )
                     kb.kb.append( self, 'vuln', v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
                             
                     # Create the fuzzable requests
                     self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )

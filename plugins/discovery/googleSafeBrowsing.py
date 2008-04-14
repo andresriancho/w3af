@@ -75,7 +75,7 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
                 v.setURL( url )
                 v.setId( response.id )
                 v.setDesc( 'According to google safe browsing, the URL: ' + url + ' is involved in a phishing scam. ')
-                om.out.vulnerability( v.getDesc() )
+                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 
         return self._fuzzableRequests
         

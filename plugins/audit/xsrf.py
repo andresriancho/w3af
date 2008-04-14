@@ -96,28 +96,28 @@ class xsrf(baseAuditPlugin):
         for cookie in cookies:
             if cookie.has_key('persistent'):
                 if not self._alreadyReported:
-                    om.out.vulnerability('The web application sent a persistent cookie.')
+                    om.out.vulnerability('The web application sent a persistent cookie.', severity=severity.LOW )
                     hasPersistentCookie = True
                     self._alreadyReported = True
         
         # If there is at least one persistent cookie
         if hasPersistentCookie:
             if len( self._vulnSimple ):
-                om.out.vulnerability('The following scripts are vulnerable to a trivial form of XSRF:')
+                om.out.vulnerability('The following scripts are vulnerable to a trivial form of XSRF:', severity=severity.LOW)
                 
                 frStr = list(set([ str(v.getURL()) for v in self._vulnSimple ]))
                 kb.kb.append( self, 'xsrf', self._vulnSimple )
                 
                 for i in frStr:
-                    om.out.vulnerability( '- ' + i )
+                    om.out.vulnerability( '- ' + i, severity=i.getSeverity() )
             
             if len( self._vulnComplex ):
-                om.out.vulnerability('The following scripts allow an attacker to send POST data as query string data (this makes XSRF more easy to exploit):')            
+                om.out.vulnerability('The following scripts allow an attacker to send POST data as query string data (this makes XSRF more easy to exploit):', severity=severity.LOW)            
                 frStr = list(set([ str(fr) for fr in self._vulnComplex ]))
                 kb.kb.append( self, 'xsrf', self._vulnComplex )
                 
                 for i in frStr:
-                    om.out.vulnerability( '- ' + i )
+                    om.out.vulnerability( '- ' + i, severity=i.getSeverity() )
                 
     def getOptions( self ):
         '''

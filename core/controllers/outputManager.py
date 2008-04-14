@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os,sys
 from core.controllers.misc.factory import factory
 from core.controllers.misc.parseOptions import parseOptions
+# severity constants for vuln messages
+import core.data.constants.severity as severity
 
 class outputManager:
     '''
@@ -122,7 +124,7 @@ class outputManager:
         for oPlugin in self._outputPluginList:
             oPlugin.logHttp( request, response )
             
-    def vulnerability(self, message, newLine = True ):
+    def vulnerability(self, message, newLine = True, severity=severity.MEDIUM ):
         '''
         Sends a vulnerability message to every output plugin on the list.
         
@@ -134,7 +136,7 @@ class outputManager:
             except:
                 pass
             for oPlugin in self._outputPluginList:
-                oPlugin.vulnerability( message, newLine )
+                oPlugin.vulnerability( message, newLine, severity=severity )
 
     def console( self, message, newLine = True ):
         '''

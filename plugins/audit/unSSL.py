@@ -67,7 +67,7 @@ class unSSL(baseAuditPlugin):
                     v.setDesc( 'Secure content can be accesed using insecure protocol http. The URLs are: ' + secure + ' - ' + unsecure + ' .' )
                     v.setId( httpResponse.id )
                     kb.kb.append( self, 'unSSL', v )
-                    om.out.vulnerability( v.getDesc() )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
     
     def _analyzeResult( self, fuzzableRequest, res ):
         pass

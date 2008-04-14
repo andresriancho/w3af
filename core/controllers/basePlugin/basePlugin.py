@@ -150,7 +150,7 @@ class basePlugin(configurable):
         # Print the list            
         for i in inform:
             if isinstance(i, vuln.vuln):
-                om.out.vulnerability( i.getDesc() )
+                om.out.vulnerability( i.getDesc(), severity=i.getSeverity() )
             else:
                 om.out.information( i.getDesc() )
             

@@ -30,6 +30,8 @@ import codecs
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+# severity constants for vuln messages
+import core.data.constants.severity as severity
 
 class textFile(baseOutputPlugin):
     '''
@@ -163,7 +165,7 @@ class textFile(baseOutputPlugin):
 
         self._flush()
 
-    def vulnerability(self, message , newLine = True ):
+    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
