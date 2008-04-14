@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import core.controllers.outputManager as om
-import getopt,sys
+import getopt,sys, os
 
 om.out.setOutputPlugins( ['console'] )
 
@@ -64,7 +64,11 @@ def main():
         console = webUi()
         console.sh()
     elif gtkui:
-        # go with GTK!
+        # go with GTK, but first check about DISPLAY environment variable
+        display = os.getenv("DISPLAY").strip()
+        if not display:
+            om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
+            sys.exit(-1)
         import core.ui.gtkUi.main
         core.ui.gtkUi.main.main(profile)
     else:
