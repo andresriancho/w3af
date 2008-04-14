@@ -94,11 +94,11 @@ class KBTree(gtk.TreeView):
         filteredkb = {}
 
         # iterate the first layer, plugin names
-        for pluginname, plugvalues in self.fullkb.iteritems():
+        for pluginname, plugvalues in self.fullkb.items():
             holdplugin = {}
             
             # iterate the second layer, variable names
-            for variabname, variabobjects in plugvalues.iteritems():
+            for variabname, variabobjects in plugvalues.items():
                 holdvariab = []
 
                 # iterate the third layer, the variable objects
@@ -165,7 +165,7 @@ class KBTree(gtk.TreeView):
         filteredKB = self._filterKB()
 
         # iterate the first layer, plugin names
-        for pluginname, plugvalues in filteredKB.iteritems():
+        for pluginname, plugvalues in filteredKB.items():
             if pluginname in treeholder:
                 (treeplugin, holdplugin) = treeholder[pluginname]
             else:
@@ -174,7 +174,7 @@ class KBTree(gtk.TreeView):
                 treeholder[pluginname] = (treeplugin, holdplugin)
 
             # iterate the second layer, variable names
-            for variabname, variabobjects in plugvalues.iteritems():
+            for variabname, variabobjects in plugvalues.items():
                 if variabname in holdplugin:
                     (treevariab, holdvariab) = holdplugin[variabname]
                 else:
