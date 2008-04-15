@@ -204,6 +204,9 @@ class googleProxy(baseAttackPlugin):
         </OptionList>\
         '
 
+    def getExploitableVulns( self ):
+        return []
+        
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the
