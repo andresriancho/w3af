@@ -80,16 +80,16 @@ class gtkOutput(baseOutputPlugin):
             # FIXME: handle those errors!
             pass
         
-        # FIXME: Bug #1928152 is here!
-        # https://sourceforge.net/tracker/index.php?func=detail&aid=1928152&group_id=170274&atid=853652
-        try:
-            self._db_req_res = Base( db_req_res_dirName )
-            # Create the database
-            self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
-        except Exception, e:
-            raise w3afException('An exception was raised while creating the gtkOutput database: ' + str(e) )
-        else:
-            kb.kb.save('gtkOutput', 'db', self._db_req_res )
+        if not kb.kb.getData('gtkOutput', 'db'):
+            try:
+                self._db_req_res = Base( db_req_res_dirName )
+                # Create the database
+                self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
+                                                    ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
+            except Exception, e:
+                raise w3afException('An exception was raised while creating the gtkOutput database: ' + str(e) )
+            else:
+                kb.kb.save('gtkOutput', 'db', self._db_req_res )
     
     def _del_dir(self,path):
         for file in os.listdir(path):
