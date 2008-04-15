@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0">
-	<META NAME="CHANGED" CONTENT="20080414;8503300">
+	<META NAME="CHANGED" CONTENT="20080414;23100400">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in; margin: 0.79in }
@@ -42,7 +42,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
-<FONT SIZE=2>Document version: <B>1.3</B></FONT></P>
+<FONT SIZE=2>Document version: <B>1.4</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
@@ -85,8 +85,8 @@ User Guide</B></U></FONT></FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>February
-26, 2008</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>April
+14, 2008</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -97,31 +97,34 @@ User Guide</B></U></FONT></FONT></P>
 	</DIV>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Introduction 	3</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Installation	3</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Download	3</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Requirements	3</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af phases	4</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af	4</P>
-	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugins	8</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af	5</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af with
+	GTK user interface	8</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugins	10</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugin
-	configuration	8</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Starting a scan	13</P>
+	configuration	10</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Starting a scan	15</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">A complete
-	session	13</P>
+	session	15</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">A warning about
-	discovery	16</P>
+	discovery	18</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">When everything
-	else fails...	17</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af scripts	17</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">The Output	19</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Complex sites	21</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Exploiting	23</P>
+	else fails...	19</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af scripts	19</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">The Output	21</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Complex sites	23</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Exploiting	25</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Advanced
-	exploiting techniques	25</P>
-	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Virtual daemon	25</P>
-	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">w3afAgent	27</P>
+	exploiting techniques	27</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Virtual daemon	28</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">w3afAgent	32</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">More
-	information	27</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Bugs	28</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Final words	28</P>
+	information	36</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Bugs	36</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Final words	37</P>
 </DIV>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
@@ -145,6 +148,25 @@ platform for auditing and penetration-testing.
 framework should work on all platforms supported by Python. This user
 guide will guide you through the installation on a Linux platform,
 but installation on Windows and OSX is possible and straight forward.</FONT></P>
+<H3 CLASS="western" STYLE="page-break-after: avoid"><FONT FACE="Bitstream Vera Sans, sans-serif">Download</FONT></H3>
+<P STYLE="margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+framework can be downloaded from the project main page: </FONT>
+</P>
+<P STYLE="margin-left: 0.49in; margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://w3af.sf.net/#download">http://w3af.sf.net/#download</A></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif">There
+are two ways to install w3af: from a release package or from SVN.
+Users that are just starting with the framework should use the latest
+package, while more advanced users should perform a SVN checkout to
+get the latest version of the framework. </FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif">If
+you downloaded the latest release and find a bug, please also perform
+a SVN checkout and try to reproduce it there, if you are still able
+to reproduce it, please report the bug with a detailed description of
+how to reproduce it. To report a bug please navigate to:</FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://sourceforge.net/tracker/?group_id=170274&amp;atid=853652">http://sourceforge.net/tracker/?group_id=170274&amp;atid=853652</A></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><BR><BR>
+</P>
 <H3 CLASS="western">Requirements</H3>
 <P>The framework has the following requirements:</P>
 <UL>
@@ -449,7 +471,7 @@ start a scan and analyze the results.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">The
 requirements for running the graphical user interface are:</FONT></P>
 <UL>
-	<LI><P>pygtk 2.0</P>
+	<LI VALUE=1><P>pygtk 2.0</P>
 	<LI><P>gtk 2.12</P>
 </UL>
 <P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: medium"><BR><BR>
