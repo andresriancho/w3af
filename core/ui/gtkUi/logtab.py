@@ -31,13 +31,15 @@ class LogGraph(gtk.DrawingArea):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, w3af):
+        self.w3af = w3af
         super(LogGraph,self).__init__()
 #        self.area.set_size_request(400, 300)
         self.pangolayout = self.create_pango_layout("")
         self.messages = messages.getQueueDiverter()
         self.all_messages = []
         self.countingPixel = 0
+        self.alreadyStopped = False
         self.pixelQuant = 0
         gobject.timeout_add(500, self.addMessage().next)
         self.show()
@@ -48,12 +50,10 @@ class LogGraph(gtk.DrawingArea):
         @returns: True to keep calling it, and False when all it's done.
         '''
         for mess in self.messages.get():
-            actualmseg = int(time.time() * 1000)
-            somepixel = actualmseg / STEP
-            if somepixel > self.countingPixel + 5:
+            if not self.alreadyStopped and not self.w3af.isRunning():
+                self.alreadyStopped = True
                 self._newPixel()
-                self.countingPixel = somepixel
-                self.pixelQuant = 0
+                self.pixelQuant = 1
 
             if mess is None:
                 yield True
@@ -68,7 +68,7 @@ class LogGraph(gtk.DrawingArea):
             else:
                 self._newPixel()
                 self.countingPixel = pixel
-                self.pixelQuant = 0
+                self.pixelQuant = 1
         yield False
         
     def _newPixel(self):
@@ -96,7 +96,7 @@ class LogBody(gtk.VPaned):
 
         # bottom widget
         # The log visualization
-        graph = LogGraph()
+        graph = LogGraph(w3af)
         self.pack2(graph)
 
         self.set_position(300)
