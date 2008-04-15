@@ -23,8 +23,6 @@ import pygtk, gtk, gobject
 import core.ui.gtkUi.messages as messages
 import time
 
-TIME_FORMAT = "%a %d %b %Y %H:%M:%S %Z"
-STEP = 1000
 
 class LogGraph(gtk.DrawingArea):
     '''Defines a log visualization widget that shows an XY plot
@@ -36,11 +34,18 @@ class LogGraph(gtk.DrawingArea):
         super(LogGraph,self).__init__()
 #        self.area.set_size_request(400, 300)
         self.pangolayout = self.create_pango_layout("")
+
+        # get the messages
         self.messages = messages.getQueueDiverter()
         self.all_messages = []
+
+        # control variables
         self.countingPixel = 0
         self.alreadyStopped = False
         self.pixelQuant = 0
+        self.timeGrouping = 1000
+
+        # schedule the message adding, and go live!
         gobject.timeout_add(500, self.addMessage().next)
         self.show()
 
@@ -58,10 +63,10 @@ class LogGraph(gtk.DrawingArea):
             if mess is None:
                 yield True
                 continue
-            mmseg = int(time.mktime(time.strptime(mess.getTime(), TIME_FORMAT)) * 1000)
+            mmseg = int(mess.getRealTime() * 1000)
             mtype = mess.getType()
 
-            pixel = mmseg / STEP
+            pixel = mmseg / self.timeGrouping
             # FIXME: Agrupar por tipo de mess!
             if pixel == self.countingPixel:
                 self.pixelQuant += 1

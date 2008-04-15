@@ -109,10 +109,7 @@ class gtkOutput(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for debug messages.
         '''
-        now = time.localtime(time.time())
-        theTime = time.strftime("%c", now)
-        
-        m = message( 'debug', self._cleanString(msgString) , theTime, newLine )
+        m = message( 'debug', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
     
     def information(self, msgString , newLine = True ):
@@ -120,10 +117,7 @@ class gtkOutput(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         ''' 
-        now = time.localtime(time.time())
-        theTime = time.strftime("%c", now)
-
-        m = message( 'information', self._cleanString(msgString) , theTime, newLine )
+        m = message( 'information', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
 
     def error(self, msgString , newLine = True ):
@@ -131,10 +125,7 @@ class gtkOutput(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
         '''     
-        now = time.localtime(time.time())
-        theTime = time.strftime("%c", now)
-        
-        m = message( 'error', self._cleanString(msgString) , theTime, newLine )
+        m = message( 'error', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
 
     def vulnerability(self, msgString , newLine=True, severity=severity.MEDIUM ):
@@ -142,10 +133,7 @@ class gtkOutput(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
         '''     
-        now = time.localtime(time.time())
-        theTime = time.strftime("%c", now)
-        
-        m = message( 'vulnerability', self._cleanString(msgString) , theTime, newLine )
+        m = message( 'vulnerability', self._cleanString(msgString), time.time(), newLine )
         m.setSeverity( severity )
         self._addToQueue( m )
         
@@ -153,10 +141,7 @@ class gtkOutput(baseOutputPlugin):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        now = time.localtime(time.time())
-        theTime = time.strftime("%c", now)
-        
-        m = message( 'console', self._cleanString(msgString) , theTime, newLine )
+        m = message( 'console', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
     
     def _addToQueue( self, m ):
@@ -198,7 +183,7 @@ class message:
         '''
         @parameter type: console, information, vulnerability, etc
         @parameter msg: The message itself
-        @parameter time: The time when the message was produced (its a string)
+        @parameter time: The time when the message was produced
         @parameter newLine: Should I print a newline ? True/False
         '''
         self._type = type
@@ -222,6 +207,8 @@ class message:
     def getNewLine( self ):
         return self._newLine
         
-    def getTime( self ):
+    def getRealTime( self ):
         return self._time
-        
+
+    def getTime( self ):
+        return time.strftime("%c", time.localtime(self._time))
