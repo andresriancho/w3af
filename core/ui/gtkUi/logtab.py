@@ -19,9 +19,61 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk
+import pygtk, gtk, gobject
 import core.ui.gtkUi.messages as messages
-from core.ui.gtkUi.logVisualization import logVisualization
+import time
+
+TIME_FORMAT = "%a %d %b %Y %H:%M:%S %Z"
+STEP = 1000
+
+class LogGraph(gtk.DrawingArea):
+    '''Defines a log visualization widget that shows an XY plot
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self):
+        super(LogGraph,self).__init__()
+#        self.area.set_size_request(400, 300)
+        self.pangolayout = self.create_pango_layout("")
+        self.messages = messages.getQueueDiverter()
+        self.all_messages = []
+        self.countingPixel = 0
+        self.pixelQuant = 0
+        gobject.timeout_add(500, self.addMessage().next)
+        self.show()
+
+    def addMessage(self):
+        '''Adds a message to the graph.
+
+        @returns: True to keep calling it, and False when all it's done.
+        '''
+        for mess in self.messages.get():
+            actualmseg = int(time.time() * 1000)
+            somepixel = actualmseg / STEP
+            if somepixel > self.countingPixel + 5:
+                self._newPixel()
+                self.countingPixel = somepixel
+                self.pixelQuant = 0
+
+            if mess is None:
+                yield True
+                continue
+            mmseg = int(time.mktime(time.strptime(mess.getTime(), TIME_FORMAT)) * 1000)
+            mtype = mess.getType()
+
+            pixel = mmseg / STEP
+            # FIXME: Agrupar por tipo de mess!
+            if pixel == self.countingPixel:
+                self.pixelQuant += 1
+            else:
+                self._newPixel()
+                self.countingPixel = pixel
+                self.pixelQuant = 0
+        yield False
+        
+    def _newPixel(self):
+        print self.countingPixel, self.pixelQuant
+
 
 class LogBody(gtk.VPaned):
     '''Body of the exploit tab.
@@ -44,10 +96,8 @@ class LogBody(gtk.VPaned):
 
         # bottom widget
         # The log visualization
-        logImageWidget = logVisualization()
-        logImageWidget.show()
-        #logImageWidget.draw_point(30, 30, severity.HIGH )
-        self.pack2(logImageWidget)
+        graph = LogGraph()
+        self.pack2(graph)
 
         self.set_position(300)
         self.show()
