@@ -32,6 +32,12 @@ MDER = 20
 MINF = 20
 MSUP = 20
 
+class colors:
+    blue = gtk.gdk.color_parse("blue")
+    black = gtk.gdk.color_parse("black")
+    white = gtk.gdk.color_parse("white")
+    whitesmoke = gtk.gdk.color_parse("whitesmoke")
+
 class LogGraph(gtk.DrawingArea):
     '''Defines a log visualization widget that shows an XY plot
 
@@ -89,34 +95,28 @@ class LogGraph(gtk.DrawingArea):
         
     def _newPixel(self):
         print self.countingPixel, self.pixelQuant
-        # FIXME: cambiar de color esto!
         posx = MDER + (self.countingPixel - self.pixelBase)
         (w, h)  = self.window.get_size()
+        self.gc.set_rgb_fg_color(colors.blue)
         self.window.draw_line(self.gc, posx, h-MINF, posx, h-MINF-self.pixelQuant)
+        self.gc.set_rgb_fg_color(colors.black)
         # FIXME: darse cuenta de que hay que resizear
 
 
     def area_expose_cb(self, area, event):
         style = self.get_style()
         self.gc = style.fg_gc[gtk.STATE_NORMAL]
-
-        # colores
-        self.c_black = gtk.gdk.color_parse("black")
-        self.c_raro = gtk.gdk.color_parse("yellow")
-#         colormap = gc.get_colormap()
-#         colormap.alloc_color(self.c_raro)
+        (w, h)  = self.window.get_size()
 
         # the axis
-#        gc.set_foreground(self.c_raro)
-#        self.area.window.draw_rectangle(gc, True, 20, 20, w-15, h-40)
-#        gc.set_foreground(self.c_black)
-        (w, h)  = self.window.get_size()
+        self.gc.set_rgb_fg_color(colors.whitesmoke)
+        self.window.draw_rectangle(self.gc, True, MIZQ, MSUP, w-MDER-MIZQ, h-MINF-MSUP)
+        self.gc.set_rgb_fg_color(colors.black)
         self.window.draw_line(self.gc, MIZQ, MSUP, MIZQ, h-MINF+10)
         self.window.draw_line(self.gc, MIZQ-10, h-MINF, w-MDER, h-MINF)
 
         # small ticks
-        # FIXME: corregir estos ticks!
-        sep = w-MIZQ-MDER / 10
+        sep = (w-MIZQ-MDER) / 10
         for i in range(1,11):
             posx = MIZQ + i*sep
             self.window.draw_line(self.gc, posx, h-MINF+5, posx, h-MINF)
