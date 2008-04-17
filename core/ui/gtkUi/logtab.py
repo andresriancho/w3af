@@ -19,10 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from __future__ import division
+
 import pygtk, gtk, gobject
 import core.ui.gtkUi.messages as messages
 import time
 
+
+# margenes (tienen que ser > 10)
+MIZQ = 20
+MDER = 20
+MINF = 20
+MSUP = 20
 
 class LogGraph(gtk.DrawingArea):
     '''Defines a log visualization widget that shows an XY plot
@@ -32,7 +40,6 @@ class LogGraph(gtk.DrawingArea):
     def __init__(self, w3af):
         self.w3af = w3af
         super(LogGraph,self).__init__()
-#        self.area.set_size_request(400, 300)
         self.pangolayout = self.create_pango_layout("")
 
         # get the messages
@@ -43,10 +50,12 @@ class LogGraph(gtk.DrawingArea):
         self.countingPixel = 0
         self.alreadyStopped = False
         self.pixelQuant = 0
-        self.timeGrouping = 1000
+        self.timeGrouping = 50
+        self.pixelBase = None
 
         # schedule the message adding, and go live!
         gobject.timeout_add(500, self.addMessage().next)
+        self.connect("expose-event", self.area_expose_cb)
         self.show()
 
     def addMessage(self):
@@ -66,18 +75,55 @@ class LogGraph(gtk.DrawingArea):
             mmseg = int(mess.getRealTime() * 1000)
             mtype = mess.getType()
 
-            pixel = mmseg / self.timeGrouping
+            pixel = mmseg // self.timeGrouping
             # FIXME: Agrupar por tipo de mess!
             if pixel == self.countingPixel:
                 self.pixelQuant += 1
             else:
-                self._newPixel()
+                if self.pixelBase is None:
+                    self.pixelBase = pixel
                 self.countingPixel = pixel
+                self._newPixel()
                 self.pixelQuant = 1
         yield False
         
     def _newPixel(self):
         print self.countingPixel, self.pixelQuant
+        # FIXME: cambiar de color esto!
+        posx = MDER + (self.countingPixel - self.pixelBase)
+        (w, h)  = self.window.get_size()
+        self.window.draw_line(self.gc, posx, h-MINF, posx, h-MINF-self.pixelQuant)
+        # FIXME: darse cuenta de que hay que resizear
+
+
+    def area_expose_cb(self, area, event):
+        style = self.get_style()
+        self.gc = style.fg_gc[gtk.STATE_NORMAL]
+
+        # colores
+        self.c_black = gtk.gdk.color_parse("black")
+        self.c_raro = gtk.gdk.color_parse("yellow")
+#         colormap = gc.get_colormap()
+#         colormap.alloc_color(self.c_raro)
+
+        # the axis
+#        gc.set_foreground(self.c_raro)
+#        self.area.window.draw_rectangle(gc, True, 20, 20, w-15, h-40)
+#        gc.set_foreground(self.c_black)
+        (w, h)  = self.window.get_size()
+        self.window.draw_line(self.gc, MIZQ, MSUP, MIZQ, h-MINF+10)
+        self.window.draw_line(self.gc, MIZQ-10, h-MINF, w-MDER, h-MINF)
+
+        # small ticks
+        # FIXME: corregir estos ticks!
+        sep = w-MIZQ-MDER / 10
+        for i in range(1,11):
+            posx = MIZQ + i*sep
+            self.window.draw_line(self.gc, posx, h-MINF+5, posx, h-MINF)
+
+#        self._updateRealInfo()
+        # FIXME: que redibuje todo el tiempo
+        return True
 
 
 class LogBody(gtk.VPaned):
