@@ -38,6 +38,7 @@ class abstractParser:
         # "setBaseUrl"
         self._baseUrl = baseUrl
         self._baseDomain = urlParser.getDomain(baseUrl)
+        self._rootDomain = urlParser.getRootDomain(baseUrl)
     
     def findAccounts( self , documentString ):
         '''
@@ -45,19 +46,20 @@ class abstractParser:
         '''
         if documentString.find('@') != -1:
             # This two for loops were taken from Sergio Alvarez fingergoogle.py
+            # FIXME: Replace this with a re.sub, it should be faster
             for i in ('=','"', '\'','<br>', '[', ']', '<', '>', ':', ';', '&', '(', ')', '{', '}'):
                 documentString = string.replace(documentString, i, ' ')
             documentString = string.split(documentString, '\n')
             for line in documentString:
-                if line.count('@'+self._baseDomain):
+                if line.count('@'+self._rootDomain):
                     split = string.split(line, ' ')
                     for i in split:
-                        if i.count('@'+self._baseDomain):
+                        if i.count('@'+self._rootDomain):
                             if i[0] == '@':
                                 continue
-                            if string.split(i, '@')[1] != self._baseDomain:
+                            if string.split(i, '@')[1] != self._rootDomain:
                                 continue
-                            i = i[:-(len(self._baseDomain)+1)]
+                            i = i[:-(len(self._rootDomain)+1)]
                             if len(i) > 1:
                                 if i[-1] == '@':
                                     i = i[:-1]
