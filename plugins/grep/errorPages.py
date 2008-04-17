@@ -75,6 +75,7 @@ class errorPages(baseGrepPlugin):
         # python
         mesg.append("PythonHandler django.core.handlers.modpython")
         mesg.append("t = loader.get_template(template_name) # You need to create a 404.html template.")
+        mesg.append('<h2>Traceback <span>(innermost last)</span></h2>')
         
         # Java
         mesg.append('[java.lang.')
