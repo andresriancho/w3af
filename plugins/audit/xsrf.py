@@ -109,7 +109,7 @@ class xsrf(baseAuditPlugin):
                 kb.kb.append( self, 'xsrf', self._vulnSimple )
                 
                 for i in frStr:
-                    om.out.vulnerability( '- ' + i, severity=i.getSeverity() )
+                    om.out.vulnerability( '- ' + i, severity=severity.LOW )
             
             if len( self._vulnComplex ):
                 om.out.vulnerability('The following scripts allow an attacker to send POST data as query string data (this makes XSRF more easy to exploit):', severity=severity.LOW)            

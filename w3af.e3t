@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-03-31, 13:07:13 -->
+<!-- Saved: 2008-04-16, 07:14:29 -->
 <Tasks version="3.8">
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Do I need to call gtk.quit ?</Description>
-    <Created>2008-01-29, 21:49:12</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>helpers.py</Name>
-      </Filename>
-      <Linenumber>210</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
     <Created>2008-02-11, 19:00:20</Created>
@@ -40,32 +27,6 @@
         <Name>scantab.py</Name>
       </Filename>
       <Linenumber>110</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: use g_io_channel when pygtk supports it</Description>
-    <Created>2008-02-11, 21:49:13</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>pluginEditor.py</Name>
-      </Filename>
-      <Linenumber>93</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: check return</Description>
-    <Created>2008-02-11, 21:49:13</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>pluginEditor.py</Name>
-      </Filename>
-      <Linenumber>133</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -95,32 +56,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-03-07, 15:27:44</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>exploittab.py</Name>
-      </Filename>
-      <Linenumber>216</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: decide what message to show here</Description>
-    <Created>2008-03-07, 15:27:44</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>exploittab.py</Name>
-      </Filename>
-      <Linenumber>224</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: How to handle this case ?!</Description>
     <Created>2008-03-17, 09:09:50</Created>
     <Resource>
@@ -131,123 +66,6 @@
         <Name>mysqlmap.py</Name>
       </Filename>
       <Linenumber>501</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: There is a problem here! When I click on a plugin to enable it (on the gtk ui)</Description>
-    <Created>2008-03-26, 13:11:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>298</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Saving the profile should put the name of the profile back to non-bold and</Description>
-    <Created>2008-03-26, 13:11:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>302</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Add a status bar message that says: "Profile saved", or something like that.</Description>
-    <Created>2008-03-26, 13:11:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>305</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Here you should reload the profile list</Description>
-    <Created>2008-03-26, 13:11:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>316</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Here you should reload the profile list</Description>
-    <Created>2008-03-26, 13:11:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>345</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-03-27, 13:30:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>115</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Make this work FOR REAL!!!</Description>
-    <Created>2008-03-27, 13:30:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>185</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: See how we can make that library path setup automatically...</Description>
-    <Created>2008-03-27, 13:31:16</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>47</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
-    <Created>2008-03-27, 13:31:16</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>mozillaTab.py</Name>
-      </Filename>
-      <Linenumber>56</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -274,18 +92,6 @@
         <Name>xUrllib.py</Name>
       </Filename>
       <Linenumber>315</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: Create a proxy object instead.</Description>
-    <Created>2008-03-30, 17:19:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>googleProxy.py</Name>
-      </Filename>
-      <Linenumber>70</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
@@ -398,32 +204,60 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: handle those errors!</Description>
-    <Created>2008-03-30, 19:14:53</Created>
+    <Description>FIXME: See how we can make that library path setup automatically...</Description>
+    <Created>2008-04-12, 21:39:20</Created>
     <Resource>
       <Filename>
-        <Dir>plugins</Dir>
-        <Dir>output</Dir>
-        <Name>gtkOutput.py</Name>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
       </Filename>
-      <Linenumber>78</Linenumber>
+      <Linenumber>47</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Bug #1928152 is here!</Description>
-    <Created>2008-03-30, 19:14:53</Created>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a html file, and load that file, so no connections are made</Description>
+    <Created>2008-04-12, 21:39:20</Created>
     <Resource>
       <Filename>
-        <Dir>plugins</Dir>
-        <Dir>output</Dir>
-        <Name>gtkOutput.py</Name>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
       </Filename>
-      <Linenumber>81</Linenumber>
+      <Linenumber>56</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-04-12, 21:39:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>115</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Make this work FOR REAL!!!</Description>
+    <Created>2008-04-12, 21:39:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>185</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: review this code !!</Description>
-    <Created>2008-03-30, 20:58:46</Created>
+    <Created>2008-04-13, 20:37:59</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
@@ -431,6 +265,30 @@
         <Name>urlFuzzer.py</Name>
       </Filename>
       <Linenumber>151</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: Create a proxy object instead.</Description>
+    <Created>2008-04-14, 23:25:33</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>googleProxy.py</Name>
+      </Filename>
+      <Linenumber>70</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: handle those errors!</Description>
+    <Created>2008-04-15, 00:00:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>output</Dir>
+        <Name>gtkOutput.py</Name>
+      </Filename>
+      <Linenumber>80</Linenumber>
     </Resource>
   </Task>
 </Tasks>
