@@ -117,7 +117,7 @@ class xsrf(baseAuditPlugin):
                 kb.kb.append( self, 'xsrf', self._vulnComplex )
                 
                 for i in frStr:
-                    om.out.vulnerability( '- ' + i, severity=i.getSeverity() )
+                    om.out.vulnerability( '- ' + i, severity=severity.LOW )
                 
     def getOptions( self ):
         '''
