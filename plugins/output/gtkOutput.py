@@ -80,8 +80,6 @@ class gtkOutput(baseOutputPlugin):
             # FIXME: handle those errors!
             pass
 
-        print 'la kb: ', kb.kb.getData('gtkOutput', 'db')
-        
         if kb.kb.getData('gtkOutput', 'db') == []:
             try:
                 # Create the DB object

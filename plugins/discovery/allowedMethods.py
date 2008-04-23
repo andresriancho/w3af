@@ -26,7 +26,10 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+
 from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 from core.data.constants.httpConstants import *
@@ -99,14 +102,24 @@ class allowedMethods(baseDiscoveryPlugin):
         # Added this to make the output a little more readable.
         allowedMethods.sort()
         
-        # Save the results in the KB so that other plugins can use this information
-        kb.kb.append( self , 'methods' , (url, allowedMethods) )
-        
-        # Now check for DAV
+        # Check for DAV
         if len( set( allowedMethods ).intersection( self._davMethods ) ) != 0:
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
-            kb.kb.append( self , 'dav-methods' , (url, allowedMethods ) )
+            i = info.info()
+            i.setName('Allowed methods for ' + url )
+            i.setURL( url )
+            i['methods'] = allowedMethods
+            i.setDesc( 'The URL "' + url + '" has the following allowed methods, including DAV methods: ' + ', '.join(allowedMethods) )
+            kb.kb.append( self , 'dav-methods' , i )
+        else:
+            # Save the results in the KB so that other plugins can use this information
+            i = info.info()
+            i.setName('Allowed methods for ' + url )
+            i.setURL( url )
+            i['methods'] = allowedMethods
+            i.setDesc( 'The URL "' + url + '" has the following allowed methods: ' + ', '.join(allowedMethods) )
+            kb.kb.append( self , 'methods' , i )
             
         return []
     
@@ -114,9 +127,19 @@ class allowedMethods(baseDiscoveryPlugin):
         '''
         Print the results.
         '''
-        allMethods = kb.kb.getData( 'allowedMethods', 'methods' )
-        davMethods = kb.kb.getData( 'allowedMethods', 'dav-methods' )
+        # First I get the data from the kb
+        all_info_obj = kb.kb.getData( 'allowedMethods', 'methods' )
+        dav_info_obj = kb.kb.getData( 'allowedMethods', 'dav-methods' )
         
+        # Now I transform it to something I can use with groupbyMinKey
+        allMethods = []
+        for i in all_info_obj:
+            allMethods.append( (i.getURL() , i['methods']) )
+        davMethods = []
+        for i in dav_info_obj:
+            davMethods.append( (i.getURL() , i['methods']) )
+
+        # Now I work the data...
         toShow, type = davMethods, ' DAV'
         if not self._reportDavOnly:
             toShow, type = allMethods, ''

@@ -92,7 +92,7 @@ class osCommandingShell(baseAttackPlugin):
         '''
         # The vuln was saved to the kb as:
         # kb.kb.append( self, 'osCommanding', v )
-        exploitQs = vuln.getDc()
+        exploitDc = vuln.getDc()
 
         # Define a test command:
         rand = createRandAlpha( 8 )
@@ -103,9 +103,9 @@ class osCommandingShell(baseAttackPlugin):
             
         # Lets define the result header and footer.
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
-        exploitQs[vuln.getVar()] = command
+        exploitDc[vuln.getVar()] = command
         try:
-            response = functionReference( vuln.getURL(), str(exploitQs) )
+            response = functionReference( vuln.getURL(), str(exploitDc) )
         except Exception, e:
             om.out.error( str(e) )
             return False
