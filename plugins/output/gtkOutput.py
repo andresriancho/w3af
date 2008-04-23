@@ -79,17 +79,25 @@ class gtkOutput(baseOutputPlugin):
             # and when the user has no permissions to remove the directory
             # FIXME: handle those errors!
             pass
+
+        print 'la kb: ', kb.kb.getData('gtkOutput', 'db')
         
-        if not kb.kb.getData('gtkOutput', 'db'):
+        if kb.kb.getData('gtkOutput', 'db') == []:
             try:
+                # Create the DB object
                 self._db_req_res = Base( db_req_res_dirName )
-                # Create the database
-                self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
-                                                    ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
             except Exception, e:
-                raise w3afException('An exception was raised while creating the gtkOutput database: ' + str(e) )
+                raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
-                kb.kb.save('gtkOutput', 'db', self._db_req_res )
+                try:
+                    # Create the database
+                    self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
+                                                        ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
+                except IOError, ioe:
+                    # hmmm , the database already existed...
+                    raise w3afException('An exception was raised while creating the gtkOutput database files: ' + str(e) )
+                else:
+                    kb.kb.save('gtkOutput', 'db', self._db_req_res )
     
     def _del_dir(self,path):
         for file in os.listdir(path):
