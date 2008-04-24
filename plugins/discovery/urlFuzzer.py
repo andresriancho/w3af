@@ -106,9 +106,8 @@ class urlFuzzer(baseDiscoveryPlugin):
             response = self._urlOpener.GET( url, useCache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
-        except Exception,e:
-            om.out.error( 'Error when requesting: '+  url )
-            om.out.error('Error: ' + str(e) )
+        except w3afException,e:
+            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
         else:
             if not self.is404( response ):
                 return True

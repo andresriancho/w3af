@@ -208,7 +208,7 @@ class davShellObj(shell):
         urlToDel = urlParser.uri2url( self._exploit )
         try:
             self._urlOpener.DELETE( urlToDel )
-        except Exception, e:
+        except w3afException, e:
             om.out.error('davShellObj cleanup failed with exception: ' + str(e) )
         else:
             om.out.debug('davShellObj cleanup complete.')

@@ -96,9 +96,7 @@ class fingerMSN(baseDiscoveryPlugin):
         except KeyboardInterrupt, e:
             raise e
         except w3afException, w3:
-            pass
-        except Exception, e:
-            om.out.debug('URL Error while fetching page in googleSpider, error: ' + str(ue) )
+            om.out.debug('xUrllib exception raised while fetching page in fingerMSN, error description: ' + str(w3) )
             self._newAccounts = []
         else:
             dp = dpCache.dpc.getDocumentParserFor( response.getBody(), 'http://'+self._domainRoot+'/' )

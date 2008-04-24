@@ -307,7 +307,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         try:
             response = URLOPENER.POST( completeUrl, postdata )
             #response = urllib2.urlopen( req )
-        except Exception, e:
+        except w3afException, e:
             proxyClientConnection.close()
             om.out.error( 'Oops! Error when proxy tried to open remote site: ' + str(e) )
         else:

@@ -104,8 +104,6 @@ class basicAuthBrute(baseBruteforcePlugin):
                     response = uriOpener.GET( url, useCache=False, analyze=False )
                 except w3afException, w3:
                     om.out.debug('Exception while bruteforcing basic authentication, error message: ' + str(w3) )
-                except Exception, e:
-                    om.out.debug('Unhandled exception while bruteforcing basic authentication, error message: ' + str(e) )
                 else:
                     # GET was OK
                     if response.getCode() == 200:

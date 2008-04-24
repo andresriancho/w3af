@@ -133,9 +133,8 @@ class fingerGoogle(baseDiscoveryPlugin):
         except KeyboardInterrupt, e:
             raise e
         except w3afException, w3:
-            pass
-        except Exception, e:
-            om.out.debug('URL Error while fetching page in fingerGoogle, error: ' + str(e) )
+            om.out.debug('xUrllib exception raised while fetching page in fingerGoogle, error description: ' + str(w3) )
+            self._newAccounts = []
         else:
             self._parseDocument( response )
             

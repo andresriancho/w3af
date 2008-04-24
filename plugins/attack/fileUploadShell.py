@@ -271,7 +271,7 @@ class fuShell(shell):
         fileToDel = urlParser.getFileName( self.getExploitURL() )
         try:
             self.removeFile(fileToDel)
-        except Exception, e:
+        except w3afException, e:
             om.out.error('File upload shell cleanup failed with exception: ' + str(e) )
         else:
             om.out.debug('File upload shell cleanup complete; successfully removed file: "' + fileToDel + '"')

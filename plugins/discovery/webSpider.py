@@ -131,8 +131,6 @@ class webSpider(baseDiscoveryPlugin):
                     raise e
                 except w3afException,w:
                     om.out.error( str(w) )
-                except Exception,e:
-                    raise e
                 else:
                     # Note: I WANT to follow links that are in the 404 page, but if the page I fetched is a 404...
                     # I should ignore it.

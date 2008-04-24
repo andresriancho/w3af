@@ -376,13 +376,7 @@ class pykto(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         except w3afException, e:
-            om.out.error( 'Correctly handled error when requesting: '+ url )
-            om.out.error( 'Correctly handled error message: ' + str(e) )
-            return False
-        except Exception,e:
-            om.out.error( 'Unhandled error when requesting: '+ url )
-            om.out.error('Unhandled error message: "' + str(e)  + '". Please report this error as a bug to: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 ; including the w3af version you are using and the following error traceback:')
-            om.out.error( str(traceback.format_exc()) )
+            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
             return False
         
         if self._analyzeResult( response, expectedResponse, parameters, url ):
@@ -444,9 +438,8 @@ class pykto(baseDiscoveryPlugin):
             response = functionReference( url )
         except KeyboardInterrupt,e:
             raise e
-        except Exception,e:
-            om.out.error( 'Error when requesting: '+ url )
-            om.out.error('Error: ' + str(e) )
+        except w3afException,e:
+            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
         else:
             if not self.is404( response ):
                 return True

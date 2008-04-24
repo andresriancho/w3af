@@ -106,7 +106,7 @@ class osCommandingShell(baseAttackPlugin):
         exploitDc[vuln.getVar()] = command
         try:
             response = functionReference( vuln.getURL(), str(exploitDc) )
-        except Exception, e:
+        except w3afException, e:
             om.out.error( str(e) )
             return False
         else:
@@ -223,7 +223,7 @@ class osShell(shell):
         exploitDc[ self.getVar() ] = self['separator'] + command
         try:
             response = functionReference( self.getURL() , str(exploitDc) )
-        except Exception, e:
+        except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
             return self._cut( response.getBody() )

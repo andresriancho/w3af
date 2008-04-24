@@ -103,7 +103,7 @@ class localFileReader(baseAttackPlugin):
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
         try:
             response = functionReference( vuln.getURL(), str(vuln.getDc()) )
-        except Exception, e:
+        except w3afException, e:
             om.out.error( str(e) )
             return False
         else:
@@ -234,7 +234,7 @@ class fileReaderShell(shell):
         dc[ self.getVar() ] = filename
         try:
             response = functionReference( self.getURL() ,  str(dc) )
-        except Exception, e:
+        except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
             return self._filterErrors( self._cut( response.getBody() ) )

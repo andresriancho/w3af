@@ -104,7 +104,7 @@ class frontpage(baseAuditPlugin):
 
         try:
             res = self._urlOpener.POST( targetURL , data=content )
-        except Exception,  e:
+        except w3afException,  e:
             om.out.debug('Exception while uploading file using author.dll: ' + str(e))
         else:
             if res.getCode() in [200]:
@@ -118,7 +118,7 @@ class frontpage(baseAuditPlugin):
         
         try:
             res = self._urlOpener.GET( targetURL )
-        except Exception,  e:
+        except w3afException,  e:
             om.out.debug('Exception while verifying if the file that was uploaded using author.dll was there: ' + str(e))
         else:
             # The file I upload has blank content
