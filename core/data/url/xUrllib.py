@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urlOpenerSettings
 import core.controllers.outputManager as om
 import core.data.url.timeAnalysis as timeAnalysis
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import *
 from core.controllers.threads.threadManager import threadManager as tm
 from core.data.parsers.urlParser import *
 from core.data.constants.httpConstants import *
@@ -63,10 +63,11 @@ class xUrllib:
         self._opener = None
         self._cacheOpener = None
         self._timeAnalysis = None
-        
-        # FIXME: Not thread safe
-        self._errorCount = 0
-        # End of not thread safe
+        # For error handling
+        self._lastRequestFailed = False
+        self._consecutiveErrorCount = 0
+            
+        self._errorCount = {}
         
         self._dnsCache()
         self._tm = tm()
@@ -361,8 +362,10 @@ class xUrllib:
                 try:
                     e.reason[0]
                 except:
+                    self._incrementGlobalErrorCount()
                     raise w3afException('Unexpected error in urllib2 / httplib: ' + repr(e.reason) )                    
                 else:
+                    self._incrementGlobalErrorCount()
                     if e.reason[0] == -2:
                         raise w3afException('Failed to resolve domain name for URL: ' + req.get_full_url() )
                     if e.reason[0] == 111:
@@ -373,13 +376,21 @@ class xUrllib:
                         req._Request__original = originalUrl
                         return self._retry( req, useCache )
             elif hasattr(e, 'code'):
+                # We usually get here when the response has codes 404, 403, 401, etc...
                 om.out.debug( req.get_method() + ' ' + originalUrl +' returned HTTP code "' + str(e.code) + '"' )
+                
                 # Return this info to the caller
                 code = int(e.code)
                 info = e.info()
                 geturl = e.geturl()
                 read = self._readRespose( e )
                 httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=e.id, time=time.time() - startTime )
+                
+                # Clear the log of failed requests; this request is done!
+                if id(req) in self._errorCount:
+                    del self._errorCount[ id(req) ]
+                self._decrementGlobalErrorCount()
+            
                 if grepResult:
                     self._grepResult( req, httpResObj )
                 else:
@@ -392,13 +403,18 @@ class xUrllib:
             # This except clause will catch errors like 
             # "(-3, 'Temporary failure in name resolution')"
             # "(-2, 'Name or service not known')"
-            # for now... i think re-raising the exception is the best solution
-            # contact me at andres.riancho@gmail.com if you have a better idea
-            #raise w3afException( str(e) )
-            # best is to post a message
+            # The handling of this errors is complex... if I get a lot of errors in a row, I'll raise a
+            # w3afMustStopException because the remote webserver might be unreachable.
+            # For the first N errors, I just return an empty response...
             om.out.debug( req.get_method() + ' ' + originalUrl +' returned HTTP code "' + str(NO_CONTENT) + '"' )
             om.out.debug( 'Unhandled exception in xUrllib._send(): ' + str ( e ) )
             om.out.debug( str( traceback.format_exc() ) )
+            
+            # Clear the log of failed requests; this request is done!
+            if id(req) in self._errorCount:
+                del self._errorCount[ id(req) ]
+            self._incrementGlobalErrorCount()
+            
             return httpResponse( NO_CONTENT, '', {}, originalUrl, originalUrl )
         else:
             # Everything ok !
@@ -412,6 +428,12 @@ class xUrllib:
             geturl = res.geturl()
             read = self._readRespose( res )
             httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=res.id, time=time.time() - startTime )
+            
+            # Clear the log of failed requests; this request is done!
+            if id(req) in self._errorCount:
+                del self._errorCount[ id(req) ]
+            self._decrementGlobalErrorCount()
+            
             if grepResult:
                 self._grepResult( req, httpResObj )
             else:
@@ -431,16 +453,30 @@ class xUrllib:
         
     def _retry( self, req , useCache ):
         '''
-        Try to send the request again.
-        
+        Try to send the request again while doing some error handling.
         '''
-        if self._errorCount < self.settings.getMaxRetrys() :
-            self._errorCount += 1
+        if self._errorCount.get( id(req), 0 ) < self.settings.getMaxRetrys() :
+            self._errorCount[ id(req) ] = 1
             return self._send( req, useCache )
         else:
-            self._errorCount = 0
+            # Clear the log of failed requests; this one definetly failed...
+            del self._errorCount[ id(req) ]
+            self._incrementGlobalErrorCount()
             raise w3afException('Too many retries when trying to get: ' + req.get_full_url() )
-        
+    
+    def _incrementGlobalErrorCount( self ):
+        if self._lastRequestFailed:
+            self._consecutiveErrorCount += 1
+        else:
+            self._lastRequestFailed = True
+            
+        if self._consecutiveErrorCount >= 10:
+            raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
+            
+    def _decrementGlobalErrorCount( self ):
+        self._lastRequestFailed = False
+        self._consecutiveErrorCount = 0
+    
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins
     

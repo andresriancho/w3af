@@ -334,13 +334,24 @@ class w3afCore:
             # The user can pause and then STOP
             if self._mustStop:
                 # hack!
+                #FIXME
                 raise KeyboardInterrupt
         
         # The user can simply STOP the scan
         if self._mustStop:
+            # FIXME
             raise KeyboardInterrupt
-            
+    
     def start(self):
+        try:
+            self._realStart()
+        except w3afMustStopException, wmse:
+            om.out.error('')
+            om.out.error('**IMPORTANT** The following error was detected by w3af and couldn\'t be resolved: ' + str(wmse) )
+            om.out.error('')
+            self._end()
+            
+    def _realStart(self):
         '''
         Starts the work.
         User interface coders: Please remember that you have to call initPlugins() method before calling start.

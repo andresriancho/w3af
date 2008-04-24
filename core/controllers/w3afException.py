@@ -48,3 +48,10 @@ class w3afFileException(Exception):
     '''
     pass
     
+class w3afMustStopException(Exception):
+    '''
+    If this exception is catched by the core, then it should stop the whole process. This exception is raised in
+    a few places. NOT to be used extensively.
+    '''
+    pass
+    
