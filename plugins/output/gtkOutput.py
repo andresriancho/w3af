@@ -81,8 +81,8 @@ class gtkOutput(baseOutputPlugin):
             pass
 
         if kb.kb.getData('gtkOutput', 'db') == []:
+            # Create the DB object
             try:
-                # Create the DB object
                 self._db_req_res = Base( db_req_res_dirName )
             except Exception, e:
                 raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
@@ -96,6 +96,9 @@ class gtkOutput(baseOutputPlugin):
                     raise w3afException('An exception was raised while creating the gtkOutput database files: ' + str(e) )
                 else:
                     kb.kb.save('gtkOutput', 'db', self._db_req_res )
+        else:
+            # Restore it from the kb
+            self._db_req_res = kb.kb.getData('gtkOutput', 'db')
     
     def _del_dir(self,path):
         for file in os.listdir(path):
