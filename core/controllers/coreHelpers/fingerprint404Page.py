@@ -53,7 +53,8 @@ class fingerprint404Page:
         try:
             response, randAlNumFile, extension = self._generate404( httpResponse.getURL() )
         except w3afException, w3:
-            om.out.debug('w3af exception:' + str(w3) )
+            om.out.debug('w3afException in _generate404:' + str(w3) )
+            raise w3
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:
@@ -85,8 +86,14 @@ class fingerprint404Page:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).')
                 return True
         else:
-            self._add404Knowledge( httpResponse )
-            return self._byDirectory( httpResponse )
+            try:
+                self._add404Knowledge( httpResponse )
+            except w3afException:
+                # bleh! I don't like this... but I only get here if there was an error in the _add404Knowledge ;
+                # which is really uncommon
+                return httpResponse.getCode() == 404
+            else:
+                return self._byDirectory( httpResponse )
     
     def _byDirectoryAndExtension( self, httpResponse ):
         '''
@@ -106,12 +113,21 @@ class fingerprint404Page:
             else:
                 return False
         else:
-            self._add404Knowledge( httpResponse )
-            return self._byDirectoryAndExtension( httpResponse )
+            try:
+                self._add404Knowledge( httpResponse )
+            except w3afException:
+                # bleh! I don't like this... but I only get here if there was an error in the _add404Knowledge ;
+                # which is really uncommon
+                return httpResponse.getCode() == 404
+            else:
+                return self._byDirectoryAndExtension( httpResponse )
             
     def is404( self, httpResponse ):
         if not self._alreadyAnalyzed:
-            self._add404Knowledge( httpResponse )
+            try:
+                self._add404Knowledge( httpResponse )
+            except w3afException:
+                om.out.debug('Failed to add 404 knowledge for ' + str(httpResponse) )
         
         # Set a variable that is widely used
         domainPath = urlParser.getDomainPath( httpResponse.getURL() )
