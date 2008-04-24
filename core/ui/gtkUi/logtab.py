@@ -56,9 +56,7 @@ class LogGraph(gtk.DrawingArea):
         self.all_messages = []
 
         # control variables
-        self.countingPixel = 0
         self.alreadyStopped = False
-        self.pixelQuant = 0
         self.timeGrouping = 2
         self.timeBase = int(time.time() * 1000)
         self.realLeftMargin = MIZQ
@@ -73,15 +71,16 @@ class LogGraph(gtk.DrawingArea):
 
         @returns: True to keep calling it, and False when all it's done.
         '''
+        somethingNew = False
         for mess in self.messages.get():
-            if not self.alreadyStopped and not self.w3af.isRunning():
-                self.alreadyStopped = True
-                self._newPixel("debug", None)
-                self.pixelQuant = 1
-
             if mess is None:
+                if somethingNew:
+                    self._redrawAll()
                 yield True
+                somethingNew = False
                 continue
+            somethingNew = True
+
             mmseg = int(mess.getRealTime() * 1000)
             mtype = mess.getType()
             if mtype == "vulnerability":
@@ -90,28 +89,7 @@ class LogGraph(gtk.DrawingArea):
                 sever = None
             self.all_messages.append((mmseg, mtype, sever))
 
-            pixel = (mmseg - self.timeBase) // self.timeGrouping
-            if mtype == "debug":
-                if pixel == self.countingPixel:
-                    self.pixelQuant += 1
-                else:
-                    self.countingPixel = pixel
-                    self._newPixel("debug", sever)
-                    self.pixelQuant = 1
-            elif mtype in ("vulnerability", "information"):
-                self._newPixel(mtype, sever)
-        yield False
         
-    def _newPixel(self, mtype, sever):
-        posx = self.realLeftMargin + self.countingPixel
-        (w, h)  = self.window.get_size()
-        if posx > w-MDER:
-            self.timeGrouping *= 2
-            self._redrawAll()
-            return
-
-        self._drawItem(mtype, posx, self.pixelQuant, sever)
-
     def _redrawAll(self):
         self.window.clear()
 
@@ -125,7 +103,7 @@ class LogGraph(gtk.DrawingArea):
                 self.timeGrouping *= 2
                 self._redrawAll()
                 return
-            elif tspan < usableWidth//2:
+            elif tspan < usableWidth//2 and self.timeGrouping>1:
                 self.timeGrouping //= 2
                 self._redrawAll()
                 return
@@ -208,7 +186,6 @@ class LogGraph(gtk.DrawingArea):
             self.window.draw_rectangle(self.gc, True, posx-1, posy-sever, 2, sever)
         self.gc.set_rgb_fg_color(colors.black)
 
-
     def area_expose_cb(self, area, event):
         style = self.get_style()
         self.gc = style.fg_gc[gtk.STATE_NORMAL]
@@ -217,26 +194,11 @@ class LogGraph(gtk.DrawingArea):
 
     def _calculateXTicks(self, width):
         '''Returns the ticks X position and time.'''
-        minsep = 20
-        maxsep = 100
-
-        # calculate separator
-        sep = 1000
-        while True:
-            if sep < minsep:
-                sep *= 2
-            elif sep > maxsep:
-                sep /= 2
-            else:
-                break
-        sep = int(sep)
-
-        #  generate info
-        x = 0
-        while x < width:
-            t = "%.1f" % (x * self.timeGrouping / 1000)
-            yield x,str(t)
-            x += sep
+        paso = width / 10
+        for i in range(10):
+            punto = int(paso * i)
+            label = "%.2f" % (punto * self.timeGrouping / 1000)
+            yield punto, label
 
 
 
