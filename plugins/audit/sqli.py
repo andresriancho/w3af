@@ -142,6 +142,8 @@ class sqli(baseAuditPlugin):
         errors.append( ('Microsoft JET Database Engine error', ACCESS ))
         errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', MSSQL ))
         errors.append( ('Incorrect syntax near', MSSQL ) )
+        errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', MSSQL ) )
+        
         
         # ORACLE
         errors.append( ('ORA-[0-9][0-9][0-9][0-9]', ORACLE ) )
