@@ -59,7 +59,7 @@ class dav(baseAuditPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
 
         # Start
-        davURLs = [ i[0] for i in kb.kb.getData( 'allowedMethods' , 'dav-methods' ) ]
+        davURLs = [ i.getURL() for i in kb.kb.getData( 'allowedMethods' , 'dav-methods' ) ]
         domainPath = urlParser.getDomainPath( freq.getURL() )
         if domainPath in davURLs and domainPath not in self._alreadyTested:
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
