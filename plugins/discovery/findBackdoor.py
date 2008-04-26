@@ -62,6 +62,17 @@ class findBackdoor(baseDiscoveryPlugin):
             for webShellFilename in self._getWebShells():
                 webShellUrl = urlParser.urlJoin(  dp , webShellFilename )
                 response = self._urlOpener.GET( webShellUrl, useCache=True )
+                
+                if not webShellUrl.endswith(webShellFilename):
+                    msg = 'It seems that you have hitted bug #1938087. We have been trying to reproduce it for a while'
+                    msg += 'but it has been impossible for us. Please send a comment to '
+                    msg += 'https://sourceforge.net/tracker/index.php?func=detail&aid=1938087&group_id=170274&atid=853652'
+                    msg += 'With this information: \n'
+                    msg += 'webShellUrl:' + webShellUrl + '\n'
+                    msg += 'webShellFilename:' + webShellFilename + '\n'
+                    msg += 'dp:' + dp + '\n'
+                    print msg
+                    om.out.error( msg )
         
                 if not self.is404( response ):
                     v = vuln.vuln()
