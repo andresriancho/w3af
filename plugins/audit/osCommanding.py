@@ -44,8 +44,8 @@ class osCommanding(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._waitTime = 6
-        self._secondWaitTime = 3
+        self._waitTime = 4
+        self._secondWaitTime = 9
 
     def _fuzzRequests(self, freq ):
         '''
@@ -94,6 +94,7 @@ class osCommanding(baseAuditPlugin):
                 v['os'] = sentOs
                 v['separator'] = sentSeparator
                 v.setDesc( 'OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDc( mutant.getDc() )
                 v.setId( response.id )
                 v.setURI( response.getURI() )
                 kb.kb.append( self, 'osCommanding', v )
@@ -103,6 +104,7 @@ class osCommanding(baseAuditPlugin):
                 i = info.info()
                 i.setName('Possible OS commanding vulnerability')
                 i.setId( response.id )
+                i.setDc( mutant.getDc() )
                 i.setMethod( mutant.getMethod() )
                 i['os'] = sentOs
                 i['separator'] = sentSeparator
