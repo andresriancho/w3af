@@ -54,7 +54,7 @@ class findvhost(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         vHostList = []
-        if self._firstExec :
+        if self._firstExec:
             # Only run once
             self._firstExec = False
             vHostList = self._genericVhosts( fuzzableRequest )
@@ -89,7 +89,7 @@ class findvhost(baseDiscoveryPlugin):
         originalResponse = self._urlOpener.GET( fuzzableRequest.getURI() , useCache=True )
         baseResponse = self._urlOpener.GET( baseURL , useCache=True )
         
-        dp = dpCache.dpc.getDocumentParserFor( originalResponse.getBody(), 'http://'+baseURL+'/' )
+        dp = dpCache.dpc.getDocumentParserFor( originalResponse.getBody(), baseURL )
         
         # Set the non existant response
         nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
