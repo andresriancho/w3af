@@ -63,17 +63,25 @@ class httpResponse:
 
     def __repr__( self ):
         return '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL() + ' >'
+    
+    def dumpResponseHead( self ):
+        '''
+        @return: A string with:
+            HTTP/1.1 /login.html 200
+            Header1: Value1
+            Header2: Value2
+        '''
+        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + '\n'
+        strRes += self.dumpHeaders()
+        return strRes
         
     def dump( self ):
         '''
         Return a DETAILED str representation of this HTTP response object.
         '''
-        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + '\n'
-        for header in self._headers.keys():
-            strRes += header + ': ' + self._headers[ header ] + '\n'
+        strRes = self.dumpResponseHead()
         strRes += '\n\n'
         strRes += self._body
-        
         return strRes
         
     def dumpHeaders( self ):

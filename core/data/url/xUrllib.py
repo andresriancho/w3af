@@ -164,6 +164,90 @@ class xUrllib:
         
         return False
     
+    def sendRawRequest( self, head, postdata):
+        '''
+        In some cases the xUrllib user wants to send a request that was typed in a textbox or is stored in a file.
+        When something like that happens, this library allows the user to send the request by specifying two parameters
+        for the sendRawRequest method:
+        
+        @parameter head: The postdata, if any. If set to '' or None, no postdata is sent.
+        @parameter postdata: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
+        
+        @return: An httpResponse object.
+        '''
+        def checkVersionSintax( version ):
+            splittedVersion = version.split('/')
+            if len(splittedVersion) != 2:
+                # Invalid!
+                raise w3afException('You are trying to send a HTTP request with an invalid version token: ' + version)
+            elif len(splittedVersion) == 2:
+                if splittedVersion[0].lower() != 'http':
+                    raise w3afException('You are trying to send a HTTP request with an invalid HTTP token in the version specification: ' + version)
+                if splittedVersion[1] not in ['1.0', '1.1']:
+                    raise w3afException('You are trying to send a HTTP request with a version that is unsupported: ' + version)
+            return True
+        
+        def checkURISintax( uri ):
+            if uri.startswith('http://') and len(uri) != len('http://'):
+                return True
+            elif uri.startswith('https://') and len(uri) != len('https://'):
+                return True
+            else:
+                raise w3afException('You have to specify the complete URI, including the protocol and the host. Invalid URI: ' + uri )
+        
+        # parse the request head
+        splittedHead = head.split('\n')
+        splittedHead = [ h.strip() for h in splittedHead ]
+        
+        # Get method, uri, version
+        metUriVer = splittedHead[0]
+        firstLine = metUriVer.split(' ')
+        if len(firstLine) == 3:
+            # Ok, we have something like "GET / HTTP/1.0"
+            # Or something like "GET /hello+world.html HTTP/1.0"
+            # This is the best case for us!
+            method, uri, version = firstLine
+            checkURISintax(uri)
+            checkVersionSintax(version)
+        elif len(firstLine) < 3:
+            # Invalid!
+            raise w3afException('You are trying to send a HTTP request with an invalid <method> <uri> <version> token: ' + metUriVer )
+        elif len(firstLine) > 3:
+            # This is mostly because the user sent something like this:
+            # GET /hello world.html HTTP/1.0
+            # Note that the correct sintax is:
+            # GET /hello+world.html HTTP/1.0
+            # or
+            # GET /hello%20world.html HTTP/1.0
+            # Mostly because we are permissive... we are going to try to send the request...
+            method = firstLine[0]
+            version = firstLine[-1]
+            checkVersionSintax(version)
+            
+            # If we get here, it means that we may send the request after all...
+            # FIXME: Should I encode here?
+            # FIXME: Should the uri be http://host + uri ?
+            uri = ' '.join( firstLine[1:-1] )
+            checkURISintax(uri)
+            
+        # If we got here, we have a nice method, uri, version first line
+        # Now we parse the headers (easy!) and finally we send the request
+        headers = splittedHead[1:]
+        headersDict = {}
+        for h in headers:
+            oneSplittedHeader = h.split(':')
+            if len(oneSplittedHeader) == 2:
+                headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
+            elif len(oneSplittedHeader) == 1:
+                raise w3afException('You are trying to send a HTTP request with an invalid header: ' + h )
+            elif len(oneSplittedHeader) > 2:
+                headerValue = ' '.join(oneSplittedHeader[1:]).strip()
+                headersDict[ oneSplittedHeader[0].strip() ] = headerValue
+        
+        # The request was parsed, now we send it to the wire!
+        functionReference = getattr( self , method )
+        return functionReference( uri, postdata, headers=headersDict, useCache=False, grepResult=False, getSize=False )        
+        
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
         '''
         Gets a uri using a proxy, user agents, and other settings that where set previously.
