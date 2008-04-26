@@ -22,13 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.kb.vuln import vuln as vuln
 from core.controllers.misc.commonAttackMethods import commonAttackMethods
+from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import *
 
 # python stuff
 import time
 
-class shell(vuln, commonAttackMethods):
+class shell(vuln, exploitResult, commonAttackMethods):
     '''
     This class represents the output of an attack plugin that gives a shell to the w3af user.
     
@@ -37,6 +38,7 @@ class shell(vuln, commonAttackMethods):
 
     def __init__(self, v):
         vuln.__init__(self, v)
+        exploitResult.__init__(self)
         
         self._rOS = None
         self._rSystem = None
@@ -137,16 +139,6 @@ class shell(vuln, commonAttackMethods):
         @return: None
         '''
         raise w3afException('You should implement the end method of classes that inherit from "shell"')
-    
-    def setShellId( self, id ):
-        '''
-        Each shell is identified by an unique number.
-        @parameter id: The integer that identifies the shell
-        '''
-        self._id = id
-
-    def getShellId( self ):
-        return self._id
 
     def getName( self ):
         '''

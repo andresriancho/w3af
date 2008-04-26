@@ -70,6 +70,12 @@ class proxy(w3afThread):
         self._ip = ip
         self._port = port
         self._proxyCert = proxyCert
+    
+    def getBindIP( self ):
+        return self._ip
+    
+    def getBindPort( self ):
+        return self._port
         
     def stop(self):
         om.out.debug('Calling stop of proxy daemon.')

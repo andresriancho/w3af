@@ -31,6 +31,7 @@ from core.controllers.daemons.proxy import *
 
 import cgi , urllib
 import core.data.kb.knowledgeBase as kb
+from core.data.kb.proxy import proxy as kbProxy
 
 import re
 import core.data.constants.w3afPorts as w3afPorts
@@ -54,9 +55,6 @@ class googleProxy(baseAttackPlugin):
     
     def setUrlOpener( self, urlOpener ):
         self._urlOpener = urlOpener
-        
-        # Now, I'm starting the proxy server !
-        self._proxy()
     
     def exploit( self, vulnToExploit=None ):
         '''
@@ -66,10 +64,16 @@ class googleProxy(baseAttackPlugin):
         '''
         
         om.out.information('google proxy listening on ' + self._proxyAddress + ':' + str(self._proxyPort) )
-        # All i need to run is runned from setUrlOpener and setOptions
-        ### TODO: Create a proxy object instead.
-        kb.kb.append( self, 'proxy', self )
-        return [self,]
+
+        # Now, I'm starting the proxy server !
+        self._proxy()
+        
+        kbp = kbProxy(self._proxyd)
+        
+        # Save the proxy object to the kb
+        kb.kb.append( self, 'proxy', kbp )
+        
+        return [kbp,]
         
     def canExploit( self, vulnToExploit=None ):
         '''
