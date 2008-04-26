@@ -43,6 +43,7 @@ import traceback
 import copy
 import Queue
 import time
+import signal
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -333,13 +334,14 @@ class w3afCore:
             
             # The user can pause and then STOP
             if self._mustStop:
-                # hack!
-                #FIXME
+                # This raises a keyboard interrupt in the middle of the discovery process.
+                # It has almost the same effect that a ctrl+c by the user if in consoleUi
                 raise KeyboardInterrupt
         
         # The user can simply STOP the scan
         if self._mustStop:
-            # FIXME
+            # This raises a keyboard interrupt in the middle of the discovery process.
+            # It has almost the same effect that a ctrl+c by the user if in consoleUi
             raise KeyboardInterrupt
     
     def start(self):
@@ -451,6 +453,18 @@ class w3afCore:
         '''
         om.out.debug('The user stopped the core.')
         self._mustStop = True
+    
+    def quit( self ):
+        '''
+        The user is in a hurry, he wants to exit w3af ASAP.
+        '''
+        try:
+            # Shoot myself (linux style)
+            os.kill( os.getpid(), signal.SIGKILL )
+        except:
+            # Kill is only available in linux/mac, lets try windows style:
+            import ctypes
+            ctypes.windll.kernel32.TerminateProcess( os.getpid(), -1)
     
     def _end( self, exceptionInstance=None ):
         '''
@@ -673,7 +687,9 @@ class w3afCore:
             
         @return: No value is returned.
         '''
+        #print 'before:', PluginsOptions
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )
+        #print 'after:', PluginsOptions
         
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
