@@ -93,7 +93,11 @@ class osCommandingShell(baseAttackPlugin):
         # The vuln was saved to the kb as:
         # kb.kb.append( self, 'osCommanding', v )
         exploitDc = vuln.getDc()
-
+        
+        if exploitDc == None:
+            om.out.error('You hitted bug #1948260. Please report how to reproduce it here:')
+            om.out.error('https://sourceforge.net/tracker/index.php?func=detail&aid=1948260&group_id=170274&atid=853652')
+            
         # Define a test command:
         rand = createRandAlpha( 8 )
         if vuln['os'] == 'windows':
