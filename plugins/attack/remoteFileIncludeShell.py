@@ -78,7 +78,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return: True if plugin knows how to exploit a found vuln.
         '''
         if self._listenAddress == '' and not self._useXssBug:
-            raise w3afException('remoteFileIncludeShell plugin has to be correctly configured to use.')
+            om.out.error('remoteFileIncludeShell plugin has to be correctly configured to use.')
+            return False
         
         rfiVulns = kb.kb.getData( 'remoteFileInclude' , 'remoteFileInclude' )
         if vulnToExploit != None:
@@ -267,7 +268,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
         self._generateOnlyOne = optionsMap['generateOnlyOne']
         
         if self._listenAddress == '' and not self._useXssBug:
-            raise w3afException('remoteFileIncludeShell plugin has to be correctly configured to use.')
+            om.out.error('remoteFileIncludeShell plugin has to be correctly configured to use.')
+            return False
             
     def getPluginDeps( self ):
         '''

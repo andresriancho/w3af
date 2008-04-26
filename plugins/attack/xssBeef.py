@@ -201,7 +201,9 @@ class xssBeef(baseAttackPlugin):
         self._beefPasswd = optionsMap['beefPasswd']
 
         if self._beefPasswd == '':
-            raise w3afException('You have to provide a beEF password to use this plugin.')
+            om.out.error('You have to provide a beEF password to use this plugin.')
+            return False
+            
 
     def getPluginDeps( self ):
         '''
