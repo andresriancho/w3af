@@ -138,4 +138,9 @@ class sharedHosting(baseDiscoveryPlugin):
         This plugin tries to find out if the web application under test is stored in a shared hosting.
         The procedure is pretty simple, using MSN search engine, the plugin searches for "ip:1.2.3.4"
         where 1.2.3.4 is the IP address of the webserver.
+        
+        One configurable option exists:
+            - resultLimit
+            
+        Fetch the first "resultLimit" results from the "ip:" MSN search.
         '''
