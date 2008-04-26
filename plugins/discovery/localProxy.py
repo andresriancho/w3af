@@ -62,9 +62,6 @@ class localProxy(baseDiscoveryPlugin):
     def setUrlOpener( self, urlOpener ):
         self._urlOpener = urlOpener
         
-        # Now, I'm starting the proxy server !
-        self._proxy()
-    
     def discover(self, fuzzableRequest ):
         '''
         Do nothing, this plugin is rather odd, cause it will never return new URIs to the core.
@@ -72,8 +69,10 @@ class localProxy(baseDiscoveryPlugin):
         in the _proxy method and in the handler class.
         '''
         
-        # All i need to run is runned from setUrlOpener and setOptions
         # All i need to run is self._proxy() with the correct parameters
+        # Now, I'm starting the proxy server !
+        self._proxy()
+
         raise w3afRunOnce()
         
     def setOptions( self, OptionsMap ):

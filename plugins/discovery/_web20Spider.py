@@ -86,7 +86,10 @@ class _web20Spider(baseDiscoveryPlugin):
             return []
         else:
             self._fuzzableRequests = []
-            
+        
+            # Now, I'm starting the proxy server !
+            self._proxy()
+        
             om.out.debug( 'web20Spider plugin is analyzing: ' + fuzzableRequest.getURL() )
             
             self._loadURI( fuzzableRequest.getURI() )
@@ -98,7 +101,11 @@ class _web20Spider(baseDiscoveryPlugin):
                     # Go back to the previous URI
                     om.out.debug('[web20Spider] The URI changed, clicking on back.')
                     self._loadURI( fuzzableRequest.getURI() )
-                    
+            
+            # Stop the proxy
+            self._proxyd.stop()
+            
+            # Done, lets go on...
             return self._fuzzableRequests
     
     def _findJs( self ):
@@ -206,9 +213,6 @@ class _web20Spider(baseDiscoveryPlugin):
     def setUrlOpener( self, urlOpener ):
         self._urlOpener = urlOpener
         
-        # Now, I'm starting the proxy server !
-        self._proxy()
-        
     def _proxy( self ):
         '''
         This method starts the proxy server with the configured options.
@@ -219,7 +223,7 @@ class _web20Spider(baseDiscoveryPlugin):
         
         self._proxyd = proxy( '127.0.0.1', self._proxyPort , self._urlOpener, proxyHandler=self.proxyHandler )
         self._proxyd.start2()
-        time.sleep(0.5)
+        time.sleep(0.3)
         if self._proxyd.isRunning():
             om.out.debug('The proxy server was successfully started.')
         else:
