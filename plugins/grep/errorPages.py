@@ -53,14 +53,19 @@ class errorPages(baseGrepPlugin):
         mesg.append('Server object error')
         mesg.append('invalid literal for int()')
         mesg.append('exceptions.ValueError')
-        mesg.append('Microsoft VBScript runtime')
+        
         mesg.append('<font face="Arial" size=2>Type mismatch: ')
         mesg.append('[an error occurred while processing this directive]')
         mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>Error Occurred While Processing Request</H3><P>')
         
+        # VBScript
+        mesg.append('Microsoft VBScript runtime')
+        mesg.append("<font face=\"Arial\" size=2>error '800a000d'</font>")
+        
         # ASP error I found during a pentest, the ASP used a foxpro db, not a SQL injection
         mesg.append('<font face="Arial" size=2>error \'800a0005\'</font>')
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
+        
         # ASPX
         mesg.append('<b> Description: </b>An unhandled exception occurred during the execution of the current web request. Please review the stack trace')
         

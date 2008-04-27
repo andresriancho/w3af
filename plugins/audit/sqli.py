@@ -158,6 +158,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('mysql_', MYSQL ) )
         errors.append( ('on MySQL result index', MYSQL ) )
         errors.append( ('You have an error in your SQL syntax;', MYSQL ) )
+        errors.append( ('You have an error in your SQL syntax near', MYSQL ) )
         errors.append( ('MySQL server version for the right syntax to use', MYSQL ) )
         errors.append( ('\\[MySQL\\]\\[ODBC', MYSQL ))
         errors.append( ("Column count doesn't match", MYSQL ))
