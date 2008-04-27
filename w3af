@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 
-import core.controllers.outputManager as om
 import getopt,sys, os
+
+# First of all, we need to change the working directory to the directory of w3af.
+currentDir = os.getcwd()
+scriptDir = os.path.dirname(sys.argv[0])
+os.chdir( scriptDir )
+
+def backToCurrentDir():
+    os.chdir( currentDir )
+
+# Now we can load all modules and stuff...
+import core.controllers.outputManager as om
 
 om.out.setOutputPlugins( ['console'] )
 
@@ -23,7 +33,7 @@ def main():
     except getopt.GetoptError:
         # print help information and exit:
         usage()
-        sys.exit(2)
+        return -3
     scriptFile = None
     web = False
     gtkui = False
@@ -37,7 +47,7 @@ def main():
             # Test all scripts that have an assert call
             from core.controllers.misc.w3afTest import w3afTest
             w3afTest()
-            sys.exit(0)
+            return 0
         if o == "-s":
             scriptFile = a
         if o == "-i":
@@ -55,10 +65,11 @@ def main():
             web = True
         if o == "-h":
             usage()
-            sys.exit()
+            return 0
     
     if web:
         # go web!
+        # Please note that webUi is deprecated, and a lot of things WILL go wrong.
         from core.ui.webUi.webUi import webUi
         om.out.setOutputPlugins( ['console', 'webOutput'] )
         console = webUi()
@@ -69,7 +80,7 @@ def main():
             display = os.getenv("DISPLAY").strip()
             if not display:
                 om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
-                sys.exit(-1)
+                return -1
         import core.ui.gtkUi.main
         core.ui.gtkUi.main.main(profile)
     else:
@@ -81,7 +92,7 @@ def main():
                 fd = open( scriptFile )
             except:
                 om.out.error('Failed to open file : ' + scriptFile )
-                sys.exit(2)
+                return -2
             else:
                 commandsToRun = []
                 for line in fd:
@@ -95,5 +106,7 @@ def main():
         console.sh()
 
 if __name__ == "__main__":
-    main()
+    errCode = main()
+    backToCurrentDir()
+    sys.exit(errCode)
 

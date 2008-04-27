@@ -68,7 +68,8 @@ import core.ui.gtkUi.confpanel as confpanel
 from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser
-    
+import time
+
 #    Commented out: this has no sense after Results reorganizing
 #    <menu action="ViewMenuScan">
 #      <menuitem action="URLWindow"/>
@@ -402,6 +403,8 @@ class MainApp(object):
         self.generalconfig["mainwindow-position"] = self.window.get_position()
         self.generalconfig.close()
         gtk.main_quit()
+        time.sleep(0.5)
+        self.w3af.quit()
         return False
 
     def _scan_director(self, widget):
