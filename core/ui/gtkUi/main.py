@@ -60,6 +60,7 @@ import core.ui.gtkUi.scanrun as scanrun
 import core.ui.gtkUi.exploittab as exploittab
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.profiles as profiles
+import core.ui.gtkUi.craftedRequests as craftedRequests
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.logtab as logtab
@@ -91,6 +92,9 @@ ui_menu = """
       <menuitem action="ExploitVuln"/>
       <menuitem action="Interactive"/>
     </menu>
+    <menu action="ToolsMenu">
+      <menuitem action="ManualRequest"/>
+    </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
       <menuitem action="Miscellaneous"/>
@@ -105,8 +109,10 @@ ui_menu = """
     <separator name="s1"/>
     <toolitem action="StartStop"/>
     <toolitem action="Pause"/>
-    <separator name="s1"/>
+    <separator name="s2"/>
     <toolitem action="ExploitAll"/>
+    <separator name="s3"/>
+    <toolitem action="ManualRequest"/>
   </toolbar>
 </ui>
 """
@@ -229,9 +235,13 @@ class MainApp(object):
             ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
             ('ConfigurationMenu', None, '_Configuration'),
             
+            ('ManualRequest', gtk.STOCK_INDEX, '_Manual Request', None, 'Generate manual HTTP request', self._manual_request),
+            ('ToolsMenu', None, '_Tools'),
+
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
             ('About', gtk.STOCK_ABOUT, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
+
             ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
             ('ExploitAll', gtk.STOCK_EXECUTE, '_Multiple Exploit', None, 'Exploit all vulns', self._exploit_all),
         ])
@@ -291,13 +301,13 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 5
+        assert toolbar.get_n_items() == 8
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
-        exploitall = toolbar.get_nth_item(4)
+        exploitall = toolbar.get_nth_item(5)
         self.exploitallsens = helpers.SensitiveAnd(exploitall, ("stopstart", "tabinfo"))
         
         # tab dependant widgets
@@ -654,6 +664,11 @@ class MainApp(object):
         '''Exploits all vulns.'''
         exploitpage = self.notetabs["Exploit"]
         exploitpage.exploitAll()
+
+    def _manual_request(self, action):
+        '''Generate manual HTTP requests.'''
+        reload(craftedRequests)
+        craftedRequests.ManualRequests(self.w3af)
 
 
 def main(profile):

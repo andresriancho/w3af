@@ -137,6 +137,27 @@ class requestResponsePaned:
         start, end = buffer.get_bounds()
         buffer.delete(start, end)
         
+    def rawShow(self, requestresponse, body):
+        '''Show the raw data.'''
+        self._clear(self._upTv)
+        buffer = self._upTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, requestresponse)
+        
+        self._clear(self._downTv)
+        buffer = self._downTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, body)
+        
+    def getBothTexts(self):
+        '''Returns the upper and lower texts.'''
+        uppBuf = self._upTv.get_buffer()
+        uppText = uppBuf.get_text(uppBuf.get_start_iter(), uppBuf.get_end_iter())
+        lowBuf = self._downTv.get_buffer()
+        lowText = lowBuf.get_text(lowBuf.get_start_iter(), lowBuf.get_end_iter())
+        return (uppText, lowText)
+
+
 class requestPaned(gtk.HPaned, requestResponsePaned):
     def __init__(self):
         gtk.HPaned.__init__(self)
