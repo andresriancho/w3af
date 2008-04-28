@@ -443,13 +443,12 @@ class xUrllib:
             # also possible when a proxy is configured and not available
             # also possible when auth credentials are wrong for the URI
             if hasattr(e, 'reason'):
+                self._incrementGlobalErrorCount()
                 try:
                     e.reason[0]
                 except:
-                    self._incrementGlobalErrorCount()
                     raise w3afException('Unexpected error in urllib2 / httplib: ' + repr(e.reason) )                    
                 else:
-                    self._incrementGlobalErrorCount()
                     if e.reason[0] == -2:
                         raise w3afException('Failed to resolve domain name for URL: ' + req.get_full_url() )
                     if e.reason[0] == 111:
@@ -540,7 +539,12 @@ class xUrllib:
         Try to send the request again while doing some error handling.
         '''
         if self._errorCount.get( id(req), 0 ) < self.settings.getMaxRetrys() :
-            self._errorCount[ id(req) ] = 1
+            # Increment the error count of this particular request.
+            if id(req) not in self._errorCount:
+                self._errorCount[ id(req) ] = 0
+            self._errorCount[ id(req) ] += 1
+            
+            om.out.debug('Re-sending request...')
             return self._send( req, useCache )
         else:
             # Clear the log of failed requests; this one definetly failed...
@@ -553,7 +557,7 @@ class xUrllib:
             self._consecutiveErrorCount += 1
         else:
             self._lastRequestFailed = True
-            
+        
         if self._consecutiveErrorCount >= 10:
             raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
             
