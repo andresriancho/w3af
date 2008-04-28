@@ -455,7 +455,7 @@ class xUrllib:
                         raise w3afException('Connection refused while requesting: ' + req.get_full_url() )
                     else:
                         om.out.debug( 'w3af failed to reach the server while requesting: "'+originalUrl+'".\nReason: "' + str(e.reason) + '" , Exception: "'+ str(e)+'"; going to retry.')
-                        #om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                        om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
                         req._Request__original = originalUrl
                         return self._retry( req, useCache )
             elif hasattr(e, 'code'):
@@ -558,12 +558,15 @@ class xUrllib:
         else:
             self._lastRequestFailed = True
         
+        om.out.debug('Incrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
+        
         if self._consecutiveErrorCount >= 10:
             raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
             
     def _decrementGlobalErrorCount( self ):
         self._lastRequestFailed = False
         self._consecutiveErrorCount = 0
+        om.out.debug('Decrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
     
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins
