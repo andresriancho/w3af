@@ -25,6 +25,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import *
+from core.controllers.w3afException import *
 import difflib
 
 class fingerprint404Page:
@@ -57,6 +58,8 @@ class fingerprint404Page:
             raise w3
         except KeyboardInterrupt, k:
             raise k
+        except w3afMustStopException, mse:
+            raise mse
         except Exception, e:
             om.out.debug('Something went wrong while getting a 404 page...')
             raise e
@@ -220,6 +223,8 @@ class fingerprint404Page:
             response = self._urlOpener.GET( url404, useCache=True, grepResult=False )
         except w3afException, w3:
             raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
+        except w3afMustStopException, mse:
+            raise mse
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
             
