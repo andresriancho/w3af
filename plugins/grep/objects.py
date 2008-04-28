@@ -65,7 +65,7 @@ class objects(baseGrepPlugin):
                 i.setName('Applet tag')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
-                i.setDesc( "The URL : " + v.getURL() + " has an applet tag." )          
+                i.setDesc( "The URL : " + i.getURL() + " has an applet tag." )          
                 kb.kb.append( self, 'applet', i )
                 self._alreadyAddedApplet.append( response.getURL() )
     
