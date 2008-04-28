@@ -59,7 +59,9 @@ class fingerprint404Page:
         except KeyboardInterrupt, k:
             raise k
         except w3afMustStopException, mse:
-            raise mse
+            # Someone else will raise this exception and handle it as expected
+            # whenever the next call to GET is done
+            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
         except Exception, e:
             om.out.debug('Something went wrong while getting a 404 page...')
             raise e
@@ -224,7 +226,9 @@ class fingerprint404Page:
         except w3afException, w3:
             raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
         except w3afMustStopException, mse:
-            raise mse
+            # Someone else will raise this exception and handle it as expected
+            # whenever the next call to GET is done
+            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
             
