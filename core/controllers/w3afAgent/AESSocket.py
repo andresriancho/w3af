@@ -20,6 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+msg = "This WHOLE file ain't used in w3af. This was a test that was truncated by my personal\
+lack of interest in using encryption here, my lack of time and the main reason: I'm lazy ;)\
+Also, pyrijndael was only used here, so I removed the dependency, which was a problem for debian."
+raise Exception(msg)
+
+# If I wan't to continue to develop AESSocket, I should re-install pyrijndael.
 from extlib.pyrijndael.pyRijndael import DecryptData
 from extlib.pyrijndael.pyRijndael import EncryptData
 
