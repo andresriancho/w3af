@@ -72,12 +72,27 @@ class shell(vuln, exploitResult, commonAttackMethods):
     def getUrlOpener( self ):
         return self._urlOpener
 
+    def help( self, command ):
+        '''
+        Handle the help command.
+        '''
+        om.out.console('Available commands:')
+        om.out.console('    help                            Display this information')
+        om.out.console('    start vdaemon                   Start the virtual daemon')
+        om.out.console('    start w3afAgent                 Start the w3afAgent service')
+        om.out.console('    endInteraction                  Exit the shell session')
+        om.out.console('')
+        om.out.console('All the other commands are executed on the remote server.')
+        return True
+        
     def rexec( self, command ):
         '''
         This is the method that is called when a user want's to execute something in the remote operating system.
         What I do here is first trap the requests for starting the virtual daemon and the w3afAgent, and this ain't the
         case I forward the request to the _rexec method, that should be implemented by all shellAttackPlugins.
         '''
+        if command.strip() == 'help':
+            self.help( command )
         if command == 'start vdaemon':
             # start a vdaemon!
             # Advanced exploitation
