@@ -762,7 +762,9 @@ class w3afCore:
         '''
         @return: A list with all plugin types.
         '''
-        pluginTypes = [ f for f in os.listdir('plugins' + os.path.sep) if f.count('.py') == 0 ]
+        pluginTypes = [ x for x in os.listdir('plugins' + os.path.sep) ]
+        # Now we filter to show only the directories
+        pluginTypes = [ d for d in pluginTypes if os.path.isdir('plugins' + os.path.sep + d) ]
         pluginTypes.remove( 'attack' )
         if '.svn' in pluginTypes:
             pluginTypes.remove('.svn')
