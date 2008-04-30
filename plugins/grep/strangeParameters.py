@@ -28,6 +28,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+import core.data.kb.vuln as vuln
 import core.data.parsers.dpCache as dpCache
 from core.data.parsers.urlParser import *
 import re
@@ -59,6 +60,17 @@ class strangeParameters(baseGrepPlugin):
                     i.setVar( param )
                     i['parameterValue'] = qs[param]
                     kb.kb.append( self , 'strangeParameters' , i )
+                if self._isSQL( param, qs[param] ): 
+                    # To find this kind of vulns
+                    # http://thedailywtf.com/Articles/Oklahoma-Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-Sensitive-Data.aspx
+                    v = vuln.vuln()
+                    v.setName('Parameter has SQL sentence')
+                    v.setURI( ref )
+                    v.setId( response.id )
+                    v.setDesc( 'The URI : ' +  v.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is a SQL sentence.' )
+                    v.setVar( param )
+                    v['parameterValue'] = qs[param]
+                    kb.kb.append( self , 'strangeParameters' , v )
     
     def setOptions( self, OptionList ):
         pass
@@ -75,6 +87,16 @@ class strangeParameters(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self.printUniq( kb.kb.getData( 'strangeParameters', 'strangeParameters' ), 'VAR' )
+
+    def _isSQL(self, parameter, value):
+        '''
+        @return: True if the parameter value contains SQL sentences
+        '''
+        regex = '(SELECT .*? FROM|INSERT INTO .*? VALUES|UPDATE .*? SET .*? WHERE)'
+        if re.search( regex, value, re.IGNORECASE):
+            return True
+        
+        return False
 
     def _isStrange(self, parameter, value):
         '''
@@ -93,6 +115,7 @@ class strangeParameters(baseGrepPlugin):
             return True
         
         return False
+    
         
     def getPluginDeps( self ):
         '''
