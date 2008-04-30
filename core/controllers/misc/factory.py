@@ -26,6 +26,7 @@ This module defines a factory function that is used around the project.
 @author: Andres Riancho ( andres.riancho@gmail.com )
 '''
 import sys
+from core.controllers.w3afException import w3afException
 
 def factory(ModuleName, *args):
     '''
@@ -40,8 +41,21 @@ def factory(ModuleName, *args):
     @parameter ModuleName: What do you want to instanciate ?
     @return: An instance.
     '''
-    __import__(ModuleName)
-    aModule = sys.modules[ModuleName]
-    className = ModuleName.split('.')[len(ModuleName.split('.'))-1]
-    aClass = getattr( aModule , className )
-    return apply(aClass, args)
+    try:
+        __import__(ModuleName)
+    except:
+        raise w3afException('Unknown plugin "'+ ModuleName + '"')
+    else:
+        try:
+            aModule = sys.modules[ModuleName]
+            className = ModuleName.split('.')[len(ModuleName.split('.'))-1]
+            aClass = getattr( aModule , className )
+        except:
+            raise w3afException('The requested plugin ("'+ ModuleName + '") doesn\'t have a correct format.')
+        else:
+            try:
+                res = apply(aClass, args)
+            except:
+                raise w3afException('Failed to get an instance of "' + className + '"')
+            else:
+                return res

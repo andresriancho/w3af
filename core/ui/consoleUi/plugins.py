@@ -167,6 +167,12 @@ class plugins(consoleMenu):
             else:
                 plugins = ''.join(parameters[0:]).split(',')
                 plugins = [ p.replace(' ', '') for p in plugins ]
+                
+                # First of all, a sanity check.
+                if 'all' not in plugins:
+                    for p in plugins:
+                        if p.startswith('!'):
+                            raise w3afException('If you wan\'t to use a negation (!) you should enable all plugins. Please read the examples in the help. Example: all,' + p)
 
                 # This avoids duplicates in the list
                 plugins = list( set( plugins ) )    # bleh !
