@@ -549,7 +549,9 @@ class xUrllib:
         else:
             # Clear the log of failed requests; this one definetly failed...
             del self._errorCount[ id(req) ]
-            self._incrementGlobalErrorCount()
+            # No need to add this:
+            #self._incrementGlobalErrorCount()
+            # The global error count is already incremented by the _send method.
             raise w3afException('Too many retries when trying to get: ' + req.get_full_url() )
     
     def _incrementGlobalErrorCount( self ):
@@ -595,7 +597,7 @@ class xUrllib:
         return request
         
     def _grepResult(self, request, response):
-        # The grep process is all done in another thread. This improved the
+        # The grep process is all done in another thread. This improves the
         # speed of all w3af.
         if len( self._grepPlugins ) and urlParser.getDomain( request.get_full_url() ) in cf.cf.getData('targetDomains'):
             # I'll create a fuzzable request based on the urllib2 request object
