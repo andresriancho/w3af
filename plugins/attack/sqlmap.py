@@ -362,11 +362,13 @@ class sqlShellObj(shell):
         _methodMap['file'] = self._driver.getFile
         _methodMap['expression'] = self._driver.getExpr
         _methodMap['union-check'] = self._driver.unionCheck
-        _methodMap['help'] = self._help
+        _methodMap['help'] = self.help
     
         commandList = command.split(' ')
         if not len( commandList ):
-            return 'Unknown command. Please read the help: \n' + self._help()
+            om.out.console('Unknown command. Please read the help:')
+            self.help()
+            return ''
         else:
             cmd = commandList[0]
             method = ''
@@ -377,7 +379,9 @@ class sqlShellObj(shell):
                     self._driver.goodSamaritanContribution( command )
                     return None
                 else:
-                    return 'Unknown command. Please read the help: \n' + self._help()
+                    om.out.console('Unknown command. Please read the help:')
+                    self.help()
+                    return ''
 
             tm.startFunction( target=self._runCommand, args=(method, command,), ownerObj=self, restrict=False )
             return None
@@ -407,27 +411,31 @@ class sqlShellObj(shell):
         # Always stop the good samaritan
         self._driver.stopGoodSamaritan() 
         om.out.console( '\r\n' + res )
-        om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getShellId())+'>>>', newLine = False)
+        self._showPrompt()
 
-    def _help( self ):
+    def _showPrompt( self ):
+        om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
+        
+    def help( self ):
         '''
         Print the help to the user.
         '''
-        res =   SQLMAPCREATORS + '''\n
-        fingerprint     perform an exaustive database fingerprint
-        banner          get database banner
-        current-user        get current database user
-        current-db      get current database name
-        users           get database users
-        dbs         get available databases
-        tables [db]     get available databases tables (optional: database)
-        columns <table> [db]    get table columns (required: table optional: database)
-        dump <table> [db]   dump a database table (required: -T optional: -D)
-        file <FILENAME>     read a specific file content
-        expression <EXPRESSION> expression to evaluate
-        union-check     check for UNION sql injection
-        '''
-        return res
+        om.out.console('')
+        om.out.console( SQLMAPCREATORS )
+        om.out.console('fingerprint             perform an exaustive database fingerprint')
+        om.out.console('banner                  get database banner')
+        om.out.console('current-user            get current database user')
+        om.out.console('current-db              get current database name')
+        om.out.console('users                   get database users')
+        om.out.console('dbs                     get available databases')
+        om.out.console('tables [db]             get available databases tables (optional: database)')
+        om.out.console('columns <table> [db]    get table columns (required: table optional: database)')
+        om.out.console('dump <table> [db]       dump a database table (required: -T optional: -D)')
+        om.out.console('file <FILENAME>         read a specific file content')
+        om.out.console('expression <EXPRESSION> expression to evaluate')
+        om.out.console('union-check             check for UNION sql injection')
+        self._showPrompt()
+        return True
     
     def _identifyOs( self ):
         # hmmm....

@@ -204,8 +204,18 @@ class localFileReader(baseAttackPlugin):
         
 class fileReaderShell(shell):
     
-    _catMsg = 'localFileReader shell is restricted to two commands cat and list. Example: "cat /etc/passwd" .'
-    _catMsg += '\nThe list command prints (if possible) a list of the full path to all files in the webroot.'
+    def help( self, command ):
+        '''
+        Handle the help command.
+        '''
+        om.out.console('Available commands:')
+        om.out.console('    help                            Display this information')
+        om.out.console('    cat                             Show the contents of a file')
+        om.out.console('    list                            (if possible) List the contents of a directory')
+        om.out.console('    endInteraction                  Exit the shell session')
+        om.out.console('')
+        om.out.console('All the other commands are executed on the remote server.')
+        return True
         
     def _rexec( self, command ):
         '''
@@ -223,7 +233,8 @@ class fileReaderShell(shell):
             try:
                 file = command.split(' ')[1]
             except:
-                return self._catMsg
+                self.help( command )
+                return ''
             else:
                 return self._cat( file )
             
