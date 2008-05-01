@@ -667,7 +667,6 @@ class MainApp(object):
 
     def _manual_request(self, action):
         '''Generate manual HTTP requests.'''
-        reload(craftedRequests)
         craftedRequests.ManualRequests(self.w3af)
 
 

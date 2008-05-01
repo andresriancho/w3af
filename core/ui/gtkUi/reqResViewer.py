@@ -56,11 +56,11 @@ class reqResViewer(gtk.HPaned):
     A VPaned with the request and the response inside.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self):
+    def __init__(self, enableWidget=None):
         super(reqResViewer,self).__init__()
         
         # Create the result viewer
-        resultNotebook = gtk.Notebook()
+        self.resultNotebook = gtk.Notebook()
         # Create the request viewer
         requestNotebook = gtk.Notebook()
         
@@ -79,27 +79,30 @@ class reqResViewer(gtk.HPaned):
         
         # Create the objects that go inside the request and the response...
         reqLabel = gtk.Label("Request")
-        self.request = requestPaned()
+        self.request = requestPaned(enableWidget)
         resLabel = gtk.Label("Response")
         self.response = responsePaned(renderWidget)
         
         # Add all to the notebook
         requestNotebook.append_page(self.request, reqLabel)
         self.pack1(requestNotebook)
-        resultNotebook.append_page(self.response, resLabel)
+        self.resultNotebook.append_page(self.response, resLabel)
         
         if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
-            resultNotebook.append_page(swRenderedHTML, renderedLabel)
+            self.resultNotebook.append_page(swRenderedHTML, renderedLabel)
             
-        self.pack2(resultNotebook)
+        self.pack2(self.resultNotebook)
         self.set_position(400)
         self.show_all()
 
 class requestResponsePaned:
-    def __init__( self ):
+    def __init__(self, enableWidget=None):
         # The textview where a part of the req/res is showed
         self._upTv = gtk.TextView()
         self._upTv.set_border_width(5)
+        if enableWidget:
+            self._upTv.get_buffer().connect("changed", self._changed, enableWidget)
+            enableWidget.set_sensitive(False)
         
         # Scroll where the textView goes
         sw1 = gtk.ScrolledWindow()
@@ -128,6 +131,12 @@ class requestResponsePaned:
         vpan.show_all()
         
         self.add( vpan )
+
+    def _changed(self, widg, toenable):
+        '''Supervises if the widget has some text.'''
+        uppBuf = self._upTv.get_buffer()
+        uppText = uppBuf.get_text(uppBuf.get_start_iter(), uppBuf.get_end_iter())
+        toenable.set_sensitive(bool(uppText))
         
     def _clear( self, textView ):
         '''
@@ -137,6 +146,11 @@ class requestResponsePaned:
         start, end = buffer.get_bounds()
         buffer.delete(start, end)
         
+    def clearPanes(self):
+        '''Public interface to clear both panes.'''
+        self._clear( self._upTv )
+        self._clear( self._downTv )
+
     def rawShow(self, requestresponse, body):
         '''Show the raw data.'''
         self._clear(self._upTv)
@@ -159,9 +173,9 @@ class requestResponsePaned:
 
 
 class requestPaned(gtk.HPaned, requestResponsePaned):
-    def __init__(self):
+    def __init__(self, enableWidget):
         gtk.HPaned.__init__(self)
-        requestResponsePaned.__init__( self )
+        requestResponsePaned.__init__(self, enableWidget)
         
     def show( self, method, uri, version, headers, postData ):
         '''

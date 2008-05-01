@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import pygtk, gtk
 from core.ui.gtkUi.reqResViewer import reqResViewer
+import core.ui.gtkUi.helpers as helpers
+from core.controllers.w3afException import w3afException
 
 class ManualRequests(gtk.Window):
     '''Infrastructure to generate manual HTTP requests.
@@ -30,6 +32,7 @@ class ManualRequests(gtk.Window):
     '''
     def __init__(self, w3af):
         super(ManualRequests,self).__init__(gtk.WINDOW_TOPLEVEL)
+        self.w3af = w3af
 
         # title, position and dimensions
         self.set_title("w3af - Manual Requests")
@@ -42,18 +45,18 @@ class ManualRequests(gtk.Window):
         vbox = gtk.VBox()
         self.add(vbox)
 
-        # request-response viewer
-        self.reqresp = reqResViewer()
-        vbox.pack_start(self.reqresp, True, True)
-
         # send button
         hbox = gtk.HBox()
-        b = gtk.Button("Send")
-        # FIXME: center this!
+        b = gtk.Button("   Send   ")
         b.connect("clicked", self._send)
-        hbox.pack_start(b, False, False)
-        vbox.pack_start(hbox, False, False, padding=10)
+        hbox.pack_start(b, True, False)
 
+        # request-response viewer
+        self.reqresp = reqResViewer(b)
+        self.reqresp.resultNotebook.set_sensitive(False)
+        vbox.pack_start(self.reqresp, True, True)
+
+        vbox.pack_start(hbox, False, False, padding=10)
         self.show_all()
 
     def _send(self, widg):
@@ -62,8 +65,21 @@ class ManualRequests(gtk.Window):
         @param widget: who sent the signal.
         '''
         (tsup, tlow) = self.reqresp.request.getBothTexts()
-        self.reqresp.response.rawShow(tlow[::-1], tsup[::-1])
-        # FIXME: actually do the HTTP request and show the response!
+
+        try:
+            httpResp = helpers.coreWrap(self.w3af.uriOpener.sendRawRequest, tsup, tlow)
+        except w3afException:
+            self.reqresp.response.clearPanes()
+            self.reqresp.resultNotebook.set_sensitive(False)
+            return
+
+        # get the info
+        body = httpResp.getBody()
+        headers = httpResp.dumpResponseHead()
+
+        # activate and show
+        self.reqresp.resultNotebook.set_sensitive(True)
+        self.reqresp.response.rawShow(body, headers)
 
     def quit(self, widget, event):
         '''Windows quit, saves the position and size.

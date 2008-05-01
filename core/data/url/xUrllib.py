@@ -197,7 +197,7 @@ class xUrllib:
         
         # parse the request head
         splittedHead = head.split('\n')
-        splittedHead = [ h.strip() for h in splittedHead ]
+        splittedHead = [ h.strip() for h in splittedHead if h ]
         
         # Get method, uri, version
         metUriVer = splittedHead[0]
