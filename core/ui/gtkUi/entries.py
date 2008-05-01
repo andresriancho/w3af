@@ -707,3 +707,46 @@ class Searchable(object):
         self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_normal)
 
 
+
+class RememberingWindow(gtk.Window):
+    '''Just a window that remembers position and size.
+
+    Also has a vertical box for the content.
+
+    @param w3af: the w3af core
+    @param idstring: an id for the configuration
+    @param title: the window title
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af, idstring, title):
+        super(RememberingWindow,self).__init__(gtk.WINDOW_TOPLEVEL)
+
+        # position and dimensions
+        self.winconfig = w3af.mainwin.generalconfig
+        self.id_size = idstring + "-size"
+        self.id_position = idstring + "-position"
+        conf_size = self.winconfig.get(self.id_size, (800, 600))
+        conf_position = self.winconfig.get(self.id_position, (50, 50))
+        self.resize(*conf_size)
+        self.move(*conf_position)
+
+        # main vertical box
+        self.vbox = gtk.VBox()
+        self.vbox.show()
+        self.add(self.vbox)
+
+        self.set_title(title)
+        self.connect("delete_event", self.quit)
+
+
+    def quit(self, widget, event):
+        '''Windows quit, saves the position and size.
+
+        @param widget: who sent the signal.
+        @param event: the event that happened
+        '''
+        self.winconfig[self.id_size] = self.get_size()
+        self.winconfig[self.id_position] = self.get_position()
+        return False
+

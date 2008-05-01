@@ -23,27 +23,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk
 from core.ui.gtkUi.reqResViewer import reqResViewer
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.entries as entries
 from core.controllers.w3afException import w3afException
 
-class ManualRequests(gtk.Window):
+request_example = """\
+GET http://www.some_host.com/path HTTP/1.0
+Host: www.some_host.com
+User-Agent: w3af.sf.net
+Pragma: no-cache
+Content-Type: application/x-www-form-urlencoded
+"""
+
+class ManualRequests(entries.RememberingWindow):
     '''Infrastructure to generate manual HTTP requests.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(ManualRequests,self).__init__(gtk.WINDOW_TOPLEVEL)
+        super(ManualRequests,self).__init__(w3af, "manualreq", "w3af - Manual Requests")
         self.w3af = w3af
-
-        # title, position and dimensions
-        self.set_title("w3af - Manual Requests")
-        self.winconfig = w3af.mainwin.generalconfig
-        self.connect("delete_event", self.quit)
-        self.resize(*self.winconfig.get("manualreq-size", (800, 600)))
-        self.move(*self.winconfig.get("manualreq-position", (50, 50)))
-
-        # main vertical box
-        vbox = gtk.VBox()
-        self.add(vbox)
 
         # send button
         hbox = gtk.HBox()
@@ -54,18 +52,12 @@ class ManualRequests(gtk.Window):
         # request-response viewer
         self.reqresp = reqResViewer(b)
         self.reqresp.resultNotebook.set_sensitive(False)
-        vbox.pack_start(self.reqresp, True, True)
+        self.vbox.pack_start(self.reqresp, True, True)
 
-        vbox.pack_start(hbox, False, False, padding=10)
+        self.vbox.pack_start(hbox, False, False, padding=10)
         
         # Add a default request
-        default_request_head = 'GET http://www.some_host.com/path HTTP/1.0\n'
-        default_request_head += 'Host: www.some_host.com\n'
-        default_request_head += 'User-Agent: w3af.sf.net\n'
-        default_request_head += 'Pragma: no-cache\n'
-        default_request_head += 'Content-Type: application/x-www-form-urlencoded\n'
-        
-        self.reqresp.request.rawShow(default_request_head, '')
+        self.reqresp.request.rawShow(request_example, '')
         
         # Show all!
         self.show_all()
@@ -91,14 +83,3 @@ class ManualRequests(gtk.Window):
         # activate and show
         self.reqresp.resultNotebook.set_sensitive(True)
         self.reqresp.response.rawShow(headers, body)
-
-    def quit(self, widget, event):
-        '''Windows quit, saves the position and size.
-
-        @param widget: who sent the signal.
-        @param event: the event that happened
-        '''
-        self.winconfig["manualreq-size"] = self.get_size()
-        self.winconfig["manualreq-position"] = self.get_position()
-        return False
-
