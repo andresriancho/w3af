@@ -31,6 +31,9 @@ from core.data.searchEngines.yahooSiteExplorer import yahooSiteExplorer as yse
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 
+# For URLError
+# FIXME: In the future, xUrllib should only raise w3afException
+import urllib2
 
 class yahooSiteExplorer(baseDiscoveryPlugin):
     '''
@@ -74,8 +77,8 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:
-            pass
-        except URLError, ue:
+            om.out.debug('w3afException while fetching page in yahooSiteExplorer, error: ' + str(ue) )
+        except urllib2.URLError, ue:
             om.out.debug('URL Error while fetching page in yahooSiteExplorer, error: ' + str(ue) )
         else:
             fuzzReqs = self._createFuzzableRequests( response )
