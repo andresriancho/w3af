@@ -39,7 +39,6 @@ class basePayloadTransfer:
         '''
         raise w3afException('You should implement the canTransfer method when you inherit from basePayloadTransfer.')
     
-    
     def estimateTransferTime( self, size ):
         '''
         @return: An estimated transfer time for a file with the specified size.

@@ -62,8 +62,8 @@ class webserver(w3afThread):
                 s.connect((self._ip, self._port))
                 s.send('GET / HTTP/1.0\n\n')
                 s.close()
-            except:
-                pass
+            except Exception, e:
+                om.out.debug('The webserver ain\'t running and I tried to close it anyway')
             self._running = False
         
     def run(self):
@@ -132,7 +132,7 @@ class w3afWebHandler(BaseHTTPRequestHandler):
 
 class w3afHTTPServer( HTTPServer ):
     def server_bind(self):
-        om.out.debug('Changing socket options.')
+        om.out.debug('Changing socket options of w3afHTTPServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         HTTPServer.server_bind( self )
     
