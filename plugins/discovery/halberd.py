@@ -40,6 +40,8 @@ halberdDir = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'oHalberd'
 # This insert in the first position of the path is to "step over" an installation of halberd.
 sys.path.insert( 0, halberdDir )
 
+# I do it this way and not with a "from plugins.discovery.oHalberd.Halberd import logger" because
+# inside the original hablerd they are crossed imports and stuff that I don't want to modify.
 import Halberd.shell as HalberdShell
 import Halberd.logger as HalberdLogger
 import Halberd.ScanTask as HalberdScanTask
