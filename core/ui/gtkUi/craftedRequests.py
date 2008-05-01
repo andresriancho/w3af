@@ -57,6 +57,17 @@ class ManualRequests(gtk.Window):
         vbox.pack_start(self.reqresp, True, True)
 
         vbox.pack_start(hbox, False, False, padding=10)
+        
+        # Add a default request
+        default_request_head = 'GET http://www.some_host.com/path HTTP/1.0\n'
+        default_request_head += 'Host: www.some_host.com\n'
+        default_request_head += 'User-Agent: w3af.sf.net\n'
+        default_request_head += 'Pragma: no-cache\n'
+        default_request_head += 'Content-Type: application/x-www-form-urlencoded\n'
+        
+        self.reqresp.request.rawShow(default_request_head, '')
+        
+        # Show all!
         self.show_all()
 
     def _send(self, widg):
@@ -79,7 +90,7 @@ class ManualRequests(gtk.Window):
 
         # activate and show
         self.reqresp.resultNotebook.set_sensitive(True)
-        self.reqresp.response.rawShow(body, headers)
+        self.reqresp.response.rawShow(headers, body)
 
     def quit(self, widget, event):
         '''Windows quit, saves the position and size.
