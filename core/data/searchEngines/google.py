@@ -23,15 +23,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
+hasPyGoogleLib = False
 try:
     import extlib.pygoogle.google as pygoogle
-    om.out.debug('google is using the bundled pygoogle library')
+    om.out.debug('google.py is using the bundled pygoogle library')
+    hasPyGoogleLib = True
 except:
     try:
         import google as pygoogle
-        om.out.debug('google is using the systems pygoogle library')
+        om.out.debug('google.py is using the systems pygoogle library')
+        hasPyGoogleLib = True
     except:
-        raise w3afException('You have to install pygoogle lib.')
+        om.out.debug('google.py detected that pygoogle ain\'t installed! Doing requests manually.')
+        hasPyGoogleLib = False
 
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
 import core.data.parsers.urlParser as urlParser
@@ -53,15 +57,16 @@ class google(searchEngine):
         self._urlOpener = urlOpener
         
     def search( self, query, start, count=10 ):
-        if self._key == '':
-            res, resPages = self.met_search( query, start, count )
-            om.out.debug('Google search for : '+ query + ' returned ' + str( len( res ) ) + ' results.' )
-            return res
-        else:
+        if hasPyGoogleLib and self._key != '':
             pygoogle.LICENSE_KEY = self._key
             data = pygoogle.doGoogleSearch( query , start, count )
             om.out.debug('Google search for : '+ query + ' returned ' + str( len( data.results ) ) + ' results.' )
             return data.results
+        else:
+            # Perform requests manually
+            res, resPages = self.met_search( query, start, count )
+            om.out.debug('Google search for : '+ query + ' returned ' + str( len( res ) ) + ' results.' )
+            return res
     
     def pagesearch( self, query, start, count=10 ):
         res, resPages = self.met_search( query, start, count )
@@ -73,7 +78,6 @@ class google(searchEngine):
         http://labs.google.com/sets
         '''
         results = []
-        
         
         if len( inputStrings ) != 0:
             # I'll use the first 5 inputs
