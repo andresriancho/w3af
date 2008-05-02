@@ -458,6 +458,8 @@ class w3afCore:
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
+        #FIXME: This os.kill is baaaaaaaad! One of the things that I'm not allowing here
+        # is the changing back to the currentDir that is done in the main "w3af" script.
         try:
             # Shoot myself (linux style)
             os.kill( os.getpid(), signal.SIGKILL )
