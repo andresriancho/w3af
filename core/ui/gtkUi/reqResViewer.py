@@ -59,44 +59,22 @@ class reqResViewer(gtk.HPaned):
     def __init__(self, enableWidget=None):
         super(reqResViewer,self).__init__()
         
-        # Create the result viewer
-        self.resultNotebook = gtk.Notebook()
-        # Create the request viewer
-        requestNotebook = gtk.Notebook()
-        
-        # Create the HTML renderer
-        renderWidget = None
-        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
-            swRenderedHTML = gtk.ScrolledWindow()
-            renderedLabel = gtk.Label("Rendered response")
-            
-            if withMozillaTab and useMozilla:
-                renderWidget = gtkmozembed.MozEmbed()
-            if withGtkHtml2 and useGTKHtml2:
-                renderWidget = gtkhtml2.View()
-                
-            swRenderedHTML.add(renderWidget)
-        
-        # Create the objects that go inside the request and the response...
-        reqLabel = gtk.Label("Request")
+        # request
         self.request = requestPaned(enableWidget)
-        resLabel = gtk.Label("Response")
-        self.response = responsePaned(renderWidget)
-        
-        # Add all to the notebook
-        requestNotebook.append_page(self.request, reqLabel)
-        self.pack1(requestNotebook)
-        self.resultNotebook.append_page(self.response, resLabel)
-        
-        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
-            self.resultNotebook.append_page(swRenderedHTML, renderedLabel)
-            
-        self.pack2(self.resultNotebook)
+        self.pack1(self.request.notebook)
+
+        # response
+        self.response = responsePaned()
+        self.pack2(self.response.notebook)
+
         self.set_position(400)
         self.show_all()
 
-class requestResponsePaned:
+
+class requestResponsePaned(gtk.VPaned):
     def __init__(self, enableWidget=None):
+        gtk.VPaned.__init__(self)
+
         # The textview where a part of the req/res is showed
         self._upTv = gtk.TextView()
         self._upTv.set_border_width(5)
@@ -123,14 +101,11 @@ class requestResponsePaned:
         sw2.add(self._downTv)
         
         # vertical pan (allows resize of req/res texts)
-        vpan = gtk.VPaned()
         ### TODO: This should be centered
-        vpan.set_position( 200 )
-        vpan.pack1( sw1 )
-        vpan.pack2( sw2 )
-        vpan.show_all()
-        
-        self.add( vpan )
+        self.set_position( 200 )
+        self.pack1( sw1 )
+        self.pack2( sw2 )
+        self.show_all()
 
     def _changed(self, widg, toenable):
         '''Supervises if the widget has some text.'''
@@ -172,11 +147,14 @@ class requestResponsePaned:
         return (uppText, lowText)
 
 
-class requestPaned(gtk.HPaned, requestResponsePaned):
+class requestPaned(requestResponsePaned):
     def __init__(self, enableWidget):
-        gtk.HPaned.__init__(self)
         requestResponsePaned.__init__(self, enableWidget)
-        
+
+        self.notebook = gtk.Notebook()
+        l = gtk.Label("Request")
+        self.notebook.append_page(self, l)
+
     def show( self, method, uri, version, headers, postData ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
@@ -194,12 +172,53 @@ class requestPaned(gtk.HPaned, requestResponsePaned):
         iter = buffer.get_end_iter()
         buffer.insert( iter, postData )
     
-class responsePaned(gtk.HPaned, requestResponsePaned):
-    def __init__(self, renderingWidget):
-        gtk.HPaned.__init__(self)
-        requestResponsePaned.__init__( self )
-        self._renderingWidget = renderingWidget
+class responsePaned(requestResponsePaned):
+    def __init__(self):
+        requestResponsePaned.__init__(self)
+        self.notebook = gtk.Notebook()
+
+        # first page
+        l = gtk.Label("Response")
+        self.notebook.append_page(self, l)
+
+        # second page, if html renderer available
+        if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
+            if withGtkHtml2 and useGTKHtml2:
+                renderWidget = gtkhtml2.View()
+                self._renderFunction = self._renderGtkHtml2
+            elif withMozillaTab and useMozilla:
+                renderWidget = gtkmozembed.MozEmbed()
+                self._renderFunction = self._renderMozilla
+            else:
+                renderWidget = None
+                
+            self._renderingWidget = renderWidget
+            if renderWidget is not None:
+                swRenderedHTML = gtk.ScrolledWindow()
+                swRenderedHTML.add(renderWidget)
+                self.notebook.append_page(swRenderedHTML, gtk.Label("Rendered response"))
+
+    def _renderGtkHtml2(self, body, mimeType, baseURI):
+        try:
+            document = gtkhtml2.Document()
+            document.clear()
+            document.open_stream(mimeType)
+            document.write_stream(body)
+            document.close_stream()
+            self._renderingWidget.set_document(document)
+        except ValueError, ve:
+            # I get here when the mime type is an image or something that I can't display
+            pass
+        except Exception, e:
+            print 'This is a catched exception!'
+            print 'Exception:', type(e), str(e)
+            print 'I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:'
+            print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
+
+    def _renderMozilla(self, body, mimeType, baseURI):
+        self._renderingWidget.render_data(body, long(len(body)), baseURI , mimeType)
         
+
     def show( self, version, code, msg, headers, body, baseURI ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
@@ -216,9 +235,9 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
         # Get the mimeType from the response headers
         mimeType = 'text/html'
         headers = headers.split('\n')
-        headers = [ h for h in headers if h != '']
+        headers = [h for h in headers if h]
         for h in headers:
-            h_name, h_value = h.split(':')[0] , ':'.join(h.split(':')[1:])
+            h_name, h_value = h.split(':', 1)
             if 'content-type' in h_name.lower():
                 mimeType = h_value.strip()
                 break
@@ -233,24 +252,5 @@ class responsePaned(gtk.HPaned, requestResponsePaned):
         buffer.insert( iter, body )
         
         # Show it rendered
-        if withGtkHtml2 and useGTKHtml2 and body:
-            try:
-                document = gtkhtml2.Document()
-                document.clear()
-                document.open_stream(mimeType)
-                document.write_stream(body)
-                document.close_stream()
-                self._renderingWidget.set_document(document)
-            except ValueError, ve:
-                # I get here when the mime type is an image or something that I can't display
-                pass
-            except Exception, e:
-                print 'This is a catched exception!'
-                print 'Exception:', type(e), str(e)
-                print 'I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:'
-                print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
-            else:
-                # Everything ok!
-                if withMozillaTab and useMozilla and body:
-                    self._renderingWidget.render_data( body,long(len(body)), baseURI , mimeType)
-
+        if self._renderingWidget is not None:
+            self._renderFunction(body, mimeType, baseURI)
