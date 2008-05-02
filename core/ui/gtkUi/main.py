@@ -33,6 +33,14 @@ except:
     print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
     sys.exit( 1 )
 
+# This is just general info, to help people knowing their system
+print "Starting w3af, running on:"
+print "  Python version:"
+print "\n".join("    "+x for x in sys.version.split("\n"))
+print "  GTK version:", ".".join(str(x) for x in gtk.gtk_version)
+print "  PyGTK version:", ".".join(str(x) for x in gtk.pygtk_version)
+print
+
 # Threading initializer
 if sys.platform == "win32":
     gobject.threads_init()
@@ -94,6 +102,7 @@ ui_menu = """
     </menu>
     <menu action="ToolsMenu">
       <menuitem action="ManualRequest"/>
+      <menuitem action="FuzzyRequest"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -113,6 +122,7 @@ ui_menu = """
     <toolitem action="ExploitAll"/>
     <separator name="s3"/>
     <toolitem action="ManualRequest"/>
+    <toolitem action="FuzzyRequest"/>
   </toolbar>
 </ui>
 """
@@ -236,6 +246,7 @@ class MainApp(object):
             ('ConfigurationMenu', None, '_Configuration'),
             
             ('ManualRequest', gtk.STOCK_INDEX, '_Manual Request', None, 'Generate manual HTTP request', self._manual_request),
+            ('FuzzyRequest', gtk.STOCK_PROPERTIES, '_Fuzzy Request', None, 'Generate fuzzy HTTP requests', self._fuzzy_request),
             ('ToolsMenu', None, '_Tools'),
 
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
@@ -301,7 +312,7 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 8
+        assert toolbar.get_n_items() == 9
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
@@ -668,6 +679,12 @@ class MainApp(object):
     def _manual_request(self, action):
         '''Generate manual HTTP requests.'''
         craftedRequests.ManualRequests(self.w3af)
+
+    def _fuzzy_request(self, action):
+        '''Generate fuzzy HTTP requests.'''
+        reload(craftedRequests)
+        print "FIXME: remove this reload!"
+        craftedRequests.FuzzyRequests(self.w3af)
 
 
 def main(profile):

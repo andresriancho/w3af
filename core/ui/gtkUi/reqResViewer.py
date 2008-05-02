@@ -102,7 +102,7 @@ class requestResponsePaned(gtk.VPaned):
         
         # vertical pan (allows resize of req/res texts)
         ### TODO: This should be centered
-        self.set_position( 200 )
+        self.set_position( 100 )
         self.pack1( sw1 )
         self.pack2( sw2 )
         self.show_all()
@@ -148,7 +148,7 @@ class requestResponsePaned(gtk.VPaned):
 
 
 class requestPaned(requestResponsePaned):
-    def __init__(self, enableWidget):
+    def __init__(self, enableWidget=None):
         requestResponsePaned.__init__(self, enableWidget)
 
         self.notebook = gtk.Notebook()
