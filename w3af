@@ -4,7 +4,7 @@ import getopt,sys, os
 
 # First of all, we need to change the working directory to the directory of w3af.
 currentDir = os.getcwd()
-scriptDir = os.path.dirname(sys.argv[0])
+scriptDir = os.path.dirname(sys.argv[0]) or '.'
 os.chdir( scriptDir )
 
 def backToCurrentDir():
