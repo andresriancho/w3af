@@ -91,7 +91,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
     def getVulnName2Exploit( self ):
         return 'remoteFileInclude'
                 
-    def exploit(self ):
+    def exploit(self, vulnToExploit=None ):
         '''
         Exploits a rfiVulns that were found and stored in the kb.
 

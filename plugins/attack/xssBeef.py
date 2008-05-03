@@ -64,7 +64,7 @@ class xssBeef(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         return 'xss'
                 
-    def exploit( self, vuln ):
+    def exploit( self, vulnToExploit=None ):
         '''
         Exploits a remoteFileInclude vuln that was found and stored in the kb.
 

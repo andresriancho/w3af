@@ -149,7 +149,7 @@ class sqlmap(baseAttackPlugin):
             om.out.information( 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.' )
             return False
 
-    def exploit( self ):
+    def exploit( self, vulnToExploit=None ):
         '''
         Exploits a [blind] sql injections vulns that was found and stored in the kb.
 
@@ -170,8 +170,17 @@ class sqlmap(baseAttackPlugin):
             
             vulns2 = []
             for v in vulns:
+            
+                # Filter the vuln that was selected by the user
+                if vulnToExploit != None:
+                    if vulnToExploit != v.getId():
+                        continue
+            
+                # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: ' + v.getURL() )
                 vulns2.extend( bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
+            
+            # Ok, go to the next stage with the filtered vulnerabilities
             vulns = vulns2
             
             exploitable = False
