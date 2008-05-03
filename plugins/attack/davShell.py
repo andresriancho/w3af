@@ -49,7 +49,6 @@ class davShell(baseAttackPlugin):
         
         # User configured variables
         self._url = ''
-        self._generateOnlyOne = True
         
     def fastExploit( self ):
         '''
@@ -121,29 +120,16 @@ class davShell(baseAttackPlugin):
                 om.out.debug('The uploaded shell with extension: "'+extension+'" DIDN\'T returned what we expected, it returned : ' + response.getBody() )
                 extension = ''
     
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="url">\
-                <default>'+self._url+'</default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        ol = optionList()
+        ol.add(o1)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
@@ -154,7 +140,6 @@ class davShell(baseAttackPlugin):
         @return: No value is returned.
         ''' 
         self._url = optionsMap['url']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
 
     def getPluginDeps( self ):
         '''
@@ -181,7 +166,8 @@ class davShell(baseAttackPlugin):
         "PUT" the plugin uploads the corresponding webshell ( php, asp, etc. ) verifies that the shell is working, and if
         everything is working as expected the user can start typing commands.
         
-        No configurable parameters exist.
+        One configurable parameter exists:
+            - URL (only used in fastExploit)
         '''
         
 class davShellObj(shell):

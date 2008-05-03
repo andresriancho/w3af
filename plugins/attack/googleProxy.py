@@ -185,28 +185,21 @@ class googleProxy(baseAttackPlugin):
         
         self._proxyd = proxy( self._proxyAddress, self._proxyPort , self._urlOpener, proxyHandler=self.proxyHandler )
         self._proxyd.start2()
+
+    def getOptions( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'IP address where googleProxy will use to receive requests'
+        o1 = option('listenAddress', str(self._listenAddress), d1, 'string')
         
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/output.xsd
-        '''
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="proxyPort">\
-                <default>'+str(self._proxyPort)+'</default>\
-                <desc>Local TCP port where the proxy will listen on.</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="proxyAddress">\
-                <default>'+str(self._proxyAddress)+'</default>\
-                <desc>Local IP Address where the proxy will listen on.</desc>\
-                <type>string</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'TCP port that the googleProxy server will use to receive requests'
+        o2 = option('listenPort', str(self._listenPort), d2, 'integer')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        return ol
 
     def getExploitableVulns( self ):
         return []

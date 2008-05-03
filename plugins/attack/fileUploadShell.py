@@ -55,8 +55,6 @@ class fileUploadShell(baseAttackPlugin):
         self._data = ''
         self._fileVars = ''
         self._fileDest = ''
-        self._generateOnlyOne = True
-
 
     def fastExploit( self ):
         '''
@@ -159,50 +157,33 @@ class fileUploadShell(baseAttackPlugin):
         fd.write( fileContent )
         fd.close()
         return self._pathName
-        
-    def getOptionsXML(self):
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
+        
+        d2 = 'Method to use with fastExploit()'
+        o2 = option('method', self._method, d2, 'string')
 
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="url">\
-                <default>'+self._url+'</default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="method">\
-                <default>'+self._method+'</default>\
-                <desc>Method to use with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="data">\
-                <default>'+self._data+'</default>\
-                <desc>Data to send with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="fileVars">\
-                <default>'+self._fileVars+'</default>\
-                <desc>The variable in data that holds the file content. Only used in fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="fileDest">\
-                <default>'+self._fileDest+'</default>\
-                <desc>The URI of the uploaded file. Only used with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d3 = 'Data to send with fastExploit()'
+        o3 = option('data', self._data, d3, 'string')
+
+        d4 = 'The variable in data that holds the file content. Only used in fastExploit()'
+        o4 = option('fileVars', self._fileVars, d4, 'string')
+
+        d5 = 'The URI of the uploaded file. Only used with fastExploit()'
+        o5 = option('fileDest', self._fileDest, d5, 'string')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
@@ -217,7 +198,6 @@ class fileUploadShell(baseAttackPlugin):
         self._data = urlParser.getQueryString( optionsMap['data'] )
         self._fileVars = optionsMap['fileVars']
         self._fileDest = optionsMap['fileDest']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
 
     def getPluginDeps( self ):
         '''
