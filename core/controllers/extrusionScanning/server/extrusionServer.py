@@ -21,7 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import socket
-from extlib.scapy.scapy import *
+try:
+    # Try to use the scapy library that is installed in the system
+    from scapy import *
+except:
+    try:
+        from extlib.scapy.scapy import *
+    except Exception, e:
+        import platform
+        if 'windows' not in platform.platform().lower():
+            raise w3afException('Something strange happened while importing scapy, please solve this issue: ' + str(e) )
+        else:
+            # Windows system!
+            raise w3afException('scapy isn\'t installed in your windows system; please install it following this guide http://trac.secdev.org/scapy/wiki/WindowsInstallationGuide')
+            
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
