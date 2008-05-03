@@ -65,15 +65,24 @@ class FullKBTree(kbtree.KBTree):
             longdesc = ""
         self.kbbrowser.explanation.set_text(longdesc)
         
+        success = False
         if hasattr(instance, "getId" ):
             if instance.getId() != None:
                 # The request and response that generated the vulnerability
                 result = self._dbHandler.searchById( instance.getId() )
                 if result:
+                    success = True
                     self.kbbrowser.rrV.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
                     self.kbbrowser.rrV.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
-
-
+        
+        if success:
+            self.kbbrowser.rrV.set_sensitive(True)
+        else:
+            self.kbbrowser.rrV.request.clearPanes()
+            self.kbbrowser.rrV.response.clearPanes()
+            self.kbbrowser.rrV.set_sensitive(False)
+            
+            
 class KBBrowser(gtk.HPaned):
     '''Show the Knowledge Base, with the filter and the tree.
     
