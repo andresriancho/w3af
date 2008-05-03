@@ -708,6 +708,10 @@ class w3afCore:
     def getPluginOptions(self, pluginType, pluginName):
         '''
         Get the options for a plugin.
+        
+        IMPORTANT NOTE: This method only returns the options for a plugin that was previously configured using setPluginOptions.
+        If you wan't to get the default options for a plugin, get a plugin instance and perform a plugin.getOptions()
+        
         @return: A map with the plugin options.
         '''
         if pluginType in self._pluginsOptions:
