@@ -24,6 +24,7 @@ import os
 import commands
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
+import time
 
 SCRIPT_DIR = 'scripts/'
 
@@ -49,8 +50,16 @@ def runScript( scriptName ):
         output = commands.getoutput('python w3af -s ' + scriptName)
     except KeyboardInterrupt, k:
         output = ''
-        om.out.information('User cancelled the test.')
-        raise k
+        om.out.information('User cancelled the script. Hit Ctrl+C again to cancel all the test or wait two seconds to continue with the next script.')
+        try:
+            time.sleep(2)
+        except:
+            om.out.information('User cancelled the WHOLE test.')
+            raise k
+        else:
+            om.out.information('Continuing with the next script..., please wait.')
+            return output
+            
     return output
     
 def analyzeResult( resultString ):
