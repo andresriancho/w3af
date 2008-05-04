@@ -191,10 +191,10 @@ class googleProxy(baseAttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'IP address where googleProxy will use to receive requests'
-        o1 = option('listenAddress', str(self._listenAddress), d1, 'string')
+        o1 = option('proxyAddress', str(self._proxyAddress), d1, 'string')
         
         d2 = 'TCP port that the googleProxy server will use to receive requests'
-        o2 = option('listenPort', str(self._listenPort), d2, 'integer')
+        o2 = option('proxyPort', str(self._proxyPort), d2, 'integer')
         
         ol = optionList()
         ol.add(o1)

@@ -45,6 +45,9 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         self._urlOpener = None
         self._footer = None
         self._header = None
+        
+        # User configured parameter
+        self._generateOnlyOne = False
 
     def fastExploit(self, url ):
         '''
