@@ -61,7 +61,7 @@ class profilesMenu(menu):
             om.out.console('No parameters expected')
         else:
             table = [['Profile', 'Description'],[]]
-            for profileInstance in self._profiles:
+            for profileInstance in self._profiles.values():
                 table.append([profileInstance.getName() , profileInstance.getDesc()])
 
             self._console.drawTable(table)
