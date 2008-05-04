@@ -1,0 +1,143 @@
+<!--
+Copyright 2008 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+This is the central help file for the consoleUi
+-->
+<help>
+    <topic name="common">
+        <category name="common">
+            <item name="back">Go to the previous menu.  </item>
+            <item name="exit">Exit w3af.  </item>
+            <item name="assert">Check assertion. </item>
+        </category>
+   </topic>
+   <topic name="root">
+        <category name="menu">
+            <item name="start">Start the scan.  </item>
+            <item name="plugins">Enable and configure plugins.  </item>
+            <item name="exploit">Exploit the vulnerability.  </item>
+            <item name="profiles">
+                <head>List and use scan profiles.</head>
+                <body>You will be able to run predefined scans.</body>
+            </item>
+        </category>
+        <category name="config">
+            <item name="http-settings">Configure the HTTP settings of the framework.  </item>
+            <item name="misc-settings">Configure w3af misc settings.  </item>
+            <item name="target">Configure the target URL.  </item>
+        </category>
+        <category name="information">
+            <item name="help">Display help.  Issuing: help [command] , prints more specific help about command</item>
+            <item name="version">Show w3af version information.  </item>
+            <item name="keys">Display key shortcuts. </item>
+            
+         </category>
+    </topic>
+    <topic name="keys">
+        <category name="keys">
+            <item name="Ctrl-A / Ctrl-E">Move cursor to the beginning/end of the line.</item>
+            <item name="Ctrl-H">Erase the character before the cursor.</item>
+            <item name="Ctrl-W">Erase the word before the cursor.</item>
+            <item name="Ctrl-D, Ctrl-C">Return to the previous menu or exit w3af.</item>
+        </category>
+    </topic>
+    <topic name="profiles">
+        <category name="menu">
+            <item name="use">
+               <head>Use a profile.</head>
+               <body><![CDATA[Syntax: use {profile-name}                
+Example: use fastScan]]></body>
+            </item>
+            <item name="list">
+               <head>List available profiles.</head>
+               <body>Syntax: list</body>
+            </item>
+        </category>
+    </topic>
+    <topic name="plugins">
+        <category name="menu">
+            <item name="list">
+                <head>List available plugins.</head>
+                <body><![CDATA[Syntax: list {plugin type} [all | enabled | disabled]
+By default all plugins are listed.
+                ]]></body>
+            </item>
+        </category>
+    </topic>
+    <topic name="pluginType">
+        <category name="plugins">
+            <item name="${TYPE}">
+                <head>View, configure and enable ${TYPE} plugins</head>
+                <body><![CDATA[Syntax: ${TYPE} [config plugin | plugin1[,plugin2 ... pluginN] | desc plugin]
+Example: ${TYPE}
+Result: All enabled ${TYPE} plugins are listed.
+
+Example2: ${TYPE} ${PLUGIN1},${PLUGIN2}
+Result: ${PLUGIN1} and ${PLUGIN2} are configured to run
+
+Example3: ${TYPE} config ${PLUGIN1}
+Result: Enters to the plugin configuration menu.
+
+Example4: ${TYPE} all,!${PLUGIN2}
+Result: All ${TYPE} plugins are configured to run except ${PLUGIN2}.
+
+Example1: ${TYPE} desc ${PLUGIN1}
+Result: You will get the plugin description ]]></body>
+            </item>
+        </category>
+
+    </topic>
+    <topic name="exploit">
+        <category name="menu">
+            <item name="list">
+                <head>List available exploits.</head>
+                <body>Syntax: list</body> 
+            </item>
+            <item name="exploit">
+                <head>Exploit a vulnerability found by audit plugins.</head>
+                <body><![CDATA[Sintax: exploit {plugin [vulnerability-id] | * [stopOnFirst]}
+When using "exploit *" you will be running all exploit plugins, ordered by the probability of getting a root shell. When you add the "stopOnFirst" option to the "exploit *" command, you are making w3af stop on the first successbody exploit.
+Examples:
+- exploit *
+- exploit osCommanding
+- exploit osCommanding 5]]></body>
+            </item>
+            <item name="interact">
+                <head>List and interact with shell objects generated by exploit plugins.</head>
+                <body><![CDATA[Syntax: interact [shell-id]               
+Examples: The "interact" command will list available shells and "interact 3" will start the interaction with the shell with id 3.]]></body>
+            </item>
+            <item name="fastexploit">
+                <head>Exploit a vulnerability based on external parameters.</head>
+                <body><![CDATA[Syntax: fastexploit {plugin name}
+Example: fastexploit sqlmap]]></body>
+            </item>
+         </category>
+    </topic>
+    <topic name="config">
+        <category name="menu">
+            <item name="view">
+                <head>List the available options and their values.</head>
+            </item>
+            <item name="set">
+                <head>Set a parameter value.</head>
+                <body>Syntax: {parameter} {value}</body>
+            </item>
+        </category>
+    </topic>
+</help>
