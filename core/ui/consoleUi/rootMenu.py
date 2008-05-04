@@ -28,6 +28,7 @@ import core.controllers.miscSettings as ms
 #from core.ui.consoleUi.session import *
 from core.ui.consoleUi.util import *
 
+from core.controllers.w3afException import *
 
 class rootMenu(menu):
     '''
@@ -53,8 +54,10 @@ class rootMenu(menu):
             self._w3af.initPlugins()
             self._w3af.verifyEnvironment()
             self._w3af.start()
+        except w3afException, w3:
+            om.out.console(str(w3))
         except Exception, e:
-            om.out.console(str(e))
+            raise e
  
     def _cmd_version(self, params):
         '''
