@@ -85,9 +85,6 @@ class consoleUi:
         '''
         Main cycle
         '''
-
-        om.out.console("WARNING: This branch is under development and unstable. \n \
-Please see http://w3af.sourceforge.net for the stable version info.")
         if callback:
             if hasattr(self, '_context'):
                 ctx = self._context
