@@ -56,6 +56,8 @@ class rootMenu(menu):
             self._w3af.start()
         except w3afException, w3:
             om.out.console(str(w3))
+        except KeyboardInterrupt, k:
+            om.out.console('User hitted Ctrl+C, stopping scan.')
         except Exception, e:
             raise e
  

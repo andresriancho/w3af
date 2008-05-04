@@ -352,6 +352,8 @@ class w3afCore:
             om.out.error('**IMPORTANT** The following error was detected by w3af and couldn\'t be resolved: ' + str(wmse) )
             om.out.error('')
             self._end()
+        except Exception, e:
+            raise e
             
     def _realStart(self):
         '''
