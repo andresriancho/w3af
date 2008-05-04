@@ -92,10 +92,10 @@ def main():
                 fd = open( scriptFile )
             except:
                 om.out.error('Failed to open file : ' + scriptFile )
-                return -2
+                sys.exit(2)
             else:
                 commandsToRun = []
-                for line in fd:
+                for line in fd:   
                     line = line.strip()
                     if line != '' and line[0] != '#':   # if not a comment..
                         commandsToRun.append( line )
@@ -104,6 +104,7 @@ def main():
         else:
             console = consoleUi()
         console.sh()
+
 
 if __name__ == "__main__":
     errCode = main()

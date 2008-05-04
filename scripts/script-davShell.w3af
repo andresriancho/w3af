@@ -27,11 +27,11 @@ interact 0
 ls
 w
 
-endInteraction
-back
-assert len(kb.kb.getData('davShell','shell')) == 1
+#endInteraction
+#back
+#assert len(kb.kb.getData('davShell','shell')) == 1
 
-exit
+#exit
 
 
 

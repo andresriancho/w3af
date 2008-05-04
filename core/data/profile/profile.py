@@ -162,7 +162,10 @@ class profile:
             self._config.add_section( section )
             
         for option in options.keys():
-            self._config.set( section, option, options[ option ] )
+            if isinstance( options[ option ], type([]) ):
+                self._config.set( section, option, ','.join(options[ option ]) )
+            else:
+                self._config.set( section, option, options[ option ] )
     
     def getPluginOptions( self, pluginType, pluginName ):
         '''
@@ -183,12 +186,14 @@ class profile:
                 if type == pluginType and name == pluginName:
                     for option in self._config.options(section):
                         try:
-                            parsedOptions[option]['default'] = self._config.get(section, option)
+                            value = self._config.get(section, option)
                         except KeyError,k:
                             raise w3afException('The option "' + option + '" is unknown for the "'+ pluginName + '" plugin.')
+                        else:
+                            parsedOptions[option]['default'] = value
 
         return parsedOptions
-    
+        
     def setName( self, name ):
         '''
         Set the name of the profile.

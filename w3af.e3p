@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-04-16, 07:14:29 -->
+<!-- Saved: 2008-05-01, 18:06:29 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3783,12 +3783,6 @@
     </Source>
     <Source>
       <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>gtkUi</Dir>
-      <Name>logVisualization.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
       <Dir>data</Dir>
       <Dir>options</Dir>
       <Name>__init__.py</Name>
@@ -3820,6 +3814,18 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>_mailer.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>kb</Dir>
+      <Name>exploitResult.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>kb</Dir>
+      <Name>proxy.py</Name>
     </Source>
   </Sources>
   <Forms>

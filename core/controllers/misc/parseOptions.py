@@ -45,17 +45,23 @@ def parseOptions( pluginName, optionsMap ):
                 else:
                     res = False
             elif type == 'list':
+                res = []
                 # Yes, we are regex dummies
                 value += ','
-                res = re.findall('(".*?"|\'.*?\'|.*?),', value)
-                if res != []:
-                    res = [y.strip() for y in res if y != '']
+                tmp = re.findall('(".*?"|\'.*?\'|.*?),', value)
+                if tmp != []:
+                    tmp = [y.strip() for y in tmp if y != '']
                     
                     # Now I check for single and double quotes
-                    for u in res:
+                    for u in tmp:
                         if ( u.startswith('"') and u.endswith('"') ) or ( u.startswith("'") and u.endswith("'") ):
                             res.append( u[1:-1] )
-                            res.remove( u )
+                        else:
+                            # Maybe its a list of integers
+                            try:
+                                res.append( int(u) )
+                            except:
+                                res.append( u )
 
                 else:
                     raise ValueError

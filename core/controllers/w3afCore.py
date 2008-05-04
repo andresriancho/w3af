@@ -689,9 +689,8 @@ class w3afCore:
             
         @return: No value is returned.
         '''
-        #print 'before:', PluginsOptions
+        # Here I transform the option with value 'a,b,c' and type 'list' to ['a','b','c']
         pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )
-        #print 'after:', PluginsOptions
         
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
