@@ -96,6 +96,9 @@ class errorPages(baseGrepPlugin):
         # http://www.programacion.net/asp/articulo/kbr_execute/
         mesg.append('Server.Execute Error')
         
+        # IIS
+        mesg.append('<h2 style="font:8pt/11pt verdana; color:000000">HTTP 403.6 - Forbidden: IP address rejected<br>')
+        
         return mesg
         
     def _testResponse(self, request, response):
