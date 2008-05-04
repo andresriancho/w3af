@@ -249,6 +249,7 @@ def _crash(type, value, tb):
     print exception
 
     # save the info to a file
+    # FIXME: What if I can't create the file ?
     arch = file("w3af_crash.txt", "w")
     arch.write('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652')
     arch.write(exception)
