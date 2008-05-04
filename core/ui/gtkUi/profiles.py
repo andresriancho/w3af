@@ -343,6 +343,7 @@ class ProfileList(gtk.TreeView):
         dlg.destroy()
         if dlgResponse is not None:
             filename,description = dlgResponse
+            # Bug here ! We should handle the w3afException !
             self.w3af.saveCurrentToNewProfile(filename , description)
             self.w3af.mainwin.sb("New profile created")
             self.loadProfiles(filename)

@@ -250,11 +250,12 @@ def _crash(type, value, tb):
 
     # save the info to a file
     arch = file("w3af_crash.txt", "w")
+    arch.write('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652')
     arch.write(exception)
     arch.close()
 
     # inform the user
-    exception += "\nAll this info is in a file called w3af_crash.txt for later review. Please send it to the developers, thank you!"
+    exception += "\nAll this info is in a file called w3af_crash.txt for later review. Please report this bug here https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 (this URL is also printed in the file), thank you!"
     exception += "\n\nThe program will exit after you close this window."
     dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, exception)
     dlg.set_title('Bug detected!')
