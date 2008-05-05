@@ -80,7 +80,8 @@ class requestResponsePaned(gtk.VPaned):
         self._upTv.set_border_width(5)
         if enableWidget:
             self._upTv.get_buffer().connect("changed", self._changed, enableWidget)
-            enableWidget.set_sensitive(False)
+            for widg in enableWidget:
+                widg.set_sensitive(False)
         
         # Scroll where the textView goes
         sw1 = gtk.ScrolledWindow()
@@ -102,7 +103,7 @@ class requestResponsePaned(gtk.VPaned):
         
         # vertical pan (allows resize of req/res texts)
         ### TODO: This should be centered
-        self.set_position( 100 )
+        self.set_position( 200 )
         self.pack1( sw1 )
         self.pack2( sw2 )
         self.show_all()
@@ -111,7 +112,8 @@ class requestResponsePaned(gtk.VPaned):
         '''Supervises if the widget has some text.'''
         uppBuf = self._upTv.get_buffer()
         uppText = uppBuf.get_text(uppBuf.get_start_iter(), uppBuf.get_end_iter())
-        toenable.set_sensitive(bool(uppText))
+        for widg in toenable:
+            widg.set_sensitive(bool(uppText))
         
     def _clear( self, textView ):
         '''

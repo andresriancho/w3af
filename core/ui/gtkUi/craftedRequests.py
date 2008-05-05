@@ -50,7 +50,7 @@ class ManualRequests(entries.RememberingWindow):
         hbox.pack_start(b, True, False)
 
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(b)
+        self.reqresp = reqResViewer.reqResViewer([b])
         self.reqresp.response.notebook.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
@@ -85,6 +85,52 @@ class ManualRequests(entries.RememberingWindow):
         self.reqresp.response.rawShow(headers, body)
 
 
+class PagesControl(gtk.HBox):
+    def __init__(self, callback):
+        gtk.HBox.__init__(self)
+        self.callback = callback
+        self.page = 0
+
+        b = gtk.Button()
+        b.connect("clicked", self._arrow, -1)
+        b.add(gtk.Arrow(gtk.ARROW_LEFT, gtk.SHADOW_OUT))
+
+        self.pack_start(b, False, False)
+        self.pageentry = gtk.Entry()
+        self.pageentry.set_text("0")
+        self.pageentry.set_width_chars(5)
+        self.pageentry.set_alignment(.5)
+        self.pack_start(self.pageentry, False, False)
+
+        b = gtk.Button()
+        b.add(gtk.Arrow(gtk.ARROW_RIGHT, gtk.SHADOW_OUT))
+        self.pack_start(b, False, False)
+
+        self.set_sensitive(False)
+        self.show_all()
+
+    def activate(self, maxpages):
+        self.max_pages = maxpages
+        self.set_sensitive(True)
+            
+    def _arrow(self, widg, delta):
+        self.page += delta
+        if self.page < 0:
+            self.page = 0
+        elif self.page > self.max_pages:
+            self.page = self.max_pages
+        self.pageentry.set_text(self.page)
+
+
+FUZZYHELP = """\
+"$" is the delimiter
+Use "$$" to include a "$"
+"$something$" will eval "something" 
+Already imported:
+    the "string" module
+    the "xx" function
+"""
+
 class FuzzyRequests(entries.RememberingWindow):
     '''Infrastructure to generate fuzzy HTTP requests.
 
@@ -93,45 +139,64 @@ class FuzzyRequests(entries.RememberingWindow):
     def __init__(self, w3af):
         super(FuzzyRequests,self).__init__(w3af, "fuzzyreq", "w3af - Fuzzy Requests")
         self.w3af = w3af
+        mainhbox = gtk.HBox()
+
+        # ---- left pane ----
+        vbox = gtk.VBox()
+        mainhbox.pack_start(vbox)
+
+        # we create the buttons first, to pass them
+        analyzBut = gtk.Button("Analyze")
+        sendBut = gtk.Button("Send all")
 
         # request and help
         hbox = gtk.HBox()
-        self.originalReq = reqResViewer.requestPaned()
+        self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
         hbox.pack_start(self.originalReq.notebook, True, True)
-        l = gtk.Label("the help!")
-        hbox.pack_start(l, True, True)
-        self.vbox.pack_start(hbox, True, True)
+        l = gtk.Label(FUZZYHELP)
+        hbox.pack_start(l, False, False, padding=10)
+        vbox.pack_start(hbox, True, True)
 
         # the commands
         t = gtk.Table(2, 3)
-        b = gtk.Button("Analyze")
-        t.attach(b, 0, 1, 0, 1)
+        analyzBut.connect("clicked", self._analyze)
+        t.attach(analyzBut, 0, 1, 0, 1)
         self.analyzefb = gtk.Label("? requests")
         t.attach(self.analyzefb, 1, 2, 0, 1)
         self.preview = gtk.CheckButton("preview")
         t.attach(self.preview, 2, 3, 0, 1)
-        b = gtk.Button("Send all")
-        t.attach(b, 0, 1, 1, 2)
+        sendBut.connect("clicked", self._send)
+        t.attach(sendBut, 0, 1, 1, 2)
         self.sendfb = gtk.Label("? ok, ? errors")
         t.attach(self.sendfb, 1, 2, 1, 2)
-        self.vbox.pack_start(t, padding=10)
+        vbox.pack_start(t, False, False, padding=5)
 
-        # result control
-        hbox = gtk.HBox()
-        b = gtk.Button()
-        b.add(gtk.Arrow(gtk.ARROW_LEFT, gtk.SHADOW_OUT))
-        hbox.pack_start(b)
-        self.pageentry = gtk.Entry()
-        hbox.pack_start(self.pageentry)
-        b = gtk.Button()
-        b.add(gtk.Arrow(gtk.ARROW_RIGHT, gtk.SHADOW_OUT))
-        hbox.pack_start(b)
-        self.vbox.pack_start(hbox, padding=10)
+        # ---- right pane ----
+        vbox = gtk.VBox()
+        mainhbox.pack_start(vbox)
 
         # result itself
         self.resultReqResp = reqResViewer.reqResViewer()
-        self.vbox.pack_start(self.resultReqResp, True, True)
+        self.resultReqResp.set_sensitive(False)
+        vbox.pack_start(self.resultReqResp, True, True)
+
+        # result control
+        centerbox = gtk.HBox()
+        self.pagesControl = PagesControl(self._pageChange)
+        centerbox.pack_start(self.pagesControl, True, False) 
+        vbox.pack_start(centerbox, False, False, padding=5)
 
         # Show all!
+        self.vbox.pack_start(mainhbox)
         self.show_all()
 
+    def _analyze(self, widg):
+        prev = self.preview.get_active()
+        print "analyze! preview:", prev
+        (request, postbody) = self.originalReq.getBothTexts()
+
+    def _send(self, widg):
+        print "send!"
+
+    def _pageChange(self, page):
+        print "page changed:", page
