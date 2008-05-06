@@ -183,7 +183,8 @@ class responsePaned(requestResponsePaned):
         l = gtk.Label("Response")
         self.notebook.append_page(self, l)
 
-        # second page, if html renderer available
+        # second page, only there if html renderer available
+        self._renderingWidget = None
         if (withMozillaTab and useMozilla) or (withGtkHtml2 and useGTKHtml2):
             if withGtkHtml2 and useGTKHtml2:
                 renderWidget = gtkhtml2.View()
