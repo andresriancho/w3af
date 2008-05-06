@@ -146,6 +146,10 @@ class FuzzyRequests(entries.RememberingWindow):
         # request and help
         hbox = gtk.HBox()
         self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
+        
+        # Add a default request
+        self.originalReq.rawShow(request_example, '')
+
         hbox.pack_start(self.originalReq.notebook, True, True)
         l = gtk.Label(FUZZYHELP)
         hbox.pack_start(l, False, False, padding=10)
