@@ -112,51 +112,38 @@ class localFileReader(baseAttackPlugin):
             else:
                 return False
 
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d0 = 'f the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
+        h0 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
+        o0 = option('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="changeToPost">\
-                <default>'+str(self._changeToPost)+'</default>\
-                <desc>If the vulnerability was found in a GET request, try to change the method to POST during exploitation.</desc>\
-                <help>If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.</help>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="url">\
-                <default>'+self._url+'</default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="method">\
-                <default>'+self._method+'</default>\
-                <desc>Method to use with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="data">\
-                <default>'+self._data+'</default>\
-                <desc>Data to send with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="filePattern">\
-                <default>'+self._filePattern+'</default>\
-                <desc>The file pattern to search for while verifiyng the vulnerability. Only used in fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
+        
+        d2 = 'Method to use with fastExploit()'
+        o2 = option('method', self._method, d2, 'string')
 
+        d3 = 'Data to send with fastExploit()'
+        o3 = option('data', self._data, d3, 'string')
+
+        d4 = 'The file pattern to search for while verifiyng the vulnerability. Only used in fastExploit()'
+        o4 = option('filePattern', self._filePattern, d4, 'string')
+
+        d5 = 'Exploit only one vulnerability.'
+        o5 = option('generateOnlyOne', self._generateOnlyOne, d5, 'boolean')
+        
+        ol = optionList()
+        ol.add(o0)
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        return ol
+        
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 
