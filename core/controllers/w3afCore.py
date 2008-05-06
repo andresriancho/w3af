@@ -353,6 +353,9 @@ class w3afCore:
             om.out.error('')
             self._end()
         except Exception, e:
+            om.out.error('')
+            om.out.error( 'Unhandled error, traceback: ' + str( traceback.format_exc() ) )
+            om.out.error('')
             raise e
             
     def _realStart(self):
