@@ -38,14 +38,14 @@ class console(baseOutputPlugin):
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        self.verbosity = 0
+        self.verbose = False
 
     def debug(self, message, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for debug messages.
         '''
-        if int( self.verbosity ) > 5:
+        if self.verbose:
             toPrint = unicode ( message )
             if newLine == True:
                 toPrint += '\r\n'
@@ -106,6 +106,9 @@ class console(baseOutputPlugin):
         '''
         return '''
         This plugin writes the framework messages to the console.
+        
+        One configurable parameter exists:
+            - verbose
         '''
 
     def setOptions( self, OptionList ):
@@ -118,14 +121,14 @@ class console(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbosity = OptionList['verbosity']
+        self.verbose = OptionList['verbose']
 
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Verbosity level for this plugin.'
-        o1 = option('verbosity', self.verbosity, d1, 'integer')
+        d1 = 'Enable if verbose output is needed'
+        o1 = option('verbose', self.verbose, d1, 'boolean')
         
         ol = optionList()
         ol.add(o1)

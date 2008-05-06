@@ -47,7 +47,7 @@ class textFile(baseOutputPlugin):
         self._fileName = 'output.txt'
         self._httpFileName = 'output-http.txt'
         self._showCaller = True
-        self.verbosity = 10
+        self.verbose = False
         
         # Internal variables
         self._flushCounter = 0
@@ -95,7 +95,7 @@ class textFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
             
-        if self.verbosity > 5:
+        if self.verbose:
             toPrint = message
             
             now = time.localtime(time.time())
@@ -224,7 +224,7 @@ class textFile(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbosity = OptionList['verbosity']
+        self.verbose = OptionList['verbose']
         self._fileName = OptionList['fileName']
         self._httpFileName = OptionList['httpFileName']
         self._showCaller = OptionList['showCaller']
@@ -233,8 +233,8 @@ class textFile(baseOutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Verbosity level for this plugin.'
-        o1 = option('verbosity', self.verbosity, d1, 'integer')
+        d1 = 'Enable if verbose output is needed'
+        o1 = option('verbose', self.verbose, d1, 'boolean')
         
         d2 = 'File name where this plugin will write to'
         o2 = option('fileName', self._fileName, d2, 'string')
@@ -281,6 +281,6 @@ class textFile(baseOutputPlugin):
         Four configurable parameters exist:
             - fileName
             - httpFileName
-            - verbosity
+            - verbose
             - showCaller
         '''

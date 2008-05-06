@@ -38,7 +38,7 @@ class webOutput(baseOutputPlugin):
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        self.verbosity = 0
+        self.verbosity = False
 
         # Initialize cache
         self._msgCache = []
