@@ -47,7 +47,7 @@ class textFile(baseOutputPlugin):
         self._fileName = 'output.txt'
         self._httpFileName = 'output-http.txt'
         self._showCaller = True
-        self.verbose = False
+        self.verbose = True
         
         # Internal variables
         self._flushCounter = 0
