@@ -750,3 +750,70 @@ class RememberingWindow(gtk.Window):
         self.winconfig[self.id_position] = self.get_position()
         return False
 
+
+class PagesControl(gtk.HBox):
+    '''The control to pass the pages.
+
+    @param callback: the function to call back when a page is changed.
+    @para maxpages: the quantity of pages.
+
+    maxpages is optional, but the control will be greyed out until the 
+    max is passed in the activate() method.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, callback, maxpages=None):
+        gtk.HBox.__init__(self)
+        self.callback = callback
+        self.page = 0
+
+        self.left = gtk.Button()
+        self.left.connect("clicked", self._arrow, -1)
+        self.left.add(gtk.Arrow(gtk.ARROW_LEFT, gtk.SHADOW_OUT))
+
+        self.pack_start(self.left, False, False)
+        self.pageentry = gtk.Entry()
+        # FIXME: non valid values should be in yellow background
+        # FIXME: "enter" in a non valid value should alert in the statusbar
+        # FIXME: "enter" in a valid value should set that page!
+        self.pageentry.set_text("0")
+        self.pageentry.set_width_chars(5)
+        self.pageentry.set_alignment(.5)
+        self.pack_start(self.pageentry, False, False)
+
+        self.right = gtk.Button()
+        self.right.connect("clicked", self._arrow, 1)
+        self.right.add(gtk.Arrow(gtk.ARROW_RIGHT, gtk.SHADOW_OUT))
+        self.pack_start(self.right, False, False)
+
+        if maxpages is None:
+            self.set_sensitive(False)
+        else:
+            self.maxpages = maxpages
+            self._arrow(None, 0)
+        self.show_all()
+
+    def activate(self, maxpages):
+        self.maxpages = maxpages
+        self.set_sensitive(True)
+        self._arrow(None, 0)
+
+    def setPage(self, page):
+        self.page = page
+        self._arrow(None, 0)
+            
+    def _arrow(self, widg, delta):
+        self.page += delta
+
+        # limit control
+        if self.page < 0:
+            self.page = 0
+        elif self.page >= self.maxpages:
+            self.page = self.maxpages - 1
+
+        # entries adjustment
+        self.left.set_sensitive(self.page > 0)
+        self.right.set_sensitive(self.page < self.maxpages-1)
+        self.pageentry.set_text(str(self.page))
+        self.callback(int(self.page))
+

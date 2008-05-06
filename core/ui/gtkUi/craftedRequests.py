@@ -24,6 +24,7 @@ import pygtk, gtk
 import core.ui.gtkUi.reqResViewer as reqResViewer
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
+import core.ui.gtkUi.fuzzygen as fuzzygen
 from core.controllers.w3afException import w3afException
 
 request_example = """\
@@ -85,41 +86,34 @@ class ManualRequests(entries.RememberingWindow):
         self.reqresp.response.rawShow(headers, body)
 
 
-class PagesControl(gtk.HBox):
-    def __init__(self, callback):
-        gtk.HBox.__init__(self)
-        self.callback = callback
-        self.page = 0
+class PreviewWindow(entries.RememberingWindow):
+    '''A window with the analysis preview.
 
-        b = gtk.Button()
-        b.connect("clicked", self._arrow, -1)
-        b.add(gtk.Arrow(gtk.ARROW_LEFT, gtk.SHADOW_OUT))
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af, pages):
+        super(PreviewWindow,self).__init__(w3af, "fuzzypreview", "Preview")
+        self.pages = pages
+        # FIXME: make this modal!
 
-        self.pack_start(b, False, False)
-        self.pageentry = gtk.Entry()
-        self.pageentry.set_text("0")
-        self.pageentry.set_width_chars(5)
-        self.pageentry.set_alignment(.5)
-        self.pack_start(self.pageentry, False, False)
+        # content
+        self.panes = reqResViewer.requestPaned()
+        self.vbox.pack_start(self.panes.notebook)
 
-        b = gtk.Button()
-        b.add(gtk.Arrow(gtk.ARROW_RIGHT, gtk.SHADOW_OUT))
-        self.pack_start(b, False, False)
+        # the ok button
+        centerbox = gtk.HBox()
+        self.pagesControl = entries.PagesControl(self._pageChange, len(pages))
+        centerbox.pack_start(self.pagesControl, True, False) 
+        self.vbox.pack_start(centerbox, False, False, padding=5)
 
-        self.set_sensitive(False)
+        self._pageChange(0)
         self.show_all()
 
-    def activate(self, maxpages):
-        self.max_pages = maxpages
-        self.set_sensitive(True)
-            
-    def _arrow(self, widg, delta):
-        self.page += delta
-        if self.page < 0:
-            self.page = 0
-        elif self.page > self.max_pages:
-            self.page = self.max_pages
-        self.pageentry.set_text(self.page)
+    def _pageChange(self, page):
+        print "page change!", page
+        (txtup, txtdn) = self.pages[page]
+        self.panes.rawShow(txtup, txtdn)
+
 
 
 FUZZYHELP = """\
@@ -182,7 +176,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # result control
         centerbox = gtk.HBox()
-        self.pagesControl = PagesControl(self._pageChange)
+        self.pagesControl = entries.PagesControl(self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False) 
         vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -194,6 +188,15 @@ class FuzzyRequests(entries.RememberingWindow):
         prev = self.preview.get_active()
         print "analyze! preview:", prev
         (request, postbody) = self.originalReq.getBothTexts()
+        try:
+            fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
+        except fuzzygen.FuzzyError:
+            return
+            
+        preview = list(fg.generate())
+        self.analyzefb.set_text("%d requests" % len(preview))
+        PreviewWindow(self.w3af, preview)
+
 
     def _send(self, widg):
         print "send!"

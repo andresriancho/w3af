@@ -20,10 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
+from core.controllers.w3afException import w3afException
 
 REPP = re.compile("\$.*?\$")
 
-class FuzzyError(Exception): pass
+class FuzzyError(w3afException): pass
 
 # Syntax rules:
 # 
