@@ -96,7 +96,10 @@ class wsPostDataRequest(httpPostDataRequest):
     def setMethodName( self , name ): self._name = name
     
     def getParameters( self ): return self._parameters
-    def setParameters( self, par ): 
+    def setParameters( self, par ):
+        # Fixed bug #1958368, we have to save this!
+        self._parameters = par
+        # And now save it so we can fuzz it.
         for param in par:
             self._dc[ param.getName() ] = ''
 
