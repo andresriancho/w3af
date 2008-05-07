@@ -135,10 +135,23 @@ class requestResponsePaned(gtk.VPaned):
         iter = buffer.get_end_iter()
         buffer.insert(iter, requestresponse)
         
+        self._downTv.set_sensitive(True)
         self._clear(self._downTv)
         buffer = self._downTv.get_buffer()
         iter = buffer.get_end_iter()
         buffer.insert(iter, body)
+        
+    def showError(self, text):
+        '''Show an error.
+        
+        Errors are shown in the upper part, with the lower one greyed out.
+        '''
+        self._clear(self._upTv)
+        buffer = self._upTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, text)
+        
+        self._downTv.set_sensitive(False)
         
     def getBothTexts(self):
         '''Returns the upper and lower texts.'''

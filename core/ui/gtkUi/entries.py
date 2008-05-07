@@ -70,6 +70,11 @@ class ValidatedEntry(gtk.Entry):
         '''
         if event.keyval == self.esc_key:
             self.set_text(self.orig_value)
+
+    def reset(self):
+        '''Resets to the default value.'''
+        self._setDefault(None, None)
+        self._changed(None)
         
     def _setDefault(self, widg, event):
         '''Signal handler for 'focus-out-event' event.
@@ -90,7 +95,7 @@ class ValidatedEntry(gtk.Entry):
 
         Used to supervise if the widget value is ok or not.
         '''
-        text = widg.get_text()
+        text = self.get_text()
         # background color indicates validity
         if self.validate(text):
             self.modify_base(gtk.STATE_NORMAL, self.bg_normal)
@@ -751,18 +756,49 @@ class RememberingWindow(gtk.Window):
         return False
 
 
+class PagesEntry(ValidatedEntry):
+    '''The entry for the PagesControl.
+
+    @param maxval: the maxvalue it can hold
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    
+    def __init__(self, maxval):
+        self.maxval = maxval
+        self.default_value = "0"
+        ValidatedEntry.__init__(self, "0")
+
+    def setMax(self, maxval):
+        self.maxval = maxval
+        self.reset()
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return Always True, there's no validation to perform
+        '''
+        try:
+            num = int(text)
+        except ValueError:
+            return False
+        return (0 <= num < self.maxval)
+
 class PagesControl(gtk.HBox):
     '''The control to pass the pages.
 
+    @param w3af: the w3af core
     @param callback: the function to call back when a page is changed.
-    @para maxpages: the quantity of pages.
+    @param maxpages: the quantity of pages.
 
     maxpages is optional, but the control will be greyed out until the 
     max is passed in the activate() method.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, callback, maxpages=None):
+    def __init__(self, w3af, callback, maxpages=None):
+        self.w3af = w3af
         gtk.HBox.__init__(self)
         self.callback = callback
         self.page = 0
@@ -772,11 +808,8 @@ class PagesControl(gtk.HBox):
         self.left.add(gtk.Arrow(gtk.ARROW_LEFT, gtk.SHADOW_OUT))
 
         self.pack_start(self.left, False, False)
-        self.pageentry = gtk.Entry()
-        # FIXME: non valid values should be in yellow background
-        # FIXME: "enter" in a non valid value should alert in the statusbar
-        # FIXME: "enter" in a valid value should set that page!
-        self.pageentry.set_text("0")
+        self.pageentry = PagesEntry(maxpages)
+        self.pageentry.connect("activate", self._textpage)
         self.pageentry.set_width_chars(5)
         self.pageentry.set_alignment(.5)
         self.pack_start(self.pageentry, False, False)
@@ -795,9 +828,17 @@ class PagesControl(gtk.HBox):
 
     def activate(self, maxpages):
         self.maxpages = maxpages
+        self.pageentry.setMax(maxpages)
         self.set_sensitive(True)
         self._arrow(None, 0)
 
+    def _textpage(self, widg):
+        val = self.pageentry.get_text()
+        if not self.pageentry.isValid():
+            self.w3af.mainwin.sb("%r is not a good value!" % val)
+            return
+        self.setPage(int(val))
+        
     def setPage(self, page):
         self.page = page
         self._arrow(None, 0)

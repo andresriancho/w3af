@@ -91,10 +91,11 @@ class PreviewWindow(entries.RememberingWindow):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, pages):
+    def __init__(self, w3af, parent, pages):
         super(PreviewWindow,self).__init__(w3af, "fuzzypreview", "Preview")
         self.pages = pages
-        # FIXME: make this modal!
+        self.set_modal(True)
+        self.set_transient_for(parent) 
 
         # content
         self.panes = reqResViewer.requestPaned()
@@ -102,7 +103,7 @@ class PreviewWindow(entries.RememberingWindow):
 
         # the ok button
         centerbox = gtk.HBox()
-        self.pagesControl = entries.PagesControl(self._pageChange, len(pages))
+        self.pagesControl = entries.PagesControl(w3af, self._pageChange, len(pages))
         centerbox.pack_start(self.pagesControl, True, False) 
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -110,7 +111,6 @@ class PreviewWindow(entries.RememberingWindow):
         self.show_all()
 
     def _pageChange(self, page):
-        print "page change!", page
         (txtup, txtdn) = self.pages[page]
         self.panes.rawShow(txtup, txtdn)
 
@@ -137,23 +137,17 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # ---- left pane ----
         vbox = gtk.VBox()
-        mainhbox.pack_start(vbox)
+        mainhbox.pack_start(vbox, padding=10)
 
         # we create the buttons first, to pass them
         analyzBut = gtk.Button("Analyze")
         sendBut = gtk.Button("Send all")
 
         # request and help
-        hbox = gtk.HBox()
         self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
-        
-        # Add a default request
         self.originalReq.rawShow(request_example, '')
-
-        hbox.pack_start(self.originalReq.notebook, True, True)
-        l = gtk.Label(FUZZYHELP)
-        hbox.pack_start(l, False, False, padding=10)
-        vbox.pack_start(hbox, True, True)
+        self.originalReq.notebook.append_page(gtk.Label(FUZZYHELP), gtk.Label("Syntax help"))
+        vbox.pack_start(self.originalReq.notebook, True, True, padding=5)
 
         # the commands
         t = gtk.Table(2, 3)
@@ -171,16 +165,16 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # ---- right pane ----
         vbox = gtk.VBox()
-        mainhbox.pack_start(vbox)
+        mainhbox.pack_start(vbox, padding=10)
 
         # result itself
         self.resultReqResp = reqResViewer.reqResViewer()
         self.resultReqResp.set_sensitive(False)
-        vbox.pack_start(self.resultReqResp, True, True)
+        vbox.pack_start(self.resultReqResp, True, True, padding=5)
 
         # result control
         centerbox = gtk.HBox()
-        self.pagesControl = entries.PagesControl(self._pageChange)
+        self.pagesControl = entries.PagesControl(w3af, self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False) 
         vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -189,21 +183,57 @@ class FuzzyRequests(entries.RememberingWindow):
         self.show_all()
 
     def _analyze(self, widg):
-        prev = self.preview.get_active()
-        print "analyze! preview:", prev
+        '''Handles the Analyze part.'''
         (request, postbody) = self.originalReq.getBothTexts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
             return
             
+        # 
         preview = list(fg.generate())
         self.analyzefb.set_text("%d requests" % len(preview))
-        PreviewWindow(self.w3af, preview)
+
+        # raise the window only if preview is active
+        if self.preview.get_active():
+            PreviewWindow(self.w3af, self, preview)
 
 
     def _send(self, widg):
-        print "send!"
+        '''Sends the requests.'''
+        (request, postbody) = self.originalReq.getBothTexts()
+        try:
+            fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
+        except fuzzygen.FuzzyError:
+            return
+            
+        # let's send the requests!
+        self.responses = []
+        result_ok = 0
+        result_err = 0
+        for (realreq, realbody) in fg.generate():
+            try:
+                httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody)
+                respbody = httpResp.getBody()
+                resphead = httpResp.dumpResponseHead()
+                result_ok += 1
+            except w3afException, e:
+                respbody = str(e)
+                resphead = None
+                result_err += 1
+            self.responses.append((realreq, realbody, respbody, resphead))
+            self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
+
+        # activate and show
+        self.resultReqResp.set_sensitive(True)
+        self.pagesControl.activate(len(self.responses))
+        self._pageChange(0)
 
     def _pageChange(self, page):
-        print "page changed:", page
+        (realreq, realbody, respbody, resphead) = self.responses[page]
+
+        self.resultReqResp.request.rawShow(realreq, realbody)
+        if resphead is not None:
+            self.resultReqResp.response.rawShow(respbody, resphead)
+        else:
+            self.resultReqResp.response.showError(respbody)

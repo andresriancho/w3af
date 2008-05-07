@@ -682,8 +682,6 @@ class MainApp(object):
 
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
-        reload(craftedRequests)
-        print "FIXME: remove this reload!"
         craftedRequests.FuzzyRequests(self.w3af)
 
 
