@@ -11,9 +11,15 @@ def backToCurrentDir():
     os.chdir( currentDir )
 
 # Now we can load all modules and stuff...
+from core.controllers.w3afException import *
 import core.controllers.outputManager as om
 
-om.out.setOutputPlugins( ['console'] )
+try:
+    om.out.setOutputPlugins( ['console'] )
+except w3afException, w3:
+    print 'Something went wrong, w3af failed to init the output manager. Exception: ', str(w3)
+    sys.exit(-9)
+    
 
 def usage():
     om.out.information('w3af - Web Application Attack and Audit Framework')
