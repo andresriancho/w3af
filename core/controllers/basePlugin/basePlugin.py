@@ -87,7 +87,7 @@ class basePlugin(configurable):
         '''
         @return: A list of option objects for this plugin.
         '''
-        raise w3afException('Plugin is not implementing required method getOptions' )
+        raise w3afException('Plugin "'+self.getName()+'" is not implementing required method getOptions' )
 
     def getPluginDeps( self ):
         '''
