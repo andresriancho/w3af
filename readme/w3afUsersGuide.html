@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0">
-	<META NAME="CHANGED" CONTENT="20080501;18375400">
+	<META NAME="CHANGED" CONTENT="20080508;10072400">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in; margin: 0.79in }
@@ -42,7 +42,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
-<FONT SIZE=2>Document version: <B>1.5</B></FONT></P>
+<FONT SIZE=2>Document version: <B>1.5.1</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
@@ -86,7 +86,7 @@ User Guide</B></U></FONT></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>May
-1, 2008</B></U></I></FONT></P>
+8, 2008</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -830,13 +830,13 @@ output config textFile</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
 set fileName output-w3af.txt</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
-set verbosity 10</FONT></P>
+set verbosity True</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
 back</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 output config console</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/console&gt;&gt;&gt;</B>
-set verbosity 0</FONT></P>
+set verbosity False</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/console&gt;&gt;&gt;</B>
 back</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
@@ -1063,7 +1063,7 @@ config textFile</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">set
 fileName output-w3af.txt</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">set
-verbosity 10</FONT></P>
+verbosity True</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">back</FONT></P>
 <P STYLE="margin-left: 0.49in"><BR><BR>
 </P>
@@ -1166,20 +1166,20 @@ output config textFile</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
 set fileName output-w3af.txt</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
-set verbosity 10</FONT></P>
+set verbosity True</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/textFile&gt;&gt;&gt;</B>
 back</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 output config console</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/console&gt;&gt;&gt;</B>
-set verbosity 0</FONT></P>
+set verbosity False</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/console&gt;&gt;&gt;</B>
 back</FONT></P>
 <P><BR><BR>
 </P>
 <P ALIGN=JUSTIFY>This will configure the textFile plugin to output
 all messages, including the debugging information ( see “<FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="font-weight: medium">set
-verbosity 10” </SPAN></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-weight: medium">)
+verbosity True” </SPAN></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-weight: medium">)
 to the </SPAN></FONT><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="font-weight: medium">“output-w3af.txt”
 </SPAN></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-weight: medium">file.
 Here is an example of what is written to this file:</SPAN></FONT></P>
