@@ -319,10 +319,6 @@ class ToolbuttonWrapper(object):
         if self.toolbut is None:    
             raise ValueError("The toolbar does not have a button in position %d" % position)
 
-        but = self.toolbut.get_children()[0]
-        box = but.get_children()[0]
-        self.image = box.get_children()[0]
-
     def changeInternals(self, newlabel, newimage, newtooltip):
         '''Changes the image and label of the widget.
     
@@ -332,9 +328,7 @@ class ToolbuttonWrapper(object):
         '''
         self.toolbut.set_tooltip_text(newtooltip)
         self.toolbut.set_label(newlabel)
-        box = self.toolbut.get_children()[0].get_children()[0]
-        img = box.get_children()[0]
-        img.set_from_stock(newimage, gtk.ICON_SIZE_BUTTON)
+        self.toolbut.set_property("stock-id", newimage)
 
     def set_sensitive(self, sensit):
         self.toolbut.set_sensitive(sensit)
