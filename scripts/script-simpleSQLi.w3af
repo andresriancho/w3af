@@ -4,7 +4,7 @@ plugins
 audit sqli
 output console
 output config console
-set verbosity 10
+set verbose True
 back
 back
 target

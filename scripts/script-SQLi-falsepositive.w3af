@@ -4,11 +4,11 @@ plugins
 audit sqli
 output console, textFile
 output config console
-set verbosity 0
+set verbose False
 back
 
 output config textFile
-set verbosity 10
+set verbose True
 back
 
 back

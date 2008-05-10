@@ -7,7 +7,7 @@ output console,gtkOutput, textFile
 output
 
 output config textFile
-set verbosity 10
+set verbose True
 back
 
 discovery pykto
