@@ -162,32 +162,22 @@ class xssBeef(baseAttackPlugin):
         '''
         return self._message + ' \nType exit to continue using w3af.'
         
-    
-    def getOptionsXML(self):
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'This is the location that the zombies will connect to (do not include the hook directory)'
+        h1 = 'This is configuration is directly passed to beEF XSS exploitation framework.'
+        o1 = option('beefURL', self._beefURL, d1, 'string', help=h1)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="beefURL">\
-                <default>http://localhost/beef/</default>\
-                <desc>This is the location that the zombies will connect to (do not include the hook directory)</desc>\
-                <help>This is configuration is directly passed to beEF XSS exploitation framework.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="beefPasswd">\
-                <default></default>\
-                <desc>The configuration password for beef.</desc>\
-                <help>This configuration parameter is needed to change the configuration of beEF.</help>\
-                <type>string</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'The configuration password for beef.'
+        h2 = 'This configuration parameter is needed to change the configuration of beEF.'
+        o2 = option('beefPasswd', self._beefPasswd, d2, 'string', help=h2)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
