@@ -211,48 +211,35 @@ class remoteFileIncludeShell(baseAttackPlugin):
             self._webServer = webserver( self._listenAddress, self._listenPort , 'webroot' + os.path.sep)
             self._webServer.start2()
             time.sleep(0.2) # wait for webserver thread to start
-            
-    def getOptionsXML(self):
+    
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'IP address that the webserver will use to receive requests'
+        h1 = 'w3af runs a webserver to serve the files to the target web app \
+            when doing remote file inclusions. This setting configures on what IP address the \
+            webserver is going to listen.'
+        o1 = option('listenAddress', self._listenAddress, d1, 'string', help=h1)
+
+        d2 = 'Port that the webserver will use to receive requests'
+        h2 = 'w3af runs a webserver to serve the files to the target web app \
+            when doing remote file inclusions. This \
+            setting configures on what IP address the webserver is going to listen.'
+        o2 = option('listenPort', self._listenPort, d2, 'integer', help=h2)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="listenAddress">\
-                <default>'+str(self._listenAddress)+'</default>\
-                <desc>IP address that the webserver will use to receive requests</desc>\
-                <type>string</type>\
-                <help>w3af runs a webserver to serve the files to the target web app \
-                when doing remote file inclusions. This \
-                setting configures on what IP address the webserver is going to listen.</help>\
-            </Option>\
-            <Option name="listenPort">\
-                <default>'+str(self._listenPort)+'</default>\
-                <desc>Port that the webserver will use to receive requests</desc>\
-                <help>w3af runs a webserver to serve the files to the target web app \
-                when doing remote file inclusions. This \
-                setting configures on what IP address the webserver is going to listen.</help>\
-                <type>integer</type>\
-                <help></help>\
-            </Option>\
-            <Option name="useXssBug">\
-                <default>'+str(self._useXssBug)+'</default>\
-                <desc>Instead of including a file in a local webserver; include the result of exploiting a XSS bug.</desc>\
-                <type>boolean</type>\
-                <help></help>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d3 = 'Instead of including a file in a local webserver; include the result of exploiting a XSS bug.'
+        o3 = option('useXssBug', self._useXssBug, d3, 'boolean')
+        
+        d4 = 'If true, this plugin will try to generate only one shell object.'
+        o4 = option('generateOnlyOne', self._generateOnlyOne, d4, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
