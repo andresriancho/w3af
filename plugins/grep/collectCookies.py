@@ -130,7 +130,7 @@ class collectCookies(baseGrepPlugin):
                     i['cookie-object'] = cookieObj
                     i['httpd'] = cookie[1]
                     i.setDesc( 'A cookie matching the cookie fingerprint DB ' +
-                    'has been found when requesting ' + response.getURL() + ' . The remote server is: ' + cookie[1] )
+                    'has been found when requesting ' + response.getURL() + ' . The remote platform is: ' + cookie[1] )
                     kb.kb.append( self, 'cookies', i )
                     self._alreadyReportedServer.append( cookie[1] )
 
@@ -169,7 +169,10 @@ class collectCookies(baseGrepPlugin):
         cookieDB.append( ('JServSessionIdroot=','Apache JServ') )
         
         # ASP
-        cookieDB.append( ('ASPSESSIONID','IIS') )        
+        cookieDB.append( ('ASPSESSIONID','ASP') )
+        
+        # PHP
+        cookieDB.append( ('PHPSESSIONID','PHP') )
         
         # Others
         cookieDB.append( ('WebLogicSession=','BEA Logic') )
