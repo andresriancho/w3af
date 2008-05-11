@@ -143,7 +143,8 @@ class KBTree(gtk.TreeView):
         self.treeholder = new_treeholder
 
     def _getBestObjName(self,  obj):
-        '''
+        '''Gets the best possible name for the object.
+
         @return: The best obj name possible
         '''
 
@@ -191,10 +192,15 @@ class KBTree(gtk.TreeView):
                         treestore.append(treevariab, [name, idinstance, icon, colorLevel, realColor])
                         self._recolorizeFather(treevariab, colorLevel, realColor)
                         self.instances[idinstance] = instance
-
         return True
 
     def _recolorizeFather(self, item, newColorLevel, realColor):
+        '''Recolorizes the tree nodes from leaf to root.
+
+        @param item: the item to recolorize.
+        @param newColorLevel: the new color level.
+        @param realColor: the new color.
+        '''
         actualLevel = self.treestore.get_value(item, 3)
         if newColorLevel > actualLevel:
             self.treestore.set_value(item, 3, newColorLevel)
@@ -202,8 +208,6 @@ class KBTree(gtk.TreeView):
             father = self.treestore.iter_parent(item)
             if father is not None:
                 self._recolorizeFather(father, newColorLevel, realColor)
-            
-#        import pdb;pdb.set_trace()
                         
     def _popup(self, tv, event):
         '''Shows a menu when you right click on an object inside the kb.
@@ -252,5 +256,3 @@ class KBTree(gtk.TreeView):
         instanckey = self.treestore[path][1]
         instance = self.instances.get(instanckey)
         return instance
-
-
