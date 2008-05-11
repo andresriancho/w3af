@@ -167,7 +167,7 @@ class LogGraph(gtk.DrawingArea):
 
     def _drawItem(self, mtype, posx, quant, sever):
         if mtype == "debug":
-            posy = self.posHorizItems["Debug"]
+            posy = self.posHorizItems["Debug"] - 1
             self.gc.set_rgb_fg_color(colors.grey)
             self.window.draw_line(self.gc, posx, posy, posx, posy-quant)
         elif mtype == "information":
