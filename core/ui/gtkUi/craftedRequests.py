@@ -211,7 +211,15 @@ class FuzzyRequests(entries.RememberingWindow):
         self.responses = []
         result_ok = 0
         result_err = 0
-        for (realreq, realbody) in fg.generate():
+        allrequests = list(fg.generate())
+        if len(allrequests) > 20:
+            msg = "Are you sure you want to send %d requests?" % len(allrequests)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+            opt = dlg.run()
+            dlg.destroy()
+            if opt != gtk.RESPONSE_YES:
+                return
+        for (realreq, realbody) in allrequests:
             try:
                 httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody)
                 respbody = httpResp.getBody()
