@@ -49,8 +49,8 @@ class KBTree(gtk.TreeView):
         self.w3af = w3af
 
         # simple empty Tree Store
-        # columns: the string to show; the key for the plugin instance, and the icon
-        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf)
+        # columns: string to show; key for the plugin instance, icon, colorLevel, color
+        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
 
@@ -62,6 +62,7 @@ class KBTree(gtk.TreeView):
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, expand=True)
         tvcolumn.add_attribute(cell, "text", 0)
+        tvcolumn.add_attribute(cell, "foreground", 4)
         self.append_column(tvcolumn)
 
         # this tree structure will keep the parents where to insert nodes
@@ -134,7 +135,7 @@ class KBTree(gtk.TreeView):
         @param active: which types should be shown.
         '''
         self.filter = active
-        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf)
+        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
         new_treeholder = {}
         self._updateTree(new_treestore, new_treeholder)
         self.set_model(new_treestore)
@@ -167,7 +168,7 @@ class KBTree(gtk.TreeView):
             if pluginname in treeholder:
                 (treeplugin, holdplugin) = treeholder[pluginname]
             else:
-                treeplugin = treestore.append(None, [pluginname, 0, None])
+                treeplugin = treestore.append(None, [pluginname, 0, None, 0, "black"])
                 holdplugin = {}
                 treeholder[pluginname] = (treeplugin, holdplugin)
 
@@ -176,7 +177,7 @@ class KBTree(gtk.TreeView):
                 if variabname in holdplugin:
                     (treevariab, holdvariab) = holdplugin[variabname]
                 else:
-                    treevariab = treestore.append(treeplugin, [variabname, 0, None])
+                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, "black"])
                     holdvariab = set()
                     holdplugin[variabname] = (treevariab, holdvariab)
 
@@ -186,10 +187,23 @@ class KBTree(gtk.TreeView):
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
                         icon = helpers.KB_ICONS.get((obtype, severity))
-                        treestore.append(treevariab, [name, idinstance, icon])
+                        (colorLevel, realColor) = helpers.KB_COLORS.get((obtype, severity), (0, "black"))
+                        treestore.append(treevariab, [name, idinstance, icon, colorLevel, realColor])
+                        self._recolorizeFather(treevariab, colorLevel, realColor)
                         self.instances[idinstance] = instance
 
         return True
+
+    def _recolorizeFather(self, item, newColorLevel, realColor):
+        actualLevel = self.treestore.get_value(item, 3)
+        if newColorLevel > actualLevel:
+            self.treestore.set_value(item, 3, newColorLevel)
+            self.treestore.set_value(item, 4, realColor)
+            father = self.treestore.iter_parent(item)
+            if father is not None:
+                self._recolorizeFather(father, newColorLevel, realColor)
+            
+#        import pdb;pdb.set_trace()
                         
     def _popup(self, tv, event):
         '''Shows a menu when you right click on an object inside the kb.
