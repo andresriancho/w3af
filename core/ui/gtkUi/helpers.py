@@ -416,7 +416,7 @@ KB_ICONS = {
 }
 KB_COLORS = {
     ("info", None):            (0, "black"),
-    ("vuln", severity.LOW):    (1, "yellow"),
+    ("vuln", severity.LOW):    (1, "orange"),
     ("vuln", severity.MEDIUM): (2, "red"),
     ("vuln", severity.HIGH):   (3, "red"),
 }
