@@ -67,10 +67,10 @@ class sqlmap(baseAttackPlugin):
         self._driver = None
         
         # User configured options for fastExploit
-        self._url = None
-        self._method = None
-        self._data = None
-        self._injvar = None
+        self._url = ''
+        self._method = 'GET'
+        self._data = ''
+        self._injvar = ''
         
         # User configured variables
         self._equalLimit = 0.85
@@ -219,65 +219,52 @@ class sqlmap(baseAttackPlugin):
             kb.kb.append( self, 'shells', s )
             
             return s
-        
-    def getOptionsXML(self):
+    
+
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="url">\
-                <default></default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="method">\
-                <default>GET</default>\
-                <desc>Method to use with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="injvar">\
-                <default></default>\
-                <desc>The variable name where to inject.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="data">\
-                <default></default>\
-                <desc>The data, like: \'f00=bar\'</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="equAlgorithm">\
-                <default>'+self._equAlgorithm+'</default>\
-                <desc>The algorithm to use in the comparison of true and false response for blind sql.</desc>\
-                <help>The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="equalLimit">\
-                <default>'+str(self._equalLimit)+'</default>\
-                <desc>Set the equal limit variable</desc>\
-                <help>Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.</help>\
-                <type>float</type>\
-            </Option>\
-            <Option name="goodSamaritan">\
-                <default>'+str(self._goodSamaritan)+'</default>\
-                <desc>Enable or disable the good samaritan module</desc>\
-                <help>The good samaritan module is a the best way to speed up blind sql exploitations. It\'s really simple, you see messages\
+        d2 = 'Method to use with fastExploit()'
+        o2 = option('method', self._method, d2, 'string')
+
+        d3 = 'Data to send with fastExploit()'
+        o3 = option('data', self._data, d3, 'string')
+
+        d4 = 'Variable where to inject with fastExploit()'
+        o4 = option('injvar', self._injvar, d4, 'string')
+
+        d5 = 'The algorithm to use in the comparison of true and false response for blind sql.'
+        h5 = 'The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.'
+        o5 = option('equAlgorithm', self._equAlgorithm, d5, 'string', help=h5)
+
+        d6 = 'Set the equal limit variable'
+        h6 = 'Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.'
+        o6 = option('equalLimit', self._equalLimit, d6, 'float')
+
+        d7 = 'Enable or disable the good samaritan module'
+        h7 = 'The good samaritan module is a the best way to speed up blind sql exploitations. It\'s really simple, you see messages\
                 in the console that show the status of the discovery and you can help the discovery. For example, if you see "Micros" you could\
-                type "oft", and if it\'s correct, you have made your good action of the day, speeded up the discovery AND had fun doing it.</help>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+                type "oft", and if it\'s correct, you have made your good action of the day, speeded up the discovery AND had fun doing it.'
+        o7 = option('goodSamaritan', self._goodSamaritan, d7, 'boolean', help=h7)
+
+        d8 = 'If true, this plugin will try to generate only one shell object.'
+        o8 = option('generateOnlyOne', self._generateOnlyOne, d8, 'boolean')
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        ol.add(o7)
+        ol.add(o8)
+        return ol
+
 
     def setOptions( self, optionsMap ):
         '''
@@ -287,19 +274,19 @@ class sqlmap(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = urlParser.uri2url( optionsMap['url'] )
+        self._url = urlParser.uri2url( optionsMap['url'].getValue() )
             
-        if optionsMap['method'] not in ['GET','POST']:
+        if optionsMap['method'].getValue() not in ['GET','POST']:
             raise w3afException('Unknown method.')
         else:
-            self._method = optionsMap['method']
+            self._method = optionsMap['method'].getValue()
 
-        self._data = optionsMap['data']
-        self._injvar = optionsMap['injvar']
-        self._equAlgorithm = optionsMap['equAlgorithm']
-        self._equalLimit = optionsMap['equalLimit']
-        self._goodSamaritan = optionsMap['goodSamaritan']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
+        self._data = optionsMap['data'].getValue()
+        self._injvar = optionsMap['injvar'].getValue()
+        self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
+        self._equalLimit = optionsMap['equalLimit'].getValue()
+        self._goodSamaritan = optionsMap['goodSamaritan'].getValue()
+        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
 
     def getPluginDeps( self ):
         '''
