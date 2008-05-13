@@ -122,7 +122,8 @@ class pluginsTypeMenu(menu):
       
 
     def suggestCommands(self, part):
-        return suggest(self._plugins.keys() + ['all'], part, True)
+        return suggest(self._plugins.keys() + ['all'], part, True) + \
+            suggest(['config'], part)
 
     def suggestParams(self, command, params, part):
         if command in self.getCommands():
@@ -245,8 +246,7 @@ class pluginsTypeMenu(menu):
     def _cmd_config(self, params):
         
         if len(params) ==0:
-            self._cmd_help(['config'])
-            return
+            raise w3afException("Plugin name is required")
 
         name = params[0]
         if self._configs.has_key(name):
