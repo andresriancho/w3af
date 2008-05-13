@@ -100,13 +100,11 @@ class LogGraph(gtk.DrawingArea):
             tspan = pan / self.timeGrouping
             usableWidth = w - MDER - self.realLeftMargin
             if tspan > usableWidth:
-                self.timeGrouping *= 2
-                self._redrawAll()
-                return
+                self.timeGrouping *= int(tspan / usableWidth) + 1
+                tspan = pan / self.timeGrouping
             elif tspan < usableWidth//2 and self.timeGrouping>1:
                 self.timeGrouping //= 2
-                self._redrawAll()
-                return
+                tspan = pan / self.timeGrouping
 
         # real left margin
         txts = ["", "Vulns", "Info", "", "Debug"]
