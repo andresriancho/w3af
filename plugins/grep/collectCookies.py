@@ -172,7 +172,7 @@ class collectCookies(baseGrepPlugin):
         cookieDB.append( ('ASPSESSIONID','ASP') )
         
         # PHP
-        cookieDB.append( ('PHPSESSIONID','PHP') )
+        cookieDB.append( ('PHPSESSID=','PHP') )
         
         # Others
         cookieDB.append( ('WebLogicSession=','BEA Logic') )
