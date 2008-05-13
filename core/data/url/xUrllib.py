@@ -283,7 +283,7 @@ class xUrllib:
         
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
-    def POST(self, uri, data='', headers={}, grepResult=True, getSize=False ):
+    def POST(self, uri, data='', headers={}, grepResult=True, getSize=False, useCache=False ):
         '''
         POST's data to a uri using a proxy, user agents, and other settings that where set previously.
         
@@ -307,7 +307,7 @@ class xUrllib:
             except Exception, e:
                 raise e
         
-        return self._send( req , grepResult=grepResult)
+        return self._send( req , grepResult=grepResult, useCache=useCache)
     
     def getRemoteFileSize( self, uri, headers={}, useCache=True ):
         '''
