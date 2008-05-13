@@ -27,7 +27,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as uparser
+import core.data.parsers.urlParser as urlParser
 import re
 from core.data.getResponseType import *
 import core.data.constants.severity as severity
@@ -55,32 +55,39 @@ class privateIP(baseGrepPlugin):
                 val = headers[ h ]
                 header = "%s: %s" % (h,val)
                 res = regex.search( header )
-                if res:                 
-                    v = vuln.vuln()
-                    v.setURL( response.getURL() )
-                    v.setId( response.id )
-                    v.setSeverity(severity.LOW)
-                    v.setName( 'Private IP disclosure vulnerability' )
-                    
-                    v.setDesc( "The URL : " + v.getURL() + " returned an HTTP header with an IP address :" +  header )
-                    v['header'] = header
-                    kb.kb.append( self, 'header', v )       
+                if res:
+                    for match in res.groups():
+                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                        if match != urlParser.getDomain(response.getURL()):
+                            v = vuln.vuln()
+                            v.setURL( response.getURL() )
+                            v.setId( response.id )
+                            v.setSeverity(severity.LOW)
+                            v.setName( 'Private IP disclosure vulnerability' )
+                            
+                            v.setDesc( "The URL : " + v.getURL() + " returned an HTTP header with an IP address :" +  match )
+                            v['header'] = header
+                            v['IP'] = match                            
+                            kb.kb.append( self, 'header', v )       
         
         # Search for IP addresses on HTML
         if isTextOrHtml(response.getHeaders()):
             for regex in self._regexList:
                 res = regex.search(response.getBody())
-                if res:                 
+                if res:
                     for match in res.groups():
-                        v = vuln.vuln()
-                        v.setURL( response.getURL() )
-                        v.setId( response.id )
-                        v.setSeverity(severity.LOW)
-                        v.setName( 'Private IP disclosure vulnerability' )
-                        
-                        v.setDesc( "The URL : " + v.getURL() + " returned an HTML document with an IP address : " + match )
-                        v['html'] = match
-                        kb.kb.append( self, 'html', v )     
+                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                        if match != urlParser.getDomain(response.getURL()):
+
+                            v = vuln.vuln()
+                            v.setURL( response.getURL() )
+                            v.setId( response.id )
+                            v.setSeverity(severity.LOW)
+                            v.setName( 'Private IP disclosure vulnerability' )
+                            
+                            v.setDesc( "The URL : " + v.getURL() + " returned an HTML document with an IP address : " + match )
+                            v['IP'] = match
+                            kb.kb.append( self, 'html', v )     
 
     def setOptions( self, OptionList ):
         pass
