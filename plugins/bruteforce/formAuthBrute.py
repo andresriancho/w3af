@@ -85,7 +85,10 @@ class formAuthBrute(baseBruteforcePlugin):
     
     def _idFailedLoginPage( self, freq ):
         '''
-        Generate a re that matches a failed login.
+        Generate TWO regex that match a failed login.
+        The first regex is for logins with filled user and password fields; the second one is for a filled user and a blank passwd.
+
+        FIXME: Do this!!
         '''
         dc = freq.getDc()
         

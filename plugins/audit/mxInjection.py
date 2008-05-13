@@ -121,7 +121,7 @@ class mxInjection(baseAuditPlugin):
         errors = []
         
         errors.append( 'Unexpected extra arguments to Select' )
-        errors.append( 'Bad or malformed request' )     
+        errors.append( 'Bad or malformed request' )     #FIXME: This could generate false positives
         errors.append( 'Could not access the following folders' )       
         errors.append( 'To check for outside changes to the folder list go to the folders page' )       
         errors.append( 'A000' )     
