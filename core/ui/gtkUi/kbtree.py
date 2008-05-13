@@ -95,10 +95,12 @@ class KBTree(gtk.TreeView):
         # iterate the first layer, plugin names
         for pluginname, plugvalues in self.fullkb.items():
             holdplugin = {}
+            maxpluginlevel = 0
             
             # iterate the second layer, variable names
             for variabname, variabobjects in plugvalues.items():
                 holdvariab = []
+                maxvariablevel = 0
 
                 # iterate the third layer, the variable objects
                 if isinstance(variabobjects, list):
@@ -109,9 +111,11 @@ class KBTree(gtk.TreeView):
                             severity = obj.getSeverity()
                         else:
                             severity = None
+                        colorlevel = helpers.KB_COLOR_LEVEL.get((type_obj, severity), 0)
+                        maxvariablevel = max(maxvariablevel, colorlevel)
                         # the type must be in the filter, and be in True
                         if self.filter.get(type_obj,False): 
-                            holdvariab.append((idobject, obj, type_obj, severity))
+                            holdvariab.append((idobject, obj, type_obj, severity, helpers.KB_COLORS[colorlevel]))
                 else:
                     # Not a list, try to show it anyway
                     # This is an ugly hack, because these structures in the core
@@ -121,12 +125,13 @@ class KBTree(gtk.TreeView):
                     if not self.strict:
                         idobject = self._getBestObjName(variabobjects)
                         if self.filter["misc"]:
-                            holdvariab.append((idobject, variabobjects, "misc", None))
+                            holdvariab.append((idobject, variabobjects, "misc", None, "black"))
 
                 if holdvariab:
-                    holdplugin[variabname] = holdvariab
+                    holdplugin[variabname] = (holdvariab, helpers.KB_COLORS[maxvariablevel])
+                    maxpluginlevel = max(maxpluginlevel, maxvariablevel)
             if holdplugin:
-                filteredkb[pluginname] = holdplugin
+                filteredkb[pluginname] = (holdplugin, helpers.KB_COLORS[maxpluginlevel])
         return filteredkb
 
     def setFilter(self, active):
@@ -165,50 +170,34 @@ class KBTree(gtk.TreeView):
         filteredKB = self._filterKB()
 
         # iterate the first layer, plugin names
-        for pluginname, plugvalues in filteredKB.items():
+        for pluginname, (plugvalues, plugincolor) in filteredKB.items():
             if pluginname in treeholder:
                 (treeplugin, holdplugin) = treeholder[pluginname]
             else:
-                treeplugin = treestore.append(None, [pluginname, 0, None, 0, "black"])
+                treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor])
                 holdplugin = {}
                 treeholder[pluginname] = (treeplugin, holdplugin)
 
             # iterate the second layer, variable names
-            for variabname, variabobjects in plugvalues.items():
+            for variabname, (variabobjects, variabcolor) in plugvalues.items():
                 if variabname in holdplugin:
                     (treevariab, holdvariab) = holdplugin[variabname]
                 else:
-                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, "black"])
+                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor])
                     holdvariab = set()
                     holdplugin[variabname] = (treevariab, holdvariab)
 
                 # iterate the third layer, the variable objects
-                for name,instance,obtype,severity in variabobjects:
+                for name,instance,obtype,severity,color in variabobjects:
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
                         icon = helpers.KB_ICONS.get((obtype, severity))
-                        (colorLevel, realColor) = helpers.KB_COLORS.get((obtype, severity), (0, "black"))
-                        treestore.append(treevariab, [name, idinstance, icon, colorLevel, realColor])
-                        self._recolorizeFather(treevariab, colorLevel, realColor)
+                        treestore.append(treevariab, [name, idinstance, icon, 0, color])
                         self.instances[idinstance] = instance
+
         return True
 
-    def _recolorizeFather(self, item, newColorLevel, realColor):
-        '''Recolorizes the tree nodes from leaf to root.
-
-        @param item: the item to recolorize.
-        @param newColorLevel: the new color level.
-        @param realColor: the new color.
-        '''
-        actualLevel = self.treestore.get_value(item, 3)
-        if newColorLevel > actualLevel:
-            self.treestore.set_value(item, 3, newColorLevel)
-            self.treestore.set_value(item, 4, realColor)
-            father = self.treestore.iter_parent(item)
-            if father is not None:
-                self._recolorizeFather(father, newColorLevel, realColor)
-                        
     def _popup(self, tv, event):
         '''Shows a menu when you right click on an object inside the kb.
         

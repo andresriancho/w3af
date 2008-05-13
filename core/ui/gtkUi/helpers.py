@@ -414,11 +414,12 @@ KB_ICONS = {
     ("vuln", severity.MEDIUM):  loadPixbuf('core/ui/gtkUi/data/vulnerability_m.png'),
     ("vuln", severity.HIGH):  loadPixbuf('core/ui/gtkUi/data/vulnerability_h.png'),
 }
-KB_COLORS = {
-    ("info", None):            (0, "black"),
-    ("vuln", severity.LOW):    (1, "orange"),
-    ("vuln", severity.MEDIUM): (2, "red"),
-    ("vuln", severity.HIGH):   (3, "red"),
+KB_COLOR_LEVEL = {
+    ("info", None):            0,
+    ("vuln", severity.LOW):    1,
+    ("vuln", severity.MEDIUM): 2,
+    ("vuln", severity.HIGH):   3,
 }
 
+KB_COLORS = ["black", "orange", "red", "red"]
 
