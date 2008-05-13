@@ -50,7 +50,7 @@ class directoryIndexing(baseGrepPlugin):
                 if htmlString.find( directoryIndexingString ) != -1:
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
-                    v.setDesc( 'The URL : ' + response.getURL() + ' has a directory indexing problem.' )
+                    v.setDesc( 'The URL: "' + response.getURL() + '" has a directory indexing problem.' )
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
                     v.setName( 'Directory indexing' )                  
