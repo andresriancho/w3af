@@ -21,9 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from string import Template
-import xml.etree.ElementTree as ET
 from xml.dom.minidom import *
 import os.path
+
+try:
+    import xml.etree.ElementTree as ET
+except ImportError:
+    # we're using Python 2.4
+    import elementtree.ElementTree as ET
+    
 
 class helpRepository:
     '''
