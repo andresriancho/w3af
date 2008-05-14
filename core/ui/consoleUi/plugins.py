@@ -123,7 +123,7 @@ class pluginsTypeMenu(menu):
 
     def suggestCommands(self, part):
         return suggest(self._plugins.keys() + ['all'], part, True) + \
-            suggest(['config'], part)
+            suggest(self.getCommands(), part)
 
     def suggestParams(self, command, params, part):
         if command in self.getCommands():
@@ -133,6 +133,8 @@ class pluginsTypeMenu(menu):
         return suggest(self._plugins.keys() + ['all'], \
             ','.join(alreadySel + params + [part]), True)
 
+    def getCommands(self):
+        return ['config', 'desc']
 
     def execute(self, tokens):
         if len(tokens)>0:
@@ -178,13 +180,13 @@ class pluginsTypeMenu(menu):
         self._w3af.setPlugins(enabled, self._name)
 
     def _cmd_desc(self, params):
-        if len(params) != 1:
-            self._cmd_help(['desc'])
-            return None
+        
+        if len(params) == 0:
+            raise w3afException("Plugin name is required")
 
         pluginName = params[0]
         if pluginName not in self._plugins:
-            raise w3afException("Unknown plugin: '%s'" % p)
+            raise w3afException("Unknown plugin: '%s'" % pluginName)
 
         plugin = self._w3af.getPluginInstance(pluginName, self._name)
         om.out.console( str(plugin.getLongDesc()) )
@@ -249,6 +251,10 @@ class pluginsTypeMenu(menu):
             raise w3afException("Plugin name is required")
 
         name = params[0]
+
+        if name not in self._plugins:
+            raise w3afException("Unknown plugin: '%s'" %name)
+
         if self._configs.has_key(name):
             config = self._configs[name]
         else:
