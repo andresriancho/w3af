@@ -27,8 +27,13 @@ import os.path
 try:
     import xml.etree.ElementTree as ET
 except ImportError:
-    # we're using Python 2.4
-    import elementtree.ElementTree as ET
+    try:
+        # we're using Python 2.4
+        import elementtree.ElementTree as ET
+    except ImportError:
+        import sys
+        print 'It seems that your python installation doesn\'t have element tree installed. Please install it and run w3af again.'
+        sys.exit(-9)
     
 
 class helpRepository:
