@@ -25,7 +25,7 @@ import core.ui.gtkUi.reqResViewer as reqResViewer
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.fuzzygen as fuzzygen
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import *
 
 request_example = """\
 GET http://www.some_host.com/path HTTP/1.0
@@ -75,6 +75,15 @@ class ManualRequests(entries.RememberingWindow):
         except w3afException:
             self.reqresp.response.clearPanes()
             self.reqresp.response.notebook.set_sensitive(False)
+            return
+        except w3afMustStopException, mse:
+            self.reqresp.response.clearPanes()
+            self.reqresp.response.notebook.set_sensitive(False)
+            # Let the user know ahout the problem, this was a serious one.
+            msg = "Stopped sending requests because " + str(mse)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()
             return
 
         # get the info
@@ -229,6 +238,17 @@ class FuzzyRequests(entries.RememberingWindow):
                 respbody = str(e)
                 resphead = None
                 result_err += 1
+            except w3afMustStopException, mse:
+                respbody = str(mse)
+                resphead = None
+                result_err += 1
+                # Let the user know ahout the problem
+                msg = "Stopped sending requests because " + str(mse)
+                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+                opt = dlg.run()
+                dlg.destroy()
+                break
+
             self.responses.append((realreq, realbody, respbody, resphead))
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
 
