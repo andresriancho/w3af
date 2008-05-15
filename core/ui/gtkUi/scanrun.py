@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk, gobject
 
 import urllib2, time
+import re
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.kbtree as kbtree
 import core.ui.gtkUi.messages as messages
@@ -198,7 +199,18 @@ class URLsTree(gtk.TreeView):
                 end += "?" + query
             if fragment:
                 end += "#" + fragment
-            nodes = path.split("/")[1:]
+
+            # AR:
+            # This was the old way of doing it:            
+            #nodes = path.split("/")[1:]
+            # But it generated this bug:    http://sourceforge.net/tracker/index.php?func=detail&aid=1963947&group_id=170274&atid=853652
+            # So I changed it to this:
+            splittedPath = re.split('(\\\\|/)', path )
+            nodes = []
+            for i in splittedPath:
+                if i not in ['\\','/']:
+                    nodes.append(i)
+            # Ok, now we continue with the code from Facundo
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]
