@@ -246,7 +246,7 @@ class xUrllib:
         
         # The request was parsed, now we send it to the wire!
         functionReference = getattr( self , method )
-        return functionReference( uri, postdata, headers=headersDict, useCache=False, grepResult=False, getSize=False )        
+        return functionReference( uri, data=postdata, headers=headersDict, useCache=False, grepResult=False, getSize=False )        
         
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
         '''
