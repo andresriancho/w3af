@@ -197,6 +197,9 @@ class menu:
         
 
     def _cmd_assert(self, params):
+        if not len(params):
+            raise w3afException('Expression is expected')
+
         assertCommand = 'assert '
         assertCommand += ' '.join( params )
         try:

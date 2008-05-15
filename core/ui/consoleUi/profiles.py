@@ -69,7 +69,7 @@ class profilesMenu(menu):
     def _para_use(self, params, part):
         if len(params)==0:
 #        profiles = [str(p.getName()) for p in self._w3af.getProfileList()]
-            return suggest (profiles.keys(), part)
+            return suggest (self._profiles.keys(), part)
 
         return []
 
