@@ -210,6 +210,7 @@ class menu:
             try:
                 # Get the value of the first argument
                 a = params[0]
+                # FIXME: The exec should have a restricted globals and locals
                 exec( 'aRes = ' + a )
             except:
                 pass
