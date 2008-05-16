@@ -26,6 +26,7 @@ from core.data.request.httpQsRequest import httpQsRequest
 import core.data.parsers.urlParser as urlParser
 from core.data.request.frFactory import createFuzzableRequestRaw
 import core.controllers.outputManager as om
+from core.controllers.w3afException import *
 
 class baseManglePlugin(basePlugin):
     '''
