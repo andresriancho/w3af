@@ -25,6 +25,7 @@ from core.controllers.basePlugin.basePlugin import basePlugin
 import inspect
 # severity constants for vuln messages
 import core.data.constants.severity as severity
+from core.controllers.w3afException import w3afException
 
 class baseOutputPlugin(basePlugin):
     '''
