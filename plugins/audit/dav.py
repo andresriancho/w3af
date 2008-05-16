@@ -83,7 +83,7 @@ class dav(baseAuditPlugin):
         res = self._urlOpener.SEARCH( domainPath , data=content )
         if res.getCode() in xrange(200,300) and "DAV:" in res.getBody():
             v = vuln.vuln()
-            v.setURL( url )
+            v.setURL( res.getURL() )
             v.setId( res.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Insecure DAV configuration' )

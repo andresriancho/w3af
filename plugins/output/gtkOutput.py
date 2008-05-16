@@ -104,7 +104,7 @@ class gtkOutput(baseOutputPlugin):
         for file in os.listdir(path):
             file_or_dir = os.path.join(path,file)
             if os.path.isdir(file_or_dir) and not os.path.islink(file_or_dir):
-                del_dir(file_or_dir) #it's a directory reucursive call to function again
+                self.del_dir(file_or_dir) #it's a directory recursive call to function again
             else:
                 try:
                     os.remove(file_or_dir) #it's a file, delete it

@@ -317,8 +317,10 @@ class rfiShell(shell):
         functionReference = getattr( self._urlOpener , self.getMethod() )
         try:
             httpRes = functionReference( self.getURL(), str(eDc) )
-        except:
-            return 'Unexpected response from the remote web application:' + str(e)
+        except w3afException, w3:
+            return 'Exception from the remote web application:' + str(w3)
+        except Exception, e:
+            return 'Unhandled exception from the remote web application:' + str(e)
         else:
             return self._cut( httpRes.getBody() )
         

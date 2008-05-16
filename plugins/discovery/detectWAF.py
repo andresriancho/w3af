@@ -66,9 +66,13 @@ class detectWAF(baseDiscoveryPlugin):
         # And now a final check for SecureIIS
         h = fuzzableRequest.getHeaders()
         h['Transfer-Encoding'] = createRandAlpha(1024 + 1)
-        lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
-        if lockResponse2.getCode() == 404:
-            self._reportFinding('SecureIIS', response)
+        try:
+          lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+        except w3afException, w3:
+          om.out.debug('Failed to identify secure IIS')
+        else:
+          if lockResponse2.getCode() == 404:
+              self._reportFinding('SecureIIS', lockResponse2)
         
     def _identifyModSecurity(self,  fuzzableRequest):
         '''

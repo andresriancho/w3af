@@ -15,6 +15,8 @@
 Enables the use of multipart/form-data for posting forms
 """
 
+import sys
+
 '''
 Inspirations:
   Upload files in python:

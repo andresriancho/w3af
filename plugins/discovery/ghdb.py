@@ -110,8 +110,8 @@ class ghdb(baseDiscoveryPlugin):
         and try MYSELF to match the query thats on the ghdb with the result.
         '''
         googleList = self._google.getNResults('site:'+ domain, self._resultLimit )
-        for url in googleList:
-            response = self._urlOpener.GET(result.URL, useCache=True )
+        for googleResult in googleList:
+            response = self._urlOpener.GET( googleResult.URL, useCache=True )
             if not self.is404( response ):
                 for gh in self._readGhdb():
                     if self._reverseMatch( gh, response ):

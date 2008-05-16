@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 
 import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 from core.data.kb.shell import shell as shell
 
 import core.data.parsers.urlParser as urlParser

@@ -111,7 +111,7 @@ class phishtank(baseDiscoveryPlugin):
         rootDomain = ''
         try:
             rootDomain = getRootDomain( domain )
-        except:
+        except Exception, e:
             om.out.debug( str(e) )
         else:
             res.append( rootDomain )

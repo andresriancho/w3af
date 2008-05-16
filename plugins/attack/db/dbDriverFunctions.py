@@ -13,6 +13,7 @@ import time
 import md5
 from core.controllers.threads.threadManager import threadManagerObj as tm
 import core.data.kb.config as cf
+import random
 
 class dbDriverFunctions:
     '''
