@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 import urllib
 import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
 
 class baseGrepPlugin(basePlugin):
     '''

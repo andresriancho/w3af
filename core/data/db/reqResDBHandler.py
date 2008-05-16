@@ -94,6 +94,7 @@ class reqResDBHandler:
         toExec = 'resultList = [ r for r in self._db_req_res if %s ]' % condition
         
         try:
+            # FIXME: This should have a different globals and locals
             exec( toExec )
         except:
             raise w3afException('Invalid search string, please try again.')
