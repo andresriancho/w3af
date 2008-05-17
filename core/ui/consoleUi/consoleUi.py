@@ -177,12 +177,17 @@ class consoleUi:
             om.out.console('')
         else:
             cmd = exit and 'exit' or 'back'
-            self._initPrompt()
+            self._clearLine()
             self._paste(cmd)
             self._execute()
         if not exit:
             self._initPrompt()
             self._showPrompt()
+
+    def _clearLine(self):
+        self._toLineEnd()
+        while self._position:
+            self._onBackspace()
 
     def _onBackspace(self):
         if self._position >0:
