@@ -113,6 +113,8 @@ def suggest(tree, part, allowSet=False):
         if len(chunks) > 1:
             # skipList is used to not to suggest items which are already in the set
             skipList, part = chunks[:-1], chunks[-1]
+        else:
+            part = chunks[0]
 
     completions = []
     # if the part is the complete word from the list, we suggest syntax: space, slash or comma
