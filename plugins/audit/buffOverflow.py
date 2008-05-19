@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
 import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException, w3afMustStopException
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -103,7 +103,7 @@ class buffOverflow(baseAuditPlugin):
         functor = getattr( self._urlOpener , method )
         try:
             res = apply( functor, args, {'data': data, 'headers': headers, 'grepResult': grepResult } )
-        except w3afException, w3:
+        except (w3afException,w3afMustStopException):
             i = info.info( mutant )
             i.setName( 'Possible buffer overflow vulnerability' )
             if data:
@@ -151,6 +151,9 @@ class buffOverflow(baseAuditPlugin):
         self.printUniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
     
     def _getErrors( self ):
+        '''
+        @return: A list of errors that are shown when a buffer overflow is triggered
+        '''
         res = []
         res.append('<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>Internal Server Error</h1>')
         res.append('*** stack smashing detected ***:')
