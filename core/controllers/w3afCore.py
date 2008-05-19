@@ -103,7 +103,14 @@ class w3afCore:
         self._isRunning = False
         self._paused = False
         self._mustStop = False
-    
+        
+        # This indicates if we are doing discovery/audit/exploit/etc...
+        self._currentPhase = ''
+        # This indicates the plugin that is running right now
+        self._runningPlugin = ''
+        # The current fuzzable request that the core is analyzing
+        self._currentFuzzableRequest = ''
+        
     def _rPlugFactory( self, strReqPlugins, pluginType ):
         '''
         This method creates the requested modules list.
@@ -463,16 +470,8 @@ class w3afCore:
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
-        #FIXME: This os.kill is baaaaaaaad! One of the things that I'm not allowing here
-        # is the changing back to the currentDir that is done in the main "w3af" script.
-        try:
-            # Shoot myself (linux style)
-            os.kill( os.getpid(), signal.SIGKILL )
-        except:
-            # Kill is only available in linux/mac, lets try windows style:
-            import ctypes
-            ctypes.windll.kernel32.TerminateProcess( os.getpid(), -1)
-    
+        self._end()
+        
     def _end( self, exceptionInstance=None ):
         '''
         This method is called when the process ends normally or by an error.
@@ -507,6 +506,7 @@ class w3afCore:
         self._alreadyWalked = toWalk
         self._urls = []
         self._firstDiscovery = True
+        self._setPhase('discovery')
         
         for fr in toWalk:
             fr.iterationNumber = 0
@@ -550,10 +550,11 @@ class w3afCore:
                     if fr.iterationNumber > cf.cf.getData('maxDepth'):
                         om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
                     else:
-                        om.out.debug('Running plugin: ' + plugin.getName() )
+                        self._setRunningPlugin( plugin.getName() )
                         try:
                             # This is for the pause and stop feature
                             self._sleepIfPausedDieIfStopped()
+                            self._setCurrentFuzzableRequest( fr )
                         
                             pluginResult = plugin.discover( fr )
                         except w3afException,e:
@@ -622,13 +623,71 @@ class w3afCore:
                 
         return self._alreadyWalked
     
+    ######## These methods are here to show a detailed information of what the core is doing ############
+    def getCoreStatus( self ):
+        if self._paused:
+            return 'Paused.'
+        elif not self._isRunning:
+            return 'Not running.'
+        else:
+            return 'Running ' + self.getPhase() + '.' + self.getRunningPlugin() + ' on ' + str(self.getCurrentFuzzableRequest()) + '.'
+    
+    def getPhase( self ):
+        '''
+        @return: The phase which the core is running.
+        '''
+        return self._currentPhase
+        
+    def _setPhase( self, phase ):
+        '''
+        This method saves the phase (discovery/audit/exploit), so in the future the UI can use the getPhase() method to show it.
+        
+        @parameter phase: The phase which the w3afCore is running in a given moment
+        '''
+        self._currentPhase = phase
+    
+    def _setRunningPlugin( self, pluginName ):
+        '''
+        This method saves the phase, so in the future the UI can use the getPhase() method to show it.
+        
+        @parameter pluginName: The pluginName which the w3afCore is running in a given moment
+        '''
+        om.out.debug('Starting plugin: ' + pluginName )
+        self._runningPlugin = pluginName
+        
+    def getRunningPlugin( self ):
+        '''
+        @return: The plugin that the core is running when the method is called.
+        '''
+        return self._runningPlugin
+        
+    def getCurrentFuzzableRequest( self ):
+        '''
+        @return: The current fuzzable request that the w3afCore is working on.
+        '''
+        return self._currentFuzzableRequest
+        
+    def _setCurrentFuzzableRequest( self, fuzzableRequest ):
+        '''
+        @parameter fuzzableRequest: The fuzzableRequest that the w3afCore is working on right now.
+        '''
+        self._currentFuzzableRequest = fuzzableRequest
+    ######## end of: methods that are here to show a detailed information of what the core is doing ############
+    
     def _audit(self):
         om.out.debug('Called _audit()' )
         
+        self._setPhase('audit')
+        
         # This two for loops do all the audit magic [KISS]
         for plugin in self._plugins['audit']:
+            
+            # FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin
             om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
             
+            # For status
+            self._setRunningPlugin( plugin.getName() )
+
             pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
             
             for fr in self._fuzzableRequestList:
@@ -636,7 +695,7 @@ class w3afCore:
                 try:
                     # This is for the pause and stop feature
                     self._sleepIfPausedDieIfStopped()
-                
+                    self._setCurrentFuzzableRequest( fr )
                     plugin.audit( fr )
                 except w3afException, e:
                     om.out.error( str(e) )
@@ -660,15 +719,19 @@ class w3afCore:
         res = []
         
         om.out.debug('Called _bruteforce()' )
+        self._setPhase('bruteforce')
         
         for plugin in self._plugins['bruteforce']:
+            # FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin
             om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
+            self._setRunningPlugin( plugin.getName() )
             for fr in fuzzableRequestList:
                 
                 # Sends each url to the plugin
                 try:
                     # This is for the pause and stop feature
                     self._sleepIfPausedDieIfStopped()
+                    self._setCurrentFuzzableRequest( fr )
                     
                     frList = plugin.bruteforce( fr )
                     tm.join( plugin )

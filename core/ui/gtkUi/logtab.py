@@ -201,7 +201,7 @@ class LogGraph(gtk.DrawingArea):
 
 
 class LogBody(gtk.VPaned):
-    '''Body of the exploit tab.
+    '''Body of the log tab.
 
     @param w3af: the Core instance.
 
@@ -210,19 +210,39 @@ class LogBody(gtk.VPaned):
     def __init__(self, w3af):
         super(LogBody,self).__init__()
         self.w3af = w3af
-        self.panels = {}
 
-        # the paned window
-        inner_hpan = gtk.HPaned()
+        # top vpan
+        top_vbox = gtk.VBox()
         
-        # first widget
+        # Content of top vbox
+        self._what_is_being_run = gtk.Label()
+        gobject.timeout_add(400, self._set_what_is_running )
+        self._what_is_being_run.show()
+        
         messag = messages.Messages()
-        self.pack1(messag)
+        messag.show()
+        
+        # Add the widgets to the top vbox
+        top_vbox.pack_start( messag, True, True )
+        top_vbox.pack_start( self._what_is_being_run, False, False )
+        top_vbox.show()
 
         # bottom widget
         # The log visualization
         graph = LogGraph(w3af)
+        
+        # Add to the main vpan
+        self.pack1(top_vbox)
         self.pack2(graph)
 
         self.set_position(300)
         self.show()
+
+    def _set_what_is_running( self ):
+        '''
+        @return: True so the timeout_add keeps calling it.
+        '''
+        coreStatus = self.w3af.getCoreStatus()
+        self._what_is_being_run.set_markup( coreStatus )
+        return True
+        
