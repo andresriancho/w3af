@@ -29,6 +29,7 @@ import string
 import re
 from sgmllib import SGMLParser
 from core.data.parsers.abstractParser import abstractParser as abstractParser
+import traceback
 
 class sgmlParser(abstractParser, SGMLParser):
     '''
@@ -131,12 +132,22 @@ class sgmlParser(abstractParser, SGMLParser):
             
         try:
             self._findReferences(tag, attrs)
+        except Exception, e:
+            om.out.error('An unhandled exception was found while finding references inside a document. The exception is: "' + str(e) + '"')
+            om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
+
+        try:
             self._findForms(tag, attrs)
-        
+        except Exception, e:
+            om.out.error('An unhandled exception was found while finding forms inside a document. The exception is: "' + str(e) + '"')
+            om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
+
+        try:        
             if tag.lower() == 'meta':
                 self._parseMetaTags(tag, attrs)
         except Exception, e:
-            om.out.error('An unhandled exception was found while parsing a document. The exception is: "' + str(e) + '"')
+            om.out.error('An unhandled exception was found while parsing meta tags inside a document. The exception is: "' + str(e) + '"')
+            om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
     
     def _parseMetaTags( self, tag , attrs ):
         '''
