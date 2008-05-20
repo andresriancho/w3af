@@ -153,18 +153,15 @@ class profile:
         Set the plugin options.
         @parameter pluginType: 'audit', 'output', etc.
         @parameter pluginName: 'xss', 'sqli', etc.
-        @parameter options: {'a':True, 'b':1}
+        @parameter options: an optionList object
         @return: None
         '''
         section = pluginType + "." + pluginName
         if section not in self._config.sections():
             self._config.add_section( section )
             
-        for option in options.keys():
-            if isinstance( options[ option ], type([]) ):
-                self._config.set( section, option, ','.join(options[ option ]) )
-            else:
-                self._config.set( section, option, options[ option ] )
+        for option in options:
+            self._config.set( section, option.getName(), option.getValueStr() )
     
     def getPluginOptions( self, pluginType, pluginName ):
         '''
@@ -235,17 +232,16 @@ class profile:
         '''
         # Get the plugin defaults with their types
         targetInstance = factory('core.controllers.targetSettings')
-        optionsXML = targetInstance.getOptionsXML()
-        parsedOptions = parseXML( optionsXML )
+        options = targetInstance.getOptions()
 
         for section in self._config.sections():
             # Section is something like audit.xss or discovery.webSpider
             # or [profile] or [target]
             if section == 'target':
                 for option in self._config.options(section):
-                    parsedOptions[option]['default'] = self._config.get(section, option)
+                    options[option].setValue( self._config.get(section, option) )
         
-        return parsedOptions
+        return options
     
     def setDesc( self, desc ):
         '''
