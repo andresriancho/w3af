@@ -215,8 +215,8 @@ class googleSets(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._minInput = optionsMap['minInput']
-        self._setResults = optionsMap['setResults']
+        self._minInput = optionsMap['minInput'].getValue()
+        self._setResults = optionsMap['setResults'].getValue()
                 
     def getPluginDeps( self ):
         '''

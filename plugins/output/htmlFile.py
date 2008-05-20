@@ -166,9 +166,9 @@ class htmlFile(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self._fileName = OptionList['fileName']
-        self._httpFileName = OptionList['httpFileName']     
-        self._reportDebug = OptionList['reportDebug']
+        self._fileName = OptionList['fileName'].getValue()
+        self._httpFileName = OptionList['httpFileName'].getValue()
+        self._reportDebug = OptionList['reportDebug'].getValue()
         
     def getOptions( self ):
         '''

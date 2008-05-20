@@ -109,17 +109,6 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @parameter combinations: A list of tuples with (user,pass)
         '''
         raise w3afException('Bruteforce plugins MUST override method _bruteWorker.')            
-
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
-        
-        @return: XML with the plugin options.
-        ''' 
-        return str(self.getOptions())
         
     def getOptions( self ):
         '''
@@ -172,15 +161,15 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._usersFile = optionsMap['usersFile']
-        self._stopOnFirst = optionsMap['stopOnFirst']
-        self._passwdFile = optionsMap['passwdFile']
-        self._passEqUser = optionsMap['passEqUser']
-        self._useMailUsers = optionsMap['useMailUsers']
-        self._useSvnUsers = optionsMap['useSvnUsers']
-        self._useMails = optionsMap['useMails']
-        self._useProfiling = optionsMap['useProfiling']
-        self._profilingNumber = optionsMap['profilingNumber']
+        self._usersFile = optionsMap['usersFile'].getValue()
+        self._stopOnFirst = optionsMap['stopOnFirst'].getValue()
+        self._passwdFile = optionsMap['passwdFile'].getValue()
+        self._passEqUser = optionsMap['passEqUser'].getValue()
+        self._useMailUsers = optionsMap['useMailUsers'].getValue()
+        self._useSvnUsers = optionsMap['useSvnUsers'].getValue()
+        self._useMails = optionsMap['useMails'].getValue()
+        self._useProfiling = optionsMap['useProfiling'].getValue()
+        self._profilingNumber = optionsMap['profilingNumber'].getValue()
         
 
     def getPluginDeps( self ):

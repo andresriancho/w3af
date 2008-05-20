@@ -124,7 +124,7 @@ class serverHeader(baseDiscoveryPlugin):
         d1 = 'Execute plugin only one time'
         h1 = 'Generally the server header wont change during a scan to \
     a same site, so executing this plugin only one time is a safe choice.'
-        o1 = option('execOneTime', str(self._execOneTime), d1, 'boolean', help=h1)
+        o1 = option('execOneTime', self._execOneTime, d1, 'boolean', help=h1)
         
         ol = optionList()
         ol.add(o1)
@@ -138,7 +138,7 @@ class serverHeader(baseDiscoveryPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._execOneTime = optionsMap['execOneTime']
+        self._execOneTime = optionsMap['execOneTime'].getValue()
 
     def getPluginDeps( self ):
         '''

@@ -186,8 +186,8 @@ class digitSum(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzzImages = optionsMap['fuzzImages']
-        self._maxDigitSections = optionsMap['maxDigitSections']
+        self._fuzzImages = optionsMap['fuzzImages'].getValue()
+        self._maxDigitSections = optionsMap['maxDigitSections'].getValue()
     
     def getPluginDeps( self ):
         '''

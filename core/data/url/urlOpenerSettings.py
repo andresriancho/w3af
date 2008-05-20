@@ -35,7 +35,10 @@ import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 
 from core.controllers.configurable import configurable
-from core.controllers.misc.parseOptions import parseOptions
+
+# options
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 class urlOpenerSettings( configurable ):
     '''
@@ -97,6 +100,16 @@ class urlOpenerSettings( configurable ):
         
         # By default, dont mangle any request/responses
         self._manglePlugins = []
+        
+        # 404 settings
+        if cf.cf.getData('404exceptions') == None:
+            # It's the first time I'm runned
+            # Set defaults
+            cf.cf.save('404exceptions', []  )
+            cf.cf.save('always404', [] )
+            cf.cf.save('autodetect404', True )
+            cf.cf.save('byDirectory404', False )
+            cf.cf.save('byDirectoryAndExtension404', False)        
     
     def setHeadersFile(self, HeadersFile ):
         '''
@@ -206,7 +219,7 @@ class urlOpenerSettings( configurable ):
     def setProxy( self, ip , port):
         om.out.debug( 'Called SetProxy(' + ip + ',' + str(port) + ')')
         if port > 65535 or port < 1:
-            raise w3afException('Invalid port number.')
+            raise w3afException('Invalid port number: '+ str(port) )
 
         self._proxyPort = port
         self._proxyAddress = ip
@@ -329,127 +342,130 @@ class urlOpenerSettings( configurable ):
     def getMaxRetrys( self ):
         return self._maxRetrys
     
-    def getOptionsXML(self):
+
+    def getOptions( self ):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''        
+        d1 = 'The timeout for connections to the HTTP server'
+	h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
+        o1 = option('timeout', self._timeout, d1, 'integer', help=h1)
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="timeout">\
-                <default>'+str(self._timeout)+'</default>\
-                <desc>The timeout for connections to the HTTP server</desc>\
-                <help>Set low timeouts for LAN use and high timeouts for slow Internet connections.</help>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="headersFile">\
-                <default>'+str(self._headersFile)+'</default>\
-                <desc>Set the headers filename. This file has additional headers that are added to each request.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="basicAuthUser">\
-                <default>'+str(self._basicAuthUser)+'</default>\
-                <desc>Set the basic authentication username for HTTP requests</desc>\
-                <tabID>Basic Authentication</tabID>\
-                <type>string</type>\
-                <tabid>Authentication</tabid>\
-                </Option>\
-            <Option name="basicAuthPass">\
-                <default>'+str(self._basicAuthPass)+'</default>\
-                <desc>Set the basic authentication password for HTTP requests</desc>\
-                <tabID>Basic Authentication</tabID>\
-                <tabid>Authentication</tabid>\
-                <type>string</type>\
-            </Option>\
-            <Option name="basicAuthDomain">\
-                <default>'+str(self._basicAuthDomain)+'</default>\
-                <desc>Set the basic authentication domain for HTTP requests</desc>\
-                <help>This configures on which request to send the authentication settings configured in basicAuthPass and basicAuthUser.</help>\
-                <tabID>Basic Authentication</tabID>\
-                <tabid>Authentication</tabid>\
-                <type>string</type>\
-            </Option>\
-            <Option name="cookieJarFile">\
-                <default>'+str(self._cookieJarFile)+'</default>\
-                <desc>Set the cookiejar filename.</desc>\
-                <help>The cookiejar file must be in mozilla format</help>\
-                <tabid>Cookies</tabid>\
-                <type>string</type>\
-            </Option>\
-            <Option name="ignoreSessCookies">\
-                <default>'+str(self._ignoreSessCookies)+'</default>\
-                <desc>Ignore session cookies</desc>\
-                <help>If set to True, w3af will ignore all session cookies sent by the web application.</help>\
-                <tabid>Cookies</tabid>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="proxyPort">\
-                <default>'+str(self._proxyPort)+'</default>\
-                <desc>Proxy TCP port</desc>\
-                <help>TCP port for the remote proxy server to use.</help>\
-                <tabid>Proxy</tabid>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="proxyAddress">\
-                <default>'+str(self._proxyAddress)+'</default>\
-                <desc>Proxy IP address</desc>\
-                <help>IP address for the remote proxy server to use.</help>\
-                <tabid>Proxy</tabid>\
-                <type>string</type>\
-            </Option>\
-            <Option name="userAgent">\
-                <default>'+str(self._userAgent)+'</default>\
-                <desc>User Agent header</desc>\
-                <help>User Agent header to send in request.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="maxFileSize">\
-                <default>'+str(self._maxFileSize)+'</default>\
-                <desc>Indicates the maximum file size (in bytes) that w3af will GET/POST.</desc>\
-                <type>integer</type>\
-            </Option>\
-            <Option name="maxRetrys">\
-                <default>'+str(self._maxRetrys)+'</default>\
-                <desc>Indicates the maximum number of retries when requesting an URL.</desc>\
-                <type>integer</type>\
-            </Option>\
-        </OptionList>\
-        '
-        
-    def setOptions( self, OptionMap ):
+        d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
+        o2 = option('headersFile', self._headersFile, d2, 'string')
+
+        d3 = 'Set the basic authentication username for HTTP requests'
+        o3 = option('basicAuthUser', self._basicAuthUser, d3, 'string', tabid='Basic HTTP Authentication')
+
+        d4 = 'Set the basic authentication password for HTTP requests'
+        o4 = option('basicAuthPass', self._basicAuthPass, d4, 'string', tabid='Basic HTTP Authentication')
+
+        d5 = 'Set the basic authentication domain for HTTP requests'
+	h5 = 'This configures on which request to send the authentication settings configured in basicAuthPass and basicAuthUser.'
+        o5 = option('basicAuthDomain', self._basicAuthDomain, d5, 'string', help=h5, tabid='Basic HTTP Authentication')
+
+        d6 = 'Set the cookiejar filename.'
+	h6 = 'The cookiejar file must be in mozilla format'
+        o6 = option('cookieJarFile', self._cookieJarFile, d6, 'string', help=h6, tabid='Cookies')
+
+        d7 = 'Ignore session cookies'
+	h7 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
+        o7 = option('ignoreSessCookies', self._ignoreSessCookies, d7, 'boolean', help=h7, tabid='Cookies')
+       
+        d8 = 'Proxy TCP port'
+	h8 = 'TCP port for the remote proxy server to use.'
+        o8 = option('proxyPort', self._proxyPort, d8, 'integer', help=h8, tabid='Outgoing proxy')
+
+        d9 = 'Proxy IP address'
+	h9 = 'IP address for the remote proxy server to use.'
+        o9 = option('proxyAddress', self._proxyAddress, d9, 'string', help=h9, tabid='Outgoing proxy')
+
+        d10 = 'User Agent header'
+	h10 = 'User Agent header to send in request.'
+        o10 = option('userAgent', self._userAgent, d10, 'string', help=h10, tabid='Misc')
+
+        d11 = 'Proxy IP address'
+	h11 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
+        o11 = option('maxFileSize', self._maxFileSize, d11, 'integer', help=h11, tabid='Misc')
+
+        d12 = 'Maximum number of retries'
+	h12 = 'Indicates the maximum number of retries when requesting an URL.'
+        o12 = option('maxRetrys', self._maxRetrys, d12, 'integer', help=h12, tabid='Misc')
+
+        d13 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
+        o13 = option('always404', cf.cf.getData('always404'), d13, 'list', tabid='404 settings')
+
+        d14 = 'A comma separated list that determines what URLs will NEVER be detected as 404 pages.'
+        o14 = option('404exceptions', cf.cf.getData('404exceptions'), d14, 'list', tabid='404 settings')
+
+        d15 = 'Perform 404 page autodetection.'
+        o15 = option('autodetect404', cf.cf.getData('autodetect404'), d15, 'boolean', tabid='404 settings')
+
+        d16 = 'Perform 404 page detection based on the knowledge found in the directory of the file'
+	h16 = 'Only used when autoDetect404 is False.'
+        o16 = option('byDirectory404', cf.cf.getData('byDirectory404'), d16, 'boolean', tabid='404 settings')
+
+        d17 = 'Perform 404 page detection based on the knowledge found in the directory of the file AND the file extension'
+	h17 = 'Only used when autoDetect404 and byDirectory404 are False.'
+        o17 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d17, 'boolean', tabid='404 settings')
+
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        ol.add(o7)
+        ol.add(o8)
+        ol.add(o9)
+        ol.add(o10)
+        ol.add(o11)
+        ol.add(o12)
+        ol.add(o13)
+        ol.add(o14)
+        ol.add(o15)
+        ol.add(o16)
+        ol.add(o17)
+        return ol
+
+    def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptionsXML().
         
-        @parameter OptionMap: A dictionary with the options for the plugin.
+        @parameter optionsMap: An optionList object with the option objects for a plugin.
         @return: No value is returned.
         ''' 
-        f00, OptionMap = parseOptions( 'url-settings', OptionMap )
-        if OptionMap['timeout'] != self._timeout:
-            self.setTimeout( OptionMap['timeout'] )
+        if optionsMap['timeout'].getValue() != self._timeout:
+            self.setTimeout( optionsMap['timeout'].getValue() )
             
-        if OptionMap['headersFile'] != self._headersFile:
-            self.setHeadersFile( OptionMap['headersFile'] )
+        if optionsMap['headersFile'].getValue() != self._headersFile:
+            self.setHeadersFile( optionsMap['headersFile'].getValue() )
             
-        if OptionMap['basicAuthDomain'] != self._basicAuthDomain or \
-        OptionMap['basicAuthUser'] != self._basicAuthUser or \
-        OptionMap['basicAuthPass'] != self._basicAuthPass:
-            self.setBasicAuth( OptionMap['basicAuthDomain'], OptionMap['basicAuthUser'], OptionMap['basicAuthPass']  )
+        if optionsMap['basicAuthDomain'].getValue() != self._basicAuthDomain or \
+        optionsMap['basicAuthUser'].getValue() != self._basicAuthUser or \
+        optionsMap['basicAuthPass'].getValue() != self._basicAuthPass:
+            self.setBasicAuth( optionsMap['basicAuthDomain'].getValue(), optionsMap['basicAuthUser'].getValue(), optionsMap['basicAuthPass'].getValue()  )
         
-        if OptionMap['cookieJarFile'] != self._cookieJarFile:
-            self.setCookieJarFile( OptionMap['cookieJarFile'] )
+        if optionsMap['cookieJarFile'].getValue() != self._cookieJarFile:
+            self.setCookieJarFile( optionsMap['cookieJarFile'].getValue() )
             
-        if OptionMap['proxyAddress'] != self._proxyAddress or OptionMap['proxyPort'] != self._proxyPort:
-            self.setProxy( OptionMap['proxyAddress'], OptionMap['proxyPort'] )
+        if optionsMap['proxyAddress'] != self._proxyAddress or optionsMap['proxyPort'].getValue() != self._proxyPort:
+            self.setProxy( optionsMap['proxyAddress'].getValue(), optionsMap['proxyPort'].getValue() )
             
-        self.setUserAgent( OptionMap['userAgent'] )
-        self.setMaxFileSize( OptionMap['maxFileSize'] )
-        self._ignoreSessCookies = OptionMap['ignoreSessCookies']
-        self.setMaxRetrys( OptionMap['maxRetrys'] )
+        self.setUserAgent( optionsMap['userAgent'].getValue() )
+        self.setMaxFileSize( optionsMap['maxFileSize'].getValue() )
+        self._ignoreSessCookies = optionsMap['ignoreSessCookies'].getValue()
+        self.setMaxRetrys( optionsMap['maxRetrys'].getValue() )
+        
+        # 404 settings are saved here
+        cf.cf.save('404exceptions', optionsMap['404exceptions'].getValue() )
+        cf.cf.save('always404', optionsMap['always404'].getValue() )
+        cf.cf.save('autodetect404', optionsMap['autodetect404'].getValue() )
+        cf.cf.save('byDirectory404', optionsMap['byDirectory404'].getValue() )
+        cf.cf.save('byDirectoryAndExtension404', optionsMap['byDirectoryAndExtension404'].getValue() )
+        
         
     def getDesc( self ):
         return 'This section is used to configure URL settings that affect the core and all plugins.'

@@ -364,10 +364,10 @@ class xss(baseAuditPlugin):
         
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
-        self._checkPersistent = optionsMap['checkPersistent']
-        if optionsMap['numberOfChecks'] >= 1 and optionsMap['numberOfChecks'] <= self._xss_strings_length:
-            self._numberOfChecks = optionsMap['numberOfChecks']
+        '''
+        self._checkPersistent = optionsMap['checkPersistent'].getValue()
+        if optionsMap['numberOfChecks'].getValue() >= 1 and optionsMap['numberOfChecks'].getValue() <= self._xss_strings_length:
+            self._numberOfChecks = optionsMap['numberOfChecks'].getValue()
         else:
             raise w3afException('Please enter a valid numberOfChecks value (1-'+str(self._xss_strings_length)+').')
         

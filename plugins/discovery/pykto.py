@@ -454,19 +454,19 @@ class pykto(baseDiscoveryPlugin):
     The cgi-bin directory can be anything and change from install to install, so its a good idea to make this a\
     user setting. The directories should be supplied comma separated and with a / at the \
     beggining and one at the end. Example: "/cgi/,/cgibin/,/bin/"'
-        o1 = option('cgiDirs',','.join(self._cgiDirs) , d1, 'list', help=h1)
+        o1 = option('cgiDirs',self._cgiDirs , d1, 'list', help=h1)
         
         d2 = 'Admin directories where to search for vulnerable scripts.'
         h2 = 'Pykto will search for vulnerable scripts in many places, one of them is inside administration directories.\
     The admin directory can be anything and change from install to install, so its a good idea to make this a\
     user setting. The directories should be supplied comma separated and with a / at the \
     beggining and one at the end. Example: "/admin/,/adm/"'
-        o2 = option('adminDirs', ','.join(self._adminDirs), d2, 'list', help=h2)
+        o2 = option('adminDirs', self._adminDirs, d2, 'list', help=h2)
         
         d3 = 'PostNuke directories where to search for vulnerable scripts.'
         h3 = 'The directories should be supplied comma separated and with a / at the \
     beggining and one at the end. Example: "/forum/,/nuke/"'
-        o3 = option('nukeDirs', ','.join(self._nuke), d3, 'list', help=h3)
+        o3 = option('nukeDirs', self._nuke, d3, 'list', help=h3)
 
         d4 = 'The path to the nikto scan_databse.db file.'
         h4 = 'The default scan database file is ok in most cases.'
@@ -474,16 +474,16 @@ class pykto(baseDiscoveryPlugin):
 
         d5 = 'Test all files with all root directories'
         h5 = 'Define if we will test all files with all root directories.'
-        o5 = option('mutateTests', str(self._mutateTests), d5, 'boolean', help=h5)        
+        o5 = option('mutateTests', self._mutateTests, d5, 'boolean', help=h5)        
 
         d6 = 'Verify that pykto is using the latest scandatabase from cirt.net.'
-        o6 = option('updateScandb', str(self._updateScandb), d6, 'boolean')
+        o6 = option('updateScandb', self._updateScandb, d6, 'boolean')
 
         d7 = 'If generic scan is enabled all tests are sent to the remote server without checking the server type.'
         h7 = 'Pykto will send all tests to the server if generic Scan is enabled.\
     For example, if a test in the database is marked as "apache" and the remote \
     server reported "iis" then the test is sent anyway.'
-        o7 = option('genericScan', str(self._genericScan), d7, 'boolean', help=h7)        
+        o7 = option('genericScan', self._genericScan, d7, 'boolean', help=h7)        
 
         ol = optionList()
         ol.add(o1)
@@ -503,13 +503,13 @@ class pykto(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._updateScandb = optionsMap['updateScandb']
-        self._cgiDirs = optionsMap['cgiDirs']
-        self._adminDirs = optionsMap['adminDirs']
-        self._nuke = optionsMap['nukeDirs']
-        self._dbFile = optionsMap['dbFile']
-        self._mutateTests = optionsMap['mutateTests']
-        self._genericScan = optionsMap['genericScan']
+        self._updateScandb = optionsMap['updateScandb'].getValue()
+        self._cgiDirs = optionsMap['cgiDirs'].getValue()
+        self._adminDirs = optionsMap['adminDirs'].getValue()
+        self._nuke = optionsMap['nukeDirs'].getValue()
+        self._dbFile = optionsMap['dbFile'].getValue()
+        self._mutateTests = optionsMap['mutateTests'].getValue()
+        self._genericScan = optionsMap['genericScan'].getValue()
 
         
     def getPluginDeps( self ):

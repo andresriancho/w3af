@@ -187,8 +187,8 @@ class xssBeef(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._beefURL = optionsMap['beefURL']
-        self._beefPasswd = optionsMap['beefPasswd']
+        self._beefURL = optionsMap['beefURL'].getValue()
+        self._beefPasswd = optionsMap['beefPasswd'].getValue()
 
         if self._beefPasswd == '':
             om.out.error('You have to provide a beEF password to use this plugin.')

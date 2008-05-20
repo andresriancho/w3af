@@ -157,7 +157,7 @@ class generic(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._diffRatio = optionsMap['diffRatio']
+        self._diffRatio = optionsMap['diffRatio'].getValue()
 
     def getPluginDeps( self ):
         '''

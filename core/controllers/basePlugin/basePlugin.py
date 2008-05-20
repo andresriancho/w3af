@@ -34,7 +34,7 @@ class basePlugin(configurable):
         
     Please note that this class is a configurable object, so it must implement:
         1. setOptions( OptionList )
-        2. getOptionsXML()
+        2. getOptions()
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -58,7 +58,7 @@ class basePlugin(configurable):
         self._urlOpener = urlOpener
         
 
-    def setOptions( self, OptionsMap ):
+    def setOptions( self, optionsMap ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
@@ -70,19 +70,6 @@ class basePlugin(configurable):
         ''' 
         raise w3afException('Plugin "'+self.getName()+'" is not implementing required method setOptions' )
         
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
-        
-        This method is just here for back compatibility; please use getOptions.
-        
-        @return: XML with the plugin options.
-        ''' 
-        return  str(self.getOptions())
-
     def getOptions(self):
         '''
         @return: A list of option objects for this plugin.

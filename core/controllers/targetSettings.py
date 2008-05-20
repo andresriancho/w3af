@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
-from core.controllers.misc.parseOptions import parseOptions
+
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 import time
@@ -38,7 +38,7 @@ cf.cf.save('baseURLs', [] )
 class targetSettings(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can configure the target
-    settings using getOptionsXML and SetOptions.
+    settings using getOptions and SetOptions.
     '''
     
     def __init__( self ):
@@ -58,18 +58,7 @@ class targetSettings(configurable):
         self._operatingSystems = ['unix','windows', 'unknown']
         self._programmingFrameworks = ['php','asp','asp.net','java','jsp','cfm','ruby','perl','unknown']
 
-        
-    def getOptionsXML(self):
-        '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
-        
-        @return: XML with the plugin options.
-        ''' 
-        return str(self.getOptions())
-        
+                
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -104,9 +93,7 @@ class targetSettings(configurable):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        f00, optionsMap = parseOptions( 'targetSettings', optionsMap )
-        
-        targetUrls = optionsMap['target']
+        targetUrls = optionsMap['target'].getValue()
         
         for targetUrl in targetUrls:
             if not targetUrl.count('file://') and not targetUrl.count('http://')\
@@ -139,13 +126,13 @@ class targetSettings(configurable):
         cf.cf.save('sessionName', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M') )
         
         # Advanced target selection
-        os = optionsMap['targetOS']
+        os = optionsMap['targetOS'].getValue()
         if os.lower() in self._operatingSystems:
             cf.cf.save('targetOS', os.lower() )
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
-        pf = optionsMap['targetFramework']
+        pf = optionsMap['targetFramework'].getValue()
         if pf.lower() in self._programmingFrameworks:
             cf.cf.save('targetFramework', pf.lower() )
         else:

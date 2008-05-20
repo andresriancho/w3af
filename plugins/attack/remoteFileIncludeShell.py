@@ -249,10 +249,10 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listenAddress = optionsMap['listenAddress']
-        self._listenPort = optionsMap['listenPort']
-        self._useXssBug = optionsMap['useXssBug']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
+        self._listenAddress = optionsMap['listenAddress'].getValue()
+        self._listenPort = optionsMap['listenPort'].getValue()
+        self._useXssBug = optionsMap['useXssBug'].getValue()
+        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         
         if self._listenAddress == '' and not self._useXssBug:
             om.out.error('remoteFileIncludeShell plugin has to be correctly configured to use.')

@@ -156,7 +156,7 @@ class _web20Spider(baseDiscoveryPlugin):
         h1 = 'This plugin embeds a browser, that is configured to browse through a local proxy server. It is done this way\
     to be able to intercept all request and responses and use all the xUrlLib configurations and features. You can safely\
     leave this setting as it is.'
-        o1 = option('proxyPort', str(self._proxyPort), d1, 'integer', help=h1)
+        o1 = option('proxyPort', self._proxyPort, d1, 'integer', help=h1)
         
         ol = optionList()
         ol.add(o1)
@@ -170,7 +170,7 @@ class _web20Spider(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._proxyPort = optionsMap['proxyPort']
+        self._proxyPort = optionsMap['proxyPort'].getValue()
     
     def getPluginDeps( self ):
         '''

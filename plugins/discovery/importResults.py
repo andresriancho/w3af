@@ -100,7 +100,7 @@ class importResults(baseDiscoveryPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._inputFile = optionsMap['inputFile']
+        self._inputFile = optionsMap['inputFile'].getValue()
         
     def getPluginDeps( self ):
         '''

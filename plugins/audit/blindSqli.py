@@ -80,8 +80,8 @@ class blindSqli(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._equAlgorithm = optionsMap['equAlgorithm']
-        self._equalLimit = optionsMap['equalLimit']
+        self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
+        self._equalLimit = optionsMap['equalLimit'].getValue()
 
     def getPluginDeps( self ):
         '''

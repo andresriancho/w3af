@@ -90,10 +90,10 @@ class googleProxy(baseAttackPlugin):
     def getRootProbability( self ):
         return 0.0
         
-    def setOptions( self, OptionsMap ):
+    def setOptions( self, optionsMap ):
         
-        self._proxyPort = OptionsMap['proxyPort']
-        self._proxyAddress = OptionsMap['proxyAddress']
+        self._proxyPort = optionsMap['proxyPort'].getValue()
+        self._proxyAddress = optionsMap['proxyAddress'].getValue()
         
         # Restart the proxy, with the new options
         self._proxy()
@@ -191,10 +191,10 @@ class googleProxy(baseAttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'IP address where googleProxy will use to receive requests'
-        o1 = option('proxyAddress', str(self._proxyAddress), d1, 'string')
+        o1 = option('proxyAddress', self._proxyAddress, d1, 'string')
         
         d2 = 'TCP port that the googleProxy server will use to receive requests'
-        o2 = option('proxyPort', str(self._proxyPort), d2, 'integer')
+        o2 = option('proxyPort', self._proxyPort, d2, 'integer')
         
         ol = optionList()
         ol.add(o1)

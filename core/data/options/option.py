@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import copy
 import cgi
+import re
+from core.controllers.w3afException import w3afException
 
 class option:
     '''
@@ -47,10 +49,20 @@ class option:
     
     def getName( self ): return self._name
     def getDesc( self ): return self._desc
+
+    # return the object, as it was set using setDefaultValue / setValue or the __init__
     def getDefaultValue( self ): return self._defaultValue
-    # This is the value configured by the user; this is the only variable that 
-    # ain't put in the __str__
     def getValue( self ): return self._value
+
+    # And the string versions of the above methods...
+    def _getStr(self, value):
+        if isinstance(value,type([])):
+            return ','.join(value)
+        else:
+            return str(value)
+
+    def getDefaultValueStr( self ): return self._getStr(self._defaultValue)
+    def getValueStr( self ): return self._getStr(self._value)
     
     def getType( self ): return self._type
     def getHelp( self ): return self._help
@@ -59,34 +71,58 @@ class option:
     def setName( self, v ): self._name = v
     def setDesc( self, v ): self._desc = v
     def setDefaultValue( self, v ): self._defaultValue = v
-    def setValue( self, v ): self._value = v
+
+    def setValue( self, value ):
+        '''
+        @parameter value: The value parameter is set by the user interface, which for example sends 'True' or 'a,b,c'
+
+        Based on the value parameter and the option type, I have to create a nice looking object like True or ['a','b','c'].
+        This replaces the *old* parseOptions.
+        '''
+        try:
+            if self._type == 'integer':
+                res = int(value)
+            elif self._type == 'float':
+                res = float(value)
+            elif self._type == 'boolean':
+                if value.lower() == 'true':
+                    res = True
+                else:
+                    res = False
+            elif self._type == 'list':
+                res = []
+                # Yes, we are regex dummies
+                value += ','
+                tmp = re.findall('(".*?"|\'.*?\'|.*?),', value)
+                if tmp != []:
+                    tmp = [y.strip() for y in tmp if y != '']
+                    
+                    # Now I check for single and double quotes
+                    for u in tmp:
+                        if ( u.startswith('"') and u.endswith('"') ) or ( u.startswith("'") and u.endswith("'") ):
+                            res.append( u[1:-1] )
+                        else:
+                            # Maybe its a list of integers
+                            try:
+                                res.append( int(u) )
+                            except:
+                                res.append( u )
+
+                else:
+                    raise ValueError
+            elif self._type == 'string':
+                res = str(value)
+            else:
+                raise w3afException('Unknown type: ' + self._type)
+        except ValueError:
+            raise w3afException('The value "' + value + '" cannot be casted to "' + self._type + '".')
+        else:
+            self._value = res
+
     def setType( self, v ): self._type = v
     def setHelp( self, v ): self._help = v
     def setTabId( self, v ): self._tabid = v
     
-    def __str__( self ):
-        '''
-        The idea if to generate something like this:
-        
-        <Option name="onlyForward">\
-            <default>'+str(self._onlyForward)+'</default>\
-            <desc>When spidering, only search directories inside the one that was given as a parameter</desc>\
-            <help>Something something...</help>\
-            <type>boolean</type>\
-            <tabid>Tab1</tabid>\
-        </Option>\
-        '''
-        res = '<Option name="'+self._sanitize(str(self._name))+'">\n'
-        res += '    <default>'+self._sanitize(str(self._defaultValue))+'</default>\n'
-        res += '    <desc>'+self._sanitize(str(self._desc))+'</desc>\n'
-        res += '    <type>'+self._sanitize(str(self._type))+'</type>\n'
-        if self._help:
-            res += '    <help>'+self._sanitize(str(self._help))+'</help>\n'
-        if self._tabid:
-            res += '    <tabid>'+self._sanitize(str(self._tabid))+'</tabid>\n'
-        res +='</Option>\n'
-        return res
-        
     def _sanitize( self, value ):
         '''
         Encode some values that can't be used in XML

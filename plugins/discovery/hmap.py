@@ -170,7 +170,7 @@ class hmap(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._genFpF = optionsMap['genFpF']
+        self._genFpF = optionsMap['genFpF'].getValue()
 
     def getPluginDeps( self ):
         '''

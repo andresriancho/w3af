@@ -22,8 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
-from core.controllers.misc import parseOptions
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException
 import cgi
 
 class ProfileList(gtk.TreeView):
@@ -164,14 +163,10 @@ class ProfileList(gtk.TreeView):
 
         # we adapt this information to a only-options dict, as that's
         # the information that we can get later from the core
-        xmlopts = plugin.getOptionsXML()
-        if xmlopts is not None:
-            opts = parseOptions.parseXML(xmlopts)
-        else:
-            opts = None
+        opts = plugin.getOptions()
         realopts = {}
-        for nom,config in opts.items():
-            realopts[nom] = config["default"]
+        for opt in opts:
+            realopts[opt.getName()] = opt.getDefaultValueStr()
         self.pluginsConfigs[(plugin.ptype,plugin.pname)] = realopts
 
     def _changeAtempt(self, widget, event):

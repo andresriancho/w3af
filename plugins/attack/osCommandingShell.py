@@ -115,7 +115,11 @@ class osCommandingShell(baseAttackPlugin):
             return False
         else:
             return self._defineCut( response.getBody(), rand , exact=True )
-                
+    
+    def getOptions(self):
+        # FIXME!
+        return optionList()
+
     def getOptionsXML(self):
         '''
         This method returns a XML containing the Options that the plugin has.
@@ -175,17 +179,17 @@ class osCommandingShell(baseAttackPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        if optionsMap['method'] not in ['GET','POST']:
+        if optionsMap['method'].getValue() not in ['GET','POST']:
             raise w3afException('Unknown method.')
         else:
-            self._method = optionsMap['method']
+            self._method = optionsMap['method'].getValue()
 
-        self._data = optionsMap['data']
-        self._injvar = optionsMap['injvar']
-        self._separator = optionsMap['separator']
-        self._url = optionsMap['url']
-        self._changeToPost = optionsMap['changeToPost']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
+        self._data = optionsMap['data'].getValue()
+        self._injvar = optionsMap['injvar'].getValue()
+        self._separator = optionsMap['separator'].getValue()
+        self._url = optionsMap['url'].getValue()
+        self._changeToPost = optionsMap['changeToPost'].getValue()
+        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
             
     def getPluginDeps( self ):
         '''

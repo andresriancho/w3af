@@ -28,7 +28,6 @@ import core.ui.gtkUi.helpers as helpers
 from core.ui.gtkUi.pluginEditor import editPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
-from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
 
 # support for <2.5
@@ -275,10 +274,8 @@ class PluginTree(gtk.TreeView):
 
     def _getEditablePlugin(self, pname, ptype):
         plugin = self.w3af.getPluginInstance(pname, ptype)
-        xmloptions = plugin.getOptionsXML()
-        node = xml.dom.minidom.parseString(xmloptions)
-        cant = len([x for x in node.getElementsByTagName('Option')])
-        return bool(cant)
+        options = plugin.getOptions()
+        return bool(len(options))
 
     def configChanged(self, like_initial):
         '''Shows in the tree when a plugin configuration changed.
@@ -563,15 +560,15 @@ class PluginConfigBody(gtk.VBox):
     def _advancedTarget(self, widg):
         # overwrite the plugin info with the target url
         configurableTarget = self.w3af.target
-        options = parseOptions.parseXML(configurableTarget.getOptionsXML())
+        options = configurableTarget.getOptions()
         url = self.target.get_text()
 
         # open config
         confpanel.AdvancedTargetConfigDialog("Advanced target settings", self.w3af, configurableTarget, {"target":url})
 
         # update the Entry with plugin info
-        options = parseOptions.parseXML(configurableTarget.getOptionsXML())
-        self.target.set_text(options['target']['default'])
+        options = configurableTarget.getOptions()
+        self.target.set_text(options['target'].getValueStr())
 
     def getActivatedPlugins(self):
         '''Return the activated plugins.
@@ -603,8 +600,8 @@ class PluginConfigBody(gtk.VBox):
         '''Reloads all the configurations.'''
         # target url
         plugin = self.w3af.target
-        options = parseOptions.parseXML(plugin.getOptionsXML())
-        newurl = options['target']['default']
+        options = plugin.getOptions()
+        newurl = options['target'].getDefaultValueStr()
         if newurl:
             self.target.setText(newurl)
             self.w3af.mainwin.scanok.change(self.target, True)

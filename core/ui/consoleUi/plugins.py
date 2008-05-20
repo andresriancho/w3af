@@ -23,8 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.config import *
-from core.controllers.misc.parseOptions import parseXML
 import core.controllers.outputManager as om
+from core.controllers.w3afException import w3afException
+import sys
 
 class pluginsMenu(menu):
     '''
@@ -116,8 +117,14 @@ class pluginsTypeMenu(menu):
         plugins = w3af.getPluginList(name)
         self._plugins = {} # name to number of options
         for p in plugins:
-            options = parseXML(self._w3af.getPluginInstance(p, self._name).getOptionsXML())
-            self._plugins[p] = len(options)
+            try:
+                options = self._w3af.getPluginInstance(p, self._name).getOptions()
+            except w3afException, w3:
+                om.out.error('Error while reading plugin options.')                
+                om.out.error(str(w3))
+                sys.exit(-8)
+            else:
+                self._plugins[p] = len(options)
         self._configs = {}
       
 
@@ -227,11 +234,6 @@ class pluginsTypeMenu(menu):
         for pluginName in list:
             row = []
             plugin = self._w3af.getPluginInstance(pluginName, self._name)
-#            try:
-#                optionsXML = plugin.getOptionsXML()
-#                options = parseXML(optionsXML)
-#            except:
-#                options = {}
     
             optCount = self._plugins[pluginName]
             row.append(pluginName)

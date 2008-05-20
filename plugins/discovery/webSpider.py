@@ -199,9 +199,9 @@ class webSpider(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._onlyForward = optionsMap['onlyForward']
-        self._ignoreRegex = optionsMap['ignoreRegex']
-        self._followRegex = optionsMap['followRegex']
+        self._onlyForward = optionsMap['onlyForward'].getValue()
+        self._ignoreRegex = optionsMap['ignoreRegex'].getValue()
+        self._followRegex = optionsMap['followRegex'].getValue()
         
         self._compileRE()
     

@@ -153,12 +153,12 @@ class localFileReader(baseAttackPlugin):
         @parameter optionsMap: A dict with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._changeToPost = optionsMap['changeToPost']
-        self._url = optionsMap['url']
-        self._method = optionsMap['method']
-        self._data = urlParser.getQueryString( optionsMap['data'] )
-        self._filePattern = optionsMap['filePattern']
-        self._generateOnlyOne = optionsMap['generateOnlyOne']
+        self._changeToPost = optionsMap['changeToPost'].getValue()
+        self._url = optionsMap['url'].getValue()
+        self._method = optionsMap['method'].getValue()
+        self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
+        self._filePattern = optionsMap['filePattern'].getValue()
+        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         
     def getPluginDeps( self ):
         '''

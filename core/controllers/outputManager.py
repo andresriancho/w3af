@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os,sys
 from core.controllers.misc.factory import factory
-from core.controllers.misc.parseOptions import parseOptions
 # severity constants for vuln messages
 import core.data.constants.severity as severity
 
@@ -176,7 +175,6 @@ class outputManager:
             
         @return: No value is returned.
         '''
-        pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )
         self._pluginsOptions[pluginName] = PluginsOptions
     
     def getMessageCache(self):

@@ -95,7 +95,7 @@ class findComments(baseGrepPlugin):
                         self._alreadyReportedInteresting.append( ( comment, response.getURL() ) )
                             
     def setOptions( self, optionsMap ):
-        self._search404 = optionsMap['search404']
+        self._search404 = optionsMap['search404'].getValue()
     
     def getOptions( self ):
         '''

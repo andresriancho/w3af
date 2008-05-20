@@ -34,7 +34,7 @@ def factory(ModuleName, *args):
     with the same name.
     
     Example :
-    >> f00 = factory( ''plugins.discovery.googleSpider'' )
+    >> f00 = factory( 'plugins.discovery.googleSpider' )
     >> print f00
     <googleSpider.googleSpider instance at 0xb7a1f28c>
     
@@ -43,8 +43,10 @@ def factory(ModuleName, *args):
     '''
     try:
         __import__(ModuleName)
-    except:
+    except ImportError:
         raise w3afException('Unknown plugin "'+ ModuleName + '"')
+    except Exception, e:
+        raise w3afException('Error while loading plugin "'+ ModuleName + '". Exception: ' + str(e) )
     else:
         try:
             aModule = sys.modules[ModuleName]

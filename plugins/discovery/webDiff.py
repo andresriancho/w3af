@@ -199,16 +199,16 @@ class webDiff(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'When comparing, also compare the content of files.'
-        o1 = option('content', str(self._content), d1, 'boolean')
+        o1 = option('content', self._content, d1, 'boolean')
         
         d2 = 'The local directory used in the comparison.'
-        o2 = option('localDir', str(self._localDir), d2, 'string')
+        o2 = option('localDir', self._localDir, d2, 'string')
 
         d3 = 'The remote directory used in the comparison.'
-        o3 = option('remotePath', str(self._remotePath), d3, 'string')
+        o3 = option('remotePath', self._remotePath, d3, 'string')
 
         d4 = 'When comparing content of two files, ignore files with this extensions.'
-        o4 = option('banUrl', ','.join(self._banUrl), d4, 'list')
+        o4 = option('banUrl', self._banUrl, d4, 'list')
         
         ol = optionList()
         ol.add(o1)
@@ -225,10 +225,10 @@ class webDiff(baseDiscoveryPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._content = optionsMap['content']
-        self._banUrl = optionsMap['banUrl']
-        self._remotePath = urlParser.getDomainPath( optionsMap['remotePath'] )
-        self._localDir = optionsMap['localDir']
+        self._content = optionsMap['content'].getValue()
+        self._banUrl = optionsMap['banUrl'].getValue()
+        self._remotePath = urlParser.getDomainPath( optionsMap['remotePath'].getValue() )
+        self._localDir = optionsMap['localDir'].getValue()
 
     def getPluginDeps( self ):
         '''

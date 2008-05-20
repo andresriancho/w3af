@@ -28,7 +28,7 @@ class baseDiscoveryPlugin(basePlugin):
     '''
     This is the base class for discovery plugins, all discovery plugins should inherit from it 
     and implement the following methods :
-        1. testUrl(...)
+        1. discover(...)
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

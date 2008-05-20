@@ -104,10 +104,10 @@ class spiderMan(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'IP address that the spiderMan proxy will use to receive requests'
-        o1 = option('listenAddress', str(self._listenAddress), d1, 'string')
+        o1 = option('listenAddress', self._listenAddress, d1, 'string')
         
         d2 = 'Port that the spiderMan HTTP proxy server will use to receive requests'
-        o2 = option('listenPort', str(self._listenPort), d2, 'integer')
+        o2 = option('listenPort', self._listenPort, d2, 'integer')
         
         ol = optionList()
         ol.add(o1)
@@ -123,8 +123,8 @@ class spiderMan(baseDiscoveryPlugin):
         @return: No value is returned.
         '''
 
-        self._listenAddress = optionsMap['listenAddress']
-        self._listenPort  = optionsMap['listenPort']
+        self._listenAddress = optionsMap['listenAddress'].getValue()
+        self._listenPort  = optionsMap['listenPort'].getValue()
         
     def getPluginDeps( self ):
         '''

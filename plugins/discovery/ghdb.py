@@ -285,9 +285,9 @@ class ghdb(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._key = optionsMap['key']           
-        self._updateGHDB = optionsMap['updateGHDB']
-        self._resultLimit = optionsMap['resultLimit']
+        self._key = optionsMap['key'].getValue()           
+        self._updateGHDB = optionsMap['updateGHDB'].getValue()
+        self._resultLimit = optionsMap['resultLimit'].getValue()
             
     def getPluginDeps( self ):
         '''

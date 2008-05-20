@@ -139,7 +139,7 @@ class davShell(baseAttackPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._url = optionsMap['url']
+        self._url = optionsMap['url'].getValue()
 
     def getPluginDeps( self ):
         '''

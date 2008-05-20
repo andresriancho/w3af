@@ -185,7 +185,7 @@ class fileUpload(baseAuditPlugin):
         '''
         d1 = 'Extensions that w3af will try to upload'
         h1 = 'When finding a form with a file upload, this plugin will try to upload a set of files with the extensions specified here.'
-        o1 = option('extensions', ','.join(self._extensions), d1, 'list', help=h1)
+        o1 = option('extensions', self._extensions, d1, 'list', help=h1)
 
         ol = optionList()
         ol.add(o1)
@@ -199,7 +199,7 @@ class fileUpload(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._extensions = optionsMap['extensions']
+        self._extensions = optionsMap['extensions'].getValue()
 
     def getPluginDeps( self ):
         '''

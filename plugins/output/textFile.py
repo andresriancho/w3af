@@ -224,10 +224,10 @@ class textFile(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = OptionList['verbose']
-        self._fileName = OptionList['fileName']
-        self._httpFileName = OptionList['httpFileName']
-        self._showCaller = OptionList['showCaller']
+        self.verbose = OptionList['verbose'].getValue()
+        self._fileName = OptionList['fileName'].getValue()
+        self._httpFileName = OptionList['httpFileName'].getValue()
+        self._showCaller = OptionList['showCaller'].getValue()
     
     def getOptions( self ):
         '''

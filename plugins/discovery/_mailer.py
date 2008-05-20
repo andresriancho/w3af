@@ -248,10 +248,10 @@ class _mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
         '''
         d1 = 'Use this domain when filling forms that contain an "email" form input.'
         h1 = 'When this plugin fill up a form, it will do it like: someString@[mailDomain]'
-        o1 = option('mailDomain', str(self._mailDomain), d1, 'string', help=h1)
+        o1 = option('mailDomain', self._mailDomain, d1, 'string', help=h1)
         
         d2 = 'The SMTP daemon will listen in this IP addres.'
-        o2 = option('listenAddress', str(self._listenAddress), d2, 'string')
+        o2 = option('listenAddress', self._listenAddress, d2, 'string')
         
         ol = optionList()
         ol.add(o1)
@@ -266,8 +266,8 @@ class _mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._mailDomain = optionsMap['mailDomain']
-        self._listenAddress = optionsMap['listenAddress']
+        self._mailDomain = optionsMap['mailDomain'].getValue()
+        self._listenAddress = optionsMap['listenAddress'].getValue()
     
     def getPluginDeps( self ):
         '''

@@ -103,7 +103,7 @@ class MSNSpider(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._resultLimit = optionsMap['resultLimit']
+        self._resultLimit = optionsMap['resultLimit'].getValue()
 
     def getPluginDeps( self ):
         '''

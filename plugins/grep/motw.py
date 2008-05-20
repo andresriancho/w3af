@@ -74,7 +74,7 @@ class motw (baseGrepPlugin):
                     kb.kb.append( self, 'no_motw', i )
 
     def setOptions( self, optionsMap ):
-        self._withoutMOTW = optionsMap['withoutMOTW']
+        self._withoutMOTW = optionsMap['withoutMOTW'].getValue()
         
     def getOptions( self ):
         '''

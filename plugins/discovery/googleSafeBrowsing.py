@@ -125,8 +125,8 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
                     res.append( url )
         return res
         
-    def setOptions( self, OptionsMap ):
-        self._googleSafeBrowsingDB = OptionsMap['dbURL']
+    def setOptions( self, optionsMap ):
+        self._googleSafeBrowsingDB = optionsMap['dbURL'].getValue()
         
     def getOptions( self ):
         '''

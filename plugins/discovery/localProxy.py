@@ -75,19 +75,19 @@ class localProxy(baseDiscoveryPlugin):
 
         raise w3afRunOnce()
         
-    def setOptions( self, OptionsMap ):
+    def setOptions( self, optionsMap ):
         
-        self._userOptionfixContentLen = OptionsMap['fixContentLen']
-        self._interceptImages = OptionsMap['interceptImages']
+        self._userOptionfixContentLen = optionsMap['fixContentLen'].getValue()
+        self._interceptImages = optionsMap['interceptImages'].getValue()
         try:
-            self._interceptRegex = re.compile( OptionsMap['interceptRegex'] )
+            self._interceptRegex = re.compile( optionsMap['interceptRegex'].getValue() )
         except:
             raise w3afException('Invalid regular expression in parameter interceptRegex.')
         
-        self._w3afMarker = OptionsMap['w3afMarker']
-        self._proxyPort = OptionsMap['proxyPort']
-        self._proxyAddress = OptionsMap['proxyAddress']
-        self._css = OptionsMap['css']
+        self._w3afMarker = optionsMap['w3afMarker'].getValue()
+        self._proxyPort = optionsMap['proxyPort'].getValue()
+        self._proxyAddress = optionsMap['proxyAddress'].getValue()
+        self._css = optionsMap['css'].getValue()
         
         # Restart the proxy, with the new options
         self._proxy()

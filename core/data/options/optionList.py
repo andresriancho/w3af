@@ -34,14 +34,17 @@ class optionList:
         
     def add( self, option ):
         self._oList.append( option )
-        
-    def __str__( self ):
-        res = '<?xml version="1.0" encoding="ISO-8859-1"?>\n<OptionList>\n'
+    append = add
+    
+    def __len__( self ):
+        return len(self._oList)
+    
+    def __contains__( self, itemName ):
         for o in self._oList:
-            res += str(o)
-        res += '</OptionList>'
-        return res
-        
+            if o.getName() == itemName:
+                return True
+        return False
+    
     def __getitem__( self, itemName ):
         '''
         This method is used when on any configurable object the developer does something like:
@@ -51,7 +54,14 @@ class optionList:
             
         @return: The value of the item that was selected
         '''
-        for o in self._oList:
-            if o.getName() == itemName:
-                return o.getValue()
-        raise w3afException('The optionList object doesn\'t contain an option with the name: ' + itemName )
+        try:
+            itemName = int(itemName)
+        except:
+            # A string
+            for o in self._oList:
+                if o.getName() == itemName:
+                    return o
+            raise w3afException('The optionList object doesn\'t contain an option with the name: ' + itemName )
+        else:
+            # An integer
+            return self._oList[ itemName ]

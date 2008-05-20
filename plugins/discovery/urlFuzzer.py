@@ -289,7 +289,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         d1 = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
         h1 = 'Don\'t change this unless you read the plugin code.'
-        o1 = option('fuzzImages', str(self._fuzzImages), d1, 'boolean', help=h1)
+        o1 = option('fuzzImages', self._fuzzImages, d1, 'boolean', help=h1)
         
         ol = optionList()
         ol.add(o1)
@@ -303,7 +303,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzzImages = optionsMap['fuzzImages']
+        self._fuzzImages = optionsMap['fuzzImages'].getValue()
     
     def getPluginDeps( self ):
         '''

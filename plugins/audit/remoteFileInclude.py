@@ -225,10 +225,10 @@ class remoteFileInclude(baseAuditPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listenAddress = optionsMap['listenAddress']
-        self._listenPort = optionsMap['listenPort']
+        self._listenAddress = optionsMap['listenAddress'].getValue()
+        self._listenPort = optionsMap['listenPort'].getValue()
         
-        if optionsMap['usew3afSite']:
+        if optionsMap['usew3afSite'].getValue():
             self._usew3afSite = True
             self._rfiUrl = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
             self._rfiResult = 'w3af is goood!'

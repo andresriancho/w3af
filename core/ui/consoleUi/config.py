@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.ui.consoleUi.menu import *
-from core.controllers.misc.parseOptions import parseXML
 from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
         
 class configMenu(menu):
@@ -35,14 +35,14 @@ class configMenu(menu):
     def __init__(self, name, console, w3af, parent, configurable):
         menu.__init__(self, 'config:' + name, console, w3af, parent)
         self._configurable = configurable
-        self._options = parseXML(self._configurable.getOptionsXML())
+        self._options = self._configurable.getOptions()
         self._memory = {}
         self._plainOptions = {}
-        for o in self._options.keys():
-            k = str(o)
-            v = str(self._options[o]['default']) 
+        for o in self._options:
+            k = o.getName()
+            v = o.getDefaultValue()
             self._memory[k] = [v]
-            self._plainOptions [k] = v
+            self._plainOptions[k] = v
         self._groupOptionsByTabId()
         self._loadHelp('config')
       
@@ -53,7 +53,7 @@ class configMenu(menu):
         table = [['Setting', 'Value', 'Description']]
         for tabid in self._tabbedOptions.keys():
             tabOpts = self._tabbedOptions[tabid]
-            table += [[o, tabOpts[o]['default'], tabOpts[o]['desc']] \
+            table += [[o, tabOpts[o].getValueStr(), tabOpts[o].getDesc()] \
                 for o in tabOpts ]           
             table.append([])
         if len(table) > 1:
@@ -62,40 +62,37 @@ class configMenu(menu):
 
     def _groupOptionsByTabId(self):      
         self._tabbedOptions = {}
-        for o in self._options.keys():
-            opt = self._options[o]
-            if opt.has_key('tabid'):
-                tabid = str(opt['tabid'])
-            else:
-                tabid = ''
+        for opt in self._options:
+            tabid = opt.getTabId()
 
             if tabid not in self._tabbedOptions:
                 target = {}
                 self._tabbedOptions[tabid] = target
             else:
                 target = self._tabbedOptions[tabid]
-
-            target[o] = opt
-                
+            
+            target[opt.getName()] = opt
 
     def _cmd_set(self, params):
         if len(params) < 2:
             om.out.console('Invalid call to set, please see the help:')
             self._cmd_help(['set'])
-        elif not self._options.has_key(params[0]):
+        elif params[0] not in self._options:
             raise w3afException('Unknown option: ' + params[0])
         else:
             name = params[0]
             value = ''.join(params[1:])
-            self._options[name]['default'] = value
+
+            self._options[name].setValue( value )
             self._plainOptions[name] = value
             mem = self._memory[name]
             if value not in mem:
                 mem.append(value)
             if isinstance( self._configurable, basePlugin ):
-                self._w3af.setPluginOptions( self._configurable.getType(),\
-                    self._configurable.getName(), self._options )
-                om.out.setPluginOptions( self._configurable.getName() , self._options )
+                if isinstance( self._configurable, baseOutputPlugin ):
+                    om.out.setPluginOptions( self._configurable.getName() , self._options )
+                else:
+                    self._w3af.setPluginOptions( self._configurable.getType(), self._configurable.getName(), self._options )
             else:
                 try:
                     self._configurable.setOptions( self._options )
@@ -106,18 +103,17 @@ class configMenu(menu):
 
     def _para_set(self, params, part):
         if len(params) == 0:
-            
-            result = suggest(map(str, self._options.keys()), part)
+            result = suggest( [ i.getName() for i in self._options] , part)
             return result
         elif len(params) == 1:
             paramName = params[0]
             if paramName not in self._options:
                 return []
 
-            opts = self._options[paramName]
-            paramType = str(opts['type'])
+            opt = self._options[paramName]
+            paramType = opt.getType()
             if paramType == 'boolean':
-                values = [str(opts['default']) == 'True' and 'False' or 'True']
+                values = [ opt.getDefaultValue() == 'True' and 'False' or 'True']
             else:
                 values = self._memory[paramName]
 

@@ -33,7 +33,7 @@ import os,sys
 
 from core.controllers.misc.homeDir import createHomeDir, getHomeDir
 from core.controllers.misc.factory import factory
-from core.controllers.misc.parseOptions import parseOptions
+
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import *
@@ -748,29 +748,25 @@ class w3afCore:
                 
         return res
 
-    def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
+    def setPluginOptions(self, pluginType, pluginName, pluginOptions ):
         '''
         @parameter pluginType: The plugin type, like 'audit' or 'discovery'
         @parameter pluginName: The plugin name, like 'sqli' or 'webSpider'
-        @parameter PluginsOptions: A dict with the options for a plugin. For example:\
-        { 'script':'AAAA', 'timeout': 10 }
-            
+        @parameter pluginOptions: An optionList object with the option objects for a plugin.
+        
         @return: No value is returned.
         '''
-        # Here I transform the option with value 'a,b,c' and type 'list' to ['a','b','c']
-        pluginName, PluginsOptions = parseOptions( pluginName, PluginsOptions )
-        
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
         pI = self.getPluginInstance( pluginName, pluginType )
         try:
-            pI.setOptions( PluginsOptions )
+            pI.setOptions( pluginOptions )
         except Exception, e:
             raise e
         else:
-            # Now that we are sure that this options are valid, lets save them
+            # Now that we are sure that these options are valid, lets save them
             # so we can use them later!
-            self._pluginsOptions[ pluginType ][ pluginName ] = PluginsOptions
+            self._pluginsOptions[ pluginType ][ pluginName ] = pluginOptions
     
     def getPluginOptions(self, pluginType, pluginName):
         '''
@@ -945,27 +941,15 @@ class w3afCore:
         '''
         @return: An instance of a plugin.
         '''
-        fileList = [ f for f in os.listdir('plugins' + os.path.sep + pluginType  + os.path.sep) ]    
-        fileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == '.py' ]
-        fileList.remove ( '__init__' )
-        if pluginName in fileList:
-            ModuleName = 'plugins.'+pluginType+ '.'+ pluginName
-            __import__(ModuleName)
-            aModule = sys.modules[ModuleName]
-            className = ModuleName.split('.')[len(ModuleName.split('.'))-1]
-            aClass = getattr( aModule , className )
-            plugin = apply(aClass, ())
-            # This sets the url opener for each module that is called inside the for loop
-            plugin.setUrlOpener( self.uriOpener )
-            if pluginName in self._pluginsOptions[ pluginType ].keys():
-                plugin.setOptions( self._pluginsOptions[ pluginType ][pluginName] )
+        pluginInst = factory('plugins.' + pluginType + '.' + pluginName)
+        pluginInst.setUrlOpener( self.uriOpener )
+        if pluginName in self._pluginsOptions[ pluginType ].keys():
+            pluginInst.setOptions( self._pluginsOptions[ pluginType ][pluginName] )
                 
-            # This will init some plugins like mangle and output
-            if pluginType == 'attack' and not self._initialized:
-                self.initPlugins()
-            return plugin
-                
-        raise w3afException('Plugin not found')
+        # This will init some plugins like mangle and output
+        if pluginType == 'attack' and not self._initialized:
+            self.initPlugins()
+        return pluginInst
     
     def saveCurrentToNewProfile( self, profileName, profileDesc='' ):
         '''
@@ -1057,6 +1041,7 @@ class w3afCore:
                 for pluginName in profileInstance.getEnabledPlugins( pluginType ):
                     pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
                     try:
+                        # FIXME: Does this work with output plugin options? What about target, http-settings, etc?
                         self.setPluginOptions( pluginType, pluginName, pluginOptions )
                     except Exception, e:
                         # This is because of an invalid plugin, or something like that...

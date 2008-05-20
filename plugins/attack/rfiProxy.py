@@ -199,7 +199,11 @@ class rfiProxy(baseAttackPlugin, w3afThread):
                 self._proxy.handle_request()
             except:
                 self._proxy.server_close()
-                
+    
+    def getOptions(self):
+        # FIXME!
+        return optionList()
+
     def getOptionsXML(self):
         '''
         This method returns a XML containing the Options that the plugin has.
@@ -265,11 +269,11 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listenAddress = optionsMap['listenAddress']
-        self._proxyPort = optionsMap['proxyPort']
-        self._httpdPort = optionsMap['httpdPort']
-        self._proxyPublicIP = optionsMap['proxyPublicIP']
-        self._rfiConnGenerator = optionsMap['rfiConnGenerator']
+        self._listenAddress = optionsMap['listenAddress'].getValue()
+        self._proxyPort = optionsMap['proxyPort'].getValue()
+        self._httpdPort = optionsMap['httpdPort'].getValue()
+        self._proxyPublicIP = optionsMap['proxyPublicIP'].getValue()
+        self._rfiConnGenerator = optionsMap['rfiConnGenerator'].getValue()
     
     def setUrlOpener( self, urlOpener):
         '''

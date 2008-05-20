@@ -121,7 +121,7 @@ class console(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = OptionList['verbose']
+        self.verbose = OptionList['verbose'].getValue()
 
     def getOptions( self ):
         '''

@@ -304,10 +304,10 @@ class userDir(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Try to identify the remote operating system based on the remote users'
-        o1 = option('identifyOS', str(self._identifyOS), d1, 'boolean')
+        o1 = option('identifyOS', self._identifyOS, d1, 'boolean')
         
         d2 = 'Try to identify applications installed remotely using the available users'
-        o2 = option('identifyApplications', str(self._identifyApplications), d2, 'boolean')
+        o2 = option('identifyApplications', self._identifyApplications, d2, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -322,8 +322,8 @@ class userDir(baseDiscoveryPlugin):
         @parameter optionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._identifyOS = optionsMap['identifyOS']
-        self._identifyApplications = optionsMap['identifyApplications']
+        self._identifyOS = optionsMap['identifyOS'].getValue()
+        self._identifyApplications = optionsMap['identifyApplications'].getValue()
     
     def getPluginDeps( self ):
         '''

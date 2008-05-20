@@ -35,7 +35,7 @@ class baseManglePlugin(basePlugin):
         1. mangleRequest( request )
         2. mangleResponse( request )
         3. setOptions( OptionList )
-        4. getOptionsXML()
+        4. getOptions()
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

@@ -289,6 +289,10 @@ class mysqlWebShell(baseAttackPlugin):
         return self._cut( response.getBody() )
     
     
+    def getOptions(self):
+        # FIXME!
+        return optionList()
+    
     def getOptionsXML(self):
         '''
         This method returns a XML containing the Options that the plugin has.
@@ -351,12 +355,12 @@ class mysqlWebShell(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = urlParser.uri2url( optionsMap['url'] )
-        self._method = optionsMap['method']
-        self._data = optionsMap['data']
-        self._injvar = optionsMap['injvar']
-        self._equAlgorithm = optionsMap['equAlgorithm']
-        self._equalLimit = optionsMap['equalLimit']         
+        self._url = urlParser.uri2url( optionsMap['url'].getValue() )
+        self._method = optionsMap['method'].getValue()
+        self._data = optionsMap['data'].getValue()
+        self._injvar = optionsMap['injvar'].getValue()
+        self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
+        self._equalLimit = optionsMap['equalLimit'].getValue()         
 
     def getPluginDeps( self ):
         '''

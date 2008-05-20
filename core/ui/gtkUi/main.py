@@ -75,7 +75,6 @@ import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.logtab as logtab
 import core.ui.gtkUi.pluginconfig as pluginconfig
 import core.ui.gtkUi.confpanel as confpanel
-from core.controllers.misc import parseOptions
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser
 import time
@@ -448,10 +447,9 @@ class MainApp(object):
             self.w3af.setPlugins(plugins, type)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
-        info = self.w3af.target.getOptionsXML()
-        options = parseOptions.parseXML(info)
+        options = self.w3af.target.getOptions()
         url = self.pcbody.target.get_text()
-        options['target'].update(default=url)
+        options['target'].setValue( url )
         if relaxedTarget:
             try:
                 self.w3af.target.setOptions(options)

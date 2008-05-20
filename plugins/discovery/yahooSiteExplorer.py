@@ -89,7 +89,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Fetch the first "resultLimit" results from yahoo search'
-        o1 = option('resultLimit', str(self._resultLimit), d1, 'integer')
+        o1 = option('resultLimit', self._resultLimit, d1, 'integer')
                 
         ol = optionList()
         ol.add(o1)
@@ -103,7 +103,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._resultLimit = optionsMap['resultLimit']
+        self._resultLimit = optionsMap['resultLimit'].getValue()
 
     def getPluginDeps( self ):
         '''

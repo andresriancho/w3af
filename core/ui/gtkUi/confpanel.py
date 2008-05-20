@@ -25,6 +25,7 @@ import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.helpers as helpers
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
+from core.data.options.optionList import optionList
 
 # decision of which widget implements the option to each type
 wrapperWidgets = {
@@ -34,40 +35,6 @@ wrapperWidgets = {
     "float": entries.FloatOption,
     "list": entries.ListOption,
 }
-
-class Option(object):
-    '''Plugin configuration option.
-
-    @param option: an XML node with the option information
-
-    Received the semiparsed XML from the plugin, and store in self the 
-    option attributes (default, desc, help and type).
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, option):
-        self.name = option.getAttribute('name')
-        for tag in "default desc help type tabid".split():
-            try:
-                value = option.getElementsByTagName(tag)[0].childNodes[0].data
-            except:
-                value = ""
-            setattr(self, tag, value)
-
-    def __str__(self):
-        return "Option %s <%s> [%s] (%s)" % (self.name, self.type, self.default, self.desc)
-
-    def getFullConfig(self):
-        '''Collects the configuration of the plugin in a dict.
-
-        @return: A dict with the configuration.
-        '''
-        d = {}
-        for tag in "desc help type".split():
-            d[tag] = getattr(self, tag)
-        d['default'] = self.widg.getValue()
-        return d
-        
 
 class EasyTable(gtk.Table):
     '''Simplification of gtk.Table.
@@ -120,22 +87,20 @@ class OnlyOptions(gtk.VBox):
         self.propagLabels = {}
 
         # options
-        self.options = []
-        xmloptions = plugin.getOptionsXML()
+        self.options = optionList()
+        options = plugin.getOptions()
         # let's use the info from the core
         coreopts = self.w3af.getPluginOptions(plugin.ptype, plugin.pname)
         if coreopts is None:
             coreopts = {}
 
         # let's get the real info
-        xmlDoc = xml.dom.minidom.parseString(xmloptions)
-        for xmlOpt in xmlDoc.getElementsByTagName('Option'):
-            option = Option(xmlOpt)
-            if option.name in coreopts:
-                option.default = str(coreopts[option.name])
-            if option.name in overwriter:
-                option.default = overwriter[option.name]
-            self.options.append(option)
+        for opt in options:
+            if opt.getName() in coreopts:
+                opt.setValue( coreopts[opt.getName()] )
+            if opt.getName() in overwriter:
+                opt.setValue( overwriter[opt.getName()] )
+            self.options.append(opt)
 
         # buttons
         save_btn.connect("clicked", self._savePanel, plugin)
@@ -162,7 +127,7 @@ class OnlyOptions(gtk.VBox):
         # let's get the tabs, but in order!
         tabs = []
         for o in self.options:
-            t = o.tabid
+            t = o.getTabId()
             if t not in tabs:
                 tabs.append(t)
 
@@ -174,7 +139,7 @@ class OnlyOptions(gtk.VBox):
         # the notebook
         nb = gtk.Notebook()
         for tab in tabs:
-            options = [x for x in self.options if x.tabid == tab]
+            options = [x for x in self.options if x.getTabId() == tab]
             if not tab:
                 tab = "General"
             label = gtk.Label(tab)
@@ -202,19 +167,19 @@ class OnlyOptions(gtk.VBox):
         table = EasyTable(len(options), 3)
         tooltips = gtk.Tooltips()
         for i,opt in enumerate(options):
-            titl = gtk.Label(opt.name)
+            titl = gtk.Label(opt.getName())
             titl.set_alignment(0.0, 0.5)
-            widg = wrapperWidgets[opt.type](self._changedWidget, opt.default)
+            widg = wrapperWidgets[opt.getType()](self._changedWidget, opt.getDefaultValueStr())
             opt.widg = widg
-            tooltips.set_tip(widg, opt.desc)
-            if opt.help:
+            tooltips.set_tip(widg, opt.getDesc())
+            if opt.getHelp():
                 helpbtn = entries.SemiStockButton("", gtk.STOCK_INFO)
-                cleanhelp = helpers.cleanDescription(opt.help)
+                cleanhelp = helpers.cleanDescription(opt.getHelp())
                 helpbtn.connect("clicked", self._showHelp, cleanhelp)
             else:
                 helpbtn = None
             table.autoAddRow(titl, widg, helpbtn)
-            self.widgets_status[widg] = (titl, opt.name, "<b>%s</b>" % opt.name)
+            self.widgets_status[widg] = (titl, opt.getName(), "<b>%s</b>" % opt.getName())
             self.propagLabels[widg] = prop
         table.show()
         return table
@@ -281,27 +246,25 @@ class OnlyOptions(gtk.VBox):
         for opt in self.options:
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
-                    invalid.append(opt.name)
+                    invalid.append(opt.getName())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the following parameter(s):\n\n"
-            msg += "\n".join(invalid)
+            msg += "\n-".join(invalid)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
             return
 
-        # we get the values, save, and if the save is ok, we
-        # fix the values in the widgets
-        tosave = {}
+        # Get the value from the GTK widget and set it to the option object
         for opt in self.options:
-            tosave[opt.name] = opt.getFullConfig()
-
+            opt.setValue( opt.widg.getValue() )
+            
         try:
             if isinstance(plugin, basePlugin):
-                helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, tosave)
+                helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, self.options)
             else:
-                helpers.coreWrap(plugin.setOptions, tosave)
+                helpers.coreWrap(plugin.setOptions, self.options)
         except w3afException:
             return
         for opt in self.options:

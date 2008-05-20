@@ -156,7 +156,7 @@ class frontpage(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._stopOnFirst = optionsMap['stopOnFirst']
+        self._stopOnFirst = optionsMap['stopOnFirst'].getValue()
 
     def getPluginDeps( self ):
         '''

@@ -186,9 +186,9 @@ class fingerGoogle(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._key = optionsMap['key']
-        self._resultLimit = optionsMap['resultLimit']
-        self._fastSearch = optionsMap['fastSearch']
+        self._key = optionsMap['key'].getValue()
+        self._resultLimit = optionsMap['resultLimit'].getValue()
+        self._fastSearch = optionsMap['fastSearch'].getValue()
             
     def getPluginDeps( self ):
         '''

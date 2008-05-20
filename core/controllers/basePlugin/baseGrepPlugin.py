@@ -34,7 +34,7 @@ class baseGrepPlugin(basePlugin):
     and implement the following methods :
         1. testResponse(...)
         2. setOptions( OptionList )
-        3. getOptionsXML()
+        3. getOptions()
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

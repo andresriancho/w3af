@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-05-01, 18:06:29 -->
+<!-- Saved: 2008-05-19, 07:55:34 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -19,18 +19,6 @@
       <Dir>core</Dir>
       <Dir>ui</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>consoleUi</Dir>
-      <Name>consoleMenu.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>consoleUi</Dir>
-      <Name>pluginConfig.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -55,12 +43,6 @@
       <Dir>ui</Dir>
       <Dir>consoleUi</Dir>
       <Name>plugins.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>consoleUi</Dir>
-      <Name>url.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -487,12 +469,6 @@
       <Dir>controllers</Dir>
       <Dir>misc</Dir>
       <Name>factory.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>misc</Dir>
-      <Name>parseOptions.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -2301,10 +2277,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-targetsInFile.txt</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-threadXSS.w3af</Name>
     </Source>
     <Source>
@@ -3123,16 +3095,6 @@
       <Name>AESSocket.py</Name>
     </Source>
     <Source>
-      <Dir>extlib</Dir>
-      <Dir>pyrijndael</Dir>
-      <Name>pyRijndael.py</Name>
-    </Source>
-    <Source>
-      <Dir>extlib</Dir>
-      <Dir>pyrijndael</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>audit</Dir>
       <Name>xst.py</Name>
@@ -3826,6 +3788,107 @@
       <Dir>data</Dir>
       <Dir>kb</Dir>
       <Name>proxy.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>craftedRequests.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>callbackMenu.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>config.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>help.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>history.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>menu.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>rootMenu.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>session.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>tables.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>util.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Dir>io</Dir>
+      <Name>common.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Dir>io</Dir>
+      <Name>console.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Dir>io</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Dir>io</Dir>
+      <Name>unixctrl.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Dir>io</Dir>
+      <Name>winctrl.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>fuzzygen.py</Name>
     </Source>
   </Sources>
   <Forms>

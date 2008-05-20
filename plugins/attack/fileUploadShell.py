@@ -194,11 +194,11 @@ class fileUploadShell(baseAttackPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._url = optionsMap['url']
-        self._method = optionsMap['method']
-        self._data = urlParser.getQueryString( optionsMap['data'] )
-        self._fileVars = optionsMap['fileVars']
-        self._fileDest = optionsMap['fileDest']
+        self._url = optionsMap['url'].getValue()
+        self._method = optionsMap['method'].getValue()
+        self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
+        self._fileVars = optionsMap['fileVars'].getValue()
+        self._fileDest = optionsMap['fileDest'].getValue()
 
     def getPluginDeps( self ):
         '''

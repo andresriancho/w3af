@@ -190,8 +190,8 @@ class allowedMethods(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._execOneTime = optionsMap['execOneTime']
-        self._reportDavOnly = optionsMap['reportDavOnly']
+        self._execOneTime = optionsMap['execOneTime'].getValue()
+        self._reportDavOnly = optionsMap['reportDavOnly'].getValue()
 
     def getPluginDeps( self ):
         '''

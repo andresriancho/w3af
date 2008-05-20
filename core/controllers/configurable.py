@@ -26,14 +26,14 @@ class configurable:
     '''
     This is mostly "an interface", this "interface" states that all classes that implement it, should
     implement the following methods :
-        1. setOptions( OptionMap )
-        2. getOptionsXML()
+        1. setOptions( optionsMap )
+        2. getOptions()
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def setOptions( self, OptionsMap ):
+    def setOptions( self, optionsMap ):
         '''
-        Sets the Options given on the OptionsMap to self. The options are the result of a user
+        Sets the Options given on the optionsMap to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
         retrieved from the plugin using getOptionsXML()
         
@@ -44,18 +44,17 @@ class configurable:
         raise w3afException('Configurable object is not implementing required method setOptions' )
         
 
-    def getOptionsXML(self):
+    def getOptions(self):
         '''
-        This method returns a XML containing the Options that the configurable object has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/display.xsd
+        This method returns an optionList containing the options objects that the configurable object has.
+        Using this option list the framework will build a window, a menu, or some other input method to retrieve
+        the info from the user.
         
         This method MUST be implemented on every plugin. 
         
-        @return: XML String
+        @return: optionList object.
         '''
-        raise w3afException('Configurable object is not implementing required method getOptionsXML' )
+        raise w3afException('Configurable object is not implementing required method getOptions' )
 
     def getName( self ):
         return self.__class__.__name__

@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 import ConfigParser
-from core.controllers.misc.parseOptions import *
 from core.controllers.misc.factory import *
 import os
 import shutil
@@ -173,8 +172,7 @@ class profile:
         '''
         # Get the plugin defaults with their types
         pluginInstance = factory('plugins.' + pluginType + '.' + pluginName )
-        optionsXML = pluginInstance.getOptionsXML()
-        parsedOptions = parseXML( optionsXML )
+        optionsMap = pluginInstance.getOptions()
         
         for section in self._config.sections():
             # Section is something like audit.xss or discovery.webSpider
@@ -190,9 +188,9 @@ class profile:
                         except KeyError,k:
                             raise w3afException('The option "' + option + '" is unknown for the "'+ pluginName + '" plugin.')
                         else:
-                            parsedOptions[option]['default'] = value
+                            optionsMap[option].setValue(value)
 
-        return parsedOptions
+        return optionsMap
         
     def setName( self, name ):
         '''
