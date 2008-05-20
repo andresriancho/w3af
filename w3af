@@ -35,13 +35,12 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:i:hs:wget", [] )
+        opts, args = getopt.getopt(sys.argv[1:], "p:i:hs:get", [] )
     except getopt.GetoptError:
         # print help information and exit:
         usage()
         return -3
     scriptFile = None
-    web = False
     gtkui = False
     profile = None
     for o, a in opts:
@@ -66,21 +65,11 @@ def main():
         if o in ('-p', '--profile'):
             # selected profile
             profile = a
-        if o == '-w':
-            # Go web
-            web = True
         if o == "-h":
             usage()
             return 0
     
-    if web:
-        # go web!
-        # Please note that webUi is deprecated, and a lot of things WILL go wrong.
-        from core.ui.webUi.webUi import webUi
-        om.out.setOutputPlugins( ['console', 'webOutput'] )
-        console = webUi()
-        console.sh()
-    elif gtkui:
+    if gtkui:
         # go with GTK, but first check about DISPLAY environment variable
         if sys.platform != "win32":
             display = os.getenv("DISPLAY").strip()
