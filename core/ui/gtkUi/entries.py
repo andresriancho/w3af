@@ -725,8 +725,8 @@ class RememberingWindow(gtk.Window):
         self.winconfig = w3af.mainwin.generalconfig
         self.id_size = idstring + "-size"
         self.id_position = idstring + "-position"
-        conf_size = self.winconfig.get(self.id_size, (800, 600))
-        conf_position = self.winconfig.get(self.id_position, (50, 50))
+        conf_size = self.winconfig.get(self.id_size, (1000, 500))
+        conf_position = self.winconfig.get(self.id_position, (100, 100))
         self.resize(*conf_size)
         self.move(*conf_position)
 

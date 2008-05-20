@@ -70,6 +70,7 @@ import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.profiles as profiles
 import core.ui.gtkUi.craftedRequests as craftedRequests
 import core.ui.gtkUi.entries as entries
+import core.ui.gtkUi.encdec as encdec
 import core.ui.gtkUi.messages as messages
 import core.ui.gtkUi.logtab as logtab
 import core.ui.gtkUi.pluginconfig as pluginconfig
@@ -103,6 +104,7 @@ ui_menu = """
     <menu action="ToolsMenu">
       <menuitem action="ManualRequest"/>
       <menuitem action="FuzzyRequest"/>
+      <menuitem action="EncodeDecode"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -123,6 +125,7 @@ ui_menu = """
     <separator name="s3"/>
     <toolitem action="ManualRequest"/>
     <toolitem action="FuzzyRequest"/>
+    <toolitem action="EncodeDecode"/>
   </toolbar>
 </ui>
 """
@@ -247,6 +250,7 @@ class MainApp(object):
             
             ('ManualRequest', gtk.STOCK_INDEX, '_Manual Request', None, 'Generate manual HTTP request', self._manual_request),
             ('FuzzyRequest', gtk.STOCK_PROPERTIES, '_Fuzzy Request', None, 'Generate fuzzy HTTP requests', self._fuzzy_request),
+            ('EncodeDecode', gtk.STOCK_CONVERT, '_Encode/Decode', None, 'Encodes and Decodes in different ways', self._encode_decode),
             ('ToolsMenu', None, '_Tools'),
 
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
@@ -312,7 +316,7 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 9
+        assert toolbar.get_n_items() == 10
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
@@ -683,6 +687,12 @@ class MainApp(object):
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
         craftedRequests.FuzzyRequests(self.w3af)
+
+    def _encode_decode(self, action):
+        '''Generate fuzzy HTTP requests.'''
+        reload(encdec)
+        print "FIXME: remove this reload!"
+        encdec.EncodeDecode(self.w3af)
 
 
 def main(profile):
