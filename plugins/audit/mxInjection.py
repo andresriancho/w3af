@@ -110,10 +110,8 @@ class mxInjection(baseAuditPlugin):
         '''
         res = []
         for mxError in self._getmxErrors():
-            match = re.search( mxError, response.getBody() , re.IGNORECASE )
+            match = re.search( mxError, response.getBody() )
             if  match:
-                # Commented because of false positives with the A000 and A001 strings
-                #om.out.information('Found MX injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
                 res.append(mxError)
         return res
 
@@ -121,11 +119,11 @@ class mxInjection(baseAuditPlugin):
         errors = []
         
         errors.append( 'Unexpected extra arguments to Select' )
-        errors.append( 'Bad or malformed request' )     #FIXME: This could generate false positives
+        errors.append( 'Bad or malformed request' )
         errors.append( 'Could not access the following folders' )       
         errors.append( 'To check for outside changes to the folder list go to the folders page' )       
-        errors.append( 'A000' )     
-        errors.append( 'A001' )     
+        errors.append( 'A000' ) #FIXME: This two strings generate false positives
+        errors.append( 'A001' ) #FIXME: This two strings generate false positives     
         errors.append( 'Invalid mailbox name' )     
         
         return errors
