@@ -31,6 +31,7 @@ import core.data.kb.vuln as vuln
 from core.data.parsers.urlParser import *
 from core.data.getResponseType import *
 import core.data.constants.severity as severity
+import re
 
 class directoryIndexing(baseGrepPlugin):
     '''
@@ -47,13 +48,13 @@ class directoryIndexing(baseGrepPlugin):
         if isTextOrHtml(response.getHeaders()):
             htmlString = response.getBody()
             for directoryIndexingString in self._getdirectoryIndexingStrings():
-                if htmlString.find( directoryIndexingString ) != -1:
+                if re.search( directoryIndexingString, htmlString ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setDesc( 'The URL: "' + response.getURL() + '" has a directory indexing problem.' )
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
-                    v.setName( 'Directory indexing' )                  
+                    v.setName( 'Directory indexing' )
                     
                     kb.kb.append( self , 'directory' , v )
                     break
@@ -72,14 +73,15 @@ class directoryIndexing(baseGrepPlugin):
         dirIndexStr = []
         ### TODO: verify if I need to add more values here, IIS !!!
         dirIndexStr.append("<title>Index of /") 
-        dirIndexStr.append('<a href="?C=N;O=D">Name</a>') 
+        dirIndexStr.append('<a href="\\?C=N;O=D">Name</a>') 
         dirIndexStr.append("Last modified</a>")
         dirIndexStr.append("Parent Directory</a>")
         dirIndexStr.append("Directory Listing for")
         dirIndexStr.append("<TITLE>Folder Listing.")
         dirIndexStr.append("<TITLE>Folder Listing.")
         dirIndexStr.append("- Browsing directory ")
-        dirIndexStr.append('">[To Parent Directory]</a><br><br>') # IIS 6.0
+        dirIndexStr.append('">\\[To Parent Directory\\]</a><br><br>') # IIS 6.0
+        dirIndexStr.append('<A HREF=".*?">.*?</A><br></pre><hr></body></html>') # IIS 5.0
         return dirIndexStr
         
     def end(self):
