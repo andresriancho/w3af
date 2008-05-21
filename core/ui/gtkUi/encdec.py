@@ -23,6 +23,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
+import urllib, base64, sha, md5
+
+
+class SimpleTextView(gtk.TextView):
+    def __init__(self):
+        gtk.TextView.__init__(self)
+        self.buffer = self.get_buffer()
+
+    def clear(self):
+        '''Clears the pane.'''
+        start, end = self.buffer.get_bounds()
+        self.buffer.delete(start, end)
+
+    def setText(self, newtext):
+        '''Sets a new text in the up pane.
+        
+        @param newtext: the new text of the pane.
+        '''
+        self.clear()
+        iter = self.buffer.get_end_iter()
+        self.buffer.insert(iter, newtext)
+
+    def getText(self):
+        '''Gets the text of the up pane.
+
+        @returns: The text of the pane.
+        '''
+        start, end = self.buffer.get_bounds()
+        return self.buffer.get_text(start, end)
 
 
 class EncodeDecode(entries.RememberingWindow):
@@ -42,7 +71,7 @@ class EncodeDecode(entries.RememberingWindow):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.paneup = gtk.TextView()
+        self.paneup = SimpleTextView()
         sw.add(self.paneup)
         hbox.pack_start(sw, True, True, padding=5)
 
@@ -62,7 +91,7 @@ class EncodeDecode(entries.RememberingWindow):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.panedn = gtk.TextView()
+        self.panedn = SimpleTextView()
         sw.add(self.panedn)
         hbox.pack_start(sw, True, True, padding=5)
 
@@ -80,27 +109,42 @@ class EncodeDecode(entries.RememberingWindow):
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
 
+    def _proc(self, inp, out, func):
+        txt = inp.getText()
+        try:
+            new = func(txt)
+        except:
+            out.clear()
+            self.w3af.mainwin.sb("Problem processing that string!")
+        else:
+            out.setText(new)
+        
     def encURL(self, widg):
         '''URL Encode function.'''
-        print '''URL Encode function.'''
+        self._proc(self.paneup, self.panedn, urllib.quote)
 
     def encBase64(self, widg):
         '''Base64 Encode function.'''
-        print '''Base64 Encode function.'''
+        self._proc(self.paneup, self.panedn, base64.b64encode)
 
     def hashSHA1(self, widg):
         '''SHA1 Hash function.'''
-        print '''SHA1 Hash function.'''
+        def f(t):
+            s = sha.new(t)
+            return s.hexdigest()
+        self._proc(self.paneup, self.panedn, f)
 
     def hashMD5(self, widg):
         '''MD5 Hash function.'''
-        print '''MD5 Hash function.'''
+        def f(t):
+            m = md5.new(t)
+            return m.hexdigest()
+        self._proc(self.paneup, self.panedn, f)
 
     def decURL(self, widg):
         '''URL Decode function.'''
-        print '''URL Decode function.'''
+        self._proc(self.panedn, self.paneup, urllib.unquote)
 
     def decBase64(self, widg):
         '''Base64 Decode function.'''
-        print '''Base64 Decode function.'''
-
+        self._proc(self.panedn, self.paneup, base64.b64decode)

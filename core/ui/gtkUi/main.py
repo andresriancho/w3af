@@ -688,8 +688,6 @@ class MainApp(object):
 
     def _encode_decode(self, action):
         '''Generate fuzzy HTTP requests.'''
-        reload(encdec)
-        print "FIXME: remove this reload!"
         encdec.EncodeDecode(self.w3af)
 
 
