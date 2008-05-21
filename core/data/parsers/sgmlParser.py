@@ -54,7 +54,7 @@ class sgmlParser(abstractParser, SGMLParser):
         # Regex URL detection ( normal detection is also done, see below )
         #########
         #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        urlRegex = '((http|https)://([\w\.]*)/[^ \n\r\t"]*)'
+        urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
         self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, document ) ]
         
         # Now detect some relative URL's ( also using regexs )
