@@ -61,8 +61,8 @@ class basePlugin(configurable):
     def setOptions( self, optionsMap ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptionsXML()
+        entering some data on a window that was constructed using the options that were
+        retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every plugin. 
         

@@ -35,7 +35,7 @@ class configurable:
         '''
         Sets the Options given on the optionsMap to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptionsXML()
+        retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every configurable object. 
         
