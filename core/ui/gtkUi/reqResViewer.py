@@ -28,7 +28,7 @@ import re
 from core.ui.gtkUi.entries import ValidatedEntry
 
 useMozilla = False
-useGTKHtml2 = True
+useGTKHtml2 = False
 
 try:
     import gtkmozembed
