@@ -46,7 +46,7 @@ class error500(baseGrepPlugin):
     def _testResponse(self, request, response):
         
         if isTextOrHtml(response.getHeaders()) and response.getCode() in range( 400,600 )\
-        and response.getCode() not in ( 404 , 403 ) and not self._falsePositive( response ):
+        and response.getCode() not in ( 404 , 403, 401 ) and not self._falsePositive( response ):
             self._error500responses.append( (request,response) )
     
     def _falsePositive( self, response ):
