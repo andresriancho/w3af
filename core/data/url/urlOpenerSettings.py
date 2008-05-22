@@ -236,6 +236,9 @@ class urlOpenerSettings( configurable ):
         return self._proxy
         
     def setBasicAuth( self, url, username, password ):
+        if url == '':
+            raise w3afException('To properly configure the basic authentication settings, you should also set the auth domain. If you are unsure, you can set it to the target domain name.')
+            
         self._basicAuthDomain = url
         self._basicAuthUser = username
         self._basicAuthPass = password
@@ -247,10 +250,13 @@ class urlOpenerSettings( configurable ):
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
         # add the username and password
-        scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( url )
-        self._password_mgr.add_password(None, domain, username, password)
-
-        self._basicAuthHandler = self._ulib.HTTPBasicAuthHandler(self._password_mgr)
+        if url.startswith('http://') or url.startswith('https://'):
+            scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( url )
+            self._password_mgr.add_password(None, domain, username, password)
+        else:
+            domain = url
+            scheme = 'http://'
+            self._password_mgr.add_password(None, domain, username, password)
         
         # Only for w3af, no usage in urllib2
         self._basicAuthStr = scheme + '://' + username + ':' + password + '@' + domain + '/'
@@ -348,7 +354,7 @@ class urlOpenerSettings( configurable ):
         @return: A list of option objects for this plugin.
         '''        
         d1 = 'The timeout for connections to the HTTP server'
-	h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
+        h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
         o1 = option('timeout', self._timeout, d1, 'integer', help=h1)
         
         d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
@@ -361,35 +367,35 @@ class urlOpenerSettings( configurable ):
         o4 = option('basicAuthPass', self._basicAuthPass, d4, 'string', tabid='Basic HTTP Authentication')
 
         d5 = 'Set the basic authentication domain for HTTP requests'
-	h5 = 'This configures on which request to send the authentication settings configured in basicAuthPass and basicAuthUser.'
+        h5 = 'This configures on which requests to send the authentication settings configured in basicAuthPass and basicAuthUser. If you are unsure, just set it to the target domain name.'
         o5 = option('basicAuthDomain', self._basicAuthDomain, d5, 'string', help=h5, tabid='Basic HTTP Authentication')
 
         d6 = 'Set the cookiejar filename.'
-	h6 = 'The cookiejar file must be in mozilla format'
+        h6 = 'The cookiejar file must be in mozilla format'
         o6 = option('cookieJarFile', self._cookieJarFile, d6, 'string', help=h6, tabid='Cookies')
 
         d7 = 'Ignore session cookies'
-	h7 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
+        h7 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
         o7 = option('ignoreSessCookies', self._ignoreSessCookies, d7, 'boolean', help=h7, tabid='Cookies')
        
         d8 = 'Proxy TCP port'
-	h8 = 'TCP port for the remote proxy server to use.'
+        h8 = 'TCP port for the remote proxy server to use.'
         o8 = option('proxyPort', self._proxyPort, d8, 'integer', help=h8, tabid='Outgoing proxy')
 
         d9 = 'Proxy IP address'
-	h9 = 'IP address for the remote proxy server to use.'
+        h9 = 'IP address for the remote proxy server to use.'
         o9 = option('proxyAddress', self._proxyAddress, d9, 'string', help=h9, tabid='Outgoing proxy')
 
         d10 = 'User Agent header'
-	h10 = 'User Agent header to send in request.'
+        h10 = 'User Agent header to send in request.'
         o10 = option('userAgent', self._userAgent, d10, 'string', help=h10, tabid='Misc')
 
         d11 = 'Proxy IP address'
-	h11 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
+        h11 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
         o11 = option('maxFileSize', self._maxFileSize, d11, 'integer', help=h11, tabid='Misc')
 
         d12 = 'Maximum number of retries'
-	h12 = 'Indicates the maximum number of retries when requesting an URL.'
+        h12 = 'Indicates the maximum number of retries when requesting an URL.'
         o12 = option('maxRetrys', self._maxRetrys, d12, 'integer', help=h12, tabid='Misc')
 
         d13 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
@@ -402,11 +408,11 @@ class urlOpenerSettings( configurable ):
         o15 = option('autodetect404', cf.cf.getData('autodetect404'), d15, 'boolean', tabid='404 settings')
 
         d16 = 'Perform 404 page detection based on the knowledge found in the directory of the file'
-	h16 = 'Only used when autoDetect404 is False.'
+        h16 = 'Only used when autoDetect404 is False.'
         o16 = option('byDirectory404', cf.cf.getData('byDirectory404'), d16, 'boolean', tabid='404 settings')
 
         d17 = 'Perform 404 page detection based on the knowledge found in the directory of the file AND the file extension'
-	h17 = 'Only used when autoDetect404 and byDirectory404 are False.'
+        h17 = 'Only used when autoDetect404 and byDirectory404 are False.'
         o17 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d17, 'boolean', tabid='404 settings')
 
         ol = optionList()
