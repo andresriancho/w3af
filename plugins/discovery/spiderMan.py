@@ -172,6 +172,7 @@ class proxyHandler(w3afProxyHandler):
             om.out.information('The user is navigating through the spiderMan proxy.')
             
         if self.path == 'http://w3af/spiderMan?terminate':
+            om.out.information('The user terminated the spiderMan session.')
             self._sendEnd()
             self._spiderMan.stopProxy()
         else:
