@@ -113,7 +113,7 @@ class errorPages(baseGrepPlugin):
                     i.setId( response.id )
                     i.setSeverity(severity.LOW)
                     i.setName( 'Error page' )
-                    i.setDesc( 'The URL : ' + response.getURL() + ' is a descriptive error page. Showing the error: ' + msg )
+                    i.setDesc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
                     kb.kb.append( self , 'errorPage' , i )
                     
             # Now i'll check if I can get a version number from the error page
