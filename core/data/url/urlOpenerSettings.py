@@ -246,7 +246,7 @@ class urlOpenerSettings( configurable ):
         om.out.debug( 'Called SetBasicAuth')
         
         if not hasattr( self, '_password_mgr' ):
-            # create a password manager
+            # create a new password manager
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
         # add the username and password
@@ -257,7 +257,9 @@ class urlOpenerSettings( configurable ):
             domain = url
             scheme = 'http://'
             self._password_mgr.add_password(None, domain, username, password)
-        
+
+        self._basicAuthHandler = self._ulib.HTTPBasicAuthHandler(self._password_mgr)
+
         # Only for w3af, no usage in urllib2
         self._basicAuthStr = scheme + '://' + username + ':' + password + '@' + domain + '/'
         
@@ -286,6 +288,7 @@ class urlOpenerSettings( configurable ):
                                 mangleHandler.mangleHandler( self._manglePlugins ) ]:
             if handler:
                 handlers.append(handler)
+                print handler
         
         self._nonCacheOpener = apply( self._ulib.build_opener, tuple(handlers) )
         
