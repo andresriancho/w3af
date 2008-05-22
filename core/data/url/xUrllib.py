@@ -566,9 +566,10 @@ class xUrllib:
             raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
             
     def _decrementGlobalErrorCount( self ):
-        self._lastRequestFailed = False
-        self._consecutiveErrorCount = 0
-        om.out.debug('Decrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
+        if self._lastRequestFailed or self._consecutiveErrorCount:
+            self._lastRequestFailed = False
+            self._consecutiveErrorCount = 0
+            om.out.debug('Decrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
     
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins
