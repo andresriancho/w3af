@@ -97,12 +97,12 @@ class modsecurity(baseEvasionPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This evasion plugin performs mod_security <= 2.1.0 bypass described here:
+        This evasion plugin performs a bypass for mod_security version 2.1.0 or less here:
             - http://www.php-security.org/MOPB/BONUS-12-2007.html
         
         Important: The evasion only works for postdata.
         
         Example:
             Postdata Input:      'a=b'
-            Postdata Output :    '\x00a=b'
+            Postdata Output :    '\\x00a=b'
         '''
