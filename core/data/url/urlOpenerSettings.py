@@ -288,7 +288,6 @@ class urlOpenerSettings( configurable ):
                                 mangleHandler.mangleHandler( self._manglePlugins ) ]:
             if handler:
                 handlers.append(handler)
-                print handler
         
         self._nonCacheOpener = apply( self._ulib.build_opener, tuple(handlers) )
         
@@ -460,7 +459,7 @@ class urlOpenerSettings( configurable ):
         if optionsMap['cookieJarFile'].getValue() != self._cookieJarFile:
             self.setCookieJarFile( optionsMap['cookieJarFile'].getValue() )
             
-        if optionsMap['proxyAddress'] != self._proxyAddress or optionsMap['proxyPort'].getValue() != self._proxyPort:
+        if optionsMap['proxyAddress'].getValue() != self._proxyAddress or optionsMap['proxyPort'].getValue() != self._proxyPort:
             self.setProxy( optionsMap['proxyAddress'].getValue(), optionsMap['proxyPort'].getValue() )
             
         self.setUserAgent( optionsMap['userAgent'].getValue() )
