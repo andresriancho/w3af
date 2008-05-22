@@ -630,7 +630,10 @@ class w3afCore:
         elif not self._isRunning:
             return 'Not running.'
         else:
-            return 'Running ' + self.getPhase() + '.' + self.getRunningPlugin() + ' on ' + str(self.getCurrentFuzzableRequest()) + '.'
+            if self.getPhase() != '' and self.getRunningPlugin() != '':
+                return 'Running ' + self.getPhase() + '.' + self.getRunningPlugin() + ' on ' + str(self.getCurrentFuzzableRequest()) + '.'
+            else:
+                return 'Starting scan.'
     
     def getPhase( self ):
         '''

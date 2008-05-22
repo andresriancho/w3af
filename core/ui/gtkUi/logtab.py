@@ -25,7 +25,7 @@ import pygtk, gtk, gobject
 import core.ui.gtkUi.messages as messages
 import core.data.constants.severity as severity
 import time
-
+import pango
 
 # margenes (tienen que ser > 10)
 MIZQ = 20
@@ -216,6 +216,9 @@ class LogBody(gtk.VPaned):
         
         # Content of top vbox
         self._what_is_being_run = gtk.Label()
+        self._what_is_being_run.set_max_width_chars(90)
+        self._what_is_being_run.set_ellipsize( pango.ELLIPSIZE_END )
+        # Refresh the content
         gobject.timeout_add(400, self._set_what_is_running )
         self._what_is_being_run.show()
         
@@ -243,6 +246,6 @@ class LogBody(gtk.VPaned):
         @return: True so the timeout_add keeps calling it.
         '''
         coreStatus = self.w3af.getCoreStatus()
-        self._what_is_being_run.set_markup( coreStatus )
+        self._what_is_being_run.set_text( coreStatus )
         return True
         
