@@ -111,7 +111,6 @@ class errorPages(baseGrepPlugin):
                     i.setName('Descriptive error page')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setSeverity(severity.LOW)
                     i.setName( 'Error page' )
                     i.setDesc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
                     kb.kb.append( self , 'errorPage' , i )
