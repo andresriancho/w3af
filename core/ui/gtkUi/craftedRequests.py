@@ -185,13 +185,15 @@ class FuzzyRequests(entries.RememberingWindow):
         t = gtk.Table(2, 3)
         analyzBut.connect("clicked", self._analyze)
         t.attach(analyzBut, 0, 1, 0, 1)
-        self.analyzefb = gtk.Label("? requests")
+        self.analyzefb = gtk.Label("0 requests")
+        self.analyzefb.set_sensitive(False)
         t.attach(self.analyzefb, 1, 2, 0, 1)
         self.preview = gtk.CheckButton("preview")
         t.attach(self.preview, 2, 3, 0, 1)
         sendBut.connect("clicked", self._send)
         t.attach(sendBut, 0, 1, 1, 2)
-        self.sendfb = gtk.Label("? ok, ? errors")
+        self.sendfb = gtk.Label("0 ok, 0 errors")
+        self.sendfb.set_sensitive(False)
         t.attach(self.sendfb, 1, 2, 1, 2)
         vbox.pack_start(t, False, False, padding=5)
 
@@ -225,6 +227,7 @@ class FuzzyRequests(entries.RememberingWindow):
         # 
         preview = list(fg.generate())
         self.analyzefb.set_text("%d requests" % len(preview))
+        self.analyzefb.set_sensitive(True)
 
         # raise the window only if preview is active
         if self.preview.get_active():
@@ -274,6 +277,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
             self.responses.append((realreq, realbody, respbody, resphead))
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
+            self.sendfb.set_sensitive(True)
 
         # activate and show
         self.resultReqResp.set_sensitive(True)
