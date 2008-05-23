@@ -61,6 +61,7 @@ class EncodeDecode(entries.RememberingWindow):
     '''
     def __init__(self, w3af):
         super(EncodeDecode,self).__init__(w3af, "encodedecode", "w3af - Encode / Decode")
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
 
         # splitted panes

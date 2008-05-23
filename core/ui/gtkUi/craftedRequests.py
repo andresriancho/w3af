@@ -42,6 +42,7 @@ class ManualRequests(entries.RememberingWindow):
     '''
     def __init__(self, w3af):
         super(ManualRequests,self).__init__(w3af, "manualreq", "w3af - Manual Requests")
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
 
         # send button
@@ -160,6 +161,7 @@ class FuzzyRequests(entries.RememberingWindow):
     '''
     def __init__(self, w3af):
         super(FuzzyRequests,self).__init__(w3af, "fuzzyreq", "w3af - Fuzzy Requests")
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
         mainhbox = gtk.HBox()
 
