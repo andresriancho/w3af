@@ -684,6 +684,7 @@ class MainApp(object):
 
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
+        reload(craftedRequests)
         craftedRequests.FuzzyRequests(self.w3af)
 
     def _encode_decode(self, action):

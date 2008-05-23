@@ -126,12 +126,31 @@ class PreviewWindow(entries.RememberingWindow):
 
 
 FUZZYHELP = """\
-"$" is the delimiter
-Use "$$" to include a "$"
-"$something$" will eval "something" 
-Already imported:
-    the "string" module
-    the "xx" function
+<b>There's an especial syntax you can follow to generate 
+multiple crafted requests.</b>
+
+Every text inside two dollar signs (<i>$</i>) is a text 
+generator (if you want to actually write a dollar sign, 
+use $$). The system will generate as many requests as 
+the generator produces. 
+
+If in a text you put more than one generator, the results
+are multiplied. For example, if you put a generator of 5
+digits and a generator of 10 letters, a total of 50 pages
+will be generated. You can actually check how many
+pages will be generated using the <i>Analyze</i> button 
+(to actually see them, still without sending them, select the 
+<i>preview</i> option).
+
+Each generator between the dollar signs will be evaluated 
+by Python, using <tt>eval()</tt>, using an almost clean 
+namespace (there's already imported the module <tt>string</tt>.
+
+For example, you can do:
+<tt>
+    Five numbers $range(5)$ here
+    First ten letters: $string.lowercase[:10]$
+</tt>
 """
 
 class FuzzyRequests(entries.RememberingWindow):
@@ -146,7 +165,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # ---- left pane ----
         vbox = gtk.VBox()
-        mainhbox.pack_start(vbox, padding=10)
+        mainhbox.pack_start(vbox, False, False, padding=10)
 
         # we create the buttons first, to pass them
         analyzBut = gtk.Button("Analyze")
@@ -155,7 +174,9 @@ class FuzzyRequests(entries.RememberingWindow):
         # request and help
         self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
         self.originalReq.rawShow(request_example, '')
-        self.originalReq.notebook.append_page(gtk.Label(FUZZYHELP), gtk.Label("Syntax help"))
+        helplabel = gtk.Label()
+        helplabel.set_markup(FUZZYHELP)
+        self.originalReq.notebook.append_page(helplabel, gtk.Label("Syntax help"))
         vbox.pack_start(self.originalReq.notebook, True, True, padding=5)
 
         # the commands
