@@ -760,10 +760,11 @@ class PagesEntry(ValidatedEntry):
     
     def __init__(self, maxval):
         self.maxval = maxval
-        self.default_value = "0"
-        ValidatedEntry.__init__(self, "0")
+        self.default_value = "1"
+        ValidatedEntry.__init__(self, "1")
 
     def setMax(self, maxval):
+        '''Sets the max value for the entry.'''
         self.maxval = maxval
         self.reset()
 
@@ -777,7 +778,8 @@ class PagesEntry(ValidatedEntry):
             num = int(text)
         except ValueError:
             return False
-        return (0 <= num < self.maxval)
+        # the next check is because it's shown +1
+        return (0 < num <= self.maxval)
 
 class PagesControl(gtk.HBox):
     '''The control to pass the pages.
@@ -795,7 +797,7 @@ class PagesControl(gtk.HBox):
         self.w3af = w3af
         gtk.HBox.__init__(self)
         self.callback = callback
-        self.page = 0
+        self.page = 1
 
         self.left = gtk.Button()
         self.left.connect("clicked", self._arrow, -1)
@@ -808,6 +810,9 @@ class PagesControl(gtk.HBox):
         self.pageentry.set_alignment(.5)
         self.pack_start(self.pageentry, False, False)
 
+        self.total = gtk.Label()
+        self.pack_start(self.total, False, False)
+
         self.right = gtk.Button()
         self.right.connect("clicked", self._arrow, 1)
         self.right.add(gtk.Arrow(gtk.ARROW_RIGHT, gtk.SHADOW_OUT))
@@ -816,15 +821,17 @@ class PagesControl(gtk.HBox):
         if maxpages is None:
             self.set_sensitive(False)
         else:
+            self.total.set_text(" / %d" % maxpages)
             self.maxpages = maxpages
-            self._arrow(None, 0)
+            self._arrow()
         self.show_all()
 
     def activate(self, maxpages):
         self.maxpages = maxpages
+        self.total.set_text(" / %d" % maxpages)
         self.pageentry.setMax(maxpages)
         self.set_sensitive(True)
-        self._arrow(None, 0)
+        self._arrow()
 
     def _textpage(self, widg):
         val = self.pageentry.get_text()
@@ -835,20 +842,19 @@ class PagesControl(gtk.HBox):
         
     def setPage(self, page):
         self.page = page
-        self._arrow(None, 0)
+        self._arrow()
             
-    def _arrow(self, widg, delta):
+    def _arrow(self, widg=None, delta=0):
         self.page += delta
 
-        # limit control
-        if self.page < 0:
-            self.page = 0
-        elif self.page >= self.maxpages:
+        # limit control, with a +1 shift
+        if self.page < 1:
+            self.page = 1
+        elif self.page > self.maxpages:
             self.page = self.maxpages - 1
 
         # entries adjustment
-        self.left.set_sensitive(self.page > 0)
-        self.right.set_sensitive(self.page < self.maxpages-1)
+        self.left.set_sensitive(self.page > 1)
+        self.right.set_sensitive(self.page < self.maxpages)
         self.pageentry.set_text(str(self.page))
-        self.callback(int(self.page))
-
+        self.callback(int(self.page)-1)
