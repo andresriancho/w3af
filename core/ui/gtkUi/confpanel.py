@@ -291,6 +291,7 @@ class ConfigDialog(gtk.Dialog):
     '''
     def __init__(self, title, w3af, plugin, overwriter={}):
         super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
 
         # buttons and config panel
         save_btn = self._button("Save configuration")
