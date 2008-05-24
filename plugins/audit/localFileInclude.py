@@ -77,7 +77,8 @@ class localFileInclude(baseAuditPlugin):
         # web app and they are on all unix or windows default installs. Feel free to mail me ( Andres Riancho )
         # if you know about other default files that could be installed on AIX ? Solaris ? and are not /etc/passwd
         if cf.cf.getData('targetOS') in ['unix', 'unknown']:
-            localFiles.append("../../../../../../../../etc/passwd") 
+            localFiles.append("../../../../../../../../etc/passwd")
+            localFiles.append("../../../../../../../../etc/passwd\0")
             localFiles.append("/etc/passwd")    
             localFiles.append("/etc/passwd\0")  
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
