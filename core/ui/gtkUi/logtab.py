@@ -41,6 +41,7 @@ class colors:
     white = gtk.gdk.color_parse("white")
     whitesmoke = gtk.gdk.color_parse("whitesmoke")
 
+
 class LogGraph(gtk.DrawingArea):
     '''Defines a log visualization widget that shows an XY plot
 
@@ -74,7 +75,7 @@ class LogGraph(gtk.DrawingArea):
         somethingNew = False
         for mess in self.messages.get():
             if mess is None:
-                if somethingNew:
+                if somethingNew and (self.flags() & gtk.MAPPED):
                     self._redrawAll()
                 yield True
                 somethingNew = False
