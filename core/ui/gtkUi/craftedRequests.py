@@ -145,7 +145,7 @@ pages will be generated using the <i>Analyze</i> button
 
 Each generator between the dollar signs will be evaluated 
 by Python, using <tt>eval()</tt>, using an almost clean 
-namespace (there's already imported the module <tt>string</tt>.
+namespace (there's already imported the module <tt>string</tt>).
 
 For example, you can do:
 <tt>

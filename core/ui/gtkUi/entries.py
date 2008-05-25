@@ -821,14 +821,14 @@ class PagesControl(gtk.HBox):
         if maxpages is None:
             self.set_sensitive(False)
         else:
-            self.total.set_text(" / %d" % maxpages)
+            self.total.set_text(" of %d " % maxpages)
             self.maxpages = maxpages
             self._arrow()
         self.show_all()
 
     def activate(self, maxpages):
         self.maxpages = maxpages
-        self.total.set_text(" / %d" % maxpages)
+        self.total.set_text(" of %d " % maxpages)
         self.pageentry.setMax(maxpages)
         self.set_sensitive(True)
         self._arrow()

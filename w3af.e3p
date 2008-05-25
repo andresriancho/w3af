@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-05-19, 07:55:34 -->
+<!-- Saved: 2008-05-22, 21:35:19 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2484,71 +2484,9 @@
       <Name>script-updateGHDB.w3af</Name>
     </Source>
     <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>plugins.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>targets.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>webMenu.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>start.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>webUi.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>kbExplorer.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Dir>content</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Dir>content</Dir>
-      <Name>htmlFile.py</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>output</Dir>
       <Name>webOutput.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>webserver.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -2770,12 +2708,6 @@
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Dir>vdaemon</Dir>
-      <Name>a.out</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>vdaemon</Dir>
       <Name>elf.py</Name>
     </Source>
     <Source>
@@ -2831,33 +2763,9 @@
       <Name>dump.py</Name>
     </Source>
     <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>index.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>miscSettings.py</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>phpEggs.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>urlSettings.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>webUi</Dir>
-      <Name>session.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
