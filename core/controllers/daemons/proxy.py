@@ -38,24 +38,47 @@ class proxy(w3afThread):
     '''
     This class defines a simple HTTP proxy, it is mainly used for "complex" plugins.
     
-    You should call it like this:
+    You should create a proxy instance like this:
         ws = proxy( '127.0.0.1', 8080, urlOpener )
-        ws.start2()
     
     Or like this, if you want to override the proxyHandler (most times you want to do it...):
         ws = proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
+    
+    To start the proxy, and given that this is a w3afThread class, you can do this:
         ws.start2()
+        
+    Or if you don't want a different thread, you can simply call the run method:
+        ws.run()
     
-    Where pH is a class like this:
-        class w3afProxyHandler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                ...
-                ...
+    The proxy handler class is the place where you'll perform all the magic stuff, like intercepting requests, modifying
+    them, etc. A good idea if you want to code your own proxy handler is to inherit from the proxy handler that 
+    is already defined in this file (see: w3afProxyHandler).
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )    
+    What you basically have to do is to inherit from it:
+        class myProxyHandler(w3afProxyHandler):
+        
+    And redefine the following methods:
+        def doAll( self )
+            Which originally receives a request from the browser, sends it to the remote site, receives the response
+            and returns the response to the browser. This method is called every time the browser sends a new request.
+    
+    Things that work:
+        - http requests like GET, HEAD, POST, CONNECT
+    
+    Things that don't work:
+        - https CONNECT (hopefully Sasha will work with it...)
+    
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__( self, ip, port, urlOpener, proxyHandler=None, proxyCert = 'core/controllers/daemons/mitm.crt' ):
+        '''
+        @parameter ip: IP address to bind
+        @parameter port: Port to bind
+        @parameter urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
+        @parameter proxyHandler: A class that will know how to handle requests from the browser
+        @parameter proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
+        '''
         w3afThread.__init__(self)
 
         # Internal vars
@@ -78,6 +101,9 @@ class proxy(w3afThread):
         return self._port
         
     def stop(self):
+        '''
+        Stop the proxy by setting _go to False and creating a new request.
+        '''
         om.out.debug('Calling stop of proxy daemon.')
         if self._running:
             self._server.server_close()
@@ -91,11 +117,14 @@ class proxy(w3afThread):
             self._running = False
     
     def isRunning( self ):
+        '''
+        @return: True if the proxy daemon is running
+        '''
         return self._running
     
     def run(self):
         '''
-        Starts the proxy daemon.
+        Starts the proxy daemon; usually this method isn't called directly. In most cases you'll call start2()
         '''
         if self._proxyHandler == None:
             self._proxyHandler = w3afProxyHandler
@@ -125,6 +154,14 @@ class proxy(w3afThread):
 class w3afProxyHandler(BaseHTTPRequestHandler):
         
     def _sendToServer( self ):
+        '''
+        Send a request that arrived from the browser to the remote web server.
+        
+        Important variables used here:
+            - self.headers : Stores the headers for the request
+            - self.rfile : A file like object that stores the postdata
+            - self.path : Stores the URL that was requested by the browser
+        '''
         self.headers['Connection'] = 'close'
         
         # Do the request to the remote server
@@ -157,12 +194,18 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     def _sendError( self, exceptionObj ):
         '''
         Send an error to the browser.
+        
+        Important methods used here:
+            - self.send_header : Sends a header to the browser
+            - self.end_headers : Ends the headers section
+            - self.wfile : A file like object that represents the body of the response
         '''
         try:
             self.send_response( 400 )
             self.send_header( 'Connection', 'close')
             self.send_header( 'Content-type', 'text/html')      
             self.end_headers()
+            # FIXME: Make this error look nicer
             self.wfile.write( 'Proxy error: ' + str(exceptionObj) )
         except Exception, e:
             om.out.debug('An error ocurred in proxy._sendError(). Maybe the browser closed the connection?')
@@ -171,9 +214,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     
     def _sendToBrowser( self, res ):
         '''
-        Send a response to the browser
+        Send a response that was sent by the remote web server to the browser
+
+        Important methods used here:
+            - self.send_header : Sends a header to the browser
+            - self.end_headers : Ends the headers section
+            - self.wfile : A file like object that represents the body of the response
         '''
-        # return the response to the browser
         try:
             self.send_response( res.getCode() )
             
@@ -188,8 +235,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             om.out.debug('Failed to send the data to the browser: ' + str(e) )      
     
     def doAll( self ):
+        '''
+        This method handles GET, POST and HEAD request that were send by the browser.
+        '''
         try:
             # Send the request to the remote webserver
+            # The request parameters such as the URL, the headers, etc. are stored in "self".
+            # Note: This is the way that the HTTPServer and the Handler work in python; this wasn't my choice.
             res = self._sendToServer()
         except Exception, e:
             self._sendError( e )
@@ -210,6 +262,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         pass
     
     def _connect_to( self, netloc ):
+        '''
+        This method is used to handle the CONNECT method. In most cases you shouldnt modify/override it.
+        '''
         i = netloc.find(':')
         if i >= 0:
             host, port = netloc[:i], int(netloc[i+1:])
@@ -250,13 +305,17 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     
     def _verify_cb(self, conn, cert, errnum, depth, ok):
         '''
-        Used by set_verify
+        Used by set_verify to check that the SSL certificate if valid.
+        In our case, we always return True.
         '''
         # This obviously has to be updated
         om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
         return ok
         
     def do_CONNECT(self):
+        '''
+        Handle the CONNECT method.
+        '''
         # Log what we are doing.
         self.log_request(200)
         soc = None
