@@ -24,7 +24,7 @@ class clusterCellData:
 
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_size_request(400, 300)
+        self.window.set_size_request(400, 400)
         self.window.set_title('Clustering')
         
         # Quit event.
@@ -51,6 +51,9 @@ class clusterCellData:
         self.treeview.connect("column-cross-event", self.emitCellCrossSignal)
         
         self.treeview.connect("cell-cross-event", self.handlePopup, popup_win)
+        
+        # Handle double click on a row
+        self.treeview.connect("row-activated", self.handleDoubleClick )
 
         self._colDict = {}
         for i, cname in enumerate( self._column_names ):
@@ -65,8 +68,14 @@ class clusterCellData:
         for i in self._parsed_clusteredData:
             self.liststore.append( i )
         
+        # I'm going to store everything inside this scroll window
+        self._sw = gtk.ScrolledWindow()
+        self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self._sw.add( self.treeview )
+        
         # Show it ! =)
-        self.window.add(self.treeview)
+        self.window.add(self._sw)
         self.window.show_all()
         return
         
@@ -144,7 +153,6 @@ class clusterCellData:
         if self.current_column != current_column:
             self.current_column = current_column
             treeview.emit("column-cross-event", event)
-
     
     def getCurrentCellData(self, treeview, event):
     
@@ -164,6 +172,13 @@ class clusterCellData:
         
         return (current_path, current_column, cell_x, cell_y, cell_x_, cell_y_)
 
+    def handleDoubleClick(self, treeview, path, view_column):
+        # FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)
+        # I'm talking about the self._colDict[ current_column ]!
+        currentId = self.liststore[ path[0] ][ self._colDict[ view_column ] ]
+        # Search the Id and show the data
+        print 'I should show the data for',currentId, 'in a different window.'
+    
     def _getInfoForId( self, id ):
         '''
         @return: A string with information about the request with id == id
