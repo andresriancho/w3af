@@ -42,20 +42,20 @@ class clusterCellWindow:
         distanceLabel = gtk.Label()
         distanceLabel.set_text('Distance between clusters: ')
         
-        distanceBackButton = gtk.Button()
-        #distanceBackButton.set_text('<')
+        distanceBackButton = gtk.Button(stock=gtk.STOCK_GO_BACK)
+        distanceBackButton.connect("clicked", self._go_back)
 
         self._distanceLabelNumber = gtk.Label()
         self._distanceLabelNumber.set_text( str(self._level) )
         
-        distanceNextButton = gtk.Button()
-        #distanceNextButton.set_text('>')
+        distanceNextButton = gtk.Button(stock=gtk.STOCK_GO_FORWARD)
+        distanceNextButton.connect("clicked", self._go_forward)
         
         dist_hbox.pack_start( distanceLabel )
         dist_hbox.pack_start( distanceBackButton )
         dist_hbox.pack_start( self._distanceLabelNumber )
         dist_hbox.pack_start( distanceNextButton )
-        main_vbox.pack_start(dist_hbox)
+        main_vbox.pack_start(dist_hbox, False, False)
         
         # Create the widget that shows the data
         cl_data_widget = clusterCellData( data, level=self._level )
@@ -70,6 +70,16 @@ class clusterCellWindow:
         self.window.add( main_vbox )
         self.window.show_all()
         return
+
+    def _go_back( self, i ):
+        if self._level != 10:
+            self._level -= 10
+        self._distanceLabelNumber.set_text( str(self._level) )        
+
+    def _go_forward( self, i ):
+        if self._level != 100:
+            self._level += 10
+        self._distanceLabelNumber.set_text( str(self._level) ) 
         
     def delete_event(self, widget, event, data=None):
         gtk.main_quit()
