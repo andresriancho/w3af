@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from cluster import *
+from cluster import HierarchicalClustering
 import difflib
 
 import os, stat, time
@@ -9,56 +9,105 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-class clusterCellData:
     
-    def __init__ ( self, data, clusteredData ):
+class clusterCellWindow:
+    def __init__ ( self ):
         '''
-        @parameter clusteredData: A list of objects that are clustered.
+        A window that stores the clusterCellData and the level changer.
         '''
-        self.current_path = None
-        self.current_column = None
+        # First we create the data
+        data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
+        httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
+        httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
+        httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
+        httpResponse('http://localhost/w0000.do', 'GET', 'oh! an error has ocurred!', 5)]
         
-        self._data = data
-        self._parsed_clusteredData = self._parse( clusteredData )
-        self._column_names = [ 'Group %d' % i for i in xrange(len(clusteredData)) ]
-
+        # The level used in the process of clustering
+        self._level = 50
+        
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_size_request(400, 400)
-        self.window.set_title('Clustering')
-        
+        self.window.set_title('HTTP Response object clustering')
+
         # Quit event.
         self.window.connect("delete_event", self.delete_event)
         
+        # Create the main vbox
+        main_vbox = gtk.VBox()
+        
+        # Create the distance pager
+        dist_hbox = gtk.HBox()
+        
+        distanceLabel = gtk.Label()
+        distanceLabel.set_text('Distance between clusters: ')
+        
+        distanceBackButton = gtk.Button()
+        #distanceBackButton.set_text('<')
+
+        self._distanceLabelNumber = gtk.Label()
+        self._distanceLabelNumber.set_text( str(self._level) )
+        
+        distanceNextButton = gtk.Button()
+        #distanceNextButton.set_text('>')
+        
+        dist_hbox.pack_start( distanceLabel )
+        dist_hbox.pack_start( distanceBackButton )
+        dist_hbox.pack_start( self._distanceLabelNumber )
+        dist_hbox.pack_start( distanceNextButton )
+        main_vbox.pack_start(dist_hbox)
+        
+        # Create the widget that shows the data
+        cl_data_widget = clusterCellData( data, level=self._level )
+        
+        # I'm going to store the cl_data_widget inside this scroll window
+        _sw = gtk.ScrolledWindow()
+        _sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        _sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        _sw.add( cl_data_widget )
+        main_vbox.pack_start( _sw )
+        
+        self.window.add( main_vbox )
+        self.window.show_all()
+        return
+        
+    def delete_event(self, widget, event, data=None):
+        gtk.main_quit()
+        return False
+
+class clusterCellData(gtk.TreeView):
+    def _httpResponse_cmp_function( self, a, b ):
+        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).ratio() * 100
+        return ratio
+    
+    def __init__ ( self, data, level=50 ):
+        '''
+        @parameter clusteredData: A list of objects that are clustered.
+        '''
+        # Save the data
+        self._data = data
+        
+        # Create the clusters
+        cl = HierarchicalClustering(data, self._httpResponse_cmp_function)
+        clusteredData = cl.getlevel( level )
+        
+        self._parsed_clusteredData = self._parse( clusteredData )
+        self._column_names = [ 'Group %d' % i for i in xrange(len(clusteredData)) ]
+
         # Start with the treeview and liststore creation
         dynamicListStoreTypes = [ str for i in xrange(len(self._column_names)) ]
         self.liststore = apply( gtk.ListStore, dynamicListStoreTypes )
-        self.treeview = gtk.TreeView(self.liststore)
-
-        # Add the "tool tips"
-        popup_win = gtk.Window(gtk.WINDOW_POPUP)
-        label = gtk.Label()
-        popup_win.add(label)
         
-        gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        gtk.TreeView.__init__( self, self.liststore )
         
-        self.treeview.connect("leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
-        self.treeview.connect("motion-notify-event", self.onTreeviewMotionNotify)
-        
-        self.treeview.connect("path-cross-event", self.emitCellCrossSignal)
-        self.treeview.connect("column-cross-event", self.emitCellCrossSignal)
-        
-        self.treeview.connect("cell-cross-event", self.handlePopup, popup_win)
-        
-        # Handle double click on a row
-        self.treeview.connect("row-activated", self.handleDoubleClick )
+        # Internal variables
+        self.current_path = None
+        self.current_column = None
 
         self._colDict = {}
         for i, cname in enumerate( self._column_names ):
             colObject = gtk.TreeViewColumn( cname )
-            self.treeview.append_column( colObject )
+            self.append_column( colObject )
             textRenderer = gtk.CellRendererText()
             colObject.pack_start(textRenderer, True)
             colObject.set_attributes(textRenderer, text=i)
@@ -68,16 +117,31 @@ class clusterCellData:
         for i in self._parsed_clusteredData:
             self.liststore.append( i )
         
-        # I'm going to store everything inside this scroll window
-        self._sw = gtk.ScrolledWindow()
-        self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._sw.add( self.treeview )
+        self._add_tooltip_support()
         
         # Show it ! =)
-        self.window.add(self._sw)
-        self.window.show_all()
-        return
+        self.show_all()
+        
+    def _add_tooltip_support( self ):
+        # Add the "tool tips"
+        popup_win = gtk.Window(gtk.WINDOW_POPUP)
+        label = gtk.Label()
+        popup_win.add(label)
+        
+        gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        
+        self.connect("leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
+        self.connect("motion-notify-event", self.onTreeviewMotionNotify)
+        
+        self.connect("path-cross-event", self.emitCellCrossSignal)
+        self.connect("column-cross-event", self.emitCellCrossSignal)
+        
+        self.connect("cell-cross-event", self.handlePopup, popup_win)
+        
+        # Handle double click on a row
+        self.connect("row-activated", self.handleDoubleClick )    
         
     def _parse( self, clusteredData ):
         '''
@@ -132,11 +196,7 @@ class clusterCellData:
             for y, paddedItem in enumerate( paddedList ):
                 resList[y][x] = str(paddedItem)
         return resList
-        
-    def delete_event(self, widget, event, data=None):
-        gtk.main_quit()
-        return False
-    
+            
     def onTreeviewLeaveNotify(self, treeview, event, popup_win):
         self.current_column = None
         self.current_path = None
@@ -245,29 +305,6 @@ class httpResponse:
 def main():
     gtk.main()
 
-def int_cmp_function( a, b):
-    r = abs(a-b)
-    return r
-    
-def str_cmp_function( a, b):
-    ratio = 100 - difflib.SequenceMatcher( None, a, b ).ratio() * 100
-    return ratio
-    
-def httpResponse_cmp_function( a, b ):
-    ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).ratio() * 100
-    return ratio
-    
 if __name__ == "__main__":
-    # First we create the cluster
-    #data = ['abc', 'ab','a','b','x', 'xyz', 'wju', 'ju']
-    #data = [1, 100]
-    data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
-    httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
-    httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
-    httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
-    httpResponse('http://localhost/w0000.do', 'GET', 'oh! an error has ocurred!', 5)]
-    
-    cl = HierarchicalClustering(data, httpResponse_cmp_function)
-    clusteredData = cl.getlevel(60)
-    cl_example = clusterCellData( data, clusteredData )
+    cl_win = clusterCellWindow()
     main()
