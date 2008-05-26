@@ -77,7 +77,7 @@ class clusterCellWindow:
 
 class clusterCellData(gtk.TreeView):
     def _httpResponse_cmp_function( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).quick_ratio() * 100
+        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).ratio() * 100
         return ratio
     
     def __init__ ( self, data, level=50 ):
@@ -248,7 +248,7 @@ class clusterCellData(gtk.TreeView):
         except Exception, e:
             return ''
         else:
-            return obj.getMethod() + ' ' + obj.getURL()
+            return '<b><i>Method:</i></b>' + obj.getMethod() + '\n<b><i>URI:</i></b>' + obj.getURL()
         
     def handlePopup(self, treeview, event, popup_win):
         current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = self.getCurrentCellData(treeview, event)
@@ -263,7 +263,7 @@ class clusterCellData(gtk.TreeView):
                 popup_win.hide()
             else:
                 # Use the info and display the window
-                popup_win.get_child().set_text( info )
+                popup_win.get_child().set_markup( info )
                 popup_width, popup_height = popup_win.get_size()
                 pos_x, pos_y = self.computeTooltipPosition(treeview, cell_x, cell_y, cell_x_, cell_y_, popup_width, popup_height, event)
                 popup_win.move(int(pos_x) , int(pos_y))
