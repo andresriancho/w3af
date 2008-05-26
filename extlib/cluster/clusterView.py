@@ -16,7 +16,7 @@ class clusterCellWindow:
         A window that stores the clusterCellData and the level changer.
         '''
         # First we create the data
-        data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
+        self._data = data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
         httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
         httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
         httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
@@ -58,13 +58,13 @@ class clusterCellWindow:
         main_vbox.pack_start(dist_hbox, False, False)
         
         # Create the widget that shows the data
-        cl_data_widget = clusterCellData( data, level=self._level )
+        self._cl_data_widget = clusterCellData( data, level=self._level )
         
         # I'm going to store the cl_data_widget inside this scroll window
         _sw = gtk.ScrolledWindow()
         _sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         _sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        _sw.add( cl_data_widget )
+        _sw.add( self._cl_data_widget )
         main_vbox.pack_start( _sw )
         
         self.window.add( main_vbox )
@@ -75,11 +75,15 @@ class clusterCellWindow:
         if self._level != 10:
             self._level -= 10
         self._distanceLabelNumber.set_text( str(self._level) )        
+        # Load the new level
+        self._cl_data_widget.setNewLevel( self._level )
 
     def _go_forward( self, i ):
         if self._level != 100:
             self._level += 10
         self._distanceLabelNumber.set_text( str(self._level) ) 
+        # Load the new level
+        self._cl_data_widget.setNewLevel( self._level )
         
     def delete_event(self, widget, event, data=None):
         gtk.main_quit()
@@ -96,9 +100,18 @@ class clusterCellData(gtk.TreeView):
         '''
         # Save the data
         self._data = data
+
+        self.setNewLevel(level)
+
+        self._add_tooltip_support()
         
+        # Show it ! =)
+        self.show_all()
+
+
+    def setNewLevel(self, level):
         # Create the clusters
-        cl = HierarchicalClustering(data, self._httpResponse_cmp_function)
+        cl = HierarchicalClustering(self._data, self._httpResponse_cmp_function)
         clusteredData = cl.getlevel( level )
         
         self._parsed_clusteredData = self._parse( clusteredData )
@@ -107,8 +120,12 @@ class clusterCellData(gtk.TreeView):
         # Start with the treeview and liststore creation
         dynamicListStoreTypes = [ str for i in xrange(len(self._column_names)) ]
         self.liststore = apply( gtk.ListStore, dynamicListStoreTypes )
-        
+
         gtk.TreeView.__init__( self, self.liststore )
+
+        # First clear the treeview
+        for col in self.get_columns():
+            self.remove_column( col )
         
         # Internal variables
         self.current_path = None
@@ -127,11 +144,7 @@ class clusterCellData(gtk.TreeView):
         for i in self._parsed_clusteredData:
             self.liststore.append( i )
         
-        self._add_tooltip_support()
-        
-        # Show it ! =)
-        self.show_all()
-        
+
     def _add_tooltip_support( self ):
         # Add the "tool tips"
         popup_win = gtk.Window(gtk.WINDOW_POPUP)
