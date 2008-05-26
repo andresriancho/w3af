@@ -77,7 +77,7 @@ class clusterCellWindow:
 
 class clusterCellData(gtk.TreeView):
     def _httpResponse_cmp_function( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).ratio() * 100
+        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).quick_ratio() * 100
         return ratio
     
     def __init__ ( self, data, level=50 ):
