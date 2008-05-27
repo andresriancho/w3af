@@ -177,12 +177,11 @@ class sgmlParser(abstractParser, SGMLParser):
                 # The content variables looks something like... "4;URL=http://www.f00.us/"
                 # The content variables looks something like... "2; URL=http://www.f00.us/"
                 # The content variables looks something like... "6  ; URL=http://www.f00.us/"
-                time, url = content.split(';')
-                url = url.strip()
-                url = url[4:]
-                url = urlParser.urlJoin( self._baseUrl , url )
-                self._urlsInDocument.append( url )
-                self._urlsInDocumentWithTags.append( ('meta', url ) )
+                for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
+                    url = url.strip()
+                    url = urlParser.urlJoin( self._baseUrl , url )
+                    self._urlsInDocument.append( url )
+                    self._urlsInDocumentWithTags.append( ('meta', url ) )
     
     def _findReferences(self, tag, attrs):
         '''
