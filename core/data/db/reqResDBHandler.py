@@ -48,16 +48,31 @@ class reqResDBHandler:
         '''
         @return: A request object that has an id == search_id
         '''
-        if not self._initDB():
-            raise w3afException('The database is not initialized yet.')
-        else:
+        def bruteforceSearch( id ):
+            # Bruteforce search
             try:
                 result = [ r for r in self._db_req_res if r.id == search_id ][0]
             except Exception, e:
                 return None
             else:
                 return result
-            
+        
+        if not self._initDB():
+            raise w3afException('The database is not initialized yet.')
+        else:
+            try:
+                # Search by """"primary key""""
+                result = self._db_req_res[ int(search_id) - 1 ]
+            except:
+                return bruteforceSearch( search_id )
+            else:
+                # pk search went ok, verify result.
+                if result.id != search_id:
+                    om.out.debug('Something wierd happened with the numbering of the requests.... doing bruteforce search.')
+                    return bruteforceSearch( search_id )
+                else:
+                    return result
+                    
     def validate(self, text):
         '''
         Validates if the text matches the regular expression
