@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-05-27, 08:14:15 -->
+<!-- Saved: 2008-05-27, 10:11:19 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
@@ -207,18 +207,6 @@
       <Linenumber>228</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: In the future, xUrllib should only raise w3afException</Description>
-    <Created>2008-05-06, 22:25:56</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>yahooSiteExplorer.py</Name>
-      </Filename>
-      <Linenumber>35</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: review this code !!</Description>
     <Created>2008-05-06, 22:26:30</Created>
@@ -417,6 +405,18 @@
         <Name>abstractParser.py</Name>
       </Filename>
       <Linenumber>61</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: In the future, xUrllib should only raise w3afException</Description>
+    <Created>2008-05-27, 10:06:54</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>yahooSiteExplorer.py</Name>
+      </Filename>
+      <Linenumber>35</Linenumber>
     </Resource>
   </Task>
 </Tasks>

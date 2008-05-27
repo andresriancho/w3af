@@ -50,7 +50,7 @@ class OptionsPanel(gtk.VBox):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, plugin_tree, plugin, title):
+    def __init__(self, plugin_tree, plugin, title, longdesc):
         super(OptionsPanel,self).__init__()
         self.set_spacing(5)
         self.plugin_tree = plugin_tree
@@ -61,6 +61,14 @@ class OptionsPanel(gtk.VBox):
         titl.set_alignment(0.0, 0.5)
         titl.show()
         self.pack_start(titl)
+        
+        # The long description of the plugin
+        longLabel = gtk.Label()
+        longLabel.set_text( longdesc )
+        longLabel.set_alignment(0.0, 0.5)
+        longLabel.show()
+        self.pack_start(longLabel)
+        
 
         # last row buttons
         hbox = gtk.HBox()
@@ -125,29 +133,29 @@ class ConfigPanel(gtk.VBox):
         @param longdesc: the long description of the plugin
         '''
         # A title with the name of the plugin in bold and with a bigger font
-        pluginName = "<b><big>"+plugin.getName()+"</big></b>\n\n"
-        longdesc = pluginName + longdesc
+        title = "<b><big>"+plugin.getName()+"</big></b>\n\n"
         
         idplugin = id(plugin)
         try:
             newwidg = self.created_panels[idplugin]
         except KeyError:
-            newwidg = OptionsPanel(plugin_tree, plugin, longdesc)
+            newwidg = OptionsPanel(plugin_tree, plugin, title, longdesc)
             if not newwidg.options.options:
                 newwidg = None
             self.created_panels[idplugin] = newwidg
 
         if newwidg is None:
-            return self.clear(longdesc, "This plugins has no options to configure")
+            return self.clear(title, longdesc, "This plugins has no options to configure")
 
         self.remove(self.widg)
         self.pack_start(newwidg, expand=True)
         self.widg = newwidg
 
-    def clear(self, title=None, label=""):
+    def clear(self, title=None, longdesc='', label=""):
         '''Shows an almost empty panel when there's no configuration.
 
         @param title: the title to show in the top (optional)
+        @param title: the long description for the plugin to show in the top (optional)
         @param label: a message to the middle of the panel (optional).
 
         When it does not receive nothing, the panel is clean.
@@ -161,6 +169,13 @@ class ConfigPanel(gtk.VBox):
             titl.set_alignment(0.0, 0.5)
             titl.show()
             vbox.pack_start(titl)
+
+        if longdesc is not None:
+            longLabel = gtk.Label()
+            longLabel.set_text(longdesc)
+            longLabel.set_alignment(0.0, 0.5)
+            longLabel.show()
+            vbox.pack_start(longLabel)
 
         labl = gtk.Label(label)
         labl.show()
