@@ -27,6 +27,7 @@ import core.data.dc.form as form
 import core.data.parsers.urlParser as urlParser
 import string
 import re
+import urllib
 
 class abstractParser:
     '''
@@ -39,33 +40,27 @@ class abstractParser:
         self._baseUrl = baseUrl
         self._baseDomain = urlParser.getDomain(baseUrl)
         self._rootDomain = urlParser.getRootDomain(baseUrl)
+        self._emails = []
     
     def findAccounts( self , documentString ):
         '''
         @return: A list with all mail users that are present in the documentString.
         '''
+        # First, we decode all chars. I have found some strange sites where they encode the @... some other
+        # sites where they encode the email, or add some %20 padding... strange stuff... so better be safe...
+        documentString = urllib.unquote_plus( documentString )
+        
+        # Perform a fast search for the @. In w3af, if we don't have an @ we don't have an email
+        # We don't support mails like myself <at> gmail !dot! com
         if documentString.find('@') != -1:
-            # This two for loops were taken from Sergio Alvarez fingergoogle.py
-            # FIXME: Replace this with a re.sub, it should be faster
-            for i in ('=','"', '\'','<br>', '[', ']', '<', '>', ':', ';', '&', '(', ')', '{', '}'):
-                documentString = string.replace(documentString, i, ' ')
-            documentString = string.split(documentString, '\n')
-            for line in documentString:
-                if line.count('@'+self._rootDomain):
-                    split = string.split(line, ' ')
-                    for i in split:
-                        if i.count('@'+self._rootDomain):
-                            if i[0] == '@':
-                                continue
-                            if string.split(i, '@')[1] != self._rootDomain:
-                                continue
-                            i = i[:-(len(self._rootDomain)+1)]
-                            if len(i) > 1:
-                                if i[-1] == '@':
-                                    i = i[:-1]
-                            # If account aint in account list , then add
-                            if self._accounts.count(i) == 0:
-                                self._accounts.append(i)
+            documentString = re.sub( '[^\w@\\.]', ' ', documentString )
+            
+            # Now we have a clean documentString; and we can match the mail addresses!
+            for email, username, host in re.findall('(([\w\._]+)@('+self._rootDomain+'|'+self._baseDomain+'))', documentString):
+                if email not in self._emails:
+                    self._emails.append( email )
+                    
+        return self._emails
 
     def getAccounts( self ):
         raise Exception('You should create your own parser class and implement the getAccounts() method.')

@@ -52,11 +52,10 @@ class getMails(baseGrepPlugin):
                 i = info.info()
                 i.setURL( response.getURL() )
                 i.setId( response.id )
-                mail = m + '@' + getDomain( response.getURL() )
-                i.setName(mail)
-                i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + response.getURL() + '"' )
-                i['mail'] = mail
-                i['user'] = m
+                i.setName(m)
+                i.setDesc( 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"' )
+                i['mail'] = m
+                i['user'] = m.split('@')[0]
             
                 kb.kb.append( 'mails', 'mails', i ) 
                 kb.kb.append( self, 'mails', i )
@@ -75,7 +74,7 @@ class getMails(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'getMails', 'mails' ), None )
+        self.printUniq( kb.kb.getData( 'mails', 'mails' ), None )
     
     def getPluginDeps( self ):
         '''

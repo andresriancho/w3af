@@ -100,17 +100,16 @@ class fingerMSN(baseDiscoveryPlugin):
             self._newAccounts = []
         else:
             dp = dpCache.dpc.getDocumentParserFor( response.getBody(), 'http://'+self._domainRoot+'/' )
-            for account in dp.getAccounts():
-                if account not in self._accounts:
-                    self._accounts.append( account )
+            for mail in dp.getAccounts():
+                if mail not in self._accounts:
+                    self._accounts.append( mail )
 
                     i = info.info()
                     i.setURL( msnPage.URL )
-                    mail = account +'@' + self._domainRoot
                     i.setName( mail )
                     i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + msnPage.URL + '"' )
                     i['mail'] = mail
-                    i['user'] = account
+                    i['user'] = mail.split('@')[0]
                     kb.kb.append( 'mails', 'mails', i )
                     kb.kb.append( 'fingerMSN', 'mails', i )
     

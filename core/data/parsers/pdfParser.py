@@ -36,7 +36,6 @@ class pdfParser(abstractParser):
     '''
     def __init__(self, document, baseURL, verbose=0):
         abstractParser.__init__(self , baseURL)
-        self._accounts = []
         self._urlsInDocument = []
         
         # work !
@@ -92,7 +91,7 @@ class pdfParser(abstractParser):
         return res
     
     def getAccounts( self ):
-        return self._accounts
+        return self._emails
         
     def getReferences( self ):
         return self._urlsInDocument

@@ -91,9 +91,6 @@ class sgmlParser(abstractParser, SGMLParser):
         self._commentsInDocument = []
         self._scriptsInDocument = []
         
-        # mail accounts
-        self._accounts = []
-        
         # Meta tags
         self._metaRedirs = []
         self._metaTags = []
@@ -224,7 +221,7 @@ class sgmlParser(abstractParser, SGMLParser):
         
         
     def getAccounts( self ):
-        return self._accounts
+        return self._emails
     
     def getForms( self ):
         '''
