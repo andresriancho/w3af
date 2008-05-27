@@ -25,6 +25,7 @@ from core.controllers.w3afException import w3afException
 
 import core.data.dc.form as form
 import core.data.parsers.urlParser as urlParser
+from core.data.parsers.encode_decode import htmldecode
 import string
 import re
 import urllib
@@ -49,6 +50,9 @@ class abstractParser:
         # First, we decode all chars. I have found some strange sites where they encode the @... some other
         # sites where they encode the email, or add some %20 padding... strange stuff... so better be safe...
         documentString = urllib.unquote_plus( documentString )
+        
+        # Now we decode the html special characters...
+        documentString = htmldecode( documentString )
         
         # Perform a fast search for the @. In w3af, if we don't have an @ we don't have an email
         # We don't support mails like myself <at> gmail !dot! com
