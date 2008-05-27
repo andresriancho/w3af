@@ -77,7 +77,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:
-            om.out.debug('w3afException while fetching page in yahooSiteExplorer, error: ' + str(ue) )
+            om.out.debug('w3afException while fetching page in yahooSiteExplorer, error: ' + str(w3) )
         except urllib2.URLError, ue:
             om.out.debug('URL Error while fetching page in yahooSiteExplorer, error: ' + str(ue) )
         else:

@@ -57,6 +57,8 @@ class abstractParser:
         # Perform a fast search for the @. In w3af, if we don't have an @ we don't have an email
         # We don't support mails like myself <at> gmail !dot! com
         if documentString.find('@') != -1:
+            # FIXME: What if we have something like this: ramosmejia_direcci&oacute;n@buenosaires.gov.ar ?!?!
+            # FIXME: Note that this parser as it is will return n@buenosaires.gov.ar
             documentString = re.sub( '[^\w@\\.]', ' ', documentString )
             
             # Now we have a clean documentString; and we can match the mail addresses!

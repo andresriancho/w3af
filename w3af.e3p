@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-05-22, 21:35:19 -->
+<!-- Saved: 2008-05-27, 08:14:15 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3797,6 +3797,12 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>fuzzygen.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>parsers</Dir>
+      <Name>encode_decode.py</Name>
     </Source>
   </Sources>
   <Forms>
