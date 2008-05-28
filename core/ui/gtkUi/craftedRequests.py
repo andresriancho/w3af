@@ -218,6 +218,11 @@ class FuzzyRequests(entries.RememberingWindow):
         clusterButton = gtk.Button(label='Cluster Responses')
         clusterButton.connect("clicked", self._clusterData )
         centerbox.pack_start(clusterButton, True, False)
+        # clear responses
+        clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
+                                                                    tooltip='Clear all HTTP responses from fuzzer window')
+        clearButton.connect("clicked", self._clearResponses )
+        centerbox.pack_start(clearButton, True, False)
         
         vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -225,6 +230,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.vbox.pack_start(mainhbox)
         self.show_all()
 
+    def _clearResponses( self, widg ):
+        '''
+        Clears all the responses from the fuzzy window.
+        '''
+        self.responses = []
+        self.resultReqResp.request.clearPanes()
+        self.resultReqResp.response.clearPanes()
+        self.resultReqResp.set_sensitive(False)
+        self.pagesControl.deactivate()
+        
     def _clusterData( self, widg):
         '''
         Analyze if we can cluster the responses and do it.

@@ -826,6 +826,13 @@ class PagesControl(gtk.HBox):
             self._arrow()
         self.show_all()
 
+    def deactivate(self):
+        self.set_sensitive(False)
+        self.right.set_sensitive(False)
+        self.left.set_sensitive(False)
+        self.total.set_text("")
+        self.pageentry.set_text("0")
+        
     def activate(self, maxpages):
         self.maxpages = maxpages
         self.total.set_text(" of %d " % maxpages)
