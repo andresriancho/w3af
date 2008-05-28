@@ -42,6 +42,7 @@ class httpResponse:
         self.id = id
         self._time = time
     
+    def getId( self ): return self.id
     def getRedirURL( self ): return self._redirectedURL
     def getRedirURI( self ): return self._redirectedURI
     def getCode( self ): return self._code

@@ -26,9 +26,10 @@ import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 import core.ui.gtkUi.fuzzygen as fuzzygen
 from core.controllers.w3afException import *
+from core.ui.gtkUi.clusterView import clusterCellWindow
 
 request_example = """\
-GET http://www.some_host.com/path HTTP/1.0
+GET http://localhost/path HTTP/1.0
 Host: www.some_host.com
 User-Agent: w3af.sf.net
 Pragma: no-cache
@@ -164,7 +165,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
         mainhbox = gtk.HBox()
-
+        
+        # To store the responses
+        self.responses = []
+        
         # ---- left pane ----
         vbox = gtk.VBox()
         mainhbox.pack_start(vbox, False, False, padding=10)
@@ -209,13 +213,32 @@ class FuzzyRequests(entries.RememberingWindow):
         # result control
         centerbox = gtk.HBox()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
-        centerbox.pack_start(self.pagesControl, True, False) 
+        centerbox.pack_start(self.pagesControl, True, False)
+        # cluster responses
+        clusterButton = gtk.Button(label='Cluster Responses')
+        clusterButton.connect("clicked", self._clusterData )
+        centerbox.pack_start(clusterButton, True, False)
+        
         vbox.pack_start(centerbox, False, False, padding=5)
 
         # Show all!
         self.vbox.pack_start(mainhbox)
         self.show_all()
 
+    def _clusterData( self, widg):
+        '''
+        Analyze if we can cluster the responses and do it.
+        '''
+        data = data=[r[4] for r in self.responses]
+        if data:
+            clusterCellWindow( data=data )
+        else:
+            # Let the user know ahout the problem
+            msg = "There are no HTTP responses available to cluster."
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()            
+        
     def _analyze(self, widg):
         '''Handles the Analyze part.'''
         (request, postbody) = self.originalReq.getBothTexts()
@@ -243,7 +266,6 @@ class FuzzyRequests(entries.RememberingWindow):
             return
             
         # let's send the requests!
-        self.responses = []
         result_ok = 0
         result_err = 0
         allrequests = list(fg.generate())
@@ -275,7 +297,7 @@ class FuzzyRequests(entries.RememberingWindow):
                 dlg.destroy()
                 break
 
-            self.responses.append((realreq, realbody, respbody, resphead))
+            self.responses.append((realreq, realbody, resphead, respbody, httpResp))
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
             self.sendfb.set_sensitive(True)
 
@@ -285,10 +307,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self._pageChange(0)
 
     def _pageChange(self, page):
-        (realreq, realbody, respbody, resphead) = self.responses[page]
+        (realreq, realbody, resphead, respbody, responseObj) = self.responses[page]
 
         self.resultReqResp.request.rawShow(realreq, realbody)
         if resphead is not None:
-            self.resultReqResp.response.rawShow(respbody, resphead)
+            self.resultReqResp.response.rawShow(resphead, respbody )
         else:
             self.resultReqResp.response.showError(respbody)

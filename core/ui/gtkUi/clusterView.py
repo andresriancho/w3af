@@ -1,26 +1,49 @@
-#!/usr/bin/env python
+'''
+clusterView.py
 
-from cluster import HierarchicalClustering
+Copyright 2008 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+'''
+
+# The clustering stuff
+try:
+    from extlib.cluster.cluster import HierarchicalClustering
+except Exception, e:
+    from cluster import HierarchicalClustering
+# To calculate the difference between httpResponse obj
 import difflib
 
-import os, stat, time
-import pygtk
-pygtk.require('2.0')
-import gtk
+# For window creation
+import pygtk, gtk
 import gobject
+import core.ui.gtkUi.helpers as helpers
 
+# For testing
+from core.data.url.httpResponse import httpResponse as httpResponse
     
 class clusterCellWindow:
-    def __init__ ( self ):
+    def __init__ ( self, data=[] ):
         '''
         A window that stores the clusterCellData and the level changer.
+        
+        @parameter data: A list with the httpResponse objects to be clustered.
         '''
-        # First we create the data
-        self._data = data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
-        httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
-        httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
-        httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
-        httpResponse('http://localhost/w0000.do', 'GET', 'oh! an error has ocurred!', 5)]
+        # First we save the data
+        self._data = data
         
         # The level used in the process of clustering
         self._level = 50
@@ -86,12 +109,20 @@ class clusterCellWindow:
         self._cl_data_widget.setNewLevel( self._level )
         
     def delete_event(self, widget, event, data=None):
-        gtk.main_quit()
+        #gtk.main_quit()
         return False
 
 class clusterCellData(gtk.TreeView):
-    def _httpResponse_cmp_function( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getData(), b.getData() ).ratio() * 100
+    def _cmp_function_ratio( self, a, b ):
+        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).ratio() * 100
+        return ratio
+
+    def _cmp_function_quick_ratio( self, a, b ):
+        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).quick_ratio() * 100
+        return ratio
+
+    def _cmp_function_real_quick_ratio( self, a, b ):
+        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).real_quick_ratio() * 100
         return ratio
     
     def __init__ ( self, data, level=50 ):
@@ -110,8 +141,25 @@ class clusterCellData(gtk.TreeView):
 
 
     def setNewLevel(self, level):
+        # Based on the amount of data, and the length of that data, I'm going to choose one of the
+        # compare functions (quick == bad precision)
+        compare_functions = [ self._cmp_function_ratio , self._cmp_function_quick_ratio, self._cmp_function_real_quick_ratio]
+        
+        # Count all the responses bodies
+        dataLength = 0
+        for htRes in self._data:
+            dataLength += len(htRes.getBody())
+        averageDataLength = dataLength / len(self._data)
+        
+        if len(self._data) < 10 and averageDataLength < 200000:
+            _cmp_function = compare_functions[ 0 ]
+        elif len(self._data) > 10 and averageDataLength < 100000:
+            _cmp_function = compare_functions[ 1 ]
+        else:
+            _cmp_function = compare_functions[ 2 ]
+        
         # Create the clusters
-        cl = HierarchicalClustering(self._data, self._httpResponse_cmp_function)
+        cl = HierarchicalClustering(self._data, _cmp_function)
         clusteredData = cl.getlevel( level )
         
         self._parsed_clusteredData = self._parse( clusteredData )
@@ -151,10 +199,15 @@ class clusterCellData(gtk.TreeView):
         label = gtk.Label()
         popup_win.add(label)
         
-        gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        
+        try:
+            gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+            gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+            gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        except:
+            # The most common case is when you create this windows two times
+            # the second time, you get here.
+            pass
+            
         self.connect("leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
         self.connect("motion-notify-event", self.onTreeviewMotionNotify)
         
@@ -271,7 +324,8 @@ class clusterCellData(gtk.TreeView):
         except Exception, e:
             return ''
         else:
-            return '<b><i>Method:</i></b>' + obj.getMethod() + '\n<b><i>URI:</i></b>' + obj.getURL()
+            return '<b><i>Code: </i></b>' + str(obj.getCode()) + '\n<b><i>Message: </i></b>' + obj.getMsg()\
+           + '\n<b><i>URI: </i></b>' + obj.getURI()
         
     def handlePopup(self, treeview, event, popup_win):
         current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = self.getCurrentCellData(treeview, event)
@@ -312,22 +366,17 @@ class clusterCellData(gtk.TreeView):
             pos_y = cell_y - 3 - popup_height
         
         return (pos_x , pos_y)
-
-class httpResponse:
-    def __init__( self, url, method, data, id ):
-        self._url = url
-        self._method = method
-        self._id = id
-        self._data = data
-    
-    def getId( self ): return self._id
-    def getMethod( self ): return self._method
-    def getURL( self ): return self._url
-    def getData( self ): return self._data
         
 def main():
     gtk.main()
 
 if __name__ == "__main__":
-    cl_win = clusterCellWindow()
+    # We create the data
+    data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
+        httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
+        httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
+        httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
+        httpResponse('http://localhost/w0000.do', 'GET', 'oh! an error has ocurred!', 5)]
+        
+    cl_win = clusterCellWindow( data=data )
     main()
