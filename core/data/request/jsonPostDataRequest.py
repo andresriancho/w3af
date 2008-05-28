@@ -24,7 +24,10 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 import core.data.dc.dataContainer as dc
-from extlib.jsonpy import json as json
+try:
+    from extlib.jsonpy import json as json
+except:
+    import json
 
 class jsonPostDataRequest(httpPostDataRequest):
     '''

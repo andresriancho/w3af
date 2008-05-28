@@ -37,7 +37,10 @@ from core.controllers.w3afException import w3afException
 # The data containers
 from core.data.dc.cookie import cookie as cookie
 from core.data.dc.dataContainer import dataContainer as dc
-from extlib.jsonpy import json as json
+try:
+    from extlib.jsonpy import json as json
+except:
+    import json
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import httpQsRequest
 

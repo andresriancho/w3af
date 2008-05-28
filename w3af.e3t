@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-05-27, 10:11:19 -->
+<!-- Saved: 2008-05-27, 13:34:13 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
@@ -343,32 +343,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-05-25, 19:28:52</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>105</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Show images</Description>
-    <Created>2008-05-25, 19:28:52</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>261</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: this list should be updated from time to time, automatically.</Description>
     <Created>2008-05-26, 22:57:08</Created>
     <Resource>
@@ -417,6 +391,45 @@
         <Name>yahooSiteExplorer.py</Name>
       </Filename>
       <Linenumber>35</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-05-27, 13:24:48</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>105</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Show images</Description>
+    <Created>2008-05-27, 13:24:48</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>261</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: This should have a different globals and locals</Description>
+    <Created>2008-05-27, 13:32:23</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>reqResDBHandler.py</Name>
+      </Filename>
+      <Linenumber>112</Linenumber>
     </Resource>
   </Task>
 </Tasks>

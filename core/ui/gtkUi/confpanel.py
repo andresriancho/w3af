@@ -99,7 +99,7 @@ class OnlyOptions(gtk.VBox):
             if opt.getName() in coreopts:
                 opt.setValue( coreopts[opt.getName()].getValueStr() )
             if opt.getName() in overwriter:
-                opt.setValue( overwriter[opt.getName()].getValueStr() )
+                opt.setValue( overwriter[opt.getName()] )
             self.options.append(opt)
 
         # buttons

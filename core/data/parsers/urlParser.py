@@ -29,6 +29,7 @@ import cgi
 import socket
 import re
 import core.data.kb.config as cf
+import string
 
 '''
 This module parses Url's.
@@ -250,7 +251,7 @@ def getRootDomain( input ):
             else:
                 subdomain = i  + (".","")[subdomain==""] + subdomain
             if (not gTopLevelDomainDict.has_key(i)):
-                 foundBreak=1
+                foundBreak=1
         return ([subdomain,baseAuthority])
     
     # def to split URI into its parts, returned as URI object
@@ -359,7 +360,6 @@ def urlDecode( url ):
     '''
     res = None
     if type(url) == type(""):
-        import string
         res = urllib.unquote(string.replace(url, "+", " "))
     return res
 
