@@ -48,7 +48,9 @@ class errorPages(baseGrepPlugin):
         mesg = []
         
         mesg.append('<H1>Error page exception</H1>')
-        mesg.append('<span><H1>Server Error in ')
+        # This signature fires up also in default 404 pages of aspx which generates a lot of noise, so ... disabling it
+        #mesg.append('<span><H1>Server Error in ')
+        mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
         mesg.append('<H3>Original Exception: </H3>')
         mesg.append('Server object error')
         mesg.append('invalid literal for int()')
