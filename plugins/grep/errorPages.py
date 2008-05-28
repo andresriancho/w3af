@@ -51,6 +51,7 @@ class errorPages(baseGrepPlugin):
         # This signature fires up also in default 404 pages of aspx which generates a lot of noise, so ... disabling it
         #mesg.append('<span><H1>Server Error in ')
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
+        mesg.append('<h2> <i>Access is denied</i> </h2></span>')
         mesg.append('<H3>Original Exception: </H3>')
         mesg.append('Server object error')
         mesg.append('invalid literal for int()')
@@ -69,7 +70,7 @@ class errorPages(baseGrepPlugin):
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
         
         # ASPX
-        mesg.append('<b> Description: </b>An unhandled exception occurred during the execution of the current web request. Please review the stack trace')
+        mesg.append('<b> Description: </b>An unhandled exception occurred during the execution of the current web request')
         
         # Struts
         mesg.append('] does not contain handler parameter named')
