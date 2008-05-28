@@ -165,6 +165,7 @@ class fileUpload(baseAuditPlugin):
         tmp.append('uploads')
         tmp.append('upload')
         tmp.append('file')
+        tmp.append('user')
         tmp.append('files')
         tmp.append('downloads')
         tmp.append('download')

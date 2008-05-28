@@ -246,7 +246,7 @@ class FuzzyRequests(entries.RememberingWindow):
         '''
         data = data=[r[4] for r in self.responses]
         if data:
-            clusterCellWindow( data=data )
+            clusterCellWindow( self.w3af, data=data )
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."

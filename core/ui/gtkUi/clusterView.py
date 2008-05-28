@@ -31,12 +31,13 @@ import difflib
 import pygtk, gtk
 import gobject
 import core.ui.gtkUi.helpers as helpers
+import core.ui.gtkUi.entries as entries
 
 # For testing
 from core.data.url.httpResponse import httpResponse as httpResponse
     
-class clusterCellWindow:
-    def __init__ ( self, data=[] ):
+class clusterCellWindow(entries.RememberingWindow):
+    def __init__ ( self, w3af, data=[] ):
         '''
         A window that stores the clusterCellData and the level changer.
         
@@ -44,17 +45,19 @@ class clusterCellWindow:
         '''
         # First we save the data
         self._data = data
+        self.w3af = w3af
         
         # The level used in the process of clustering
         self._level = 50
         
         # Create a new window
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_size_request(400, 400)
-        self.window.set_title('HTTP Response object clustering')
+        super(clusterCellWindow,self).__init__(w3af, "clusterWindow", "w3af - HTTP Response Clustering")
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+
+        self.set_size_request(400, 400)
 
         # Quit event.
-        self.window.connect("delete_event", self.delete_event)
+        self.connect("delete_event", self.delete_event)
         
         # Create the main vbox
         main_vbox = gtk.VBox()
@@ -90,8 +93,8 @@ class clusterCellWindow:
         _sw.add( self._cl_data_widget )
         main_vbox.pack_start( _sw )
         
-        self.window.add( main_vbox )
-        self.window.show_all()
+        self.vbox.pack_start(main_vbox)
+        self.show_all()
         return
 
     def _go_back( self, i ):
@@ -170,6 +173,9 @@ class clusterCellData(gtk.TreeView):
         self.liststore = apply( gtk.ListStore, dynamicListStoreTypes )
 
         gtk.TreeView.__init__( self, self.liststore )
+
+        # Show horizontal and vertical lines        	
+        self.set_grid_lines(gtk.TREE_VIEW_GRID_LINES_BOTH)
 
         # First clear the treeview
         for col in self.get_columns():
