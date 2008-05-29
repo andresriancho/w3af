@@ -215,21 +215,23 @@ class responsePaned(requestResponsePaned):
                 self.notebook.append_page(swRenderedHTML, gtk.Label("Rendered response"))
 
     def _renderGtkHtml2(self, body, mimeType, baseURI):
-        try:
-            document = gtkhtml2.Document()
-            document.clear()
-            document.open_stream(mimeType)
-            document.write_stream(body)
-            document.close_stream()
-            self._renderingWidget.set_document(document)
-        except ValueError, ve:
-            # I get here when the mime type is an image or something that I can't display
-            pass
-        except Exception, e:
-            print 'This is a catched exception!'
-            print 'Exception:', type(e), str(e)
-            print 'I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:'
-            print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
+        # It doesn't make sense to render something empty
+        if body != '':
+            try:
+                document = gtkhtml2.Document()
+                document.clear()
+                document.open_stream(mimeType)
+                document.write_stream(body)
+                document.close_stream()
+                self._renderingWidget.set_document(document)
+            except ValueError, ve:
+                # I get here when the mime type is an image or something that I can't display
+                pass
+            except Exception, e:
+                print 'This is a catched exception!'
+                print 'Exception:', type(e), str(e)
+                print 'I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:'
+                print 'https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652'
 
     def _renderMozilla(self, body, mimeType, baseURI):
         self._renderingWidget.render_data(body, long(len(body)), baseURI , mimeType)
