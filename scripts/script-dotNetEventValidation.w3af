@@ -1,0 +1,36 @@
+# grep demo for dotNet Event Validation = False detection
+
+#http-settings
+#set basicAuthDomain target
+#set basicAuthPass pass
+#set basicAuthUser user
+#back
+
+plugins
+
+output console,textFile
+output
+
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+
+output config console
+set verbose False
+back
+
+grep dotNetEventValidation
+discovery webSpider
+
+back
+
+target
+set target http://localhost/w3af/grepPlugins/eventValidation.html
+back
+
+start
+
+assert len(kb.kb.getData('dotNetEventValidation','dotNetEventValidation')) == 0
+
+exit
