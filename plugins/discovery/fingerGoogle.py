@@ -126,10 +126,10 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         try:
             om.out.debug('Searching for mails in: ' + googlePage.getURL() )
-            if self._domain == urlParser.getDomain( googlePage.URL ):
-                response = self._urlOpener.GET( googlePage.URL, useCache=True, grepResult=True )
+            if self._domain == urlParser.getDomain( googlePage.getURL() ):
+                response = self._urlOpener.GET( googlePage.getURL(), useCache=True, grepResult=True )
             else:
-                response = self._urlOpener.GET( googlePage.URL, useCache=True, grepResult=False )
+                response = self._urlOpener.GET( googlePage.getURL(), useCache=True, grepResult=False )
         except KeyboardInterrupt, e:
             raise e
         except w3afException, w3:
