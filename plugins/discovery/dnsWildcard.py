@@ -70,7 +70,7 @@ class dnsWildcard(baseDiscoveryPlugin):
                 self._testDNS( originalResponse, dnsWildcardUrl )
                 self._testIP( originalResponse, domain )
                 
-                return []
+            return []
     
     def _testIP( self, originalResponse, domain ):
         '''
