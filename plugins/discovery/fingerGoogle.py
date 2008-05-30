@@ -120,12 +120,12 @@ class fingerGoogle(baseDiscoveryPlugin):
             
     def _findAccounts(self, googlePage ):
         '''
-        Finds mails in google result.
+        Finds mails in google result page.
         
         @return: A list of valid accounts
         '''
         try:
-            om.out.debug('Searching for mails in: ' + googlePage.URL )
+            om.out.debug('Searching for mails in: ' + googlePage.getURL() )
             if self._domain == urlParser.getDomain( googlePage.URL ):
                 response = self._urlOpener.GET( googlePage.URL, useCache=True, grepResult=True )
             else:
