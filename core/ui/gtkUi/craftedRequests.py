@@ -293,6 +293,11 @@ class FuzzyRequests(entries.RememberingWindow):
             dlg.destroy()
             if opt != gtk.RESPONSE_YES:
                 return
+
+        self.sendfb.set_sensitive(True)
+        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+        busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
+        busy.show()
         for (realreq, realbody) in allrequests:
             try:
                 httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody)
@@ -316,9 +321,11 @@ class FuzzyRequests(entries.RememberingWindow):
 
             self.responses.append((realreq, realbody, resphead, respbody, httpResp))
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
-            self.sendfb.set_sensitive(True)
+            while gtk.events_pending():
+                gtk.main_iteration()
 
         # activate and show
+        busy.destroy()
         self.resultReqResp.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
         self._pageChange(0)
