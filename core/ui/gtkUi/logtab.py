@@ -138,11 +138,15 @@ class LogGraph(gtk.DrawingArea):
         # small vertical ticks and texts
         sep = (h-MSUP-MINF) / 4
         self.posHorizItems = {}
+        self.maxItemHeight = {}
+        posyant = MSUP
         for i,txt in enumerate(txts):
             if not txt:
                 continue
             posy = int(MSUP + i*sep)
             self.posHorizItems[txt] = posy
+            self.maxItemHeight[txt] = posy - posyant - 1
+            posyant = posy
             self.window.draw_line(self.gc, lm-5, posy, lm, posy)
             self.pangolayout.set_text(txt)
             (tw,th) = self.pangolayout.get_pixel_size()
@@ -159,30 +163,36 @@ class LogGraph(gtk.DrawingArea):
                     pixelQuant += 1
                 else:
                     countingPixel = pixel
-                    self._drawItem(mtype, posx, pixelQuant, sever)
+                    self._drawItem_debug(posx, pixelQuant)
                     pixelQuant = 1
-            elif mtype in ("vulnerability", "information"):
-                self._drawItem(mtype, posx, None, sever)
+            elif mtype == "information":
+                self._drawItem_info(posx)
+            elif mtype == "vulnerability":
+                self._drawItem_vuln(posx, sever)
 
-    def _drawItem(self, mtype, posx, quant, sever):
-        if mtype == "debug":
-            posy = self.posHorizItems["Debug"] - 1
-            self.gc.set_rgb_fg_color(colors.grey)
-            self.window.draw_line(self.gc, posx, posy, posx, posy-quant)
-        elif mtype == "information":
-            posy = self.posHorizItems["Info"]
-            self.gc.set_rgb_fg_color(colors.blue)
-            self.window.draw_rectangle(self.gc, True, posx-1, posy-1, 2, 2)
-        elif mtype == "vulnerability":
-            posy = self.posHorizItems["Vulns"]
-            self.gc.set_rgb_fg_color(colors.red)
-            if sever == severity.LOW:
-                sever = 4
-            elif sever == severity.MEDIUM:
-                sever = 10
-            else:
-                sever = 20
-            self.window.draw_rectangle(self.gc, True, posx-1, posy-sever, 2, sever)
+    def _drawItem_debug(self, posx, quant):
+        posy = self.posHorizItems["Debug"] - 1
+        quant = min(quant, self.maxItemHeight["Debug"])
+        self.gc.set_rgb_fg_color(colors.grey)
+        self.window.draw_line(self.gc, posx, posy, posx, posy-quant)
+        self.gc.set_rgb_fg_color(colors.black)
+
+    def _drawItem_info(self, posx):
+        posy = self.posHorizItems["Info"]
+        self.gc.set_rgb_fg_color(colors.blue)
+        self.window.draw_rectangle(self.gc, True, posx-1, posy-1, 2, 2)
+        self.gc.set_rgb_fg_color(colors.black)
+
+    def _drawItem_vuln(self, posx, sever):
+        posy = self.posHorizItems["Vulns"]
+        self.gc.set_rgb_fg_color(colors.red)
+        if sever == severity.LOW:
+            sever = 4
+        elif sever == severity.MEDIUM:
+            sever = 10
+        else:
+            sever = 20
+        self.window.draw_rectangle(self.gc, True, posx-1, posy-sever, 2, sever)
         self.gc.set_rgb_fg_color(colors.black)
 
     def area_expose_cb(self, area, event):
