@@ -110,7 +110,7 @@ class strangeParameters(baseGrepPlugin):
             if re.match( regex, value ):
                 return True
         
-        splittedValue = [ x for x in re.split( r'([a-zA-Z0-9.]+)', value ) if x != '' ]
+        splittedValue = [ x for x in re.split( r'([a-zA-Z0-9. ]+)', value ) if x != '' ]
         if len( splittedValue ) > 4:
             return True
         
