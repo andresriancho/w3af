@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 '''
 encdec.py
 
@@ -23,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk
 import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
-import urllib, base64, sha, md5
+import urllib, base64, sha, md5, random
 
 class SimpleTextView(gtk.TextView):
     def __init__(self):
@@ -102,7 +104,7 @@ class EncodeDecode(entries.RememberingWindow):
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack2(hbox)
 
-        vpan.set_position(300)
+        vpan.set_position(500)
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
 
@@ -161,32 +163,222 @@ def b64decode(t):
     '''
     return base64.b64decode(t)
 
-def urllib_quote(t):
+def urlencode(t):
     '''Encoder doing URL Encode.
 
-    >>> urllib.quote("Hola mundo")
+    >>> urlencode("Hola mundo")
     'Hola%20mundo'
     '''
     return urllib.quote(t)
 
-def urllib_unquote(t):
+def urldecode(t):
     '''Decoder doing URL Encode.
 
-    >>> urllib.unquote("Hola%20mundo")
+    >>> urldecode("Hola%20mundo")
     'Hola mundo'
     '''
     return urllib.unquote(t)
 
+def double_urlencode(t):
+    '''Encoder doing Double URL Encode.
+
+    >>> double_urlencode("Hola mundo")
+    'Hola%2520mundo'
+    '''
+    return urllib.quote(urllib.quote(t))
+
+def double_urldecode(t):
+    '''Decoder doing Double URL Encode.
+
+    >>> double_urldecode("Hola%2520mundo")
+    'Hola mundo'
+    '''
+    return urllib.unquote(urllib.unquote(t))
+
+def hex_encoding(t):
+    '''Hex encoding method.
+    
+    This is one of the RFC compliant ways for encoding a URL.  It is also the
+    simplest method of encoding a URL. The encoding method consists of
+    escaping a hexadecimal byte value for the encoded character with a '%'
+
+    >>> hex_encoding("A")
+    '%41'
+    >>> hex_encoding("ABC")
+    '%41%42%43'
+    '''
+    return "%" + "%".join(hex(ord(c))[2:] for c in t)
+ 
+def hex_decoding(t):
+    '''Hex decoding method.
+    
+    The reverse of Hex Encoding.
+
+    >>> hex_decoding("%41")
+    'A'
+    >>> hex_decoding("%41%42%43")
+    'ABC'
+    '''
+    nums = t[1:].split("%")
+    return "".join(chr(int(n,16)) for n in nums)
+ 
+def double_percent_hex_encoding(t):
+    '''Double Percent Hex encoding method.
+    
+    This is based on the normal method of hex encoding.  The percent
+    is encoded using hex encoding followed by the hexadecimal byte 
+    value to be encoded. 
+
+    >>> double_percent_hex_encoding("A")
+    '%2541'
+    >>> double_percent_hex_encoding("ABC")
+    '%2541%2542%2543'
+    '''
+    return "%25" + "%25".join(hex(ord(c))[2:] for c in t)
+ 
+def double_nibble_hex_encoding(t):
+    '''Double Nibble Hex encoding method.
+    
+    This is based on the standard hex encoding method.  Each hexadecimal 
+    nibble value is encoded using the standard hex encoding.
+
+    >>> double_nibble_hex_encoding("A")
+    '%%34%31'
+    >>> double_nibble_hex_encoding("ABC")
+    '%%34%31%%34%32%%34%33'
+    '''
+    parts = []
+    for c in t:
+        x,y = hex(ord(c))[2:]
+        parts.append("%%%X%%%X" % (ord(x), ord(y)))
+    return "%" + "%".join(parts) 
+
+def first_nibble_hex_encoding(t):
+    '''First Nibble Hex encoding method.
+    
+    This is very similar to double nibble hex encoding.  The difference is 
+    that only the first nibble is encoded.
+
+    >>> first_nibble_hex_encoding("A")
+    '%%341'
+    >>> first_nibble_hex_encoding("ABC")
+    '%%341%%342%%343'
+    '''
+    parts = []
+    for c in t:
+        x,y = hex(ord(c))[2:]
+        parts.append("%%%X%s" % (ord(x), y))
+    return "%" + "%".join(parts) 
+
+def second_nibble_hex_encoding(t):
+    '''Second Nibble Hex encoding method.
+    
+    This is very similar to double nibble hex encoding.  The difference is 
+    that only the second nibble is encoded.
+
+    >>> second_nibble_hex_encoding("A")
+    '%4%31'
+    >>> second_nibble_hex_encoding("ABC")
+    '%4%31%4%32%4%33'
+    '''
+    parts = []
+    for c in t:
+        x,y = hex(ord(c))[2:]
+        parts.append("%s%%%X" % (x, ord(y)))
+    return "%" + "%".join(parts) 
+
+def utf8_barebyte_encoding(t):
+    '''UTF-8 Barebyte Encoding, just a normal UTF-8 encoding.
+
+    >>> utf8_barebyte_encoding("A")
+    'A'
+    >>> utf8_barebyte_encoding("Año")
+    'A\\xc3\\xb1o'
+    '''
+    return t.encode("utf8")
+
+def utf8_encoding(t):
+    '''UTF-8 Encoding. Note that the exa values are shown with a '%'.
+
+    >>> utf8_encoding("A")
+    'A'
+    >>> utf8_encoding("Año")
+    'A%C3%B1o'
+    '''
+    return "".join("%%%X"%ord(x) if ord(x)>127 else x for x in t)
+
+def msu_encoding(t):
+    '''Microsoft %U Encoding.
+    
+    This presents a different way to encode Unicode code point values
+    up to 65535 (or two bytes).  The format is simple; %U precedes 4
+    hexadecimal nibble values that represent the Unicode code point value.
+
+    >>> msu_encoding("A")
+    '%U0041'
+    >>> msu_encoding("Año")
+    '%U0041%UC3B1%U006F'
+    '''
+    full = (c.encode("hex_codec").zfill(4) for c in t.decode("utf8"))
+    uppr = (x.upper() for x in full)
+    return "%U" + "%U".join(uppr)
+
+def random_upper(t):
+    '''Change random chars of the string to upper case.
+
+    This function has no tests, because its random nature.
+    '''
+    return "".join((c.upper() if random.random()>.5 else c) for c in t)
+
+def random_lower(t):
+    '''Change random chars of the string to lower case.
+
+    This function has no tests, because its random nature.
+    '''
+    return "".join((c.lower() if random.random()>.5 else c) for c in t)
+
+def mysql_encode(t):
+    '''Convert the text to a CHAR-like MySQL command.
+
+    >>> mysql_encode("Hola mundo")
+    'CHAR(72,111,108,97,32,109,117,110,100,111)'
+    '''
+    return "CHAR(%s)" % ",".join(str(ord(c)) for c in t)
+
+def mssql_encode(t):
+    '''Convert the text to a CHAR-like MS SQL command.
+
+    >>> mssql_encode("Mundo")
+    'CHAR(77)+CHAR(117)+CHAR(110)+CHAR(100)+CHAR(111)'
+    '''
+    return "CHAR(%s)" % ")+CHAR(".join(str(ord(c)) for c in t)
+
+
 _butNameFunc_enc = [
-    ("URL Encode",    urllib_quote),
-    ("Base64 Encode", b64encode), 
-    ("SHA1 Hash",     sha_encode),
-    ("MD5 Hash",      md5_encode),
+    ("URL Encode",                   urlencode),
+    ("Double URL Encode",            double_urlencode),
+    ("Base64 Encode",                b64encode), 
+    ("SHA1 Hash",                    sha_encode),
+    ("MD5 Hash",                     md5_encode),
+    ("Hex Encoding",                 hex_encoding),
+    ("Double Percent Hex Encoding",  double_percent_hex_encoding),
+    ("Double Nibble Hex Encoding",   double_nibble_hex_encoding),
+    ("First Nibble Hex Encoding",    first_nibble_hex_encoding),
+    ("Second Nibble Hex Encoding",   second_nibble_hex_encoding),
+    ("UTF-8 Barebyte Encoding",      utf8_barebyte_encoding),
+    ("UTF-8 Encoding",               utf8_encoding),
+    ("Microsoft %U Encoding",        msu_encoding),
+    ("Random Uppercase",             random_upper),
+    ("Random Lowercase",             random_lower),
+    ("MySQL Encode",                 mysql_encode),
+    ("MS SQL Encode",                mssql_encode),
 ]
 
 _butNameFunc_dec = [
-    ("URL Decode",    urllib_unquote), 
-    ("Base64 Decode", b64decode),
+    ("URL Decode",                   urldecode), 
+    ("Double URL Decode",            double_urldecode), 
+    ("Base64 Decode",                b64decode),
+    ("Hex Decoding",                 hex_decoding),
 ] 
 
 
