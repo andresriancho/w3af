@@ -25,7 +25,6 @@ import core.ui.gtkUi.helpers as helpers
 import core.ui.gtkUi.entries as entries
 import urllib, base64, sha, md5
 
-
 class SimpleTextView(gtk.TextView):
     def __init__(self):
         gtk.TextView.__init__(self)
@@ -78,11 +77,9 @@ class EncodeDecode(entries.RememberingWindow):
 
         # upper buttons
         vbox = gtk.VBox()
-        buttons = [("URL Encode", "encURL"), ("Base64 Encode", "encBase64"), 
-                   ("SHA1 Hash", "hashSHA1"), ("MD5 Hash", "hashMD5")]
-        for (lab, fnc) in buttons:
+        for (lab, fnc) in _butNameFunc_enc:
             b = gtk.Button(lab)
-            b.connect("clicked", getattr(self, fnc))
+            b.connect("clicked", self._encode, fnc)
             vbox.pack_start(b, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack1(hbox)
@@ -98,10 +95,9 @@ class EncodeDecode(entries.RememberingWindow):
 
         # upper buttons
         vbox = gtk.VBox()
-        buttons = [("URL Decode", "decURL"), ("Base64 Decode", "decBase64")] 
-        for (lab, fnc) in buttons:
+        for (lab, fnc) in _butNameFunc_dec:
             b = gtk.Button(lab)
-            b.connect("clicked", getattr(self, fnc))
+            b.connect("clicked", self._decode, fnc)
             vbox.pack_start(b, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack2(hbox)
@@ -120,32 +116,87 @@ class EncodeDecode(entries.RememberingWindow):
         else:
             out.setText(new)
         
-    def encURL(self, widg):
-        '''URL Encode function.'''
-        self._proc(self.paneup, self.panedn, urllib.quote)
+    def _encode(self, widg, func):
+        '''Encodes the upper text.'''
+        self._proc(self.paneup, self.panedn, func)
+        
+    def _decode(self, widg, func):
+        '''Decodes the lower text.'''
+        self._proc(self.panedn, self.paneup, func)
+        
 
-    def encBase64(self, widg):
-        '''Base64 Encode function.'''
-        self._proc(self.paneup, self.panedn, base64.b64encode)
+# These are the encoding and decoding functions:
 
-    def hashSHA1(self, widg):
-        '''SHA1 Hash function.'''
-        def f(t):
-            s = sha.new(t)
-            return s.hexdigest()
-        self._proc(self.paneup, self.panedn, f)
+def sha_encode(t):
+    '''Encoder using SHA1.
 
-    def hashMD5(self, widg):
-        '''MD5 Hash function.'''
-        def f(t):
-            m = md5.new(t)
-            return m.hexdigest()
-        self._proc(self.paneup, self.panedn, f)
+    >>> sha_encode("Hola mundo")
+    'c083106c930790151165b95bd11860724e3836cb'
+    '''
+    s = sha.new(t)
+    return s.hexdigest()
 
-    def decURL(self, widg):
-        '''URL Decode function.'''
-        self._proc(self.panedn, self.paneup, urllib.unquote)
+def md5_encode(t):
+    '''Encoder using MD5.
 
-    def decBase64(self, widg):
-        '''Base64 Decode function.'''
-        self._proc(self.panedn, self.paneup, base64.b64decode)
+    >>> md5_encode("Hola mundo")
+    'f822102f4515609fc31927a84c6db7f8'
+    '''
+    m = md5.new(t)
+    return m.hexdigest()
+
+def b64encode(t):
+    '''Encoder using Base64.
+
+    >>> b64encode("Hola mundo")
+    'SG9sYSBtdW5kbw=='
+    '''
+    return base64.b64encode(t)
+
+def b64decode(t):
+    '''Decoder using Base64.
+
+    >>> b64decode("SG9sYSBtdW5kbw==")
+    'Hola mundo'
+    '''
+    return base64.b64decode(t)
+
+def urllib_quote(t):
+    '''Encoder doing URL Encode.
+
+    >>> urllib.quote("Hola mundo")
+    'Hola%20mundo'
+    '''
+    return urllib.quote(t)
+
+def urllib_unquote(t):
+    '''Decoder doing URL Encode.
+
+    >>> urllib.unquote("Hola%20mundo")
+    'Hola mundo'
+    '''
+    return urllib.unquote(t)
+
+_butNameFunc_enc = [
+    ("URL Encode",    urllib_quote),
+    ("Base64 Encode", b64encode), 
+    ("SHA1 Hash",     sha_encode),
+    ("MD5 Hash",      md5_encode),
+]
+
+_butNameFunc_dec = [
+    ("URL Decode",    urllib_unquote), 
+    ("Base64 Decode", b64decode),
+] 
+
+
+def _test_all():
+    '''To use these tests, from the w3af root directory, do:
+
+    >>> import core.ui.gtkUi.encdec
+    >>> core.ui.gtkUi.encdec._test_all()
+    '''
+    import doctest
+    glob = globals()
+    for func in (x[1] for x in _butNameFunc_enc+_butNameFunc_dec):
+        doctest.run_docstring_examples(func, glob)
