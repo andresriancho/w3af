@@ -254,7 +254,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     do_GET = do_POST = do_HEAD = doAll
     
     class TimeoutError (Exception): pass
-    def SIGALRM_handler(sig, stack): raise TimeoutError()
+    def SIGALRM_handler(sig, stack): raise Error("Timeout")
     # Windows signal.SIGALRM doesn't exist
     try:
         signal.signal(signal.SIGALRM, SIGALRM_handler)
@@ -265,6 +265,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         This method is used to handle the CONNECT method. In most cases you shouldnt modify/override it.
         '''
+        #print "CONNECT: " + str(netloc)
         i = netloc.find(':')
         if i >= 0:
             host, port = netloc[:i], int(netloc[i+1:])
@@ -288,12 +289,29 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 ctx.load_verify_locations( self._urlOpener._proxyCert )
                 
                 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                soc = SSL.Connection(ctx, soc )
-                soc.connect( (host, port) )
-                
-                om.out.debug("SSL 'soc' connection state="+ soc.state_string() )
-                
+                soc.connect((host, port))
+                con = SSL.Connection(ctx, soc )
+                con.set_connect_state()
+
+                attemp = 0
+                while True:
+                    try:
+                        con.do_handshake()
+                        break
+                    except SSL.WantReadError:
+                        select.select([soc], [], [], 10.0)
+                        if attemp == 1:
+                            break
+                        attemp+=1
+                    except SSL.WantWriteError:
+                        select.select([], [soc], [], 10.0)
+                        if attemp == 1:
+                            break
+                        attemp+=1
+               
             except Exception, e:
+                traceback.print_exc()
+                print e.message
                 om.out.debug( "Remote site ain't using SSL ? Exception: " + str(e) )
                 return None
             else:
@@ -301,7 +319,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         finally:
             signal.alarm(0)
-        return soc
+        return con
     
     def _verify_cb(self, conn, cert, errnum, depth, ok):
         '''
@@ -325,8 +343,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 soc = self._connect_to(self.path)
                 if soc:
                     # Send the browser some messages that indicate that the connection to the remote end succeded
-                    self.wfile.write(self.protocol_version + " 200 Connection established\r\n")
-                    self.wfile.write("\r\n")
+                    self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
+                    
+#                    self.wfile.write("\r\n")
                     
                     # Now, transform the socket that connects the browser and the proxy to a SSL socket!
                     ctx = SSL.Context(SSL.SSLv23_METHOD)
@@ -368,8 +387,34 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         analyze what happends on the proxy ( like spiderMan ).
         '''
         print request
-        print response
+#        print response
         
+
+    def _resend(self, socFrom, socTo, maxIdling=20):
+        result = ''
+        count = 0
+        curSoc = socFrom
+        while True:
+            try:
+                buf = socFrom.recv(4096)
+                if not buf: break
+                curSoc = socTo
+                count=0
+                socTo.send(buf)
+                
+            except SSL.WantReadError, wre:
+                count+=1
+                select.select([curSoc], [], [], 3)
+                if count == maxIdling:
+                    break
+            except SSL.WantWriteError, wwe:
+                count+=1
+                select.select([], [curSoc], [], 3)
+                if count == maxIdling:
+                    break
+            
+
+
     def _read_write(self, browserConnection, siteConnection, max_idling=20, sslSocket=None):
         '''
         - Read from the socket that is connected to the browser
@@ -379,118 +424,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         
         All this using select in a loop.
         '''
-        # Do this forever
-        while True:
-        
-            om.out.debug('Read from the browser')
-            count = 0
-            while count < max_idling:
-                try:
-                    request = browserConnection.recv(8192)
-                    count = 0
-                    break
-                except SSL.WantReadError:
-                    count += 1
-                    select.select([browserConnection],[],[],3)
-                except SSL.WantWriteError:
-                    print 'ww'
-                    count += 1
-                    select.select([],[browserConnection],[],3)
-                except Exception, e:
-                    om.out.debug('Closing browserConnection because of exception:' + str(e) )
-                    browserConnection.close()
-                    siteConnection.close()
-                    return
-            
-            if count == max_idling:
-                om.out.debug('Closing browserConnection because of exception:' + str(e) )
-                browserConnection.close()
-                siteConnection.close()
-                return
+
+        self._resend(browserConnection, siteConnection)
+        self._resend(siteConnection, browserConnection)
                 
-            om.out.debug('Ok.')
-            
-            om.out.debug('Write to the siteConnection')
-            count = 0
-            while count != max_idling:
-                try:
-                    written = siteConnection.send(request)
-                    count = 0
-                    break
-                except SSL.WantWriteError:
-                    count += 1
-                    select.select([],[siteConnection],[],3)
-                except SSL.WantReadError:
-                    count += 1
-                    select.select([siteConnection],[],[],3)
-                except Exception, e:
-                    om.out.debug('Closing siteConnection because of exception:' + str(e) )
-                    browserConnection.close()
-                    siteConnection.close()
-                    return
-            
-            if count == max_idling:
-                om.out.debug('Closing siteConnection because of exception:' + str(e) )
-                browserConnection.close()
-                siteConnection.close()
-                return
-            
-            om.out.debug('Ok.')
-            
-            om.out.debug('Read from the remote website')
-            count = 0
-            while count < max_idling:
-                try:
-                    response = siteConnection.recv(8192)
-                    count = 0
-                    break
-                except SSL.WantReadError:
-                    count += 1
-                    select.select([siteConnection],[],[],3)
-                except SSL.WantWriteError:
-                    count += 1
-                    select.select([],[siteConnection],[],3)
-                except Exception, e:
-                    om.out.debug('Closing siteConnection because of exception:' + str(e) )
-                    browserConnection.close()
-                    siteConnection.close()
-                    return
-            
-            if count == max_idling:
-                om.out.debug('Closing siteConnection because of exception:' + str(e) )
-                browserConnection.close()
-                siteConnection.close()
-                return
-            
-            self._analyzeRequestResponse( request, response )
-            om.out.debug('Ok.')
-            
-            om.out.debug('Write to the browserConnection (forwarding response from site to the browser)')
-            count = 0
-            while count != max_idling:
-                try:
-                    response = browserConnection.write(response)
-                    count = 0
-                    break
-                except SSL.WantWriteError:
-                    count += 1
-                    select.select([browserConnection,],[],[],3)
-                except SSL.WantReadError:
-                    count += 1
-                    select.select([],[browserConnection],[],3)
-                except Exception, e:
-                    om.out.debug('Closing browserConnection because of exception:' + str(e) )
-                    browserConnection.close()
-                    siteConnection.close()
-                    return
-            
-            if count == max_idling:
-                om.out.debug('Closing browserConnection because of exception:' + str(e) )
-                browserConnection.close()
-                siteConnection.close()
-                return
-        om.out.debug('Ok.')
-        
+
     def log_message( self, format, *args):
         '''
         I dont want messages written to stderr, please write them to the om.
