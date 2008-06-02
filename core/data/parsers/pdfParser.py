@@ -24,7 +24,12 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 from core.data.parsers.abstractParser import abstractParser
-import extlib.pyPdf.pyPdf as pyPdf
+
+try:
+    import extlib.pyPdf.pyPdf as pyPdf
+except:
+    import pyPdf
+    
 import StringIO
 import re
 
