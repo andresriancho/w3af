@@ -80,7 +80,9 @@ class findvhost(baseDiscoveryPlugin):
         
     def _deadLinks( self, fuzzableRequest ):
         '''
-        check for dead links and try them.
+        Find every link on a HTML document and verify if the domain is reachable or not; after that, verify if web
+        found a different name for the target site or if we found a new site that is linked. If the link points to a dead
+        site then report it (it could be pointing to some private address or something...)
         '''
         res = []
         
@@ -95,7 +97,7 @@ class findvhost(baseDiscoveryPlugin):
         nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
         self._nonExistantResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': nonExistant } )
 
-        
+        # FIXME: Review this logic... I think its flawed
         for link in dp.getReferences():
             domain = urlParser.getDomain( link )
             try:
