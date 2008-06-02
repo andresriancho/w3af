@@ -64,9 +64,7 @@ class proxy(w3afThread):
     
     Things that work:
         - http requests like GET, HEAD, POST, CONNECT
-    
-    Things that don't work:
-        - https CONNECT (hopefully Sasha will work with it...)
+        - https CONNECT ( thanks Sasha! )
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -413,8 +411,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 if count == maxIdling:
                     break
             
-
-
     def _read_write(self, browserConnection, siteConnection, max_idling=20, sslSocket=None):
         '''
         - Read from the socket that is connected to the browser
@@ -424,10 +420,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         
         All this using select in a loop.
         '''
-
         self._resend(browserConnection, siteConnection)
         self._resend(siteConnection, browserConnection)
-                
 
     def log_message( self, format, *args):
         '''
