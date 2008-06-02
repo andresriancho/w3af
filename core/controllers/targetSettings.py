@@ -98,7 +98,7 @@ class targetSettings(configurable):
         for targetUrl in targetUrls:
             if not targetUrl.count('file://') and not targetUrl.count('http://')\
             and not targetUrl.count('https://'):
-                raise w3afException('Invalid format for target URL: '+ targetUrl )
+                raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file).' )
         
         for targetUrl in targetUrls:
             if targetUrl.count('file://'):
