@@ -159,10 +159,15 @@ class spiderMan(baseDiscoveryPlugin):
 global_firstRequest = True
 class proxyHandler(w3afProxyHandler):
 
-    def __init__(self, request, client_address, server, spiderMan):
+    def __init__(self, request, client_address, server, spiderMan=None):
         self._version = 'spiderMan-w3af/1.0'
-        self._spiderMan = spiderMan
-        self._urlOpener = spiderMan._urlOpener
+        if spiderMan is None:
+            if hasattr(server, 'chainedHandler'):
+                self._spiderMan = server.chainedHandler._spiderMan
+                print self._spiderMan
+        else:
+            self._spiderMan = spiderMan
+        self._urlOpener = self._spiderMan._urlOpener
         w3afProxyHandler.__init__(self, request, client_address, server)
     
     def doAll(self):
