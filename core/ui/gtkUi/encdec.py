@@ -79,10 +79,17 @@ class EncodeDecode(entries.RememberingWindow):
 
         # upper buttons
         vbox = gtk.VBox()
+        tit = gtk.Label("Choose an encoding function:")
+        tit.set_alignment(0.0, .5)
+        tit.set_width_chars(30)
+        vbox.pack_start(tit, False, False)
+        cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_enc:
+            cb.append_text(lab)
             b = gtk.Button(lab)
-            b.connect("clicked", self._encode, fnc)
-            vbox.pack_start(b, False, False)
+        cb.set_active(0)
+        cb.connect("changed", self._encode)
+        vbox.pack_start(cb, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack1(hbox)
 
@@ -97,10 +104,17 @@ class EncodeDecode(entries.RememberingWindow):
 
         # upper buttons
         vbox = gtk.VBox()
+        tit = gtk.Label("Choose a decoding function:")
+        tit.set_width_chars(30)
+        tit.set_alignment(0.0, .5)
+        vbox.pack_start(tit, False, False)
+        cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_dec:
+            cb.append_text(lab)
             b = gtk.Button(lab)
-            b.connect("clicked", self._decode, fnc)
-            vbox.pack_start(b, False, False)
+        cb.set_active(0)
+        cb.connect("changed", self._decode)
+        vbox.pack_start(cb, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack2(hbox)
 
@@ -118,12 +132,16 @@ class EncodeDecode(entries.RememberingWindow):
         else:
             out.setText(new)
         
-    def _encode(self, widg, func):
+    def _encode(self, widg):
         '''Encodes the upper text.'''
+        opc = widg.get_active()
+        func = _butNameFunc_enc[opc][1]
         self._proc(self.paneup, self.panedn, func)
         
-    def _decode(self, widg, func):
+    def _decode(self, widg):
         '''Decodes the lower text.'''
+        opc = widg.get_active()
+        func = _butNameFunc_dec[opc][1]
         self._proc(self.panedn, self.paneup, func)
         
 
