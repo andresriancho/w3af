@@ -163,6 +163,7 @@ class proxyHandler(w3afProxyHandler):
         self._version = 'spiderMan-w3af/1.0'
         if spiderMan is None:
             if hasattr(server, 'chainedHandler'):
+                # see core.controllers.daemons.proxy.HTTPServerWrapper
                 self._spiderMan = server.chainedHandler._spiderMan
                 print self._spiderMan
         else:

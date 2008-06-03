@@ -164,9 +164,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.headers['Connection'] = 'close'
 
         path = self.path
-        if 'url' in dir(self.server):
-            path = self.server.url + path
 
+        # See HTTPWrapperClass
+        if hasattr(self.server, 'chainedHandler'):
+            basePath = "https://" + self.server.chainedHandler.path
+            path = basePath + path
+        
         
         # Do the request to the remote server
         if self.headers.dict.has_key('content-length'):
@@ -295,10 +298,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         # This obviously has to be updated
         om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
         return ok
-        
+
     def do_CONNECT(self):
         '''
         Handle the CONNECT method.
+        This method is not expected to be overwritten.
+        To understand what happens here, please read comments for HTTPServerWrapper class
         '''
         # Log what we are doing.
         self.log_request(200)
@@ -307,10 +312,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         try:
             try:
-                    netloc = self.path
-
-                    i = netloc.find(':')
-                    host, port = netloc[:i], int(netloc[i+1:])
                     self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
                     
                     
@@ -331,8 +332,15 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     browCon = SSL.Connection(ctx, self.connection )
 
                     browCon.set_accept_state()
-                    httpsServer = HTTPServerWrapper(self.__class__, 'https://%s:%s' % (host, port))
-                    httpsServer.chainedHandler = self
+
+                    # see HTTPServerWrapper below
+                    netloc = self.path
+                    i = netloc.find(':')
+                    port = i<0 and '443' or netloc[i+1:]
+                    host  = netloc[:i]
+
+                    httpsServer = HTTPServerWrapper(self.__class__, self)
+                
 #                    self._do_handshake(self.connection, sslCon)
                     
                     om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
@@ -415,12 +423,40 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         om.out.debug( message )
 
 
+# We make SSL Connection look almost exactly as a socket connection. 
+# Thus, we're able to use the SocketServer framework transparently.
+
 class HTTPServerWrapper(HTTPServer):
-    def __init__(self, handler, url):
+    '''
+    This is a dummy wrapper around HTTPServer.
+    It is intended to be used only through process_request() method
+    It also has chainedHandler attribute, which refers to a handler instance 
+    that was created to handle CONNECT method.
+
+    Client                              Proxy                               Server                  
+       |                                  |                                   |
+       | -- CONNECT http://host:port ---> |                                   |
+       | <---------- 200 OK ------------  |                                   |
+       | -------- Handshake ------------- |                                   |
+       |                                  | -- create --> Wrapped Proxy       |
+       |                                  |                     |             |
+       | --------- (Over SSL) GET /path?params ---------------> |             |
+       |                                  | <--- Get info ----  |             |  
+       |                                  |                     | --- GET --> | 
+    
+    Due to the wrapper object, the second (wrapped) proxy know almost nothing about
+    SSL and works just as with plain sockets.
+    Examples of what a second proxy handler would want to know from the original
+    one is the CONNECT method path or urlOpener (see spiderMan).
+    '''
+    def __init__(self, handler, chainedHandler):
         self.RequestHandlerClass = handler
-        self.url = url
+        self.chainedHandler = chainedHandler
 
 def wrap(socket, fun, attempts, *params):
+    '''
+    A utility function that calls SSL read/write operation and handles errors.
+    '''
     count = 0
     while True:
         try:
@@ -441,6 +477,10 @@ def wrap(socket, fun, attempts, *params):
     
 
 class SSLConnectionWrapper(object):
+    '''
+    This is a wrapper around an SSL connection which also implements a makefile method.
+    Thus, it imitates a socket by an SSL connection.
+    '''
 
     def __init__(self, conn, socket):
         self._connection = conn
@@ -467,6 +507,10 @@ class SSLConnectionWrapper(object):
         return SSLConnectionFile( self, socket )
 
 class SSLConnectionFile:
+    '''
+    This class pretends to be a file to be used as rfile or wfile in request handlers.
+    Actually, it reads and writes data from and to SSL connection
+    '''
     
     def __init__(self, sslCon, socket):
         self.closed = False
