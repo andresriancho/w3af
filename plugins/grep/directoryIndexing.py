@@ -48,7 +48,7 @@ class directoryIndexing(baseGrepPlugin):
         if isTextOrHtml(response.getHeaders()):
             htmlString = response.getBody()
             for directoryIndexingString in self._getdirectoryIndexingStrings():
-                if re.search( directoryIndexingString, htmlString ):
+                if re.search( directoryIndexingString, htmlString, re.IGNORECASE ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setDesc( 'The URL: "' + response.getURL() + '" has a directory indexing problem.' )
