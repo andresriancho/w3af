@@ -74,6 +74,10 @@ class phpEggs(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
+            # FIXME: This logic is flawed when I'm analyzing a site that is NOT php
+            # this logic will make me perform a lot of requests to the server, and I'll never get
+            # any php egg.
+            # BUG #1984610.
             getResults = []
             originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
             
