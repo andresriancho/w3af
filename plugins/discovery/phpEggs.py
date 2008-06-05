@@ -42,6 +42,9 @@ class phpEggs(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         self._exec = True
         
+        # Already analyzed extensions
+        self._already_analyzed_ext = []
+        
         # This is a list of hashes and description of the egg for every PHP version.
         self._eggDB = {}
         self._eggDB['4.1.2'] = [('\x11\xb9\xcf\xe3\x06\x00O\xceY\x9a\x1f\x81\x80\xb6\x12f', 'PHP Logo'), ('\x85\xbe;K\xe7\xbf\xe89\xcb\xb3\xb4\xf2\xd3\x0f\xf9\x83', 'Easter Egg'),     ('tJ\xec\xef\x04\xf9\xed\x1b\xc3\x9a\xe7s\xc4\x00\x17\xd1', 'PHP Credits'),     ('\xda-\xae\x87\xb1f\xb7p\x9d\xbd@a7[t\xcb', 'Zend Logo')]  
@@ -74,33 +77,46 @@ class phpEggs(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-            # FIXME: This logic is flawed when I'm analyzing a site that is NOT php
-            # this logic will make me perform a lot of requests to the server, and I'll never get
-            # any php egg.
-            # BUG #1984610.
-            getResults = []
-            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+            # Get the extension of the URL (.html, .php, .. etc)
+            ext = urlParser.getExtension( fuzzableRequest.getURL() )
             
-            for egg, desc in self._getEggs():
-                eggURL = urlParser.uri2url( fuzzableRequest.getURL() ) + egg
-                try:
-                    response = self._urlOpener.GET( eggURL, useCache=True )
-                except KeyboardInterrupt,e:
-                    raise e
-                else:
-                    if difflib.SequenceMatcher( None, originalResponse.getBody(), response.getBody() ).ratio() < 0.1:
-                        # Found an egg, save it.
-                        i = info.info()
-                        i.setName('PHP Egg')
-                        i.setURL( eggURL )
-                        i.setDesc( 'The PHP framework running on the remote server has an easter egg, example URL: '+  eggURL )
-                        kb.kb.append( self, 'eggs', i )
-                        om.out.information( i.getDesc() )
-                        
-                        getResults.append( (response, desc) )
-                        self._exec = False
+            # Only perform this analysis if we haven't already analyzed this type of extension
+            # OR if we get an URL like http://f00b5r/4/     (Note that it has no extension)
+            # This logic will perform some extra tests... but we won't miss some special cases
+            # Also, we aren't doing something like "if 'php' in ext:" because we never depend
+            # on something so changable as extensions to make decisions.
+            if ext == '' or ext not in self._already_analyzed_ext:
                 
-            self._analyzeEgg( getResults )
+                # Init some internal variables
+                getResults = []
+                originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+                
+                # Perform the GET requests to see if we have a phpegg
+                for egg, desc in self._getEggs():
+                    eggURL = urlParser.uri2url( fuzzableRequest.getURL() ) + egg
+                    try:
+                        response = self._urlOpener.GET( eggURL, useCache=True )
+                    except KeyboardInterrupt,e:
+                        raise e
+                    else:
+                        if difflib.SequenceMatcher( None, originalResponse.getBody(), response.getBody() ).ratio() < 0.1:
+                            # Found an egg, save it.
+                            i = info.info()
+                            i.setName('PHP Egg')
+                            i.setURL( eggURL )
+                            i.setDesc( 'The PHP framework running on the remote server has an easter egg, example URL: '+  eggURL )
+                            kb.kb.append( self, 'eggs', i )
+                            om.out.information( i.getDesc() )
+                            
+                            getResults.append( (response, desc) )
+                            self._exec = False
+                
+                # analyze the info to see if we can identify the version
+                self._analyzeEgg( getResults )
+                
+                # Now we save the extension as one of the already analyzed
+                if ext != '':
+                    self._already_analyzed_ext.append(ext)
         
         return []
     
