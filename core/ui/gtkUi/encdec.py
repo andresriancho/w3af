@@ -38,21 +38,32 @@ class SimpleTextView(gtk.TextView):
         self.buffer.delete(start, end)
 
     def setText(self, newtext):
-        '''Sets a new text in the up pane.
+        '''Sets a new text in the pane, repr'ing it.
         
         @param newtext: the new text of the pane.
         '''
         self.clear()
         iter = self.buffer.get_end_iter()
+        newtext = repr(newtext)[1:-1]
         self.buffer.insert(iter, newtext)
 
     def getText(self):
-        '''Gets the text of the up pane.
+        '''Gets the text of the pane, un-repr'ing it.
 
         @returns: The text of the pane.
         '''
         start, end = self.buffer.get_bounds()
-        return self.buffer.get_text(start, end)
+        text = self.buffer.get_text(start, end)
+
+        parts = text.split("\\x")
+        for i, part in enumerate(parts[1:]):
+            try:
+                carac = int(part[:2], 16)
+            except ValueError:
+                print "BAD String: %r" % text
+                return ""
+            parts[i+1] = chr(carac) + part[2:]
+        return "".join(parts)
 
 
 class EncodeDecode(entries.RememberingWindow):
@@ -88,8 +99,10 @@ class EncodeDecode(entries.RememberingWindow):
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        cb.connect("changed", self._encode)
         vbox.pack_start(cb, False, False)
+        b = gtk.Button("Encode")
+        b.connect("clicked", self._encode, cb)
+        vbox.pack_start(b, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack1(hbox)
 
@@ -102,7 +115,7 @@ class EncodeDecode(entries.RememberingWindow):
         sw.add(self.panedn)
         hbox.pack_start(sw, True, True, padding=5)
 
-        # upper buttons
+        # lower buttons
         vbox = gtk.VBox()
         tit = gtk.Label("Choose a decoding function:")
         tit.set_width_chars(30)
@@ -113,12 +126,14 @@ class EncodeDecode(entries.RememberingWindow):
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        cb.connect("changed", self._decode)
         vbox.pack_start(cb, False, False)
+        b = gtk.Button("Decode")
+        b.connect("clicked", self._decode, cb)
+        vbox.pack_start(b, False, False)
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack2(hbox)
 
-        vpan.set_position(500)
+        vpan.set_position(300)
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
 
@@ -126,21 +141,21 @@ class EncodeDecode(entries.RememberingWindow):
         txt = inp.getText()
         try:
             new = func(txt)
-        except:
-            out.clear()
+        except Exception, e:
+            out.setText("ERROR: Invalid input for that operation:  "+str(e))
             self.w3af.mainwin.sb("Problem processing that string!")
         else:
             out.setText(new)
         
-    def _encode(self, widg):
+    def _encode(self, widg, combo):
         '''Encodes the upper text.'''
-        opc = widg.get_active()
+        opc = combo.get_active()
         func = _butNameFunc_enc[opc][1]
         self._proc(self.paneup, self.panedn, func)
         
-    def _decode(self, widg):
+    def _decode(self, widg, combo):
         '''Decodes the lower text.'''
-        opc = widg.get_active()
+        opc = combo.get_active()
         func = _butNameFunc_dec[opc][1]
         self._proc(self.panedn, self.paneup, func)
         
