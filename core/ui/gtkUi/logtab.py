@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import division
 
 import pygtk, gtk, gobject
-import core.ui.gtkUi.messages as messages
+from . import messages
 import core.data.constants.severity as severity
 import time
 import pango

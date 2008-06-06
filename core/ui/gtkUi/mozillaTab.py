@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk
 import gtkmozembed
-import core.ui.gtkUi.entries as entries
+from . import entries
 
 class mozillaTab(gtk.HPaned):
     '''

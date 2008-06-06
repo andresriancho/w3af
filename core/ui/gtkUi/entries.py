@@ -20,8 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk
-import core.ui.gtkUi.history as history
-import core.ui.gtkUi.helpers as helpers
+from . import history, helpers
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.

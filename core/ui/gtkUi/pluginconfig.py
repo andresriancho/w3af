@@ -22,10 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk, gobject
 import xml.dom, sys, os
 
-import core.ui.gtkUi.confpanel as confpanel
-import core.ui.gtkUi.entries as entries
-import core.ui.gtkUi.helpers as helpers
-from core.ui.gtkUi.pluginEditor import editPlugin
+from . import confpanel, entries, helpers
+from .pluginEditor import editPlugin
+
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.misc.homeDir import getHomeDir

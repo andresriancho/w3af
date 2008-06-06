@@ -20,8 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.entries as entries
+from . import helpers, entries
 from core.controllers.w3afException import w3afException
 import cgi
 

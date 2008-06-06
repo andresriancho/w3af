@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 import gobject
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
-from core.ui.gtkUi.entries import ValidatedEntry
+from . import entries
 
 useMozilla = False
 useGTKHtml2 = False
@@ -51,25 +50,54 @@ def sigsegv_handler(signum, frame):
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 # End signal handler
     
-class reqResViewer(gtk.HPaned):
+class reqResViewer(gtk.VBox):
     '''
-    A VPaned with the request and the response inside.
+    A widget with the request and the response inside.
+
     @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Facundo Batista ( facundo@taniquetil.com.ar )
     '''
-    def __init__(self, enableWidget=None):
+    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, withCompare=True):
         super(reqResViewer,self).__init__()
+        self.w3af = w3af
         
+        pan = gtk.HPaned()
+        pan.set_position(400)
+        self.pack_start(pan)
+
         # request
         self.request = requestPaned(enableWidget)
-        self.pack1(self.request.notebook)
+        pan.pack1(self.request.notebook)
 
         # response
         self.response = responsePaned()
-        self.pack2(self.response.notebook)
+        pan.pack2(self.response.notebook)
 
-        self.set_position(400)
+        # buttons
+        if withManual or withFuzzy or withCompare:
+            from .craftedRequests import ManualRequests, FuzzyRequests
+            hbox = gtk.HBox()
+            if withManual:
+                b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Request to Manual")
+                b.connect("clicked", self._sendRequest, ManualRequests)
+                hbox.pack_start(b, False, False, padding=2)
+            if withFuzzy:
+                b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Request to Fuzzy")
+                b.connect("clicked", self._sendRequest, FuzzyRequests)
+                hbox.pack_start(b, False, False, padding=2)
+            if withCompare:
+                b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, "Send Request and Response to Compare")
+                b.connect("clicked", self._sendReqResp)
+                hbox.pack_end(b, False, False, padding=2)
+            self.pack_start(hbox, False, False, padding=5)
+
         self.show_all()
 
+    def _sendRequest(self, widg, func):
+        print "FIXME: To manual or fuzzy!"
+
+    def _sendReqResp(self, widg):
+        print "FIXME: To compare!"
 
 class requestResponsePaned(gtk.VPaned):
     def __init__(self, enableWidget=None):

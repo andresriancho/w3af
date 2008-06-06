@@ -21,12 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk
-import core.ui.gtkUi.reqResViewer as reqResViewer
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.entries as entries
-import core.ui.gtkUi.fuzzygen as fuzzygen
+from . import reqResViewer, helpers, entries, fuzzygen
+from .clusterView import clusterCellWindow
 from core.controllers.w3afException import *
-from core.ui.gtkUi.clusterView import clusterCellWindow
 
 request_example = """\
 GET http://localhost/path HTTP/1.0
@@ -53,7 +50,7 @@ class ManualRequests(entries.RememberingWindow):
         hbox.pack_start(b, True, False)
 
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer([b])
+        self.reqresp = reqResViewer.reqResViewer(w3af, [b], withManual=False)
         self.reqresp.response.notebook.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
@@ -208,7 +205,7 @@ class FuzzyRequests(entries.RememberingWindow):
         mainhbox.pack_start(vbox, padding=10)
 
         # result itself
-        self.resultReqResp = reqResViewer.reqResViewer()
+        self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False)
         self.resultReqResp.set_sensitive(False)
         vbox.pack_start(self.resultReqResp, True, True, padding=5)
 

@@ -20,8 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk, gobject
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.entries as entries
+from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
 
 def getQueueDiverter(reset=False, instance=[]):

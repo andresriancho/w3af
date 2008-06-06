@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk, gobject
 
 import core.data.kb.knowledgeBase as kb
-import core.ui.gtkUi.helpers as helpers
+from . import helpers
 import core.data.kb
 
 TYPES_OBJ = {

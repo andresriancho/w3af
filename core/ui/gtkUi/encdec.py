@@ -23,8 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.entries as entries
+from . import helpers, entries
 import urllib, base64, sha, md5, random
 
 class SimpleTextView(gtk.TextView):

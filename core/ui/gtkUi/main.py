@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import absolute_import
 
 import sys
 
@@ -64,20 +65,10 @@ import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
-import core.ui.gtkUi.scanrun as scanrun
-import core.ui.gtkUi.exploittab as exploittab
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.profiles as profiles
-import core.ui.gtkUi.craftedRequests as craftedRequests
-import core.ui.gtkUi.entries as entries
-import core.ui.gtkUi.encdec as encdec
-import core.ui.gtkUi.messages as messages
-import core.ui.gtkUi.logtab as logtab
-import core.ui.gtkUi.pluginconfig as pluginconfig
-import core.ui.gtkUi.confpanel as confpanel
+from . import scanrun, exploittab, helpers, profiles, craftedRequests
+from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from core.controllers.misc.homeDir import getHomeDir
-import webbrowser
-import time
+import webbrowser, time
 
 #    Commented out: this has no sense after Results reorganizing
 #    <menu action="ViewMenuScan">
@@ -684,7 +675,6 @@ class MainApp(object):
 
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
-        reload(craftedRequests)
         craftedRequests.FuzzyRequests(self.w3af)
 
     def _encode_decode(self, action):

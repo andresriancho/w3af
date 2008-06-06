@@ -30,8 +30,7 @@ import difflib
 # For window creation
 import pygtk, gtk
 import gobject
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.entries as entries
+from . import helpers, entries
 
 # For testing
 from core.data.url.httpResponse import httpResponse as httpResponse

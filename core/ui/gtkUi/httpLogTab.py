@@ -25,10 +25,10 @@ import gobject
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
-from core.ui.gtkUi.entries import ValidatedEntry
+from .entries import ValidatedEntry
 
 # The elements to create the req/res viewer
-from core.ui.gtkUi.reqResViewer import reqResViewer
+from . import reqResViewer
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
@@ -67,7 +67,7 @@ class httpLogTab(gtk.HPaned):
         mainvbox = gtk.VBox()
         
         # Create the req/res viewer
-        self._reqResViewer = reqResViewer()
+        self._reqResViewer = reqResViewer.reqResViewer(w3af)
         
         # Create the database handler
         self._dbHandler = reqResDBHandler()

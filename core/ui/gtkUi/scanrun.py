@@ -23,14 +23,10 @@ import pygtk, gtk, gobject
 
 import urllib2, time
 import re
-import core.ui.gtkUi.helpers as helpers
-import core.ui.gtkUi.kbtree as kbtree
-import core.ui.gtkUi.messages as messages
-import core.ui.gtkUi.httpLogTab as httpLogTab
+from . import helpers, kbtree, messages, httpLogTab, reqResViewer
 import core.data.kb.knowledgeBase as kb
 
 # To show request and responses
-from core.ui.gtkUi.reqResViewer import reqResViewer
 from core.data.db.reqResDBHandler import reqResDBHandler
 
 class FullKBTree(kbtree.KBTree):
@@ -135,7 +131,7 @@ class KBBrowser(gtk.HPaned):
         scrollwin22.show()        
         
         # The request/response viewer
-        self.rrV = reqResViewer()
+        self.rrV = reqResViewer.reqResViewer(w3af)
         vpanedExplainAndView = gtk.VPaned()
         vpanedExplainAndView.pack1( scrollwin22 )
         vpanedExplainAndView.pack2( self.rrV )
