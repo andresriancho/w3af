@@ -70,6 +70,8 @@ class errorPages(baseGrepPlugin):
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
         # Some error in ASP when using COM objects.
         mesg.append('Operation is not allowed when the object is closed.')
+        # An error when ASP tries to include something and it fails
+        mesg.append('<p>Active Server Pages</font> <font face="Arial" size=2>error \'ASP 0126\'</font>')
         
         # ASPX
         mesg.append('<b> Description: </b>An unhandled exception occurred during the execution of the current web request')
