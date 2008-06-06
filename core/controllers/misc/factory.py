@@ -57,7 +57,7 @@ def factory(ModuleName, *args):
         else:
             try:
                 res = apply(aClass, args)
-            except:
-                raise w3afException('Failed to get an instance of "' + className + '"')
+            except Exception, e:
+                raise w3afException('Failed to get an instance of "' + className + '". Original exception: "' + str(e) + '".')
             else:
                 return res

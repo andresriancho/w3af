@@ -20,18 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import os
-from os import sep
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import mimetypes
+import SocketServer 
+
+import os
 import time
 import socket, signal, select
+import httplib
+
 from core.controllers.threads.w3afThread import w3afThread
+from core.controllers.threads.threadManager import threadManagerObj as tm
+
+from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import *
-from core.controllers.threads.threadManager import threadManagerObj as tm
-from core.controllers.w3afException import w3afException
+
 from OpenSSL import SSL
+
 import traceback
 
 class proxy(w3afThread):
@@ -82,7 +87,6 @@ class proxy(w3afThread):
         # Internal vars
         self._server = None
         self._proxyHandler = proxyHandler
-        self._go = True
         self._running = False
         self._urlOpener = urlOpener
         self._tm = tm
@@ -104,15 +108,14 @@ class proxy(w3afThread):
         '''
         om.out.debug('Calling stop of proxy daemon.')
         if self._running:
-            self._server.server_close()
-            self._go = False
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s.connect((self._ip, self._port))
-                s.close()
+                conn = httplib.HTTPConnection(self._ip+':'+self._port)
+                conn.request("QUIT", "/")
+                conn.getresponse()
             except:
                 pass
-            self._running = False
+            else:
+                self._running = False
     
     def isRunning( self ):
         '''
@@ -135,22 +138,16 @@ class proxy(w3afThread):
         self._proxyHandler._urlOpener._proxyCert = self._proxyCert
         
         try:
-            self._server = HTTPServer( (self._ip, self._port), self._proxyHandler )
+            self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
         except Exception, e:
             om.out.error('Failed to start proxy server, error: ' + str(e) )
         else:
             message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
             om.out.debug( message )
             self._running = True
-            
-            while self._go:
-                try:
-                    self._server.handle_request()
-                except:
-                    self._server.server_close()
+            self._server.serve_forever()
 
 class w3afProxyHandler(BaseHTTPRequestHandler):
-
         
     def _sendToServer( self ):
         '''
@@ -243,6 +240,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         except Exception, e:
             om.out.debug('Failed to send the data to the browser: ' + str(e) )      
     
+    def do_QUIT (self):
+        """send 200 OK response, and set server.stop to True"""
+        self.send_response(200)
+        self.end_headers()
+        self.server.stop = True
+        
     def doAll( self ):
         '''
         This method handles GET, POST and HEAD request that were send by the browser.
@@ -288,8 +291,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     break
                 attempt+=1
        
-
-
     def _verify_cb(self, conn, cert, errnum, depth, ok):
         '''
         Used by set_verify to check that the SSL certificate if valid.
@@ -358,62 +359,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             if soc:
                 soc.close()
             self.connection.close()
-    
-    def _analyzeRequestResponse( self, request, response ):
-        '''
-        This method is called by _read_write and should be implemented by plugins that would like to
-        analyze what happends on the proxy ( like spiderMan ).
-        browCon, None'''
-        print request
-#        print response
-        
-
-    def _resend(self, conFrom, conTo, maxIdling=20):
-        result = ''
-        count = 0
-        (socFrom, conFrom) = conFrom
-        (socTo, conTo) = conTo
-
-        curSoc = socFrom
-        
-        result = ''
-        while True:
-            try:
-#                if not conFrom.want_read(): 
-#                    break
-                buf = conFrom.recv(4096)
-#                if not buf: break
-                result += buf
-                curSoc = socTo
-                count=0
-                conTo.send(buf)
-                
-            except SSL.WantReadError, wre:
-                select.select([curSoc], [], [], 3)
-                if count == maxIdling:
-                    break
-                count+=1
-            except SSL.WantWriteError, wwe:
-                select.select([], [curSoc], [], 3)
-                if count == maxIdling:
-                    break
-                count+=1
-            except SSL.ZeroReturnError, zre:
-                break
-        
-        return result
-    def _read_write(self, browser, site, max_idling=20, sslSocket=None):
-        '''
-        - Read from the socket that is connected to the browser
-        - Write the received data to the socket that is connected to the remote site
-        - Read from the socket that is connected to the remote site
-        - Write the received data back to the browser
-        
-        All this using select in a loop.
-        '''
-        request = self._resend(browser, site)
-        response = self._resend(site, browser)
-        self._analyzeRequestResponse(request, response)
 
     def log_message( self, format, *args):
         '''
@@ -422,11 +367,20 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         message = "Local proxy daemon handling request: %s - %s" % (self.address_string(),format%args) 
         om.out.debug( message )
 
+# I want to use threads to handle all requests.
+class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
+    def serve_forever (self):
+        """Handle one request at a time until stopped."""
+        self.stop = False
+        while not self.stop:
+            try:
+                self.handle_request()
+            except KeyboardInterrupt:
+                self.stop = True
 
 # We make SSL Connection look almost exactly as a socket connection. 
 # Thus, we're able to use the SocketServer framework transparently.
-
-class HTTPServerWrapper(HTTPServer):
+class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
     '''
     This is a dummy wrapper around HTTPServer.
     It is intended to be used only through process_request() method
@@ -453,6 +407,8 @@ class HTTPServerWrapper(HTTPServer):
         self.RequestHandlerClass = handler
         self.chainedHandler = chainedHandler
 
+        
+#### And now some helper functions ####        
 def wrap(socket, fun, attempts, *params):
     '''
     A utility function that calls SSL read/write operation and handles errors.
