@@ -78,15 +78,15 @@ class reqResViewer(gtk.VBox):
             from .craftedRequests import ManualRequests, FuzzyRequests
             hbox = gtk.HBox()
             if withManual:
-                b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Request to Manual")
+                b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Request to Manual Editor")
                 b.connect("clicked", self._sendRequest, ManualRequests)
                 hbox.pack_start(b, False, False, padding=2)
             if withFuzzy:
-                b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Request to Fuzzy")
+                b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Request to Fuzzy Editor")
                 b.connect("clicked", self._sendRequest, FuzzyRequests)
                 hbox.pack_start(b, False, False, padding=2)
             if withCompare:
-                b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, "Send Request and Response to Compare")
+                b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, "Send Request and Response to Compare Tool")
                 b.connect("clicked", self._sendReqResp)
                 hbox.pack_end(b, False, False, padding=2)
             self.pack_start(hbox, False, False, padding=5)
