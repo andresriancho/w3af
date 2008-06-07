@@ -393,6 +393,11 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
                 self.handle_request()
             except KeyboardInterrupt:
                 self.stop = True
+                
+    def server_bind(self):
+        om.out.debug('Changing socket options of ProxyServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        HTTPServer.server_bind( self )                
 
 # We make SSL Connection look almost exactly as a socket connection. 
 # Thus, we're able to use the SocketServer framework transparently.
