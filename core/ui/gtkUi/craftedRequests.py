@@ -253,7 +253,7 @@ class FuzzyRequests(entries.RememberingWindow):
         '''
         Analyze if we can cluster the responses and do it.
         '''
-        data = data=[r[4] for r in self.responses]
+        data = [ r[4] for r in self.responses if r[4] != None ]
         if data:
             clusterCellWindow( self.w3af, data=data )
         else:
@@ -315,18 +315,25 @@ class FuzzyRequests(entries.RememberingWindow):
                 respbody = str(e)
                 resphead = None
                 result_err += 1
+                self.responses.append((realreq, realbody, resphead, respbody, None))
+                
             except w3afMustStopException, mse:
                 respbody = str(mse)
                 resphead = None
                 result_err += 1
+                self.responses.append((realreq, realbody, resphead, respbody, None))
+                
                 # Let the user know ahout the problem
                 msg = "Stopped sending requests because " + str(mse)
                 dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
                 opt = dlg.run()
                 dlg.destroy()
                 break
-
-            self.responses.append((realreq, realbody, resphead, respbody, httpResp))
+            else:
+                # I have the httpResp object, save it.
+                self.responses.append((realreq, realbody, resphead, respbody, httpResp))
+            
+            # Always update the gtk stuff
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
             while gtk.events_pending():
                 gtk.main_iteration()
