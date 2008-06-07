@@ -50,7 +50,7 @@ class ManualRequests(entries.RememberingWindow):
         hbox.pack_start(b, True, False)
 
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [b], withManual=False)
+        self.reqresp = reqResViewer.reqResViewer(w3af, [b], withManual=False, editableRequest=True)
         self.reqresp.response.notebook.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
@@ -110,7 +110,7 @@ class PreviewWindow(entries.RememberingWindow):
         self.set_transient_for(parent) 
 
         # content
-        self.panes = reqResViewer.requestPaned()
+        self.panes = reqResViewer.requestPaned(editable=False)
         self.vbox.pack_start(self.panes.notebook)
 
         # the ok button
@@ -181,7 +181,7 @@ class FuzzyRequests(entries.RememberingWindow):
         sendBut = gtk.Button("Send all")
 
         # request
-        self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
+        self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut], editable=True)
         if initialRequest is None:
             self.originalReq.rawShow(request_example, '')
         else:
@@ -215,7 +215,7 @@ class FuzzyRequests(entries.RememberingWindow):
         mainhbox.pack_start(vbox, padding=10)
 
         # result itself
-        self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False)
+        self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False, editableRequest=False, editableResponse=False)
         self.resultReqResp.set_sensitive(False)
         vbox.pack_start(self.resultReqResp, True, True, padding=5)
 

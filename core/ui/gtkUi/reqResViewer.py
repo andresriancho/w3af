@@ -57,7 +57,7 @@ class reqResViewer(gtk.VBox):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     @author: Facundo Batista ( facundo@taniquetil.com.ar )
     '''
-    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, withCompare=True):
+    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, withCompare=True, editableRequest=False, editableResponse=False ):
         super(reqResViewer,self).__init__()
         self.w3af = w3af
         
@@ -66,11 +66,11 @@ class reqResViewer(gtk.VBox):
         self.pack_start(pan)
 
         # request
-        self.request = requestPaned(enableWidget)
+        self.request = requestPaned(enableWidget, editable=editableRequest)
         pan.pack1(self.request.notebook)
 
         # response
-        self.response = responsePaned()
+        self.response = responsePaned(editable=editableResponse)
         pan.pack2(self.response.notebook)
 
         # buttons
@@ -101,11 +101,12 @@ class reqResViewer(gtk.VBox):
         print "FIXME: To compare!"
 
 class requestResponsePaned(gtk.VPaned):
-    def __init__(self, enableWidget=None):
+    def __init__(self, enableWidget=None, editable=False):
         gtk.VPaned.__init__(self)
 
         # The textview where a part of the req/res is showed
         self._upTv = gtk.TextView()
+        self._upTv.set_editable(editable)
         self._upTv.set_border_width(5)
         if enableWidget:
             self._upTv.get_buffer().connect("changed", self._changed, enableWidget)
@@ -119,6 +120,7 @@ class requestResponsePaned(gtk.VPaned):
         
         # The textview where a part of the req/res is showed (this is for postdata and response body)
         self._downTv = gtk.TextView()
+        self._downTv.set_editable(editable)
         self._downTv.set_border_width(5)
         
         # Scroll where the textView goes
@@ -192,8 +194,8 @@ class requestResponsePaned(gtk.VPaned):
 
 
 class requestPaned(requestResponsePaned):
-    def __init__(self, enableWidget=None):
-        requestResponsePaned.__init__(self, enableWidget)
+    def __init__(self, enableWidget=None, editable=False):
+        requestResponsePaned.__init__(self, enableWidget, editable)
 
         self.notebook = gtk.Notebook()
         l = gtk.Label("Request")
@@ -217,8 +219,8 @@ class requestPaned(requestResponsePaned):
         buffer.insert( iter, postData )
     
 class responsePaned(requestResponsePaned):
-    def __init__(self):
-        requestResponsePaned.__init__(self)
+    def __init__(self, editable=False):
+        requestResponsePaned.__init__(self, editable)
         self.notebook = gtk.Notebook()
 
         # first page

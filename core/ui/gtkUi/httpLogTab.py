@@ -67,7 +67,7 @@ class httpLogTab(gtk.HPaned):
         mainvbox = gtk.VBox()
         
         # Create the req/res viewer
-        self._reqResViewer = reqResViewer.reqResViewer(w3af)
+        self._reqResViewer = reqResViewer.reqResViewer(w3af, editableRequest=False, editableResponse=False)
         
         # Create the database handler
         self._dbHandler = reqResDBHandler()
