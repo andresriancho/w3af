@@ -170,6 +170,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             self.server.stop = True
+        elif self.command == 'CONNECT':
+            self.do_CONNECT()
         else:
             self.doAll()
     
@@ -331,7 +333,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             try:
                     self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
                     
-                    
                     # Now, transform the socket that connects the browser and the proxy to a SSL socket!
                     ctx = SSL.Context(SSL.SSLv23_METHOD)
                     ctx.set_timeout(5)
@@ -347,19 +348,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     ctx.load_verify_locations( self._urlOpener._proxyCert )
                     
                     browCon = SSL.Connection(ctx, self.connection )
-
                     browCon.set_accept_state()
 
-                    # see HTTPServerWrapper below
-                    netloc = self.path
-                    i = netloc.find(':')
-                    port = i<0 and '443' or netloc[i+1:]
-                    host  = netloc[:i]
-
+                    # see HTTPServerWrapper class below
                     httpsServer = HTTPServerWrapper(self.__class__, self)
                 
-#                    self._do_handshake(self.connection, sslCon)
-                    
+                    #self._do_handshake(self.connection, sslCon)
                     om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
                     
                     conWrap = SSLConnectionWrapper(browCon, browSoc)
@@ -511,7 +505,6 @@ class SSLConnectionFile:
         while True:
             ch = self.read(1)
             result += ch
-#            print ch
             if ch == '\n':
                 break
         return result
