@@ -224,14 +224,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False)
         # cluster responses
-        clusterButton = gtk.Button(label='Cluster Responses')
-        clusterButton.connect("clicked", self._clusterData )
-        centerbox.pack_start(clusterButton, True, False)
+        self.clusterButton = gtk.Button(label='Cluster Responses')
+        self.clusterButton.connect("clicked", self._clusterData )
+        self.clusterButton.set_sensitive( False )
+        centerbox.pack_start(self.clusterButton, True, False)
         # clear responses
-        clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
+        self.clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
                                                                     tooltip='Clear all HTTP responses from fuzzer window')
-        clearButton.connect("clicked", self._clearResponses )
-        centerbox.pack_start(clearButton, True, False)
+        self.clearButton.connect("clicked", self._clearResponses )
+        self.clearButton.set_sensitive( False )
+        centerbox.pack_start(self.clearButton, True, False)
         
         vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -247,6 +249,8 @@ class FuzzyRequests(entries.RememberingWindow):
         self.resultReqResp.request.clearPanes()
         self.resultReqResp.response.clearPanes()
         self.resultReqResp.set_sensitive(False)
+        self.clusterButton.set_sensitive(False)
+        self.clearButton.set_sensitive(False)
         self.pagesControl.deactivate()
         
     def _clusterData( self, widg):
@@ -341,6 +345,8 @@ class FuzzyRequests(entries.RememberingWindow):
         # activate and show
         busy.destroy()
         self.resultReqResp.set_sensitive(True)
+        self.clearButton.set_sensitive(True)
+        self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
         self._pageChange(0)
 
