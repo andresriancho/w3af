@@ -148,7 +148,48 @@ class proxy(w3afThread):
             self._server.serve_forever()
 
 class w3afProxyHandler(BaseHTTPRequestHandler):
+    def handle_one_request(self):
+        """Handle a single HTTP request.
+
+        You normally don't need to override this method; see the class
+        __doc__ string for information on how to handle specific HTTP
+        commands such as GET and POST.
         
+        I overrid this becuse I'm going to use ONE handler for all the methods.
+        """
+        self.raw_requestline = self.rfile.readline()
+        if not self.raw_requestline:
+            self.close_connection = 1
+            return
+        if not self.parse_request(): # An error code has been sent, just exit
+            return
+        
+        # Now I perform my specific tasks...
+        if self.command == 'QUIT':
+            # Stop the server
+            self.send_response(200)
+            self.end_headers()
+            self.server.stop = True
+        else:
+            self.doAll()
+    
+    def doAll( self ):
+        '''
+        This method handles EVERY request that were send by the browser.
+        '''
+        try:
+            # Send the request to the remote webserver
+            # The request parameters such as the URL, the headers, etc. are stored in "self".
+            # Note: This is the way that the HTTPServer and the Handler work in python; this wasn't my choice.
+            res = self._sendToServer()
+        except Exception, e:
+            self._sendError( e )
+        else:
+            try:
+                self._sendToBrowser( res )
+            except Exception, e:
+                om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )
+
     def _sendToServer( self ):
         '''
         Send a request that arrived from the browser to the remote web server.
@@ -167,14 +208,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             basePath = "https://" + self.server.chainedHandler.path
             path = basePath + path
         
-        
         # Do the request to the remote server
         if self.headers.dict.has_key('content-length'):
-            # POST
+            # most likely a POST request
             cl = int( self.headers['content-length'] )
             postData = self.rfile.read( cl )
             try:
-                res = self._urlOpener.POST( path, data=postData, headers=self.headers )
+                httpCommandMethod = getattr( self._urlOpener, self.command )
+                res = httpCommandMethod( path, data=postData, headers=self.headers )
             except w3afException, w:
                 om.out.error('The proxy request failed, error: ' + str(w) )
                 raise w
@@ -183,11 +224,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             return res
             
         else:
-            # GET
+            # most likely a GET request
             url = uri2url( path )
             qs = getQueryString( self.path )
             try:
-                res = self._urlOpener.GET( url, data=str(qs), headers=self.headers )
+                httpCommandMethod = getattr( self._urlOpener, self.command )
+                res = httpCommandMethod( url, data=str(qs), headers=self.headers )
             except w3afException, w:
                 om.out.error('The proxy request failed, error: ' + str(w) )
                 raise w
@@ -238,32 +280,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.wfile.write( res.getBody() )
             self.wfile.close()
         except Exception, e:
-            om.out.debug('Failed to send the data to the browser: ' + str(e) )      
-    
-    def do_QUIT (self):
-        """send 200 OK response, and set server.stop to True"""
-        self.send_response(200)
-        self.end_headers()
-        self.server.stop = True
-        
-    def doAll( self ):
-        '''
-        This method handles GET, POST and HEAD request that were send by the browser.
-        '''
-        try:
-            # Send the request to the remote webserver
-            # The request parameters such as the URL, the headers, etc. are stored in "self".
-            # Note: This is the way that the HTTPServer and the Handler work in python; this wasn't my choice.
-            res = self._sendToServer()
-        except Exception, e:
-            self._sendError( e )
-        else:
-            try:
-                self._sendToBrowser( res )
-            except Exception, e:
-                om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )
-    
-    do_GET = do_POST = do_HEAD = doAll
+            om.out.debug('Failed to send the data to the browser: ' + str(e) )
     
     class TimeoutError (Exception): pass
     def SIGALRM_handler(sig, stack): raise Error("Timeout")
@@ -273,7 +290,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     except:
         pass
     
-   
     def _do_handshake(self, soc, con):
         attempt = 0
         while True:
