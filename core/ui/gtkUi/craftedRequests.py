@@ -38,7 +38,7 @@ class ManualRequests(entries.RememberingWindow):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af):
+    def __init__(self, w3af, initialRequest=None):
         super(ManualRequests,self).__init__(w3af, "manualreq", "w3af - Manual Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
@@ -54,10 +54,14 @@ class ManualRequests(entries.RememberingWindow):
         self.reqresp.response.notebook.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
-        self.vbox.pack_start(hbox, False, False, padding=10)
+        self.vbox.pack_start(hbox, False, False)
         
         # Add a default request
-        self.reqresp.request.rawShow(request_example, '')
+        if initialRequest is None:
+            self.reqresp.request.rawShow(request_example, '')
+        else:
+            (initialUp, initialDn) = initialRequest
+            self.reqresp.request.rawShow(initialUp, initialDn)
         
         # Show all!
         self.show_all()
@@ -159,7 +163,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af):
+    def __init__(self, w3af, initialRequest=None):
         super(FuzzyRequests,self).__init__(w3af, "fuzzyreq", "w3af - Fuzzy Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
@@ -176,9 +180,15 @@ class FuzzyRequests(entries.RememberingWindow):
         analyzBut = gtk.Button("Analyze")
         sendBut = gtk.Button("Send all")
 
-        # request and help
+        # request
         self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut])
-        self.originalReq.rawShow(request_example, '')
+        if initialRequest is None:
+            self.originalReq.rawShow(request_example, '')
+        else:
+            (initialUp, initialDn) = initialRequest
+            self.originalReq.rawShow(initialUp, initialDn)
+
+        # help
         helplabel = gtk.Label()
         helplabel.set_markup(FUZZYHELP)
         self.originalReq.notebook.append_page(helplabel, gtk.Label("Syntax help"))

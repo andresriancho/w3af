@@ -94,7 +94,8 @@ class reqResViewer(gtk.VBox):
         self.show_all()
 
     def _sendRequest(self, widg, func):
-        print "FIXME: To manual or fuzzy!"
+        up,dn = self.request.getBothTexts()
+        func(self.w3af, (up,dn))
 
     def _sendReqResp(self, widg):
         print "FIXME: To compare!"
