@@ -120,30 +120,6 @@ ui_menu = """
 </ui>
 """
 
-
-class Throbber(gtk.ToolButton):
-    '''Creates the throbber widget.
-    
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self):
-        self.img_static = gtk.Image()
-        self.img_static.set_from_file('core/ui/gtkUi/data/throbber_static.gif')
-        self.img_static.show()
-        self.img_animat = gtk.Image()
-        self.img_animat.set_from_file('core/ui/gtkUi/data/throbber_animat.gif')
-        self.img_animat.show()
-
-        super(Throbber,self).__init__(self.img_static, "")
-        self.set_sensitive(False)
-        self.show()
-
-    def running(self, spin):
-        if spin:
-            self.set_icon_widget(self.img_animat)
-        else:
-            self.set_icon_widget(self.img_static)
-
 class AboutDialog(gtk.Dialog):
     '''A dialog with the About information.
 
@@ -322,7 +298,7 @@ class MainApp(object):
 
         # the throbber  
         splash.push("Building the throbber...")
-        self.throbber = Throbber()
+        self.throbber = helpers.Throbber()
         separat = gtk.SeparatorToolItem()
         separat.set_draw(False)
         separat.set_expand(True)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-05-27, 13:34:13 -->
+<!-- Saved: 2008-06-07, 10:52:59 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
@@ -143,58 +143,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Should I encode here?</Description>
-    <Created>2008-05-05, 22:21:20</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>228</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Should the uri be http://host + uri ?</Description>
-    <Created>2008-05-05, 22:21:20</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>229</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-05-05, 22:21:20</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>400</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: make this modal!</Description>
-    <Created>2008-05-06, 07:03:07</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>craftedRequests.py</Name>
-      </Filename>
-      <Linenumber>97</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: When finished migrating from XML to object options, remove this lines.</Description>
     <Created>2008-05-06, 21:13:00</Created>
     <Resource>
@@ -280,43 +228,6 @@
       <Linenumber>130</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: What if I can't create the file ?</Description>
-    <Created>2008-05-19, 01:00:32</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>helpers.py</Name>
-      </Filename>
-      <Linenumber>252</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: This os.kill is baaaaaaaad! One of the things that I'm not allowing here</Description>
-    <Created>2008-05-19, 23:45:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>466</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Description>
-    <Created>2008-05-19, 23:45:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>981</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Description>
     <Created>2008-05-20, 00:08:19</Created>
@@ -327,58 +238,6 @@
         <Name>xss.py</Name>
       </Filename>
       <Linenumber>108</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Make this error look nicer</Description>
-    <Created>2008-05-25, 14:59:47</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>daemons</Dir>
-        <Name>proxy.py</Name>
-      </Filename>
-      <Linenumber>208</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: this list should be updated from time to time, automatically.</Description>
-    <Created>2008-05-26, 22:57:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>urlParser.py</Name>
-      </Filename>
-      <Linenumber>200</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: What if we have something like this: ramosmejia_direcci&amp;oacute;n@buenosaires.gov.ar ?!?!</Description>
-    <Created>2008-05-27, 08:11:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>abstractParser.py</Name>
-      </Filename>
-      <Linenumber>60</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Note that this parser as it is will return n@buenosaires.gov.ar</Description>
-    <Created>2008-05-27, 08:11:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>abstractParser.py</Name>
-      </Filename>
-      <Linenumber>61</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -393,32 +252,6 @@
       <Linenumber>35</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-05-27, 13:24:48</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>105</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Show images</Description>
-    <Created>2008-05-27, 13:24:48</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>261</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: This should have a different globals and locals</Description>
     <Created>2008-05-27, 13:32:23</Created>
@@ -430,6 +263,223 @@
         <Name>reqResDBHandler.py</Name>
       </Filename>
       <Linenumber>112</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: What if we have something like this: ramosmejia_direcci&amp;oacute;n@buenosaires.gov.ar ?!?!</Description>
+    <Created>2008-05-27, 23:23:45</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>abstractParser.py</Name>
+      </Filename>
+      <Linenumber>60</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Note that this parser as it is will return n@buenosaires.gov.ar</Description>
+    <Created>2008-05-27, 23:23:45</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>abstractParser.py</Name>
+      </Filename>
+      <Linenumber>61</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: this list should be updated from time to time, automatically.</Description>
+    <Created>2008-05-27, 23:28:44</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>201</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: What if I can't create the file ?</Description>
+    <Created>2008-05-29, 21:47:05</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>helpers.py</Name>
+      </Filename>
+      <Linenumber>252</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Description>
+    <Created>2008-05-29, 22:16:47</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterView.py</Name>
+      </Filename>
+      <Linenumber>364</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Description>
+    <Created>2008-05-29, 22:16:47</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterView.py</Name>
+      </Filename>
+      <Linenumber>386</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Review this logic... I think its flawed</Description>
+    <Created>2008-05-30, 01:37:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>findvhost.py</Name>
+      </Filename>
+      <Linenumber>100</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
+    <Created>2008-06-06, 20:44:35</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>688</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
+    <Created>2008-06-06, 20:44:35</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>728</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Description>
+    <Created>2008-06-06, 20:44:35</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1047</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Make this error look nicer</Description>
+    <Created>2008-06-06, 22:12:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>daemons</Dir>
+        <Name>proxy.py</Name>
+      </Filename>
+      <Linenumber>257</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Should I encode here?</Description>
+    <Created>2008-06-07, 10:15:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>228</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Should the uri be http://host + uri ?</Description>
+    <Created>2008-06-07, 10:15:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>229</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
+    <Created>2008-06-07, 10:15:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>400</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: To compare!"</Description>
+    <Created>2008-06-07, 10:52:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>104</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-06-07, 10:52:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>137</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Show images</Description>
+    <Created>2008-06-07, 10:52:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>295</Linenumber>
     </Resource>
   </Task>
 </Tasks>

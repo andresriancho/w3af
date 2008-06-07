@@ -291,7 +291,7 @@ class SemiStockButton(gtk.Button):
         self.label.set_text(text)
         if tooltip is not None:
             self.set_tooltip_text(tooltip)
-
+            
     def changeInternals(self, newtext, newimage, tooltip=None):
         '''Changes the image and label of the widget.
     

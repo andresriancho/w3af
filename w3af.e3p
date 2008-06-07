@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-05-27, 08:14:15 -->
+<!-- Saved: 2008-05-31, 10:26:21 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3803,6 +3803,12 @@
       <Dir>data</Dir>
       <Dir>parsers</Dir>
       <Name>encode_decode.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>clusterView.py</Name>
     </Source>
   </Sources>
   <Forms>

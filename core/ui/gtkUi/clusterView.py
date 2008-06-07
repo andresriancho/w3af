@@ -24,13 +24,13 @@ try:
     from extlib.cluster.cluster import HierarchicalClustering
 except Exception, e:
     from cluster import HierarchicalClustering
-# To calculate the difference between httpResponse obj
-import difflib
 
 # For window creation
 import pygtk, gtk
 import gobject
 from . import helpers, entries
+
+import threading
 
 # For testing
 from core.data.url.httpResponse import httpResponse as httpResponse
@@ -42,9 +42,10 @@ class clusterCellWindow(entries.RememberingWindow):
         
         @parameter data: A list with the httpResponse objects to be clustered.
         '''
-        # First we save the data
+        # First we save the data        
         self._data = data
         self.w3af = w3af
+        self._cl_data_widget = None
         
         # The level used in the process of clustering
         self._level = 50
@@ -52,7 +53,6 @@ class clusterCellWindow(entries.RememberingWindow):
         # Create a new window
         super(clusterCellWindow,self).__init__(w3af, "clusterWindow", "w3af - HTTP Response Clustering")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
-
         self.set_size_request(400, 400)
 
         # Quit event.
@@ -82,20 +82,54 @@ class clusterCellWindow(entries.RememberingWindow):
         dist_hbox.pack_start( distanceNextButton )
         main_vbox.pack_start(dist_hbox, False, False)
         
-        # Create the widget that shows the data
-        self._cl_data_widget = clusterCellData( data, level=self._level )
+        self._createClusterCellDataWidget()       
         
         # I'm going to store the cl_data_widget inside this scroll window
-        _sw = gtk.ScrolledWindow()
-        _sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        _sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        _sw.add( self._cl_data_widget )
-        main_vbox.pack_start( _sw )
+        self._sw = gtk.ScrolledWindow()
+        self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        main_vbox.pack_start( self._sw )
         
         self.vbox.pack_start(main_vbox)
+        self.vbox.pack_start(self._progressHBox)
         self.show_all()
         return
 
+    def _createClusterCellDataWidget( self ):
+        self._showThrobber()
+        self._cl_data_widget = None
+        def _helper():
+            self._cl_data_widget = clusterCellData( self._data, level=self._level )
+            self._sw.add( self._cl_data_widget )            
+            
+        # Create the widget that shows the data in a different thread
+        threading.Thread(target=_helper).start()
+        gobject.timeout_add(200, self._verify_if_finished)
+
+    def _showThrobber( self ):
+        # Create a throbber that indicates that we are calculating the clusters
+        self.throbber = helpers.Throbber()
+        self.throbber.running(True)
+        self.calculating_label = gtk.Label()
+        self.calculating_label.set_markup('<i>Creating clusters...</i>')
+        self._progressHBox = gtk.HBox()
+        self._progressHBox.pack_start( self.throbber )
+        self._progressHBox.pack_start( self.calculating_label )
+        self._progressHBox.show_all()
+    
+    def _hideThrobber( self ):
+        self.throbber.hide()
+        self.calculating_label.hide()
+        self._progressHBox.hide()
+        
+    def _verify_if_finished( self ):
+        if self._cl_data_widget:
+            self._hideThrobber()
+            self.throbber.running(False)
+            return False
+        else:
+            return True
+    
     def _go_back( self, i ):
         if self._level != 10:
             self._level -= 10
@@ -115,53 +149,27 @@ class clusterCellWindow(entries.RememberingWindow):
         return False
 
 class clusterCellData(gtk.TreeView):
-    def _cmp_function_ratio( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).ratio() * 100
-        return ratio
 
-    def _cmp_function_quick_ratio( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).quick_ratio() * 100
-        return ratio
-
-    def _cmp_function_real_quick_ratio( self, a, b ):
-        ratio = 100 - difflib.SequenceMatcher( None, a.getBody(), b.getBody() ).real_quick_ratio() * 100
-        return ratio
-    
     def __init__ ( self, data, level=50 ):
         '''
         @parameter clusteredData: A list of objects that are clustered.
         '''
         # Save the data
         self._data = data
-
+        
+        # A cache of distances between httpResponses
+        self._distance_cache = {}
+        
         self.setNewLevel(level)
-
+        
         self._add_tooltip_support()
         
         # Show it ! =)
         self.show_all()
 
-
     def setNewLevel(self, level):
-        # Based on the amount of data, and the length of that data, I'm going to choose one of the
-        # compare functions (quick == bad precision)
-        compare_functions = [ self._cmp_function_ratio , self._cmp_function_quick_ratio, self._cmp_function_real_quick_ratio]
-        
-        # Count all the responses bodies
-        dataLength = 0
-        for htRes in self._data:
-            dataLength += len(htRes.getBody())
-        averageDataLength = dataLength / len(self._data)
-        
-        if len(self._data) < 10 and averageDataLength < 200000:
-            _cmp_function = compare_functions[ 0 ]
-        elif len(self._data) > 10 and averageDataLength < 100000:
-            _cmp_function = compare_functions[ 1 ]
-        else:
-            _cmp_function = compare_functions[ 2 ]
-        
         # Create the clusters
-        cl = HierarchicalClustering(self._data, _cmp_function)
+        cl = HierarchicalClustering(self._data, self._relative_levenshtein)
         clusteredData = cl.getlevel( level )
         
         self._parsed_clusteredData = self._parse( clusteredData )
@@ -198,20 +206,57 @@ class clusterCellData(gtk.TreeView):
             self.liststore.append( i )
         
 
+    def _relative_levenshtein(self, a, b):
+        '''
+        Computes the relative levenshtein distance between two strings. Its in the range
+        (0-1] where 1 means total equality.
+        @param a: httpResponse object
+        @param b: httpResponse object
+        @return: A float with the distance
+        '''
+        # After some tests I realized that the amount of calls to this method was HUGE
+        # It seems that python-cluster compares each pair (a,b) more than once!!
+        # So I implemented this ratio cache...
+        in_cache = self._distance_cache.get( (a.getId(), b.getId()), None )
+        if in_cache != None:
+            return in_cache
+            
+        # Not in cache, perform calculations...
+        a_str = a.getBody()
+        b_str = b.getBody()
+
+        m, n = (len(a_str),a_str), (len(b_str),b_str)
+        #ensure that the 'm' tuple holds the longest string
+        if(m[0] < n[0]):                
+            m, n = n, m
+        #assume distance = length of longest string (worst case)
+        dist = m[0]
+        # reduce the distance for each char match in shorter string   
+        for i in range(0, n[0]):
+            if m[1][i] == n[1][i]:
+                dist = dist - 1
+        
+        # make it relative
+        longer = float(max((len(a_str), len(b_str))))
+        shorter = float(min((len(a_str), len(b_str))))    
+        r = ((longer - dist) / longer) * (shorter / longer)
+        r = 100 - r * 100
+        
+        # Save in cache
+        self._distance_cache[ (a.getId(), b.getId()) ] = r
+        self._distance_cache[ (b.getId(), a.getId()) ] = r
+        return r
+        
     def _add_tooltip_support( self ):
         # Add the "tool tips"
         popup_win = gtk.Window(gtk.WINDOW_POPUP)
         label = gtk.Label()
         popup_win.add(label)
         
-        try:
+        if "path-cross-event" not in gobject.signal_list_names( gtk.TreeView ):
             gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
             gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
             gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-        except:
-            # The most common case is when you create this windows two times
-            # the second time, you get here.
-            pass
             
         self.connect("leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
         self.connect("motion-notify-event", self.onTreeviewMotionNotify)
@@ -377,11 +422,13 @@ def main():
 
 if __name__ == "__main__":
     # We create the data
-    data = [ httpResponse('http://localhost/index.html', 'GET', 'my data1 looks like this and has no errors', 1),
-        httpResponse('http://localhost/f00.html', 'GET', 'i love my data', 2),
-        httpResponse('http://localhost/b4r.html', 'GET', 'my data likes me', 3),
-        httpResponse('http://localhost/wiiii.php', 'GET', 'my data 4 is nice', 4),
-        httpResponse('http://localhost/w0000.do', 'GET', 'oh! an error has ocurred!', 5)]
-        
+    data = [
+        httpResponse(200, 'my data1 looks like this and has no errors', {}, 'http://a/index.html', 'http://a/index.html', id=1),
+        httpResponse(200, 'errors? i like errors like this one: SQL', {}, 'http://a/index.html', 'http://a/index.html', id=2),
+        httpResponse(200, 'my data is really happy', {}, 'http://a/index.html', 'http://a/index.html', id=3),
+        httpResponse(200, 'my data1 loves me', {}, 'http://a/index.html', 'http://a/index.html', id=4),
+        httpResponse(200, 'my data likes me', {}, 'http://a/index.html', 'http://a/index.html', id=5)
+        ]
+            
     cl_win = clusterCellWindow( data=data )
     main()
