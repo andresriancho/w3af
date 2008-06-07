@@ -96,7 +96,7 @@ def load_pixbuf(fname, size=0):
     """Load an image from a file as a pixbuf, with optional resizing.
     """
     image = gtk.Image()
-    image.set_from_file(os.path.join("pixmaps", fname))
+    image.set_from_file(os.path.join("core/ui/gtkUi/comparator/pixmaps", fname))
     image = image.get_pixbuf()
     if size:
         aspect = float(image.get_height()) / image.get_width()
@@ -188,27 +188,12 @@ class FileDiff(object):
 
     def _genTextView(self):
         sw = gtk.ScrolledWindow()
-        sw.set_property("visible", True)
         sw.set_property("hscrollbar_policy", gtk.POLICY_ALWAYS)
         sw.set_property("vscrollbar_policy", gtk.POLICY_ALWAYS)
         sw.set_property("shadow_type", gtk.SHADOW_NONE)
         sw.set_property("window_placement", gtk.CORNER_TOP_LEFT)
 
         tv = gtk.TextView()
-        tv.set_property("visible", True)
-        tv.set_property("can_focus", True)
-        tv.set_property("editable", True)
-        tv.set_property("overwrite", False)
-        tv.set_property("accepts_tab", True)
-        tv.set_property("justification", gtk.JUSTIFY_LEFT)
-        tv.set_property("wrap_mode", gtk.WRAP_NONE)
-        tv.set_property("cursor_visible", True)
-        tv.set_property("pixels_above_lines", 0)
-        tv.set_property("pixels_below_lines", 0)
-        tv.set_property("pixels_inside_wrap", 0)
-        tv.set_property("left_margin", 0)
-        tv.set_property("right_margin", 0)
-        tv.set_property("indent", 0)
         tv.connect("key-press-event", self.on_key_press_event)
         tv.connect("key-release-event", self.on_key_release_event)
         tv.connect("focus-in-event", self.on_textview_focus_in_event)
@@ -224,24 +209,35 @@ class FileDiff(object):
         return (sw, tv)
 
     def _genTodo(self):
-        table = gtk.Table(1, 5)
+        table = gtk.Table(3, 5)
+        table.set_row_spacings(5)
         self.widget = table
+
+        self.title0 = gtk.Label()
+        table.attach(self.title0, 1, 2, 0, 1, yoptions=gtk.FILL)
+        self.title1 = gtk.Label()
+        table.attach(self.title1, 3, 4, 0, 1, yoptions=gtk.FILL)
         
         self.linkmap = self._genLinkMap()
-        table.attach(self.linkmap, 2, 3, 0, 1, xoptions=gtk.FILL, yoptions=gtk.FILL)
+        table.attach(self.linkmap, 2, 3, 1, 2, xoptions=gtk.FILL, yoptions=gtk.FILL)
 
         self.diffmap0 = self._genDiffMap()
-        table.attach(self.diffmap0, 0, 1, 0, 1, xoptions=gtk.FILL, yoptions=gtk.FILL)
+        table.attach(self.diffmap0, 0, 1, 1, 2, xoptions=gtk.FILL, yoptions=gtk.FILL)
         self.diffmap1 = self._genDiffMap()
-        table.attach(self.diffmap1, 4, 5, 0, 1, xoptions=gtk.FILL, yoptions=gtk.FILL)
+        table.attach(self.diffmap1, 4, 5, 1, 2, xoptions=gtk.FILL, yoptions=gtk.FILL)
         self.diffmap = [self.diffmap0, self.diffmap1]
 
         (sw0, self.textview0) = self._genTextView()
-        table.attach(sw0, 1, 2, 0, 1)
+        table.attach(sw0, 1, 2, 1, 2)
         (sw1, self.textview1) = self._genTextView()
-        table.attach(sw1, 3, 4, 0, 1)
+        table.attach(sw1, 3, 4, 1, 2)
         self.scrolledwindow = [sw0, sw1]
         self.textview = [self.textview0, self.textview1]
+
+        self.leftBaseBox = gtk.HBox()
+        table.attach(self.leftBaseBox, 1, 2, 2, 3, yoptions=gtk.FILL)
+        self.rightBaseBox = gtk.HBox()
+        table.attach(self.rightBaseBox, 3, 4, 2, 3, yoptions=gtk.FILL)
 
         table.show_all()
 
@@ -258,7 +254,7 @@ class FileDiff(object):
             self.idle_hooked = 1
             gobject.idle_add( self.on_idle )
 
-    def __init__(self, cont1, cont2):
+    def __init__(self):
         """Start up an filediff with num_panes empty contents."""
         self.idle_hooked = 0
         self.scheduler = FifoScheduler()
@@ -305,7 +301,20 @@ class FileDiff(object):
         self.last_search = None
         self.queue_draw()
         gobject.idle_add( lambda *args: self.load_font()) # hack around Bug 316730
-        self.scheduler.add_task( self._set_files_internal((cont1, cont2)).next )
+
+    def setLeftPane(self, title, text):
+        self.title0.set_markup("<b>%s</b>" % title)
+        leftText = text
+        buf = self.textview1.get_buffer()
+        rightText = buf.get_text(*buf.get_bounds())
+        self._set_internal((leftText, rightText))
+
+    def setRightPane(self, title, text):
+        self.title1.set_markup("<b>%s</b>" % title)
+        buf = self.textview0.get_buffer()
+        leftText = buf.get_text(*buf.get_bounds())
+        rightText = text
+        self._set_internal((leftText, rightText))
 
     def _update_regexes(self):
         self.regexes = []
@@ -439,7 +448,7 @@ class FileDiff(object):
         self.textview_overwrite_handlers = [ t.connect("toggle-overwrite", self.on_textview_toggle_overwrite) for t in self.textview ]
         self._update_cursor_status(view.get_buffer())
 
-    def _set_files_internal(self, texts):
+    def _set_internal(self, texts):
         self.linediffer.diffs = [[],[]]
         self.queue_draw()
         buffers = [t.get_buffer() for t in self.textview]
@@ -450,12 +459,9 @@ class FileDiff(object):
         panetext = [self._filter_text(p) for p in panetext]
         lines = map(lambda x: x.split("\n"), panetext)
         step = self.linediffer.set_sequences_iter(*lines)
-        while step.next() == None:
-            yield 1
         self.queue_draw()
         lenseq = [len(d) for d in self.linediffer.diffs]
         self.scheduler.add_task( self._update_highlighting( (0,lenseq[0]), (0,lenseq[1]) ).next )
-        yield 0
 
     def _update_highlighting(self, range0, range1):
         buffers = [t.get_buffer() for t in self.textview]

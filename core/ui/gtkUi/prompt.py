@@ -186,6 +186,7 @@ class PromptDialog(gtk.Dialog):
         box.pack_start(but, False, False)
         self.vbox.pack_start(box, False, False)
         self.vbox.pack_start(gtk.HSeparator(), False, False, padding=5)
+        # FIXME: poner un HELP aca
 
         # the prompt in an scrolled window
         sw = gtk.ScrolledWindow()

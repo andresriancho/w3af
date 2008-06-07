@@ -65,7 +65,7 @@ import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
-from . import scanrun, exploittab, helpers, profiles, craftedRequests
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser, time
@@ -95,6 +95,7 @@ ui_menu = """
       <menuitem action="ManualRequest"/>
       <menuitem action="FuzzyRequest"/>
       <menuitem action="EncodeDecode"/>
+      <menuitem action="Compare"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -116,6 +117,7 @@ ui_menu = """
     <toolitem action="ManualRequest"/>
     <toolitem action="FuzzyRequest"/>
     <toolitem action="EncodeDecode"/>
+    <toolitem action="Compare"/>
   </toolbar>
 </ui>
 """
@@ -217,6 +219,7 @@ class MainApp(object):
             ('ManualRequest', gtk.STOCK_INDEX, '_Manual Request', None, 'Generate manual HTTP request', self._manual_request),
             ('FuzzyRequest', gtk.STOCK_PROPERTIES, '_Fuzzy Request', None, 'Generate fuzzy HTTP requests', self._fuzzy_request),
             ('EncodeDecode', gtk.STOCK_CONVERT, '_Encode/Decode', None, 'Encodes and Decodes in different ways', self._encode_decode),
+            ('Compare', gtk.STOCK_ZOOM_100, '_Compare', None, 'Compare different requests and responses', self._compare),
             ('ToolsMenu', None, '_Tools'),
 
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
@@ -282,7 +285,7 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 10
+        assert toolbar.get_n_items() == 11
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
@@ -656,6 +659,12 @@ class MainApp(object):
     def _encode_decode(self, action):
         '''Generate fuzzy HTTP requests.'''
         encdec.EncodeDecode(self.w3af)
+
+    def _compare(self, action):
+        '''Generate fuzzy HTTP requests.'''
+        print "FIXME: Sacar este reload!"
+        reload(compare)
+        compare.Compare(self.w3af)
 
 
 def main(profile):
