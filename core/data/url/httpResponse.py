@@ -21,15 +21,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.parsers.urlParser import *
 
+import codecs
+def _returnEscapedChar(exc):
+    slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
+    return ( unicode(slash_x_XX) , exc.end)
+codecs.register_error("returnEscapedChar", _returnEscapedChar)
+
+import re
+
 class httpResponse:
     
     def __init__( self, code, read , info, geturl, originalUrl, msg='OK', id=None, time=0.2):
         '''
         @parameter time: The time between the request and the response.
         '''
-        self._code = code
-        self._body = read
-        self._headers = info
+        self.setCode(code)
+        self.setHeaders(info)
+        self.setBody(read)
         
         self._realurl = uri2url( originalUrl )
         self._uri = originalUrl
@@ -48,6 +56,20 @@ class httpResponse:
     def getCode( self ): return self._code
     def getBody( self ): return self._body
     def getHeaders( self ): return self._headers
+    def getLowerCaseHeaders( self ):
+        '''
+        If the original headers were:
+            'Abc-Def: f00N3s'
+        This will return:
+            'abc-def: f00N3s'
+        
+        The only thing that changes is the header name.
+        '''
+        res = {}
+        for i in self._headers:
+            res[ i.lower() ] = self._headers[ i ]
+        return res
+        
     def getURL( self ): return self._realurl
     def getURI( self ): return self._uri
     def getWaitTime( self ): return self._time
@@ -56,7 +78,33 @@ class httpResponse:
     def setRedirURL( self, ru ): self._redirectedURL = ru
     def setRedirURI( self, ru ): self._redirectedURI = ru
     def setCode( self, code ): self._code = code
-    def setBody( self, body): self._body = body
+    def setBody( self, body):
+        # FIXME: Is this code ok?
+        # FIXME: should I parse <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> ?
+    
+        # I'll get the charset from the response headers, and then decode the content using it
+        # content-type: text/html; charset=iso-8859-1
+        lowerCaseHeaders = self.getLowerCaseHeaders()
+        if not 'content-type' in lowerCaseHeaders:
+            #hmmm...
+            self._body = body
+        else:
+            if not re.findall('text/(\w+)', lowerCaseHeaders['content-type'] ):
+                # Not text, save as it is.
+                self._body = body
+            else:
+                # According to the web server, the body content is a text
+                # by default we asume:
+                charset = 'utf-8'
+                reCharset = re.findall('charset=([\w-]+)', lowerCaseHeaders['content-type'] )
+                if reCharset:
+                    # well... it seems that they are defining a charset in the response..
+                    charset = reCharset[0]
+                # Now that we have the charset, we use it!
+                decodedStr = body.decode(charset, 'returnEscapedChar')
+                # Then, I'll get that string and encode it as UTF-8, so it can be used in all the framework
+                self._body = decodedStr.encode('utf-8', 'returnEscapedChar')
+        
     def setHeaders( self, headers ): self._headers = headers
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri
