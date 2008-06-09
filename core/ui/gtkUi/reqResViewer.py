@@ -98,7 +98,10 @@ class reqResViewer(gtk.VBox):
         func(self.w3af, (up,dn))
 
     def _sendReqResp(self, widg):
-        print "FIXME: To compare!"
+        requp,reqdn = self.request.getBothTexts()
+        rspup,rspdn = self.response.getBothTexts()
+        # FIXME: here we should also send the title!
+        self.w3af.mainwin.commCompareTool((requp, reqdn, rspup, rspdn))
 
 class requestResponsePaned(gtk.VPaned):
     def __init__(self, enableWidget=None, editable=False):

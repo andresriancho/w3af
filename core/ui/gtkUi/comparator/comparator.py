@@ -188,8 +188,8 @@ class FileDiff(object):
 
     def _genTextView(self):
         sw = gtk.ScrolledWindow()
-        sw.set_property("hscrollbar_policy", gtk.POLICY_ALWAYS)
-        sw.set_property("vscrollbar_policy", gtk.POLICY_ALWAYS)
+        sw.set_property("hscrollbar_policy", gtk.POLICY_AUTOMATIC)
+        sw.set_property("vscrollbar_policy", gtk.POLICY_AUTOMATIC)
         sw.set_property("shadow_type", gtk.SHADOW_NONE)
         sw.set_property("window_placement", gtk.CORNER_TOP_LEFT)
 
@@ -198,6 +198,7 @@ class FileDiff(object):
         tv.connect("key-release-event", self.on_key_release_event)
         tv.connect("focus-in-event", self.on_textview_focus_in_event)
         tv.connect("expose-event", self.on_textview_expose_event)
+        tv.set_editable(False)
 
         buf = tv.get_buffer()
         buf.connect("delete-range", self.on_text_delete_range)
@@ -253,6 +254,9 @@ class FileDiff(object):
         if not self.idle_hooked:
             self.idle_hooked = 1
             gobject.idle_add( self.on_idle )
+
+    def set_sensitive(self, how):
+        self.widget.set_sensitive(how)
 
     def __init__(self):
         """Start up an filediff with num_panes empty contents."""

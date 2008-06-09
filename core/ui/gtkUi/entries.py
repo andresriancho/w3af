@@ -717,8 +717,9 @@ class RememberingWindow(gtk.Window):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, idstring, title):
+    def __init__(self, w3af, idstring, title, onDestroy=None):
         super(RememberingWindow,self).__init__(gtk.WINDOW_TOPLEVEL)
+        self.onDestroy = onDestroy
 
         # position and dimensions
         self.winconfig = w3af.mainwin.generalconfig
@@ -744,6 +745,8 @@ class RememberingWindow(gtk.Window):
         @param widget: who sent the signal.
         @param event: the event that happened
         '''
+        if self.onDestroy is not None:
+            self.onDestroy()
         self.winconfig[self.id_size] = self.get_size()
         self.winconfig[self.id_position] = self.get_position()
         return False
@@ -857,7 +860,7 @@ class PagesControl(gtk.HBox):
         if self.page < 1:
             self.page = 1
         elif self.page > self.maxpages:
-            self.page = self.maxpages - 1
+            self.page = self.maxpages
 
         # entries adjustment
         self.left.set_sensitive(self.page > 1)

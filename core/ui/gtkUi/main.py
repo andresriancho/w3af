@@ -155,6 +155,39 @@ class AboutDialog(gtk.Dialog):
         self.destroy()
 
 
+class WindowsCommunication(object):
+    def __init__(self, w3af, winCreator):
+        self.w3af = w3af
+        self.winCreator = winCreator
+        self.isActive = False
+        def e(x):
+            raise RuntimeError("BUG! The communicator was never initialized")
+        self.callback = e
+        self.client = e
+
+    def destroy(self):
+        self.isActive = False
+
+    def create(self, info=None):
+        if self.isActive:
+            self.client.present()
+        else:
+            self.winCreator(self.w3af, self)
+            self.isActive = True
+        if info is not None:
+            self.send(info)
+    __call__ = create
+
+    def send(self, info):
+        if not self.isActive:
+            self.create()
+        self.callback(info)
+
+    def enable(self, window, callback):
+        self.client = window
+        self.callback = callback
+
+
 class MainApp(object):
     '''Main GTK application
 
@@ -339,6 +372,10 @@ class MainApp(object):
         # status bar
         mainvbox.pack_start(self.sb, False)
 
+        # communication between different windows
+        self.commCompareTool = WindowsCommunication(self.w3af, compare.Compare)
+
+        # finish it
         self.window.show()
         splash.destroy()
         gtk.main()
@@ -664,8 +701,9 @@ class MainApp(object):
         '''Generate fuzzy HTTP requests.'''
         print "FIXME: Sacar este reload!"
         reload(compare)
-        compare.Compare(self.w3af)
+        self.commCompareTool.create()
 
-
+        
+    
 def main(profile):
     MainApp(profile)
