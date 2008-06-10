@@ -20,22 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-from shlex import *
-import os.path
-import traceback
-from core.ui.consoleUi.rootMenu import *
-from core.ui.consoleUi.callbackMenu import *
-from core.ui.consoleUi.util import *
-import core.ui.consoleUi.io.console as term
-from core.ui.consoleUi.history import *
-import core.ui.consoleUi.tables as tables
-import core.controllers.w3afCore
-import core.controllers.outputManager as om
-import core.controllers.miscSettings as miscSettings
-from core.controllers.w3afException import w3afException
 import sys
-import random
+try:
+    from shlex import *
+    import os.path
+    import traceback
+    from core.ui.consoleUi.rootMenu import *
+    from core.ui.consoleUi.callbackMenu import *
+    from core.ui.consoleUi.util import *
+    import core.ui.consoleUi.io.console as term
+    from core.ui.consoleUi.history import *
+    import core.ui.consoleUi.tables as tables
+    import core.controllers.w3afCore
+    import core.controllers.outputManager as om
+    import core.controllers.miscSettings as miscSettings
+    from core.controllers.w3afException import w3afException
+    import random
+except KeyboardInterrupt:
+    sys.exit(0)
 
 class consoleUi:
     '''
@@ -85,30 +87,34 @@ class consoleUi:
         '''
         Main cycle
         '''
-        if callback:
-            if hasattr(self, '_context'):
-                ctx = self._context
+        try:
+            if callback:
+                if hasattr(self, '_context'):
+                    ctx = self._context
+                else:
+                    ctx = None
+                self._context = callbackMenu(name, self, self._w3af, ctx, callback)
             else:
-                ctx = None
-            self._context = callbackMenu(name, self, self._w3af, ctx, callback)
-        else:
-            self._context = rootMenu(name, self, self._w3af)
-            
-        self._lastWasArrow = False
-        self._showPrompt()
-        self._active = True
-        term.setRawInputMode(True)
+                self._context = rootMenu(name, self, self._w3af)
+                
+            self._lastWasArrow = False
+            self._showPrompt()
+            self._active = True
+            term.setRawInputMode(True)
 
-        self._executePending()
+            self._executePending()
 
-        while self._active: 
-            try:
-                c = term.getch()
-                self._handleKey(c)
-            except Exception, e:
-                om.out.console(str(e))
+            while self._active: 
+                try:
+                    c = term.getch()
+                    self._handleKey(c)
+                except Exception, e:
+                    om.out.console(str(e))
 
-        term.setRawInputMode(False)
+            term.setRawInputMode(False)
+        except KeyboardInterrupt:
+            pass
+
         if not hasattr(self, '_parent'):
             om.out.console(self._randomMessage())
 
@@ -219,6 +225,10 @@ class consoleUi:
                 # If None, the menu is not changed.
                 params = self.inRawLineMode() and line or self._parseLine(line)
                 menu = self._context.execute(params)
+            except w3afMustStopException, wmse:
+                menu = None
+                self.exit()
+
             except w3afException, e:
                 menu = None
                 om.out.console( e.value )
