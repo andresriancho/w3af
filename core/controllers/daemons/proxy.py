@@ -110,13 +110,16 @@ class proxy(w3afThread):
         if self._running:
             try:
                 # Tell the proxy that he must quit
-                conn = httplib.HTTPConnection(self._ip+':'+self._port)
+                conn = httplib.HTTPConnection(self._ip+':'+str(self._port))
                 conn.request("QUIT", "/")
                 conn.getresponse()
-            except:
-                pass
+                om.out.debug('Sent QUIT request.')
+            except Exception, e:
+                om.out.debug('Failed to stop proxy server, exception: "' + str(e) +'".')
             else:
                 self._running = False
+        else:
+            om.out.debug('You called stop() on a proxy daemon that isn\'t running.')
     
     def isRunning( self ):
         '''
@@ -156,7 +159,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         __doc__ string for information on how to handle specific HTTP
         commands such as GET and POST.
         
-        I overrid this becuse I'm going to use ONE handler for all the methods.
+        I overrid this becuse I'm going to use ONE handler for all the methods (except CONNECT).
         """
         self.raw_requestline = self.rfile.readline()
         if not self.raw_requestline:
@@ -164,13 +167,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             return
         if not self.parse_request(): # An error code has been sent, just exit
             return
-        
+
         # Now I perform my specific tasks...
         if self.command == 'QUIT':
             # Stop the server
             self.send_response(200)
             self.end_headers()
             self.server.stop = True
+            om.out.debug('Handled QUIT request.')
         elif self.command == 'CONNECT':
             self.do_CONNECT()
         else:
@@ -380,7 +384,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
 # I want to use threads to handle all requests.
 class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
-    def serve_forever (self):
+    def serve_forever(self):
         """Handle one request at a time until stopped."""
         self.stop = False
         while not self.stop:
