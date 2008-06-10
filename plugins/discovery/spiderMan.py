@@ -165,7 +165,6 @@ class proxyHandler(w3afProxyHandler):
             if hasattr(server, 'chainedHandler'):
                 # see core.controllers.daemons.proxy.HTTPServerWrapper
                 self._spiderMan = server.chainedHandler._spiderMan
-                print self._spiderMan
         else:
             self._spiderMan = spiderMan
         self._urlOpener = self._spiderMan._urlOpener

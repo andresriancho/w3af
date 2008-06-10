@@ -141,6 +141,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('odbc_exec\\(\\)', MSSQL ) )
         errors.append( ('Microsoft JET Database Engine error', ACCESS ))
         errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', MSSQL ))
+        errors.append( ('Microsoft OLE DB Provider for SQL Server', MSSQL ))
         errors.append( ('Incorrect syntax near', MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', MSSQL ) )
         

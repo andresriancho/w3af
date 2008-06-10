@@ -109,6 +109,7 @@ class proxy(w3afThread):
         om.out.debug('Calling stop of proxy daemon.')
         if self._running:
             try:
+                # Tell the proxy that he must quit
                 conn = httplib.HTTPConnection(self._ip+':'+self._port)
                 conn.request("QUIT", "/")
                 conn.getresponse()
@@ -387,6 +388,7 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
                 self.handle_request()
             except KeyboardInterrupt:
                 self.stop = True
+        om.out.debug('Exiting proxy server serve_forever().')
                 
     def server_bind(self):
         om.out.debug('Changing socket options of ProxyServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
