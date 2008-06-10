@@ -129,16 +129,22 @@ class pluginsTypeMenu(menu):
       
 
     def suggestCommands(self, part):
-        return suggest(self._plugins.keys() + ['all'], part, True) + \
+        return suggest(self._plugins.keys() + ['all'], part) + \
             suggest(self.getCommands(), part)
 
     def suggestParams(self, command, params, part):
         if command in self.getCommands():
             return menu.suggestParams(self, command, params, part)
         
-        alreadySel = command.split(',')
-        return suggest(self._plugins.keys() + ['all'], \
-            ','.join(alreadySel + params + [part]), True)
+#        alreadySel = command.split(',')
+        alreadySel = [command] + params
+        plugins = self._plugins.keys()
+#        plugins.difference_update(alreadySel)
+#        plugins.add('all')
+        return suggest(plugins, part, alreadySel)
+
+#        return suggest(self._plugins.keys() + ['all'], \
+#            ','.join(alreadySel + params + [part]), True)
 
     def getCommands(self):
         return ['config', 'desc']
