@@ -70,7 +70,7 @@ class xsrf(baseAuditPlugin):
             v.setName( 'Cross site request forgery vulnerability' )
             v.setSeverity(severity.LOW)
             v.setMethod( freq.getMethod() )
-            v.setDesc( 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery. It sends info in the query string.' )
+            v.setDesc( 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.' )
             v.setId( 0 )
             self._vulnSimple.append( v )
         
@@ -96,7 +96,7 @@ class xsrf(baseAuditPlugin):
         for cookie in cookies:
             if cookie.has_key('persistent'):
                 if not self._alreadyReported:
-                    om.out.vulnerability('The web application sent a persistent cookie.', severity=severity.LOW )
+                    om.out.information('The web application sent a persistent cookie.')
                     hasPersistentCookie = True
                     self._alreadyReported = True
         
@@ -106,7 +106,7 @@ class xsrf(baseAuditPlugin):
                 om.out.vulnerability('The following scripts are vulnerable to a trivial form of XSRF:', severity=severity.LOW)
                 
                 frStr = list(set([ str(v.getURL()) for v in self._vulnSimple ]))
-                kb.kb.append( self, 'xsrf', self._vulnSimple )
+                kb.kb.save( self, 'get_xsrf', self._vulnSimple )
                 
                 for i in frStr:
                     om.out.vulnerability( '- ' + i, severity=severity.LOW )
@@ -114,7 +114,7 @@ class xsrf(baseAuditPlugin):
             if len( self._vulnComplex ):
                 om.out.vulnerability('The following scripts allow an attacker to send POST data as query string data (this makes XSRF more easy to exploit):', severity=severity.LOW)            
                 frStr = list(set([ str(fr) for fr in self._vulnComplex ]))
-                kb.kb.append( self, 'xsrf', self._vulnComplex )
+                kb.kb.save( self, 'post_xsrf', self._vulnComplex )
                 
                 for i in frStr:
                     om.out.vulnerability( '- ' + i, severity=severity.LOW )

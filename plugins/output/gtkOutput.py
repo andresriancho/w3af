@@ -89,7 +89,8 @@ class gtkOutput(baseOutputPlugin):
             else:
                 try:
                     # Create the database
-                    self._db_req_res.create( ('id',int), ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
+                    self._db_req_res.create( ('id',int),
+                                                        ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
                                                         ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
                 except IOError, ioe:
                     # hmmm , the database already existed...
@@ -161,7 +162,10 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            self._db_req_res.insert(response.id, request.getMethod(), request.getURI(), '1.1', request.dumpHeaders(), request.getData(), response.getCode(), response.getMsg(), response.dumpHeaders(), response.getBody(), response.getWaitTime() )
+            self._db_req_res.insert(response.id, 
+                                                str(request.getMethod()), str(request.getURI()), str('1.1'), str(request.dumpHeaders()), str(request.getData()), 
+                                                response.getCode(), str(response.getMsg()), str(response.dumpHeaders()), str(response.getBody()),
+                                                response.getWaitTime() )
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:
