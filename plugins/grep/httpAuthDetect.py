@@ -42,6 +42,8 @@ class httpAuthDetect(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        self._authUriRegexStr = '.*://.*?:.*?@[\w\.]{3,40}'
 
     def _testResponse(self, request, response):
         
@@ -66,7 +68,7 @@ class httpAuthDetect(baseGrepPlugin):
             om.out.information( i.getDesc() )
             
         else:
-            if re.match( '.*://(.*?):(.*?)@.*?/' , response.getURI() ):
+            if re.match( self._authUriRegexStr , response.getURI() ):
                 # An authentication URI was found!
                 
                 v = vuln.vuln()
@@ -83,7 +85,7 @@ class httpAuthDetect(baseGrepPlugin):
             # I know that by doing this I loose the chance of finding hashes in PDF files, but...
             # This is much faster
             if isTextOrHtml( response.getHeaders() ):
-                for authURI in re.findall( '\w{2,10}://.*?:.*?@' , response.getBody() ):
+                for authURI in re.findall( self._authUriRegexStr , response.getBody() ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )

@@ -44,8 +44,15 @@ class osCommanding(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        
+        # The wait time of the unfuzzed request
+        self._originalWaitTime = 0
+        
+        # The wait time of the first test I'm going to perform
         self._waitTime = 4
+        # The wait time of the second test I'm going to perform (this one is just to be sure!)
         self._secondWaitTime = 9
+        
 
     def _fuzzRequests(self, freq ):
         '''
@@ -54,6 +61,10 @@ class osCommanding(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         om.out.debug( 'osCommanding plugin is testing: ' + freq.getURL() )
+        
+        # Send the fuzzableRequest without any fuzzing, so we can measure the response time of this script
+        # in order to compare it later
+        self._originalWaitTime = self._sendMutant( freq, analyze=False, grepResult=False ).getWaitTime()
         
         # Prepare the strings to create the mutants
         cList = self._getCommandList()
@@ -72,7 +83,8 @@ class osCommanding(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        if response.getWaitTime() > (self._waitTime-1) and response.getWaitTime() < (self._waitTime+1):
+        if response.getWaitTime() > (self._originalWaitTime + self._waitTime-2) and \
+        response.getWaitTime() < (self._originalWaitTime + self._waitTime+2):
             # Retrieve the data I need to create the vuln and the info objects
             for comm in self._getCommandList():
                 if comm.getCommand() == mutant.getModValue():
@@ -85,7 +97,8 @@ class osCommanding(baseAuditPlugin):
             mutant.setModValue( moreWaitParam )
             response = self._sendMutant( mutant, analyze=False )
             
-            if response.getWaitTime() > (self._secondWaitTime-1) and response.getWaitTime() < (self._secondWaitTime+1):
+            if response.getWaitTime() > (self._originalWaitTime + self._secondWaitTime-3) and \
+            response.getWaitTime() < (self._originalWaitTime + self._secondWaitTime+3):
                 # Now I can be sure that I found a vuln, I control the time of the response.
                 v = vuln.vuln( mutant )
                 # Search for the correct command and separator
