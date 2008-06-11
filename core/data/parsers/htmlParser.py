@@ -122,18 +122,16 @@ class htmlParser(sgmlParser):
 
             # I am inside a form, I should parse input tags
             if tag.lower() == 'input':
-                # Get the type
+                # Try to get the type of input
                 for attr in attrs:
-                    if attr[0].lower() == 'type':
+                    if attr[0].lower() == 'type' and attr[1].lower() == 'file':
+                        # Let the form know, that this is a file input
+                        f.hasFileInput = True
+                        f.addFileInput( attrs )
                         break
-                # Let the form know, that this is a file input
-                if attr[1].lower() == 'file':
-                    f.hasFileInput = True
-                    f.addFileInput( attrs )
-                    
+                
                 # Simply add all the other input types
                 f.addInput( attrs )
-                    
                     
             elif tag.lower() == 'select':
                 self._insideSelect = True
