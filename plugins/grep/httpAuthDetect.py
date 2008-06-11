@@ -47,7 +47,9 @@ class httpAuthDetect(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if response.getCode() == 401:
+        # If I have a 401 code, and this URL wasn't already reported...
+        if response.getCode() == 401 and \
+        response.getURL() not in [ u.getURL() for u in kb.kb.getData( self , 'auth')]:
             wwwAuth = ''
             for key in response.getHeaders():
                 if key.lower() == 'www-authenticate':
