@@ -46,10 +46,14 @@ class httpAuthDetect(baseGrepPlugin):
         self._authUriRegexStr = '.*://.*?:.*?@[\w\.]{3,40}'
 
     def _testResponse(self, request, response):
+        '''
+        Verify if I find 401 or authentication URIs like http://user:pass@domain.com/
+        '''
+        already_reported = [ u.getURL() for u in kb.kb.getData( 'httpAuthDetect', 'auth' ) ]
         
         # If I have a 401 code, and this URL wasn't already reported...
         if response.getCode() == 401 and \
-        response.getURL() not in [ u.getURL() for u in kb.kb.getData( self , 'auth')]:
+        response.getURL() not in already_reported:
             wwwAuth = ''
             for key in response.getHeaders():
                 if key.lower() == 'www-authenticate':
@@ -63,7 +67,7 @@ class httpAuthDetect(baseGrepPlugin):
             i.setURL( response.getURL() )
             i.setId( response.id )
             i.setDesc( 'The resource: '+ response.getURL() + ' requires authentication.' +
-            ' The message is: ' + wwwAuth + ' .')
+            ' The realm is: ' + wwwAuth + ' .')
             i['message'] = wwwAuth
             
             kb.kb.append( self , 'auth' , i )

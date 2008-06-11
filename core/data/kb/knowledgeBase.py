@@ -84,15 +84,20 @@ class knowledgeBase:
         '''
         @return: Returns the data that was saved by another plugin.
         '''
+        if isinstance( pluginWhoSavedTheData, basestring ):
+            name = pluginWhoSavedTheData
+        else:
+            name = pluginWhoSavedTheData.getName()
+            
         res = []
         if self.getLock():
-            if pluginWhoSavedTheData not in self._kb.keys():
+            if name not in self._kb.keys():
                 res = []
             else:
-                if variableName not in self._kb[pluginWhoSavedTheData].keys():
+                if variableName not in self._kb[name].keys():
                     res = []
                 else:
-                    res = self._kb[pluginWhoSavedTheData][variableName]
+                    res = self._kb[name][variableName]
             self.releaseLock()
         return res
     

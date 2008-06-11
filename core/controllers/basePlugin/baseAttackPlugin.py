@@ -161,5 +161,5 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
                 else:
                     # Keep adding all shells to the kb
                     pass
-                    
-        return kb.kb.getData( self, 'shell' )
+        
+        return kb.kb.getData( self.getName(), 'shell' )

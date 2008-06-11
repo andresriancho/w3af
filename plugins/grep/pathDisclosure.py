@@ -102,7 +102,7 @@ class pathDisclosure(baseGrepPlugin):
                         for url in urlList:
                             tmp.append( webroot + urlParser.getPath( url ) )
                         
-                        tmp.extend( kb.kb.getData( self, 'listFiles') )
+                        tmp.extend( kb.kb.getData( 'pathDisclosure', 'listFiles') )
                         paths = list( set( tmp ) )
                         kb.kb.save( self, 'listFiles', tmp )
                         
@@ -119,7 +119,7 @@ class pathDisclosure(baseGrepPlugin):
                             path = pathSep.join( file.split( pathSep )[:-1] ) + pathSep
                             paths.append( (webroot,path) )
                             
-                        paths.extend( kb.kb.getData( self, 'listPaths') )
+                        paths.extend( kb.kb.getData( 'pathDisclosure', 'listPaths') )
                         paths = list( set( paths ) )
                         kb.kb.save( self, 'listPaths', paths ) 
             
