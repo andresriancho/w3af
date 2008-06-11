@@ -58,7 +58,7 @@ class pathDisclosure(baseGrepPlugin):
                     match = match[:-1]
                     
                     # The if is to avoid false positives
-                    if not self._wasSent( request, pathDisclosureString ):
+                    if len(pathDisclosureString) < 80 and not self._wasSent( request, pathDisclosureString ):
                         
                         v = vuln.vuln()
                         v.setURL( realurl )

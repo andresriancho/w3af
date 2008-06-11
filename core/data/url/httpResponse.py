@@ -101,10 +101,9 @@ class httpResponse:
                     # well... it seems that they are defining a charset in the response..
                     charset = reCharset[0]
                 # Now that we have the charset, we use it!
-                decodedStr = body.decode(charset, 'returnEscapedChar')
-                # Then, I'll get that string and encode it as UTF-8, so it can be used in all the framework
-                self._body = decodedStr.encode('utf-8', 'returnEscapedChar')
-        
+                # The return value of the decode function is a unicode string.
+                self._body = body.decode(charset, 'returnEscapedChar')
+
     def setHeaders( self, headers ): self._headers = headers
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri

@@ -81,13 +81,14 @@ class creditCards(baseGrepPlugin):
     def _testResponse(self, request, response):
         
         if isTextOrHtml(response.getHeaders()) and response.getCode()==200:
-            if self._findCard(response.getBody()):
+            found_card = self._findCard(response.getBody())
+            if found_card:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'Credit card number disclosure' )
-                v.setDesc( "The URL: " + v.getURL() + " discloses credit card numbers." )
+                v.setDesc( 'The URL: "' + v.getURL() + '" discloses a credit card number: ' + found_card )
                 kb.kb.append( self, 'creditCards', v )
      
     def _findCard(self, body):
@@ -96,7 +97,7 @@ class creditCards(baseGrepPlugin):
         for c in res:
             payload = self._markupRegex.sub('', c)
             if luhnCheck(payload):
-                return True
+                return payload
 
         return False
 

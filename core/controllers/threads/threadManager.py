@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.threads.threadpool import *
 import core.data.kb.config as cf
+import time
 
 class threadManager:
     '''
@@ -101,5 +102,7 @@ class threadManager:
             
     def join( self, ownerObj=None, joinAll=False ):
         self._threadPool.wait( ownerObj, joinAll )
+        # FIXME: This is horrible, the thread manager NEEDS to be REWRITTEN
+        time.sleep(1.5)
 
 threadManagerObj = threadManager()

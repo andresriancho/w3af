@@ -352,7 +352,9 @@ class xUrllib:
             #(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False )
             def __call__( self, *args, **keywords ):
                 if len( args ) != 1:
-                    raise w3afException('Invalid number of arguments. This method receives one argument and N keywords.')
+                    msg = 'Invalid number of arguments. This method receives one argument and N keywords and you called it with:'
+                    msg += 'args: ' + repr(args) + ' and keywords: ' + repr(keywords)
+                    raise w3afException( msg )
                     
                 uri = args[0]
                 

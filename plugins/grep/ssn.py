@@ -50,13 +50,14 @@ class ssn(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         if isTextOrHtml(response.getHeaders()) and response.getCode()==200:
-            if self._findSsn(response.getBody()):
+            found_ssn = self._findSsn(response.getBody())
+            if found_ssn:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'US Social Security Number disclosure' )
-                v.setDesc( "The URL: " + v.getURL() + " discloses US Social Security Numbers." )
+                v.setDesc( 'The URL: "' + v.getURL() + '" possibly discloses a US Social Security Number: "'+ found_ssn +'"' )
                 kb.kb.append( self, 'ssn', v )
      
     def _findSsn(self, body):
@@ -68,7 +69,7 @@ class ssn(baseGrepPlugin):
             res = self._regex.search(str(line))
             if (res != None):
                 validate_res = self._validSsn(res)
-                if (validate_res == True):
+                if validate_res:
                     break
         return validate_res
     
@@ -105,10 +106,9 @@ class ssn(baseGrepPlugin):
        if ((area_code == 78) and (group_number == 5) and (serial_number == 1120)):
             om.out.debug("invalid ssn erred out: "+ str(area_code)  + ' ' + str(group_number) + ' ' + str(serial_number) )
             return False
-       '''If none of above conditions, then we have a valid ssn in the
-       document. So, return true'''
-       om.out.debug(" " + str(area_code)+str(group_number)+str(serial_number) )
-       return True
+       
+       # If none of above conditions, then we have a valid ssn in the document. And we return it
+       return str(area_code)+'-'+ str(group_number)+ '-' + str(serial_number)
 
 
     def end(self):
