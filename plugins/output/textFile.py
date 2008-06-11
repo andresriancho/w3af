@@ -65,7 +65,7 @@ class textFile(baseOutputPlugin):
             
         try:
             # Images aren't ascii, so this file that logs every request/response, will be binary
-            self._http = file( self._httpFileName, "wb" )
+            self._http = codecs.open( self._httpFileName, "wb", "utf-8", 'replace' )
         except Exception, e:
             raise w3afException('Cant open HTTP log file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
         

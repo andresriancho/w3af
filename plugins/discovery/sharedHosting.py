@@ -82,8 +82,26 @@ class sharedHosting(baseDiscoveryPlugin):
                 
                 results = [ urlParser.baseUrl( r.URL ) for r in results ]
                 results = list( set( results ) )
-        
-                if len( results ) > 1:
+                
+                # not vuln by default
+                isVulnerable = False
+                
+                if len(results) > 1:
+                    # We may have something...
+                    isVulnerable = True
+                    
+                    if len(results) == 2:
+                        # Maybe we have this case:
+                        # [Mon 09 Jun 2008 01:08:26 PM ART] - http://216.244.147.14/
+                        # [Mon 09 Jun 2008 01:08:26 PM ART] - http://www.business.com/
+                        # Where www.business.com resolves to 216.244.147.14; so we don't really
+                        # have more than one domain in the same server.
+                        res0 = socket.gethostbyname( urlParser.getDomain( results[0] ) )
+                        res1 = socket.gethostbyname( urlParser.getDomain( results[1] ) )
+                        if res0 == res1:
+                            isVulnerable = False
+                
+                if isVulnerable:
                     v = vuln.vuln()
                     v.setURL( fuzzableRequest.getURL() )
                     v.setId( 0 )
