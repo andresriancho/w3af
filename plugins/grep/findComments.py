@@ -117,7 +117,7 @@ class findComments(baseGrepPlugin):
             urlsWithThisComment = self._comments[comment]
             om.out.information('The comment : "' + comment + '" was found on this URL(s):')
             for url , request_id in urlsWithThisComment:
-                inform.append('- ' + url + ' (with id:'+str(request_id)+')' )
+                inform.append('- ' + url + ' (request with id:'+str(request_id)+')' )
         
             inform.sort()
             inform = list(set(inform))

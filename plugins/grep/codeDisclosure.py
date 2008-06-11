@@ -41,7 +41,13 @@ class codeDisclosure(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        php = re.compile( '<\?.*\?>' ,re.IGNORECASE | re.DOTALL)
+        # This regex means: "find all tags that are of the form <? something ?> but if that something
+        # is "xml .*" ignore it completely. This is to remove the false positive in the detection of code disclosure
+        # that is added when the web application uses something like
+        # <?xml version="1.0" encoding="UTF-8"?>
+        # This was added to fix bug #1989056
+        php = re.compile( '<\?(?! *xml).*\?>' ,re.IGNORECASE | re.DOTALL)
+        # The rest of the regex are ok, because this patterns aren't used in html / xhtml
         asp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
         jsp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
         jsp2 = re.compile( '<jsp:.*>' ,re.IGNORECASE | re.DOTALL)
