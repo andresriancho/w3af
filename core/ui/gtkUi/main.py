@@ -218,6 +218,10 @@ class MainApp(object):
 
         splash.push("Initializing core...")
         self.w3af = core.controllers.w3afCore.w3afCore()
+
+        # Using print so the user can read this in the console, together with the GTK, python and pygtk versions.
+        print '\n  '.join(self.w3af.getVersion().split('\n'))
+
         self.w3af.mainwin = self
         self.isRunning = False
         self.paused = False
