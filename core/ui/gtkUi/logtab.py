@@ -61,6 +61,7 @@ class LogGraph(gtk.DrawingArea):
         self.timeGrouping = 2
         self.timeBase = int(time.time() * 1000)
         self.realLeftMargin = MIZQ
+        self.gc = None
 
         # schedule the message adding, and go live!
         gobject.timeout_add(500, self.addMessage().next)
@@ -92,6 +93,9 @@ class LogGraph(gtk.DrawingArea):
 
         
     def _redrawAll(self):
+        if self.gc is None:
+            # sorry, not exposed yet...
+            return
         self.window.clear()
 
         # let's check if resizing is needed
