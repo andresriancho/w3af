@@ -28,14 +28,9 @@ import core.data.parsers.wmlParser as wmlParser
 
 from core.controllers.w3afException import w3afException
 try:
-    import extlib.pyPdf.pyPdf as pyPdf
+    from extlib.pyPdf import pyPdf as pyPdf
 except:
-    try:
-            import pyPdf
-    except:
-            print 'You have to install python-pypdf lib. Debian based
-distributions: apt-get install python-pypdf'
-            sys.exit( 1 )
+    import pyPdf
 import StringIO
 
 class documentParser:
