@@ -60,6 +60,14 @@ def dependencyCheck():
         except:
             print 'You have to install SOAPpy lib. Debian based distributions: apt-get install python-soappy'
             sys.exit( 1 )
+    try:
+        import extlib.pyPdf.pyPdf as pyPdf
+    except:
+        try:
+            import pyPdf
+        except:
+            print 'You have to install pyPdf lib. Debian based distributions: apt-get install python-pypdf'
+            sys.exit( 1 )
     
     try:
         from extlib.jsonpy import json as json
