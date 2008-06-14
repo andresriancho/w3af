@@ -89,17 +89,17 @@ class Compare(entries.RememberingWindow):
         b.connect("clicked", self._sendRequests, "manual", "left")
         hbox.pack_start(b, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Left Request to Fuzzy Editor")
-        b.connect("clicked", self._sendRequests, "fuzzy", "right")
+        b.connect("clicked", self._sendRequests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
         b = entries.SemiStockButton("", gtk.STOCK_SELECT_COLOR, "Send all to Cluster Responses")
         b.connect("clicked", self._sendCluster)
         hbox.pack_end(b, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Right Request to Fuzzy Editor")
-        b.connect("clicked", self._sendRequests, "manual", "left")
+        b.connect("clicked", self._sendRequests, "fuzzy", "right")
         hbox.pack_end(b, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Right Request to Manual Editor")
-        b.connect("clicked", self._sendRequests, "fuzzy", "right")
+        b.connect("clicked", self._sendRequests, "manual", "right")
         hbox.pack_end(b, False, False, padding=2)
         self.vbox.pack_start(hbox, False, False, padding=10)
 
@@ -113,6 +113,7 @@ class Compare(entries.RememberingWindow):
         box.pack_start(self.pagesControl, False, False, padding=5) 
         self.delbut = gtk.Button("Delete")
         self.delbut.connect("clicked", self._delete)
+        self.delbut.set_sensitive(False)
         box.pack_start(self.delbut, False, False, padding=10) 
         self.comp.rightBaseBox.pack_start(box, True, False)
 
@@ -214,10 +215,25 @@ class Compare(entries.RememberingWindow):
         self.comp.setRightPane("", self._getElementText())
 
     def _help(self, action):
-        print "FIXME", action
+        print "FIXME: implement help!!"
+
     def _clearAll(self, action):
-        print "FIXME", action
+        self.elements = []
+        self.comp.setLeftPane("", "")
+        self.comp.setRightPane("", "")
+        self.showingPage = None
+        self.leftElement = None
+        self.sensitiveAll(False)
+        self.delbut.set_sensitive(False)
+
     def _sendRequests(self, widg, edittype, paneside):
-        print "FIXME sendRequests", edittype, paneside
+        func = dict(manual=craftedRequests.ManualRequests, fuzzy=craftedRequests.FuzzyRequests)[edittype]
+        if paneside == "left":
+            element = self.leftElement
+        else:
+            element = self.elements[self.showingPage]
+        (reqhead, reqbody, resphead, respbody) = element
+        func(self.w3af, (reqhead, reqbody))
+
     def _sendCluster(self, widg):
-        print "FIXME sendCluster"
+        print "FIXME: implement the sending to sendCluster"
