@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-06-10, 08:08:10 -->
+<!-- Saved: 2008-06-14, 10:01:01 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
@@ -204,18 +204,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: handle those errors!</Description>
-    <Created>2008-05-19, 00:49:05</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>output</Dir>
-        <Name>gtkOutput.py</Name>
-      </Filename>
-      <Linenumber>80</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Not 100% sure about this...</Description>
     <Created>2008-05-19, 00:54:16</Created>
     <Resource>
@@ -250,19 +238,6 @@
         <Name>yahooSiteExplorer.py</Name>
       </Filename>
       <Linenumber>35</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: This should have a different globals and locals</Description>
-    <Created>2008-05-27, 13:32:23</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>reqResDBHandler.py</Name>
-      </Filename>
-      <Linenumber>112</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -327,42 +302,6 @@
         <Name>findvhost.py</Name>
       </Filename>
       <Linenumber>100</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
-    <Created>2008-06-06, 20:44:35</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>688</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
-    <Created>2008-06-06, 20:44:35</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>728</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Description>
-    <Created>2008-06-06, 20:44:35</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1047</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
@@ -444,8 +383,57 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
+    <Created>2008-06-10, 22:51:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>688</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
+    <Created>2008-06-10, 22:51:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>728</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Description>
+    <Created>2008-06-10, 22:51:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1047</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: This is horrible, the thread manager NEEDS to be REWRITTEN</Description>
+    <Created>2008-06-10, 22:52:44</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>threads</Dir>
+        <Name>threadManager.py</Name>
+      </Filename>
+      <Linenumber>105</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Should I encode here?</Description>
-    <Created>2008-06-08, 00:07:16</Created>
+    <Created>2008-06-10, 23:20:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -458,7 +446,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Should the uri be http://host + uri ?</Description>
-    <Created>2008-06-08, 00:07:16</Created>
+    <Created>2008-06-10, 23:20:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -471,7 +459,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-06-08, 00:07:16</Created>
+    <Created>2008-06-10, 23:20:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -479,12 +467,37 @@
         <Dir>url</Dir>
         <Name>xUrllib.py</Name>
       </Filename>
-      <Linenumber>400</Linenumber>
+      <Linenumber>402</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: This should have a different globals and locals</Description>
+    <Created>2008-06-10, 23:22:26</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>reqResDBHandler.py</Name>
+      </Filename>
+      <Linenumber>112</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: handle those errors!</Description>
+    <Created>2008-06-10, 23:26:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>output</Dir>
+        <Name>gtkOutput.py</Name>
+      </Filename>
+      <Linenumber>80</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Is this code ok?</Description>
-    <Created>2008-06-08, 13:28:57</Created>
+    <Created>2008-06-11, 00:17:50</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -497,7 +510,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: should I parse &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt; ?</Description>
-    <Created>2008-06-08, 13:28:57</Created>
+    <Created>2008-06-11, 00:17:50</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -506,6 +519,19 @@
         <Name>httpResponse.py</Name>
       </Filename>
       <Linenumber>83</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Sacar este reload!"</Description>
+    <Created>2008-06-11, 23:42:08</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>main.py</Name>
+      </Filename>
+      <Linenumber>706</Linenumber>
     </Resource>
   </Task>
 </Tasks>

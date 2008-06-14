@@ -57,10 +57,10 @@ class collectCookies(baseGrepPlugin):
                 i = info.info()
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
-                i['cookie-string'] = headers[key]
+                i['cookie-string'] = headers[key].strip()
                 
                 C = Cookie.SimpleCookie()
-                C.load( headers[ key ] )
+                C.load( headers[ key ].strip() )
                 i['cookie-object'] = C
                 
                 '''
