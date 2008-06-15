@@ -703,8 +703,6 @@ class MainApp(object):
 
     def _compare(self, action):
         '''Generate fuzzy HTTP requests.'''
-        print "FIXME: Sacar este reload!"
-        reload(compare)
         self.commCompareTool.create()
 
         

@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # This module is a collection of useful code snippets for the GTK gui
 
 import threading, re, sys, Queue
+import  traceback
 import gtk, gobject
+from core.controllers.w3afException import w3afException
 
 RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
 
@@ -199,9 +201,6 @@ class RegistThread(threading.Thread):
 
 #-- the following is for core wrapping
 
-import gtk, sys, traceback
-from core.controllers.w3afException import w3afException
-
 class _Wrapper(object):
     '''Wraps a call to the Core.
 
@@ -248,10 +247,16 @@ def _crash(type, value, tb):
     exception = "".join(exception)
     print exception
 
+    # get version info
+    versions = "\nPython version:\n%s\n\n" % sys.version
+    versions += "GTK version:%s\n" % ".".join(str(x) for x in gtk.gtk_version)
+    versions += "PyGTK version:%s\n\n" % ".".join(str(x) for x in gtk.pygtk_version)
+
     # save the info to a file
     # FIXME: What if I can't create the file ?
     arch = file("w3af_crash.txt", "w")
     arch.write('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 \n')
+    arch.write(versions)
     arch.write(exception)
     arch.close()
 
