@@ -99,9 +99,8 @@ class reqResViewer(gtk.VBox):
 
     def _sendReqResp(self, widg):
         requp,reqdn = self.request.getBothTexts()
-        rspup,rspdn = self.response.getBothTexts()
         # FIXME: here we should also send the title!
-        self.w3af.mainwin.commCompareTool((requp, reqdn, rspup, rspdn))
+        self.w3af.mainwin.commCompareTool((requp, reqdn, self.response.showingResponse))
 
 class requestResponsePaned(gtk.VPaned):
     def __init__(self, enableWidget=None, editable=False):
@@ -162,19 +161,6 @@ class requestResponsePaned(gtk.VPaned):
         self._clear( self._upTv )
         self._clear( self._downTv )
 
-    def rawShow(self, requestresponse, body):
-        '''Show the raw data.'''
-        self._clear(self._upTv)
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, requestresponse)
-        
-        self._downTv.set_sensitive(True)
-        self._clear(self._downTv)
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, body)
-        
     def showError(self, text):
         '''Show an error.
         
@@ -221,10 +207,24 @@ class requestPaned(requestResponsePaned):
         iter = buffer.get_end_iter()
         buffer.insert( iter, postData )
     
+    def rawShow(self, requestresponse, body):
+        '''Show the raw data.'''
+        self._clear(self._upTv)
+        buffer = self._upTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, requestresponse)
+        
+        self._downTv.set_sensitive(True)
+        self._clear(self._downTv)
+        buffer = self._downTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, body)
+        
 class responsePaned(requestResponsePaned):
     def __init__(self, editable=False):
         requestResponsePaned.__init__(self, editable)
         self.notebook = gtk.Notebook()
+        self.showingResponse = None
 
         # first page
         l = gtk.Label("Response")
@@ -270,6 +270,24 @@ class responsePaned(requestResponsePaned):
     def _renderMozilla(self, body, mimeType, baseURI):
         self._renderingWidget.render_data(body, long(len(body)), baseURI , mimeType)
         
+
+    def httpShow(self, httpResp):
+        '''Show the raw data.'''
+
+        self.showingResponse = httpResp
+        resp = httpResp.dumpResponseHead()
+        body = httpResp.getBody()
+
+        self._clear(self._upTv)
+        buffer = self._upTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, resp)
+        
+        self._downTv.set_sensitive(True)
+        self._clear(self._downTv)
+        buffer = self._downTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, body)
 
     def show( self, version, code, msg, headers, body, baseURI ):
         '''

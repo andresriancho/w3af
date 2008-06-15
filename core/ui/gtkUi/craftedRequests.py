@@ -89,13 +89,9 @@ class ManualRequests(entries.RememberingWindow):
             dlg.destroy()
             return
 
-        # get the info
-        body = httpResp.getBody()
-        headers = httpResp.dumpResponseHead()
-
         # activate and show
         self.reqresp.response.notebook.set_sensitive(True)
-        self.reqresp.response.rawShow(headers, body)
+        self.reqresp.response.httpShow(httpResp)
 
 
 class PreviewWindow(entries.RememberingWindow):
@@ -257,7 +253,7 @@ class FuzzyRequests(entries.RememberingWindow):
         '''
         Analyze if we can cluster the responses and do it.
         '''
-        data = [ r[4] for r in self.responses if r[4] != None ]
+        data = [r[2] for r in self.responses if r[2] is not None]
         if data:
             clusterCellWindow( self.w3af, data=data )
         else:
@@ -312,30 +308,24 @@ class FuzzyRequests(entries.RememberingWindow):
         for (realreq, realbody) in allrequests:
             try:
                 httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody)
-                respbody = httpResp.getBody()
-                resphead = httpResp.dumpResponseHead()
+                errorMsg = None
                 result_ok += 1
             except w3afException, e:
-                respbody = str(e)
-                resphead = None
+                errorMsg = str(e)
+                httpResp = None
                 result_err += 1
-                self.responses.append((realreq, realbody, resphead, respbody, None))
-                
-            except w3afMustStopException, mse:
-                respbody = str(mse)
-                resphead = None
+            except w3afMustStopException, e:
+                errorMsg = str(e)
+                httpResp = None
                 result_err += 1
-                self.responses.append((realreq, realbody, resphead, respbody, None))
-                
+
                 # Let the user know ahout the problem
-                msg = "Stopped sending requests because " + str(mse)
+                msg = "Stopped sending requests because " + str(e)
                 dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
                 opt = dlg.run()
                 dlg.destroy()
                 break
-            else:
-                # I have the httpResp object, save it.
-                self.responses.append((realreq, realbody, resphead, respbody, httpResp))
+            self.responses.append((realreq, realbody, httpResp, errorMsg))
             
             # Always update the gtk stuff
             self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
@@ -351,10 +341,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self._pageChange(0)
 
     def _pageChange(self, page):
-        (realreq, realbody, resphead, respbody, responseObj) = self.responses[page]
+        (realreq, realbody, responseObj, errorMsg) = self.responses[page]
 
         self.resultReqResp.request.rawShow(realreq, realbody)
-        if resphead is not None:
-            self.resultReqResp.response.rawShow(resphead, respbody )
+        if responseObj is not None:
+            self.resultReqResp.response.httpShow(responseObj)
         else:
-            self.resultReqResp.response.showError(respbody)
+            self.resultReqResp.response.showError(errorMsg)

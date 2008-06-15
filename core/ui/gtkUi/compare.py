@@ -23,9 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pygtk, gtk
 from . import reqResViewer, entries, craftedRequests
 from .comparator import comparator
-print "FIXME: otro reload!"
-reload(comparator)
-#from core.controllers.w3afException import *
+from .clusterView import clusterCellWindow
 
 ui_menu = """
 <ui>
@@ -92,9 +90,10 @@ class Compare(entries.RememberingWindow):
         b.connect("clicked", self._sendRequests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
-        b = entries.SemiStockButton("", gtk.STOCK_SELECT_COLOR, "Send all to Cluster Responses")
-        b.connect("clicked", self._sendCluster)
-        hbox.pack_end(b, False, False, padding=2)
+        self.clusterbut = entries.SemiStockButton("", gtk.STOCK_SELECT_COLOR, "Send all to Cluster Responses")
+        self.clusterbut.connect("clicked", self._sendCluster)
+        self.clusterbut.set_sensitive(False)
+        hbox.pack_end(self.clusterbut, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Right Request to Fuzzy Editor")
         b.connect("clicked", self._sendRequests, "fuzzy", "right")
         hbox.pack_end(b, False, False, padding=2)
@@ -164,6 +163,9 @@ class Compare(entries.RememberingWindow):
             # more than one, we can delete any
             self.delbut.set_sensitive(True)
 
+        if any(r[2] for r in self.elements):
+            self.clusterbut.set_sensitive(True)
+
         # put the text in the right and adjust the page selector 
         self.comp.setRightPane("", realtext)
         self.pagesControl.activate(newlen)
@@ -181,13 +183,24 @@ class Compare(entries.RememberingWindow):
         if len(self.elements) == 1:
             self.delbut.set_sensitive(False)
             
+        if not any(r[2] for r in self.elements):
+            self.clusterbut.set_sensitive(False)
+
         realtext = self._getElementText()
         self.comp.setRightPane("", realtext)
 
     def _getElementText(self, element=None):
         if element is None:
             element = self.elements[self.showingPage]
-        realtext = "\n".join(x for x,y in zip(element, self.showText) if y) + "\n"
+        (reqhead, reqbody, httpResp) = element
+        if httpResp is not None:
+            resphead = httpResp.dumpResponseHead()
+            respbody = httpResp.getBody()
+        else:
+            resphead = ""
+            respbody = ""
+        alltexts = (reqhead, reqbody, resphead, respbody)
+        realtext = "\n".join(x for x,y in zip(alltexts, self.showText) if y) + "\n"
         return realtext
 
     def _rightToLeft(self, widg):
@@ -225,6 +238,7 @@ class Compare(entries.RememberingWindow):
         self.leftElement = None
         self.sensitiveAll(False)
         self.delbut.set_sensitive(False)
+        self.clusterbut.set_sensitive(False)
 
     def _sendRequests(self, widg, edittype, paneside):
         func = dict(manual=craftedRequests.ManualRequests, fuzzy=craftedRequests.FuzzyRequests)[edittype]
@@ -232,8 +246,9 @@ class Compare(entries.RememberingWindow):
             element = self.leftElement
         else:
             element = self.elements[self.showingPage]
-        (reqhead, reqbody, resphead, respbody) = element
+        (reqhead, reqbody, httpResp) = element
         func(self.w3af, (reqhead, reqbody))
 
     def _sendCluster(self, widg):
-        print "FIXME: implement the sending to sendCluster"
+        data = [r[2] for r in self.elements if r[2] is not None]
+        clusterCellWindow(self.w3af, data=data)
