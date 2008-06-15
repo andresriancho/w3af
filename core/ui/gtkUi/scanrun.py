@@ -71,6 +71,7 @@ class FullKBTree(kbtree.KBTree):
                     success = True
                     self.kbbrowser.rrV.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
                     self.kbbrowser.rrV.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
+                    # FIXME: here it should send a httpResponse object!
         
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
