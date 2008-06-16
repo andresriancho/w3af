@@ -24,6 +24,7 @@ import pygtk, gtk
 from . import reqResViewer, helpers, entries, fuzzygen
 from .clusterView import clusterCellWindow
 from core.controllers.w3afException import *
+import os
 
 request_example = """\
 GET http://localhost/path HTTP/1.0
@@ -219,12 +220,19 @@ class FuzzyRequests(entries.RememberingWindow):
         centerbox = gtk.HBox()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False)
-        # cluster responses
+        
+        # cluster responses button
+        image = gtk.Image()
+        image.set_from_file( os.path.join( os.path.split(__file__)[0] ,'data','cluster_data.png'))
+        image.show()
         self.clusterButton = gtk.Button(label='Cluster Responses')
         self.clusterButton.connect("clicked", self._clusterData )
         self.clusterButton.set_sensitive( False )
+        self.clusterButton.set_image(image)
+        self.clusterButton.show()
         centerbox.pack_start(self.clusterButton, True, False)
-        # clear responses
+        
+        # clear responses button
         self.clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
                                                                     tooltip='Clear all HTTP responses from fuzzer window')
         self.clearButton.connect("clicked", self._clearResponses )

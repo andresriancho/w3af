@@ -24,6 +24,7 @@ import pygtk, gtk
 from . import reqResViewer, entries, craftedRequests
 from .comparator import comparator
 from .clusterView import clusterCellWindow
+import os
 
 ui_menu = """
 <ui>
@@ -90,7 +91,12 @@ class Compare(entries.RememberingWindow):
         b.connect("clicked", self._sendRequests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
-        self.clusterbut = entries.SemiStockButton("", gtk.STOCK_SELECT_COLOR, "Send all to Cluster Responses")
+        image = gtk.Image()
+        image.set_from_file( os.path.join( os.path.split(__file__)[0] ,'data','cluster_data.png'))
+        image.show()
+        self.clusterbut = gtk.Button("")
+        self.clusterbut.set_tooltip_text("Send all to Cluster Responses")
+        self.clusterbut.set_image(image)
         self.clusterbut.connect("clicked", self._sendCluster)
         self.clusterbut.set_sensitive(False)
         hbox.pack_end(self.clusterbut, False, False, padding=2)
