@@ -23,7 +23,7 @@ import pygtk, gtk, gobject
 
 import urllib2, time
 import re
-from . import helpers, kbtree, messages, httpLogTab, reqResViewer
+from . import helpers, kbtree, messages, httpLogTab, reqResViewer, craftedRequests
 import core.data.kb.knowledgeBase as kb
 
 # To show request and responses
@@ -153,16 +153,24 @@ class KBBrowser(gtk.HPaned):
         self.kbtree.setFilter(self.filters)
 
 
+HEAD_TO_SEND = """\
+GET %s HTTP/1.0
+Host: %s
+User-Agent: w3af.sf.net
+"""
+
 class URLsTree(gtk.TreeView):
     '''Show the URLs that the system discovers.
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self):
+    def __init__(self, w3af):
+        self.w3af = w3af
+
         # simple empty Tree Store
         self.treestore = gtk.TreeStore(str)
         gtk.TreeView.__init__(self, self.treestore)
-        #self.set_enable_tree_lines(True)
+        self.connect('button-release-event', self.popup_menu)
 
         # the TreeView column
         tvcolumn = gtk.TreeViewColumn('URLs')
@@ -244,6 +252,39 @@ class URLsTree(gtk.TreeView):
         holder[node] = (newtreenode, newholdnode)
         return holder
 
+    def popup_menu( self, tv, event ):
+        '''Shows a menu when you right click on a plugin.
+        
+        @param tv: the treeview.
+        @parameter event: The GTK event 
+        '''
+        if event.button != 3:
+            return
+
+        (path, column) = tv.get_cursor()
+        # Is it over a plugin name ?
+        if path is None:
+            return
+
+        # Get the information about the click
+        fullurl = "/".join(self.treestore[path[:i+1]][0] for i in range(len(path)))
+        host = urllib2.urlparse.urlparse(fullurl)[1]
+        sendtext = HEAD_TO_SEND % (fullurl, host)
+
+        gm = gtk.Menu()
+
+        e = gtk.MenuItem("Open with Manual Request...")
+        e.connect('activate', self._sendRequest, sendtext, craftedRequests.ManualRequests)
+        gm.append( e )
+        e = gtk.MenuItem("Open with Fuzzy Request...")
+        e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
+        gm.append( e )
+
+        gm.show_all()
+        gm.popup( None, None, None, event.button, event.time)
+
+    def _sendRequest(self, widg, text, func):
+        func(self.w3af, (text,""))
 
 class ScanRunBody(gtk.Notebook):
     '''The whole body of scan run.
@@ -261,7 +302,7 @@ class ScanRunBody(gtk.Notebook):
         self.append_page(kbbrowser, l)
         
         # urlstree
-        urlstree = URLsTree()
+        urlstree = URLsTree(w3af)
         scrollwin1 = gtk.ScrolledWindow()
         scrollwin1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin1.add_with_viewport(urlstree)
