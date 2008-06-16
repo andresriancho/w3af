@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import gtk
-import gobject
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
