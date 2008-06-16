@@ -40,9 +40,7 @@ class reqResDBHandler:
             return False
         else:
             # Restore it from the kb
-            self._db = persist()
-            db_name = kb.kb.getData('gtkOutput', 'db')
-            self._db.open( db_name )
+            self._db = kb.kb.getData('gtkOutput', 'db')
             return True
     
     def searchById( self, search_id ):

@@ -87,12 +87,10 @@ class gtkOutput(baseOutputPlugin):
             except Exception, e:
                 raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
-                kb.kb.save('gtkOutput', 'db', db_name )
+                kb.kb.save('gtkOutput', 'db', self._db )
         else:
             # Restore it from the kb
-            self._db = persist()
-            db_name = kb.kb.getData('gtkOutput', 'db')
-            self._db.open( db_name )
+            self._db = kb.kb.getData('gtkOutput', 'db')
             
     
     def debug(self, msgString, newLine = True ):
@@ -110,7 +108,6 @@ class gtkOutput(baseOutputPlugin):
         ''' 
         m = message( 'information', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
-        self._db.commit()
 
     def error(self, msgString , newLine = True ):
         '''
@@ -128,7 +125,6 @@ class gtkOutput(baseOutputPlugin):
         m = message( 'vulnerability', self._cleanString(msgString), time.time(), newLine )
         m.setSeverity( severity )
         self._addToQueue( m )
-        self._db.commit()
         
     def console( self, msgString, newLine = True ):
         '''

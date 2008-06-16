@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import sqlite3
+import thread
 
 try:
     from cPickle import Pickler, Unpickler
@@ -47,7 +48,30 @@ class persist:
         self._primary_key_columns = None
         
         self._insertion_count = 0
+        self.createLock()
     
+    def destroyLock( self ):
+        self._kbLock = None
+    
+    def createLock( self ):
+        self._kbLock = thread.allocate_lock()
+        
+    def getLock(self):
+        try:
+            self._kbLock.acquire()
+        except:
+            return False
+        else:
+            return True
+    
+    def releaseLock(self):
+        try:
+            self._kbLock.release()
+        except:
+            return False
+        else:
+            return True
+            
     def open( self, filename ):
         '''
         Open an already existing database.
@@ -72,7 +96,10 @@ class persist:
             else:
                 col_names = [ r[1] for r in table_info ]
                 pk_getters = [ c for c in col_names if c != 'raw_pickled_data']
-                    
+                
+                if not pk_getters:
+                    raise w3afException('There is an error in the database backend. The file ' + filename + ' is invalid.')
+                
                 # Now we save the data to the attributes
                 self._filename = filename
                 self._primary_key_columns = pk_getters
@@ -94,9 +121,11 @@ class persist:
         '''
         if not self._db:
             raise w3afException('You have to call open or create first.')
-            
-        insert_stm = "insert into data_table values ("
         
+        self.getLock()
+        
+        insert_stm = "insert into data_table values ("
+
         # The primary key data
         bindings = []
         for column_number, column_name in enumerate(self._primary_key_columns):
@@ -114,14 +143,12 @@ class persist:
         bindings.append( f.getvalue() )
         
         # Save the object
-        self._db.execute( insert_stm, bindings )
+        c = self._db.cursor()
+        c.execute( insert_stm, bindings )
+        c.close()
         self._commit_if_needed()
         
-    def commit( self ):
-        '''
-        Force a commit of the changes to disk.
-        '''
-        self._db.commit()
+        self.releaseLock()
         
     def _commit_if_needed( self ):
         '''
@@ -129,8 +156,12 @@ class persist:
         '''
         self._insertion_count += 1
         if self._insertion_count > 50:
-            self._db.commit()
-            self._insertion_count = 0
+            try:
+                self._db.commit()
+            except Exception, e:
+                raise w3afException('The database layer of object persistence raised and exception: ' + str(e) )
+            else:
+                self._insertion_count = 0
             
     def _create_db( self, filename, primary_key_columns):
         '''
