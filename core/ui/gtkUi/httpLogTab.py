@@ -48,7 +48,7 @@ class httpLogTab(gtk.HPaned):
         searchLabel = gtk.Label("Search:")
         
         # The search entry
-        self._searchText = searchEntry('r.id == 1')
+        self._searchText = searchEntry('id = 1')
         self._searchText.connect("activate", self._findRequestResponse )
         
         # The button that is used to search
@@ -145,7 +145,9 @@ class httpLogTab(gtk.HPaned):
                 self._showListView( searchResultObjects )
             elif len( searchResultObjects ) == 1:
                 # I got only one response to the database query!
-                self.showReqResById( searchResultObjects[0].id )
+                request, response = searchResultObjects[0]
+                self._reqResViewer.request.showObject( request )
+                self._reqResViewer.response.showObject( response )
             else:
                 self._showDialog('No results', 'The search you performed returned no results.' )
 
@@ -171,10 +173,11 @@ class httpLogTab(gtk.HPaned):
         This method should be called by other tabs when they want to show what request/response pair
         is related to the vulnerability.
         '''
-        result = self._dbHandler.searchById( search_id )
-        if result:
-            self._reqResViewer.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
-            self._reqResViewer.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
+        search_result = self._dbHandler.searchById( search_id )
+        if len(search_result) == 1:
+            request, response = search_result[0]
+            self._reqResViewer.request.showObject( request )
+            self._reqResViewer.response.showObject( response )
         else:
             self._showDialog('Error', 'The id ' + str(id) + 'is not inside the database.')
         
@@ -186,7 +189,9 @@ class httpLogTab(gtk.HPaned):
         self._lstore.clear()
         
         for item in results:
-            iter = self._lstore.append( [item.id, item.method, item.uri, item.code, item.msg, item.time] )
+            request, response = item
+            iter = self._lstore.append( [response.getId(), request.getMethod(), request.getURI(), \
+                                                    response.getCode(), response.getMsg(), response.getWaitTime()] )
         
         # Size search results
         if len(results) < 10:
@@ -200,7 +205,7 @@ class httpLogTab(gtk.HPaned):
 class searchEntry(ValidatedEntry):
     '''Class that inherits from validate entry in order to turn yellow if the text is not valid'''
     def __init__(self, value):
-        self.default_value = "r.id == 1"
+        self.default_value = "id = 1"
         self._match = None
         self.rrh = reqResDBHandler()
         ValidatedEntry.__init__(self, value)

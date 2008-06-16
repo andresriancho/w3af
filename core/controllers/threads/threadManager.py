@@ -102,7 +102,5 @@ class threadManager:
             
     def join( self, ownerObj=None, joinAll=False ):
         self._threadPool.wait( ownerObj, joinAll )
-        # FIXME: This is horrible, the thread manager NEEDS to be REWRITTEN
-        time.sleep(1.5)
 
 threadManagerObj = threadManager()

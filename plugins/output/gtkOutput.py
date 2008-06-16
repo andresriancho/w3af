@@ -29,10 +29,9 @@ from core.controllers.w3afException import *
 # the session name is assigned in the target settings
 import core.data.kb.config as cf
 
-import Queue
+from core.data.db.persist import persist
 
-# The database handler class
-from extlib.buzhug.buzhug import Base
+import Queue
 
 from core.controllers.misc.homeDir import getHomeDir
 
@@ -63,7 +62,7 @@ class gtkOutput(baseOutputPlugin):
         baseOutputPlugin.__init__(self)
         
         sessionName = cf.cf.getData('sessionName')
-        db_req_res_dirName = os.path.join(getHomeDir(), 'sessions', 'db_req_' + sessionName )
+        db_name = os.path.join(getHomeDir(), 'sessions', 'db_' + sessionName )
         
         try:
             os.mkdir(os.path.join(getHomeDir() , 'sessions'))
@@ -73,7 +72,7 @@ class gtkOutput(baseOutputPlugin):
                 raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
             
         try:
-            self._del_dir(db_req_res_dirName)
+            os.remove(db_name)
         except Exception, e:
             # I get here when the session directory for this db wasn't created
             # and when the user has no permissions to remove the directory
@@ -82,38 +81,20 @@ class gtkOutput(baseOutputPlugin):
 
         if kb.kb.getData('gtkOutput', 'db') == []:
             # Create the DB object
+            self._db = persist()
             try:
-                self._db_req_res = Base( db_req_res_dirName )
+                self._db.create( db_name , ['id','url'] )
             except Exception, e:
                 raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
-                try:
-                    # Create the database
-                    self._db_req_res.create( ('id',int),
-                                                        ('method', str), ('uri', str), ('http_version', str), ('request_headers', str), ('postdata', str), 
-                                                        ('code', int), ('msg', str), ('response_headers', str), ('body', str), ('time',float) )
-                except IOError, ioe:
-                    # hmmm , the database already existed...
-                    raise w3afException('An exception was raised while creating the gtkOutput database files: ' + str(e) )
-                else:
-                    kb.kb.save('gtkOutput', 'db', self._db_req_res )
+                kb.kb.save('gtkOutput', 'db', db_name )
         else:
             # Restore it from the kb
-            self._db_req_res = kb.kb.getData('gtkOutput', 'db')
+            self._db = persist()
+            db_name = kb.kb.getData('gtkOutput', 'db')
+            self._db.open( db_name )
+            
     
-    def _del_dir(self,path):
-        for file in os.listdir(path):
-            file_or_dir = os.path.join(path,file)
-            if os.path.isdir(file_or_dir) and not os.path.islink(file_or_dir):
-                self._del_dir(file_or_dir) #it's a directory recursive call to function again
-            else:
-                try:
-                    os.remove(file_or_dir) #it's a file, delete it
-                except Exception, e:
-                    #probably failed because it is not a normal file
-                    raise w3afException('An exception was raised while removing the old database: ' + str(e) )
-        os.rmdir(path) #delete the directory here
-
     def debug(self, msgString, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -129,6 +110,7 @@ class gtkOutput(baseOutputPlugin):
         ''' 
         m = message( 'information', self._cleanString(msgString), time.time(), newLine )
         self._addToQueue( m )
+        self._db.commit()
 
     def error(self, msgString , newLine = True ):
         '''
@@ -146,6 +128,7 @@ class gtkOutput(baseOutputPlugin):
         m = message( 'vulnerability', self._cleanString(msgString), time.time(), newLine )
         m.setSeverity( severity )
         self._addToQueue( m )
+        self._db.commit()
         
     def console( self, msgString, newLine = True ):
         '''
@@ -162,10 +145,7 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            self._db_req_res.insert(response.id, 
-                                                str(request.getMethod()), str(request.getURI()), str('1.1'), str(request.dumpHeaders()), str(request.getData()), 
-                                                response.getCode(), str(response.getMsg()), str(response.dumpHeaders()), str(response.getBody()),
-                                                response.getWaitTime() )
+            self._db.persist( (response.getId(),request.getURI()), (request, response) )
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:

@@ -66,11 +66,12 @@ class FullKBTree(kbtree.KBTree):
         if hasattr(instance, "getId" ):
             if instance.getId() != None:
                 # The request and response that generated the vulnerability
-                result = self._dbHandler.searchById( instance.getId() )
-                if result:
+                search_result = self._dbHandler.searchById( instance.getId() )
+                if len(search_result) == 1:
+                    request, response = search_result[0]
+                    self.kbbrowser.rrV.request.showObject( request )
+                    self.kbbrowser.rrV.response.showObject( response )
                     success = True
-                    self.kbbrowser.rrV.request.show( result.method, result.uri, result.http_version, result.request_headers, result.postdata )
-                    self.kbbrowser.rrV.response.show( result.http_version, result.code, result.msg, result.response_headers, result.body, result.uri )
                     # FIXME: here it should send a httpResponse object!
         
         if success:

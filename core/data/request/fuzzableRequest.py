@@ -56,14 +56,19 @@ class fuzzableRequest:
         @return: a DETAILED str representation of this fuzzable request.
         '''
         strRes = ''
-        strRes += self._method + ' '
-        strRes += getPathQs( self.getURI() ) + ' HTTP/1.1\n'
-        for header in self._headers:
-            strRes += header + ': ' + self._headers[ header ] + '\n'
+        strRes += self.dumpRequestHead()
         strRes += '\n\n'
         strRes += str( self.getData() )
-
         return strRes
+    
+    def dumpRequestHead( self ):
+        '''
+        @return: A string with the head of the request
+        '''
+        res = ''
+        res += self.getMethod() + ' ' + self.getURI() + ' ' + 'HTTP/1.1\n'
+        res += self.dumpHeaders()
+        return res
     
     def dumpHeaders( self ):
         '''

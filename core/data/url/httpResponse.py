@@ -79,27 +79,58 @@ class httpResponse:
     def setRedirURI( self, ru ): self._redirectedURI = ru
     def setCode( self, code ): self._code = code
     def setBody( self, body):
-        # FIXME: Is this code ok?
-        # FIXME: should I parse <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> ?
-    
-        # I'll get the charset from the response headers, and then decode the content using it
-        # content-type: text/html; charset=iso-8859-1
+        
+        # A sample header just to remember how they look like: "content-type: text/html; charset=iso-8859-1"
         lowerCaseHeaders = self.getLowerCaseHeaders()
         if not 'content-type' in lowerCaseHeaders:
-            #hmmm...
+            #hmmm... wtf?!
             self._body = body
         else:
             if not re.findall('text/(\w+)', lowerCaseHeaders['content-type'] ):
                 # Not text, save as it is.
                 self._body = body
             else:
-                # According to the web server, the body content is a text
-                # by default we asume:
-                charset = 'utf-8'
+                # According to the web server, the body content is a text/html content
+                
+                # I'll get the charset from the response headers, and the charset from the HTML content meta tag
+                # if the charsets differ, then I'll decode the text with one encoder, and then with the other; comparing
+                # which of the two generated less encoding errors. The one with less encoding errors is going to be
+                # set as the self._body variable.
+                
+                # Go for the headers
+                headers_charset = ''
                 reCharset = re.findall('charset=([\w-]+)', lowerCaseHeaders['content-type'] )
                 if reCharset:
-                    # well... it seems that they are defining a charset in the response..
-                    charset = reCharset[0]
+                    # well... it seems that they are defining a charset in the response headers..
+                    headers_charset = reCharset[0].lower()
+                    
+                # Now go for the meta tag
+                # I parse <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> ?
+                meta_charset = ''
+                reCharset = re.findall('<meta.*?content=".*?charset=([\w-]+)".*?>', body, re.IGNORECASE )
+                if reCharset:
+                    # well... it seems that they are defining a charset in meta tag...
+                    meta_charset = reCharset[0].lower()
+                
+                if meta_charset == '' and headers_charset != '':
+                    charset = headers_charset
+                elif headers_charset == '' and meta_charset != '':
+                    charset = meta_charset
+                elif headers_charset == '' and meta_charset == '':
+                    # by default we asume:
+                    charset = 'utf-8'
+                elif meta_charset != headers_charset:
+                    om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
+                    meta_charset +'" in the HTML body meta tag.')
+                    # decode the body with the headers_charset
+                    pass
+                    # decode the body with the meta_charset
+                    pass
+                    
+                    if errors_decoding_with_headers >= errors_decoding_with_meta:
+                        charset = meta_charset
+                    else:
+                        charset = headers_charset
                 # Now that we have the charset, we use it!
                 # The return value of the decode function is a unicode string.
                 self._body = body.decode(charset, 'returnEscapedChar')

@@ -189,7 +189,26 @@ class requestPaned(requestResponsePaned):
         self.notebook = gtk.Notebook()
         l = gtk.Label("Request")
         self.notebook.append_page(self, l)
+        
+    def showObject(self, fuzzableRequest):
+        '''
+        Show the data from a fuzzableRequest object in the textViews.
+        '''
+        self.showingRequest = fuzzableRequest
+        head = fuzzableRequest.dumpRequestHead()
+        postdata = fuzzableRequest.getData()
 
+        self._clear(self._upTv)
+        buffer = self._upTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, head)
+        
+        self._downTv.set_sensitive(True)
+        self._clear(self._downTv)
+        buffer = self._downTv.get_buffer()
+        iter = buffer.get_end_iter()
+        buffer.insert(iter, postdata)
+        
     def show( self, method, uri, version, headers, postData ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
@@ -271,8 +290,10 @@ class responsePaned(requestResponsePaned):
         self._renderingWidget.render_data(body, long(len(body)), baseURI , mimeType)
         
 
-    def httpShow(self, httpResp):
-        '''Show the raw data.'''
+    def showObject(self, httpResp):
+        '''
+        Show the data from a httpResp object in the textViews.
+        '''
 
         self.showingResponse = httpResp
         resp = httpResp.dumpResponseHead()

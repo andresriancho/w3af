@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import sqlite3
+
 try:
     from cPickle import Pickler, Unpickler
 except ImportError:
@@ -30,17 +31,20 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-    
+
+if __name__ != '__main__':
+    from core.controllers.w3afException import w3afException
+
 class persist:
     '''
-    A class that persists objects to a file.
+    A class that persists objects to a file using sqlite3 and pickle.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
         self._filename = None
         self._db = None
-        self._primary_key_getters = None
+        self._primary_key_columns = None
         
         self._insertion_count = 0
     
@@ -51,11 +55,12 @@ class persist:
         @parameter filename: The filename where the database is.
         '''
         try:
-            self._db = sqlite3.connect(filename)
+            ### FIXME: check_same_thread=False
+            self._db = sqlite3.connect(filename, check_same_thread=False)
         except Exception, e:
-            raise w3afException('Failed to create the database in file "' + primary_key_getters +'". Exception: ' + str(e) )
+            raise w3afException('Failed to create the database in file "' + primary_key_columns +'". Exception: ' + str(e) )
         else:
-            # Read the column names to recreate self._primary_key_getters
+            # Read the column names to recreate self._primary_key_columns
             pk_getters = []
             
             c = self._db.cursor()
@@ -69,23 +74,24 @@ class persist:
                 col_names.remove('raw_pickled_data')
                 
                 for col in col_names: 
-                    pk_getters.append('get' + col )
+                    pk_getters.append( col )
                     
                 # Now we save the data to the attributes
                 self._filename = filename
-                self._primary_key_getters = pk_getters
+                self._primary_key_columns = pk_getters
     
-    def create( self, filename, primary_key_getters ):
+    def create( self, filename, primary_key_columns ):
         '''
-        @parameter primary_key_getters: A list of getters that we use to get the values for the primary key.
+        @parameter primary_key_columns: A list of getters that we use to get the values for the primary key.
         @parameter filename: The file name where to save the data.
         '''
-        self._create_db( filename, primary_key_getters)
+        self._create_db( filename, primary_key_columns)
         
-    def persist( self, obj ):
+    def persist( self, primary_key_values, obj ):
         '''
         Save an object to a file; if this is the first object to persist, we are going to create the database.
         
+        @parameter primary_key_values: A tuple that contains the values of the primary key.
         @parameter obj: The object to persist.
         @return: None
         '''
@@ -96,12 +102,11 @@ class persist:
         
         # The primary key data
         bindings = []
-        for getter_name in self._primary_key_getters:
+        for column_number, column_name in enumerate(self._primary_key_columns):
             # Create the stm
             insert_stm += "(?) ,"
             # Get the value
-            getter = getattr( obj, getter_name )
-            value = getter()
+            value = primary_key_values[column_number]
             bindings.append( str(value) )
             
         # And the pickled data
@@ -130,35 +135,39 @@ class persist:
             self._db.commit()
             self._insertion_count = 0
             
-    def _create_db( self, filename, primary_key_getters):
+    def _create_db( self, filename, primary_key_columns):
         '''
-        Create the database; the columns of the database are going to be the primary_key_getters.
+        Create the database; the columns of the database are going to be the primary_key_columns.
         
         @parameter filename: The filename where the object database is.
-        @parameter primary_key_getters: The primary key getters.
+        @parameter primary_key_columns: The primary key getters.
         @return: None
         '''
         try:
-            self._db = sqlite3.connect(filename)
+            ### FIXME: check_same_thread=False
+            self._db = sqlite3.connect(filename, check_same_thread=False)
         except Exception, e:
-            raise w3afException('Failed to create the database in file "' + primary_key_getters +'". Exception: ' + str(e) )
+            raise w3afException('Failed to create the database in file "' + primary_key_columns +'". Exception: ' + str(e) )
         else:
             # Create the table for the data
             database_creation = 'create table data_table'
             database_creation += '('
-            for getter_name in primary_key_getters:
-                attr_type = 'text PRIMARY KEY'
-                database_creation += getter_name[3:] + ' ' + attr_type +' ,'
+            for column_name in primary_key_columns:
+                attr_type = 'text'
+                database_creation += column_name + ' ' + attr_type +' ,'
             
             # And now we add the column for the pickle
-            database_creation = database_creation[:-1] + ', raw_pickled_data blob )'
+            database_creation = database_creation[:-1] + ', raw_pickled_data blob, '
+            # Finally the PK
+            database_creation += 'PRIMARY KEY ('+','.join(primary_key_columns)+'))'
+            
             try:
                 self._db.execute(database_creation)
             except Exception, e:
                 raise e
             else:
                 self._filename = filename
-                self._primary_key_getters = primary_key_getters
+                self._primary_key_columns = primary_key_columns
     
     def retrieve( self, primary_key ):
         '''
@@ -171,16 +180,15 @@ class persist:
         if not self._db:
             raise w3afException('No database has been initialized.')
         
-        if len(primary_key) != len(self._primary_key_getters):
-            raise w3afException('The length of the primary_key should be equal to the length of the primary_key_getters.')
+        if len(primary_key) != len(self._primary_key_columns):
+            raise w3afException('The length of the primary_key should be equal to the length of the primary_key_columns.')
         
         # Get the row
         c = self._db.cursor()
         select_stm = "select * from data_table"
         select_stm += " where "
         bindings = []
-        columns = [ i[3:] for i in self._primary_key_getters ]
-        for column_number, column_name in enumerate(columns):
+        for column_number, column_name in enumerate(self._primary_key_columns):
             select_stm += column_name + '= (?)'
             bindings.append( primary_key[column_number] )
         
@@ -194,6 +202,43 @@ class persist:
             f = StringIO( str(row[-1]) )
             obj = Unpickler(f).load()
             return obj
+    
+    def retrieve_all( self, search_string ):
+        '''
+        This method returns a list of objects (if any is found).
+        
+        Examples:
+            if search_string is 
+                id='1' and url='abc'
+            you'll get all object that match:
+                SELECT * FROM DATA_TABLE WHERE id=1 AND url ='abc'
+        
+        @parameter search_string: The user specifies here the search parameters to use in the retrieve process.
+        @return: An object of the type that was persisted; None if the PK isn't in the database.
+        '''
+        if not self._db:
+            raise w3afException('No database has been initialized.')
+        
+        # Get the row(s)
+        c = self._db.cursor()
+        select_stm = "select * from data_table"
+        # This is a SQL injection! =)
+        select_stm += " where " + search_string
+        try:
+            c.execute( select_stm )
+            rows = c.fetchall()
+        except Exception, e:
+            return []
+        else:
+            res = []
+            
+            # unpickle
+            for row in rows:
+                f = StringIO( str(row[-1]) )
+                obj = Unpickler(f).load()
+                res.append(obj)
+                
+            return res
             
     def raw_stm( self, stm ):
         '''
@@ -211,7 +256,7 @@ class persist:
         '''
         self._db.close()
         self._db.close()
-        self._primary_key_getters = None
+        self._primary_key_columns = None
         self._filename = None
         
         
@@ -255,17 +300,17 @@ class test_class:
         
 if __name__ == '__main__':
     p = persist()
-    p.create('/tmp/a.sqlite', primary_key_getters=['getId',] )
+    p.create('/tmp/a.sqlite', primary_key_columns=['id',] )
     
     print '1- Loading...'
     tc = test_class()
     for i in xrange(10000):
         tc.setId( i )
-        p.persist( tc )
+        p.persist( (i,), tc )
     
     print '1- Retrieving...'
     for i in xrange(10000):
-        p.retrieve( [i,] )
+        p.retrieve( (i,) )
     p.close()
     
     p = persist()
@@ -274,13 +319,18 @@ if __name__ == '__main__':
     tc = test_class()
     for i in xrange(10000, 20000):
         tc.setId( i )
-        p.persist( tc )
+        p.persist( (i,) , tc )
     
     print '2- Retrieving...'
     for i in xrange(10000, 20000):
         tc2 = p.retrieve( [i,] )
-    p.close()
+    
     
     if tc2.getId() == 19999:
         print 'Success!'
+        
+    if len(p.retrieve_all('id = 5 or id = 6')) == 2:
+        print 'Success!'
+        
+    p.close()
  
