@@ -72,7 +72,8 @@ class FullKBTree(kbtree.KBTree):
                     self.kbbrowser.rrV.request.showObject( request )
                     self.kbbrowser.rrV.response.showObject( response )
                     success = True
-                    # FIXME: here it should send a httpResponse object!
+                else:
+                    om.out.error('Failed to find request/response with id: ' + str(instance.getId()) + ' in the database.' )
         
         if success:
             self.kbbrowser.rrV.set_sensitive(True)

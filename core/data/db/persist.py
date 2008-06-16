@@ -81,6 +81,7 @@ class persist:
         try:
             ### FIXME: check_same_thread=False
             self._db = sqlite3.connect(filename, check_same_thread=False)
+            self._db.text_factory = str
         except Exception, e:
             raise w3afException('Failed to create the database in file "' + primary_key_columns +'". Exception: ' + str(e) )
         else:
@@ -122,8 +123,6 @@ class persist:
         if not self._db:
             raise w3afException('You have to call open or create first.')
         
-        self.getLock()
-        
         insert_stm = "insert into data_table values ("
 
         # The primary key data
@@ -143,6 +142,8 @@ class persist:
         bindings.append( f.getvalue() )
         
         # Save the object
+        self.getLock()
+        
         c = self._db.cursor()
         c.execute( insert_stm, bindings )
         c.close()
@@ -174,6 +175,7 @@ class persist:
         try:
             ### FIXME: check_same_thread=False
             self._db = sqlite3.connect(filename, check_same_thread=False)
+            self._db.text_factory = str
         except Exception, e:
             raise w3afException('Failed to create the database in file "' + primary_key_columns +'". Exception: ' + str(e) )
         else:
@@ -211,6 +213,8 @@ class persist:
         if len(primary_key) != len(self._primary_key_columns):
             raise w3afException('The length of the primary_key should be equal to the length of the primary_key_columns.')
         
+        
+        
         # Get the row
         c = self._db.cursor()
         select_stm = "select * from data_table"
@@ -220,12 +224,15 @@ class persist:
             select_stm += column_name + '= (?)'
             bindings.append( primary_key[column_number] )
         
+        self.getLock()
         try:
             c.execute( select_stm, bindings )
             row = c.fetchone()
         except Exception, e:
+            self.releaseLock()
             return None
         else:
+            self.releaseLock()
             # unpickle
             f = StringIO( str(row[-1]) )
             obj = Unpickler(f).load()
@@ -252,12 +259,17 @@ class persist:
         select_stm = "select * from data_table"
         # This is a SQL injection! =)
         select_stm += " where " + search_string
+        
+        self.getLock()
         try:
             c.execute( select_stm )
             rows = c.fetchall()
         except Exception, e:
+            self.releaseLock()
+            raise e
             return []
         else:
+            self.releaseLock()
             res = []
             
             # unpickle
