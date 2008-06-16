@@ -91,7 +91,7 @@ class ManualRequests(entries.RememberingWindow):
 
         # activate and show
         self.reqresp.response.notebook.set_sensitive(True)
-        self.reqresp.response.httpShow(httpResp)
+        self.reqresp.response.showObject(httpResp)
 
 
 class PreviewWindow(entries.RememberingWindow):
@@ -345,6 +345,6 @@ class FuzzyRequests(entries.RememberingWindow):
 
         self.resultReqResp.request.rawShow(realreq, realbody)
         if responseObj is not None:
-            self.resultReqResp.response.httpShow(responseObj)
+            self.resultReqResp.response.showObject(responseObj)
         else:
             self.resultReqResp.response.showError(errorMsg)
