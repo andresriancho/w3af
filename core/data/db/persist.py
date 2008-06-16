@@ -71,10 +71,7 @@ class persist:
                 raise w3afException('Exception found while opening database: ' + str(e) )
             else:
                 col_names = [ r[1] for r in table_info ]
-                col_names.remove('raw_pickled_data')
-                
-                for col in col_names: 
-                    pk_getters.append( col )
+                pk_getters = [ c for c in col_names if c != 'raw_pickled_data']
                     
                 # Now we save the data to the attributes
                 self._filename = filename
