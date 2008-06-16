@@ -53,13 +53,10 @@ from core.ui.gtkUi.splash import Splash
 splash = Splash()
 
 try:
-    import buzhug
+    import sqlite3
 except:
-    try:
-        from extlib.buzhug.buzhug import Base
-    except:
-        print 'You have to install the buzhug database module to be able to run the GTK user interface. Available at: http://buzhug.sourceforge.net/'
-        sys.exit( 1 )
+    print 'You have to install the sqlite3 database module to be able to run the GTK user interface. On debian based distributions you should install: python-pysqlite2'
+    sys.exit( 1 )
 
 import threading, shelve, os
 import core.controllers.w3afCore
