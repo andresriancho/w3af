@@ -64,10 +64,10 @@ class Compare(entries.RememberingWindow):
         ])
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('ReqHeaders', gtk.STOCK_GOTO_TOP, '_Request Headers', None, 'Show/Hide the request headers', self._toggle_reqhead, True),
-            ('ReqBody',    gtk.STOCK_GO_UP,    '_Request Body',    None, 'Show/Hide the request body',    self._toggle_reqbody, True),
-            ('RespHeaders', gtk.STOCK_GO_DOWN,     '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, False),
-            ('RespBody',    gtk.STOCK_GOTO_BOTTOM, '_Response Body',    None, 'Show/Hide the response body',    self._toggle_respbody, False),
+            ('ReqHeaders', gtk.STOCK_GOTO_TOP, '_Request Headers', None, 'Show/Hide the request headers', self._toggle_reqhead, False),
+            ('ReqBody',    gtk.STOCK_GO_UP,    '_Request Body',    None, 'Show/Hide the request body',    self._toggle_reqbody, False),
+            ('RespHeaders', gtk.STOCK_GO_DOWN,     '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
+            ('RespBody',    gtk.STOCK_GOTO_BOTTOM, '_Response Body',    None, 'Show/Hide the response body',    self._toggle_respbody, True),
         ])
 
         # finish the toolbar
@@ -124,7 +124,7 @@ class Compare(entries.RememberingWindow):
         self.comp.leftBaseBox.pack_start(box, True, False)
 
         # this four bool list indicates which texts to show
-        self.showText = [True, True, False, False]
+        self.showText = [False, False, True, True]
 
         # other attributes
         self.elements = []
