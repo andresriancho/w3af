@@ -230,7 +230,7 @@ class persist:
             row = c.fetchone()
         except Exception, e:
             self.releaseLock()
-            return None
+            raise e
         else:
             self.releaseLock()
             # unpickle
@@ -267,7 +267,6 @@ class persist:
         except Exception, e:
             self.releaseLock()
             raise e
-            return []
         else:
             self.releaseLock()
             res = []
