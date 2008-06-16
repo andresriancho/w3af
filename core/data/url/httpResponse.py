@@ -21,11 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.parsers.urlParser import *
 
+STRING_TO_IDENTIFY_ERRORS = '077b8d51aef4843c24efa7ad11ec56c6'
+
 import codecs
 def _returnEscapedChar(exc):
     slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
     return ( unicode(slash_x_XX) , exc.end)
+def _returnStringToIdentifyError(exc):
+    return ( unicode('077b8d51aef4843c24efa7ad11ec56c6') , exc.end)
+    
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
+codecs.register_error("returnStringToIdentifyError", _returnStringToIdentifyError)
 
 import re
 
@@ -122,10 +128,14 @@ class httpResponse:
                 elif meta_charset != headers_charset:
                     om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
                     meta_charset +'" in the HTML body meta tag.')
+                    
                     # decode the body with the headers_charset
-                    pass
+                    decoded_with_headers = body.decode(headers_charset, 'returnStringToIdentifyError')
+                    errors_decoding_with_headers = decoded_with_headers.count(STRING_TO_IDENTIFY_ERRORS)
+                    
                     # decode the body with the meta_charset
-                    pass
+                    decoded_with_meta = body.decode(meta_charset, 'returnStringToIdentifyError')
+                    errors_decoding_with_meta = decoded_with_meta.count(STRING_TO_IDENTIFY_ERRORS)
                     
                     if errors_decoding_with_headers >= errors_decoding_with_meta:
                         charset = meta_charset
