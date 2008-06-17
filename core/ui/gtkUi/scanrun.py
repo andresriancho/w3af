@@ -26,6 +26,7 @@ import re
 from . import helpers, kbtree, messages, httpLogTab, reqResViewer, craftedRequests
 import core.data.kb.knowledgeBase as kb
 import webbrowser
+import os
 
 # To show request and responses
 from core.data.db.reqResDBHandler import reqResDBHandler
@@ -274,13 +275,21 @@ class URLsTree(gtk.TreeView):
 
         gm = gtk.Menu()
 
-        e = gtk.MenuItem("Open with Manual Request Editor...")
+        e = gtk.ImageMenuItem("Open with Manual Request Editor...")
+        image = gtk.Image()
+        image.set_from_stock(gtk.STOCK_INDEX, 14)
+        e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.ManualRequests)
         gm.append( e )
-        e = gtk.MenuItem("Open with Fuzzy Request Editor...")
+        
+        image = gtk.Image()
+        image.set_from_stock(gtk.STOCK_PROPERTIES, 14)
+        e = gtk.ImageMenuItem("Open with Fuzzy Request Editor...")
+        e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
         gm.append( e )
-        e = gtk.MenuItem("Open with default browser...")
+        
+        e = gtk.ImageMenuItem("Open with default browser...")
         e.connect('activate', self._openBrowser, fullurl)
         gm.append( e )
 
