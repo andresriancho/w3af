@@ -157,13 +157,13 @@ class Compare(entries.RememberingWindow):
         self.elements.append(element)
         newlen = len(self.elements)
         self.showingPage = newlen-1
-        realtext = self._getElementText()
+        title, realtext = self._getElementText()
 
         # acciones especiales
         if newlen == 1:
             # first one, turn everything on and put the text also in the left
             self.sensitiveAll(True)
-            self.comp.setLeftPane("", realtext)
+            self.comp.setLeftPane(title, realtext)
             self.leftElement = element
         else:
             # more than one, we can delete any
@@ -173,7 +173,7 @@ class Compare(entries.RememberingWindow):
             self.clusterbut.set_sensitive(True)
 
         # put the text in the right and adjust the page selector 
-        self.comp.setRightPane("", realtext)
+        self.comp.setRightPane(title, realtext)
         self.pagesControl.activate(newlen)
         self.pagesControl.setPage(newlen)
 
@@ -192,13 +192,14 @@ class Compare(entries.RememberingWindow):
         if not any(r[2] for r in self.elements):
             self.clusterbut.set_sensitive(False)
 
-        realtext = self._getElementText()
-        self.comp.setRightPane("", realtext)
+        title, realtext = self._getElementText()
+        self.comp.setRightPane(title, realtext)
 
     def _getElementText(self, element=None):
         if element is None:
             element = self.elements[self.showingPage]
         (reqhead, reqbody, httpResp) = element
+        title = "Id: %d" % httpResp.id
         if httpResp is not None:
             resphead = httpResp.dumpResponseHead()
             respbody = httpResp.getBody()
@@ -207,17 +208,17 @@ class Compare(entries.RememberingWindow):
             respbody = ""
         alltexts = (reqhead, reqbody, resphead, respbody)
         realtext = "\n".join(x for x,y in zip(alltexts, self.showText) if y) + "\n"
-        return realtext
+        return title, realtext
 
     def _rightToLeft(self, widg):
         self.leftElement = self.elements[self.showingPage]
-        realtext = self._getElementText()
-        self.comp.setLeftPane("", realtext)
+        title, realtext = self._getElementText()
+        self.comp.setLeftPane(title, realtext)
 
     def _pageChange(self, page):
         self.showingPage = page
-        realtext = self._getElementText()
-        self.comp.setRightPane("", realtext)
+        title, realtext = self._getElementText()
+        self.comp.setRightPane(title, realtext)
 
     def _toggle_reqhead(self, action):
         self._toggle_show(0)
@@ -230,8 +231,8 @@ class Compare(entries.RememberingWindow):
 
     def _toggle_show(self, ind):
         self.showText[ind] = not self.showText[ind]
-        self.comp.setLeftPane("", self._getElementText(self.leftElement))
-        self.comp.setRightPane("", self._getElementText())
+        self.comp.setLeftPane(*self._getElementText(self.leftElement))
+        self.comp.setRightPane(*self._getElementText())
 
     def _help(self, action):
         print "FIXME: implement help!!"

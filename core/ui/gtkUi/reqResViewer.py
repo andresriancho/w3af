@@ -99,7 +99,6 @@ class reqResViewer(gtk.VBox):
 
     def _sendReqResp(self, widg):
         requp,reqdn = self.request.getBothTexts()
-        # FIXME: here we should also send the title!
         self.w3af.mainwin.commCompareTool((requp, reqdn, self.response.showingResponse))
 
 class requestResponsePaned(gtk.VPaned):
