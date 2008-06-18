@@ -41,7 +41,6 @@ class w3afLocalProxyHandler(w3afProxyHandler):
     '''
     The handler that traps requests and adds them to the queue.
     '''
-    
     def doAll( self ):
         '''
         This method handles EVERY request that were send by the browser.
@@ -49,31 +48,34 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         # first of all, we create a fuzzable request based on the attributes that are set to this object
         fuzzReq = self._createFuzzableRequest()
         
-        # Now we check if we need to add this to the queue, or just let it go through.
-        if self._shouldBeTrapped(fuzzReq):
-            # Add it to the request queue, and wait for the user to edit the request...
-            self.server.w3afLayer._requestQueue.put(fuzzReq)
-            # waiting...
-            while 1:
-                if id(fuzzReq) in self.server.w3afLayer._editedRequests:
-                    head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
-                    del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
-                    self._urlOpener.sendRawRequest( head,  body )
-                else:
-                    time.sleep(0.3)
-        else:
-            # Not to be trapped, send unchanged.
-            try:
+        try:
+            # Now we check if we need to add this to the queue, or just let it go through.
+            if self._shouldBeTrapped(fuzzReq):
+                res = self._do_trap(fuzzReq)
+            else:
                 # Send the request to the remote webserver
                 res = self._sendFuzzableRequest(fuzzReq)
+        except Exception, e:
+            self._sendError( e )
+        else:
+            try:
+                self._sendToBrowser( res )
             except Exception, e:
-                self._sendError( e )
-            else:
-                try:
-                    self._sendToBrowser( res )
-                except Exception, e:
-                    om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )        
+                om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )        
     
+    def _do_trap(self, fuzzReq):
+        # Add it to the request queue, and wait for the user to edit the request...
+        self.server.w3afLayer._requestQueue.put(fuzzReq)
+        # waiting...
+        while 1:
+            if id(fuzzReq) in self.server.w3afLayer._editedRequests:
+                head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
+                del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
+                res = self._urlOpener.sendRawRequest( head,  body )
+                return res
+            else:
+                time.sleep(0.2)
+                
     def _sendFuzzableRequest(self, fuzzReq):
         '''
         Sends a fuzzable request to the remote web server.
@@ -195,6 +197,8 @@ class localproxy(proxy):
         return self._trap
         
     def sendRawRequest( self, originalFuzzableRequest, head, postdata):
+        # the handler is polling this dict and will extract the information from it and
+        # then send it to the remote web server
         self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)
 
 if __name__ == '__main__':
