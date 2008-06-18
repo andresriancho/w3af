@@ -20,69 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+if __name__ == '__main__':
+    import sys
+    sys.path.insert(0, '/home/dz0/w3af/w3af/trunk')
+    
 from core.controllers.daemons.proxy import proxy
 from core.controllers.daemons.proxy import w3afProxyHandler
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import getExtension
 from core.controllers.w3afException import w3afException
-import re
+import core.controllers.outputManager as om
 
+import time
+import re
 import Queue
 
 IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'swf', 'png', 'bmp',  'jpe',  'ico',  'ps',  'ppm',  'tif',  'tiff']
-
-class localproxy(proxy):
-    '''
-    This is the local proxy server that is used by the local proxy GTK user interface to perform all its magic ;)
-    '''
-    def __init__( self, ip, port, urlOpener, proxyHandler=w3afLocalProxyHandler, proxyCert = 'core/controllers/daemons/mitm.crt' ):
-        '''
-        @parameter ip: IP address to bind
-        @parameter port: Port to bind
-        @parameter urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
-        @parameter proxyHandler: A class that will know how to handle requests from the browser
-        @parameter proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
-        '''
-        proxy.__init__(self,  ip, port, urlOpener, proxyHandler, proxyCert)
-
-        # Internal vars
-        self._requestQueue = Queue.Queue()
-        
-        # User configured parameters
-        self._whatToTrap= re.compile('.*')
-        self._trap = True
-        self._ignoreImages = True
-
-    def getTrappedRequest(self):
-        '''
-        To be called by the gtk user interface every 400ms.
-        @return: A fuzzable request object, or None if the queue is empty.
-        '''
-        return self._requestQueue.get()
-        
-    def getIgnoreImages(self):
-        return self._ignoreImages
-    
-    def setIgnoreImages(self,  ignore):
-        '''
-        @parameter ignore: True if we want to let requests for images go through.
-        '''
-        self._ignoreImages = ignore
-        
-    def setWhatToTrap(self,  regex ):
-        try:
-            self._whatToTrap= re.compile(regex)
-        except:
-            raise w3afException('The regular expression you configured is invalid.')
-        
-    def setTrap(self,  trap):
-        '''
-        @parameter trap: True if we want to trap requests.
-        '''
-        self._trap = trap
-        
-    def getTrap(self):
-        return self._trap
         
 class w3afLocalProxyHandler(w3afProxyHandler):
     '''
@@ -98,8 +51,18 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         
         # Now we check if we need to add this to the queue, or just let it go through.
         if self._shouldBeTrapped(fuzzReq):
-            self.server._requestQueue.put(fuzzReq)
+            # Add it to the request queue, and wait for the user to edit the request...
+            self.server.w3afLayer._requestQueue.put(fuzzReq)
+            # waiting...
+            while 1:
+                if id(fuzzReq) in self.server.w3afLayer._editedRequests:
+                    head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
+                    del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
+                    self._urlOpener.sendRawRequest( head,  body )
+                else:
+                    time.sleep(0.3)
         else:
+            # Not to be trapped, send unchanged.
             try:
                 # Send the request to the remote webserver
                 res = self._sendFuzzableRequest(fuzzReq)
@@ -141,13 +104,13 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         If the request needs to be trapped or not.
         @parameter fuzzReq: The request to analyze.
         '''
-        if not self.server._trap:
+        if not self.server.w3afLayer._trap:
             return False
             
-        if self.server._ignoreImages and getExtension( fuzzReq.getURL() ).lower() in IMAGE_EXTENSIONS:
+        if self.server.w3afLayer._ignoreImages and getExtension( fuzzReq.getURL() ).lower() in IMAGE_EXTENSIONS:
             return False
             
-        if not self.server._whatToTrap.search( fuzzReq.getURL() ):
+        if not self.server.w3afLayer._whatToTrap.search( fuzzReq.getURL() ):
             return False
         
         return True
@@ -174,3 +137,78 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             fuzzReq.setData(postData)
         
         return fuzzReq
+
+
+class localproxy(proxy):
+    '''
+    This is the local proxy server that is used by the local proxy GTK user interface to perform all its magic ;)
+    '''
+    
+    def __init__( self, ip, port, urlOpener, proxyCert = 'core/controllers/daemons/mitm.crt' ):
+        '''
+        @parameter ip: IP address to bind
+        @parameter port: Port to bind
+        @parameter urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
+        @parameter proxyHandler: A class that will know how to handle requests from the browser
+        @parameter proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
+        '''
+        proxy.__init__(self,  ip, port, urlOpener, w3afLocalProxyHandler, proxyCert)
+
+        # Internal vars
+        self._requestQueue = Queue.Queue()
+        self._editedRequests = {}
+        
+        # User configured parameters
+        self._whatToTrap= re.compile('.*')
+        self._trap = True
+        self._ignoreImages = True
+
+    def getTrappedRequest(self):
+        '''
+        To be called by the gtk user interface every 400ms.
+        @return: A fuzzable request object, or None if the queue is empty.
+        '''
+        return self._requestQueue.get()
+        
+    def getIgnoreImages(self):
+        return self._ignoreImages
+    
+    def setIgnoreImages(self,  ignore):
+        '''
+        @parameter ignore: True if we want to let requests for images go through.
+        '''
+        self._ignoreImages = ignore
+        
+    def setWhatToTrap(self,  regex ):
+        try:
+            self._whatToTrap= re.compile(regex)
+        except:
+            raise w3afException('The regular expression you configured is invalid.')
+        
+    def setTrap(self,  trap):
+        '''
+        @parameter trap: True if we want to trap requests.
+        '''
+        self._trap = trap
+        
+    def getTrap(self):
+        return self._trap
+        
+    def sendRawRequest( self, originalFuzzableRequest, head, postdata):
+        self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)
+
+if __name__ == '__main__':
+    from core.data.url.xUrllib import xUrllib
+    
+    lp = localproxy('127.0.0.1', 8080, xUrllib() )
+    lp.start2()
+    
+    for i in xrange(100):
+        time.sleep(1)
+        tr = lp.getTrappedRequest()
+        if tr:
+            print tr
+            lp.sendRawRequest( tr,  tr.dumpRequestHead(), tr.getData() )
+        else:
+            print 'Waiting...'
+        

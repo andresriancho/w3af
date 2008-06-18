@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.8.dtd">
 <!-- Tasks file for project w3af -->
-<!-- Saved: 2008-06-14, 10:01:01 -->
+<!-- Saved: 2008-06-17, 09:27:45 -->
 <Tasks version="3.8">
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: review this, I'm not sure *when* activate this</Description>
@@ -240,32 +240,6 @@
       <Linenumber>35</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: What if we have something like this: ramosmejia_direcci&amp;oacute;n@buenosaires.gov.ar ?!?!</Description>
-    <Created>2008-05-27, 23:23:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>abstractParser.py</Name>
-      </Filename>
-      <Linenumber>60</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Note that this parser as it is will return n@buenosaires.gov.ar</Description>
-    <Created>2008-05-27, 23:23:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>abstractParser.py</Name>
-      </Filename>
-      <Linenumber>61</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: this list should be updated from time to time, automatically.</Description>
     <Created>2008-05-27, 23:28:44</Created>
@@ -344,45 +318,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: To compare!"</Description>
-    <Created>2008-06-07, 12:42:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>101</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="0">
-    <Description>TODO: This should be centered</Description>
-    <Created>2008-06-07, 12:42:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>136</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Show images</Description>
-    <Created>2008-06-07, 12:42:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>294</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Description>
     <Created>2008-06-10, 22:51:17</Created>
     <Resource>
@@ -419,21 +354,34 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: This is horrible, the thread manager NEEDS to be REWRITTEN</Description>
-    <Created>2008-06-10, 22:52:44</Created>
+    <Description>FIXME: What if we have something like this: ramosmejia_direcci&amp;oacute;n@buenosaires.gov.ar ?!?!</Description>
+    <Created>2008-06-14, 12:09:15</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>threads</Dir>
-        <Name>threadManager.py</Name>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>abstractParser.py</Name>
       </Filename>
-      <Linenumber>105</Linenumber>
+      <Linenumber>60</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Note that this parser as it is will return n@buenosaires.gov.ar</Description>
+    <Created>2008-06-14, 12:09:15</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>abstractParser.py</Name>
+      </Filename>
+      <Linenumber>61</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Should I encode here?</Description>
-    <Created>2008-06-10, 23:20:31</Created>
+    <Created>2008-06-15, 23:35:52</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -446,7 +394,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: Should the uri be http://host + uri ?</Description>
-    <Created>2008-06-10, 23:20:31</Created>
+    <Created>2008-06-15, 23:35:52</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -459,7 +407,7 @@
   </Task>
   <Task priority="1" completed="0" bugfix="0">
     <Description>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Description>
-    <Created>2008-06-10, 23:20:31</Created>
+    <Created>2008-06-15, 23:35:52</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -471,67 +419,80 @@
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: This should have a different globals and locals</Description>
-    <Created>2008-06-10, 23:22:26</Created>
+    <Description>FIXME: implement help!!"</Description>
+    <Created>2008-06-16, 11:23:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>reqResDBHandler.py</Name>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>compare.py</Name>
       </Filename>
-      <Linenumber>112</Linenumber>
+      <Linenumber>237</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
     <Description>FIXME: handle those errors!</Description>
-    <Created>2008-06-10, 23:26:20</Created>
+    <Created>2008-06-16, 14:42:49</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
         <Dir>output</Dir>
         <Name>gtkOutput.py</Name>
       </Filename>
-      <Linenumber>80</Linenumber>
+      <Linenumber>79</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Is this code ok?</Description>
-    <Created>2008-06-11, 00:17:50</Created>
+    <Description>FIXME: check_same_thread=False</Description>
+    <Created>2008-06-16, 15:57:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>httpResponse.py</Name>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
       </Filename>
       <Linenumber>82</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: should I parse &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt; ?</Description>
-    <Created>2008-06-11, 00:17:50</Created>
+    <Description>FIXME: check_same_thread=False</Description>
+    <Created>2008-06-16, 15:57:31</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>httpResponse.py</Name>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
       </Filename>
-      <Linenumber>83</Linenumber>
+      <Linenumber>176</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="0" bugfix="1">
-    <Description>FIXME: Sacar este reload!"</Description>
-    <Created>2008-06-11, 23:42:08</Created>
+  <Task priority="1" completed="0" bugfix="0">
+    <Description>TODO: This should be centered</Description>
+    <Created>2008-06-16, 23:05:30</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>ui</Dir>
         <Dir>gtkUi</Dir>
-        <Name>main.py</Name>
+        <Name>reqResViewer.py</Name>
       </Filename>
-      <Linenumber>706</Linenumber>
+      <Linenumber>137</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="0" bugfix="1">
+    <Description>FIXME: Show images</Description>
+    <Created>2008-06-16, 23:05:30</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>335</Linenumber>
     </Resource>
   </Task>
 </Tasks>

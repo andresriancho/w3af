@@ -148,6 +148,7 @@ class proxy(w3afThread):
         else:
             message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
             om.out.debug( message )
+            self._server.w3afLayer = self
             self._running = True
             self._server.serve_forever()
 

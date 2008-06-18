@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project w3af -->
-<!-- Saved: 2008-05-31, 10:26:21 -->
+<!-- Saved: 2008-06-17, 09:27:44 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3809,6 +3809,46 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>clusterView.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>db</Dir>
+      <Name>persist.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Dir>comparator</Dir>
+      <Name>comparator.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Dir>comparator</Dir>
+      <Name>diffutil.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Dir>comparator</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Dir>comparator</Dir>
+      <Name>test.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>compare.py</Name>
     </Source>
   </Sources>
   <Forms>
