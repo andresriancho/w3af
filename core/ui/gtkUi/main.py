@@ -93,6 +93,7 @@ ui_menu = """
       <menuitem action="FuzzyRequest"/>
       <menuitem action="EncodeDecode"/>
       <menuitem action="Compare"/>
+      <menuitem action="Proxy"/>
     </menu>
     <menu action="ConfigurationMenu">
       <menuitem action="URLconfig"/>
@@ -115,6 +116,7 @@ ui_menu = """
     <toolitem action="FuzzyRequest"/>
     <toolitem action="EncodeDecode"/>
     <toolitem action="Compare"/>
+    <toolitem action="Proxy"/>
   </toolbar>
 </ui>
 """
@@ -164,6 +166,7 @@ class WindowsCommunication(object):
 
     def destroy(self):
         self.isActive = False
+        return True
 
     def create(self, info=None):
         if self.isActive:
@@ -254,6 +257,7 @@ class MainApp(object):
             ('FuzzyRequest', gtk.STOCK_PROPERTIES, '_Fuzzy Request', None, 'Generate fuzzy HTTP requests', self._fuzzy_request),
             ('EncodeDecode', gtk.STOCK_CONVERT, '_Encode/Decode', None, 'Encodes and Decodes in different ways', self._encode_decode),
             ('Compare', gtk.STOCK_ZOOM_100, '_Compare', None, 'Compare different requests and responses', self._compare),
+            ('Proxy', gtk.STOCK_CONNECT, '_Proxy', None, 'Proxies the HTTP requests, allowing their modification', self._proxy_tool),
             ('ToolsMenu', None, '_Tools'),
 
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
@@ -319,7 +323,7 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 11
+        assert toolbar.get_n_items() == 12
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(3)
@@ -701,6 +705,10 @@ class MainApp(object):
     def _compare(self, action):
         '''Generate fuzzy HTTP requests.'''
         self.commCompareTool.create()
+
+    def _proxy_tool(self, action):
+        '''Proxies the HTTP calls.'''
+        craftedRequests.ProxiedRequests(self.w3af)
 
         
     

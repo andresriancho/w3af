@@ -68,6 +68,7 @@ class httpLogTab(gtk.HPaned):
         
         # Create the req/res viewer
         self._reqResViewer = reqResViewer.reqResViewer(w3af, editableRequest=False, editableResponse=False)
+        self._reqResViewer.set_sensitive(False)
         
         # Create the database handler
         self._dbHandler = reqResDBHandler()
@@ -138,17 +139,25 @@ class httpLogTab(gtk.HPaned):
         try:
             searchResultObjects = self._dbHandler.searchByString( self._searchText.get_text() )
         except w3afException, w3:
+            self._reqResViewer.request.clearPanes()
+            self._reqResViewer.response.clearPanes()
+            self._reqResViewer.set_sensitive(False)
             self._showDialog('No results', str(w3) )
         else:
             # Now show the results
             if len( searchResultObjects ) > 1:
+                self._reqResViewer.set_sensitive(True)
                 self._showListView( searchResultObjects )
             elif len( searchResultObjects ) == 1:
                 # I got only one response to the database query!
+                self._reqResViewer.set_sensitive(True)
                 request, response = searchResultObjects[0]
                 self._reqResViewer.request.showObject( request )
                 self._reqResViewer.response.showObject( response )
             else:
+                self._reqResViewer.request.clearPanes()
+                self._reqResViewer.response.clearPanes()
+                self._reqResViewer.set_sensitive(False)
                 self._showDialog('No results', 'The search you performed returned no results.' )
 
     def _showDialog( self, title, msg, gtkLook=gtk.MESSAGE_INFO ):

@@ -137,6 +137,7 @@ class KBBrowser(gtk.HPaned):
         
         # The request/response viewer
         self.rrV = reqResViewer.reqResViewer(w3af)
+        self.rrV.set_sensitive(False)
         vpanedExplainAndView = gtk.VPaned()
         vpanedExplainAndView.pack1( scrollwin22 )
         vpanedExplainAndView.pack2( self.rrV )

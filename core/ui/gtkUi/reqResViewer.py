@@ -80,14 +80,17 @@ class reqResViewer(gtk.VBox):
             if withManual:
                 b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Request to Manual Editor")
                 b.connect("clicked", self._sendRequest, ManualRequests)
+                self.request.childButtons.append(b)
                 hbox.pack_start(b, False, False, padding=2)
             if withFuzzy:
                 b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Request to Fuzzy Editor")
                 b.connect("clicked", self._sendRequest, FuzzyRequests)
+                self.request.childButtons.append(b)
                 hbox.pack_start(b, False, False, padding=2)
             if withCompare:
                 b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, "Send Request and Response to Compare Tool")
                 b.connect("clicked", self._sendReqResp)
+                self.response.childButtons.append(b)
                 hbox.pack_end(b, False, False, padding=2)
             self.pack_start(hbox, False, False, padding=5)
 
@@ -104,6 +107,7 @@ class reqResViewer(gtk.VBox):
 class requestResponsePaned(gtk.VPaned):
     def __init__(self, enableWidget=None, editable=False):
         gtk.VPaned.__init__(self)
+        self.childButtons = []
 
         # The textview where a part of the req/res is showed
         self._upTv = gtk.TextView()
@@ -139,6 +143,15 @@ class requestResponsePaned(gtk.VPaned):
         self.pack1( sw1 )
         self.pack2( sw2 )
         self.show_all()
+
+    def set_sensitive(self, how):
+        '''Sets the pane on/off.
+
+        This is not a camelcase name to match the GTK interface.
+        '''
+        self.notebook.set_sensitive(how)
+        for but in self.childButtons:
+            but.set_sensitive(how)
 
     def _changed(self, widg, toenable):
         '''Supervises if the widget has some text.'''

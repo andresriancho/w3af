@@ -746,7 +746,9 @@ class RememberingWindow(gtk.Window):
         @param event: the event that happened
         '''
         if self.onDestroy is not None:
-            self.onDestroy()
+            if not self.onDestroy():
+                return
+
         self.winconfig[self.id_size] = self.get_size()
         self.winconfig[self.id_position] = self.get_position()
         return False
