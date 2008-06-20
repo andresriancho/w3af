@@ -71,7 +71,14 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             if id(fuzzReq) in self.server.w3afLayer._editedRequests:
                 head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
                 del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
-                res = self._urlOpener.sendRawRequest( head,  body )
+                
+                try:
+                    res = self._urlOpener.sendRawRequest( head,  body )
+                except Exception,  e:
+                    res = e
+
+                # Save it so the upper layer can read this response.
+                self.server.w3afLayer._editedResponses[ id(fuzzReq) ] = res
                 return res
             else:
                 time.sleep(0.2)
@@ -159,6 +166,7 @@ class localproxy(proxy):
         # Internal vars
         self._requestQueue = Queue.Queue()
         self._editedRequests = {}
+        self._editedResponses = {}
         
         # User configured parameters
         self._whatToTrap= re.compile('.*')
@@ -200,6 +208,21 @@ class localproxy(proxy):
         # the handler is polling this dict and will extract the information from it and
         # then send it to the remote web server
         self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)
+        
+        # Loop until I get the data from the remote web server
+        for i in xrange(30):
+            time.sleep(0.1)
+            if id(originalFuzzableRequest) in self._editedResponses:
+                res = self._editedResponses[ id(originalFuzzableRequest) ]
+                del self._editedResponses[ id(originalFuzzableRequest) ]
+                # Now we return it...
+                if isinstance(res, Exception):
+                    raise res
+                else:
+                    return res
+        
+        # I looped and got nothing!
+        raise w3afException('Timed out waiting for response from remote server.')
 
 if __name__ == '__main__':
     from core.data.url.xUrllib import xUrllib
@@ -212,7 +235,7 @@ if __name__ == '__main__':
         tr = lp.getTrappedRequest()
         if tr:
             print tr
-            lp.sendRawRequest( tr,  tr.dumpRequestHead(), tr.getData() )
+            print lp.sendRawRequest( tr,  tr.dumpRequestHead(), tr.getData() )
         else:
             print 'Waiting...'
         
