@@ -28,7 +28,7 @@ def _returnEscapedChar(exc):
     slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
     return ( unicode(slash_x_XX) , exc.end)
 def _returnStringToIdentifyError(exc):
-    return ( unicode('077b8d51aef4843c24efa7ad11ec56c6') , exc.end)
+    return ( unicode( STRING_TO_IDENTIFY_ERRORS ) , exc.end)
     
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
 codecs.register_error("returnStringToIdentifyError", _returnStringToIdentifyError)

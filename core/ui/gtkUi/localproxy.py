@@ -79,10 +79,12 @@ class w3afLocalProxyHandler(w3afProxyHandler):
 
                 # Save it so the upper layer can read this response.
                 self.server.w3afLayer._editedResponses[ id(fuzzReq) ] = res
+                
+                # From here, we send it to the browser
                 return res
             else:
-                time.sleep(0.2)
-                
+                time.sleep(0.1)
+            
     def _sendFuzzableRequest(self, fuzzReq):
         '''
         Sends a fuzzable request to the remote web server.
