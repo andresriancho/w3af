@@ -118,13 +118,14 @@ class httpResponse:
                     # well... it seems that they are defining a charset in meta tag...
                     meta_charset = reCharset[0].lower()
                 
+                # by default we asume:
+                charset = 'utf-8'
                 if meta_charset == '' and headers_charset != '':
                     charset = headers_charset
                 elif headers_charset == '' and meta_charset != '':
                     charset = meta_charset
-                elif headers_charset == '' and meta_charset == '':
-                    # by default we asume:
-                    charset = 'utf-8'
+                elif headers_charset == meta_charset:
+                    charset = headers_charset
                 elif meta_charset != headers_charset:
                     om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
                     meta_charset +'" in the HTML body meta tag.')
@@ -141,6 +142,7 @@ class httpResponse:
                         charset = meta_charset
                     else:
                         charset = headers_charset
+                    
                 # Now that we have the charset, we use it!
                 # The return value of the decode function is a unicode string.
                 self._body = body.decode(charset, 'returnEscapedChar')
