@@ -60,7 +60,8 @@ class httpResponse:
     def getRedirURL( self ): return self._redirectedURL
     def getRedirURI( self ): return self._redirectedURI
     def getCode( self ): return self._code
-    def getBody( self ): return self._body
+    def getBody( self ):
+        return self._body
     def getHeaders( self ): return self._headers
     def getLowerCaseHeaders( self ):
         '''
@@ -80,6 +81,7 @@ class httpResponse:
     def getURI( self ): return self._uri
     def getWaitTime( self ): return self._time
     def getMsg( self ): return self._msg
+    def getCharset(self): return self._charset
     
     def setRedirURL( self, ru ): self._redirectedURL = ru
     def setRedirURI( self, ru ): self._redirectedURI = ru
@@ -108,7 +110,7 @@ class httpResponse:
                 reCharset = re.findall('charset=([\w-]+)', lowerCaseHeaders['content-type'] )
                 if reCharset:
                     # well... it seems that they are defining a charset in the response headers..
-                    headers_charset = reCharset[0].lower()
+                    headers_charset = reCharset[0].lower().strip()
                     
                 # Now go for the meta tag
                 # I parse <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> ?
@@ -116,7 +118,7 @@ class httpResponse:
                 reCharset = re.findall('<meta.*?content=".*?charset=([\w-]+)".*?>', body, re.IGNORECASE )
                 if reCharset:
                     # well... it seems that they are defining a charset in meta tag...
-                    meta_charset = reCharset[0].lower()
+                    meta_charset = reCharset[0].lower().strip()
                 
                 # by default we asume:
                 charset = 'utf-8'
@@ -124,7 +126,7 @@ class httpResponse:
                     charset = headers_charset
                 elif headers_charset == '' and meta_charset != '':
                     charset = meta_charset
-                elif headers_charset == meta_charset:
+                elif headers_charset == meta_charset and headers_charset != '' and meta_charset != '':
                     charset = headers_charset
                 elif meta_charset != headers_charset:
                     om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
@@ -145,7 +147,12 @@ class httpResponse:
                     
                 # Now that we have the charset, we use it!
                 # The return value of the decode function is a unicode string.
-                self._body = body.decode(charset, 'returnEscapedChar')
+                unicode_str = body.decode(charset, 'returnEscapedChar')
+                # Now we use the unicode_str to create a utf-8 string that will be used in all w3af
+                self._body = unicode_str.encode('utf-8')
+                
+                self._charset = charset
+                
 
     def setHeaders( self, headers ): self._headers = headers
     def setURL( self, url ): self._realurl = url
@@ -172,7 +179,7 @@ class httpResponse:
         '''
         strRes = self.dumpResponseHead()
         strRes += '\n\n'
-        strRes += self._body
+        strRes += self.getBody()
         return strRes
         
     def dumpHeaders( self ):
