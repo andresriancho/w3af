@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 encode_decode.py
 
@@ -19,6 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+
 import re
 from htmlentitydefs import name2codepoint
 
@@ -30,10 +33,7 @@ def htmldecode(text):
     # references, a hexadecimal numeric reference, or a named reference).
     charrefpat = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?')
     
-    if type(text) is unicode:
-        uchr = unichr
-    else:
-        uchr = lambda value: value > 255 and unichr(value) or chr(value)    
+    uchr = lambda value: value > 255 and unichr(value).encode('utf-8') or chr(value)
     
     # Internal function to do the work
     def entitydecode(match, uchr=uchr):
@@ -46,6 +46,11 @@ def htmldecode(text):
             return uchr(name2codepoint[entity])
         else:
             return match.group(0)
-    
+            
     # "main"
     return charrefpat.sub(entitydecode, text)
+
+if __name__ == '__main__':
+    print htmldecode('hola mundo')
+    print htmldecode('hólá múndó')
+    print htmldecode('hola mundo &#0443')
