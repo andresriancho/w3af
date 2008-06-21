@@ -278,13 +278,13 @@ class URLsTree(gtk.TreeView):
 
         e = gtk.ImageMenuItem("Open with Manual Request Editor...")
         image = gtk.Image()
-        image.set_from_stock(gtk.STOCK_INDEX, 14)
+        image.set_from_stock(gtk.STOCK_INDEX,  gtk.ICON_SIZE_MENU)
         e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.ManualRequests)
         gm.append( e )
         
         image = gtk.Image()
-        image.set_from_stock(gtk.STOCK_PROPERTIES, 14)
+        image.set_from_stock(gtk.STOCK_PROPERTIES,  gtk.ICON_SIZE_MENU)
         e = gtk.ImageMenuItem("Open with Fuzzy Request Editor...")
         e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
