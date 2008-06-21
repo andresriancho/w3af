@@ -31,6 +31,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.info as info
+import difflib
 
 class userDir(baseDiscoveryPlugin):
     '''
@@ -111,7 +112,10 @@ class userDir(baseDiscoveryPlugin):
         else:
             path = mutant.replace( urlParser.baseUrl( mutant ) , '' )
             responseBody = response.getBody().replace( path, '')
-            if responseBody != self._nonExistant:
+            
+            ratio = difflib.SequenceMatcher( None, responseBody, self._nonExistant ).ratio()
+            if ratio < 0.7:
+                
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.getData( 'userDir', 'users') ]:
                     i = info.info()
