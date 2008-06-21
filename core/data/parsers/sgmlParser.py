@@ -211,7 +211,9 @@ class sgmlParser(abstractParser, SGMLParser):
         except Exception, e:
             # The user will call getAccounts, getReferences, etc and will get all the information
             # that the parser could find before dieing
-            om.out.debug('Exception found while parsing document. Exception: ' + str(e) )
+            om.out.debug('Exception found while parsing document. Exception: ' + str(e) + '. Document head: "' + s[0:20] +'".' )
+            import traceback
+            om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
         else:
             # Saves A LOT of memory
             # without this a run will use 4,799,936

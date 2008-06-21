@@ -137,8 +137,9 @@ class htmlParser(sgmlParser):
                 self._insideSelect = True
                 try:
                     self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
-                except:
+                except Exception,  e:
                     om.out.debug('htmlParser found a select tag without a name attr !')
+                    self._selectTagName = 'kludge_added_by_w3af'
             
             if self._insideSelect:
                 if tag.lower() == 'option':
