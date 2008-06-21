@@ -279,13 +279,20 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         try:
             self.send_response( res.getCode() )
+
+            what_to_send = res.getBody()            
             
             for header in res.getHeaders():
-                self.send_header( header, res.getHeaders()[header] )
+                if header == 'transfer-encoding' and res.getHeaders()[header] == 'chunked':
+                    # don't send this header, and send the content-length instead
+                    self.send_header( 'content-length', str(len(what_to_send)) )
+                else:    
+                    self.send_header( header, res.getHeaders()[header] )
+            
             self.send_header( 'Connection', 'close')
             self.end_headers()
             
-            self.wfile.write( res.getBody() )
+            self.wfile.write(what_to_send)
             self.wfile.close()
         except Exception, e:
             om.out.debug('Failed to send the data to the browser: ' + str(e) )
