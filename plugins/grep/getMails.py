@@ -48,7 +48,9 @@ class getMails(baseGrepPlugin):
         dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
         mails = dp.getAccounts()
         for m in mails:
-            if not self._wasSent( request, m ):
+            wasSent = self._wasSent( request, m )
+            alreadyReported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
+            if not wasSent and not alreadyReported:
                 i = info.info()
                 i.setURL( response.getURL() )
                 i.setId( response.id )
@@ -57,7 +59,7 @@ class getMails(baseGrepPlugin):
                 i['mail'] = m
                 i['user'] = m.split('@')[0]
             
-                kb.kb.append( 'mails', 'mails', i ) 
+                kb.kb.append( 'mails', 'mails', i )
                 kb.kb.append( self, 'mails', i )
     
     def setOptions( self, OptionList ):

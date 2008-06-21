@@ -218,6 +218,15 @@ class searchEntry(ValidatedEntry):
         self._match = None
         self.rrh = reqResDBHandler()
         ValidatedEntry.__init__(self, value)
+        
+        markup_help = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i> and <i>url</i> columns.
+        
+Here are some <b>examples</b>:
+    - <i>id = 3 or id = 4</i>
+    - <i>url like '%xc.php'</i>
+    - <i>url like '%xc%' and id &lt;&gt; 3</i>
+        '''
+        self.set_tooltip_markup(markup_help)        
 
     def validate(self, text):
         '''
