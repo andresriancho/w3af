@@ -232,7 +232,7 @@ if __name__ == '__main__':
     lp = localproxy('127.0.0.1', 8080, xUrllib() )
     lp.start2()
     
-    for i in xrange(100):
+    for i in xrange(10):
         time.sleep(1)
         tr = lp.getTrappedRequest()
         if tr:
@@ -240,4 +240,7 @@ if __name__ == '__main__':
             print lp.sendRawRequest( tr,  tr.dumpRequestHead(), tr.getData() )
         else:
             print 'Waiting...'
-        
+    
+    print 'Exit!'
+    lp.stop()
+    print 'bye bye...'
