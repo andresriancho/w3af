@@ -59,13 +59,15 @@ class textFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            self._file = codecs.open( self._fileName, "w", "utf-8", 'replace' )
+            #self._file = codecs.open( self._fileName, "w", "utf-8", 'replace' )
+            self._file = open( self._fileName, "w")
         except Exception, e:
             raise w3afException('Cant open report file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
             
         try:
             # Images aren't ascii, so this file that logs every request/response, will be binary
-            self._http = codecs.open( self._httpFileName, "wb", "utf-8", 'replace' )
+            #self._http = codecs.open( self._httpFileName, "wb", "utf-8", 'replace' )
+            self._http = open( self._httpFileName, "wb" )
         except Exception, e:
             raise w3afException('Cant open HTTP log file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
         
