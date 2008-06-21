@@ -168,7 +168,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             return
         if not self.parse_request(): # An error code has been sent, just exit
             return
-
+        
         # Now I perform my specific tasks...
         if self.command == 'QUIT':
             # Stop the server
@@ -341,7 +341,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.log_request(200)
         soc = None
         
-
         try:
             try:
                     self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
@@ -365,6 +364,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
                     # see HTTPServerWrapper class below
                     httpsServer = HTTPServerWrapper(self.__class__, self)
+                    httpsServer.w3afLayer = self.server.w3afLayer
                 
                     #self._do_handshake(self.connection, sslCon)
                     om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )

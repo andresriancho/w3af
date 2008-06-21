@@ -47,7 +47,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         # first of all, we create a fuzzable request based on the attributes that are set to this object
         fuzzReq = self._createFuzzableRequest()
-        
+        print 'doing all'
         try:
             # Now we check if we need to add this to the queue, or just let it go through.
             if self._shouldBeTrapped(fuzzReq):
@@ -135,11 +135,18 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             - self.rfile : A file like object that stores the postdata
             - self.path : Stores the URL that was requested by the browser
         '''
+        # See HTTPWrapperClass
+        if hasattr(self.server, 'chainedHandler'):
+            basePath = "https://" + self.server.chainedHandler.path
+            path = basePath + self.path
+        else:
+            path = self.path
+
         fuzzReq = fuzzableRequest()
-        fuzzReq.setURI(self.path)
+        fuzzReq.setURI(path)
         fuzzReq.setHeaders(self.headers.dict)
         fuzzReq.setMethod(self.command)
-        
+            
         # get the postdata (if any)
         if self.headers.dict.has_key('content-length'):
             # most likely a POST request
