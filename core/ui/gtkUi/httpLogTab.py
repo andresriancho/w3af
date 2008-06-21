@@ -32,6 +32,14 @@ from . import reqResViewer
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
+MARKUP_HELP = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i> and <i>url</i> columns.
+
+Here are some <b>examples</b>:
+    - <i>id = 3 or id = 4</i>
+    - <i>url like '%xc.php'</i>
+    - <i>url like '%xc%' and id &lt;&gt; 3</i>
+'''
+
 class httpLogTab(gtk.HPaned):
     '''
     A tab that shows all HTTP requests and responses made by the framework.    
@@ -55,12 +63,17 @@ class httpLogTab(gtk.HPaned):
         searchBtn = gtk.Button(stock=gtk.STOCK_FIND)
         searchBtn.connect("clicked", self._findRequestResponse )
         
+        # A help button
+        helpBtn = gtk.Button(stock=gtk.STOCK_HELP)
+        helpBtn.connect("clicked", self._showHelp )
+        
         # Create the container that has the menu
         menuHbox = gtk.HBox()
         menuHbox.set_spacing(10)
         menuHbox.pack_start( searchLabel, False )
         menuHbox.pack_start( self._searchText )
         menuHbox.pack_start( searchBtn, False )
+        menuHbox.pack_start( helpBtn, False )
         menuHbox.show_all()
         
         # Create the main container
@@ -134,6 +147,16 @@ class httpLogTab(gtk.HPaned):
         column = gtk.TreeViewColumn('Time (ms)', gtk.CellRendererText(),text=5)
         column.set_sort_column_id(5)
         treeview.append_column(column)
+    
+    def _showHelp(self,  widget):
+        '''
+        Show a little help for the window.
+        '''
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK)
+        dlg.set_markup(MARKUP_HELP)
+        dlg.set_title( 'Search help' )
+        dlg.run()
+        dlg.destroy()
     
     def _findRequestResponse( self, widget):
         try:
@@ -218,15 +241,7 @@ class searchEntry(ValidatedEntry):
         self._match = None
         self.rrh = reqResDBHandler()
         ValidatedEntry.__init__(self, value)
-        
-        markup_help = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i> and <i>url</i> columns.
-        
-Here are some <b>examples</b>:
-    - <i>id = 3 or id = 4</i>
-    - <i>url like '%xc.php'</i>
-    - <i>url like '%xc%' and id &lt;&gt; 3</i>
-        '''
-        self.set_tooltip_markup(markup_help)        
+        self.set_tooltip_markup(MARKUP_HELP)        
 
     def validate(self, text):
         '''
