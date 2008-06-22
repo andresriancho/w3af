@@ -33,6 +33,7 @@ wrapperWidgets = {
     "string": entries.StringOption,
     "float": entries.FloatOption,
     "list": entries.ListOption,
+    "combo": entries.ComboBoxOption, 
 }
 
 class EasyTable(gtk.Table):
@@ -168,7 +169,7 @@ class OnlyOptions(gtk.VBox):
         for i,opt in enumerate(options):
             titl = gtk.Label(opt.getName())
             titl.set_alignment(0.0, 0.5)
-            widg = wrapperWidgets[opt.getType()](self._changedWidget, opt.getDefaultValueStr())
+            widg = wrapperWidgets[opt.getType()](self._changedWidget, opt )
             opt.widg = widg
             tooltips.set_tip(widg, opt.getDesc())
             if opt.getHelp():

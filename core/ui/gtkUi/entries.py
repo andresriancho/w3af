@@ -182,8 +182,8 @@ class IntegerOption(ValidatedEntry, ModifiedMixIn):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, alert, value):
-        ValidatedEntry.__init__(self, value)
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0"
 
@@ -206,8 +206,8 @@ class FloatOption(ValidatedEntry, ModifiedMixIn):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, alert, value):
-        ValidatedEntry.__init__(self, value)
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0.0"
 
@@ -230,8 +230,8 @@ class StringOption(ValidatedEntry, ModifiedMixIn):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, alert, value):
-        ValidatedEntry.__init__(self, value)
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -248,8 +248,8 @@ class ListOption(ValidatedEntry, ModifiedMixIn):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, alert, value):
-        ValidatedEntry.__init__(self, value)
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -266,13 +266,42 @@ class BooleanOption(gtk.CheckButton, ModifiedMixIn):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, alert, value):
+    def __init__(self, alert, opt):
         gtk.CheckButton.__init__(self)
-        if value == "True":
+        if opt.getDefaultValueStr() == "True":
             self.set_active(True)
         ModifiedMixIn.__init__(self, alert, "toggled", "get_active", "set_active")
         self.show()
 
+class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
+    '''Class that implements the config option ComboBox.
+
+    @author: Andres Riancho
+    '''
+    def __init__(self, alert, opt):
+        # Create the list store
+        liststore = gtk.ListStore(str)
+        for i in opt.getValue():
+            liststore.append([ i , ])
+        
+        gtk.ComboBox.__init__(self, liststore)
+        ModifiedMixIn.__init__(self, alert, "changed", "changed_cb", "set_default")
+        
+        cell = gtk.CellRendererText()
+        self.pack_start(cell, True)
+        self.add_attribute(cell, 'text', 0)  
+        
+        self.show()
+        
+    def changed_cb(self):
+        model = self.get_model()
+        index = self.get_active()
+        if index > -1:
+            return model[index][0]
+            
+    def set_default(self,  t):
+        iter = self.get_active_iter()
+        self.set_active_iter(iter)
 
 class SemiStockButton(gtk.Button):
     '''Takes the image from the stock, but the label which is passed.

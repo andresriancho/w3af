@@ -55,8 +55,8 @@ class targetSettings(configurable):
             cf.cf.save('sessionName', 'defaultSession' )
         
         # Some internal variables
-        self._operatingSystems = ['unix','windows', 'unknown']
-        self._programmingFrameworks = ['php','asp','asp.net','java','jsp','cfm','ruby','perl','unknown']
+        self._operatingSystems = ['unknown','unix','windows']
+        self._programmingFrameworks = ['unknown', 'php','asp','asp.net','java','jsp','cfm','ruby','perl']
 
                 
     def getOptions( self ):
@@ -66,17 +66,13 @@ class targetSettings(configurable):
         d1 = 'A comma separated list of URLs'
         o1 = option('target', ','.join(cf.cf.getData('targets')), d1, 'list')
         
-        d2 = 'Target operating system. Valid options: '+','.join(self._operatingSystems)
-        h2 = 'This setting is here to enhance w3af performance. If you are not sure what the\
-          target operating system is, you can leave this value blank; otherwise please choose one from:\
-          '+','.join(self._operatingSystems)
-        o2 = option('targetOS', cf.cf.getData('targetOS'), d2, 'string', help=h2)
+        d2 = 'Target operating system.'
+        h2 = 'This setting is here to enhance w3af performance.'
+        o2 = option('targetOS', self._operatingSystems, d2, 'combo', help=h2)
 
-        d3 = 'Target programming framework. Valid options: '+','.join(self._programmingFrameworks)
-        h3 = 'This setting is here to enhance w3af performance. If you are not sure what the\
-          target programming framework is, you can leave this value blank; otherwise please choose one from:\
-          '+','.join(self._programmingFrameworks)
-        o3 = option('targetFramework', cf.cf.getData('targetFramework'), d3, 'string', help=h3)
+        d3 = 'Target programming framework.'
+        h3 = 'This setting is here to enhance w3af performance.'
+        o3 = option('targetFramework', self._programmingFrameworks, d3, 'combo', help=h3)
         
         ol = optionList()
         ol.add(o1)

@@ -89,6 +89,8 @@ class option:
                     res = True
                 else:
                     res = False
+            elif self._type == 'combo':
+                res = value
             elif self._type == 'list':
                 res = []
                 # Yes, we are regex dummies
