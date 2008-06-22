@@ -142,7 +142,7 @@ class frontpage(baseAuditPlugin):
         '''
         d1 = 'Stop on the first successfull file upload'
         h1 = 'The default value is usually a good idea, because if we can upload a file to a directory, the chances are that we can upload to every directory; and if this is the case, we would get a lot of vulnerabilities reported, that are really only one.'
-        o1 = option('stopOnFirst', self._stopOnFirst, d1, 'string', help=h1)
+        o1 = option('stopOnFirst', self._stopOnFirst, d1, 'boolean', help=h1)
         
         ol = optionList()
         ol.add(o1)

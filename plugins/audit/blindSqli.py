@@ -105,6 +105,7 @@ class blindSqli(baseAuditPlugin):
             - stringEq
             - setIntersection
             - intelligentCut
+            
         The classic way of matching two strings is "stringEq" , in python this is "string1 == string2" , but other ways have been
         developed for sites that have changing banners and random data on their HTML response. "setIntersection" will create
         two different sets with the words inside the two HTML responses, and do an intersection. If number of words that are

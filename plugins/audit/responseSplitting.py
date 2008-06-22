@@ -152,6 +152,6 @@ class responseSplitting(baseAuditPlugin):
         return '''
         This plugin will find response splitting vulnerabilities. 
         
-        The detection is done by sending "w3af\r\nVulnerable: Yes" to every injection point, and reading the
+        The detection is done by sending "w3af\\r\\nVulnerable: Yes" to every injection point, and reading the
         response headers searching for a header with name "Vulnerable" and value "Yes".
         '''
