@@ -279,29 +279,31 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
     @author: Andres Riancho
     '''
     def __init__(self, alert, opt):
+        self._opt = opt
+        
         # Create the list store
         liststore = gtk.ListStore(str)
         for i in opt.getValue():
             liststore.append([ i , ])
         
         gtk.ComboBox.__init__(self, liststore)
-        ModifiedMixIn.__init__(self, alert, "changed", "changed_cb", "set_default")
+        ModifiedMixIn.__init__(self, alert, "changed", "get_value", "set_value")
         
         cell = gtk.CellRendererText()
         self.pack_start(cell, True)
-        self.add_attribute(cell, 'text', 0)  
+        self.add_attribute(cell, 'text', 0)
         
         self.show()
         
-    def changed_cb(self):
+    def get_value(self):
         model = self.get_model()
         index = self.get_active()
         if index > -1:
             return model[index][0]
             
-    def set_default(self,  t):
-        iter = self.get_active_iter()
-        self.set_active_iter(iter)
+    def set_value(self,  t):
+        index = self._opt.getValue().index(t)
+        self.set_active(index)
 
 class SemiStockButton(gtk.Button):
     '''Takes the image from the stock, but the label which is passed.

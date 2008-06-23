@@ -122,13 +122,13 @@ class targetSettings(configurable):
         cf.cf.save('sessionName', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M') )
         
         # Advanced target selection
-        os = optionsMap['targetOS'].getValue()
+        os = optionsMap['targetOS'].getValueStr()
         if os.lower() in self._operatingSystems:
             cf.cf.save('targetOS', os.lower() )
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
-        pf = optionsMap['targetFramework'].getValue()
+        pf = optionsMap['targetFramework'].getValueStr()
         if pf.lower() in self._programmingFrameworks:
             cf.cf.save('targetFramework', pf.lower() )
         else:

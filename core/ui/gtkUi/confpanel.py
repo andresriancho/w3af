@@ -170,6 +170,11 @@ class OnlyOptions(gtk.VBox):
             titl = gtk.Label(opt.getName())
             titl.set_alignment(0.0, 0.5)
             widg = wrapperWidgets[opt.getType()](self._changedWidget, opt )
+            try:
+                widg.set_active(1)
+            except Exception,  e:
+                print e
+            
             opt.widg = widg
             tooltips.set_tip(widg, opt.getDesc())
             if opt.getHelp():
@@ -179,7 +184,9 @@ class OnlyOptions(gtk.VBox):
             else:
                 helpbtn = None
             table.autoAddRow(titl, widg, helpbtn)
+            print widg
             self.widgets_status[widg] = (titl, opt.getName(), "<b>%s</b>" % opt.getName())
+            print self.widgets_status
             self.propagLabels[widg] = prop
         table.show()
         return table
