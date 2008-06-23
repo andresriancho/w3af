@@ -70,6 +70,21 @@ class outputManager:
     def endOutputPlugins( self ):
         for oPlugin in self._outputPluginList:
             oPlugin.end()
+            
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method logs to the output plugins the enabled plugins and their configuration.
+        
+        @parameter enabledPluginsDict: As defined in the w3afCore,
+            # A dict with plugin types as keys and a list of plugin names as values
+            self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
+            'evasion':[], 'mangle':[], 'output':[]}
+        
+        @parameter pluginOptionsDict: As defined in the w3afCore,
+            self._pluginsOptions = {'audit':{},'grep':{},'bruteforce':{},'discovery':{},\
+            'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
+        '''
+        pass
     
     def debug(self, message, newLine = True ):
         '''
