@@ -79,11 +79,12 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace')
+                message = unicode( message, errors='replace').encode('utf-8')
             except:
                 pass
-            for oPlugin in self._outputPluginList:
-                oPlugin.debug( message, newLine )
+            else:
+                for oPlugin in self._outputPluginList:
+                    oPlugin.debug( message, newLine )
     
     def information(self, message, newLine = True ):
         '''
@@ -93,11 +94,12 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace')
+                message = unicode( message, errors='replace').encode('utf-8')
             except:
                 pass
-            for oPlugin in self._outputPluginList:
-                oPlugin.information( message, newLine )
+            else:
+                for oPlugin in self._outputPluginList:
+                    oPlugin.information( message, newLine )
             
     def error(self, message, newLine = True ):
         '''
@@ -107,11 +109,12 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace')
+                message = unicode( message, errors='replace').encode('utf-8')
             except:
                 pass
-            for oPlugin in self._outputPluginList:
-                oPlugin.error( message, newLine )
+            else:
+                for oPlugin in self._outputPluginList:
+                    oPlugin.error( message, newLine )
 
     def logHttp( self, request, response ):
         '''
@@ -131,11 +134,12 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace')
+                message = unicode( message, errors='replace').encode('utf-8')
             except:
                 pass
-            for oPlugin in self._outputPluginList:
-                oPlugin.vulnerability( message, newLine, severity=severity )
+            else:
+                for oPlugin in self._outputPluginList:
+                    oPlugin.vulnerability( message, newLine, severity=severity )
 
     def console( self, message, newLine = True ):
         '''
@@ -143,11 +147,12 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace')
+                message = unicode( message, errors='replace').encode('utf-8')
             except:
                 pass
-            for oPlugin in self._outputPluginList:
-                oPlugin.console( message, newLine )
+            else:
+                for oPlugin in self._outputPluginList:
+                    oPlugin.console( message, newLine )
     
     def echo( self, onOff ):
         '''
