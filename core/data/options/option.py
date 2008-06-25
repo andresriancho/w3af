@@ -57,7 +57,7 @@ class option:
     # And the string versions of the above methods...
     def _getStr(self, value):
         if self._type == 'combo':
-            return value[0]
+            return value
         elif isinstance(value,type([])):
             return ','.join(value)
         else:
