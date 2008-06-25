@@ -176,7 +176,7 @@ class message:
         @parameter newLine: Should I print a newline ? True/False
         '''
         self._type = type
-        self._msg = unicode(msg)
+        self._msg = msg
         self._newLine = newLine
         self._time = time
         self._severity = None
