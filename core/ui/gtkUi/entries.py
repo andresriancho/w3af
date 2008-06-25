@@ -283,7 +283,7 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
         
         # Create the list store
         liststore = gtk.ListStore(str)
-        for i in opt.getValue():
+        for i in opt.getComboOptions():
             liststore.append([ i , ])
         
         gtk.ComboBox.__init__(self, liststore)
@@ -304,6 +304,17 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
     def set_value(self,  t):
         index = self._opt.getValue().index(t)
         self.set_active(index)
+        
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return True if the text is ok.
+        '''
+        if text in self._opt.getComboOptions():
+            return True
+        else:
+            return False
 
 class SemiStockButton(gtk.Button):
     '''Takes the image from the stock, but the label which is passed.

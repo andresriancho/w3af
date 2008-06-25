@@ -29,6 +29,7 @@ import time
 
 # options
 from core.data.options.option import option
+from core.data.options.comboOption import comboOption
 from core.data.options.optionList import optionList
 
 cf.cf.save('targets', [] )
@@ -68,11 +69,11 @@ class targetSettings(configurable):
         
         d2 = 'Target operating system.'
         h2 = 'This setting is here to enhance w3af performance.'
-        o2 = option('targetOS', self._operatingSystems, d2, 'combo', help=h2)
+        o2 = comboOption('targetOS', self._operatingSystems, d2, 'combo', help=h2)
 
         d3 = 'Target programming framework.'
         h3 = 'This setting is here to enhance w3af performance.'
-        o3 = option('targetFramework', self._programmingFrameworks, d3, 'combo', help=h3)
+        o3 = comboOption('targetFramework', self._programmingFrameworks, d3, 'combo', help=h3)
         
         ol = optionList()
         ol.add(o1)

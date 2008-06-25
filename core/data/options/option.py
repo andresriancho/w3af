@@ -56,9 +56,7 @@ class option:
 
     # And the string versions of the above methods...
     def _getStr(self, value):
-        if self._type == 'combo':
-            return value
-        elif isinstance(value,type([])):
+        if isinstance(value,type([])):
             return ','.join(value)
         else:
             return str(value)
@@ -91,8 +89,6 @@ class option:
                     res = True
                 else:
                     res = False
-            elif self._type == 'combo':
-                res = value
             elif self._type == 'list':
                 res = []
                 # Yes, we are regex dummies
