@@ -171,17 +171,21 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         if not self.parse_request(): # An error code has been sent, just exit
             return
         
-        # Now I perform my specific tasks...
-        if self.command == 'QUIT':
-            # Stop the server
-            self.send_response(200)
-            self.end_headers()
-            self.server.stop = True
-            om.out.debug('Handled QUIT request.')
-        elif self.command == 'CONNECT':
-            self.do_CONNECT()
-        else:
-            self.doAll()
+        try:
+            # Now I perform my specific tasks...
+            if self.command == 'QUIT':
+                # Stop the server
+                self.send_response(200)
+                self.end_headers()
+                self.server.stop = True
+                om.out.debug('Handled QUIT request.')
+            elif self.command == 'CONNECT':
+                self.do_CONNECT()
+            else:
+                self.doAll()
+        except Exception,  e:
+            ### FIXME: Maybe I should perform some more detailed error handling...
+            om.out.debug('An exception ocurred in w3afProxyHandler.handle_one_request() :' + str(e) )
     
     def doAll( self ):
         '''
