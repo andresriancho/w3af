@@ -270,32 +270,28 @@ class EditWindow(gtk.Window):
         dlg.hide()
         return
 
-def editPlugin( widget, pluginName, pluginType ):
-    '''
-    I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
-    This method calls the plugin editor as a separate process and exists.
-    '''
-    program = 'python'
-    fName = 'plugins/' + pluginType + '/' + pluginName + '.py'
-    try:
-        subprocess.Popen(['python', 'core/ui/gtkUi/pluginEditor.py', fName])
-    except Exception, e:
-        msg = 'Error while starting the w3af plugin editor. Exception: ' + str(e)
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-        dlg.set_title('Error')
-        dlg.run()
-        dlg.destroy()
 
-def edit(fname, mainwin=False):
-    if mainwin: quit_cb = lambda w: gtk.main_quit()
-    else:       quit_cb = None
-    w = EditWindow(quit_cb=quit_cb)
-    w.load_file(fname)
-    w.show()
-    w.set_size_request(600,400)
-    if mainwin: gtk.main()
-    return
+class pluginEditor:
+    def __init__(self,  pluginType, pluginName, finishEditCallback):
+        self._finishEditCallback = finishEditCallback
+        self._pluginType = pluginType
+        self._pluginName = pluginName
+        
+        # The filename to edit
+        self._filename = 'plugins' + os.path.sep + pluginType + os.path.sep + pluginName + '.py'
+        
+        # Create the window
+        w = EditWindow(quit_cb=self._quit_cb)
+        w.load_file(self._filename)
+        w.show()
+        w.set_size_request(600,400)
+        
+        gtk.main()
+        return
 
-if __name__ == '__main__':
-    import sys
-    edit(sys.argv[-1], mainwin=True)
+    def _quit_cb(self,  widget):
+        '''
+        The quit callback.
+        '''
+        gtk.main_quit()
+        self._finishEditCallback( self._pluginType,  self._pluginName)

@@ -23,7 +23,7 @@ import pygtk, gtk, gobject
 import xml.dom, sys, os
 
 from . import confpanel, entries, helpers
-from .pluginEditor import editPlugin
+from core.ui.gtkUi.pluginEditor import pluginEditor
 
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
@@ -372,12 +372,25 @@ class PluginTree(gtk.TreeView):
                 
                 # And the items
                 e = gtk.MenuItem("Edit plugin...")
-                e.connect('activate', editPlugin, pname, ptype )
+                e.connect('activate', self._handleEditPluginEvent, pname, ptype )
                 gm.append( e )
                 gm.show_all()
                 
                 gm.popup( None, None, None, event.button, _time)
-        
+
+    def _handleEditPluginEvent( self, widget, pluginName, pluginType ):
+        '''
+        I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
+        This method calls the plugin editor with the corresponding parameters.
+        '''
+        pluginEditor(pluginType,  pluginName,  self._finishedEditingPlugin)
+
+    def _finishedEditingPlugin(self,  pluginType,  pluginName):
+        '''
+        This is a callback that is called when the plugin editor finishes.
+        '''
+        self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
+
     def configure_plugin(self, tv):
         '''Starts the plugin configuration.
 
@@ -608,7 +621,7 @@ class PluginConfigBody(gtk.VBox):
             pname = treeToUse.treestore[path][3]
             ptype = treeToUse.treestore[path[:1]][3]
             # Launch the editor
-            editPlugin( None, pname, ptype )
+            self._handleEditPluginEvent( None, pname, ptype )
         
     def reload(self, profileDescription):
         '''Reloads all the configurations.'''

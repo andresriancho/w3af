@@ -817,7 +817,17 @@ class w3afCore:
         func( pluginNames )
         
         om.out.logEnabledPlugins( self._strPlugins,  self._pluginsOptions )
+    
+    def reloadModifiedPlugin(self,  pluginType,  pluginName):
+        '''
+        When a plugin is modified using the plugin editor, all instances of it inside the core have to be "reloaded"
+        so, if the plugin code was changed, the core reflects that change.
         
+        @parameter pluginType: The plugin type of the modified plugin ('audit','discovery', etc)
+        @parameter pluginName: The plugin name of the modified plugin ('xss', 'sqli', etc)
+        '''
+        print 'TODO: Reload the plugin',  pluginType + '.' + pluginName
+    
     def getPluginTypesDesc( self, type ):
         '''
         @parameter type: The type of plugin for which we want a description.
