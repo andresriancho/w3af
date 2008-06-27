@@ -182,21 +182,24 @@ class sqlmap(baseAttackPlugin):
             
             # Ok, go to the next stage with the filtered vulnerabilities
             vulns = vulns2
-            
-            exploitable = False
-            for vuln in vulns:
-                # Try to get a shell using all vuln
-                om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) + '. Please wait...' )
-                s = self._generateShell(vuln)
-                if s != None:
-                    if self._generateOnlyOne:
-                        # A shell was generated, I only need one point of exec.
-                        return [s,]
-                    else:
-                        # Keep adding all shells to the kb
-                        pass
+            if len(vulns) == 0:
+                om.out.debug('Failed to verifyBlindSQL for all vulnerabilities.')
+                return []
+            else:
+                exploitable = False
+                for vuln in vulns:
+                    # Try to get a shell using all vuln
+                    om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) + '. Please wait...' )
+                    s = self._generateShell(vuln)
+                    if s != None:
+                        if self._generateOnlyOne:
+                            # A shell was generated, I only need one point of exec.
+                            return [s,]
+                        else:
+                            # Keep adding all shells to the kb
+                            pass
                     
-        return [s, ]
+                return kb.kb.getData( self.getName(), 'shell' )
                 
     def _generateShell( self, vuln ):
         '''
