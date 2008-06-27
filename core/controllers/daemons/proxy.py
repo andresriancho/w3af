@@ -110,12 +110,14 @@ class proxy(w3afThread):
         if self._running:
             try:
                 # Tell the proxy that he must quit
+                self._server.stop = True
                 conn = httplib.HTTPConnection(self._ip+':'+str(self._port))
                 conn.request("QUIT", "/")
                 conn.getresponse()
                 om.out.debug('Sent QUIT request.')
             except Exception, e:
-                om.out.debug('Failed to stop proxy server, exception: "' + str(e) +'".')
+                om.out.debug('Sent QUIT request and got timeout. Proxy server closed.')
+                self._running = False
             else:
                 self._running = False
         else:
