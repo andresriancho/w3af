@@ -45,6 +45,22 @@ class knowledgeBase:
     def createLock( self ):
         self._kbLock = thread.allocate_lock()
         
+    def getLock(self):
+        try:
+            self._kbLock.acquire()
+        except:
+            return False
+        else:
+            return True
+    
+    def releaseLock(self):
+        try:
+            self._kbLock.release()
+        except:
+            return False
+        else:
+            return True        
+        
     def save( self, callingInstance, variableName, value ):
         '''
         This method saves the variableName value to a dict.
@@ -100,22 +116,6 @@ class knowledgeBase:
                     res = self._kb[name][variableName]
             self.releaseLock()
         return res
-    
-    def getLock(self):
-        try:
-            self._kbLock.acquire()
-        except:
-            return False
-        else:
-            return True
-    
-    def releaseLock(self):
-        try:
-            self._kbLock.release()
-        except:
-            return False
-        else:
-            return True
 
     def getAllEntriesOfClass( self, klass ):
         '''
