@@ -47,29 +47,6 @@ class LRU:
         self.last = None
         for key, value in pairs:
             self[key] = value
-        self.createLock()
-    
-    def destroyLock( self ):
-        self._lruLock = None
-    
-    def createLock( self ):
-        self._lruLock = thread.allocate_lock()
-        
-    def getLock(self):
-        try:
-            self._lruLock.acquire()
-        except:
-            return False
-        else:
-            return True
-    
-    def releaseLock(self):
-        try:
-            self._lruLock.release()
-        except:
-            return False
-        else:
-            return True            
             
     def __contains__(self, obj):
         return obj in self.d
@@ -80,8 +57,6 @@ class LRU:
         return a[1]
         
     def __setitem__(self, obj, val):
-        self.getLock()
-        
         if obj in self.d:
             del self[obj]
         nobj = Node(self.last, (obj, val))
@@ -95,8 +70,6 @@ class LRU:
             if self.first == self.last:
                 self.first = None
                 self.last = None
-                # releasing lock
-                self.releaseLock()
                 return
             a = self.first
             a.next.prev = None
@@ -105,12 +78,7 @@ class LRU:
             del self.d[a.me[0]]
             del a
         
-        # releasing lock
-        self.releaseLock()
-        
     def __delitem__(self, obj):
-        self.getLock()
-        
         nobj = self.d[obj]
         if nobj.prev:
             nobj.prev.next = nobj.next
@@ -121,9 +89,6 @@ class LRU:
         else:
             self.last = nobj.prev
         del self.d[obj]
-        
-        # releasing lock
-        self.releaseLock()        
         
     def __iter__(self):
         cur = self.first

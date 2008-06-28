@@ -19,12 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.parsers.documentParser as documentParser
 from core.controllers.misc.lru import LRU
+
 import md5
+import thread
+
 
 class dpCache:
     '''
@@ -34,18 +38,20 @@ class dpCache:
     '''
     def __init__(self):
         self._cache = LRU(100)
+        self._LRULock = thread.allocate_lock()
         
     def getDocumentParserFor( self, document, baseUrl, normalizeMarkup=True ):
         res = None
         hash = md5.new(document).hexdigest()
         
-        if hash in self._cache:
-            res = self._cache[ hash ]
-        else:
-            # Create a new instance of dp, add it to the cache
-            res = documentParser.documentParser( document, baseUrl, normalizeMarkup )
-            self._cache[ hash ] = res
-        
-        return res
+        with self._LRULock:
+            if hash in self._cache:
+                res = self._cache[ hash ]
+            else:
+                # Create a new instance of dp, add it to the cache
+                res = documentParser.documentParser( document, baseUrl, normalizeMarkup )
+                self._cache[ hash ] = res
+            
+            return res
     
 dpc = dpCache()
