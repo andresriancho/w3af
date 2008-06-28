@@ -109,6 +109,8 @@ class LRU:
         self.releaseLock()
         
     def __delitem__(self, obj):
+        self.getLock()
+        
         nobj = self.d[obj]
         if nobj.prev:
             nobj.prev.next = nobj.next
@@ -119,23 +121,31 @@ class LRU:
         else:
             self.last = nobj.prev
         del self.d[obj]
+        
+        # releasing lock
+        self.releaseLock()        
+        
     def __iter__(self):
         cur = self.first
         while cur != None:
             cur2 = cur.next
             yield cur.me[1]
             cur = cur2
+    
     def iteritems(self):
         cur = self.first
         while cur != None:
             cur2 = cur.next
             yield cur.me
             cur = cur2
+    
     def iterkeys(self):
         return iter(self.d)
+    
     def itervalues(self):
         for i,j in self.iteritems():
             yield j
+    
     def keys(self):
         return self.d.keys()
 
