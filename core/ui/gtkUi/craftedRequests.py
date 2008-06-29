@@ -425,7 +425,16 @@ class ProxiedRequests(entries.RememberingWindow):
         self.reqresp = reqResViewer.reqResViewer(w3af, [self.bt_drop, self.bt_send], editableRequest=True)
         self.reqresp.request.set_sensitive(False)
         self.reqresp.response.set_sensitive(False)
-        self.vbox.pack_start(self.reqresp, True, True)
+
+        # notebook
+        nb = gtk.Notebook()
+        nb.append_page(self.reqresp, gtk.Label("Request and Response"))
+        lab1 = gtk.Label("Coming soon! :)")
+        lab1.set_sensitive(False)
+        lab2 = gtk.Label("History")
+        lab2.set_sensitive(False)
+        nb.append_page(lab1, lab2)
+        self.vbox.pack_start(nb, True, True)
 
         self.vbox.pack_start(hbox, False, False)
         
