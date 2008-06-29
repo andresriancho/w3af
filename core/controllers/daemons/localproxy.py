@@ -30,6 +30,7 @@ from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import getExtension
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+from core.data.url.xUrllib import xUrllib
 
 import time
 import re
@@ -162,7 +163,7 @@ class localproxy(proxy):
     This is the local proxy server that is used by the local proxy GTK user interface to perform all its magic ;)
     '''
     
-    def __init__( self, ip, port, urlOpener, proxyCert = 'core/controllers/daemons/mitm.crt' ):
+    def __init__( self, ip, port, urlOpener=xUrllib(), proxyCert='core/controllers/daemons/mitm.crt' ):
         '''
         @parameter ip: IP address to bind
         @parameter port: Port to bind
@@ -234,8 +235,6 @@ class localproxy(proxy):
         raise w3afException('Timed out waiting for response from remote server.')
 
 if __name__ == '__main__':
-    from core.data.url.xUrllib import xUrllib
-    
     lp = localproxy('127.0.0.1', 8080, xUrllib() )
     lp.start2()
     

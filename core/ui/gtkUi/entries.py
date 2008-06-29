@@ -183,7 +183,7 @@ class IntegerOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
+        ValidatedEntry.__init__(self, opt.getValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0"
 
@@ -207,7 +207,7 @@ class FloatOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
+        ValidatedEntry.__init__(self, opt.getValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0.0"
 
@@ -231,7 +231,7 @@ class StringOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
+        ValidatedEntry.__init__(self, opt.getValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -243,13 +243,32 @@ class StringOption(ValidatedEntry, ModifiedMixIn):
         '''
         return True
 
+class IPPortOption(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option IP and Port.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getValueStr())
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ""
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return True if valid.
+        '''
+        parts = text.split(":")
+        return ( len(parts) == 2 and parts[1].isdigit() )
+
 class ListOption(ValidatedEntry, ModifiedMixIn):
     '''Class that implements the config option List.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getDefaultValueStr())
+        ValidatedEntry.__init__(self, opt.getValueStr())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -268,7 +287,7 @@ class BooleanOption(gtk.CheckButton, ModifiedMixIn):
     '''
     def __init__(self, alert, opt):
         gtk.CheckButton.__init__(self)
-        if opt.getDefaultValueStr() == "True":
+        if opt.getValueStr() == "True":
             self.set_active(True)
         ModifiedMixIn.__init__(self, alert, "toggled", "get_active", "set_active")
         self.show()
@@ -911,3 +930,44 @@ class PagesControl(gtk.HBox):
         self.right.set_sensitive(self.page < self.maxpages)
         self.pageentry.set_text(str(self.page))
         self.callback(int(self.page)-1)
+
+
+class EasyTable(gtk.Table):
+    '''Simplification of gtk.Table.
+
+    @param arg: all it receives goes to gtk.Table
+    @param kw: all it receives goes to gtk.Table
+
+    This class is to have a simple way to add rows to the table.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, *arg, **kw):
+        super(EasyTable,self).__init__(*arg, **kw)
+        self.auto_rowcounter = 0
+        self.set_row_spacings(1)
+
+    def autoAddRow(self, *widgets):
+        '''Simple way to add rows to a table.
+
+        @param widgets: all the widgets to the row
+
+        This method creates a new row, adds the widgets and show() them.
+        '''
+        r = self.auto_rowcounter
+        for i,widg in enumerate(widgets):
+            if widg is not None:
+                self.attach(widg, i, i+1, r, r+1, yoptions=gtk.EXPAND, xpadding=5)
+                widg.show()
+        self.auto_rowcounter += 1
+
+# decision of which widget implements the option to each type
+wrapperWidgets = {
+    "boolean": BooleanOption,
+    "integer": IntegerOption,
+    "string": StringOption,
+    "ipport": IPPortOption,
+    "float": FloatOption,
+    "list": ListOption,
+    "combo": ComboBoxOption, 
+}

@@ -110,7 +110,7 @@ class option:
 
                 else:
                     raise ValueError
-            elif self._type == 'string':
+            elif self._type in ('string', 'ipport'):
                 res = str(value)
             else:
                 raise w3afException('Unknown type: ' + self._type)

@@ -26,45 +26,6 @@ from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.data.options.optionList import optionList
 
-# decision of which widget implements the option to each type
-wrapperWidgets = {
-    "boolean": entries.BooleanOption,
-    "integer": entries.IntegerOption,
-    "string": entries.StringOption,
-    "float": entries.FloatOption,
-    "list": entries.ListOption,
-    "combo": entries.ComboBoxOption, 
-}
-
-class EasyTable(gtk.Table):
-    '''Simplification of gtk.Table.
-
-    @param arg: all it receives goes to gtk.Table
-    @param kw: all it receives goes to gtk.Table
-
-    This class is to have a simple way to add rows to the table.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, *arg, **kw):
-        super(EasyTable,self).__init__(*arg, **kw)
-        self.auto_rowcounter = 0
-        self.set_row_spacings(1)
-
-    def autoAddRow(self, *widgets):
-        '''Simple way to add rows to a table.
-
-        @param widgets: all the widgets to the row
-
-        This method creates a new row, adds the widgets and show() them.
-        '''
-        r = self.auto_rowcounter
-        for i,widg in enumerate(widgets):
-            if widg is not None:
-                self.attach(widg, i, i+1, r, r+1, yoptions=gtk.EXPAND, xpadding=5)
-                widg.show()
-        self.auto_rowcounter += 1
-
 class OnlyOptions(gtk.VBox):
     '''Only the options for configuration.
 
@@ -164,12 +125,12 @@ class OnlyOptions(gtk.VBox):
 
         Also, the configurable widget gets a tooltip for a small description.
         '''
-        table = EasyTable(len(options), 3)
+        table = entries.EasyTable(len(options), 3)
         tooltips = gtk.Tooltips()
         for i,opt in enumerate(options):
             titl = gtk.Label(opt.getName())
             titl.set_alignment(0.0, 0.5)
-            widg = wrapperWidgets[opt.getType()](self._changedWidget, opt )            
+            widg = entries.wrapperWidgets[opt.getType()](self._changedWidget, opt )            
             opt.widg = widg
             tooltips.set_tip(widg, opt.getDesc())
             if opt.getHelp():
