@@ -62,7 +62,7 @@ import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, proxywin
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser, time
@@ -708,7 +708,7 @@ class MainApp(object):
 
     def _proxy_tool(self, action):
         '''Proxies the HTTP calls.'''
-        craftedRequests.ProxiedRequests(self.w3af)
+        proxywin.ProxiedRequests(self.w3af)
 
         
     
