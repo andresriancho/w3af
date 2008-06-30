@@ -26,11 +26,15 @@ if __name__ == '__main__':
     
 from core.controllers.daemons.proxy import proxy
 from core.controllers.daemons.proxy import w3afProxyHandler
+
 from core.data.request.fuzzableRequest import fuzzableRequest
-from core.data.parsers.urlParser import getExtension
+from core.data.url.xUrllib import xUrllib
+
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
-from core.data.url.xUrllib import xUrllib
+
+from core.data.parsers.urlParser import getExtension
+from core.data.parsers.httpRequestParser import httpRequestParser
 
 import time
 import re
@@ -48,7 +52,6 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         # first of all, we create a fuzzable request based on the attributes that are set to this object
         fuzzReq = self._createFuzzableRequest()
-        print 'doing all'
         try:
             # Now we check if we need to add this to the queue, or just let it go through.
             if self._shouldBeTrapped(fuzzReq):
@@ -73,19 +76,60 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
                 del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
                 
-                try:
-                    res = self._urlOpener.sendRawRequest( head,  body )
-                except Exception,  e:
-                    res = e
-
-                # Save it so the upper layer can read this response.
-                self.server.w3afLayer._editedResponses[ id(fuzzReq) ] = res
+                if head == body == None:
+                    # The request was dropped!
+                    # We close the connection to the browser and exit
+                    print 'dropping request'
+                    self.rfile.close()
+                    self.wfile.close()
+                    break
                 
-                # From here, we send it to the browser
-                return res
+                else:
+                    # The request was edited by the user
+                    # Send it to the remote web server and to the proxy user interface.
+                    
+                    if self.server.w3afLayer._fixContentLength:
+                        head, body = self._fixContentLength(head, body)
+                    
+                    try:
+                        res = self._urlOpener.sendRawRequest( head,  body )
+                    except Exception,  e:
+                        res = e
+
+                    # Save it so the upper layer can read this response.
+                    self.server.w3afLayer._editedResponses[ id(fuzzReq) ] = res
+                    
+                    # From here, we send it to the browser
+                    return res
             else:
                 time.sleep(0.1)
-            
+    
+    def _fixContentLength(self, head, postdata):
+        '''
+        The user may have changed the postdata of the request, and not the content-length header;
+        so we are going to fix that problem.
+        '''
+        fuzzReq = httpRequestParser(head, postdata)
+        headers = fuzzReq.getHeaders()
+        for h in headers:
+            if h.lower() == 'content-length':
+                length = headers[ h ]
+                try:
+                    length = int(length)
+                except Exception,  e:
+                    om.out.debug('Failed to fix the content length, the value of the header is: "'+ length +'".')
+                else:
+                    if length == len(fuzzReq.getData()):
+                        # I don't have to fix anything
+                        pass
+                    else:
+                        # fixing length!
+                        headers[ h ] = str(len(fuzzReq.getData()))
+                        fuzzReq.setHeaders(headers)
+        
+        head = fuzzReq.dumpRequestHead()
+        return head,  postdata
+    
     def _sendFuzzableRequest(self, fuzzReq):
         '''
         Sends a fuzzable request to the remote web server.
@@ -182,13 +226,19 @@ class localproxy(proxy):
         self._whatToTrap= re.compile('.*')
         self._trap = True
         self._ignoreImages = True
+        self._fixContentLength = True
 
     def getTrappedRequest(self):
         '''
         To be called by the gtk user interface every 400ms.
         @return: A fuzzable request object, or None if the queue is empty.
         '''
-        return self._requestQueue.get()
+        try:
+            res = self._requestQueue.get(block=False)
+        except:
+            return None
+        else:
+            return res
         
     def getIgnoreImages(self):
         return self._ignoreImages
@@ -214,6 +264,18 @@ class localproxy(proxy):
     def getTrap(self):
         return self._trap
         
+    def setFixContentLength(self,  fix):
+        self._fixContentLength = fix
+        
+    def getFixContentLength(self):
+        return self._fixContentLength
+    
+    def dropRequest(self,  originalFuzzableRequest):
+        '''
+        Let the handler know that the request was dropped.
+        '''
+        self._editedRequests[ id(originalFuzzableRequest) ] = (None,  None)
+    
     def sendRawRequest( self, originalFuzzableRequest, head, postdata):
         # the handler is polling this dict and will extract the information from it and
         # then send it to the remote web server
@@ -221,7 +283,7 @@ class localproxy(proxy):
         
         # Loop until I get the data from the remote web server
         for i in xrange(30):
-            time.sleep(0.1)
+            time.sleep(0.2)
             if id(originalFuzzableRequest) in self._editedResponses:
                 res = self._editedResponses[ id(originalFuzzableRequest) ]
                 del self._editedResponses[ id(originalFuzzableRequest) ]

@@ -131,7 +131,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.fuzzable = None
         self.waitingRequests = True
         self.keepChecking = True
-        gobject.timeout_add(500, self._superviseRequests)
+        gobject.timeout_add(200, self._superviseRequests)
         self.show_all()
 
     def _startProxy(self):
@@ -169,6 +169,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.reqresp.request.clearPanes()
         self.reqresp.request.set_sensitive(False)
         self.waitingRequests = True
+        self.proxy.dropRequest(self.fuzzable)
 
     def _send(self, widg):
         '''Sends the request through the proxy.
@@ -180,11 +181,13 @@ class ProxiedRequests(entries.RememberingWindow):
             httpResp = helpers.coreWrap(self.proxy.sendRawRequest, self.fuzzable, tsup, tlow)
         except w3afException:
             return
-        self.fuzzable = None
-        self.reqresp.response.set_sensitive(True)
-        self.reqresp.response.showObject(httpResp)
-        self.bt_next.set_sensitive(True)
-        self.bt_drop.set_sensitive(False)
+        else:
+            self.fuzzable = None
+            self.reqresp.response.set_sensitive(True)
+            self.reqresp.response.showObject(httpResp)
+            self.bt_next.set_sensitive(True)
+            self.bt_drop.set_sensitive(False)
+            self.bt_send.set_sensitive(False)
 
     def _next(self, widg):
         '''Moves to the next request.

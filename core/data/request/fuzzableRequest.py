@@ -142,7 +142,6 @@ class fuzzableRequest:
             om.out.error('[fuzzableRequest error] setCookie received: "' + str(type(c)) + '" , "' + repr(c) + '"'  )
             raise w3afException('Invalid call to fuzzableRequest.setCookie()')
             
-        
     def getURL( self ):
         return self._url
     
