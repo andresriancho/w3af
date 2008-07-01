@@ -39,6 +39,11 @@ from core.controllers.daemons.proxy import *
 from core.controllers.w3afException import *
 import core.data.constants.w3afPorts as w3afPorts
 
+# Cohny changed the original http://w3af/spiderMan?terminate
+# to http://127.7.7.7/spiderMan?terminate because in Opera we got
+# an error if we used the original one! Thanks Cohny!
+TERMINATE_URL = 'http://127.7.7.7/spiderMan?terminate'
+
 class spiderMan(baseDiscoveryPlugin):
     '''
     SpiderMan is a local proxy that will collect new URLs.
@@ -92,7 +97,7 @@ class spiderMan(baseDiscoveryPlugin):
             # Inform the user
             om.out.information('spiderMan proxy is running on ' + self._listenAddress + ':' + str(self._listenPort) + ' .' )
             om.out.information('Please configure your browser to use these proxy settings and navigate the target site.')
-            om.out.information('To exit spiderMan plugin please navigate to http://w3af/spiderMan?terminate.')
+            om.out.information('To exit spiderMan plugin please navigate to ' + TERMINATE_URL + ' .')
             
             # Run the server
             self._proxy.run()
@@ -176,7 +181,7 @@ class proxyHandler(w3afProxyHandler):
             global_firstRequest = False
             om.out.information('The user is navigating through the spiderMan proxy.')
             
-        if self.path == 'http://w3af/spiderMan?terminate':
+        if self.path == TERMINATE_URL:
             om.out.information('The user terminated the spiderMan session.')
             self._sendEnd()
             self._spiderMan.stopProxy()
@@ -240,5 +245,5 @@ class proxyHandler(w3afProxyHandler):
         html = '<html>spiderMan plugin finished its execution.</html>'
         headers = {'Content-Length': str(len(html))}
         r = httpResponse.httpResponse( 200, html, headers, 
-            'http://w3af/spiderMan?terminate', 'http://w3af/spiderMan?terminate',)
+            TERMINATE_URL, TERMINATE_URL,)
         self._sendToBrowser(r)
