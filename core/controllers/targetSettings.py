@@ -53,7 +53,7 @@ class targetSettings(configurable):
             cf.cf.save('targetFramework', 'unknown' )
             cf.cf.save('targetDomains', [] )
             cf.cf.save('baseURLs', [] )
-            cf.cf.save('sessionName', 'defaultSession' )
+            cf.cf.save('sessionName', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M') )
         
         # Some internal variables
         self._operatingSystems = ['unknown','unix','windows']
