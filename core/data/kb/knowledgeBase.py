@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import os,sys
 from core.controllers.w3afException import w3afException
@@ -37,30 +38,8 @@ class knowledgeBase:
     
     def __init__(self):
         self._kb = {}
-        self.createLock()
-    
-    def destroyLock( self ):
-        self._kbLock = None
-    
-    def createLock( self ):
         self._kbLock = thread.allocate_lock()
-        
-    def getLock(self):
-        try:
-            self._kbLock.acquire()
-        except:
-            return False
-        else:
-            return True
-    
-    def releaseLock(self):
-        try:
-            self._kbLock.release()
-        except:
-            return False
-        else:
-            return True        
-        
+
     def save( self, callingInstance, variableName, value ):
         '''
         This method saves the variableName value to a dict.
@@ -70,12 +49,11 @@ class knowledgeBase:
         else:
             name = callingInstance.getName()
         
-        if self.getLock():
+        with self._kbLock:
             if name not in self._kb.keys():
                 self._kb[ name ] = {variableName: value}
             else:
                 self._kb[ name ][ variableName ] = value
-            self.releaseLock()
         
     def append( self, callingInstance, variableName, value ):
         '''
@@ -86,7 +64,7 @@ class knowledgeBase:
         else:
             name = callingInstance.getName()
         
-        if self.getLock():
+        with self._kbLock:
             if name not in self._kb.keys():
                 self._kb[ name ] = {variableName:[value,]}
             else:
@@ -94,7 +72,6 @@ class knowledgeBase:
                     self._kb[ name ][ variableName ].extend( [value,] )
                 else:
                     self._kb[ name ][ variableName ] = [value,]
-            self.releaseLock()
         
     def getData( self, pluginWhoSavedTheData, variableName ):
         '''
@@ -106,7 +83,8 @@ class knowledgeBase:
             name = pluginWhoSavedTheData.getName()
             
         res = []
-        if self.getLock():
+        
+        with self._kbLock:
             if name not in self._kb.keys():
                 res = []
             else:
@@ -114,7 +92,7 @@ class knowledgeBase:
                     res = []
                 else:
                     res = self._kb[name][variableName]
-            self.releaseLock()
+                    
         return res
 
     def getAllEntriesOfClass( self, klass ):
@@ -122,14 +100,15 @@ class knowledgeBase:
         @return: A list of all objects of class == klass that are saved in the kb.
         '''
         res = []
-        if self.getLock():
+        
+        with self._kbLock:
             for pluginName in self._kb:
                 for savedName in self._kb[ pluginName ]:
                     if isinstance( self._kb[ pluginName ][ savedName ], list ):
                         for i in self._kb[ pluginName ][ savedName ]:
                             if isinstance( i, klass ):
                                 res.append( i )
-            self.releaseLock()
+
         return res
     
     def getAllVulns( self ):
