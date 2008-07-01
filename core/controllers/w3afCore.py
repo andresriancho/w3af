@@ -102,7 +102,6 @@ class w3afCore:
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         self._isRunning = False
         self._paused = False
-        self._mustStop = False
         
         # This indicates if we are doing discovery/audit/exploit/etc...
         self._currentPhase = ''
@@ -330,27 +329,9 @@ class w3afCore:
         '''
         self._paused = pauseYesNo
         self._isRunning = not pauseYesNo
+        self.uriOpener.pause( pauseYesNo )
         om.out.debug('The user paused/unpaused the scan.')
-        
-    def _sleepIfPausedDieIfStopped( self ):
-        '''
-        This method sleeps until self._paused is False.
-        '''
-        while self._paused:
-            time.sleep(0.5)
-            
-            # The user can pause and then STOP
-            if self._mustStop:
-                # This raises a keyboard interrupt in the middle of the discovery process.
-                # It has almost the same effect that a ctrl+c by the user if in consoleUi
-                raise KeyboardInterrupt
-        
-        # The user can simply STOP the scan
-        if self._mustStop:
-            # This raises a keyboard interrupt in the middle of the discovery process.
-            # It has almost the same effect that a ctrl+c by the user if in consoleUi
-            raise KeyboardInterrupt
-    
+
     def start(self):
         try:
             self._realStart()
@@ -464,7 +445,7 @@ class w3afCore:
         @return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core.')
-        self._mustStop = True
+        self.uriOpener.stop()
     
     def quit( self ):
         '''
@@ -552,8 +533,6 @@ class w3afCore:
                     else:
                         self._setRunningPlugin( plugin.getName() )
                         try:
-                            # This is for the pause and stop feature
-                            self._sleepIfPausedDieIfStopped()
                             self._setCurrentFuzzableRequest( fr )
                         
                             pluginResult = plugin.discover( fr )
@@ -696,8 +675,6 @@ class w3afCore:
             for fr in self._fuzzableRequestList:
                 # Sends each fuzzable request to the plugin
                 try:
-                    # This is for the pause and stop feature
-                    self._sleepIfPausedDieIfStopped()
                     self._setCurrentFuzzableRequest( fr )
                     plugin.audit( fr )
                 except w3afException, e:
@@ -732,8 +709,6 @@ class w3afCore:
                 
                 # Sends each url to the plugin
                 try:
-                    # This is for the pause and stop feature
-                    self._sleepIfPausedDieIfStopped()
                     self._setCurrentFuzzableRequest( fr )
                     
                     frList = plugin.bruteforce( fr )

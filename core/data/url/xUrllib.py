@@ -77,7 +77,45 @@ class xUrllib:
         # User configured options (in an indirect way)
         self._grepPlugins = []
         self._evasionPlugins = []
+        self._paused = False
+        self._mustStop = False
+    
+    def pause(self,  pauseYesNo):
+        '''
+        When the core wants to pause a scan, it calls this method, in order to freeze all actions
+        @parameter pauseYesNo: True if I want to pause the scan; False to un-pause it.
+        '''
+        self._paused = pauseYesNo
         
+    def stop(self):
+        '''
+        Called when the user wants to finish a scan.
+        '''
+        self._mustStop = True
+        
+    def _sleepIfPausedDieIfStopped( self ):
+        '''
+        This method sleeps until self._paused is False.
+        '''
+        while self._paused:
+            time.sleep(0.5)
+            
+            # The user can pause and then STOP
+            if self._mustStop:
+                self._mustStop = False
+                self._paused = False
+                # This raises a keyboard interrupt in the middle of the discovery process.
+                # It has almost the same effect that a ctrl+c by the user if in consoleUi
+                raise KeyboardInterrupt
+        
+        # The user can simply STOP the scan
+        if self._mustStop:
+            self._mustStop = False
+            self._paused = False
+            # This raises a keyboard interrupt in the middle of the discovery process.
+            # It has almost the same effect that a ctrl+c by the user if in consoleUi
+            raise KeyboardInterrupt
+    
     def end( self ):
         '''
         This method is called when the xUrllib is not going to be used anymore.
@@ -359,6 +397,9 @@ class xUrllib:
                 raise sizeExceeded( msg )
             
     def _send( self , req , useCache=False, useMultipart=False, grepResult=True ):
+        # This is for the pause and stop feature
+        self._sleepIfPausedDieIfStopped()
+
         # Sanitize the URL
         self._checkURI( req )
         
