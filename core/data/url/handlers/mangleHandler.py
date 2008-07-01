@@ -103,7 +103,13 @@ class mangleHandler(urllib2.BaseHandler):
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
             
-            response = self._httpResponse2httplib( response, httpRes )
+            if response._connection.sock == None:
+                # This fixes bug #1982106
+                # https://sourceforge.net/tracker/index.php?func=detail&aid=1982106&group_id=170274&atid=853652
+                # Returning None is like saying "I don't know what to do with this, let the next handler manage it".
+                return None
+            else:
+                response = self._httpResponse2httplib( response, httpRes )
         return response
 
     def _httpResponse2httplib( self, originalResponse, mangledResponse ):
