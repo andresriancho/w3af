@@ -204,7 +204,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             except Exception, e:
                 om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )
 
-    def _sendToServer( self ):
+    def _sendToServer( self,  grep=False ):
         '''
         Send a request that arrived from the browser to the remote web server.
         
@@ -243,7 +243,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             qs = getQueryString( self.path )
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod( url, data=str(qs), headers=self.headers )
+                res = httpCommandMethod( url, data=str(qs), headers=self.headers,  grepResult=grep )
             except w3afException, w:
                 om.out.error('The proxy request failed, error: ' + str(w) )
                 raise w

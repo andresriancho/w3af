@@ -93,6 +93,7 @@ class spiderMan(baseDiscoveryPlugin):
             
             # Create the proxy server
             self._proxy = proxy(self._listenAddress, self._listenPort, self._urlOpener, self.createPH())
+            self._proxy.targetDomain = urlParser.getDomain( freq.getURL() )
             
             # Inform the user
             om.out.information('spiderMan proxy is running on ' + self._listenAddress + ':' + str(self._listenPort) + ' .' )
@@ -191,9 +192,14 @@ class proxyHandler(w3afProxyHandler):
             headers = self._getHeadersDict()
             om.out.debug("[spiderMan] Handling request: " + self.command + ' ' + self.path)
             self._spiderMan.appendFuzzableRequest( self.command, self.path, postData, headers )
-
+            
+            if urlParser.getDomain( self.path ) == self.server.w3afLayer.targetDomain:
+                grep = True
+            else:
+                grep = False
+                
             try:
-                response = self._sendToServer()
+                response = self._sendToServer(grep=grep)
             except Exception, e:
                 self._sendError( e )
             else:
