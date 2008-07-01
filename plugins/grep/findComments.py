@@ -73,7 +73,7 @@ class findComments(baseGrepPlugin):
                     for word in self._interestingWords:
                         if comment.count( word ) and ( word, response.getURL() ) not in self._alreadyReportedInteresting:
                             i = info.info()
-                            i.setName('HTML comment')
+                            i.setName('HTML comment with "' + word + '" inside')
                             i.setDesc( 'A comment with the string "' + word + '" was found in: ' + response.getURL() + ' . This could be interesting.' )
                             i.setId( response.id )
                             i.setDc( request.getDc )
