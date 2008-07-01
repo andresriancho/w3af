@@ -381,18 +381,20 @@ class urlOpenerSettings( configurable ):
         o7 = option('ignoreSessCookies', self._ignoreSessCookies, d7, 'boolean', help=h7, tabid='Cookies')
        
         d8 = 'Proxy TCP port'
-        h8 = 'TCP port for the remote proxy server to use.'
+        h8 = 'TCP port for the remote proxy server to use. On windows systems, if you left this setting blank '
+        h8 += 'w3af will use the system settings that are configured in Internet Explorer.'
         o8 = option('proxyPort', self._proxyPort, d8, 'integer', help=h8, tabid='Outgoing proxy')
 
         d9 = 'Proxy IP address'
-        h9 = 'IP address for the remote proxy server to use.'
+        h9 = 'IP address for the remote proxy server to use. On windows systems, if you left this setting blank '
+        h9 += 'w3af will use the system settings that are configured in Internet Explorer.'
         o9 = option('proxyAddress', self._proxyAddress, d9, 'string', help=h9, tabid='Outgoing proxy')
 
         d10 = 'User Agent header'
         h10 = 'User Agent header to send in request.'
         o10 = option('userAgent', self._userAgent, d10, 'string', help=h10, tabid='Misc')
 
-        d11 = 'Proxy IP address'
+        d11 = 'Maximum file size'
         h11 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
         o11 = option('maxFileSize', self._maxFileSize, d11, 'integer', help=h11, tabid='Misc')
 
