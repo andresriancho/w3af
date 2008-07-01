@@ -79,7 +79,6 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 if head == body == None:
                     # The request was dropped!
                     # We close the connection to the browser and exit
-                    print 'dropping request'
                     self.rfile.close()
                     self.wfile.close()
                     break
@@ -282,8 +281,8 @@ class localproxy(proxy):
         self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)
         
         # Loop until I get the data from the remote web server
-        for i in xrange(30):
-            time.sleep(0.2)
+        for i in xrange(60):
+            time.sleep(0.1)
             if id(originalFuzzableRequest) in self._editedResponses:
                 res = self._editedResponses[ id(originalFuzzableRequest) ]
                 del self._editedResponses[ id(originalFuzzableRequest) ]
