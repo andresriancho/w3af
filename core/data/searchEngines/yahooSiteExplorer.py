@@ -21,9 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
-import core.data.parsers.urlParser as urlParser
 import urllib
 import re
 
@@ -57,12 +55,15 @@ class yahooSiteExplorer(searchEngine):
         
         results = []
 
-        for url in re.findall('<Url>(.*?)</Url>',response.getBody() ):
+        for url in re.findall('<Url>(.*?)</Url>', response.getBody() ):
             gr = yahooSiteExplorerResult( url )
             results.append( gr )
 
         return results
 
 class yahooSiteExplorerResult:
+    '''
+    This is a dummy class that represents a search engine result.
+    '''
     def __init__( self, url ):
         self.URL = url

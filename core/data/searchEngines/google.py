@@ -57,6 +57,13 @@ class google(searchEngine):
         self._urlOpener = urlOpener
         
     def search( self, query, start, count=10 ):
+        '''
+        Perform a google search and return the resulting URLs.
+        
+        @parameter query: The query that we want to perform in the search engine
+        @parameter start: The first result item
+        @parameter count: How many results to get from start
+        '''        
         if hasPyGoogleLib and self._key != '':
             pygoogle.LICENSE_KEY = self._key
             data = pygoogle.doGoogleSearch( query , start, count )
@@ -69,27 +76,34 @@ class google(searchEngine):
             return res
     
     def pagesearch( self, query, start, count=10 ):
+        '''
+        Perform a google search and return the google result pages.
+        
+        @parameter query: The query that we want to perform in the search engine
+        @parameter start: The first result item
+        @parameter count: How many results to get from start
+        '''        
         res, resPages = self.met_search( query, start, count )
         return resPages
     
-    def set( self, inputStrings ):
+    def set( self, inputStringList ):
         '''
         Performs a google set search.
         http://labs.google.com/sets
         '''
         results = []
         
-        if len( inputStrings ) != 0:
+        if len( inputStringList ) != 0:
             # I'll use the first 5 inputs
-            inputStrings = list(inputStrings)[:5]
+            inputStringList = list(inputStringList)[:5]
         
             # This is a search for a set with input blue and white
             #http://labs.google.com/sets?hl=en&q1=blue&q2=white&q3=&q4=&q5=&btn=Small+Set+%2815+items+or+fewer%29
             url = 'http://labs.google.com/sets?hl=en'
             q = 1
             
-            for input in inputStrings:
-                url += '&q' + str( q ) + '=' + urllib.quote_plus( input )
+            for inputString in inputStringList:
+                url += '&q' + str( q ) + '=' + urllib.quote_plus( inputString )
             url += '&btn=Small+Set+%2815+items+or+fewer%29'
             
             # Now I get the results
@@ -98,7 +112,7 @@ class google(searchEngine):
             for resultStr in re.findall('<font face="Arial, sans-serif" size=-1><a href="http://www.google.com/search\?hl=en&q=(.*?)">',response.getBody() ):
                 results.append( urllib.unquote_plus( resultStr.lower() ) )
         
-        results = [ x for x in results if x not in inputStrings ] 
+        results = [ x for x in results if x not in inputStringList ] 
         om.out.debug('Google set search returned:')
         for i in results:
             om.out.debug('- ' + i )
