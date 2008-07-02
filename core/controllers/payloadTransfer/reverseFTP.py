@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import *
+import socket
 
 from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
 
@@ -57,7 +58,7 @@ class reverseFTP( basePayloadTransfer ):
         client on the remote server.
         '''
         serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSock.bind(('', inboundPort))
+        serverSock.bind(('', self._inboundPort))
         serverSock.listen(1)
         
         clientSock, addr = serverSock.accept()
