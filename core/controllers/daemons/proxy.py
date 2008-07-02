@@ -154,7 +154,7 @@ class proxy(w3afThread):
             self._running = True
             self._server.serve_forever()
 
-class w3afProxyHandler(BaseHTTPRequestHandler):
+class w3afProxyHandler(BaseHTTPRequestHandler):    
     def handle_one_request(self):
         """Handle a single HTTP request.
 
@@ -302,15 +302,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.wfile.close()
         except Exception, e:
             om.out.debug('Failed to send the data to the browser: ' + str(e) )
-    
-    class TimeoutError (Exception): pass
-    def SIGALRM_handler(sig, stack): raise Error("Timeout")
-    # Windows signal.SIGALRM doesn't exist
-    try:
-        signal.signal(signal.SIGALRM, SIGALRM_handler)
-    except:
-        pass
-    
+        
     def _do_handshake(self, soc, con):
         attempt = 0
         while True:
