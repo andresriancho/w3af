@@ -28,7 +28,7 @@ from core.data.options.optionList import optionList
 from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.searchEngines.google import google as google
+from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache

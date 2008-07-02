@@ -1,5 +1,5 @@
 '''
-google.py
+googleSearchEngine.py
 
 Copyright 2006 Andres Riancho
 
@@ -43,7 +43,7 @@ import urllib
 import re
 
 
-class google(searchEngine):
+class googleSearchEngine(searchEngine):
     '''
     This class is a wrapper for doing google searches. It allows the user to use pygoogle or simply do GET requests
     to google.com .
@@ -154,5 +154,8 @@ class google(searchEngine):
         return results, resPages
 
 class googleResult:
+    '''
+    This is a dummy class that represents a search engine result.
+    '''    
     def __init__( self, url ):
         self.URL = url

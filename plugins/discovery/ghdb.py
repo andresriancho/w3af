@@ -29,7 +29,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.searchEngines.google import google as google
+from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
