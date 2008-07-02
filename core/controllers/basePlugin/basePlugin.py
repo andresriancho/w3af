@@ -164,6 +164,15 @@ class basePlugin(configurable):
             self._analyzeResult( mutant, res )
         return res
     
+    def _analyzeResult(self,  mutant,  res):
+        '''
+        Analyze the result of sending the mutant to the remote web server.
+        
+        @parameter mutant: The mutated request.
+        @parameter res: The HTTP response.
+        '''
+        raise w3afException('You must override the _analyzeResult method of basePlugin if you want to use _sendMutant().')
+    
     def __eq__( self, other ):
         '''
         This function is called when extending a list of plugin instances.

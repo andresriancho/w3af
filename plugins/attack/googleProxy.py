@@ -145,7 +145,7 @@ class googleProxy(baseAttackPlugin):
             
             # Prepare the url for google.
             googleProxyURL = 'http://www.google.com/gwt/n?'
-            qs = queryString.queryString()
+            qs = queryString()
             qs['u'] = self.path
             qs['_gwt_noimg'] = 1
             url = googleProxyURL + str( qs )

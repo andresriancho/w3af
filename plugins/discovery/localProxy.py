@@ -129,7 +129,7 @@ class localProxy(baseDiscoveryPlugin):
             elif self._mustBeEdited():
                 # The URL hasnt been edited yet AND it MUST be edited
                 # Return the data to the browser for editing
-                res = self._editWithBrowser()
+                self._editWithBrowser()
                 
             else:
                 # The URL was edited and we are ready to send the data to the server

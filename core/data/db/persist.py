@@ -83,7 +83,7 @@ class persist:
             self._db = sqlite3.connect(filename, check_same_thread=False)
             self._db.text_factory = str
         except Exception, e:
-            raise w3afException('Failed to create the database in file "' + primary_key_columns +'". Exception: ' + str(e) )
+            raise w3afException('Failed to create the database in file "' + filename +'". Exception: ' + str(e) )
         else:
             # Read the column names to recreate self._primary_key_columns
             pk_getters = []

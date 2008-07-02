@@ -24,7 +24,7 @@ import core.data.parsers.dpCache as dpCache
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
-from core.data.getResponseType import *
+from core.data.getResponseType import isPDF, isTextOrHtml
 from core.data.parsers.urlParser import getDomain
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
@@ -45,13 +45,18 @@ class webSpider(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._onlyForward = False
         
+        # Internal variables
+        self._compiledIgnoreRe = None
+        self._compiledFollowRe = None
+        self._brokenLinks = []
+        self._fuzzableRequests = []
+        
+        # User configured variables
         self._ignoreRegex = 'None'
         self._followRegex = '.*'
+        self._onlyForward = False
         self._compileRE()
-        
-        self._brokenLinks = []
         
     def discover(self, fuzzableRequest ):
         '''
@@ -88,9 +93,9 @@ class webSpider(baseDiscoveryPlugin):
             # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze
             # a image file, its useless and consumes cpu power.
             if isTextOrHtml( response.getHeaders() ) or isPDF( response.getHeaders() ):
-                self._originalURL = response.getRedirURI()
-                dp = dpCache.dpc.getDocumentParserFor( response.getBody(), self._originalURL )
-                references = dp.getReferences()
+                originalURL = response.getRedirURI()
+                documentParser = dpCache.dpc.getDocumentParserFor( response.getBody(), originalURL )
+                references = documentParser.getReferences()
                 
                 # I also want to analyze all directories, if the URL I just fetched is:
                 # http://localhost/a/b/c/f00.php I want to GET:
@@ -108,7 +113,7 @@ class webSpider(baseDiscoveryPlugin):
                 references = [ r for r in references if not self._compiledIgnoreRe.match( r )]
                 
                 for ref in references:
-                    targs = (ref, fuzzableRequest)
+                    targs = (ref, fuzzableRequest, originalURL)
                     self._tm.startFunction( target=self._verifyReferences, args=targs, ownerObj=self )
             
         self._tm.join( self )
@@ -118,19 +123,21 @@ class webSpider(baseDiscoveryPlugin):
         
         return self._fuzzableRequests
         
-    def _verifyReferences( self, reference, originalRequest ):
-        
-        if getDomain( reference ) == getDomain( self._originalURL ):
-            if self._isForward( reference ):
+    def _verifyReferences( self, reference, originalRequest, originalURL ):
+        '''
+        This method GET's every new link and parses it in order to get new links and forms.
+        '''
+        if getDomain( reference ) == getDomain( originalURL ):
+            if self._isForward( reference, originalURL ):
                 response = None
-                h = { 'Referer': self._originalURL }
+                headers = { 'Referer': originalURL }
                 
                 try:
-                    response = self._urlOpener.GET( reference, useCache=True, headers=h, getSize=True )
+                    response = self._urlOpener.GET( reference, useCache=True, headers= headers, getSize=True )
                 except KeyboardInterrupt,e:
                     raise e
-                except w3afException,w:
-                    om.out.error( str(w) )
+                except w3afException,w3:
+                    om.out.error( str(w3) )
                 else:
                     # Note: I WANT to follow links that are in the 404 page, but if the page I fetched is a 404...
                     # I should ignore it.
@@ -141,9 +148,9 @@ class webSpider(baseDiscoveryPlugin):
                         fuzzableRequestList = self._createFuzzableRequests( response, addSelf=True )
                     
                     # Process the list.
-                    for fr in fuzzableRequestList:
-                        fr.setReferer( self._originalURL )
-                        self._fuzzableRequests.append( fr )
+                    for fuzzableRequest in fuzzableRequestList:
+                        fuzzableRequest.setReferer( originalURL )
+                        self._fuzzableRequests.append( fuzzableRequest )
     
     def end( self ):
         '''
@@ -152,12 +159,12 @@ class webSpider(baseDiscoveryPlugin):
         if len(self._brokenLinks):
             reported = []
             om.out.information('The following is a list of broken links that were found by the webSpider plugin:')
-            for u,o in self._brokenLinks:
-                if (u,o) not in reported:
-                    reported.append( (u,o) )
-                    om.out.information('- ' + u + ' [ ' + o + ' ]')
+            for broken, where in self._brokenLinks:
+                if (broken, where) not in reported:
+                    reported.append( (broken, where) )
+                    om.out.information('- ' + broken + ' [ ' + where + ' ]')
     
-    def _isForward( self, reference ):
+    def _isForward( self, reference, originalURL ):
         '''
         Check if the reference is inside the original URL directory
         @return: True if inside.
@@ -166,8 +173,8 @@ class webSpider(baseDiscoveryPlugin):
             return True
         else:
             # I have to work :S
-            joinedURL = urlParser.urlJoin( self._originalURL, reference )
-            if joinedURL.startswith( urlParser.getDomainPath( self._originalURL )  ):
+            joinedURL = urlParser.urlJoin( originalURL, reference )
+            if joinedURL.startswith( urlParser.getDomainPath( originalURL )  ):
                 return True
             else:
                 return False
@@ -206,7 +213,10 @@ class webSpider(baseDiscoveryPlugin):
         self._compileRE()
     
     def _compileRE( self ):
-        # Now we compile the regular expressions
+        '''
+        Now we compile the regular expressions that are going to be
+        used to ignore or follow links.
+        '''
         self._compiledIgnoreRe = re.compile( self._ignoreRegex )
         self._compiledFollowRe = re.compile( self._followRegex )
         

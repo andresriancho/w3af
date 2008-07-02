@@ -64,14 +64,13 @@ def moveDelta(dx=1):
             moveBack(-dx)
 
 def moveBack(steps=1):
-        for i in range(steps):
-            sys.stdout.write('\x08')
-	pass #print CSI_CUB % steps
+    for i in range(steps):
+        sys.stdout.write('\x08')
 
 # TODO: Obsolete?
 def moveForward(steps=1):
-        for i in range(steps):
-            sys.stdout.write(CTRL_RIGHT)
+    for i in range(steps):
+        sys.stdout.write(CTRL_RIGHT)
 
 	pass #print CSI_CUF % steps
 

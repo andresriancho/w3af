@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createRandAlpha
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
@@ -30,7 +30,6 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import socket
 from core.controllers.w3afException import w3afRunOnce
 
 class detectWAF(baseDiscoveryPlugin):
@@ -48,10 +47,12 @@ class detectWAF(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         if not self._run:
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery plugins 
+            # to be runned.
             raise w3afRunOnce()
         else:
-            # I will only run this one time. All calls to detectWAF return the same url's ( none! )
+            # I will only run this one time. All calls to detectWAF return 
+            # the same url's ( none! )
             self._run = False
             self._identifyURLScan( fuzzableRequest )
             self._identifyModSecurity( fuzzableRequest )
@@ -64,15 +65,15 @@ class detectWAF(baseDiscoveryPlugin):
         Try to verify if SecureIIS is installed or not.
         '''
         # And now a final check for SecureIIS
-        h = fuzzableRequest.getHeaders()
-        h['Transfer-Encoding'] = createRandAlpha(1024 + 1)
+        headers = fuzzableRequest.getHeaders()
+        headers['Transfer-Encoding'] = createRandAlpha(1024 + 1)
         try:
-          lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
         except w3afException, w3:
-          om.out.debug('Failed to identify secure IIS')
+            om.out.debug('Failed to identify secure IIS, exception: ' + str(w3) )
         else:
-          if lockResponse2.getCode() == 404:
-              self._reportFinding('SecureIIS', lockResponse2)
+            if lockResponse2.getCode() == 404:
+                self._reportFinding('SecureIIS', lockResponse2)
         
     def _identifyModSecurity(self,  fuzzableRequest):
         '''
@@ -89,30 +90,34 @@ class detectWAF(baseDiscoveryPlugin):
         originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
         if originalResponse.getCode() != 404:
             # Now add the if header and try again
-            h = fuzzableRequest.getHeaders()
-            h['If'] = createRandAlpha(8)
-            ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            headers = fuzzableRequest.getHeaders()
+            headers['If'] = createRandAlpha(8)
+            ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
             
-            h = fuzzableRequest.getHeaders()
-            h['Translate'] = createRandAlpha(8)
-            translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            headers = fuzzableRequest.getHeaders()
+            headers['Translate'] = createRandAlpha(8)
+            translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
             
-            h = fuzzableRequest.getHeaders()
-            h['Lock-Token'] = createRandAlpha(8)
-            lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            headers = fuzzableRequest.getHeaders()
+            headers['Lock-Token'] = createRandAlpha(8)
+            lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
             
-            h = fuzzableRequest.getHeaders()
-            h['Transfer-Encoding'] = createRandAlpha(8)
-            transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=h, useCache=True )
+            headers = fuzzableRequest.getHeaders()
+            headers['Transfer-Encoding'] = createRandAlpha(8)
+            transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
         
             if ifResponse.getCode() == 404 or translateResponse.getCode() == 404 or\
             lockResponse.getCode() == 404 or transferEncodingResponse.getCode() == 404:
-                self._reportFinding('URLScan', response)
+                self._reportFinding('URLScan', lockResponse)
 
     
     def _reportFinding( self, name, response ):
+        '''
+        Creates a information object based on the name and the response parameter and
+        saves the data in the kb.
+        '''
         i = info.info()
-        i.setURL( fuzzableRequest.getURL() )
+        i.setURL( response.getURL() )
         i.setDesc( 'The remote web server seems to have a '+name+'.' )
         i.setName('Found '+name)
         kb.kb.append( self, name, i )

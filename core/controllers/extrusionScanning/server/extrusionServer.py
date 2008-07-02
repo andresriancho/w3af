@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import socket
+from core.controllers.w3afException import w3afException
+
 try:
     # Try to use the scapy library that is installed in the system
     from scapy import *
@@ -36,7 +38,6 @@ except:
             raise w3afException('scapy isn\'t installed in your windows system; please install it following this guide http://trac.secdev.org/scapy/wiki/WindowsInstallationGuide')
             
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 
 class extrusionServer:

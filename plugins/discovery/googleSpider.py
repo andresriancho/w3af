@@ -30,7 +30,7 @@ from core.controllers.w3afException import w3afRunOnce
 from core.data.searchEngines.google import google as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
-
+from urllib2 import URLError
 
 class googleSpider(baseDiscoveryPlugin):
     '''

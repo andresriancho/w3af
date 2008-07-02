@@ -27,6 +27,7 @@ from . import helpers, kbtree, messages, httpLogTab, reqResViewer, craftedReques
 import core.data.kb.knowledgeBase as kb
 import webbrowser
 import os
+import core.controllers.outputManager as om
 
 # To show request and responses
 from core.data.db.reqResDBHandler import reqResDBHandler

@@ -1,6 +1,7 @@
 import codecs, math, os, re, difflib, struct
 import pango, gobject, gtk
 import diffutil
+import traceback
 
 class FifoScheduler(object):
     """Base class with common functionality for schedulers.

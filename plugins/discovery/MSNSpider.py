@@ -30,6 +30,7 @@ from core.data.searchEngines.msn import msn as msn
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce
+from urllib2 import URLError
 
 class MSNSpider(baseDiscoveryPlugin):
     '''

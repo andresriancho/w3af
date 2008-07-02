@@ -310,23 +310,7 @@ class urlOpenerSettings( configurable ):
         
     def getCachedUrlopen(self):
         return self._cacheOpener
-    
-    def getCfg( self ):
-        '''
-        This is a faster and simpler way to call all getters.
-        '''
-        result = {}
-        
-        result['timeout'] = self.getTimeout()
-        result['basicAuth'] = self.getBasicAuth()
-        result['cookie'] = self.getCookie()
-        result['headers'] = self.getHeadersFile()
-        result['proxy'] = self.getProxy()
-        result['userAgent'] = self.getUserAgent()
-        result['ignoreSessionCookies'] = self.ignoreSessionCookies
-        
-        return result
-        
+
     def setManglePlugins( self, mp ):
         '''
         Configure the mangle plugins to be used.

@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #import core.controllers.outputManager as om
 import sys
+import os
 
 # If this two modules are imported here instead of below
 # we loose windows support.
@@ -81,7 +82,7 @@ def wrapper( fun ):
 
 def ioctl_GWINSZ(fd): #### TABULATION FUNCTIONS
     try: ### Discover terminal width
-        import fcntl, termios, struct, os
+        import fcntl, termios, struct
         cr = struct.unpack('hh',
         fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
     except:
@@ -104,7 +105,7 @@ def terminal_size():
     if not cr:
         # env vars or finally defaults
         try:
-            cr = (env['LINES'], env['COLUMNS'])
+            cr = (os.environ['LINES'], os.environ['COLUMNS'])
         except:
             cr = (25, 80)
     # reverse rows, cols

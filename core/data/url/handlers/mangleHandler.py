@@ -107,6 +107,7 @@ class mangleHandler(urllib2.BaseHandler):
                 # This fixes bug #1982106
                 # https://sourceforge.net/tracker/index.php?func=detail&aid=1982106&group_id=170274&atid=853652
                 # Returning None is like saying "I don't know what to do with this, let the next handler manage it".
+                ### FIXME: Does this work?
                 return None
             else:
                 response = self._httpResponse2httplib( response, httpRes )
