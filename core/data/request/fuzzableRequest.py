@@ -171,9 +171,10 @@ class fuzzableRequest:
         return self._headers
     
     def getReferer( self ):
-        if 'Referer' in self._fuzzable['headers']:
+        if 'Referer' in self._headers['headers']:
             return self._headers['Referer']
-        return ''
+        else:
+            return ''
     
     def getCookie( self ):
         if self._cookie:

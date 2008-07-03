@@ -99,6 +99,14 @@ class sgmlParser(abstractParser, SGMLParser):
         
         # Now we are ready to work
         self._preParse( document )
+        
+    def _preParse(self, document):
+        '''
+        Parse the document!
+        
+        @parameter document: The document that we want to parse.
+        '''
+        raise w3afException('You have to override the _preParse method when subclassing sgmlParser class.')
     
     def unknown_endtag(self, tag):         
         '''

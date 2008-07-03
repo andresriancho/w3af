@@ -74,7 +74,6 @@ class threadManager:
                 threadObj.stop()
                 om.out.debug('Calling join on daemon thread: ' + str(threadObj) )
                 threadObj.join(self._waitForJoin)
-                self._threads.remove( threadObj )
                 
     def stopAllDaemons( self ):
         om.out.debug('Calling join on all daemon threads')

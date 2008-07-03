@@ -200,18 +200,21 @@ class menu:
         if not len(params):
             raise w3afException('Expression is expected')
 
+        smallLocals = {'kb':kb}
+        smallGlobals = {}
+        
         assertCommand = 'assert '
         assertCommand += ' '.join( params )
         try:
-            exec( assertCommand )
+            exec( assertCommand,  smallGlobals,  smallLocals)
         except AssertionError, ae:
             msg = 'Assert **FAILED**'
 
+            aRes = ''
             try:
                 # Get the value of the first argument
                 a = params[0]
-                # FIXME: The exec should have a restricted globals and locals
-                exec( 'aRes = ' + a )
+                exec( 'aRes = ' + a,  smallGlobals,  smallLocals)
             except:
                 pass
             else:
