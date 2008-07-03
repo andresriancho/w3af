@@ -23,19 +23,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
-hasPyGoogleLib = False
+WITH_PYGOOGLE = False
 try:
     import extlib.pygoogle.google as pygoogle
     om.out.debug('google.py is using the bundled pygoogle library')
-    hasPyGoogleLib = True
-except:
+    WITH_PYGOOGLE = True
+except ImportError:
     try:
         import google as pygoogle
         om.out.debug('google.py is using the systems pygoogle library')
-        hasPyGoogleLib = True
-    except:
+        WITH_PYGOOGLE = True
+    except ImportError:
         om.out.debug('google.py detected that pygoogle ain\'t installed! Doing requests manually.')
-        hasPyGoogleLib = False
+        WITH_PYGOOGLE = False
 
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
 import core.data.parsers.urlParser as urlParser
@@ -64,7 +64,7 @@ class googleSearchEngine(searchEngine):
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''        
-        if hasPyGoogleLib and self._key != '':
+        if WITH_PYGOOGLE and self._key != '':
             pygoogle.LICENSE_KEY = self._key
             data = pygoogle.doGoogleSearch( query , start, count )
             om.out.debug('Google search for : '+ query + ' returned ' + str( len( data.results ) ) + ' results.' )
@@ -100,16 +100,19 @@ class googleSearchEngine(searchEngine):
             # This is a search for a set with input blue and white
             #http://labs.google.com/sets?hl=en&q1=blue&q2=white&q3=&q4=&q5=&btn=Small+Set+%2815+items+or+fewer%29
             url = 'http://labs.google.com/sets?hl=en'
-            q = 1
+            qParameter = 1
             
             for inputString in inputStringList:
-                url += '&q' + str( q ) + '=' + urllib.quote_plus( inputString )
+                url += '&q' + str( qParameter ) + '=' + urllib.quote_plus( inputString )
+                qParameter += 1
             url += '&btn=Small+Set+%2815+items+or+fewer%29'
             
             # Now I get the results
             response = self._urlOpener.GET( url , headers=self._headers, useCache=True, grepResult=False )
             
-            for resultStr in re.findall('<font face="Arial, sans-serif" size=-1><a href="http://www.google.com/search\?hl=en&q=(.*?)">',response.getBody() ):
+            regex = '<font face="Arial, sans-serif" size=-1>'
+            regex += '<a href="http://www.google.com/search\?hl=en&q=(.*?)">'
+            for resultStr in re.findall( regex, response.getBody() ):
                 results.append( urllib.unquote_plus( resultStr.lower() ) )
         
         results = [ x for x in results if x not in inputStringList ] 
@@ -141,15 +144,16 @@ class googleSearchEngine(searchEngine):
             
         resPages.append( response )
         
-        for url in re.findall('<a accesskey="\d+" href="(.*?)" >',response.getBody() ):
+        for url in re.findall('<a accesskey="\d+" href="(.*?)" >',
+                                       response.getBody() ):
             url = url[ url.index(';u=') + 3: ]
             url = urllib.unquote_plus( url )
 
             if not url.startswith('https://') and not url.startswith('ftp://') and not url.startswith('http://'):
                 url = 'http://' + url
 
-            gr = googleResult( url )
-            results.append( gr )
+            grInstance = googleResult( url )
+            results.append( grInstance )
 
         return results, resPages
 

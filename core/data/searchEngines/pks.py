@@ -40,7 +40,11 @@ class pks(searchEngine):
         self._urlOpener = urlOpener
         
     def search( self, hostname ):
-    
+        '''
+        Searches a PKS server, and returns all emails related to hostname.
+        
+        @parameter hostname: The hostname from which we want to get emails from.
+        '''
         if hostname.count('//'):
             raise w3afException('You must provide the pks search engine with a root domain name (as returned by urlParser.getRootDomain).')
     

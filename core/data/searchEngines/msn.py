@@ -39,20 +39,21 @@ class msn(searchEngine):
         self._urlOpener = urlOpener
         
     def search( self, query, start, count=10 ):
-        res = self.met_search( query, start, count )
+        res = self.met_search(query, start)
         om.out.debug('MSN search for : '+ query + ' returned ' + str( len( res ) ) + ' results.' )
         return res
 
-    def met_search(self, query, start = 0, count = 10):
+    def met_search(self, query, start = 0):
         """
-        search(query, start = 0, count = 10) -> results
-
         Search the web with MSN.
         
         This method is based from the msn.py file from the massive enumeration toolset, 
         coded by pdp and released under GPL v2.
         """
         class msnResult:
+            '''
+            Dummy class that represents the search result.
+            '''
             def __init__( self, url ):
                 self.URL = url
         

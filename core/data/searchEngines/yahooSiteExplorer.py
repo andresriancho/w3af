@@ -37,6 +37,13 @@ class yahooSiteExplorer(searchEngine):
         self._urlOpener = urlOpener
         
     def search( self, query, start, count=100 ):
+        '''
+        This method searches the web using yahoo site explorer and returns a list of URLs.
+        
+        @parameter query: The query that we want to perform in the search engine
+        @parameter start: The first result item
+        @parameter count: How many results to get from start
+        ''' 
         res = self.se_search( query, start, count )
         om.out.debug('yahooSiteExplorer search for : '+ query + ' returned ' + str( len( res ) ) + ' results.' )
         return res
@@ -56,8 +63,8 @@ class yahooSiteExplorer(searchEngine):
         results = []
 
         for url in re.findall('<Url>(.*?)</Url>', response.getBody() ):
-            gr = yahooSiteExplorerResult( url )
-            results.append( gr )
+            yserInstance = yahooSiteExplorerResult( url )
+            results.append( yserInstance )
 
         return results
 
