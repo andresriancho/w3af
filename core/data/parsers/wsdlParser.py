@@ -26,28 +26,38 @@ from core.controllers.w3afException import w3afException
 try:
     import extlib.SOAPpy.SOAPpy as SOAPpy
     om.out.debug('wsdlParser is using the bundled SOAPpy library')
-except:
+except ImportError:
     try:
         import SOAPpy
         om.out.debug('wsdlParser is using the systems SOAPpy library')
-    except:
+    except ImportError:
         raise w3afException('You have to install SOAPpy lib.')
 
-'''
-This module parses WSDL documents.
+import xml
 
-@author: Andres Riancho ( andres.riancho@gmail.com )
-'''
 class wsdlParser:
+    '''
+    This class parses WSDL documents.
+
+    @author: Andres Riancho ( andres.riancho@gmail.com )
+    '''
     
     def __init__( self ):
         self._proxy = None
         
     def setWsdl( self, xmlData ):
+        '''
+        @parameter xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
+        '''
         try:
             self._proxy = SOAPpy.WSDL.Proxy( xmlData )
-        except:
+        except xml.parsers.expat.ExpatError:
             raise w3afException('The document aint a WSDL document.')
+        except Exception, e:
+            msg = 'The document aint a WSDL document.'
+            msg += 'Unhandled exception in SOAPpy: "' + str(e) + '".'
+            om.out.error(msg)
+            raise w3afException(msg)
         
     def getNS( self, method ):
         '''
@@ -85,52 +95,68 @@ class wsdlParser:
         @return: The methods defined in the WSDL
         '''
         res = []
-        for i in self._proxy.methods.keys():
-            rm = remoteMethod()
-            rm.setMethodName( str( i ) )
-            rm.setNamespace( self.getNS( i ) )
-            rm.setAction( self.getAction( i ) )
-            rm.setLocation( self.getLocation( i ) )
-            rm.setParameters( self.getMethodParams( i ) )
-            res.append( rm )
+        for methodName in self._proxy.methods.keys():
+            remoteMethodObject = remoteMethod()
+            remoteMethodObject.setMethodName( str( methodName ) )
+            remoteMethodObject.setNamespace( self.getNS( methodName ) )
+            remoteMethodObject.setAction( self.getAction( methodName ) )
+            remoteMethodObject.setLocation( self.getLocation( methodName ) )
+            remoteMethodObject.setParameters(
+                                            self.getMethodParams( methodName ) )
+            res.append( remoteMethodObject )
         return res
     
-    def getMethodParams( self,  method ):
+    def getMethodParams( self,  methodName ):
         '''
         @methodName: The method name
         @return: The soap action.
         '''
-        if method in self._proxy.methods.keys():
+        if not methodName in self._proxy.methods.keys():
+            raise w3afException('Unknown method name.')
+        else:
             res = []
-            inps = self._proxy.methods[ method ].inparams
+            inps = self._proxy.methods[ methodName ].inparams
             for param in range(len(inps)):
                 details = inps[param]
-                p = parameter()
-                p.setName( str(details.name) )
-                p.setType( str(details.type[1]) )
-                p.setNs( str(details.type[0]) )
-                res.append( p )
+                parameterObject = parameter()
+                parameterObject.setName( str(details.name) )
+                parameterObject.setType( str(details.type[1]) )
+                parameterObject.setNs( str(details.type[0]) )
+                res.append( parameterObject )
             return res
-        else:
-            raise w3afException('Unknown method name.')
 
-            
+
 class parameter:
+    '''
+    This class represents a parameter in a SOAP call.
+    '''
     def __init__( self ):
         self._type = ''
         self._name = ''
         self._ns = ''
 
-    def getName( self ): return self._name
-    def setName( self, n ): self._name = n
+    def getName( self ):
+        return self._name
     
-    def getNs( self ): return self._ns
-    def setNs( self, n ): self._ns = n
+    def setName( self, name ):
+        self._name = name
+    
+    def getNs( self ):
+        return self._ns
+    
+    def setNs( self, namespace ):
+        self._ns = namespace
 
-    def getType( self ): return self._type
-    def setType( self, t ): self._type = t
+    def getType( self ):
+        return self._type
+    
+    def setType( self, paramType ):
+        self._type = paramType
 
 class remoteMethod:
+    '''
+    This class represents a remote method call.
+    '''
     def __init__( self ):
         self._name = ''
         self._action = ''
@@ -138,18 +164,33 @@ class remoteMethod:
         self._inParameters = None
         self._location = ''
         
-    def getMethodName( self ): return self._name
-    def setMethodName( self, n ): self._name = n
-    
-    def getAction( self ): return self._action
-    def setAction( self, a ): self._action = a
-    
-    def getLocation( self ): return self._location
-    def setLocation( self, l ): self._location = l
-    
-    def getNamespace( self ): return self._namespace
-    def setNamespace( self, n ): self._namespace = n
+    def getMethodName( self ):
+        return self._name
         
-    def getParameters( self ): return self._inParameters
-    def setParameters( self, o ): self._inParameters = o
+    def setMethodName( self, name ):
+        self._name = name
+    
+    def getAction( self ):
+        return self._action
+        
+    def setAction( self, action ):
+        self._action = action
+    
+    def getLocation( self ):
+        return self._location
+        
+    def setLocation( self, location ):
+        self._location = location
+    
+    def getNamespace( self ):
+        return self._namespace
+        
+    def setNamespace( self, namespace ):
+        self._namespace = namespace
+        
+    def getParameters( self ):
+        return self._inParameters
+        
+    def setParameters( self, inparams ):
+        self._inParameters = inparams
     
