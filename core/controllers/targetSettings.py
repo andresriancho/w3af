@@ -109,6 +109,15 @@ class targetSettings(configurable):
                     f.close()
                 targetUrls.remove( targetUrl )
         
+        # Now we perform a check to see if the user has specified more than one target
+        # domain, for example: "http://google.com, http://yahoo.com".
+        domainList = [urlParser.getDomain(targetURL) for targetURL in targetUrls]
+        domainList = list( set(domainList) )
+        if len( domainList ) != 1:
+            msg = 'You specified more than one target domain: ' + ','.join(domainList)
+            msg += ' . And w3af only supports one target domain at the time.'
+            raise w3afException(msg)
+        
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', targetUrls)
         cf.cf.save('targetDomains', [ urlParser.getDomain( i ) for i in targetUrls ] )
