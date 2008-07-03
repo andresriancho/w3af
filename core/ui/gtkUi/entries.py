@@ -555,7 +555,7 @@ class TextDialog(gtk.Dialog):
         self.butt_ok.connect("clicked", lambda x: self.destroy())
         self.butt_ok.set_sensitive(False)
 
-        self.resize(300,300)
+        self.resize(450,300)
         self.show_all()
         self.flush()
 
