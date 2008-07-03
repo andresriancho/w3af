@@ -58,6 +58,7 @@ class mysqlWebShell(baseAttackPlugin):
         self._changeToPost = True
         self._equAlgorithm = 'stringEq'
         self._equalLimit = 0.8
+        self._forceNotLocal = False
         
     def fastExploit( self ):
         '''
@@ -155,7 +156,7 @@ class mysqlWebShell(baseAttackPlugin):
             om.out.information('Checking if the web application and the database are in the same host.')
             currentUser = self._driver.getCurrentUser()
             if not currentUser.upper().endswith( 'LOCALHOST' ):
-                om.out.information('The web application and the database seem to be in different hosts. If you want to continue this exploit anyway, set the forceNotLocal setting to True.')
+                om.out.information('The web application and the database seem to be in different hosts. If you want to continue this exploit anyway, set the forceNotLocal setting to True and run again.')
                 if not self._forceNotLocal:
                     return False
                 else:
@@ -290,63 +291,43 @@ class mysqlWebShell(baseAttackPlugin):
     
     
     def getOptions(self):
-        # FIXME!
-        return optionList()
-    
-    def getOptionsXML(self):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="url">\
-                <default></default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="method">\
-                <default>'+self._method+'</default>\
-                <desc>Method to use with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="injvar">\
-                <default></default>\
-                <desc>The variable name where to inject.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="data">\
-                <default></default>\
-                <desc>The data, like: \'f00=bar\'</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="changeToPost">\
-                <default>'+str(self._changeToPost)+'</default>\
-                <desc>If the vulnerability was found in a GET request, try to change the method to POST during exploitation.</desc>\
-                <help>If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.</help>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="equAlgorithm">\
-                <default>'+str(self._equAlgorithm)+'</default>\
-                <desc>The algorithm to use in the comparison of true and false response for blind sql.</desc>\
-                <help>The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.</help>\
-                <type>string</type>\
-                <tabid>Blind SQL Options</tabid>\
-            </Option>\
-            <Option name="equalLimit">\
-                <default>'+str(self._equalLimit)+'</default>\
-                <desc>Set the equal limit variable</desc>\
-                <help>Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.</help>\
-                <type>float</type>\
-                <tabid>Blind SQL Options</tabid>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'Method to use with fastExploit()'
+        o2 = option('method', self._method, d2, 'string')
 
+        d3 = 'Data to send with fastExploit()'
+        o3 = option('data', self._data, d3, 'string')
+
+        d4 = 'Variable where to inject with fastExploit()'
+        o4 = option('injvar', self._injvar, d4, 'string')
+
+        d5 = 'The algorithm to use in the comparison of true and false response for blind sql.'
+        h5 = 'The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.'
+        o5 = option('equAlgorithm', self._equAlgorithm, d5, 'string', help=h5)
+
+        d6 = 'Set the equal limit variable'
+        h6 = 'Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.'
+        o6 = option('equalLimit', self._equalLimit, d6, 'float')
+        
+        d7 = 'f the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
+        h7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
+        o7 = option('changeToPost', self._changeToPost, d7, 'boolean', help=h7)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        ol.add(o7)
+        return ol
+        
     def setOptions( self, optionsMap ):
         '''
         This method sets all the options that are configured using the user interface 
@@ -360,7 +341,8 @@ class mysqlWebShell(baseAttackPlugin):
         self._data = optionsMap['data'].getValue()
         self._injvar = optionsMap['injvar'].getValue()
         self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
-        self._equalLimit = optionsMap['equalLimit'].getValue()         
+        self._equalLimit = optionsMap['equalLimit'].getValue()
+        self._forceNotLocal = optionsMap['forceNotLocal'].getValue()
 
     def getPluginDeps( self ):
         '''
@@ -395,4 +377,5 @@ class mysqlWebShell(baseAttackPlugin):
             - injvar
             - equAlgorithm
             - equalLimit
+            - forceNotLocal
         '''
