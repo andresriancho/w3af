@@ -107,7 +107,13 @@ class sgmlParser(abstractParser, SGMLParser):
         @parameter document: The document that we want to parse.
         '''
         raise w3afException('You have to override the _preParse method when subclassing sgmlParser class.')
-    
+
+    def _findForms(self, tag, attrs):
+        '''
+        Find forms.
+        '''
+        raise w3afException('You have to override the _findForms method when subclassing sgmlParser class.')
+
     def unknown_endtag(self, tag):         
         '''
         called for each end tag, e.g. for </pre>, tag will be "pre"

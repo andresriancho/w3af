@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-import core.data.kb.config as cf
 from core.data.parsers.abstractParser import abstractParser
 
 try:
@@ -39,7 +37,7 @@ class pdfParser(abstractParser):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, document, baseURL, verbose=0):
+    def __init__(self, document, baseURL):
         abstractParser.__init__(self , baseURL)
         self._urlsInDocument = []
         
@@ -77,8 +75,8 @@ class pdfParser(abstractParser):
         
         
         '''
-        hack to avoid this bug:
-        ==============
+        Added to avoid this bug:
+        ===============
         
         "/home/ulises2k/programas/w3af-svn/w3af/core/data/parsers/abstractParser.py
         ", line 52, in findAccounts
@@ -86,13 +84,7 @@ class pdfParser(abstractParser):
         UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 13:
         ordinal not in range(128)
         '''
-        res = ''
-        for char in content:
-            try:
-                res += char.encode()
-            except:
-                pass
-        
+        res = content.encode('utf-8')        
         return res
     
     def getAccounts( self ):
@@ -100,15 +92,19 @@ class pdfParser(abstractParser):
         
     def getReferences( self ):
         return self._urlsInDocument
-    
-    def getReferencesOfTag( self, tagType ):
-        '''
-        @return: A list of the URLs that the parser found in a tag of tagType = "tagType" (i.e img, a)
-        '''
-        # I have no tags.
-        return []
         
     def _returnEmptyList( self ):
+        '''
+        This method is called (see below) when the caller invokes one of:
+            - getForms
+            - getComments
+            - getMetaRedir
+            - getMetaTags
+            - getReferencesOfTag
+        
+        @return: Because we are a PDF document, we don't have the same things that
+        a nice HTML document has, so we simply return an empty list.
+        '''
         return []
         
-    getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList
+    getReferencesOfTag = getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList

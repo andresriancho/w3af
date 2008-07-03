@@ -33,6 +33,13 @@ def htmldecode(text):
     # references, a hexadecimal numeric reference, or a named reference).
     charrefpat = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?')
     
+    # FIXME: What if we have something like this: &aacute ?!?!
+    # I expected something like á , not a  '\xe1'
+    '''
+    >>> from encode_decode import *
+    >>> htmldecode('&aacute;')
+    '\xe1'
+    '''
     uchr = lambda value: value > 255 and unichr(value).encode('utf-8') or chr(value)
     
     # Internal function to do the work

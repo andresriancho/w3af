@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.controllers.w3afException import w3afException
 
@@ -35,6 +34,9 @@ def httpRequestParser(head, postdata):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def checkVersionSintax( version ):
+        '''
+        @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
+        '''
         splittedVersion = version.split('/')
         if len(splittedVersion) != 2:
             # Invalid!
@@ -47,6 +49,9 @@ def httpRequestParser(head, postdata):
         return True
     
     def checkURISintax( uri ):
+        '''
+        @return: True if the sintax of the URI section of HTTP is valid; else raise an exception.
+        '''
         if uri.startswith('http://') and len(uri) != len('http://'):
             return True
         elif uri.startswith('https://') and len(uri) != len('https://'):
@@ -93,12 +98,12 @@ def httpRequestParser(head, postdata):
     # Now we parse the headers (easy!) and finally we send the request
     headers = splittedHead[1:]
     headersDict = {}
-    for h in headers:
-        oneSplittedHeader = h.split(':')
+    for header in headers:
+        oneSplittedHeader = header.split(':')
         if len(oneSplittedHeader) == 2:
             headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
         elif len(oneSplittedHeader) == 1:
-            raise w3afException('You are trying to send a HTTP request with an invalid header: ' + h )
+            raise w3afException('You are trying to send a HTTP request with an invalid header: ' + header )
         elif len(oneSplittedHeader) > 2:
             headerValue = ' '.join(oneSplittedHeader[1:]).strip()
             headersDict[ oneSplittedHeader[0].strip() ] = headerValue

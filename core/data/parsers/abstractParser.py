@@ -20,13 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-
-import core.data.dc.form as form
 import core.data.parsers.urlParser as urlParser
 from core.data.parsers.encode_decode import htmldecode
-import string
 import re
 import urllib
 
@@ -57,30 +52,44 @@ class abstractParser:
         # Perform a fast search for the @. In w3af, if we don't have an @ we don't have an email
         # We don't support mails like myself <at> gmail !dot! com
         if documentString.find('@') != -1:
-            # FIXME: What if we have something like this: ramosmejia_direcci&oacute;n@buenosaires.gov.ar ?!?!
-            # FIXME: Note that this parser as it is will return n@buenosaires.gov.ar
             documentString = re.sub( '[^\w@\\.]', ' ', documentString )
             
             # Now we have a clean documentString; and we can match the mail addresses!
-            for email, username, host in re.findall('(([\w\._]+)@('+self._rootDomain+'|'+self._baseDomain+'))', documentString):
+            emailRegex = '(([\w\._]+)@('+self._rootDomain+'|'+self._baseDomain+'))'
+            for email, username, host in re.findall(emailRegex, documentString):
                 if email not in self._emails:
                     self._emails.append( email )
                     
         return self._emails
 
     def getAccounts( self ):
+        '''
+        @return: A list of email accounts that are inside the document.
+        '''
         raise Exception('You should create your own parser class and implement the getAccounts() method.')
     
     def getForms( self ):
+        '''
+        @return: A list of forms.
+        '''        
         raise Exception('You should create your own parser class and implement the getForms() method.')
         
     def getReferences( self ):
+        '''
+        @return: A list of URL strings.
+        '''        
         raise Exception('You should create your own parser class and implement the getReferences() method.')
         
     def getComments( self ):
+        '''
+        @return: A list of comments.
+        '''        
         raise Exception('You should create your own parser class and implement the getComments() method.')
     
     def getScripts( self ):
+        '''
+        @return: A list of scripts (like javascript).
+        '''        
         raise Exception('You should create your own parser class and implement the getScripts() method.')
         
     def getMetaRedir( self ):
