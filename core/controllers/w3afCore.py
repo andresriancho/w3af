@@ -808,7 +808,12 @@ class w3afCore:
         @parameter pluginType: The plugin type of the modified plugin ('audit','discovery', etc)
         @parameter pluginName: The plugin name of the modified plugin ('xss', 'sqli', etc)
         '''
-        print 'TODO: Reload the plugin',  pluginType + '.' + pluginName
+        try:
+            aModule = sys.modules['plugins.' + pluginType + '.' + pluginName ]
+        except KeyError:
+            om.out.debug('Tried to reload a plugin that was never imported! ('+ pluginType +'.' + pluginName + ')')
+        else:
+            reload(aModule)
     
     def getPluginTypesDesc( self, pluginType ):
         '''

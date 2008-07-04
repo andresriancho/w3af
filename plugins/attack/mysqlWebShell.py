@@ -314,7 +314,7 @@ class mysqlWebShell(baseAttackPlugin):
         h6 = 'Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.'
         o6 = option('equalLimit', self._equalLimit, d6, 'float')
         
-        d7 = 'f the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
+        d7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
         h7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
         o7 = option('changeToPost', self._changeToPost, d7, 'boolean', help=h7)
         
@@ -343,6 +343,7 @@ class mysqlWebShell(baseAttackPlugin):
         self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
         self._equalLimit = optionsMap['equalLimit'].getValue()
         self._forceNotLocal = optionsMap['forceNotLocal'].getValue()
+        self._changeToPost = optionsMap['changeToPost'].getValue()
 
     def getPluginDeps( self ):
         '''
