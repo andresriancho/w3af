@@ -1049,7 +1049,7 @@ class w3afCore:
     
     def getVersion( self ):
         # Let's check if the user is using a version from SVN
-        revision = None
+        revision = -1
         try:
             for line in file('.svn' + os.path.sep +'entries'):
                 line = line.strip()
@@ -1061,7 +1061,7 @@ class w3afCore:
     
         res = 'w3af - Web Application Attack and Audit Framework'
         res += '\nVersion: beta7'
-        if revision != 0:
+        if revision != -1:
             res += '\nRevision: ' + str(revision)
         res += '\nAuthor: Andres Riancho and the w3af team.'
         return res
