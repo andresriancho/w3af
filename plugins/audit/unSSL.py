@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import getProtocol, allButScheme
 import core.data.constants.severity as severity
 
 class unSSL(baseAuditPlugin):

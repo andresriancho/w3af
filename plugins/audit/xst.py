@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option

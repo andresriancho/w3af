@@ -26,8 +26,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as uparser
-from core.data.getResponseType import *
+from core.data.getResponseType import isTextOrHtml
 import re
 
 class httpInBody (baseGrepPlugin):

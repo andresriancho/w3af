@@ -29,7 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
-from core.data.exchangableMethods import *
+from core.data.exchangableMethods import isExchangable
 from core.data.parsers.urlParser import hasQueryString
 import core.data.constants.severity as severity
 

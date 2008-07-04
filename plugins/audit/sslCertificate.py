@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import socket
 import re
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import getProtocol, getDomain
 import core.data.constants.severity as severity
 
 class sslCertificate(baseAuditPlugin):

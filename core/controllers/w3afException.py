@@ -37,6 +37,7 @@ class w3afRunOnce(Exception):
     A small class that defines an exception to be raised by plugins that dont want to be runned anymore.
     '''
     def __init__(self, value=''):
+        Exception.__init__( self )
         self.value = value
     
     def __str__(self):

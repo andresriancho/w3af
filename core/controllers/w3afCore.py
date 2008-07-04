@@ -27,23 +27,23 @@ from core.controllers.misc.dependencyCheck import dependencyCheck
 dependencyCheck()
 
 # Called here to init some variables in the config ( cf.cf.save() )
+# DO NOT REMOVE
 import core.controllers.miscSettings as miscSettings
 
-import os,sys
+import os, sys
 
 from core.controllers.misc.homeDir import createHomeDir, getHomeDir
 from core.controllers.misc.factory import factory
 
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException, w3afRunOnce, w3afFileException, w3afMustStopException
 from core.controllers.targetSettings import targetSettings as targetSettings
 
 import traceback
 import copy
 import Queue
-import time
-import signal
+import re
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -83,14 +83,14 @@ class w3afCore:
         Init some internal variables
         '''
         # A dict with plugin types as keys and a list of plugin names as values
-        self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
+        self._strPlugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
         'evasion':[], 'mangle':[], 'output':[]}
         
         # A dict with plugin types as keys and a list of plugin instances as values
-        self._plugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
+        self._plugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
         'evasion':[], 'mangle':[], 'output':[]}
 
-        self._pluginsOptions = {'audit':{},'grep':{},'bruteforce':{},'discovery':{},\
+        self._pluginsOptions = {'audit':{}, 'grep':{}, 'bruteforce':{}, 'discovery':{}, \
         'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
         
         self._fuzzableRequestList  = []
@@ -333,6 +333,11 @@ class w3afCore:
         om.out.debug('The user paused/unpaused the scan.')
 
     def start(self):
+        '''
+        The user interfaces call this method to start the whole scanning process.
+        
+        This method raises almost every possible exception, so please do your error handling!
+        '''
         try:
             self._realStart()
         except w3afMustStopException, wmse:
@@ -495,7 +500,7 @@ class w3afCore:
         result = []
         try:
             result = self._discoverWorker( toWalk )
-        except KeyboardInterrupt, e:
+        except KeyboardInterrupt:
             om.out.information('The user interrupted the discovery phase, continuing with audit.')
             result = self._alreadyWalked
         
@@ -584,8 +589,10 @@ class w3afCore:
             # This wont be used anymore, here i'm duplicating objects that are already saved
             # in the self._alreadyWalked list.
             del fuzzableRequestList
-            try: del iFr
-            except: pass
+            try:
+                del iFr
+            except:
+                pass
             
             # Get ready for next while loop
             toWalk = newFR
@@ -780,13 +787,13 @@ class w3afCore:
         pList = self.getPluginList(  pluginType  )
         for p in pluginNames:
             if p not in pList \
-                and p.replace('!','') not in pList\
-                and p != 'all':
-                    raise w3afException('Unknown plugin selected ("'+ p +'")')
+            and p.replace('!','') not in pList\
+            and p != 'all':
+                raise w3afException('Unknown plugin selected ("'+ p +'")')
         
-        setMap = {'discovery':self._setDiscoveryPlugins, 'audit':self._setAuditPlugins,\
-        'grep':self._setGrepPlugins, 'evasion':self._setEvasionPlugins, 'output':self._setOutputPlugins\
-        , 'mangle': self._setManglePlugins, 'bruteforce': self._setBruteforcePlugins}
+        setMap = {'discovery':self._setDiscoveryPlugins, 'audit':self._setAuditPlugins, \
+        'grep':self._setGrepPlugins, 'evasion':self._setEvasionPlugins, 'output':self._setOutputPlugins,  \
+        'mangle': self._setManglePlugins, 'bruteforce': self._setBruteforcePlugins}
         
         func = setMap[ pluginType ]
         func( pluginNames )
@@ -803,17 +810,16 @@ class w3afCore:
         '''
         print 'TODO: Reload the plugin',  pluginType + '.' + pluginName
     
-    def getPluginTypesDesc( self, type ):
+    def getPluginTypesDesc( self, pluginType ):
         '''
-        @parameter type: The type of plugin for which we want a description.
+        @parameter pluginType: The type of plugin for which we want a description.
         @return: A description of the plugin type passed as parameter
         '''
         try:
-            p = __import__('plugins.' + type )
-            aModule = sys.modules['plugins.' + type ]
+            __import__('plugins.' + pluginType )
+            aModule = sys.modules['plugins.' + pluginType ]
         except Exception, e:
-            print e
-            raise w3afException('Unknown plugin type: "'+ type + '".')
+            raise w3afException('Unknown plugin type: "'+ pluginType + '".')
         else:
             return aModule.getLongDescription()
         
@@ -857,26 +863,26 @@ class w3afCore:
         '''         
         self._strPlugins['discovery'] = discoveryPlugins
     
-    def _setAuditPlugins( self, AuditPlugins ):
+    def _setAuditPlugins( self, auditPlugins ):
         '''
-        @parameter AuditPlugins: A list with the names of Audit Plugins that will be runned.
+        @parameter auditPlugins: A list with the names of Audit Plugins that will be runned.
         @return: No value is returned.
         '''         
-        self._strPlugins['audit'] = AuditPlugins
+        self._strPlugins['audit'] = auditPlugins
         
-    def _setGrepPlugins( self, GrepPlugins):
+    def _setGrepPlugins( self, grepPlugins):
         '''
-        @parameter GrepPlugins: A list with the names of Grep Plugins that will be used.
+        @parameter grepPlugins: A list with the names of Grep Plugins that will be used.
         @return: No value is returned.
         '''     
-        self._strPlugins['grep'] = GrepPlugins
+        self._strPlugins['grep'] = grepPlugins
         
-    def _setEvasionPlugins( self, EvasionPlugins ):
+    def _setEvasionPlugins( self, evasionPlugins ):
         '''
-        @parameter EvasionPlugins: A list with the names of Evasion Plugins that will be used.
+        @parameter evasionPlugins: A list with the names of Evasion Plugins that will be used.
         @return: No value is returned.
         '''     
-        self._plugins['evasion'] = self._rPlugFactory( EvasionPlugins , 'evasion')
+        self._plugins['evasion'] = self._rPlugFactory( evasionPlugins , 'evasion')
         self.uriOpener.setEvasionPlugins( self._plugins['evasion'] )
 
     def verifyEnvironment(self):
@@ -901,11 +907,11 @@ class w3afCore:
         except AssertionError, ae:
             raise w3afException( str(ae) )
     
-    def getPluginList( self, PluginType ):
+    def getPluginList( self, pluginType ):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        strPluginList = self._getListOfFiles( 'plugins' + os.path.sep + PluginType + os.path.sep )
+        strPluginList = self._getListOfFiles( 'plugins' + os.path.sep + pluginType + os.path.sep )
         return strPluginList
         
     def getProfileList( self ):
@@ -1043,16 +1049,15 @@ class w3afCore:
     
     def getVersion( self ):
         # Let's check if the user is using a version from SVN
-        import re
-        revision = '0'
+        revision = None
         try:
             for line in file('.svn' + os.path.sep +'entries'):
                 line = line.strip()
                 if re.match('^\d+$', line ):
                     if int(line) > int(revision):
                         revision = int(line)
-        except:
-            pass
+        except (IOError, ValueError):
+            revision = 0
     
         res = 'w3af - Web Application Attack and Audit Framework'
         res += '\nVersion: beta7'

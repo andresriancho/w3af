@@ -22,15 +22,15 @@ def groupbyMinKey( inputList ):
     '''
     
     # So, first, we groupby the first item in the tuples
-    key=itemgetter(0)
-    value=itemgetter(1)
+    key = itemgetter(0)
+    value = itemgetter(1)
     resDict1 = {}
     for key, group in groupby(inputList, key):
         resDict1[ key ] = [ value(x) for x in group ]
 
     # Now, we groupby the second item in the tuples
-    key=itemgetter(1)
-    value=itemgetter(0)
+    key = itemgetter(1)
+    value = itemgetter(0)
     resDict2 = {}
     for key, group in groupby(inputList, key):
         resDict2[ key ] = [ value(x) for x in group ]
@@ -42,6 +42,6 @@ def groupbyMinKey( inputList ):
         return resDict1, 0
 
 if __name__ == '__main__':
-    print groupbyMinKey( [('a',1) , ('a',2) , ('a',3)] )
-    print groupbyMinKey( [(1,'a') , (2,'a') , (3,'a')] )
+    print groupbyMinKey( [('a', 1) , ('a', 2) , ('a', 3)] )
+    print groupbyMinKey( [(1, 'a') , (2, 'a') , (3, 'a')] )
     

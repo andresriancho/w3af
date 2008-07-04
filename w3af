@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import getopt,sys, os
+import getopt, sys, os
 
 # First of all, we need to change the working directory to the directory of w3af.
 currentDir = os.getcwd()
@@ -11,7 +11,7 @@ def backToCurrentDir():
     os.chdir( currentDir )
 
 # Now we can load all modules and stuff...
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 try:

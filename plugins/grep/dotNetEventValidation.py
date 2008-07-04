@@ -20,14 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import *
+from core.data.getResponseType import isTextOrHtml
 import re
 
 class dotNetEventValidation(baseGrepPlugin):
@@ -40,10 +39,17 @@ class dotNetEventValidation(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
-        self._viewstate = re.compile(r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value=".*?" />',re.IGNORECASE|re.DOTALL)
-        self._eventvalidation = re.compile(r'<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value=".*?" />',re.IGNORECASE|re.DOTALL)
+        vsRegex = r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value=".*?" />'
+        self._viewstate = re.compile( vsRegex, re.IGNORECASE|re.DOTALL)
+        
+        evRegex = r'<input type="hidden" name="__EVENTVALIDATION" '
+        evRegex += 'id="__EVENTVALIDATION" value=".*?" />'
+        self._eventvalidation = re.compile( evRegex, re.IGNORECASE|re.DOTALL)
 
     def _testResponse(self, request, response):
+        '''
+        If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
+        '''
         if isTextOrHtml(response.getHeaders()):
             if self._viewstate.search(response.getBody()):
                 # I have __viewstate!, verify if event validation is enabled
@@ -53,11 +59,16 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setName('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled. This programming/configuration error should be manually verified.' )
+                    msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled.'
+                    msg += 'This programming/configuration error should be manually verified.'
+                    i.setDesc( msg )
                     kb.kb.append( self, 'dotNetEventValidation', i )
 
     
     def setOptions( self, OptionList ):
+        '''
+        Do nothing, I don't have any options.
+        '''
         pass
     
     def getOptions( self ):

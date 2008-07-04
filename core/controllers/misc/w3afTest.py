@@ -89,9 +89,9 @@ def w3afTest():
         try:
             result = runScript( assertScript )
             analyzeResult( result )
-        except KeyboardInterrupt, k:
+        except KeyboardInterrupt:
             break
-        except w3afException, w3:
+        except w3afException:
             badCount += 1
         else:
             okCount += 1

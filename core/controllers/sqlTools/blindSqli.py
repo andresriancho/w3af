@@ -21,17 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createMutants, createRandNum
 import core.controllers.outputManager as om
+
 import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
+import core.data.constants.severity as severity
+
 from core.controllers.threads.threadManager import threadManager as tm
 from core.controllers.w3afException import w3afException
+
+import re
+
 # importing this to have sendMutant and setUrlOpener
 from core.controllers.basePlugin.basePlugin import basePlugin
-import re
-import core.data.constants.severity as severity
 
 class blindSqli(basePlugin):
     '''
@@ -42,23 +45,34 @@ class blindSqli(basePlugin):
     '''
 
     def __init__(self):
+        # ""I'm a plugin""
+        basePlugin.__init__(self)
+        
         # User configured variables
         self._equalLimit = 0.8
         self._equAlgorithm = 'setIntersection'
         self._tm = tm()
         
     def setEqualLimit( self, _equalLimit ):
+        '''
+        Most of the equal algorithms use a rate to tell if two responses 
+        are equal or not. 1 is 100% equal, 0 is totally different.
+        
+        @parameter _equalLimit: The equal limit to use.
+        '''
         self._equalLimit = _equalLimit
         
     def setEquAlgorithm( self, _equAlgorithm ):
+        '''
+        @parameter _equAlgorithm: The equal algorithm to use.
+        '''
         self._equAlgorithm = _equAlgorithm
-    
         
     def verifyBlindSQL( self, freq, parameter ):
         '''
         Verify the existance of an already found vuln.
         '''
-        dummy = ['',]
+        dummy = ['', ]
         parameterToTest = [ parameter, ]
         mutants = createMutants( freq , dummy, fuzzableParamList=parameterToTest )
         
@@ -77,13 +91,13 @@ class blindSqli(basePlugin):
         
         @param freq: A fuzzableRequest
         '''
-        dummy = ['',]
+        dummy = ['', ]
         mutants = createMutants( fuzzableRequest , dummy )
         
         for mutant in mutants:
             statements = self._getStatements( mutant )
             for statementType in statements:
-                targs = (mutant,statements[ statementType ], statementType, saveToKb)
+                targs = (mutant, statements[ statementType ], statementType, saveToKb)
                 self._tm.startFunction( target=self._findBsqlAux, args=targs, ownerObj=self )
         
         self._tm.join( self )
@@ -138,9 +152,9 @@ class blindSqli(basePlugin):
         '''
         bsqlVulns = self._findBsql( mutant, statementTuple, statementType )
         if saveToKb:
-            for vuln in bsqlVulns:
-                om.out.vulnerability( vuln.getDesc() )
-                kb.kb.append( self, 'blindSqli', vuln )
+            for bsqlVuln in bsqlVulns:
+                om.out.vulnerability( bsqlVuln.getDesc() )
+                kb.kb.append( self, 'blindSqli', bsqlVuln )
                 
     def _findBsql( self, mutant, statementTuple, statementType ):
         '''
@@ -191,8 +205,12 @@ class blindSqli(basePlugin):
                         v.getMutant().setOriginalValue( '' )
                         v.getMutant().setModValue( '' )
                         
-                        v.setDesc( 'Blind SQL injection was found at: ' + v.getURL() + ' . Using method: ' + v.getMethod() + '. The injectable parameter is: ' + mutant.getVar() )
+                        desc = 'Blind SQL injection was found at: ' + v.getURL()  + ' .'
+                        desc += ' Using method: ' + v.getMethod() + '.'
+                        desc += 'The injectable parameter is: ' + mutant.getVar()
+                        v.setDesc( desc )
                         om.out.debug( v.getDesc() )
+                        
                         v['type'] = statementType
                         v['trueHtml'] = secondTrueResponse.getBody()
                         v['falseHtml'] = secondFalseResponse.getBody()
@@ -235,8 +253,8 @@ class blindSqli(basePlugin):
         '''
         This is one of the equal algorithms.
         '''
-        sb1 = re.findall('(\w+)',body1 )
-        sb2 = re.findall('(\w+)',body2 )
+        sb1 = re.findall('(\w+)', body1)
+        sb2 = re.findall('(\w+)', body2)
         
         setb1 = set( sb1 )
         setb2 = set( sb2 )

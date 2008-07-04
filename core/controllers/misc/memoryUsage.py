@@ -28,7 +28,7 @@ if DEBUGMEMORY:
     import core.controllers.outputManager as om
     try:
         import guppy
-    except:
+    except ImportError:
         DEBUGMEMORY = False
 
 if DEBUGREFERENCES:
@@ -43,8 +43,8 @@ def dumpMemoryUsage():
     if not DEBUGMEMORY:
         pass
     else:
-        h=guppy.hpy()
-        heapDumpStr = h.heap()
+        hpy = guppy.hpy()
+        heapDumpStr = hpy.heap()
         if isinstance( heapDumpStr, guppy.heapy.UniSet.IdentitySetMulti ):
             om.out.debug( str(heapDumpStr) )
         
@@ -56,4 +56,4 @@ def dumpMemoryUsage():
                 ###
                 if isinstance( objMemoryUsage, fuzzableRequest.fuzzableRequest ):
                     om.out.debug('Objects of class fuzzableRequest are referenced by:' )
-                    om.out.debug( str(h.iso(objMemoryUsage).sp) )
+                    om.out.debug( str(hpy.iso(objMemoryUsage).sp) )

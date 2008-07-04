@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.data.kb.vuln as vuln
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option

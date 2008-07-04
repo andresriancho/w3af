@@ -33,7 +33,7 @@ def createHomeDir():
     if not os.path.exists(homeLocation):
         try:
             os.makedirs(homeLocation)
-        except:
+        except OSError:
             return False
     return True
     

@@ -28,7 +28,7 @@ This module defines a factory function that is used around the project.
 import sys
 from core.controllers.w3afException import w3afException
 
-def factory(ModuleName, *args):
+def factory(moduleName, *args):
     '''
     This function creates an instance of a class thats inside a module
     with the same name.
@@ -38,22 +38,22 @@ def factory(ModuleName, *args):
     >> print f00
     <googleSpider.googleSpider instance at 0xb7a1f28c>
     
-    @parameter ModuleName: What do you want to instanciate ?
+    @parameter moduleName: What do you want to instanciate ?
     @return: An instance.
     '''
     try:
-        __import__(ModuleName)
+        __import__(moduleName)
     except ImportError:
-        raise w3afException('Unknown plugin "'+ ModuleName + '"')
+        raise w3afException('Unknown plugin "'+ moduleName + '"')
     except Exception, e:
-        raise w3afException('Error while loading plugin "'+ ModuleName + '". Exception: ' + str(e) )
+        raise w3afException('Error while loading plugin "'+ moduleName + '". Exception: ' + str(e) )
     else:
         try:
-            aModule = sys.modules[ModuleName]
-            className = ModuleName.split('.')[len(ModuleName.split('.'))-1]
+            aModule = sys.modules[moduleName]
+            className = moduleName.split('.')[len(moduleName.split('.'))-1]
             aClass = getattr( aModule , className )
         except:
-            raise w3afException('The requested plugin ("'+ ModuleName + '") doesn\'t have a correct format.')
+            raise w3afException('The requested plugin ("'+ moduleName + '") doesn\'t have a correct format.')
         else:
             try:
                 res = apply(aClass, args)
