@@ -372,31 +372,39 @@ class PluginTree(gtk.TreeView):
                 
                 # And the items
                 e = gtk.MenuItem("Edit plugin...")
-                e.connect('activate', self._handleEditPluginEvent, pname, ptype )
+                e.connect('activate', self._handleEditPluginEvent, pname, ptype, path)
                 gm.append( e )
                 gm.show_all()
                 
                 gm.popup( None, None, None, event.button, _time)
 
-    def _handleEditPluginEvent( self, widget, pluginName, pluginType ):
+    def _handleEditPluginEvent(self, widget, pluginName, pluginType, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
         This method calls the plugin editor with the corresponding parameters.
         '''
-        pluginEditor(pluginType,  pluginName,  self._finishedEditingPlugin)
+        def f(t, n):
+            self._finishedEditingPlugin(path, pluginName, pluginType)
+        pluginEditor(pluginType,  pluginName,  f)
 
-    def _finishedEditingPlugin(self,  pluginType,  pluginName):
+    def _finishedEditingPlugin(self, path, pluginType, pluginName):
         '''
         This is a callback that is called when the plugin editor finishes.
         '''
-        self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
+        # remove the edited plugin from cache
+        del self.plugin_instances[path]
 
-    def configure_plugin(self, tv):
+        # if we still are in the same tree position, refresh the config
+        (newpath, column) = self.get_cursor()
+        if newpath == path:
+            self.configure_plugin()
+
+    def configure_plugin(self, tv=None):
         '''Starts the plugin configuration.
 
         @param tv: the treeview.
         '''
-        (path, column) = tv.get_cursor()
+        (path, column) = self.get_cursor()
         if path is None:
             return
 
@@ -407,7 +415,9 @@ class PluginTree(gtk.TreeView):
             self.config_panel.clear(label=label )
         else:
             plugin = self._getPluginInstance(path)
+            print "Plugin to configure:", id(plugin)
             longdesc = plugin.getLongDesc()
+            print "--", longdesc.split("\n")[-2:]
             longdesc = helpers.cleanDescription(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
             self.config_panel.config(self, plugin, longdesc)
@@ -621,7 +631,7 @@ class PluginConfigBody(gtk.VBox):
             pname = treeToUse.treestore[path][3]
             ptype = treeToUse.treestore[path[:1]][3]
             # Launch the editor
-            self._handleEditPluginEvent( None, pname, ptype )
+            self._handleEditPluginEvent(None, pname, ptype, path)
         
     def reload(self, profileDescription):
         '''Reloads all the configurations.'''
