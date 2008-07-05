@@ -99,11 +99,14 @@ class httpLogTab(gtk.HPaned):
         self._lstoreTreeview.show()
         self._lstoreTreeview.connect('cursor-changed', self._viewInReqResViewer)
         self._sw.add(self._lstoreTreeview)
+        self._sw.set_sensitive(False)
+        self._sw.show_all()
         
         # I want all sections to be resizable
         self._vpan = gtk.VPaned()
         self._vpan.pack1( self._sw )
         self._vpan.pack2( self._reqResViewer )
+        self._vpan.set_position(100)
         self._vpan.show()
         
         # Add the menuHbox, the request/response viewer and the r/r selector on the bottom
@@ -165,23 +168,28 @@ class httpLogTab(gtk.HPaned):
             self._reqResViewer.request.clearPanes()
             self._reqResViewer.response.clearPanes()
             self._reqResViewer.set_sensitive(False)
+            self._sw.set_sensitive(False)
+            self._lstore.clear()
             self._showDialog('No results', str(w3) )
-        else:
-            # Now show the results
-            if len( searchResultObjects ) > 1:
-                self._reqResViewer.set_sensitive(True)
-                self._showListView( searchResultObjects )
-            elif len( searchResultObjects ) == 1:
-                # I got only one response to the database query!
-                self._reqResViewer.set_sensitive(True)
-                request, response = searchResultObjects[0]
-                self._reqResViewer.request.showObject( request )
-                self._reqResViewer.response.showObject( response )
-            else:
-                self._reqResViewer.request.clearPanes()
-                self._reqResViewer.response.clearPanes()
-                self._reqResViewer.set_sensitive(False)
-                self._showDialog('No results', 'The search you performed returned no results.' )
+            return
+
+        # no results
+        if len( searchResultObjects ) == 0:
+            self._reqResViewer.request.clearPanes()
+            self._reqResViewer.response.clearPanes()
+            self._reqResViewer.set_sensitive(False)
+            self._sw.set_sensitive(False)
+            self._lstore.clear()
+            self._showDialog('No results', 'The search you performed returned no results.' )
+            return
+
+        # show the results in the list view (when first row is selected that just triggers
+        # the req/resp filling.
+        self._sw.set_sensitive(True)
+        self._reqResViewer.set_sensitive(True)
+        self._showListView( searchResultObjects )
+        self._lstoreTreeview.set_cursor((0,))
+        return
 
     def _showDialog( self, title, msg, gtkLook=gtk.MESSAGE_INFO ):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
