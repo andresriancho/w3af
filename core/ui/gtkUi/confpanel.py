@@ -250,7 +250,7 @@ class ConfigDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, w3af, plugin, overwriter={}):
+    def __init__(self, title, w3af, plugin, overwriter={}, showDesc=False):
         super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
 
@@ -260,6 +260,16 @@ class ConfigDialog(gtk.Dialog):
         close_btn = self._button(stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
+        
+        # Show the description
+        if showDesc:
+            # The long description of the plugin
+            longLabel = gtk.Label()
+            longLabel.set_text( plugin.getLongDesc() )
+            longLabel.set_alignment(0.0, 0.5)
+            longLabel.show()
+            self.vbox.pack_start(longLabel)
+        
         # Save it , I need it when I inherit from this class
         self._plugin = plugin
         self._panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn, overwriter)
