@@ -418,9 +418,7 @@ class PluginTree(gtk.TreeView):
             self.config_panel.clear(label=label )
         else:
             plugin = self._getPluginInstance(path)
-            print "Plugin to configure:", id(plugin)
             longdesc = plugin.getLongDesc()
-            print "--", longdesc.split("\n")[-2:]
             longdesc = helpers.cleanDescription(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
             self.config_panel.config(self, plugin, longdesc)
