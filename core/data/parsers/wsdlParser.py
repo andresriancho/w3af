@@ -56,7 +56,7 @@ class wsdlParser:
         except Exception, e:
             msg = 'The document aint a WSDL document.'
             msg += 'Unhandled exception in SOAPpy: "' + str(e) + '".'
-            om.out.error(msg)
+            om.out.debug(msg)
             raise w3afException(msg)
         
     def getNS( self, method ):

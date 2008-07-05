@@ -111,6 +111,7 @@ class collectCookies(baseGrepPlugin):
                                     v['cookie-string'] = cookie.output(header='')
                                     v['cookie-object'] = cookie
                                     v.setSeverity(severity.HIGH)
+                                    v.setId( response.id )
                                     v.setName( 'Secure cookies over insecure channel' )                                    
                                     v.setDesc( 'Cookie values that were set over HTTPS, are sent over an insecure channel when requesting URL: ' + request.getURL() + ' , parameter ' + item[0] )
                                     kb.kb.append( self, 'cookies', v )
@@ -124,6 +125,7 @@ class collectCookies(baseGrepPlugin):
             if cookieObj.output(header='').count( cookie[0] ):
                 if cookie[1] not in self._alreadyReportedServer:
                     i = info.info()
+                    i.setId( response.id )
                     i.setName('Identified cookie')
                     i.setURL( response.getURL() )
                     i['cookie-string'] = cookieObj.output(header='')

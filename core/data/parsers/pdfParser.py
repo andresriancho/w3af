@@ -84,7 +84,7 @@ class pdfParser(abstractParser):
         UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 13:
         ordinal not in range(128)
         '''
-        res = content.encode('utf-8')        
+        res = unicode(content,'utf-8','ignore').encode('utf-8')
         return res
     
     def getAccounts( self ):
