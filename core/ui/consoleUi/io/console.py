@@ -52,7 +52,10 @@ def backspace():
     sys.stdout.write(KEY_BACKSPACE)
 
 def getch(buf=None):
-    ch = read(1)
+    try:
+        ch = read(1)
+    except KeyboardInterrupt:
+        return getch(buf)
     if ch == SEQ_PREFIX:
         buf = [ ch ]
         result = getch(buf)

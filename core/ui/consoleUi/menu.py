@@ -228,14 +228,6 @@ class menu:
         
         return None
 
-    def _getHelpForSubj(self, subj):
-        table = self.getBriefHelp()
-        if table.has_key(subj):
-            return help[subj]
-        else:
-            return None
-
-           
     def _para_help(self, params, part):
         if len(params) ==0:
             return suggest(self._help.getItems(), part)
