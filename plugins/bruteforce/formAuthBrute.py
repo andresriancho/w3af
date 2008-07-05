@@ -32,8 +32,8 @@ import core.data.kb.vuln as vuln
 from core.data.url.xUrllib import xUrllib
 from core.controllers.bruteforce.bruteforcer import bruteforcer
 from core.data.dc.form import form as form
-import re
-from core.data.fuzzer.fuzzer import *
+import difflib
+from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.constants.severity as severity
 
 class formAuthBrute(baseBruteforcePlugin):
@@ -45,10 +45,8 @@ class formAuthBrute(baseBruteforcePlugin):
     def __init__(self):
         baseBruteforcePlugin.__init__(self)
         
-        # Note that \ are escaped first !
-        self._metachars = ['\\', '.', '^', '$', '*', '+', '?', '{', '[', ']', \
-        '|', '(', ')','..','\\d','\\D','\\s','\\S','\\w','\\W',\
-        '\\A', '\\Z', '\\b','\\B']
+        # To store failed responses for later comparison
+        self._loginFailedResultList = []
         
     def _fuzzRequests(self, freq ):
         '''
@@ -75,7 +73,7 @@ class formAuthBrute(baseBruteforcePlugin):
                     for i in xrange( 30 ):
                         try:
                             combinations.append( self._bruteforcer.getNext() )
-                        except w3afException, e:
+                        except w3afException:
                             om.out.information('No more user/password combinations available.')
                             self._alreadyTested.append( freq.getURL() )
                             return
@@ -85,42 +83,61 @@ class formAuthBrute(baseBruteforcePlugin):
     
     def _idFailedLoginPage( self, freq ):
         '''
-        Generate TWO regex that match a failed login.
-        The first regex is for logins with filled user and password fields; the second one is for a filled user and a blank passwd.
-
-        FIXME: Do this!!
+        Generate TWO different response bodies that are the result of failed logins.
+        
+        The first result is for logins with filled user and password fields; the second
+        one is for a filled user and a blank passwd.
         '''
         dc = freq.getDc()
+        userField, passwdField = self._getLoginFieldNames( freq )
         
-        user, passwd = self._getLoginFieldNames( freq )
-        dc[ user ] = createRandAlNum( 8 )
-        dc[ passwd ] = createRandAlNum( 8 )
-        freq.setDc( dc )
-        response = self._sendMutant( freq , analyze=False, grepResult=False )
+        # The first tuple is an invalid username and a password
+        # The second tuple is an invalid username with a blank password
+        tests = [ (createRandAlNum( 8 ), createRandAlNum( 8 ) ),
+                    (createRandAlNum( 8 ), '' )]
         
-        # Escape special characters
-        regexStr = response.getBody()
-        for c in self._metachars:
-            regexStr = regexStr.replace( c, '\\'+c )
+        # The result is going to be stored here
+        self._loginFailedResultList = []
         
-        # For some reason I dont want to know about, ' ' (spaces) must be escaped also
-        regexStr = regexStr.replace( ' ', '\\ ' )
+        for user, passwd in tests:
+            # setup the dc
+            dc[ userField ] = user
+            dc[ passwdField ] = passwd
+            freq.setDc( dc )
+            response = self._sendMutant( freq , analyze=False, grepResult=False )
+            
+            # Save it
+            self._loginFailedResultList.append( response.getBody() )
         
-        # If the failed login page showed the user or the passwd i sent, replace that with a ".*?"
-        regexStr = regexStr.replace( dc[ user ], '.*?' )
-        regexStr = regexStr.replace( dc[ passwd ], '.*?' )
-        regexStr = '^' + regexStr + '$'
-        self._regex = re.compile( regexStr )
+        # Now I perform a self test, before starting with the actual bruteforcing
+        # The first tuple is an invalid username and a password
+        # The second tuple is an invalid username with a blank password
+        tests = [ (createRandAlNum( 8 ), createRandAlNum( 8 ) ),
+                    (createRandAlNum( 8 ), '' )]
         
-        # Now I do a self test of the regex I just created.
-        dc[ user ] = createRandAlNum( 8 )
-        dc[ passwd ] = createRandAlNum( 8 )
-        freq.setDc( dc )
-        response = self._sendMutant( freq , analyze=False, grepResult=False )
-        if not self._regex.search( response.getBody() ):
-            raise w3afException('Failed to generate a regular expression that matches the failed login page.')
+        for user, passwd in tests:
+            # Now I do a self test of the regex I just created.
+            dc[ userField ] = user
+            dc[ passwdField ] = passwd
+            freq.setDc( dc )
+            response = self._sendMutant( freq , analyze=False, grepResult=False )
+            if not self._matchesFailedLogin( response.getBody() ):
+                raise w3afException('Failed to generate a regular expression that matches the failed login page.')
         
-    
+    def _matchesFailedLogin(self, responseBody):
+        '''
+        @return: True if the responseBody matches the previously created responses that
+        are stored in self._loginFailedResultList.
+        '''
+        ratio0 = difflib.SequenceMatcher( None, responseBody, self._loginFailedResultList[0]).ratio()
+        ratio1 = difflib.SequenceMatcher( None, responseBody, self._loginFailedResultList[1]).ratio()
+        
+        if ratio0 > 0.9 or ratio1 > 0.9:
+            return True
+        else:
+            # I'm happy!
+            return False
+        
     def _isLoginForm( self, freq ):
         '''
         @return: True if this fuzzableRequest is a loginForm.
@@ -187,7 +204,7 @@ class formAuthBrute(baseBruteforcePlugin):
             if not self._found or not self._stopOnFirst:
                 response = self._sendMutant( freq, analyze=False, grepResult=False )
             
-                if not self._regex.search( response.getBody() ):
+                if not self._matchesFailedLogin( response.getBody() ):
                     self._found = True
                     v = vuln.vuln()
                     v.setURL( freq.getURL() )
