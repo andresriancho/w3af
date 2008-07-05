@@ -58,7 +58,6 @@ class sitemapReader(baseDiscoveryPlugin):
             baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
             sitemapUrl = urlParser.urlJoin(  baseUrl , 'sitemap.xml' )
             response = self._urlOpener.GET( sitemapUrl, useCache=True )
-            print response
             
             if not self.is404( response ) and '</urlset>' in response.getBody():
                 om.out.debug('Analyzing sitemap.xml file.')
