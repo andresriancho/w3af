@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import pygtk, gtk, gobject
-from . import reqResViewer, helpers, entries
+from . import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.w3afException import *
 from core.data.options.option import option as Option
 from core.controllers.daemons import localproxy
@@ -106,11 +106,9 @@ class ProxiedRequests(entries.RememberingWindow):
         # notebook
         nb = gtk.Notebook()
         nb.append_page(self.reqresp, gtk.Label("Request and Response"))
-        lab1 = gtk.Label("Coming soon! :)")
-        lab1.set_sensitive(False)
+        httplog = httpLogTab.httpLogTab(w3af)
         lab2 = gtk.Label("History")
-        lab2.set_sensitive(False)
-        nb.append_page(lab1, lab2)
+        nb.append_page(httplog, lab2)
         self.vbox.pack_start(nb, True, True)
 
         self.vbox.pack_start(hbox, False, False)
