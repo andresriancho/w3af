@@ -113,7 +113,7 @@ class targetSettings(configurable):
         # domain, for example: "http://google.com, http://yahoo.com".
         domainList = [urlParser.getDomain(targetURL) for targetURL in targetUrls]
         domainList = list( set(domainList) )
-        if len( domainList ) != 1:
+        if len( domainList ) > 1:
             msg = 'You specified more than one target domain: ' + ','.join(domainList)
             msg += ' . And w3af only supports one target domain at the time.'
             raise w3afException(msg)
