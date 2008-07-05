@@ -148,9 +148,7 @@ class ProxiedRequests(entries.RememberingWindow):
         @return: True to gobject to keep calling it, False when all is done.
         '''
         if self.waitingRequests:
-            print "getting requests...",
             req = self.proxy.getTrappedRequest()
-            print req
             if req is not None:
                 self.waitingRequests = False
                 self.fuzzable = req
@@ -208,7 +206,6 @@ class ProxiedRequests(entries.RememberingWindow):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
-        import pdb;pdb.set_trace()
         if  opt != gtk.RESPONSE_YES:
             return False
         self.proxy.stop()
@@ -243,7 +240,7 @@ class ProxiedRequests(entries.RememberingWindow):
         # rest of config
         self.proxy.setWhatToTrap(self.proxyoptions.trap.getValue())
         self.proxy.setIgnoreImages(self.proxyoptions.ignoreimgs.getValue())
-        # FIXME: do something with the "fix length" option
+        self.proxy.setFixContentLength(self.proxyoptions.fixlength.getValue())
 
     def _help(self, action):
         '''Shows the help.'''
