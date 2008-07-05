@@ -384,7 +384,7 @@ class PluginTree(gtk.TreeView):
         This method calls the plugin editor with the corresponding parameters.
         '''
         def f(t, n):
-            self._finishedEditingPlugin(path, pluginName, pluginType)
+            self._finishedEditingPlugin(path, pluginType, pluginName)
         pluginEditor(pluginType,  pluginName,  f)
 
     def _finishedEditingPlugin(self, path, pluginType, pluginName):
@@ -393,7 +393,10 @@ class PluginTree(gtk.TreeView):
         '''
         # remove the edited plugin from cache
         del self.plugin_instances[path]
-
+        
+        # Reload the plugin
+        self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
+        
         # if we still are in the same tree position, refresh the config
         (newpath, column) = self.get_cursor()
         if newpath == path:
