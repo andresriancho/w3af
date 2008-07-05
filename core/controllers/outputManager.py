@@ -35,6 +35,7 @@ class outputManager:
     
     def __init__(self):
         self._outputPluginList = []
+        self._outputPlugins = []
         self._pluginsOptions = {}
         self._echo = True
 
@@ -175,19 +176,22 @@ class outputManager:
         '''
         self._echo = onOff
 
-    def setOutputPlugins( self, OutputPlugins ):
+    def setOutputPlugins( self, outputPlugins ):
         '''
-        @parameter OutputPlugins: A list with the names of Output Plugins that will be used.
+        @parameter outputPlugins: A list with the names of Output Plugins that will be used.
         @return: No value is returned.
         '''     
         self._outputPluginList = []
-        self._outputPlugins = OutputPlugins
+        self._outputPlugins = outputPlugins
         
         for pluginName in self._outputPlugins:
             out._addOutputPlugin( pluginName )  
         
         out.debug('Exiting setOutputPlugins()' )
-        
+    
+    def getOutputPlugins(self):
+        return self._outputPlugins
+    
     def setPluginOptions(self, pluginName, PluginsOptions ):
         '''
         @parameter PluginsOptions: A tuple with a string and a dictionary with the options for a plugin. For example:\

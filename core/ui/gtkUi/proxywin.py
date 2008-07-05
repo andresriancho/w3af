@@ -27,6 +27,7 @@ from core.data.options.option import option as Option
 from core.controllers.daemons import localproxy
 import os
 
+import core.controllers.outputManager as om
 
 ui_proxy_menu = """
 <ui>
@@ -58,6 +59,16 @@ class ProxiedRequests(entries.RememberingWindow):
         super(ProxiedRequests,self).__init__(w3af, "proxytool", "w3af - Proxy", onDestroy=self._close)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
+        
+        # This is inited before all, to have a full logging facility.
+        coreOutputPlugins = self.w3af.getEnabledPlugins('output')
+        omOutputPlugins = om.out.getOutputPlugins()
+        tmp = []
+        tmp.extend(coreOutputPlugins)
+        tmp.extend(omOutputPlugins)
+        if 'gtkOutput' not in tmp:
+            tmp.append('gtkOutput')
+        om.out.setOutputPlugins( tmp )
 
         # toolbar elements
         uimanager = gtk.UIManager()
