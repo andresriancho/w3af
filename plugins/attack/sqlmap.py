@@ -176,6 +176,10 @@ class sqlmap(baseAttackPlugin):
                     if vulnToExploit != v.getId():
                         continue
             
+                mutant = v.getMutant()
+                mutant.setModValue( mutant.getOriginalValue() )
+                v.setMutant( mutant )
+            
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: ' + v.getURL() )
                 vulns2.extend( bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
@@ -198,7 +202,8 @@ class sqlmap(baseAttackPlugin):
                         else:
                             # Keep adding all shells to the kb
                             pass
-                    
+                
+                # FIXME: Am I really saving anything here ?!?!
                 return kb.kb.getData( self.getName(), 'shell' )
                 
     def _generateShell( self, vuln ):

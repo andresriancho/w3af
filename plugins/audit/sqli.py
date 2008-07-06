@@ -83,6 +83,7 @@ class sqli(baseAuditPlugin):
         sqlErrorList = self._findSqlError( response )
         for sqlError in sqlErrorList:
             if not re.search( sqlError[0], mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                # Create the vuln,
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setName( 'SQL injection vulnerability' )
