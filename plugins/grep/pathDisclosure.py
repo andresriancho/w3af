@@ -145,7 +145,7 @@ class pathDisclosure(baseGrepPlugin):
         # False positive with http://localhost/home/f00.html and
         # /home/user/
         path = urlParser.getPath(url)
-        if path[0:5] == pathDisclosureString[0:5]:
+        if pathDisclosureString[0:5] in path:
             return True
 
         if url.count( pathDisclosureString ) or sentData.count( pathDisclosureString ):
