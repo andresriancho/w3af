@@ -135,8 +135,8 @@ class Messages(gtk.VBox, entries.Searchable):
             upbox.pack_start(but, expand=True, fill=False)
         makeBut("Vulnerabilities", "vulnerability", True)
         makeBut("Information", "information", True)
+        makeBut("Error", "error", True)
         makeBut("Debug", "debug", False)
-        makeBut("Error", "error", False)
         upbox.show()
         self.pack_start(upbox, expand=False, fill=False)
 
