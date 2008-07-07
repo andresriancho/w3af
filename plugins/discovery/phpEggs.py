@@ -144,7 +144,7 @@ class phpEggs(baseDiscoveryPlugin):
                     matchingVersions.append( version )
                     found = True
             
-            if versionHashes:
+            if matchingVersions:
                 i = info.info()
                 i.setName('PHP Egg')
                 i.setDesc( 'The PHP framework version running on the remote server was identified as: '+  ' / '.join(matchingVersions) )
