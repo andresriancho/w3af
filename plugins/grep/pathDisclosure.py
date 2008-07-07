@@ -132,17 +132,27 @@ class pathDisclosure(baseGrepPlugin):
         '''
         Checks if the pathDisclosureString was sent in the request.
         '''
+        sentData = ''
         url = urllib.unquote( request.getURI() )
+
         if request.getMethod().upper() == 'POST':
             sentData = request.getData()
-            sentData = urllib.unquote( sentData )
-        else:
-            sentData = ''
+            # This fixes bug #2012748
+            if sentData != None:
+                sentData = urllib.unquote( sentData )
         
+        # This fixes bug #1990018
+        # False positive with http://localhost/home/f00.html and
+        # /home/user/
+        path = urlParser.getPath(url)
+        if path[0:5] == pathDisclosureString[0:5]:
+            return True
+
         if url.count( pathDisclosureString ) or sentData.count( pathDisclosureString ):
             return True
-        else:
-            return False
+
+        # I didn't sent the pathDisclosureString in any way
+        return False
         
     def setOptions( self, OptionList ):
         pass
