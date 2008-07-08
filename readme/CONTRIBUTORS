@@ -19,7 +19,7 @@ Contributors from Cybsec:
 
 Testing:
     Ulises Cuñe - Bug reports and ideas
-    Sebastian Garcia eldraco|en|gmail.com - A lot of bug reports and good ideas
+    Sebastian Garcia (eldraco|en|gmail.com) - A lot of bug reports and good ideas
     
 Plugin contributors:
     Sharad Ganapathy - Mark of the web plugin
@@ -30,6 +30,9 @@ Plugin contributors:
 Documentation:
     Mike Harbison - Documentation review
     Andy Bach - Documentation review
+
+General:
+    Achim Hoffmann (ah|at|securenet.de) - Great ideas and OWASP SoC Reviewer
 
 w3af also has one big sponsor, Cybsec, www.cybsec.com
 
