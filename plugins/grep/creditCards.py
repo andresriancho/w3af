@@ -37,21 +37,17 @@ def luhnCheck(value):
     '''
     The Luhn check against the value which can be an array of digits, 
     numeric string or a positive integer.
+    
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-
-    if type(value) == int:
-        value = str(value)
-
-    if type(value) == list:
-        arr = value
-    else:
-        arr = []
-        for c in value:
+    # Prepare the value to be analyzed.
+    arr = []
+    for c in value:
+        if c.isdigit():
             arr.append(int(c))
-
     arr.reverse()
-    even = False
+    
+    # Analyze
     for idx in [i for i in range(len(arr)) if i%2]:
         d = arr[idx] * 2
         if d > 9:
