@@ -57,6 +57,11 @@ class detectWAF(baseDiscoveryPlugin):
             self._identifyURLScan( fuzzableRequest )
             self._identifyModSecurity( fuzzableRequest )
             self._identifySecureIIS( fuzzableRequest )
+            self._identifyAirlock( fuzzableRequest )
+            self._identifyBarracuda( fuzzableRequest )
+            self._identifyDenyAll( fuzzableRequest )
+            self._identifyF5ASM( fuzzableRequest )
+            self._identifyHyperGuard( fuzzableRequest )
 
         return []
     
@@ -80,7 +85,108 @@ class detectWAF(baseDiscoveryPlugin):
         Try to verify if mod_security is installed or not AND try to get the installed version.
         '''
         pass
-    
+
+    def _identifyAirlock(self,  fuzzableRequest):
+        '''
+        Try to verify if Airlock is present.
+        '''
+        om.out.debug( 'detect Airlock' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for h in response.getHeaders().keys():
+                if h.lower() == 'set-cookie':
+                    protectedBy = response.getHeaders()[h]
+                    if re.match('^AL[_-]?(SESS|LB)=', protectedBy):
+                        om.out.information( 'URL protected: ' + protectedBy )
+                        self._reportFinding('Airlock', response)
+                        return
+                # else 
+                    # more checks, like path /error_path or encrypted URL in response
+
+    def _identifyBarracuda(self,  fuzzableRequest):
+        '''
+        Try to verify if Barracuda is present.
+        '''
+        om.out.debug( 'detect Barracuda' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for h in response.getHeaders().keys():
+                if h.lower() == 'set-cookie':
+                    # ToDo: not sure if this is always there (08jul08 Achim)
+                    protectedBy = response.getHeaders()[h]
+                    if re.match('^barra_counter_session=', protectedBy):
+                        om.out.information( 'URL protected: ' + protectedBy )
+                        self._reportFinding('Barracuda', response)
+                        return
+                # else 
+                    # don't know ...
+
+    def _identifyDenyAll(self,  fuzzableRequest):
+        '''
+        Try to verify if Deny All rWeb is present.
+        '''
+        om.out.debug( 'detect Deny All' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for h in response.getHeaders().keys():
+                if h.lower() == 'set-cookie':
+                    protectedBy = response.getHeaders()[h]
+                    if re.match('^sessioncookie=', protectedBy):
+                        om.out.information( 'URL protected: ' + protectedBy )
+                        self._reportFinding('Deny All rWeb', response)
+                        return
+                # else
+                    # more checks like detection=detected cookie
+
+    def _identifyF5ASM(self,  fuzzableRequest):
+        '''
+        Try to verify if F5 ASM (also TrafficShield) is present.
+        '''
+        om.out.debug( 'detect F5 ASM or TrafficShield' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for h in response.getHeaders().keys():
+                if h.lower() == 'set-cookie':
+                    protectedBy = response.getHeaders()[h]
+                    if re.match('^TS[a-zA-Z0-9]{3,6}=', protectedBy):
+                        om.out.information( 'URL protected: ' + protectedBy )
+                        self._reportFinding('F5 ASM', response)
+                        return
+                # else
+                    # more checks like special string in response
+
+    def _identifyHyperGuard(self,  fuzzableRequest):
+        '''
+        Try to verify if HyperGuard is present.
+        '''
+        om.out.debug( 'detect HyperGuard' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for h in response.getHeaders().keys():
+                if h.lower() == 'set-cookie':
+                    protectedBy = response.getHeaders()[h]
+                    if re.match('^WODSESSION=', protectedBy):
+                        om.out.information( 'URL protected: ' + protectedBy )
+                        self._reportFinding('HyperGuard', response)
+                        return
+                # else
+                    # more checks like special string in response
+
     def _identifyURLScan(self,  fuzzableRequest):
         '''
         Try to verify if URLScan is installed or not.
