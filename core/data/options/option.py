@@ -134,6 +134,12 @@ class option:
         value = value.replace('"', '&quot;')
         return value
         
+    def __repr__(self):
+        '''
+        A nice way of printing your object =)
+        '''
+        return '<option '+self._name+'|'+self._type+'|'+str(self._value)+'>'
+        
     def copy(self):
         '''
         This method returns a copy of the option Object.

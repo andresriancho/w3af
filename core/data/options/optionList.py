@@ -39,6 +39,12 @@ class optionList:
     def __len__( self ):
         return len(self._oList)
     
+    def __repr__(self):
+        '''
+        A nice way of printing your object =)
+        '''
+        return '<optionList: '+ '|'.join([i.getName() for i in self._oList]) +'>'
+
     def __contains__( self, itemName ):
         for o in self._oList:
             if o.getName() == itemName:
