@@ -38,7 +38,7 @@ class abstractParser:
         self._rootDomain = urlParser.getRootDomain(baseUrl)
         self._emails = []
     
-    def findAccounts( self , documentString ):
+    def findEmails( self , documentString ):
         '''
         @return: A list with all mail users that are present in the documentString.
         '''
@@ -55,18 +55,19 @@ class abstractParser:
             documentString = re.sub( '[^\w@\\.]', ' ', documentString )
             
             # Now we have a clean documentString; and we can match the mail addresses!
-            emailRegex = '(([\w\._]+)@('+self._rootDomain+'|'+self._baseDomain+'))'
-            for email, username, host in re.findall(emailRegex, documentString):
+            emailRegex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+            for email in re.findall(emailRegex, documentString,  re.IGNORECASE):
                 if email not in self._emails:
                     self._emails.append( email )
                     
         return self._emails
 
-    def getAccounts( self ):
+    def getEmails( self, domain ):
         '''
+        @parameter domain: Indicates what email addresses I want to retrieve:   "*@domain".
         @return: A list of email accounts that are inside the document.
         '''
-        raise Exception('You should create your own parser class and implement the getAccounts() method.')
+        return [ i for i in self._emails if domain in i.split('@')[1] ]
     
     def getForms( self ):
         '''

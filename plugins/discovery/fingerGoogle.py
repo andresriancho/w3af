@@ -143,7 +143,7 @@ class fingerGoogle(baseDiscoveryPlugin):
         Parses the HTML and adds the mail addresses to the kb.
         '''
         dp = dpCache.dpc.getDocumentParserFor( response.getBody(), 'http://'+self._domainRoot+'/' )
-        for mail in dp.getAccounts():
+        for mail in dp.getEmails( self._domainRoot ):
             if mail not in self._accounts:
                 self._accounts.append( mail )
                 

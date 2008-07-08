@@ -28,7 +28,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import *
+import core.data.parsers.urlParser as urlParser
 from core.data.getResponseType import *
 
 class getMails(baseGrepPlugin):
@@ -45,8 +45,10 @@ class getMails(baseGrepPlugin):
         
         # Modified when I added the pdfParser
         #if isTextOrHtml(response.getHeaders()):
+        
         dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
-        mails = dp.getAccounts()
+        mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
+        
         for m in mails:
             wasSent = self._wasSent( request, m )
             alreadyReported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]

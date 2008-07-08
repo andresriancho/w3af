@@ -219,11 +219,11 @@ class sgmlParser(abstractParser, SGMLParser):
         @parameter s: The document to parse.
         '''
         try:
-            self.findAccounts( s )
+            self.findEmails( s )
             self.feed(s)
             self.close()
         except Exception, e:
-            # The user will call getAccounts, getReferences, etc and will get all the information
+            # The user will call getEmails, getReferences, etc and will get all the information
             # that the parser could find before dieing
             om.out.debug('Exception found while parsing document. Exception: ' + str(e) + '. Document head: "' + s[0:20] +'".' )
             import traceback
@@ -234,10 +234,6 @@ class sgmlParser(abstractParser, SGMLParser):
             # with this, a run will use 113,696
             del self.rawdata
         
-        
-    def getAccounts( self ):
-        return self._emails
-    
     def getForms( self ):
         '''
         @return: Returns list of forms.

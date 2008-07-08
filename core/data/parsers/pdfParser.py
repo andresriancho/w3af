@@ -87,9 +87,6 @@ class pdfParser(abstractParser):
         res = unicode(content,'utf-8','ignore').encode('utf-8')
         return res
     
-    def getAccounts( self ):
-        return self._emails
-        
     def getReferences( self ):
         return self._urlsInDocument
         
