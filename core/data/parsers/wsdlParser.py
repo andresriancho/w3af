@@ -33,7 +33,7 @@ except ImportError:
     except ImportError:
         raise w3afException('You have to install SOAPpy lib.')
 
-import xml
+import xml.parsers.expat as expat
 
 class wsdlParser:
     '''
@@ -51,7 +51,7 @@ class wsdlParser:
         '''
         try:
             self._proxy = SOAPpy.WSDL.Proxy( xmlData )
-        except xml.parsers.expat.ExpatError:
+        except expat.ExpatError:
             raise w3afException('The document aint a WSDL document.')
         except Exception, e:
             msg = 'The document aint a WSDL document.'
