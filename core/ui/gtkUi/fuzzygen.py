@@ -20,7 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
-from core.controllers.w3afException import w3afException
+try:
+    from core.controllers.w3afException import w3afException
+except ImportError:
+    # this is to easy the test when executing this file directly
+    w3afException = Exception
 
 REPP = re.compile("\$.*?\$")
 
@@ -47,12 +51,8 @@ class FuzzyGenerator(object):
         torp2, self.sane2 = self._dissect(txt2)
 
         # generate the generators, :)
-        namespace = {"string":__import__("string")}
-        try:
-            self.genr1 = [eval(x, namespace) for x in torp1]
-            self.genr2 = [eval(x, namespace) for x in torp2]
-        except Exception, e:
-            raise FuzzyError("%s: %s" % (e.__class__.__name__, e))
+        self.genr1 = [self._genIterator(x) for x in torp1]
+        self.genr2 = [self._genIterator(x) for x in torp2]
 
         # if one of them is empty, put a dummy
         if not self.genr1:
@@ -60,6 +60,19 @@ class FuzzyGenerator(object):
         if not self.genr2:
             self.genr2 = [[]]
 
+    def _genIterator(self, text):
+        namespace = {"string":__import__("string")}
+        try:
+            it = eval(text, namespace)
+        except Exception, e:
+            raise FuzzyError("%s: %s" % (e.__class__.__name__, e))
+
+        try:
+            iter(it)
+        except TypeError:
+            raise FuzzyError("%r is not iterable! (generated from %r)" % (it,text))
+        return it
+        
     def _dissect(self, txt):
         # separate sane texts from what is to be replaced 
         toreplace = REPP.findall(txt)
@@ -116,25 +129,35 @@ class FuzzyGenerator(object):
             else:
                 for val in self._possib(generat, constr+[elem]):
                     yield val
+
         
 if __name__ == "__main__":
-    # simple $$ to $ checks
-    fg = FuzzyGenerator("Hola $$mundo\ncruel", "")
-    assert fg.sane1 == ["Hola $mundo\ncruel"]
-    
-    fg = FuzzyGenerator("Hola $$mundo\ncruel$$", "")
-    assert fg.sane1 == ["Hola $mundo\ncruel$"]
-    
-    fg = FuzzyGenerator("Hola $$mundo\ncruel$$asdfg$$$$gh", "")
-    assert fg.sane1 == ["Hola $mundo\ncruel$asdfg$$gh"]
+    import unittest
 
-    # generations
-    fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
-    assert list(fg.generate()) == [
-        ('0 dnda', 'pp'), ('0 dnds', 'pp'), ('1 dnda', 'pp'), ('1 dnds', 'pp')]
+    class TestAll(unittest.TestCase):
+        def test_simple_doubledollar(self):
+            fg = FuzzyGenerator("Hola $$mundo\ncruel", "")
+            self.assertEqual(fg.sane1, ["Hola $mundo\ncruel"])
+            
+            fg = FuzzyGenerator("Hola $$mundo\ncruel$$", "")
+            self.assertEqual(fg.sane1, ["Hola $mundo\ncruel$"])
+            
+            fg = FuzzyGenerator("Hola $$mundo\ncruel$$asdfg$$$$gh", "")
+            self.assertEqual(fg.sane1, ["Hola $mundo\ncruel$asdfg$$gh"])
 
-    fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp$string.lowercase[:2]$")
-    assert list(fg.generate()) == [
-        ('0 dnda', 'ppa'), ('0 dnda', 'ppb'), ('0 dnds', 'ppa'), ('0 dnds', 'ppb'),
-        ('1 dnda', 'ppa'), ('1 dnda', 'ppb'), ('1 dnds', 'ppa'), ('1 dnds', 'ppb'),
-    ]
+        def test_generations(self):
+            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
+            self.assertEqual(list(fg.generate()), [
+                ('0 dnda', 'pp'), ('0 dnds', 'pp'), ('1 dnda', 'pp'), ('1 dnds', 'pp')])
+        
+            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp$string.lowercase[:2]$")
+            self.assertEqual(list(fg.generate()), [
+                ('0 dnda', 'ppa'), ('0 dnda', 'ppb'), ('0 dnds', 'ppa'), ('0 dnds', 'ppb'),
+                ('1 dnda', 'ppa'), ('1 dnda', 'ppb'), ('1 dnds', 'ppa'), ('1 dnds', 'ppb'),
+            ])
+        
+        def test_noniterable(self):
+            self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $3$ bb")
+            self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $[].extend([1,2])$ bb")
+
+    unittest.main()
