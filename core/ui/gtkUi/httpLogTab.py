@@ -32,10 +32,11 @@ from . import reqResViewer
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
-MARKUP_HELP = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i> and <i>url</i> columns.
+MARKUP_HELP = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i>, <i>url</i> and <i>code</i> columns.
 
 Here are some <b>examples</b>:
     - <i>id = 3 or id = 4</i>
+    - <i>code &lt;&gt; 404 and code &gt; 400</i>
     - <i>url like '%xc.php'</i>
     - <i>url like '%xc%' and id &lt;&gt; 3</i>
 '''
@@ -180,6 +181,16 @@ class httpLogTab(gtk.HPaned):
                 self._sw.set_sensitive(False)
                 self._lstore.clear()
                 self._showDialog('No results', 'The search you performed returned no results.' )
+                return
+            elif len( searchResultObjects ) > 10000:
+                self._reqResViewer.request.clearPanes()
+                self._reqResViewer.response.clearPanes()
+                self._reqResViewer.set_sensitive(False)
+                self._sw.set_sensitive(False)
+                self._lstore.clear()
+                msg = 'The search you performed returned too many results (' + str(len(searchResultObjects)) + ').\n'
+                msg += 'Please refine your search and try again.'
+                self._showDialog('Too many results', msg )
                 return
             else:
                 # show the results in the list view (when first row is selected that just triggers

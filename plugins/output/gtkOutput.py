@@ -83,7 +83,7 @@ class gtkOutput(baseOutputPlugin):
             # Create the DB object
             self._db = persist()
             try:
-                self._db.create( db_name , ['id','url'] )
+                self._db.create( db_name , ['id','url', 'code'] )
             except Exception, e:
                 raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
@@ -141,7 +141,7 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            self._db.persist( (response.getId(),request.getURI()), (request, response) )
+            self._db.persist( (response.getId(),request.getURI(), response.getCode()), (request, response) )
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:
