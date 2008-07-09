@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 abstractParser.py
 
@@ -105,3 +106,9 @@ class abstractParser:
         '''
         raise Exception('You should create your own parser class and implement the getMetaTags() method.')
         
+    def _decodeString(self, stringToDecode):
+        '''
+        >>> print urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8')
+        indéx.html
+        '''
+        return urllib.unquote(stringToDecode).decode('utf-8').encode('utf-8')

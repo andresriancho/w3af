@@ -55,21 +55,23 @@ class sgmlParser(abstractParser, SGMLParser):
         #########
         #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
         urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
-        self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, httpResponse.getBody() ) ]
+        self._urlsInDocument = [ self._decodeString(x[0]) for x in re.findall(urlRegex, httpResponse.getBody() ) ]
         
         # Now detect some relative URL's ( also using regexs )
         def findRelative( doc ):
             res = []
             relRegex = re.compile('[^\/\/]([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,4}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
             
-            go = True
-            while go:
-                try:
-                    s, e = relRegex.search( doc ).span()
-                except:
-                    go = False
+            while True:
+                regex_match = relRegex.search( doc )
+                if not regex_match:
+                    break
                 else:
-                    res.append( urlParser.urlJoin( urlParser.getDomainPath(httpResponse.getURL()) , doc[s+1:e] ) )
+                    s, e = regex_match.span()
+                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                    url = urlParser.urlJoin( domainPath , doc[s+1:e] )
+                    url = self._decodeString(url)
+                    res.append( url )
                     doc = doc[e:]
             '''
             om.out.debug('Relative URLs found using regex:')
@@ -185,6 +187,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     content = attr[1]
                     
             if hasContent and hasHTTP_EQUIV:
+                content = self._decodeString( content )
                 self._metaRedirs.append( content )
                 
                 # And finally I add the URL to the list of url's found in the document...
@@ -194,6 +197,8 @@ class sgmlParser(abstractParser, SGMLParser):
                 for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                     url = url.strip()
                     url = urlParser.urlJoin( self._baseUrl , url )
+                    url = self._decodeString(url)
+                    
                     self._urlsInDocument.append( url )
                     self._urlsInDocumentWithTags.append( ('meta', url ) )
     
@@ -207,6 +212,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     if len(  attr[1] ):
                             if attr[1][0] != '#':
                                 url = urlParser.urlJoin( self._baseUrl ,attr[1] )
+                                url = self._decodeString(url)
                                 if url not in self._urlsInDocument:
                                     self._urlsInDocument.append( url )
                                     self._urlsInDocumentWithTags.append( (tag.lower(), url) )

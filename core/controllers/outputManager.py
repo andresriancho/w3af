@@ -95,7 +95,7 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace').encode('utf-8')
+                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
             except:
                 pass
             else:
@@ -110,7 +110,7 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace').encode('utf-8')
+                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
             except:
                 pass
             else:
@@ -125,7 +125,7 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace').encode('utf-8')
+                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
             except:
                 pass
             else:
@@ -150,7 +150,7 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace').encode('utf-8')
+                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
             except:
                 pass
             else:
@@ -163,7 +163,7 @@ class outputManager:
         '''
         if self._echo:
             try:
-                message = unicode( message, errors='replace').encode('utf-8')
+                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
             except:
                 pass
             else:

@@ -46,7 +46,7 @@ class console(baseOutputPlugin):
         or from the framework. This method should take an action for debug messages.
         '''
         if self.verbose:
-            toPrint = unicode ( message )
+            toPrint = message
             if newLine == True:
                 toPrint += '\r\n'
             sys.stdout.write( self._cleanString(toPrint) )
@@ -58,7 +58,7 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         ''' 
-        toPrint = unicode ( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\r\n'
         sys.stdout.write( self._cleanString(toPrint) )
@@ -70,7 +70,7 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
         '''     
-        toPrint = unicode ( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\r\n'
         sys.stderr.write( self._cleanString(toPrint) )
@@ -80,8 +80,8 @@ class console(baseOutputPlugin):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
-        '''     
-        toPrint = unicode ( message )
+        '''
+        toPrint = message
         if newLine == True:
             toPrint += '\r\n'
         sys.stdout.write( self._cleanString(toPrint) )
@@ -91,7 +91,7 @@ class console(baseOutputPlugin):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        toPrint = unicode( message )
+        toPrint = message
         if newLine == True:
             toPrint += '\r\n'
         sys.stdout.write( self._cleanString(toPrint) )
