@@ -45,7 +45,11 @@ class findvhost(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._firstExec = True
+        self._alreadyQueried = []
+        self._canResolveDomainNames = False
         
     def discover(self, fuzzableRequest ):
         '''
@@ -58,6 +62,10 @@ class findvhost(baseDiscoveryPlugin):
             # Only run once
             self._firstExec = False
             vHostList = self._genericVhosts( fuzzableRequest )
+            
+            # Set this for later
+            self._canResolveDomainNames = self._canResolveDomains()
+            
         
         # I also test for ""dead links"" that the web programmer left in the page
         # For example, If w3af finds a link to "http://corporative.intranet.corp/" it will try to
@@ -80,7 +88,7 @@ class findvhost(baseDiscoveryPlugin):
         
     def _deadLinks( self, fuzzableRequest ):
         '''
-        Find every link on a HTML document and verify if the domain is reachable or not; after that, verify if web
+        Find every link on a HTML document verify if the domain is reachable or not; after that, verify if the web
         found a different name for the target site or if we found a new site that is linked. If the link points to a dead
         site then report it (it could be pointing to some private address or something...)
         '''
@@ -101,37 +109,60 @@ class findvhost(baseDiscoveryPlugin):
         nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
         self._nonExistantResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': nonExistant } )
 
-        # FIXME: Review this logic... I think its flawed
         for link in dp.getReferences():
             domain = urlParser.getDomain( link )
             
-            try:
-                socket.gethostbyname( domain )
-            except:
-                # only work if domain is not resolved
+            #
+            # First section, find internal hosts using the HTTP Host header:
+            #
+            if domain not in self._alreadyQueried:
+                # If the parsed page has an external link to www.google.com
+                # then I'll send a request to the target site, with Host: www.google.com
+                # This sucks, but it's cool if the document has a link to http://some.internal.site.target.com/
                 try:
                     vhostResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': domain } )
                 except w3afException, w:
                     pass
                 else:
-                    # If they are *really* different (not just different by some chars) 
                     if difflib.SequenceMatcher( None, vhostResponse.getBody(), baseResponse.getBody() ).ratio() < 0.35 and \
                     difflib.SequenceMatcher( None, vhostResponse.getBody(), self._nonExistantResponse.getBody() ).ratio() < 0.35:
+                        # If they are *really* different (not just different by some chars) I may have found
+                        # something interesting!
                         res.append( (domain, vhostResponse.id) )
-                    else:
-                        i = info.info()
-                        i.setName('Internal hostname in HTML link')
-                        i.setURL( fuzzableRequest.getURL() )
-                        i.setMethod( 'GET' )
-                        i.setDesc('Found a page that references a non existant domain: "' + link + '"' )
-                        i.setId( vhostResponse.id )
-                        kb.kb.append( self, 'findvhost', i )
-                        om.out.information( i.getDesc() )
-            else:
-                pass
+
+            #
+            # Second section, find hosts using failed DNS resolutions
+            #
+            if self._canResolveDomainNames:
+                try:
+                    socket.gethostbyname( domain )
+                except:
+                    i = info.info()
+                    i.setName('Internal hostname in HTML link')
+                    i.setURL( fuzzableRequest.getURL() )
+                    i.setMethod( 'GET' )
+                    i.setDesc('Found a page that references a non existant domain: "' + link + '"' )
+                    i.setId( vhostResponse.id )
+                    kb.kb.append( self, 'findvhost', i )
+                    om.out.information( i.getDesc() )
         
         return res 
+    
+    def _canResolveDomains(self):
+        '''
+        This method was added to verify if w3af can resolve domain names
+        using the OS configuration (/etc/resolv.conf in linux) or if we are in some
+        strange LAN where we can't.
         
+        @return: True if we can resolve domain names.
+        '''
+        try:
+            socket.gethostbyname( 'www.w3.org' )
+        except:
+            return False
+        else:
+            return True
+    
     def _genericVhosts( self, fuzzableRequest ):
         '''
         Test some generic virtual hosts, only do this once.
