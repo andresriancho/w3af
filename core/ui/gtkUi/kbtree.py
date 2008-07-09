@@ -173,6 +173,8 @@ class KBTree(gtk.TreeView):
         for pluginname, (plugvalues, plugincolor) in filteredKB.items():
             if pluginname in treeholder:
                 (treeplugin, holdplugin) = treeholder[pluginname]
+                # the color can change later!
+                self.treestore[treeplugin][4] = plugincolor
             else:
                 treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor])
                 holdplugin = {}
@@ -182,6 +184,8 @@ class KBTree(gtk.TreeView):
             for variabname, (variabobjects, variabcolor) in plugvalues.items():
                 if variabname in holdplugin:
                     (treevariab, holdvariab) = holdplugin[variabname]
+                    # the color can change later!
+                    self.treestore[treevariab][4] = variabcolor
                 else:
                     treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor])
                     holdvariab = set()
