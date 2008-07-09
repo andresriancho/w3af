@@ -171,25 +171,24 @@ class httpLogTab(gtk.HPaned):
             self._sw.set_sensitive(False)
             self._lstore.clear()
             self._showDialog('No results', str(w3) )
-            return
-
-        # no results
-        if len( searchResultObjects ) == 0:
-            self._reqResViewer.request.clearPanes()
-            self._reqResViewer.response.clearPanes()
-            self._reqResViewer.set_sensitive(False)
-            self._sw.set_sensitive(False)
-            self._lstore.clear()
-            self._showDialog('No results', 'The search you performed returned no results.' )
-            return
-
-        # show the results in the list view (when first row is selected that just triggers
-        # the req/resp filling.
-        self._sw.set_sensitive(True)
-        self._reqResViewer.set_sensitive(True)
-        self._showListView( searchResultObjects )
-        self._lstoreTreeview.set_cursor((0,))
-        return
+        else:
+            # no results ?
+            if len( searchResultObjects ) == 0:
+                self._reqResViewer.request.clearPanes()
+                self._reqResViewer.response.clearPanes()
+                self._reqResViewer.set_sensitive(False)
+                self._sw.set_sensitive(False)
+                self._lstore.clear()
+                self._showDialog('No results', 'The search you performed returned no results.' )
+                return
+            else:
+                # show the results in the list view (when first row is selected that just triggers
+                # the req/resp filling.
+                self._sw.set_sensitive(True)
+                self._reqResViewer.set_sensitive(True)
+                self._showListView( searchResultObjects )
+                self._lstoreTreeview.set_cursor((0,))
+                return
 
     def _showDialog( self, title, msg, gtkLook=gtk.MESSAGE_INFO ):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)

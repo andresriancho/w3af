@@ -266,7 +266,7 @@ class persist:
             rows = c.fetchall()
         except Exception, e:
             self.releaseLock()
-            raise e
+            raise w3afException(str(e))
         else:
             self.releaseLock()
             res = []

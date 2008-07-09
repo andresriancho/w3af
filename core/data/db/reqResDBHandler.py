@@ -79,6 +79,5 @@ class reqResDBHandler:
             try:
                 result = self._db.retrieve_all( search_string )
                 return result
-            except Exception, e:
-                raise e
-
+            except w3afException:
+                raise w3afException('You performed an invalid search. Please verify your sintax.')
