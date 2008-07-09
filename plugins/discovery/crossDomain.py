@@ -83,7 +83,12 @@ class crossDomain(baseDiscoveryPlugin):
                         v.setMethod( 'GET' )
                         v.setName( 'Insecure crossdomain.xml settings' )
                         v.setSeverity(severity.LOW)
-                        v.setDesc( 'The crossdomain.xml file at ' +  urlParser.baseUrl( fuzzableRequest.getURL() ) + '/crossdomain.xml allows flash access from any site.')
+                        
+                        baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
+                        file = '/crossdomain.xml'
+                        path = urlParser.urlJoin(baseUrl, file)
+                        
+                        v.setDesc( 'The crossdomain.xml file at "' + path + '" allows flash access from any site.')
                         v.setId( response.id )
                         kb.kb.append( self, 'vuln', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
