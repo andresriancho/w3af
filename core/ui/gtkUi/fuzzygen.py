@@ -65,7 +65,8 @@ class FuzzyGenerator(object):
         try:
             it = eval(text, namespace)
         except Exception, e:
-            raise FuzzyError("%s: %s" % (e.__class__.__name__, e))
+            msg = "%s: %s (generated from %r)" % (e.__class__.__name__, e, text)
+            raise FuzzyError(msg)
 
         try:
             iter(it)
