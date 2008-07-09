@@ -35,13 +35,13 @@ class wmlParser(sgmlParser):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, document, baseUrl, verbose=0):
+    def __init__(self, httpResponse, verbose=0):
         self._tagsContainingURLs =  ('go', 'a','anchor','img', 'link', 'script', 'iframe', 'object',
                 'embed', 'area', 'frame', 'applet', 'input', 'base',
                 'div', 'layer', 'ilayer', 'bgsound', 'form')
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
-        sgmlParser.__init__(self, document, baseUrl, verbose)
+        sgmlParser.__init__(self, httpResponse, verbose)
         
     def _preParse( self, WMLDocument ):
         assert self._baseUrl != '', 'The base URL must be setted.'

@@ -37,12 +37,12 @@ class pdfParser(abstractParser):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, document, baseURL):
-        abstractParser.__init__(self , baseURL)
+    def __init__(self, httpResponse):
+        abstractParser.__init__(self , httpResponse)
         self._urlsInDocument = []
         
         # work !
-        self._preParse( document )
+        self._preParse( httpResponse.getBody() )
         
     def _preParse( self, document ):
         contentText = self.getPDFContent( document )
@@ -54,7 +54,7 @@ class pdfParser(abstractParser):
         self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, contentText ) ]
         
         # Get the mail addys
-        self.findAccounts( contentText )
+        self.findEmails( contentText )
         
     def getPDFContent( self, documentString ):
         content = ""

@@ -46,13 +46,13 @@ class htmlParser(sgmlParser):
     '''
     
     
-    def __init__(self, document, baseUrl, normalizeMarkup=True, verbose=0):
+    def __init__(self, httpResponse, normalizeMarkup=True, verbose=0):
         self._tagsContainingURLs =  ('a', 'img', 'link', 'script', 'iframe', 'object',
                 'embed', 'area', 'frame', 'applet', 'input', 'base',
                 'div', 'layer', 'ilayer', 'bgsound', 'form')
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
-        sgmlParser.__init__(self, document, baseUrl, normalizeMarkup, verbose)
+        sgmlParser.__init__(self, httpResponse, normalizeMarkup, verbose)
         
     def _preParse( self, HTMLDocument ):
         assert self._baseUrl != '', 'The base URL must be setted.'

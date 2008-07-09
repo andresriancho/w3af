@@ -123,21 +123,26 @@ class archiveDotOrg(baseDiscoveryPlugin):
                     pass
                 else:
                     # Get the references
-                    docuParser = dpc.getDocumentParserFor( httpRes.getBody(), httpRes.getURL() )
-                    references = docuParser.getReferences()
-                    
-                    # Filter the ones I want
-                    url = 'http[s]?://' + domain + '/'
-                    newUrls = [ u for u in references if re.match('http://web\.archive\.org/web/.*/' + url + '.*', u ) ]
-                    
-                    # Go recursive
-                    if maxDepth -1 > 0:
-                        if newUrls:
-                            res.extend( newUrls )
-                            res.extend( self._spiderArchive( newUrls, maxDepth -1, domain ) )
+                    try:
+                        docuParser = dpc.getDocumentParserFor( httpRes )
+                    except w3afException:
+                        # Failed to find a suitable document parser
+                        pass
                     else:
-                        om.out.debug('Some sections of the archive.org site were not analyzed because of the configured maxDepth.')
-                        return newUrls
+                        references = docuParser.getReferences()
+                        
+                        # Filter the ones I want
+                        url = 'http[s]?://' + domain + '/'
+                        newUrls = [ u for u in references if re.match('http://web\.archive\.org/web/.*/' + url + '.*', u ) ]
+                        
+                        # Go recursive
+                        if maxDepth -1 > 0:
+                            if newUrls:
+                                res.extend( newUrls )
+                                res.extend( self._spiderArchive( newUrls, maxDepth -1, domain ) )
+                        else:
+                            om.out.debug('Some sections of the archive.org site were not analyzed because of the configured maxDepth.')
+                            return newUrls
         
         return res
     

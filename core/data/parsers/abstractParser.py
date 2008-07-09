@@ -31,11 +31,11 @@ class abstractParser:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self, baseUrl ):
+    def __init__( self, httpResponse ):
         # "setBaseUrl"
-        self._baseUrl = baseUrl
-        self._baseDomain = urlParser.getDomain(baseUrl)
-        self._rootDomain = urlParser.getRootDomain(baseUrl)
+        self._baseUrl = urlParser.getDomainPath(httpResponse.getURL())
+        self._baseDomain = urlParser.getDomain(httpResponse.getURL())
+        self._rootDomain = urlParser.getRootDomain(httpResponse.getURL())
         self._emails = []
     
     def findEmails( self , documentString ):

@@ -39,8 +39,8 @@ class sgmlParser(abstractParser, SGMLParser):
     '''
     
 
-    def __init__(self, document, baseUrl, normalizeMarkup=True, verbose=0):
-        abstractParser.__init__( self, baseUrl )
+    def __init__(self, httpResponse, normalizeMarkup=True, verbose=0):
+        abstractParser.__init__( self, httpResponse )
         SGMLParser.__init__(self, verbose)
 
         self._tagsContainingURLs =  ('go', 'a','img', 'link', 'script', 'iframe', 'object',
@@ -55,7 +55,7 @@ class sgmlParser(abstractParser, SGMLParser):
         #########
         #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
         urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
-        self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, document ) ]
+        self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, httpResponse.getBody() ) ]
         
         # Now detect some relative URL's ( also using regexs )
         def findRelative( doc ):
@@ -69,7 +69,7 @@ class sgmlParser(abstractParser, SGMLParser):
                 except:
                     go = False
                 else:
-                    res.append( urlParser.urlJoin( baseUrl , doc[s+1:e] ) )
+                    res.append( urlParser.urlJoin( urlParser.getDomainPath(httpResponse.getURL()) , doc[s+1:e] ) )
                     doc = doc[e:]
             '''
             om.out.debug('Relative URLs found using regex:')
@@ -78,7 +78,7 @@ class sgmlParser(abstractParser, SGMLParser):
             '''
             return res
         
-        relativeURLs = findRelative( document )
+        relativeURLs = findRelative( httpResponse.getBody() )
         self._urlsInDocument.extend( relativeURLs )
         ########
         # End
@@ -98,7 +98,7 @@ class sgmlParser(abstractParser, SGMLParser):
         self._normalizeMarkup = normalizeMarkup
         
         # Now we are ready to work
-        self._preParse( document )
+        self._preParse( httpResponse.getBody() )
         
     def _preParse(self, document):
         '''

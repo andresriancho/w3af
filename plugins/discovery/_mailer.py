@@ -196,13 +196,17 @@ class _mailer(baseDiscoveryPlugin, smtpd.SMTPServer):
             kb.kb.append( self, 'ipAddress', i )
         
         # Find URLs in the email
-        docuParser = dpc.getDocumentParserFor( httpRes.getBody(), httpRes.getURL() )
-        for ru in docuParser.getReferences():
-            QSObject = urlParser.getQueryString( ru )
-            qsr = httpQsRequest()
-            qsr.setURI( ru )
-            qsr.setDc( QSObject )
-            self._newFuzzableRequests.append( qsr )
+        try:
+            docuParser = dpc.getDocumentParserFor( httpRes )
+        except w3afException:
+            pass
+        else:
+            for ru in docuParser.getReferences():
+                QSObject = urlParser.getQueryString( ru )
+                qsr = httpQsRequest()
+                qsr.setURI( ru )
+                qsr.setDc( QSObject )
+                self._newFuzzableRequests.append( qsr )
 
     def _fillEmail( self, fuzzableRequest ):
         # smartFill the Dc.

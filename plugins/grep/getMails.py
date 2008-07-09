@@ -29,7 +29,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
-from core.data.getResponseType import *
+from core.controllers.w3afException import w3afException
 
 class getMails(baseGrepPlugin):
     '''
@@ -45,24 +45,27 @@ class getMails(baseGrepPlugin):
         
         # Modified when I added the pdfParser
         #if isTextOrHtml(response.getHeaders()):
-        
-        dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
-        mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
-        
-        for m in mails:
-            wasSent = self._wasSent( request, m )
-            alreadyReported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
-            if not wasSent and not alreadyReported:
-                i = info.info()
-                i.setURL( response.getURL() )
-                i.setId( response.id )
-                i.setName(m)
-                i.setDesc( 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"' )
-                i['mail'] = m
-                i['user'] = m.split('@')[0]
+        try:
+            dp = dpCache.dpc.getDocumentParserFor( response )
+        except w3afException:
+            pass
+        else:
+            mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
             
-                kb.kb.append( 'mails', 'mails', i )
-                kb.kb.append( self, 'mails', i )
+            for m in mails:
+                wasSent = self._wasSent( request, m )
+                alreadyReported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
+                if not wasSent and not alreadyReported:
+                    i = info.info()
+                    i.setURL( response.getURL() )
+                    i.setId( response.id )
+                    i.setName(m)
+                    i.setDesc( 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"' )
+                    i['mail'] = m
+                    i['user'] = m.split('@')[0]
+                
+                    kb.kb.append( 'mails', 'mails', i )
+                    kb.kb.append( self, 'mails', i )
     
     def setOptions( self, OptionList ):
         pass

@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.htmlParser as htmlParser
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
@@ -32,6 +31,7 @@ import core.data.kb.vuln as vuln
 import core.data.parsers.dpCache as dpCache
 from core.data.parsers.urlParser import *
 import re
+from core.controllers.w3afException import w3afException
 
 class strangeParameters(baseGrepPlugin):
     '''
@@ -45,32 +45,36 @@ class strangeParameters(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
-        references = dp.getReferences()
-        
-        for ref in references:
-            qs = getQueryString( ref )
-            for param in qs:
-                if self._isStrange( param, qs[param] ):
-                    i = info.info()
-                    i.setName('Strange parameter')
-                    i.setURI( ref )
-                    i.setId( response.id )
-                    i.setDesc( 'The URI : ' +  i.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is quite odd.' )
-                    i.setVar( param )
-                    i['parameterValue'] = qs[param]
-                    kb.kb.append( self , 'strangeParameters' , i )
-                if self._isSQL( param, qs[param] ): 
-                    # To find this kind of vulns
-                    # http://thedailywtf.com/Articles/Oklahoma-Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-Sensitive-Data.aspx
-                    v = vuln.vuln()
-                    v.setName('Parameter has SQL sentence')
-                    v.setURI( ref )
-                    v.setId( response.id )
-                    v.setDesc( 'The URI : ' +  v.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is a SQL sentence.' )
-                    v.setVar( param )
-                    v['parameterValue'] = qs[param]
-                    kb.kb.append( self , 'strangeParameters' , v )
+        try:
+            dp = dpCache.dpc.getDocumentParserFor( response )
+        except w3afException:
+            pass
+        else:
+            references = dp.getReferences()
+            
+            for ref in references:
+                qs = getQueryString( ref )
+                for param in qs:
+                    if self._isStrange( param, qs[param] ):
+                        i = info.info()
+                        i.setName('Strange parameter')
+                        i.setURI( ref )
+                        i.setId( response.id )
+                        i.setDesc( 'The URI : ' +  i.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is quite odd.' )
+                        i.setVar( param )
+                        i['parameterValue'] = qs[param]
+                        kb.kb.append( self , 'strangeParameters' , i )
+                    if self._isSQL( param, qs[param] ): 
+                        # To find this kind of vulns
+                        # http://thedailywtf.com/Articles/Oklahoma-Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-Sensitive-Data.aspx
+                        v = vuln.vuln()
+                        v.setName('Parameter has SQL sentence')
+                        v.setURI( ref )
+                        v.setId( response.id )
+                        v.setDesc( 'The URI : ' +  v.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is a SQL sentence.' )
+                        v.setVar( param )
+                        v['parameterValue'] = qs[param]
+                        kb.kb.append( self , 'strangeParameters' , v )
     
     def setOptions( self, OptionList ):
         pass

@@ -91,10 +91,14 @@ class findvhost(baseDiscoveryPlugin):
         originalResponse = self._urlOpener.GET( fuzzableRequest.getURI() , useCache=True )
         baseResponse = self._urlOpener.GET( baseURL , useCache=True )
         
-        dp = dpCache.dpc.getDocumentParserFor( originalResponse.getBody(), baseURL )
+        try:
+            dp = dpCache.dpc.getDocumentParserFor( originalResponse )
+        except w3afException:
+            # Failed to find a suitable parser for the document
+            return []
         
         # Set the non existant response
-        nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
+        nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
         self._nonExistantResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': nonExistant } )
 
         # FIXME: Review this logic... I think its flawed

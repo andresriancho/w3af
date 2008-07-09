@@ -29,6 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 from core.data.getResponseType import *
+from core.controllers.w3afException import w3afException
 import re
 
 class findComments(baseGrepPlugin):
@@ -54,7 +55,12 @@ class findComments(baseGrepPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
             
             if not self.is404( response ) or self._search404:
-                dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
+                
+                try:
+                    dp = dpCache.dpc.getDocumentParserFor( response )
+                except w3afException:
+                    return
+
                 commentList = dp.getComments()
                 
                 for comment in commentList:

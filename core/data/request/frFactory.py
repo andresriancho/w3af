@@ -73,9 +73,15 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
     if addSelf:
         res.append( qsr )
     
-    # forms
-    dp = dpCache.dpc.getDocumentParserFor( httpResponse.getBody(), httpResponse.getRedirURI() )
-    formList = dp.getForms()
+    # Try to find forms in the document
+    formList = []
+    try:
+        dp = dpCache.dpc.getDocumentParserFor( httpResponse )
+    except w3afException:
+        # Failed to find a suitable parser for the document
+        pass
+    else:
+        formList = dp.getForms()
     
     if len( formList ) == 0:
         

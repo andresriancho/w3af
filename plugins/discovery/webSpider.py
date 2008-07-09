@@ -94,27 +94,32 @@ class webSpider(baseDiscoveryPlugin):
             # a image file, its useless and consumes cpu power.
             if isTextOrHtml( response.getHeaders() ) or isPDF( response.getHeaders() ):
                 originalURL = response.getRedirURI()
-                documentParser = dpCache.dpc.getDocumentParserFor( response.getBody(), originalURL )
-                references = documentParser.getReferences()
-                
-                # I also want to analyze all directories, if the URL I just fetched is:
-                # http://localhost/a/b/c/f00.php I want to GET:
-                # http://localhost/a/b/c/
-                # http://localhost/a/b/
-                # http://localhost/a/
-                # http://localhost/
-                # And analyze the responses...
-                directories = urlParser.getDirectories( response.getURL() )
-                references.extend( directories )
-                references = list( set( references ) )
-                
-                # Filter the URL's according to the configured regular expressions
-                references = [ r for r in references if self._compiledFollowRe.match( r ) ]
-                references = [ r for r in references if not self._compiledIgnoreRe.match( r )]
-                
-                for ref in references:
-                    targs = (ref, fuzzableRequest, originalURL)
-                    self._tm.startFunction( target=self._verifyReferences, args=targs, ownerObj=self )
+                try:
+                    documentParser = dpCache.dpc.getDocumentParserFor( response )
+                except w3afException:
+                    # Failed to find a suitable document parser.
+                    pass
+                else:
+                    references = documentParser.getReferences()
+                    
+                    # I also want to analyze all directories, if the URL I just fetched is:
+                    # http://localhost/a/b/c/f00.php I want to GET:
+                    # http://localhost/a/b/c/
+                    # http://localhost/a/b/
+                    # http://localhost/a/
+                    # http://localhost/
+                    # And analyze the responses...
+                    directories = urlParser.getDirectories( response.getURL() )
+                    references.extend( directories )
+                    references = list( set( references ) )
+                    
+                    # Filter the URL's according to the configured regular expressions
+                    references = [ r for r in references if self._compiledFollowRe.match( r ) ]
+                    references = [ r for r in references if not self._compiledIgnoreRe.match( r )]
+                    
+                    for ref in references:
+                        targs = (ref, fuzzableRequest, originalURL)
+                        self._tm.startFunction( target=self._verifyReferences, args=targs, ownerObj=self )
             
         self._tm.join( self )
             

@@ -97,10 +97,15 @@ class globalRedirect(baseAuditPlugin):
             return True
         else:
             # Test for http-equiv redirects
-            dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
-            for redir in dp.getMetaRedir():
-                if redir.count( self._testSite ):
-                    return True
+            try:
+                dp = dpCache.dpc.getDocumentParserFor( response )
+            except w3afException:
+                # Failed to find a suitable parser for the document
+                return False
+            else:
+                for redir in dp.getMetaRedir():
+                    if redir.count( self._testSite ):
+                        return True
                     
             # Test for javascript redirects
             # These are some redirects I found on google :

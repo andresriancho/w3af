@@ -100,16 +100,20 @@ class findCaptchas(baseDiscoveryPlugin):
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
             # Do not use dpCache here, it's no good.
-            #dp = dpCache.dpc.getDocumentParserFor( response.getBody(), fr.getURI() )
-            dp = documentParser.documentParser( response.getBody(), fr.getURI() )
-            imageList = dp.getReferencesOfTag('img')
-            for imgSrc in imageList:
-                try:
-                    imageResponse = self._urlOpener.GET( imgSrc, useCache=False )
-                except:
-                    om.out.debug('Failed to retrieve the image for finding captchas.')
-                else:
-                    res[ imgSrc ] = sha.new(imageResponse.getBody()).hexdigest()
+            #dp = dpCache.dpc.getDocumentParserFor( response )
+            try:
+                dp = documentParser.documentParser( response )
+            except w3afException:
+                pass
+            else:
+                imageList = dp.getReferencesOfTag('img')
+                for imgSrc in imageList:
+                    try:
+                        imageResponse = self._urlOpener.GET( imgSrc, useCache=False )
+                    except:
+                        om.out.debug('Failed to retrieve the image for finding captchas.')
+                    else:
+                        res[ imgSrc ] = sha.new(imageResponse.getBody()).hexdigest()
         
         return res
 

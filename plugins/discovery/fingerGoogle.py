@@ -142,19 +142,25 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         Parses the HTML and adds the mail addresses to the kb.
         '''
-        dp = dpCache.dpc.getDocumentParserFor( response.getBody(), 'http://'+self._domainRoot+'/' )
-        for mail in dp.getEmails( self._domainRoot ):
-            if mail not in self._accounts:
-                self._accounts.append( mail )
-                
-                i = info.info()
-                i.setName(mail)
-                i.setURL( response.getURI() )
-                i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + response.getURI() + '"' )
-                i['mail'] = mail
-                i['user'] = mail.split('@')[0]
-                kb.kb.append( 'mails', 'mails', i )
-                kb.kb.append( self, 'mails', i )
+        try:
+            dp = dpCache.dpc.getDocumentParserFor( response )
+        except w3afException:
+            # Failed to find a suitable parser for the document
+            pass
+        else:
+            # Search for email addresses
+            for mail in dp.getEmails( self._domainRoot ):
+                if mail not in self._accounts:
+                    self._accounts.append( mail )
+                    
+                    i = info.info()
+                    i.setName(mail)
+                    i.setURL( response.getURI() )
+                    i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + response.getURI() + '"' )
+                    i['mail'] = mail
+                    i['user'] = mail.split('@')[0]
+                    kb.kb.append( 'mails', 'mails', i )
+                    kb.kb.append( self, 'mails', i )
     
     def getOptions( self ):
         '''

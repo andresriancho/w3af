@@ -40,16 +40,16 @@ class dpCache:
         self._cache = LRU(100)
         self._LRULock = thread.allocate_lock()
         
-    def getDocumentParserFor( self, document, baseUrl, normalizeMarkup=True ):
+    def getDocumentParserFor( self, httpResponse, normalizeMarkup=True ):
         res = None
-        hash = md5.new(document).hexdigest()
+        hash = md5.new( httpResponse.getBody() ).hexdigest()
         
         with self._LRULock:
             if hash in self._cache:
                 res = self._cache[ hash ]
             else:
                 # Create a new instance of dp, add it to the cache
-                res = documentParser.documentParser( document, baseUrl, normalizeMarkup )
+                res = documentParser.documentParser( httpResponse, normalizeMarkup )
                 self._cache[ hash ] = res
             
             return res

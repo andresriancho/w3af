@@ -99,19 +99,27 @@ class fingerMSN(baseDiscoveryPlugin):
             om.out.debug('xUrllib exception raised while fetching page in fingerMSN, error description: ' + str(w3) )
             self._newAccounts = []
         else:
-            dp = dpCache.dpc.getDocumentParserFor( response.getBody(), 'http://'+self._domainRoot+'/' )
-            for mail in dp.getEmails( self._domainRoot ):
-                if mail not in self._accounts:
-                    self._accounts.append( mail )
+            
+            # I have the response object!
+            try:
+                dp = dpCache.dpc.getDocumentParserFor( response )
+            except w3afException:
+                # Failed to find a suitable parser for the document
+                pass
+            else:
+                # Search for email addresses
+                for mail in dp.getEmails( self._domainRoot ):
+                    if mail not in self._accounts:
+                        self._accounts.append( mail )
 
-                    i = info.info()
-                    i.setURL( msnPage.URL )
-                    i.setName( mail )
-                    i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + msnPage.URL + '"' )
-                    i['mail'] = mail
-                    i['user'] = mail.split('@')[0]
-                    kb.kb.append( 'mails', 'mails', i )
-                    kb.kb.append( 'fingerMSN', 'mails', i )
+                        i = info.info()
+                        i.setURL( msnPage.URL )
+                        i.setName( mail )
+                        i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + msnPage.URL + '"' )
+                        i['mail'] = mail
+                        i['user'] = mail.split('@')[0]
+                        kb.kb.append( 'mails', 'mails', i )
+                        kb.kb.append( 'fingerMSN', 'mails', i )
     
     def getOptions( self ):
         '''

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.controllers.w3afException import w3afException
 
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdfParser as pdfParser
@@ -38,20 +39,27 @@ class documentParser:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, document, baseUrl, normalizeMarkup=True):
-        if self._isWML( document ):
-            self._parser = wmlParser.wmlParser( document, baseUrl )
-        elif self._isPDF( document ):
-            self._parser = pdfParser.pdfParser( document, baseUrl )
+    def __init__(self, httpResponse, normalizeMarkup=True):
+        if self._isWML( httpResponse ):
+            self._parser = wmlParser.wmlParser( httpResponse )
+        elif self._isPDF( httpResponse ):
+            self._parser = pdfParser.pdfParser( httpResponse )
+        elif self._isHTMLorText( httpResponse ):
+            self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
         else:
-            self._parser = htmlParser.htmlParser( document, baseUrl, normalizeMarkup)
+            raise w3afException('There is no parser for "' + httpResponse.getURL() + '".')
     
-    def _isPDF( self, document ):
+    def _isPDF( self, httpResponse ):
         '''
-        @document: A string that contains a document of type HTML / PDF / WML / etc.
+        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a PDF document.
         '''
-        if document.startswith('%PDF-'):
+        document = httpResponse.getBody()
+        
+        headerMatch = self._getContentType(httpResponse) == 'application/pdf'
+        contentMatch = document.startswith('%PDF-') and document.endswith('%%EOF')
+        
+        if headerMatch or contentMatch:
             try:
                 pyPdf.PdfFileReader( StringIO.StringIO(document) )
             except Exception:
@@ -61,17 +69,42 @@ class documentParser:
         else:
             return False
             
-    def _isWML( self, document ):
+    def _isWML( self, httpResponse ):
         '''
-        @document: A string that contains a document of type HTML / PDF / WML / etc.
+        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a WML document.
         '''
-        if re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE) and\
-        re.search('<html', document, re.IGNORECASE):
+        document = httpResponse.getBody()
+        
+        headerMatch = self._getContentType(httpResponse) == 'text/vnd.wap.wml'
+        contentMatch = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)
+        
+        if headerMatch or contentMatch:
             return True
         else:
             return False
-            
+    
+    def _isHTMLorText( self, httpResponse ):
+        '''
+        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
+        @return: True if the document parameter is a string that contains a HTML or Text document.
+        '''
+        headerMatch = 'text/' in self._getContentType(httpResponse)
+        
+        if headerMatch:
+            return True
+        else:
+            return False
+    
+    def _getContentType(self, httpResponse):
+        '''
+        @return: The value of the content-type header; '' if not found.
+        '''
+        for i in httpResponse.getHeaders():
+            if i.lower() == 'content-type':
+                return httpResponse.getHeaders()[i]
+        return ''
+    
     def getForms( self ):
         '''
         @return: A list of forms.

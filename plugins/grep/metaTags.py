@@ -29,6 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.getResponseType import *
+from core.controllers.w3afException import w3afException
 
 class metaTags(baseGrepPlugin):
     '''
@@ -65,24 +66,28 @@ class metaTags(baseGrepPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
             
             if not self.is404( response ):
-                dp = dpCache.dpc.getDocumentParserFor( response.getBody(), response.getURL() )
-                metaTagList = dp.getMetaTags()
-                
-                for tag in metaTagList:
-                    name = self._findName( tag )
-                    for attr in tag:
-                        for word in self._interestingWords:
-                            if ( word in attr[0].lower() ) or ( word in attr[1].lower() ):
-                                # The atribute is interesting!
-                                
-                                # Init the map if necesary
-                                if response.getURL() not in self._alreadyReportedInteresting:
-                                    self._alreadyReportedInteresting[ response.getURL() ] = []
+                try:
+                    dp = dpCache.dpc.getDocumentParserFor( response )
+                except w3afException:
+                    pass
+                else:
+                    metaTagList = dp.getMetaTags()
+                    
+                    for tag in metaTagList:
+                        name = self._findName( tag )
+                        for attr in tag:
+                            for word in self._interestingWords:
+                                if ( word in attr[0].lower() ) or ( word in attr[1].lower() ):
+                                    # The atribute is interesting!
                                     
-                                self._alreadyReportedInteresting[ response.getURL() ].append( (name,attr[1]) )
-                            else:
-                                # The attribute ain't interesting
-                                pass
+                                    # Init the map if necesary
+                                    if response.getURL() not in self._alreadyReportedInteresting:
+                                        self._alreadyReportedInteresting[ response.getURL() ] = []
+                                        
+                                    self._alreadyReportedInteresting[ response.getURL() ].append( (name,attr[1]) )
+                                else:
+                                    # The attribute ain't interesting
+                                    pass
     
     def _findName( self, tag ):
         '''
