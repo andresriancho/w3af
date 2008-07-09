@@ -303,7 +303,6 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
         # Create the list store
         liststore = gtk.ListStore(str)
         optselected = opt.getValueStr()
-        print "creating combo with option:", optselected
         indselected = 0
         for i,option in enumerate(opt.getComboOptions()):
             if optselected == option:

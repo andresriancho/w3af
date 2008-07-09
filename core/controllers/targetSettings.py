@@ -69,11 +69,21 @@ class targetSettings(configurable):
         
         d2 = 'Target operating system.'
         h2 = 'This setting is here to enhance w3af performance.'
-        o2 = comboOption('targetOS', self._operatingSystems, d2, 'combo', help=h2)
+        # This list "hack" has to be done becase the default value is the one
+        # in the first position on the list
+        tmpList = self._operatingSystems[:]
+        tmpList.remove( cf.cf.getData('targetOS') )
+        tmpList.insert(0, cf.cf.getData('targetOS') )
+        o2 = comboOption('targetOS', tmpList, d2, 'combo', help=h2)
 
         d3 = 'Target programming framework.'
         h3 = 'This setting is here to enhance w3af performance.'
-        o3 = comboOption('targetFramework', self._programmingFrameworks, d3, 'combo', help=h3)
+        # This list "hack" has to be done becase the default value is the one
+        # in the first position on the list
+        tmpList = self._programmingFrameworks[:]
+        tmpList.remove( cf.cf.getData('targetFramework') )
+        tmpList.insert(0, cf.cf.getData('targetFramework') )
+        o3 = comboOption('targetFramework', tmpList, d3, 'combo', help=h3)
         
         ol = optionList()
         ol.add(o1)
@@ -89,7 +99,7 @@ class targetSettings(configurable):
         
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         targetUrls = optionsMap['target'].getValue()
         
         for targetUrl in targetUrls:

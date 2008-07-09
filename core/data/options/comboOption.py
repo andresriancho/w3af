@@ -58,7 +58,6 @@ class comboOption(option):
         @parameter value: The value parameter is set by the user interface, which for example sends 'a' when the
         options of the combobox are '1','2','a','f'
         '''
-        print "setting in combo:", value
         if value in self._comboOptions:
             self._value = value
         else:
