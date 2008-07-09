@@ -29,6 +29,6 @@ back
 
 start
 
-assert len(kb.kb.getData('mails','mails')) == 6
+assert len(kb.kb.getData('mails','mails')) == 1
 
 exit
