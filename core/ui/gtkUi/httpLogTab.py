@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk
 import gobject
+import pango
+
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 import re
@@ -122,6 +124,7 @@ class httpLogTab(gtk.HPaned):
     
     def __add_columns(self, treeview):
         model = treeview.get_model()
+        
         # column for id's
         column = gtk.TreeViewColumn('ID', gtk.CellRendererText(),text=0)
         column.set_sort_column_id(0)
@@ -133,8 +136,11 @@ class httpLogTab(gtk.HPaned):
         treeview.append_column(column)
 
         # column for URI
-        column = gtk.TreeViewColumn('URI', gtk.CellRendererText(),text=2)
+        renderer = gtk.CellRendererText()
+        renderer.set_property( 'ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('URI' + ' ' * 155, renderer,text=2)
         column.set_sort_column_id(2)
+        column.set_resizable(True)
         treeview.append_column(column)
         
         # column for Code
@@ -145,6 +151,7 @@ class httpLogTab(gtk.HPaned):
         # column for response message
         column = gtk.TreeViewColumn('Message', gtk.CellRendererText(),text=4)
         column.set_sort_column_id(4)
+        column.set_resizable(True)
         treeview.append_column(column)
         
         # column for response time
