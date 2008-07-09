@@ -75,33 +75,25 @@ class FuzzyGenerator(object):
         return it
         
     def _dissect(self, txt):
+        # remove the double $$
+        txt = txt.replace("$$", "\x00")
+
         # separate sane texts from what is to be replaced 
         toreplace = REPP.findall(txt)
         saneparts = REPP.split(txt)
         
         # transform $$ for $
-        self._doubleMark(toreplace, saneparts)
+        for i,part in enumerate(toreplace):
+            if "\x00" in part:
+                toreplace[i] = part.replace("\x00", "$")
+        for i,part in enumerate(saneparts):
+            if "\x00" in part:
+                saneparts[i] = part.replace("\x00", "$")
 
         # extract border $
         toreplace = [x[1:-1] for x in toreplace]
     
         return toreplace, saneparts
-
-    def _doubleMark(self, torp, sane):
-        '''Replaces $$ for $, modifying the lists in place.'''
-        # check if anything to do
-        if "$$" not in torp:
-            return
-
-        # get the position, and delete the mark
-        pos = torp.index("$$")
-        del torp[pos]
-
-        # join the two sane elements
-        sane[pos:pos+2] = [sane[pos] + "$" + sane[pos+1]]
-
-        # check again, recursively
-        self._doubleMark(torp, sane)
 
     def generate(self):
         for x in self._possib(self.genr1):
@@ -160,5 +152,12 @@ if __name__ == "__main__":
         def test_noniterable(self):
             self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $3$ bb")
             self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $[].extend([1,2])$ bb")
+
+        def test_inside_doubledollar(self):
+            fg = FuzzyGenerator("GET http://localhost/$['aaa$$b', 'b$$ccc']$ HTTP/1.0", "")
+            self.assertEqual(list(fg.generate()), [
+                ("GET http://localhost/aaa$b HTTP/1.0", ""),
+                ("GET http://localhost/b$ccc HTTP/1.0", ""),
+                                ])
 
     unittest.main()
