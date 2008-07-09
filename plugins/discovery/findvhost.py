@@ -105,10 +105,6 @@ class findvhost(baseDiscoveryPlugin):
         for link in dp.getReferences():
             domain = urlParser.getDomain( link )
             
-            # This line fixes bug #2012798 ; mainly I failed to realize that
-            # the domain is actually the netlocation with domain:port for some cases
-            domain = domain.split(':')[0]
-            
             try:
                 socket.gethostbyname( domain )
             except:

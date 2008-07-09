@@ -145,7 +145,7 @@ def urlJoin( baseurl , relative ):
                 relativeURL = relativeURL[4:]
             return relativeURL
         
-        baseURL = getProtocol( url ) + '://'+ getDomain( url ) + '/'
+        baseURL = getProtocol( url ) + '://'+ getNetLocation( url ) + '/'
         relativeURL = getPathQs( url )
         
         if len( getDirectories( baseURL ) ) == 1:
@@ -172,8 +172,23 @@ def urlJoin( baseurl , relative ):
     
 def getDomain( url ):
     '''
+    Input: http://localhost:4444/f00_bar.html
+    Output: localhost
+
     @parameter url: The url to parse.
     @return: Returns the domain name for the url.
+    '''
+    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    domain = domain.split(':')[0]
+    return domain
+    
+def getNetLocation( url ):
+    '''
+    Input: http://localhost:4444/f00_bar.html
+    Output: localhost:4444
+    
+    @parameter url: The url to parse.
+    @return: Returns the net location for the url.
     '''
     scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
     return domain
@@ -286,7 +301,7 @@ def getRootDomain( input ):
     else:
         url = input
         
-    domain = getDomain( url )
+    domain = getNetLocation( url )
     
     if re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?', domain ):
         # An IP address has no "root domain" 

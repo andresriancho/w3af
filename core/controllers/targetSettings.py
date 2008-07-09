@@ -111,7 +111,7 @@ class targetSettings(configurable):
         
         # Now we perform a check to see if the user has specified more than one target
         # domain, for example: "http://google.com, http://yahoo.com".
-        domainList = [urlParser.getDomain(targetURL) for targetURL in targetUrls]
+        domainList = [urlParser.getNetLocation(targetURL) for targetURL in targetUrls]
         domainList = list( set(domainList) )
         if len( domainList ) > 1:
             msg = 'You specified more than one target domain: ' + ','.join(domainList)
@@ -120,11 +120,11 @@ class targetSettings(configurable):
         
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', targetUrls)
-        cf.cf.save('targetDomains', [ urlParser.getDomain( i ) for i in targetUrls ] )
+        cf.cf.save('targetDomains', [ urlParser.getNetLocation( i ) for i in targetUrls ] )
         cf.cf.save('baseURLs', [ urlParser.baseUrl( i ) for i in targetUrls ] )
         
         if targetUrls:
-            sessName = [ urlParser.getDomain(x) for x in targetUrls ]
+            sessName = [ urlParser.getNetLocation(x) for x in targetUrls ]
             sessName = '-'.join(sessName)
         else:
             sessName = 'noTarget'

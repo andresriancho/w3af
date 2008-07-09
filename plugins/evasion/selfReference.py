@@ -49,7 +49,7 @@ class selfReference(baseEvasionPlugin):
         
         # Finally, we set all the mutants to the request in order to return it
         url = urlParser.getProtocol( request.get_full_url() )
-        url += '://' + urlParser.getDomain( request.get_full_url() ) + path        
+        url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path        
         new_req = urllib2.Request( url , request.get_data(), request.headers, request.get_origin_req_host() )
         
         return request

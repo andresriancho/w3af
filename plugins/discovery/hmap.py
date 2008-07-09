@@ -88,7 +88,7 @@ class hmap(baseDiscoveryPlugin):
                 ssl = False
                 url = fuzzableRequest.getURL()
                 protocol = urlParser.getProtocol( url )
-                server = urlParser.getDomain( url )
+                server = urlParser.getNetLocation( url )
                 if server.count(':'):
                     port = int( server.split(':')[1] )
                     server = server.split(':')[0]

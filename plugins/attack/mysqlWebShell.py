@@ -268,14 +268,25 @@ class mysqlWebShell(baseAttackPlugin):
         @return: A list of common and default document roots
         '''
         res = []
+        
+        domain = urlParser.getDomain( vuln.getURL() )
+        rootDomain = urlParser.getRootDomain( vuln.getURL() )
+        
         res.append('/var/www/')
         res.append('/var/www/html/')
         res.append('/var/www/htdocs/')
-        res.append('/var/www/' + urlParser.getDomain( vuln.getURL() ) )
-        res.append( '/home/' + urlParser.getDomain( vuln.getURL() ) )
-        res.append( '/home/' + urlParser.getDomain( vuln.getURL() ) + '/www/' )
-        res.append( '/home/' + urlParser.getDomain( vuln.getURL() ) + '/html/' )
-        res.append( '/home/' + urlParser.getDomain( vuln.getURL() ) + '/htdocs/' )
+        res.append('/var/www/' +  domain )
+        res.append( '/home/' + domain )
+        res.append( '/home/' + domain + '/www/' )
+        res.append( '/home/' + domain + '/html/' )
+        res.append( '/home/' + domain + '/htdocs/' )
+        
+        if domain != rootDomain:
+            res.append( '/home/' + rootDomain )
+            res.append( '/home/' + rootDomain + '/www/' )
+            res.append( '/home/' + rootDomain + '/html/' )
+            res.append( '/home/' + rootDomain + '/htdocs/' )
+        
         return res
         
     def _rexec( self, command ):
