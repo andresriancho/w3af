@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import pygtk, gtk, gobject
+import pygtk, gtk, gobject, threading
 from . import reqResViewer, helpers, entries, fuzzygen
 from .clusterView import clusterCellWindow
 from core.controllers.w3afException import *
@@ -33,6 +33,25 @@ User-Agent: w3af.sf.net
 Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
+
+class ThreadedURLImpact(threading.Thread):
+    def __init__(self, w3af, tsup, tlow, event):
+        self.tsup = tsup
+        self.tlow = tlow
+        self.w3af = w3af
+        self.event = event
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            self.httpResp = self.w3af.uriOpener.sendRawRequest(self.tsup, self.tlow)
+            self.ok = True
+        except Exception, e:
+            self.exception = e
+            self.ok = False
+        finally:
+            self.event.set()
+            
 
 class ManualRequests(entries.RememberingWindow):
     '''Infrastructure to generate manual HTTP requests.
@@ -74,25 +93,40 @@ class ManualRequests(entries.RememberingWindow):
         '''
         (tsup, tlow) = self.reqresp.request.getBothTexts()
 
-        try:
-            httpResp = helpers.coreWrap(self.w3af.uriOpener.sendRawRequest, tsup, tlow)
-        except w3afException:
-            self.reqresp.response.clearPanes()
-            self.reqresp.response.set_sensitive(False)
-            return
-        except w3afMustStopException, mse:
-            self.reqresp.response.clearPanes()
-            self.reqresp.response.set_sensitive(False)
-            # Let the user know ahout the problem, this was a serious one.
-            msg = "Stopped sending requests because " + str(mse)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-            opt = dlg.run()
-            dlg.destroy()
-            return
+        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+        busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
+        busy.show()
+        while gtk.events_pending():
+            gtk.main_iteration()
 
-        # activate and show
-        self.reqresp.response.set_sensitive(True)
-        self.reqresp.response.showObject(httpResp)
+        # threading game
+        event = threading.Event()
+        impact = ThreadedURLImpact(self.w3af, tsup, tlow, event)
+        def impactDone():
+            if not event.isSet():
+                return True
+            busy.destroy()
+
+            if impact.ok:
+                self.reqresp.response.set_sensitive(True)
+                self.reqresp.response.showObject(impact.httpResp)
+            else:
+                if impact.exception.__class__ == w3afException:
+                    msg = str(impact.exception)
+                elif impact.exception.__class__ == w3afMustStopException:
+                    msg = "Stopped sending requests because " + str(impact.exception)
+                else:
+                    raise impact.exception
+                self.reqresp.response.clearPanes()
+                self.reqresp.response.set_sensitive(False)
+                gtk.gdk.threads_enter()
+                helpers.friendlyException(msg)
+                gtk.gdk.threads_leave()
+
+            return False
+
+        impact.start()
+        gobject.timeout_add(200, impactDone)
 
 
 class PreviewWindow(entries.RememberingWindow):
@@ -154,6 +188,7 @@ For example, you can do:
     The content of a file: $[l.strip() for l in file('input.txt').readlines()]$
 </tt>
 """
+
 
 class FuzzyRequests(entries.RememberingWindow):
     '''Infrastructure to generate fuzzy HTTP requests.

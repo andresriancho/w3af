@@ -201,6 +201,16 @@ class RegistThread(threading.Thread):
 
 #-- the following is for core wrapping
 
+def friendlyException(message):
+    '''Creates the dialog showing the message.
+
+    @param message: text received in the friendly exception.
+    '''
+    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+    dlg.run()
+    dlg.destroy()
+    return
+
 class _Wrapper(object):
     '''Wraps a call to the Core.
 
@@ -218,18 +228,8 @@ class _Wrapper(object):
             return func(*args, **kwargs)
         except Exception, err:
             if isinstance(err, self.friendly):
-                self._friendlyException(str(err))
+                friendlyException(str(err))
             raise
-
-    def _friendlyException(self, message):
-        '''Creates the dialog showing the message.
-
-        @param message: text received in the friendly exception.
-        '''
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
-        dlg.run()
-        dlg.destroy()
-        return
 
 coreWrap = _Wrapper(w3afException)
 
