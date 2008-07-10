@@ -83,6 +83,7 @@ class sgmlParser(abstractParser, SGMLParser):
         relativeURLs = findRelative( httpResponse.getBody() )
         self._urlsInDocument.extend( relativeURLs )
         self._urlsInDocument = [ urlParser.normalizeURL(i) for i in self._urlsInDocument ]
+        self._urlsInDocument = list(set(self._urlsInDocument))
                 
         ########
         # End

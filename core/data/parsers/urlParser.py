@@ -135,7 +135,7 @@ def normalizeURL( url ):
         elif path.startswith('/../'):
             path = path[3:]
     
-    fixedURL = urlJoin( baseURL, path )
+    fixedURL = _uparse.urljoin( baseURL, path )
     return fixedURL
 
 def urlJoin( baseurl , relative ):
