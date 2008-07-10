@@ -132,14 +132,16 @@ class pathDisclosure(baseGrepPlugin):
         '''
         Checks if the pathDisclosureString was sent in the request.
         '''
-        sentData = ''
         url = urllib.unquote( request.getURI() )
 
+        sentData = ''
         if request.getMethod().upper() == 'POST':
             sentData = request.getData()
             # This fixes bug #2012748
             if sentData != None:
                 sentData = urllib.unquote( sentData )
+            else:
+                sentData = ''
         
         # This fixes bug #1990018
         # False positive with http://localhost/home/f00.html and
