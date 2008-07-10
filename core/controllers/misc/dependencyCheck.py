@@ -84,3 +84,8 @@ def dependencyCheck():
         print 'You have to install pyOpenSSL library. On Debian based distributions: apt-get install python-pyopenssl'
         sys.exit( 1 )
 
+    try:
+        import sqlite3
+    except:
+        print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-sqlite2'
+        sys.exit( 1 )
