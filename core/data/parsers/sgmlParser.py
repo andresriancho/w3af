@@ -82,6 +82,8 @@ class sgmlParser(abstractParser, SGMLParser):
         
         relativeURLs = findRelative( httpResponse.getBody() )
         self._urlsInDocument.extend( relativeURLs )
+        self._urlsInDocument = [ urlParser.normalizeURL(i) for i in self._urlsInDocument ]
+                
         ########
         # End
         ########
@@ -213,6 +215,7 @@ class sgmlParser(abstractParser, SGMLParser):
                             if attr[1][0] != '#':
                                 url = urlParser.urlJoin( self._baseUrl ,attr[1] )
                                 url = self._decodeString(url)
+                                url = urlParser.normalizeURL( url )
                                 if url not in self._urlsInDocument:
                                     self._urlsInDocument.append( url )
                                     self._urlsInDocumentWithTags.append( (tag.lower(), url) )
