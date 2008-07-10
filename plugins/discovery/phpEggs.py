@@ -58,6 +58,8 @@ class phpEggs(baseDiscoveryPlugin):
 
         self._eggDB['4.4.4'] = [('K,\x92@\x9c\xf0\xbc\xf4e\xd1\x99\xe9:\x15\xac?', 'Easter Egg'),   ('\x11\xb9\xcf\xe3\x06\x00O\xceY\x9a\x1f\x81\x80\xb6\x12f', 'PHP Logo'),    ('\xbe\xd7\xce\xff\t\xe9fm\x96\xfd\xf3Q\x8a\xf7\x8e\x0e', 'PHP Credits'),   ('\xda-\xae\x87\xb1f\xb7p\x9d\xbd@a7[t\xcb', 'Zend Logo')]
         self._eggDB['4.4.7'] = [('K,\x92@\x9c\xf0\xbc\xf4e\xd1\x99\xe9:\x15\xac?', 'Easter Egg'),   ('i*\x87\xca,QR<\x17\xf5\x97%6S\xc7w', 'PHP Credits'),  ('\x11\xb9\xcf\xe3\x06\x00O\xceY\x9a\x1f\x81\x80\xb6\x12f', 'PHP Logo'),    ('\xda-\xae\x87\xb1f\xb7p\x9d\xbd@a7[t\xcb', 'Zend Logo')]
+
+        self._eggDB['4.4.7'] = [('K,\x92@\x9c\xf0\xbc\xf4e\xd1\x99\xe9:\x15\xac?', 'Easter Egg'), ('\x11\xb9\xcf\xe3\x06\x00O\xceY\x9a\x1f\x81\x80\xb6\x12f', 'PHP Logo'), ('r\xb7\xad`O\xe16/\x1e\x8b\xf4\xf6\xd8\rN\xdc', 'PHP Credits'), ('\xda-\xae\x87\xb1f\xb7p\x9d\xbd@a7[t\xcb', 'Zend Logo')]
         
         self._eggDB['5.1.1'] =[('U\x18\xa0*\xf4\x14x\xcf\xc4\x92\xc90\xac\xe4Z\xe5', 'PHP Credits'), ('\x8a\xc5\xa6\x86\x13[\x926d\xf6O\xe7\x18\xeaU\xcd', 'PHP Logo'), ('vu\xf1\xd0\x1c\x92\x7f\x9ejGR\xcf\x18#E\xa2', 'Zend Logo')]
         self._eggDB['5.1.6'] = [('\x82\xfa-j\xa1_\x97\x1f}\xad\xef\xe4\xf2\xac \xe3', 'PHP Credits'),   ('\xc4\x8b\x07\x89\x99\x17\xdf\xb5\xd5\x91\x03 \x07\x04\x1a\xe3', 'PHP Logo'),  ('vu\xf1\xd0\x1c\x92\x7f\x9ejGR\xcf\x18#E\xa2', 'Zend Logo')]   
@@ -107,7 +109,7 @@ class phpEggs(baseDiscoveryPlugin):
                             i = info.info()
                             i.setName('PHP Egg')
                             i.setURL( eggURL )
-                            i.setDesc( 'The PHP framework running on the remote server has an easter egg, example URL: '+  eggURL )
+                            i.setDesc( 'The PHP framework running on the remote server has a "'+ desc +'" easter egg, example URL: '+  eggURL )
                             kb.kb.append( self, 'eggs', i )
                             om.out.information( i.getDesc() )
                             
@@ -162,7 +164,7 @@ class phpEggs(baseDiscoveryPlugin):
                 except:
                     pass
                 om.out.information('The PHP version could not be identified using PHP eggs, please send this signature and the \
-PHP version to the w3af project. Signature: self._eggDB[\''+ version + '\'] =' + str(list(cmpSet)) )
+PHP version to the w3af project. Signature: self._eggDB[\''+ version + '\'] = ' + str(list(cmpSet)) )
                 om.out.information('The serverHeader plugin reported this PHP version: ' + version )
             
     def _getEggs( self ):
