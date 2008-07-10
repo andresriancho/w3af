@@ -89,7 +89,7 @@ class info(dict):
         
     def getDesc( self ):
         if self._id != None and self._id != 0:
-            if not self._desc.endswith('.'):
+            if not self._desc.strip().endswith('.'):
                 self._desc += '.'
             return self._desc + ' This information was found in the request with id ' + str(self._id) + '.'
         else:

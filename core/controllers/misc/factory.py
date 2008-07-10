@@ -43,8 +43,8 @@ def factory(moduleName, *args):
     '''
     try:
         __import__(moduleName)
-    except ImportError:
-        raise w3afException('Unknown plugin "'+ moduleName + '"')
+    except ImportError,  ie:
+        raise w3afException('There was an error while importing '+ moduleName + ': "' + str(ie) + '".')
     except Exception, e:
         raise w3afException('Error while loading plugin "'+ moduleName + '". Exception: ' + str(e) )
     else:
