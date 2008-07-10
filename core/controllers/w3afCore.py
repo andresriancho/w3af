@@ -537,9 +537,9 @@ class w3afCore:
                         om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
                     else:
                         self._setRunningPlugin( plugin.getName() )
+                        self._setCurrentFuzzableRequest( fr )
                         try:
-                            self._setCurrentFuzzableRequest( fr )
-                        
+                            # Perform the actual work
                             pluginResult = plugin.discover( fr )
                         except w3afException,e:
                             om.out.error( str(e) )
@@ -551,8 +551,14 @@ class w3afCore:
                             tm.join( plugin )
                         else:
                             tm.join( plugin )
-                            for i in pluginResult:
-                                fuzzableRequestList.append( (i, plugin.getName()) )
+                            
+                            # We don't trust plugins, i'll only work if this is a list
+                            # or something else that is iterable
+                            if hasattr(pluginResult,'__iter__'):
+                                for i in pluginResult:
+                                    fuzzableRequestList.append( (i, plugin.getName()) )
+                                    
+                                    
                         om.out.debug('Ending plugin: ' + plugin.getName() )
                     #end-if fr.iterationNumber > cf.cf.getData('maxDepth'):
                 #end-for
