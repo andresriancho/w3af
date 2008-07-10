@@ -77,7 +77,7 @@ class privateIP(baseGrepPlugin):
                 if res:
                     for match in res.groups():
                         # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                        if match != urlParser.getDomain(response.getURL()):
+                        if match != urlParser.getDomain(response.getURL()) and not self._wasSent( request, match ):
 
                             v = vuln.vuln()
                             v.setURL( response.getURL() )

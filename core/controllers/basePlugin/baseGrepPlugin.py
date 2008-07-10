@@ -65,26 +65,33 @@ class baseGrepPlugin(basePlugin):
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )
             pass
     
-    def _wasSent( self, request, theWord ):
+    def _wasSent( self, request, somethingInteresting ):
         '''
-        Checks if the theWord was sent in the request, this is mainly used to avoid false positives.
+        Checks if the somethingInteresting was sent in the request.
         '''
-        
+        url = urllib.unquote( request.getURI() )
+
+        sentData = ''
         if request.getMethod().upper() == 'POST':
             sentData = request.getData()
-            if sentData == None:
-                sentData = ''
-            else:
+            # This fixes bug #2012748
+            if sentData != None:
                 sentData = urllib.unquote( sentData )
-        else:
-            url = urllib.unquote( request.getURL() )
-            dp = urlParser.getDomainPath( url )
-            sentData = url.replace( dp, '' )
+            else:
+                sentData = ''
         
-        if sentData.count( theWord ):
+        # This fixes bug #1990018
+        # False positive with http://localhost/home/f00.html and
+        # /home/user/
+        path = urlParser.getPath(url)
+        if somethingInteresting[0:5] in path:
             return True
-        else:
-            return False
+
+        if url.count( somethingInteresting ) or sentData.count( somethingInteresting ):
+            return True
+
+        # I didn't sent the somethingInteresting in any way
+        return False
             
     def _testResponse( self, request, response ):
         '''

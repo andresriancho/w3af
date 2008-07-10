@@ -126,35 +126,6 @@ class pathDisclosure(baseGrepPlugin):
             if not match:
                 kb.kb.save( self, 'listFiles', [] ) 
                 kb.kb.save( self, 'listPaths', [] ) 
-
-            
-    def _wasSent( self, request, pathDisclosureString ):
-        '''
-        Checks if the pathDisclosureString was sent in the request.
-        '''
-        url = urllib.unquote( request.getURI() )
-
-        sentData = ''
-        if request.getMethod().upper() == 'POST':
-            sentData = request.getData()
-            # This fixes bug #2012748
-            if sentData != None:
-                sentData = urllib.unquote( sentData )
-            else:
-                sentData = ''
-        
-        # This fixes bug #1990018
-        # False positive with http://localhost/home/f00.html and
-        # /home/user/
-        path = urlParser.getPath(url)
-        if pathDisclosureString[0:5] in path:
-            return True
-
-        if url.count( pathDisclosureString ) or sentData.count( pathDisclosureString ):
-            return True
-
-        # I didn't sent the pathDisclosureString in any way
-        return False
         
     def setOptions( self, OptionList ):
         pass

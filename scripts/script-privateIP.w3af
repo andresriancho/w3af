@@ -1,0 +1,34 @@
+# grep demo for finding private ip addresses
+
+plugins
+
+output console,textFile
+output
+
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+
+output config console
+set verbose False
+back
+
+grep privateIP
+grep
+
+#discovery webSpider
+#discovery config webSpider
+#set onlyForward True
+#back
+back
+
+target
+set target http://localhost/w3af/grepPlugins/index.html
+back
+
+start
+
+assert len(kb.kb.getData('privateIP','html')) == 1
+
+exit
