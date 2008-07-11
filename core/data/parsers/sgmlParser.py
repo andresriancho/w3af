@@ -56,32 +56,6 @@ class sgmlParser(abstractParser, SGMLParser):
         #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
         urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
         self._urlsInDocument = [ self._decodeString(x[0]) for x in re.findall(urlRegex, httpResponse.getBody() ) ]
-        
-        # Now detect some relative URL's ( also using regexs )
-        def findRelative( doc ):
-            res = []
-            relRegex = re.compile('[^\/\/]([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,4}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
-            
-            while True:
-                regex_match = relRegex.search( doc )
-                if not regex_match:
-                    break
-                else:
-                    s, e = regex_match.span()
-                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
-                    url = urlParser.urlJoin( domainPath , doc[s+1:e] )
-                    url = self._decodeString(url)
-                    res.append( url )
-                    doc = doc[e:]
-            '''
-            om.out.debug('Relative URLs found using regex:')
-            for u in res:
-                om.out.debug('- ' + u )
-            '''
-            return res
-        
-        relativeURLs = findRelative( httpResponse.getBody() )
-        self._urlsInDocument.extend( relativeURLs )
         self._urlsInDocument = [ urlParser.normalizeURL(i) for i in self._urlsInDocument ]
         self._urlsInDocument = list(set(self._urlsInDocument))
                 
