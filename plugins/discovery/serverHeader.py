@@ -27,6 +27,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 from core.controllers.w3afException import w3afRunOnce
 
 class serverHeader(baseDiscoveryPlugin):
@@ -70,14 +71,29 @@ class serverHeader(baseDiscoveryPlugin):
                         server = response.getHeaders()[h]
                 
                 if server != '':
-                    # Output the results
-                    om.out.information('The Server header for this HTTP server is: ' + server )
-                    # Save the results in the KB so that other plugins can use this information
-                    kb.kb.save( self , 'server' , server )
+                    i = info.info()
+                    i.setName('Server header')
+                    i.setDesc('The server header for the remote web server is: ' + server )
+                    i['server'] = server
+                    om.out.information( i.getDesc() )
+                    
+                    # Save the results in the KB so the user can look at it
+                    kb.kb.append( self, 'server', i )
+                    
+                    # Also save this for easy internal use
+                    # other plugins can use this information
+                    kb.kb.save( self , 'serverString' , server )
+                    
                 else:
                     # strange !
-                    om.out.information('The remote HTTP Server ommited the "Server" header in its response.' )
-    
+                    i = info.info()
+                    i.setName('Omited server header')
+                    i.setDesc('The remote HTTP Server ommited the "server" header in it\'s response.' )
+                    om.out.information( i.getDesc() )
+                    
+                    # Save the results in the KB so that other plugins can use this information
+                    kb.kb.append( self, 'omitedHeader', i )
+                    
                 if self._execOneTime:
                     self._exec = False
                 
@@ -97,15 +113,24 @@ class serverHeader(baseDiscoveryPlugin):
                 for d in [ 'ASPNET','POWERED']:
                     if d in h.upper() or h.upper() in d :
                         poweredBy = response.getHeaders()[h]
-                        # Output the results
-                        om.out.information( h + ' header for this HTTP server is: ' + poweredBy )
+                        
+                        i = info.info()
+                        i.setName('Powered by')
+                        i.setDesc(h + ' header for this HTTP server is: ' + poweredBy )
+                        i['poweredBy'] = poweredBy
+                        om.out.information( i.getDesc() )
+                        
                         # Save the results in the KB so that other plugins can use this information
                         
                         # Before knowing that some servers may return more than one poweredby header I had:
                         #kb.kb.save( self , 'poweredBy' , poweredBy )
                         # But I have seen an IIS server with PHP that returns both the ASP.NET and the PHP headers
-                        if poweredBy not in kb.kb.getData( 'serverHeader', 'poweredBy' ):
-                            kb.kb.append( self , 'poweredBy' , poweredBy )
+                        poweredByInKb = [ i['poweredBy'] for i in kb.kb.getData( 'serverHeader', 'poweredBy' ) ]
+                        if poweredBy not in poweredByInKb:
+                            kb.kb.append( self , 'poweredBy' , i )
+                        
+                        # Also save this for easy internal use
+                        kb.kb.append( self , 'poweredByString' , poweredBy )
                         
                         if self._execOneTime:
                             self._xpowered = False          
@@ -114,8 +139,8 @@ class serverHeader(baseDiscoveryPlugin):
                 # not as strange as the one above, this is because of a config or simply
                 # cause I requested a static "html" file.
                 # I will save the server header as the poweredBy, its the best choice I have right now
-                if kb.kb.getData( 'serverHeader' , 'server' ) not in kb.kb.getData( 'serverHeader', 'poweredBy' ):
-                    kb.kb.append( self , 'poweredBy' , kb.kb.getData( 'serverHeader' , 'server' ) )
+                if kb.kb.getData( 'serverHeader' , 'serverString' ) not in kb.kb.getData( 'serverHeader', 'poweredByString' ):
+                    kb.kb.append( self , 'poweredByString' , kb.kb.getData( 'serverHeader' , 'serverString' ) )
     
     def getOptions( self ):
         '''

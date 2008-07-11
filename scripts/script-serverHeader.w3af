@@ -20,7 +20,7 @@ back
 
 start
 
-assert 'Apache' in kb.kb.getData('serverHeader', 'server')
-assert 'PHP' in kb.kb.getData('serverHeader','poweredBy')[0]
+assert 'Apache' in kb.kb.getData('serverHeader', 'serverString')
+assert 'PHP' in kb.kb.getData('serverHeader','poweredByString')[0]
 
 exit

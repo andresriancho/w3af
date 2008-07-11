@@ -247,13 +247,13 @@ class pykto(baseDiscoveryPlugin):
         '''
         # Try to get the server type from hmap
         # it is the most accurate way to do it but hmap plugin
-        if kb.kb.getData( 'hmap' , 'server' ) != []:
-            kbServer = kb.kb.getData( 'hmap' , 'server' )
+        if kb.kb.getData( 'hmap' , 'serverString' ) != []:
+            kbServer = kb.kb.getData( 'hmap' , 'serverString' )
             self._source = 'hmap'
-        elif kb.kb.getData( 'serverHeader' , 'server' ) != []:
+        elif kb.kb.getData( 'serverHeader' , 'serverString' ) != []:
             # Get the server type from the serverHeader plugin. It gets this info
             # by reading the "server" header of request responses.
-            kbServer = kb.kb.getData( 'serverHeader' , 'server' )
+            kbServer = kb.kb.getData( 'serverHeader' , 'serverString' )
             self._source = 'serverHeader'
         else:
             self._source = 'not available'

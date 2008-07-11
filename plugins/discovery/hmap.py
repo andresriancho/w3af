@@ -102,11 +102,16 @@ class hmap(baseDiscoveryPlugin):
                 results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
                 
                 server = results[0]
-                # Output the results
-                om.out.information('The most accurate fingerprint for this HTTP server is: ' + str(server) )
-
+                
+                i = info.info()
+                i.setName('Webserver Fingerprint')
+                i.setDesc('The most accurate fingerprint for this HTTP server is: ' + str(server))
+                i['server'] = server
+                om.out.information( i.getDesc() )
+                
                 # Save the results in the KB so that other plugins can use this information
-                kb.kb.save( self , 'server' , server )
+                kb.kb.append( self, 'server', i )
+                kb.kb.save( self, 'serverString', i )
                 
                 # Fingerprint file generated
                 if self._genFpF:

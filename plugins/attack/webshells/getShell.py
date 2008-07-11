@@ -44,7 +44,7 @@ def getShell( extension, forceExtension=False ):
         realExtension = extension
         knownFramework.append( (filename, realExtension) )
     else:
-        poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredBy' )
+        poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredByString' )
         filename = ''
         
         shellList = [ x for x in os.listdir( cmdPath ) if x.startswith('cmd') ]

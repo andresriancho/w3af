@@ -156,7 +156,7 @@ class phpEggs(baseDiscoveryPlugin):
 
             if not found:
                 version = 'unknown'
-                poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredBy' )
+                poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredByString' )
                 try:
                     for v in poweredByHeaders:
                         if 'php' in v.lower():
