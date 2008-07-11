@@ -29,7 +29,7 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import socket
+import re
 from core.controllers.w3afException import w3afRunOnce
 
 class detectReverseProxy(baseDiscoveryPlugin):
@@ -43,7 +43,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         self._run = True
         
         # Some internal variables
-        self._proxyHeaderList = ['Via','X-Forwarded-For','Proxy-Connection']
+        self._proxyHeaderList = ['Via','Reverse-Via','X-Forwarded-For','Proxy-Connection']
         
     def discover(self, fuzzableRequest ):
         '''
@@ -62,10 +62,28 @@ class detectReverseProxy(baseDiscoveryPlugin):
                 if self._hasProxyHeaders( response ):
                     self._reportFinding( response )
            
-           # detect using TRACE
-           # only if I wasn't able to do it with GET
+            # detect using TRACE
+            # only if I wasn't able to do it with GET
             if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
                 response = self._urlOpener.TRACE( fuzzableRequest.getURL(), useCache=True )
+                if self._hasProxyContent( response ):
+                    self._reportFinding( response )
+           
+            # detect using TRACK
+            # This is a rather special case that works with ISA server; example follows:
+            # Request:
+            # TRACK http://www.xyz.com.bo/ HTTP/1.1
+            # ...
+            # Response headers:
+            # HTTP/1.1 200 OK
+            # content-length: 99
+            # ...
+            # Response body:
+            # TRACK / HTTP/1.1
+            # Reverse-Via: MUTUN ------> find this!
+            # ....
+            if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
+                response = self._urlOpener.TRACK( fuzzableRequest.getURL(), useCache=True )
                 if self._hasProxyContent( response ):
                     self._reportFinding( response )
                 
@@ -78,6 +96,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
     def _reportFinding( self, response ):
         i = info.info()
         i.setName('Reverse proxy')
+        i.setId( response.getId() )
         i.setURL( response.getURL() )
         i.setDesc( 'The remote web server seems to have a reverse proxy installed.' )
         i.setName('Found reverse proxy')
@@ -98,14 +117,24 @@ class detectReverseProxy(baseDiscoveryPlugin):
                     
     def _hasProxyContent( self, response ):
         '''
-        Performs the analysis of the response of the TRACE command.
+        Performs the analysis of the response of the TRACE and TRACK command.
+        
+        @parameter response: The HTTP response object to analyze
         @return: True if the remote web server has a reverse proxy
         '''
+        responseBody = response.getBody().upper()
+        #remove duplicated spaces from body
+        whitespace = re.compile('\s+')
+        responseBody = re.sub(whitespace, ' ', responseBody)
+        
         for proxyHeader in self._proxyHeaderList:
-            if proxyHeader.upper() + ':' in response.getBody().upper():
-                return True
-            else:
-                return False
+            # Create possible header matches
+            possibleMatches = [proxyHeader.upper() + ':',  proxyHeader.upper() + ' :']
+            for possibleMatch in possibleMatches:
+                if possibleMatch in responseBody:
+                    return True
+                else:
+                    return False
 
     def getOptions( self ):
         '''
