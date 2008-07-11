@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 import core.data.constants.severity as severity
 
 class generic(baseAuditPlugin):
@@ -81,9 +81,9 @@ class generic(baseAuditPlugin):
         Analyze responses; if errorResponse doesn't look like oResponse nor limitResponse, then we have a vuln.
         @return: None
         '''
-        originalToError = difflib.SequenceMatcher( None, oResponse.getBody(), errorResponse.getBody() ).quick_ratio()
-        limitToError = difflib.SequenceMatcher( None, limitResponse.getBody(), errorResponse.getBody() ).quick_ratio() 
-        originalToLimit = difflib.SequenceMatcher( None, limitResponse.getBody(), oResponse.getBody() ).quick_ratio() 
+        originalToError = relative_distance(oResponse.getBody(), errorResponse.getBody() )
+        limitToError = relative_distance( limitResponse.getBody(), errorResponse.getBody() )
+        originalToLimit = relative_distance( limitResponse.getBody(), oResponse.getBody() )
         
         ratio = self._diffRatio + ( 1 - originalToLimit )
         
@@ -98,7 +98,7 @@ class generic(baseAuditPlugin):
             # This removes some false positives
             limitResponse2 = self._getLimitResponse( mutant )
             
-            if difflib.SequenceMatcher( None, limitResponse2.getBody(), limitResponse.getBody() ).ratio() > 1 - self._diffRatio:
+            if relative_distance( limitResponse2.getBody(), limitResponse.getBody() ) > 1 - self._diffRatio:
                 # The two limits are "equal"; It's safe to suppose that we have found the limit here
                 # and that the error string really produced an error
                 v = vuln.vuln( mutant )

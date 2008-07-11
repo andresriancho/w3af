@@ -33,7 +33,7 @@ import plugins.discovery.oHmap.hmap as originalHmap
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 
 class hmap(baseDiscoveryPlugin):
     '''
@@ -131,7 +131,7 @@ class hmap(baseDiscoveryPlugin):
             originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
             self._foundOS = True
             
-            if difflib.SequenceMatcher( None, originalResponse.getBody(), windowsResponse.getBody() ).ratio() > 0.98:
+            if relative_distance( originalResponse.getBody(), windowsResponse.getBody() ) > 0.98:
                 i = info.info()
                 i.setName('Operating system')
                 i.setURL( windowsResponse.getURL() )

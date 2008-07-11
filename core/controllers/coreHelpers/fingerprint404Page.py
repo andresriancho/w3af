@@ -26,7 +26,7 @@ import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import *
 from core.controllers.w3afException import *
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 
 class fingerprint404Page:
     '''
@@ -85,7 +85,7 @@ class fingerprint404Page:
         if len( tmp ):
             # All items in this directory should be the same...
             responseBody = tmp[0]
-            ratio = difflib.SequenceMatcher( None, responseBody, httpResponse.getBody() ).ratio()
+            ratio = relative_distance( responseBody, httpResponse.getBody() )
             if ratio > 0.90:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory). diff ratio = ' + str(ratio) )
                 return True
@@ -113,7 +113,7 @@ class fingerprint404Page:
         if len( tmp ):
             # All items in this directory/extension combination should be the same...
             responseBody = tmp[0]
-            ratio = difflib.SequenceMatcher( None, responseBody, httpResponse.getBody() ).ratio()
+            ratio = relative_distance( responseBody, httpResponse.getBody() )
             if ratio > 0.90:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). diff ratio =' + str(ratio) )            
                 return True
@@ -176,7 +176,7 @@ class fingerprint404Page:
                 else:
                     return False
             elif kb.kb.getData('error404page', 'trustBody'):
-                ratio = difflib.SequenceMatcher( None, httpResponse.getBody(), kb.kb.getData('error404page', 'trustBody') ).ratio()
+                ratio = relative_distance( httpResponse.getBody(), kb.kb.getData('error404page', 'trustBody') )
                 if ratio > 0.90:
                     om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). diff ratio =' + str(ratio) )
                     return True
@@ -198,7 +198,7 @@ class fingerprint404Page:
         def areEqual( tmp ):
             for respBody1 in tmp:
                 for respBody2 in tmp:
-                    if difflib.SequenceMatcher( None, respBody1, respBody2 ).ratio() > 0.90:
+                    if relative_distance( respBody1, respBody2 ) > 0.90:
                         return True
             return False
         

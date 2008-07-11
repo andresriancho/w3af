@@ -32,7 +32,7 @@ import core.data.kb.vuln as vuln
 from core.data.url.xUrllib import xUrllib
 from core.controllers.bruteforce.bruteforcer import bruteforcer
 from core.data.dc.form import form as form
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.constants.severity as severity
 
@@ -129,8 +129,8 @@ class formAuthBrute(baseBruteforcePlugin):
         @return: True if the responseBody matches the previously created responses that
         are stored in self._loginFailedResultList.
         '''
-        ratio0 = difflib.SequenceMatcher( None, responseBody, self._loginFailedResultList[0]).ratio()
-        ratio1 = difflib.SequenceMatcher( None, responseBody, self._loginFailedResultList[1]).ratio()
+        ratio0 = relative_distance( responseBody, self._loginFailedResultList[0])
+        ratio1 = relative_distance(responseBody, self._loginFailedResultList[1])
         
         if ratio0 > 0.9 or ratio1 > 0.9:
             return True

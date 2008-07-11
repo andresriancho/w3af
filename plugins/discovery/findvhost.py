@@ -33,7 +33,7 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import *
 import core.data.parsers.dpCache as dpCache
 import socket
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.constants.severity as severity
 
@@ -124,8 +124,8 @@ class findvhost(baseDiscoveryPlugin):
                 except w3afException, w:
                     pass
                 else:
-                    if difflib.SequenceMatcher( None, vhostResponse.getBody(), baseResponse.getBody() ).ratio() < 0.35 and \
-                    difflib.SequenceMatcher( None, vhostResponse.getBody(), self._nonExistantResponse.getBody() ).ratio() < 0.35:
+                    if relative_distance( vhostResponse.getBody(), baseResponse.getBody() ) < 0.35 and \
+                    relative_distance( vhostResponse.getBody(), self._nonExistantResponse.getBody() ) < 0.35:
                         # If they are *really* different (not just different by some chars) I may have found
                         # something interesting!
                         res.append( (domain, vhostResponse.id) )
@@ -184,8 +184,8 @@ class findvhost(baseDiscoveryPlugin):
                 pass
             else:
                 # If they are *really* different (not just different by some chars) 
-                if difflib.SequenceMatcher( None, vhostResponse.getBody(), originalResponse.getBody() ).ratio() < 0.35 and \
-                difflib.SequenceMatcher( None, vhostResponse.getBody(), self._nonExistantResponse.getBody() ).ratio() < 0.35:
+                if relative_distance( vhostResponse.getBody(), originalResponse.getBody() ) < 0.35 and \
+                relative_distance( vhostResponse.getBody(), self._nonExistantResponse.getBody() ) < 0.35:
                     res.append( (commonVhost, vhostResponse.id) )
         
         return res

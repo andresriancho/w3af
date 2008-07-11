@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.info as info
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 
 class userDir(baseDiscoveryPlugin):
     '''
@@ -113,7 +113,7 @@ class userDir(baseDiscoveryPlugin):
             path = mutant.replace( urlParser.baseUrl( mutant ) , '' )
             responseBody = response.getBody().replace( path, '')
             
-            ratio = difflib.SequenceMatcher( None, responseBody, self._nonExistant ).ratio()
+            ratio = relative_distance( responseBody, self._nonExistant )
             if ratio < 0.7:
                 
                 # Avoid duplicates

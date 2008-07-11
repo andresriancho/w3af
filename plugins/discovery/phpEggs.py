@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.info as info
-import difflib
+from core.controllers.misc.levenshtein import relative_distance
 import core.data.parsers.urlParser as urlParser
 import md5
 
@@ -104,7 +104,7 @@ class phpEggs(baseDiscoveryPlugin):
                     except KeyboardInterrupt,e:
                         raise e
                     else:
-                        if difflib.SequenceMatcher( None, originalResponse.getBody(), response.getBody() ).ratio() < 0.1:
+                        if relative_distance( originalResponse.getBody(), response.getBody() ) < 0.1:
                             # Found an egg, save it.
                             i = info.info()
                             i.setName('PHP Egg')
