@@ -44,9 +44,15 @@ def dumpMemoryUsage():
         pass
     else:
         hpy = guppy.hpy()
-        heapDumpStr = hpy.heap()
-        if isinstance( heapDumpStr, guppy.heapy.UniSet.IdentitySetMulti ):
-            om.out.debug( str(heapDumpStr) )
+        h = hpy.heap()
+
+        byrcs = h.byrcs
+        
+        if isinstance( byrcs, guppy.heapy.UniSet.IdentitySetMulti ):
+            om.out.debug( str(byrcs) )
+            for i in xrange(10):
+                om.out.debug( str(byrcs[i].byvia) )
+            #om.out.debug( 'The one:' + repr(byrcs[0].byid[0].theone) )
         
         if DEBUGREFERENCES:
             for objMemoryUsage in gc.get_objects():

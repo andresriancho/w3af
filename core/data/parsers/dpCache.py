@@ -37,7 +37,7 @@ class dpCache:
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        self._cache = LRU(100)
+        self._cache = LRU(30)
         self._LRULock = thread.allocate_lock()
         
     def getDocumentParserFor( self, httpResponse, normalizeMarkup=True ):

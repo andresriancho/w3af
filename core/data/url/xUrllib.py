@@ -43,6 +43,7 @@ import urllib
 import time
 import os
 from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.memoryUsage import dumpMemoryUsage
 
 # for better debugging of handlers
 import traceback
@@ -64,10 +65,11 @@ class xUrllib:
         self._opener = None
         self._cacheOpener = None
         self._timeAnalysis = None
+        self._memoryUsageCounter = 0
+        
         # For error handling
         self._lastRequestFailed = False
         self._consecutiveErrorCount = 0
-            
         self._errorCount = {}
         
         self._dnsCache()
@@ -92,7 +94,21 @@ class xUrllib:
         Called when the user wants to finish a scan.
         '''
         self._mustStop = True
+    
+    def _callBeforeSend(self):
+        '''
+        This is a method that is called before every request is sent. I'm using it as
+        a hook implement:
+            - The pause/stop feature
+            - Memory debugging features
+        '''
+        self._sleepIfPausedDieIfStopped()
         
+        self._memoryUsageCounter += 1
+        if self._memoryUsageCounter == 20:
+            dumpMemoryUsage()
+            self._memoryUsageCounter = 0
+    
     def _sleepIfPausedDieIfStopped( self ):
         '''
         This method sleeps until self._paused is False.
@@ -397,8 +413,9 @@ class xUrllib:
                 raise sizeExceeded( msg )
             
     def _send( self , req , useCache=False, useMultipart=False, grepResult=True ):
-        # This is for the pause and stop feature
-        self._sleepIfPausedDieIfStopped()
+        # This is the place where I hook the pause and stop feature
+        # And some other things like memory usage debugging.
+        self._callBeforeSend()
 
         # Sanitize the URL
         self._checkURI( req )
