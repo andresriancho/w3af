@@ -87,7 +87,7 @@ class fingerprint404Page:
             responseBody = tmp[0]
             ratio = relative_distance( responseBody, httpResponse.getBody() )
             if ratio > 0.90:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory). diff ratio = ' + str(ratio) )
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + '0.90' )
                 return True
             else:
                 return False
@@ -115,7 +115,7 @@ class fingerprint404Page:
             responseBody = tmp[0]
             ratio = relative_distance( responseBody, httpResponse.getBody() )
             if ratio > 0.90:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). diff ratio =' + str(ratio) )            
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.90' )
                 return True
             else:
                 return False
@@ -178,7 +178,7 @@ class fingerprint404Page:
             elif kb.kb.getData('error404page', 'trustBody'):
                 ratio = relative_distance( httpResponse.getBody(), kb.kb.getData('error404page', 'trustBody') )
                 if ratio > 0.90:
-                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). diff ratio =' + str(ratio) )
+                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.90' )
                     return True
                 else:
                     return False

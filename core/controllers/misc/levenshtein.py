@@ -50,4 +50,7 @@ def relative_distance(a_str, b_str):
     r = ((longer - dist) / longer) * (shorter / longer)
     r = 100 - r * 100
     
+    r = r / 100
+    r = 1 - r
+    
     return r
