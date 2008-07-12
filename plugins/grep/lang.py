@@ -119,7 +119,7 @@ class lang(baseGrepPlugin):
     def end( self ):
         if self._exec:
             # I never got executed !
-            om.out.information('Could not determine the language of the site. Enable discovery.webSpider and try again.')
+            om.out.information('Could not determine the language of the site.')
     
     def setOptions( self, OptionList ):
         '''
