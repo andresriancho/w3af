@@ -103,9 +103,11 @@ class targetSettings(configurable):
         targetUrls = optionsMap['target'].getValue()
         
         for targetUrl in targetUrls:
-            if not targetUrl.count('file://') and not targetUrl.count('http://')\
-            and not targetUrl.count('https://'):
-                raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file).' )
+            aFile = targetUrl.count('file://') and len(targetUrl) > len('file://')
+            aHTTP = targetUrl.count('http://') and len(targetUrl) > len('http://')
+            aHTTPS = targetUrl.count('https://') and len(targetUrl) > len('https://')
+            if not aFile and not aHTTP and not aHTTPS:
+                raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file) and a domain/IP.' )
         
         for targetUrl in targetUrls:
             if targetUrl.count('file://'):
