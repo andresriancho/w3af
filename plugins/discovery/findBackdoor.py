@@ -31,6 +31,8 @@ import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.controllers.w3afException import w3afException
+
 class findBackdoor(baseDiscoveryPlugin):
     '''
     Find web backdoors and web shells.
@@ -61,19 +63,23 @@ class findBackdoor(baseDiscoveryPlugin):
             # Search for the web shells
             for webShellFilename in self._getWebShells():
                 webShellUrl = urlParser.urlJoin(  dp , webShellFilename )
-                response = self._urlOpener.GET( webShellUrl, useCache=True )
-        
-                if not self.is404( response ):
-                    v = vuln.vuln()
-                    v.setId( response.id )
-                    v.setName( 'Possible web backdoor' )
-                    v.setSeverity(severity.HIGH)
-                    v.setURL( response.getURL() )
-                    v.setDesc( 'A web backdoor was found at: ' + v.getURL() + ' ; this could indicate that your server was hacked.' )
-                    kb.kb.append( self, 'backdoors', v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                    
-                    fuzzableRequestsToReturn.extend( self._createFuzzableRequests( response ) )
+                
+                try:
+                    response = self._urlOpener.GET( webShellUrl, useCache=True )
+                except w3afException,  w3:
+                    om.out.debug('Failed to GET webshell:' + webShellUrl)
+                else:
+                    if not self.is404( response ):
+                        v = vuln.vuln()
+                        v.setId( response.id )
+                        v.setName( 'Possible web backdoor' )
+                        v.setSeverity(severity.HIGH)
+                        v.setURL( response.getURL() )
+                        v.setDesc( 'A web backdoor was found at: ' + v.getURL() + ' ; this could indicate that your server was hacked.' )
+                        kb.kb.append( self, 'backdoors', v )
+                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                        
+                        fuzzableRequestsToReturn.extend( self._createFuzzableRequests( response ) )
                     
         return fuzzableRequestsToReturn
     

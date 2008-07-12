@@ -15,7 +15,7 @@ discovery
 
 back
 target
-set target http://localhost/w3af/backdoors/f00.html
+set target http://localhost/w3af/findBackdoor/
 back
 start
 

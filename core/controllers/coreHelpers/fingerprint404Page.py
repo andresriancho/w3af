@@ -48,11 +48,11 @@ class fingerprint404Page:
 
     def  _add404Knowledge( self, httpResponse ):
         '''
-        Creates the regular expression and saves it to the kb.
+        Creates a (response, extension) tuple and saves it in the self._404pageList.
         '''
         domainPath = urlParser.getDomainPath( httpResponse.getURL() )
         try:
-            response, randAlNumFile, extension = self._generate404( httpResponse.getURL() )
+            response, extension = self._generate404( httpResponse.getURL() )
         except w3afException, w3:
             om.out.debug('w3afException in _generate404:' + str(w3) )
             raise w3
@@ -72,14 +72,14 @@ class fingerprint404Page:
                 self._reported = True
             
             #om.out.debug('The 404 page for "'+domainPath+'" is : "'+response.getBody()+'".')
-            self._404pageList.append( (response, randAlNumFile, extension) )
+            self._404pageList.append( (response, extension) )
     
     def _byDirectory( self, httpResponse ):
         '''
         @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
         in _404pageList regarding the directory.
         '''
-        tmp = [ response.getBody() for (response, randAlNumFile, extension) in self._404pageList if \
+        tmp = [ response.getBody() for (response, extension) in self._404pageList if \
         urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL())]
         
         if len( tmp ):
@@ -106,7 +106,7 @@ class fingerprint404Page:
         @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
         in _404pageList regarding the directory AND the file extension.
         '''
-        tmp = [ response.getBody() for (response, randAlNumFile, extension) in self._404pageList if \
+        tmp = [ response.getBody() for (response,extension) in self._404pageList if \
         urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL()) and \
         (urlParser.getExtension(httpResponse.getURL()) == '' or urlParser.getExtension(httpResponse.getURL()) == extension)]
         
@@ -187,22 +187,43 @@ class fingerprint404Page:
                 return self._byDirectoryAndExtension( httpResponse )
             
     def _analyzeData( self ):
-        # Check if all are 404
-        tmp = [ (response, randAlNumFile, extension) for (response, randAlNumFile, extension) in self._404pageList if response.getCode() == 404 ]
+        # Check if all 404 responses are really HTTP 404
+        tmp = [ (response, extension) for (response, extension) in self._404pageList if response.getCode() == 404 ]
         if len(tmp) == len(self._404pageList):
             om.out.debug('The remote web site uses 404 as 404.')
             kb.kb.save('error404page', 'trust404', True)
             return
             
         # Check if the 404 error message body is the same for all directories
-        def areEqual( tmp ):
-            for respBody1 in tmp:
-                for respBody2 in tmp:
-                    if relative_distance( respBody1, respBody2 ) > 0.90:
-                        return True
-            return False
+        def areEqual( tmp, exactComparison=False ):
+            for a in tmp:
+                for b in tmp:
+                    
+                    # The first method
+                    if exactComparison == True:
+                        if a != b:
+                            return False
+                    
+                    # The second method
+                    if exactComparison == False:
+                        if relative_distance( a, b ) < 0.90:
+                            # If one is different, then we return false.
+                            return False
+                        
+            return True
         
-        tmp = [ response.getBody() for (response, randAlNumFile, extension) in self._404pageList ]
+        # Now I check if all responses have the same extension (which is bad for the analysis)
+        # If they all have the same extension, I'll create a new one with a different extension
+        extensionList = [ extension for (response, extension) in self._404pageList ]
+        if areEqual( extensionList, exactComparison=True ):
+            responseCopy = response.copy()
+            responseURL = response.getURL()
+            extension = urlParser.getExtension( responseURL )
+            fakedURL = responseURL[0:len(responseURL)-len(extension)] + createRandAlpha(3)
+            responseCopy.setURL(fakedURL)
+            self._add404Knowledge(responseCopy)
+        
+        tmp = [ response.getBody() for (response, extension) in self._404pageList ]
         if areEqual( tmp ):
             om.out.debug('The remote web site uses always the same body for all 404 responses.')
             kb.kb.save('error404page', 'trustBody', tmp[0] )
@@ -218,10 +239,13 @@ class fingerprint404Page:
         # Get the filename extension and create a 404 for it
         extension = urlParser.getExtension( url )
         domainPath = urlParser.getDomainPath( url )
-        if not extension:
-            extension = 'html'
         
-        randAlNumFile = createRandAlNum( 11 ) + '.' + extension
+        if not extension:
+            randAlNumFile = createRandAlNum( 8 )
+            extension = ''
+        else:
+            randAlNumFile = createRandAlNum( 8 ) + '.' + extension
+            
         url404 = urlParser.urlJoin(  domainPath , randAlNumFile )
         
         try:
@@ -234,5 +258,9 @@ class fingerprint404Page:
             raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
-            
-        return response, randAlNumFile, extension
+        
+        responseBody = response.getBody()
+        responseBody.replace(randAlNumFile, '')
+        response.setBody(responseBody)
+        
+        return response, extension

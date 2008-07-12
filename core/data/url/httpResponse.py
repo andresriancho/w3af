@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.data.parsers.urlParser import *
+import copy
 
 STRING_TO_IDENTIFY_ERRORS = '077b8d51aef4843c24efa7ad11ec56c6'
 
@@ -191,3 +192,5 @@ class httpResponse:
             strRes += header + ': ' + self._headers[ header ] + '\n'
         return strRes
         
+    def copy( self ):
+        return copy.deepcopy( self )
