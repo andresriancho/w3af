@@ -87,7 +87,7 @@ class pathDisclosure(baseGrepPlugin):
             responseBody = '...<b>Error while processing /home/image.png</b>...'
             return: False
         '''
-        regex_res = re.findall('<.+(["|\']'+pathDisclosureString+'["|\']).*>', responseBody)
+        regex_res = re.findall('<.+?(["|\']'+pathDisclosureString+'["|\']).*?>', responseBody)
         count_res = responseBody.count( pathDisclosureString )
         
         if count_res > len(regex_res):
