@@ -58,7 +58,8 @@ class pathDisclosure(baseGrepPlugin):
                     match = match[:-1]
                     
                     # The if is to avoid false positives
-                    if len(pathDisclosureString) < 80 and not self._wasSent( request, pathDisclosureString ):
+                    if len(match) < 80 and not self._wasSent( request, pathDisclosureString )\
+                    and not self._attrValue( match, htmlString ):
                         
                         v = vuln.vuln()
                         v.setURL( realurl )
@@ -70,7 +71,30 @@ class pathDisclosure(baseGrepPlugin):
                         kb.kb.append( self, 'pathDisclosure', v )
         
         self._updateKBPathList( response.getURL() )
-                        
+    
+    def _attrValue(self, pathDisclosureString, responseBody ):
+        '''
+        This method was created to remove some false positives.
+        
+        @return: True if pathDisclosureString is the value of an attribute inside a tag.
+        
+        Examples:
+            pathDisclosureString = '/home/image.png'
+            responseBody = '....<img src="/home/image.png">...'
+            return: True
+            
+            pathDisclosureString = '/home/image.png'
+            responseBody = '...<b>Error while processing /home/image.png</b>...'
+            return: False
+        '''
+        regex_res = re.findall('<.+(["|\']'+pathDisclosureString+'["|\']).*>', responseBody)
+        count_res = responseBody.count( pathDisclosureString )
+        
+        if count_res > len(regex_res):
+            return False
+        else:
+            return True
+    
     def _updateKBPathList( self, url ):
         '''
         If a path disclosure was found, I can create a list of full paths to all URLs ever visited.
