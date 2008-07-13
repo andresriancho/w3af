@@ -62,6 +62,7 @@ class LogGraph(gtk.DrawingArea):
         self.timeBase = int(time.time() * 1000)
         self.realLeftMargin = MIZQ
         self.gc = None
+        self._redrawGen = None
 
         # schedule the message adding, and go live!
         gobject.timeout_add(500, self.addMessage().next)
@@ -73,15 +74,17 @@ class LogGraph(gtk.DrawingArea):
 
         @returns: True to keep calling it, and False when all it's done.
         '''
-        somethingNew = False
         for mess in self.messages.get():
             if mess is None:
-                if somethingNew and (self.flags() & gtk.MAPPED):
-                    self._redrawAll()
+                # no more new messages
+                if self.flags() & gtk.MAPPED:
+                    if self._redrawGen is None:
+                        self._redrawGen = self._redrawAll()
+                    reset = self._redrawGen.next()
+                    if reset:
+                        self._redrawGen = None
                 yield True
-                somethingNew = False
                 continue
-            somethingNew = True
 
             mmseg = int(mess.getRealTime() * 1000)
             mtype = mess.getType()
@@ -95,21 +98,25 @@ class LogGraph(gtk.DrawingArea):
     def _redrawAll(self):
         if self.gc is None:
             # sorry, not exposed yet...
-            return
-        self.window.clear()
+            yield True
 
-        # let's check if resizing is needed
+        # do we have enough data to start?
+        if len(self.all_messages) < 2:
+            yield True
+
+        self.window.clear()
         (w, h)  = self.window.get_size()
-        if len(self.all_messages) > 2:
-            pan = self.all_messages[-1][0] - self.all_messages[0][0]
+
+        # some size helpers
+        pan = self.all_messages[-1][0] - self.all_messages[0][0]
+        tspan = pan / self.timeGrouping
+        usableWidth = w - MDER - self.realLeftMargin
+        if tspan > usableWidth:
+            self.timeGrouping *= int(tspan / usableWidth) + 1
             tspan = pan / self.timeGrouping
-            usableWidth = w - MDER - self.realLeftMargin
-            if tspan > usableWidth:
-                self.timeGrouping *= int(tspan / usableWidth) + 1
-                tspan = pan / self.timeGrouping
-            elif tspan < usableWidth//2 and self.timeGrouping>1:
-                self.timeGrouping //= 2
-                tspan = pan / self.timeGrouping
+        elif tspan < usableWidth//2 and self.timeGrouping>1:
+            self.timeGrouping //= 2
+            tspan = pan / self.timeGrouping
 
         # real left margin
         txts = ["", "Vulns", "Info", "", "Debug"]
@@ -159,20 +166,29 @@ class LogGraph(gtk.DrawingArea):
         # draw the info
         countingPixel = 0
         pixelQuant = 0
-        for (mmseg, mtype, sever) in self.all_messages:
-            pixel = (mmseg - self.timeBase) // self.timeGrouping
-            posx = self.realLeftMargin + pixel
-            if mtype == "debug":
-                if pixel == countingPixel:
-                    pixelQuant += 1
-                else:
-                    countingPixel = pixel
-                    self._drawItem_debug(posx, pixelQuant)
-                    pixelQuant = 1
-            elif mtype == "information":
-                self._drawItem_info(posx)
-            elif mtype == "vulnerability":
-                self._drawItem_vuln(posx, sever)
+        mesind = 0
+        while True:
+            for (mmseg, mtype, sever) in self.all_messages[mesind:]:
+                mesind += 1
+                pixel = (mmseg - self.timeBase) // self.timeGrouping
+                posx = self.realLeftMargin + pixel
+
+                # if out of bound, restart draw
+                if posx > (w-MDER):
+                    yield True
+
+                if mtype == "debug":
+                    if pixel == countingPixel:
+                        pixelQuant += 1
+                    else:
+                        countingPixel = pixel
+                        self._drawItem_debug(posx, pixelQuant)
+                        pixelQuant = 1
+                elif mtype == "information":
+                    self._drawItem_info(posx)
+                elif mtype == "vulnerability":
+                    self._drawItem_vuln(posx, sever)
+            yield False
 
     def _drawItem_debug(self, posx, quant):
         posy = self.posHorizItems["Debug"] - 1
@@ -202,7 +218,7 @@ class LogGraph(gtk.DrawingArea):
     def area_expose_cb(self, area, event):
         style = self.get_style()
         self.gc = style.fg_gc[gtk.STATE_NORMAL]
-        self._redrawAll()
+        self._redrawGen = self._redrawAll()
         return True
 
     def _calculateXTicks(self, width):
