@@ -105,7 +105,7 @@ class xUrllib:
         self._sleepIfPausedDieIfStopped()
         
         self._memoryUsageCounter += 1
-        if self._memoryUsageCounter == 20:
+        if self._memoryUsageCounter == 2000:
             dumpMemoryUsage()
             self._memoryUsageCounter = 0
     
@@ -245,7 +245,7 @@ class xUrllib:
         '''
         self._init()
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
         
         qs = urlParser.getQueryString( uri )
         if qs:
@@ -264,7 +264,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
             except Exception, e:
                 raise e
         
@@ -280,7 +280,7 @@ class xUrllib:
         '''
         self._init()
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
         
         req = urllib2.Request(uri, data )
         req = self._addHeaders( req, headers )
@@ -290,7 +290,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
             except Exception, e:
                 raise e
         
@@ -348,7 +348,7 @@ class xUrllib:
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( NO_CONTENT, '', {}, uri, uri )
+                    return httpResponse( NO_CONTENT, '', {}, uri, uri, 'No Content' )
             
                 if 'data' in keywords and keywords['data'] != None:
                     req = self.methodRequest( uri, keywords['data'] )
@@ -460,7 +460,7 @@ class xUrllib:
                 info = e.info()
                 geturl = e.geturl()
                 read = self._readRespose( e )
-                httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=e.id, time=time.time() - startTime )
+                httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=e.id, time=time.time() - startTime, msg=e.msg )
                 
                 # Clear the log of failed requests; this request is done!
                 if id(req) in self._errorCount:
@@ -491,19 +491,19 @@ class xUrllib:
                 del self._errorCount[ id(req) ]
             self._incrementGlobalErrorCount()
             
-            return httpResponse( NO_CONTENT, '', {}, originalUrl, originalUrl )
+            return httpResponse( NO_CONTENT, '', {}, originalUrl, originalUrl, msg='No Content' )
         else:
             # Everything ok !
             if not req.get_data():
                 om.out.debug( req.get_method() + ' ' + urllib.unquote_plus( originalUrl ) +' returned HTTP code "' + str(res.code) + '"' )
             else:
                 om.out.debug( req.get_method() + ' ' + originalUrl +' with data: "'+ urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "' + str(res.code) + '"' )
-                
+            
             code = int(res.code)
             info = res.info()
             geturl = res.geturl()
             read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=res.id, time=time.time() - startTime )
+            httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=res.id, time=time.time() - startTime, msg=res.msg )
             
             # Clear the log of failed requests; this request is done!
             if id(req) in self._errorCount:
