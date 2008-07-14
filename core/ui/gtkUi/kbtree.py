@@ -169,27 +169,36 @@ class KBTree(gtk.TreeView):
         '''
         filteredKB = self._filterKB()
 
+        # Note for the following lines: we store the path in the dict, and then
+        # regenerate the iter with that path, to avoid the iter to become invalid
+        # when the tree changes in some way (we may use the iter later to change
+        # the color)
+
         # iterate the first layer, plugin names
         for pluginname, (plugvalues, plugincolor) in filteredKB.items():
             if pluginname in treeholder:
-                (treeplugin, holdplugin) = treeholder[pluginname]
+                (pathplugin, holdplugin) = treeholder[pluginname]
+                treeplugin = treestore.get_iter(pathplugin)
                 # the color can change later!
                 self.treestore[treeplugin][4] = plugincolor
             else:
                 treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor])
                 holdplugin = {}
-                treeholder[pluginname] = (treeplugin, holdplugin)
+                pathplugin = treestore.get_path(treeplugin)
+                treeholder[pluginname] = (pathplugin, holdplugin)
 
             # iterate the second layer, variable names
             for variabname, (variabobjects, variabcolor) in plugvalues.items():
                 if variabname in holdplugin:
-                    (treevariab, holdvariab) = holdplugin[variabname]
+                    (pathvariab, holdvariab) = holdplugin[variabname]
+                    treevariab = treestore.get_iter(pathvariab)
                     # the color can change later!
                     self.treestore[treevariab][4] = variabcolor
                 else:
                     treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor])
                     holdvariab = set()
-                    holdplugin[variabname] = (treevariab, holdvariab)
+                    pathvariab = treestore.get_path(treevariab)
+                    holdplugin[variabname] = (pathvariab, holdvariab)
 
                 # iterate the third layer, the variable objects
                 for name,instance,obtype,severity,color in variabobjects:
