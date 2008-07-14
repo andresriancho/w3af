@@ -44,7 +44,8 @@ class blankBody(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        if response.getBody() == '' and request.getMethod() in ['GET', 'POST']:
+        if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
+        and response.getCode() != 401:
             i = info.info()
             i.setName('Blank body')
             i.setURL( response.getURL() )
