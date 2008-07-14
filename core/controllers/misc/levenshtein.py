@@ -46,7 +46,12 @@ def relative_distance(a_str, b_str):
     
     # make it relative
     longer = float(max((len(a_str), len(b_str))))
-    shorter = float(min((len(a_str), len(b_str))))    
+    shorter = float(min((len(a_str), len(b_str))))
+
+    # Special case
+    if longer == shorter == 0:
+        return 1
+
     r = ((longer - dist) / longer) * (shorter / longer)
     r = 100 - r * 100
     
