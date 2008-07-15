@@ -81,14 +81,14 @@ class clusterCellWindow(entries.RememberingWindow):
         dist_hbox.pack_start( self._distanceLabelNumber )
         dist_hbox.pack_start( distanceNextButton )
         main_vbox.pack_start(dist_hbox, False, False)
-        
-        self._createClusterCellDataWidget()       
-        
+
         # I'm going to store the cl_data_widget inside this scroll window
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         main_vbox.pack_start( self._sw )
+
+        self._createClusterCellDataWidget()       
         
         self.vbox.pack_start(main_vbox)
         self.vbox.pack_start(self._progressHBox)
