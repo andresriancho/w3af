@@ -57,30 +57,28 @@ class gtkOutput(baseOutputPlugin):
     '''
     
     def __init__(self):
-        self.queue = Queue.Queue()
-        kb.kb.save( 'gtkOutput', 'queue' , self.queue )
         baseOutputPlugin.__init__(self)
         
-        sessionName = cf.cf.getData('sessionName')
-        db_name = os.path.join(getHomeDir(), 'sessions', 'db_' + sessionName )
-        
-        try:
-            os.mkdir(os.path.join(getHomeDir() , 'sessions'))
-        except OSError, oe:
-            # [Errno 17] File exists
-            if oe.errno != 17:
-                raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
-            
-        try:
-            os.remove(db_name)
-        except Exception, e:
-            # I get here when the session directory for this db wasn't created
-            # and when the user has no permissions to remove the directory
-            # FIXME: handle those errors!
-            pass
-
-        if kb.kb.getData('gtkOutput', 'db') == []:
+        if not kb.kb.getData('gtkOutput', 'db') == []:
+            # Restore it from the kb
+            self._db = kb.kb.getData('gtkOutput', 'db')
+            self.queue = kb.kb.getData('gtkOutput', 'queue')
+        else:
             # Create the DB object
+            self.queue = Queue.Queue()
+            kb.kb.save( 'gtkOutput', 'queue' , self.queue )
+            
+            sessionName = cf.cf.getData('sessionName')
+            db_name = os.path.join(getHomeDir(), 'sessions', 'db_' + sessionName )
+            
+            # Just in case the directory doesn't exist...
+            try:
+                os.mkdir(os.path.join(getHomeDir() , 'sessions'))
+            except OSError, oe:
+                # [Errno 17] File exists
+                if oe.errno != 17:
+                    raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
+            
             self._db = persist()
             try:
                 self._db.create( db_name , ['id','url', 'code'] )
@@ -88,10 +86,6 @@ class gtkOutput(baseOutputPlugin):
                 raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
                 kb.kb.save('gtkOutput', 'db', self._db )
-        else:
-            # Restore it from the kb
-            self._db = kb.kb.getData('gtkOutput', 'db')
-            
     
     def debug(self, msgString, newLine = True ):
         '''
