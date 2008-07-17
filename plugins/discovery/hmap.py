@@ -99,25 +99,30 @@ class hmap(baseDiscoveryPlugin):
                     else:
                         port = 80
                 
-                results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
-                
-                server = results[0]
-                
-                i = info.info()
-                i.setName('Webserver Fingerprint')
-                i.setDesc('The most accurate fingerprint for this HTTP server is: ' + str(server))
-                i['server'] = server
-                om.out.information( i.getDesc() )
-                
-                # Save the results in the KB so that other plugins can use this information
-                kb.kb.append( self, 'server', i )
-                kb.kb.save( self, 'serverString', i )
-                
-                # Fingerprint file generated
-                if self._genFpF:
-                    om.out.information('Fingerprint file generated, please send a mail to w3af.project@gmail.com including'+
-                    ' the fingerprint file, your name and what server you fingerprinted. New fingerprints make hmap plugin'+
-                    ' more powerfull and accurate.')
+                try:
+                    results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
+                except w3afException, w3:
+                    om.out.debug('A w3afException ocurred while running hmamp: ' + str(w3) )
+                except Exception,  e:
+                    om.out.error('An unhandled exception ocurred while running hmamp: ' + str(e) )
+                else:
+                    server = results[0]
+                    
+                    i = info.info()
+                    i.setName('Webserver Fingerprint')
+                    i.setDesc('The most accurate fingerprint for this HTTP server is: ' + str(server))
+                    i['server'] = server
+                    om.out.information( i.getDesc() )
+                    
+                    # Save the results in the KB so that other plugins can use this information
+                    kb.kb.append( self, 'server', i )
+                    kb.kb.save( self, 'serverString', i )
+                    
+                    # Fingerprint file generated
+                    if self._genFpF:
+                        om.out.information('Fingerprint file generated, please send a mail to w3af-develop@lists.sourceforge.net including'+
+                        ' the fingerprint file, your name and what server you fingerprinted. New fingerprints make hmap plugin'+
+                        ' more powerfull and accurate.')
             
         return []
     
