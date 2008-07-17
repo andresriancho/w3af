@@ -855,8 +855,8 @@ def testServer( ssl, server, port, matchCount, generateFP ):
     if generateFP:
         try:
             fd = open( 'hmap-fingerprint-' + server , 'w' )
-        except:
-            raise w3afException('Cannot open fingerprint file.')
+        except Exception,  e:
+            raise w3afException('Cannot open fingerprint file. Error:' + str(e))
         else:
             import pprint
             pp = pprint.PrettyPrinter(indent=4)
