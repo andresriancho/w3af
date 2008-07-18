@@ -2,6 +2,7 @@ import sys
 import pygtk, gtk
 
 import comparator
+comparator. _pixmap_path = "pixmaps"
 
 class Test(object):
 
@@ -10,7 +11,9 @@ class Test(object):
         self.window.connect("destroy", gtk.main_quit)
         self.window.resize(800,400)
 
-        doc = comparator.FileDiff(cont1, cont2)
+        doc = comparator.FileDiff()
+        doc.setLeftPane("test1", cont1)
+        doc.setRightPane("test2", cont2)
 
         self.window.add(doc.widget)
         self.window.show()

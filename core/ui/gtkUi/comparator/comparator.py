@@ -93,11 +93,12 @@ class ListItem(object):
     def __str__(self):
         return "<%s %s %i %s>" % ( self.__class__, self.name, self.active, self.value )
 
+_pixmap_path = "core/ui/gtkUi/comparator/pixmaps"
 def load_pixbuf(fname, size=0):
     """Load an image from a file as a pixbuf, with optional resizing.
     """
     image = gtk.Image()
-    image.set_from_file(os.path.join("core/ui/gtkUi/comparator/pixmaps", fname))
+    image.set_from_file(os.path.join(_pixmap_path, fname))
     image = image.get_pixbuf()
     if size:
         aspect = float(image.get_height()) / image.get_width()
