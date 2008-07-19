@@ -32,7 +32,7 @@ import core.data.kb.info as info
 import plugins.discovery.oHmap.hmap as originalHmap
 
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce,  w3afException
 from core.controllers.misc.levenshtein import relative_distance
 
 class hmap(baseDiscoveryPlugin):
@@ -85,19 +85,23 @@ class hmap(baseDiscoveryPlugin):
                 
                 om.out.information('Hmap web server fingerprint is starting, this may take a while.')
                 
-                ssl = False
                 url = fuzzableRequest.getURL()
                 protocol = urlParser.getProtocol( url )
                 server = urlParser.getNetLocation( url )
+                
+                # Set some defaults that can be overriden later
+                if protocol == 'https':
+                    port = 443
+                    ssl = True
+                else:
+                    port = 80
+                    ssl = False
+                
+                # Override the defaults
                 if server.count(':'):
                     port = int( server.split(':')[1] )
                     server = server.split(':')[0]
-                else:
-                    if protocol == 'https':
-                        port = 443
-                        ssl = True
-                    else:
-                        port = 80
+
                 
                 try:
                     results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )

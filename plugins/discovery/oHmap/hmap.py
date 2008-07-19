@@ -25,6 +25,7 @@ import socket, urlparse, select
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
+import os
 
 class request:
     """Collect elements needed to send a Request to an HTTP server"""
@@ -837,7 +838,7 @@ def testServer( ssl, server, port, matchCount, generateFP ):
     useSSL = ssl
     
     MATCH_COUNT = matchCount
-    fingerprintDir = 'plugins/discovery/oHmap/known.servers/'
+    fingerprintDir = 'plugins'+os.path.sep+'discovery'+os.path.sep+'oHmap'+os.path.sep+'known.servers'+os.path.sep
     
     # Get the fingerprint
     target_url = server
@@ -847,6 +848,7 @@ def testServer( ssl, server, port, matchCount, generateFP ):
     known_servers = []
     for f in glob.glob(fingerprintDir+'*'):
         ksf = file(f)
+        ### FIXME: This eval is awful, I should change it to pickle.
         ks = eval(ksf.read())
         known_servers.append(ks)
         ksf.close()
