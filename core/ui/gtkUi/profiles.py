@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk
+import gtk
 from . import helpers, entries
 from core.controllers.w3afException import w3afException
 import cgi
@@ -63,6 +63,10 @@ class ProfileList(gtk.TreeView):
         self.show()
 
     def loadProfiles(self, selected=None):
+        '''Load the profiles.
+
+        @param selected: which profile is already selected.
+        '''
         # create the ListStore, with the info listed below
         liststore = gtk.ListStore(str, str, str, int, str)
 
@@ -96,7 +100,7 @@ class ProfileList(gtk.TreeView):
                     self._useProfile()
                     break
             else:
-                raise SystemExit("The profile %r does not exists!" % selected)
+                raise ValueError("The profile %r does not exists!" % selected)
         
     def _controlDifferences(self):
         '''Returns if something is different agains initial state.'''

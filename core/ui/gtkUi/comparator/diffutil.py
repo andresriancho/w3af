@@ -107,7 +107,7 @@ class Differ(object):
     def _locate_chunk(self, whichdiffs, sequence, line):
         """Find the index of the chunk which contains line."""
         idx = 1 + 2*(sequence != 1)
-        line_in_chunk = lambda x: line < c[idx+1]
+        line_in_chunk = lambda x: line < x[idx+1]
         i = 0
         for c in self.diffs[whichdiffs]:
             if line_in_chunk(c):

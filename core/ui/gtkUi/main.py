@@ -54,7 +54,7 @@ splash = Splash()
 
 try:
     import sqlite3
-except:
+except ImportError:
     print 'You have to install the sqlite3 database module to be able to run the GTK user interface. On debian based distributions you should install: python-pysqlite2'
     sys.exit( 1 )
 
@@ -165,10 +165,18 @@ class WindowsCommunication(object):
         self.client = e
 
     def destroy(self):
+        '''Destroys the window.'''
         self.isActive = False
         return True
 
     def create(self, info=None):
+        '''Assures the window is shown.
+        
+        Create a new window if not active, raises the previous one if already 
+        is created.
+
+        @param info: info to sent initially to the window
+        '''
         if self.isActive:
             self.client.present()
         else:
@@ -179,11 +187,16 @@ class WindowsCommunication(object):
     __call__ = create
 
     def send(self, info):
+        '''Sends information to the window.
+
+        @param info: info to sent initially to the window
+        '''
         if not self.isActive:
             self.create()
         self.callback(info)
 
     def enable(self, window, callback):
+        '''Enables the window.'''
         self.client = window
         self.callback = callback
 
@@ -444,6 +457,7 @@ class MainApp(object):
         return False
 
     def _scan_director(self, widget):
+        '''Directs what to do with the Scan.'''
         action = "_scan_" + self.scanShould
         func = getattr(self, action)
         func()
@@ -455,8 +469,8 @@ class MainApp(object):
         @return: True if all went ok
         '''
         # save the activated plugins
-        for type,plugins in self.pcbody.getActivatedPlugins():
-            self.w3af.setPlugins(plugins, type)
+        for ptype,plugins in self.pcbody.getActivatedPlugins():
+            self.w3af.setPlugins(plugins, ptype)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
         options = self.w3af.target.getOptions()
@@ -487,7 +501,7 @@ class MainApp(object):
         try:
             helpers.coreWrap(self.w3af.initPlugins)
             helpers.coreWrap(self.w3af.verifyEnvironment)
-        except w3afException, w3:
+        except w3afException:
             return
 
         def startScanWrap():
@@ -512,6 +526,7 @@ class MainApp(object):
         self.exploitallsens.set_sensitive(True, "stopstart")
 
     def _scan_pause(self, widget):
+        '''Pauses the scan.'''
         shall_pause = widget.get_active()
 
         # stop/start core and throbber
@@ -620,10 +635,12 @@ class MainApp(object):
         self.notetabs[title] = newone
 
     def menu_config_http(self, action):
+        '''Configure HTTP options.'''
         configurable = self.w3af.uriOpener.settings
         confpanel.ConfigDialog("Configure HTTP settings", self.w3af, configurable)
 
     def menu_config_misc(self, action):
+        '''Configure Misc options.'''
         configurable = core.controllers.miscSettings.miscSettings()
         confpanel.ConfigDialog("Configure Misc settings", self.w3af, configurable)
 
@@ -663,6 +680,7 @@ class MainApp(object):
             widg(page in where)
 
     def profileAction(self, action):
+        '''Do the action on the profile.'''
         methname = action + "Profile"
         method = getattr(self.profiles, methname)
         method()
