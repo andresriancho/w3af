@@ -62,24 +62,32 @@ class request:
             try:
                 s.connect((HOST, PORT))
             except:
-                raise w3afException('hmap: Connection failed to ' + str(HOST) + ':' + str(PORT) )
+                raise w3afException('Connection failed to ' + str(HOST) + ':' + str(PORT) )
             else:
                 
                 if useSSL:
                     try:
                         s2 = socket.ssl( s )
                     except:
-                        raise w3afException('hmap: SSL Connection failed to ' + str(HOST) + ':' + str(PORT) )
-                        
+                        raise w3afException('SSL Connection failed to ' + str(HOST) + ':' + str(PORT) )
+                    else:
                         s.recv = s2.read
                         s.send = s2.write
+                
+                data = ''
                 
                 try:
                     s.send(str(self))
                 except:
-                    raise w3afException('hmap: Failed to send data to socket.' )
+                    om.out.debug('Failed to send data to socket.' )
+                    # Try again
+                    tries -= 1
+                    time.sleep(wait_time)
+                    wait_time *= 2
+                    s.close()
+                    continue                    
                 
-                data = ''
+                
                 ss = s
                 try:
                     while 1:
@@ -93,7 +101,22 @@ class request:
                     s.close()
                 except KeyboardInterrupt,e:
                     raise e
+                except socket.sslerror, sslerr:
+                    # When the remote server has no more data to send
+                    # It simply closes the remote connection, which raises:
+                    # (6, 'TLS/SSL connection has been closed')
+                    if sslerr[0] == 6:
+                        return response(data)
+                    else:
+                        # Try again
+                        tries -= 1
+                        time.sleep(wait_time)
+                        wait_time *= 2
+                        s.close()
+                        continue
+                        
                 except Exception:
+                    # Try again.
                     tries -= 1
                     time.sleep(wait_time)
                     wait_time *= 2
@@ -855,15 +878,17 @@ def testServer( ssl, server, port, matchCount, generateFP ):
     
     # Generate the fingerprint file
     if generateFP:
-        try:
-            fd = open( 'hmap-fingerprint-' + server , 'w' )
-        except Exception,  e:
-            raise w3afException('Cannot open fingerprint file. Error:' + str(e))
-        else:
-            import pprint
-            pp = pprint.PrettyPrinter(indent=4)
-            pprint.PrettyPrinter(stream=fd).pprint(fp)
-            fd.close()
+        for i in xrange(10):
+            try:
+                fd = open( 'hmap-fingerprint-' + server + '-'+ str(i), 'w' )
+            except Exception,  e:
+                raise w3afException('Cannot open fingerprint file. Error:' + str(e))
+            else:
+                import pprint
+                pp = pprint.PrettyPrinter(indent=4)
+                pprint.PrettyPrinter(stream=fd).pprint(fp)
+                fd.close()
+                break
     
     # Compare
     scores = find_most_similar(known_servers, fp)

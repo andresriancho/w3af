@@ -5,10 +5,15 @@ discovery serverHeader,hmap
 discovery config hmap
 set genFpF True
 back
-output console
+
+output console, textFile
 output config console
 set verbose False
 back
+output config textFile
+set verbose True
+back
+
 back
 
 http-settings
@@ -17,6 +22,7 @@ back
 
 target
 set target http://localhost/w3af/index.html
+#set target https://192.168.1.1/
 back
 start
 
