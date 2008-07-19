@@ -48,7 +48,7 @@ class getMails(baseGrepPlugin):
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
-            pass
+            om.out.debug('If I can\'t parse the document, I won\'t be able to find any emails. Doing nothing.')
         else:
             mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
             
