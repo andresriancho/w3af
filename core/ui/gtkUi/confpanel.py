@@ -19,8 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk
-import xml.dom
+import gtk
 from . import entries, helpers
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
@@ -37,8 +36,10 @@ class OnlyOptions(gtk.VBox):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter={}):
+    def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter=None):
         super(OnlyOptions,self).__init__()
+        if overwriter is None:
+            overwriter = {}
         self.set_spacing(5)
         self.w3af = w3af
         self.parentwidg = parentwidg
@@ -250,9 +251,11 @@ class ConfigDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, w3af, plugin, overwriter={}, showDesc=False):
+    def __init__(self, title, w3af, plugin, overwriter=None, showDesc=False):
         super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+        if overwriter is None:
+            overwriter = {}
 
         # buttons and config panel
         save_btn = self._button("Save configuration")
@@ -281,6 +284,7 @@ class ConfigDialog(gtk.Dialog):
         self.destroy()
 
     def _button(self, text="", stock=None):
+        '''Creates a button.'''
         b = gtk.Button(text, stock)
         b.show()
         self.action_area.pack_start(b)
@@ -329,7 +333,9 @@ class AdvancedTargetConfigDialog(ConfigDialog):
 
     @author: Andres Riancho
     '''
-    def __init__(self, title, w3af, plugin, overwriter={}):
+    def __init__(self, title, w3af, plugin, overwriter=None):
+        if overwriter is None:
+            overwriter = {}
         ConfigDialog.__init__(self, title, w3af, plugin, overwriter)
         
     def _close(self):

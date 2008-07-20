@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk
-from . import history, helpers
+import gtk
+from . import history
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
@@ -398,6 +398,7 @@ class ToolbuttonWrapper(object):
         self.toolbut.set_property("stock-id", newimage)
 
     def set_sensitive(self, sensit):
+        '''Sets the sensitivity of the toolbar button.'''
         self.toolbut.set_sensitive(sensit)
 
 class AdvisedEntry(gtk.Entry):
@@ -450,15 +451,18 @@ class AdvisedEntry(gtk.Entry):
             self.firstfocus = False
             self.set_text("")
 
-    def _match_completion(self, completion, entrystr, iter):
-        texto = self.liststore[iter][0]
+    def _match_completion(self, completion, entrystr, iterl):
+        '''Called when there's a match in the completion.'''
+        texto = self.liststore[iterl][0]
         return entrystr in texto
 
     def setText(self, message):
+        '''Sets the widget text.'''
         self.firstfocus = False
         self.set_text(message)
         
     def reset(self):
+        '''Resets the message in the widget.'''
         self.firstfocus = True
         self.set_text(self.origMessage)
         
@@ -576,8 +580,8 @@ class TextDialog(gtk.Dialog):
 
         @param text: the message to add.
         '''
-        iter = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iter, text+"\n")
+        iterl = self.textbuffer.get_end_iter()
+        self.textbuffer.insert(iterl, text+"\n")
         self.textview.scroll_to_mark(self.textbuffer.get_insert(), 0)
         self.flush()
         
@@ -648,6 +652,7 @@ class Searchable(object):
         menu.show_all()
 
     def _show_search(self, widget=None):
+        '''Shows the search tab.'''
         self.srchtab.show_all()
         self.search_entry.grab_focus()
         self.searching = True
@@ -765,6 +770,7 @@ class Searchable(object):
         self.searching = False
 
     def _clean(self):
+        '''Cleans the entry colors.'''
         # highlights
         (ini, fin) = self.textbuf.get_bounds()
         self.textbuf.remove_tag_by_name("yellow-background", ini, fin)

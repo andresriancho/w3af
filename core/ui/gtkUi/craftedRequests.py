@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import pygtk, gtk, gobject, threading
+import gtk, gobject, threading
 from . import reqResViewer, helpers, entries, fuzzygen
 from .clusterView import clusterCellWindow
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException, w3afMustStopException 
 import os
 
 request_example = """\
@@ -35,6 +35,7 @@ Content-Type: application/x-www-form-urlencoded
 """
 
 class ThreadedURLImpact(threading.Thread):
+    '''Impacts an URL in a different thread.'''
     def __init__(self, w3af, tsup, tlow, event):
         self.tsup = tsup
         self.tlow = tlow
@@ -43,6 +44,7 @@ class ThreadedURLImpact(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        '''Starts the thread.'''
         try:
             self.httpResp = self.w3af.uriOpener.sendRawRequest(self.tsup, self.tlow)
             self.ok = True

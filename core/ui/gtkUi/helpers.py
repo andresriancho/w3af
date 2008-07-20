@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import threading, re, sys, Queue
 import  traceback
-import gtk, gobject
+import gtk
 from core.controllers.w3afException import w3afException
 
 RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
@@ -332,6 +332,7 @@ class BroadcastWrapper(object):
         self.widgets = []
     
     def __addWidget(self, widg):
+        '''Adds the widget to broadcast.'''
         self.widgets.append(widg)
 
     def __getattr__(self, attr):
@@ -350,6 +351,7 @@ class BroadcastWrapper(object):
 event_types = [i for i in vars(gtk.gdk).values() if type(i) is gtk.gdk.EventType]
 
 def debugHandler(widget, event, *a):
+    '''Just connect it to the 'event' event.'''
     if event.type in event_types:
         print event.type.value_nick
 
@@ -371,6 +373,7 @@ class Throbber(gtk.ToolButton):
         self.show()
 
     def running(self, spin):
+        '''Returns if running.'''
         if spin:
             self.set_icon_widget(self.img_animat)
         else:
@@ -391,6 +394,7 @@ class StatusBar(gtk.Statusbar):
             self.__call__(initmsg)
         
     def __call__(self, msg, timeout=5):
+        '''Inserts a message in the statusbar.'''
         if self._timer is not None:
             self._timer.cancel()
         self.push(self._context, msg)
@@ -398,6 +402,7 @@ class StatusBar(gtk.Statusbar):
         self._timer.start()
 
     def clear(self):
+        '''Clears the statusbar content.'''
         self.push(self._context, "")
         if self._timer is not None:
             self._timer.cancel()
@@ -424,11 +429,14 @@ class SensitiveAnd(object):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, target, falseDefaults=[]):
+    def __init__(self, target, falseDefaults=None):
+        if falseDefaults is None:
+            falseDefaults = []
         self.target = target
         self.opinions = dict.fromkeys(falseDefaults, False)
 
     def set_sensitive(self, how, whosays=None):
+        '''Sets the sensitivity of the target.'''
         self.opinions[whosays] = how
         sensit = all(self.opinions.values())
         self.target.set_sensitive(sensit)
