@@ -79,12 +79,13 @@ class gtkOutput(baseOutputPlugin):
                 if oe.errno != 17:
                     raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
             
+            # Create one!
+            self._db = persist()
+            
             # Check if the database already exists
             if os.path.exists( db_name ):
-                self._db = open(db_name)
+                self._db.open(db_name)
             else:
-                # Create one!
-                self._db = persist()
                 try:
                     self._db.create( db_name , ['id','url', 'code'] )
                 except Exception, e:
