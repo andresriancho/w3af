@@ -871,10 +871,14 @@ def testServer( ssl, server, port, matchCount, generateFP ):
     known_servers = []
     for f in glob.glob(fingerprintDir+'*'):
         ksf = file(f)
-        ### FIXME: This eval is awful, I should change it to pickle.
-        ks = eval(ksf.read())
-        known_servers.append(ks)
-        ksf.close()
+        try:
+            ### FIXME: This eval is awful, I should change it to pickle.
+            ks = eval(ksf.read())
+        except Exception,  e:
+            raise w3afException('The signature file "' + f + '" has an invalid sintax.')
+        else:
+            known_servers.append(ks)
+            ksf.close()
     
     # Generate the fingerprint file
     if generateFP:
