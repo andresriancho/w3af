@@ -79,19 +79,27 @@ class gtkOutput(baseOutputPlugin):
                 if oe.errno != 17:
                     raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
             
-            # Create one!
             self._db = persist()
             
             # Check if the database already exists
             if os.path.exists( db_name ):
                 self._db.open(db_name)
             else:
+                # Create one!
                 try:
                     self._db.create( db_name , ['id','url', 'code'] )
                 except Exception, e:
                     raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
                 else:
                     kb.kb.save('gtkOutput', 'db', self._db )
+    
+    def end(self):
+        '''
+        This method is called by w3afCore to let the plugin know that it wont be used
+        anymore. This is helpfull to do some final tests, free some structures, etc.
+        '''
+        if self._db:
+            self._db.close()
     
     def debug(self, msgString, newLine = True ):
         '''

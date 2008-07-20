@@ -294,7 +294,6 @@ class persist:
         Commits changes and closes the connection to the underlaying db.
         '''
         self._db.close()
-        self._db.close()
         self._primary_key_columns = None
         self._filename = None
         
