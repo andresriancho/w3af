@@ -36,17 +36,18 @@ Content-Type: application/x-www-form-urlencoded
 
 class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
-    def __init__(self, w3af, tsup, tlow, event):
+    def __init__(self, w3af, tsup, tlow, event, fixContentLength):
         self.tsup = tsup
         self.tlow = tlow
         self.w3af = w3af
         self.event = event
+        self.fixContentLength = fixContentLength
         threading.Thread.__init__(self)
 
     def run(self):
         '''Starts the thread.'''
         try:
-            self.httpResp = self.w3af.uriOpener.sendRawRequest(self.tsup, self.tlow)
+            self.httpResp = self.w3af.uriOpener.sendRawRequest(self.tsup, self.tlow, self.fixContentLength)
             self.ok = True
         except Exception, e:
             self.exception = e
@@ -65,18 +66,29 @@ class ManualRequests(entries.RememberingWindow):
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
         self.w3af = w3af
 
+        # The table to store the checkbox and the button
+        table = gtk.Table(1, 20)
+        table.set_col_spacings(10)
+        
+        # Fix content length checkbox
+        self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
+        self._fixContentLengthCB.set_active(True)
+        self._fixContentLengthCB.show()
+
         # send button
-        hbox = gtk.HBox()
         b = gtk.Button("   Send   ")
         b.connect("clicked", self._send)
-        hbox.pack_start(b, True, False)
+        
+        # Store all inside the table
+        table.attach(self._fixContentLengthCB, 9, 10, 0, 1, xoptions=gtk.SHRINK)
+        table.attach(b, 19, 20, 0, 1, xoptions=gtk.SHRINK)
 
         # request-response viewer
         self.reqresp = reqResViewer.reqResViewer(w3af, [b], withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
-        self.vbox.pack_start(hbox, False, False)
+        self.vbox.pack_start(table, False, False)
         
         # Add a default request
         if initialRequest is None:
@@ -101,9 +113,12 @@ class ManualRequests(entries.RememberingWindow):
         while gtk.events_pending():
             gtk.main_iteration()
 
+        # Get the fix content length value
+        fixContentLength = self._fixContentLengthCB.get_active()
+
         # threading game
         event = threading.Event()
-        impact = ThreadedURLImpact(self.w3af, tsup, tlow, event)
+        impact = ThreadedURLImpact(self.w3af, tsup, tlow, event, fixContentLength)
         def impactDone():
             if not event.isSet():
                 return True
@@ -213,6 +228,11 @@ class FuzzyRequests(entries.RememberingWindow):
         # we create the buttons first, to pass them
         analyzBut = gtk.Button("Analyze")
         sendBut = gtk.Button("Send all")
+        
+        # Fix content length checkbox
+        self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
+        self._fixContentLengthCB.set_active(True)
+        self._fixContentLengthCB.show()
 
         # request
         self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut], editable=True)
@@ -235,13 +255,14 @@ class FuzzyRequests(entries.RememberingWindow):
         self.analyzefb = gtk.Label("0 requests")
         self.analyzefb.set_sensitive(False)
         t.attach(self.analyzefb, 1, 2, 0, 1)
-        self.preview = gtk.CheckButton("preview")
+        self.preview = gtk.CheckButton("Preview")
         t.attach(self.preview, 2, 3, 0, 1)
         sendBut.connect("clicked", self._send)
         t.attach(sendBut, 0, 1, 1, 2)
         self.sendfb = gtk.Label("0 ok, 0 errors")
         self.sendfb.set_sensitive(False)
         t.attach(self.sendfb, 1, 2, 1, 2)
+        t.attach(self._fixContentLengthCB, 2, 3, 1, 2)
         vbox.pack_start(t, False, False, padding=5)
 
         # ---- right pane ----
@@ -350,9 +371,13 @@ class FuzzyRequests(entries.RememberingWindow):
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
+        
+        # Get the fix content length value
+        fixContentLength = self._fixContentLengthCB.get_active()
+        
         for (realreq, realbody) in allrequests:
             try:
-                httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody)
+                httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody, fixContentLength)
                 errorMsg = None
                 result_ok += 1
             except w3afException, e:

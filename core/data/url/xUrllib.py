@@ -219,7 +219,7 @@ class xUrllib:
         
         return False
     
-    def sendRawRequest( self, head, postdata):
+    def sendRawRequest( self, head, postdata, fixContentLength=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed in a textbox or is stored in a file.
         When something like that happens, this library allows the user to send the request by specifying two parameters
@@ -227,10 +227,26 @@ class xUrllib:
         
         @parameter head: The postdata, if any. If set to '' or None, no postdata is sent.
         @parameter postdata: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
+        @parameter fixContentLength: Indicates if the content length has to be fixed or not.
         
         @return: An httpResponse object.
         '''
+        # Parse the two strings
         fuzzReq = httpRequestParser(head, postdata)
+        
+        # Fix the content length
+        if fixContentLength:
+            headers = fuzzReq.getHeaders()
+            fixed = False
+            for h in headers:
+                if h.lower() == 'content-length':
+                    headers[ h ] = str(len(postdata))
+                    fixed = True
+            if not fixed and postdata:
+                headers[ 'content-length' ] = str(len(postdata))
+            fuzzReq.setHeaders(headers)
+        
+        # Send it
         functionReference = getattr( self , fuzzReq.getMethod() )
         return functionReference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
                                                 useCache=False, grepResult=False, getSize=True )
