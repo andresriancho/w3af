@@ -82,24 +82,21 @@ class gtkOutput(baseOutputPlugin):
             self._db = persist()
             
             # Check if the database already exists
-            if os.path.exists( db_name ):
-                self._db.open(db_name)
+            if os.path.exists(db_name):
+                # Find one that doesn't exist
+                for i in xrange(100):
+                    new_db_name = db_name + '-' + str(i)
+                    if not os.path.exists(new_db_name):
+                        db_name = new_db_name
+                        break
+            
+            # Create one!
+            try:
+                self._db.create( db_name , ['id','url', 'code'] )
+            except Exception, e:
+                raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
             else:
-                # Create one!
-                try:
-                    self._db.create( db_name , ['id','url', 'code'] )
-                except Exception, e:
-                    raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
-                else:
-                    kb.kb.save('gtkOutput', 'db', self._db )
-    
-    def end(self):
-        '''
-        This method is called by w3afCore to let the plugin know that it wont be used
-        anymore. This is helpfull to do some final tests, free some structures, etc.
-        '''
-        if self._db:
-            self._db.close()
+                kb.kb.save('gtkOutput', 'db', self._db )
     
     def debug(self, msgString, newLine = True ):
         '''

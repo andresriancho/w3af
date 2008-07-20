@@ -63,6 +63,7 @@ class reqResDBHandler:
         @param text: the text to validate
         @return: True if the text is ok.
         '''
+        #FIXME: This re is buggy
         self._match = re.match('^(?:((?:id|uri)) (=|>|>=|<=|<|<>|like) ([\w\'\" /:\.]+)( (and|or) )?)*$', text )
         if self._match:
             return True

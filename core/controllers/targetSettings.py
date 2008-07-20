@@ -141,7 +141,7 @@ class targetSettings(configurable):
         else:
             sessName = 'noTarget'
 
-        cf.cf.save('sessionName', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M') )
+        cf.cf.save('sessionName', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
         
         # Advanced target selection
         os = optionsMap['targetOS'].getValueStr()
