@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from __future__ import division
 
-import pygtk, gtk, gobject
+import gtk, gobject
 from . import messages
 import core.data.constants.severity as severity
 import time
@@ -96,6 +96,7 @@ class LogGraph(gtk.DrawingArea):
 
         
     def _redrawAll(self):
+        '''Redraws all the graph.'''
         if self.gc is None:
             # sorry, not exposed yet...
             yield True

@@ -20,10 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import gtk
-import gobject
-import core.data.kb.knowledgeBase as kb
-import core.controllers.outputManager as om
-import re
 from . import entries
 
 useMozilla = False
@@ -97,10 +93,15 @@ class reqResViewer(gtk.VBox):
         self.show_all()
 
     def _sendRequest(self, widg, func):
+        '''Sends the texts to the manual or fuzzy request.
+
+        @param func: where to send the request.
+        '''
         up,dn = self.request.getBothTexts()
         func(self.w3af, (up,dn))
 
     def _sendReqResp(self, widg):
+        '''Sends the texts to the compare tool.'''
         requp,reqdn = self.request.getBothTexts()
         self.w3af.mainwin.commCompareTool((requp, reqdn, self.response.showingResponse))
 
@@ -164,9 +165,9 @@ class requestResponsePaned(gtk.VPaned):
         '''
         Clears a text view.
         '''
-        buffer = textView.get_buffer()
-        start, end = buffer.get_bounds()
-        buffer.delete(start, end)
+        buff = textView.get_buffer()
+        start, end = buff.get_bounds()
+        buff.delete(start, end)
         
     def clearPanes(self):
         '''Public interface to clear both panes.'''
@@ -179,9 +180,9 @@ class requestResponsePaned(gtk.VPaned):
         Errors are shown in the upper part, with the lower one greyed out.
         '''
         self._clear(self._upTv)
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, text)
+        buff = self._upTv.get_buffer()
+        iter = buff.get_end_iter()
+        buff.insert(iter, text)
         
         self._downTv.set_sensitive(False)
         
@@ -211,15 +212,15 @@ class requestPaned(requestResponsePaned):
         postdata = fuzzableRequest.getData()
 
         self._clear(self._upTv)
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, head)
+        buff = self._upTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, head)
         
         self._downTv.set_sensitive(True)
         self._clear(self._downTv)
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, postdata)
+        buff = self._downTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, postdata)
         
     def show( self, method, uri, version, headers, postData ):
         '''
@@ -229,27 +230,27 @@ class requestPaned(requestResponsePaned):
         self._clear( self._upTv )
         self._clear( self._downTv )
         
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, method + ' ' + uri + ' ' + 'HTTP/' + version + '\n')
-        buffer.insert( iter, headers )
+        buff = self._upTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert( iterl, method + ' ' + uri + ' ' + 'HTTP/' + version + '\n')
+        buff.insert( iterl, headers )
         
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, postData )
+        buff = self._downTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert( iterl, postData )
     
     def rawShow(self, requestresponse, body):
         '''Show the raw data.'''
         self._clear(self._upTv)
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, requestresponse)
+        buff = self._upTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, requestresponse)
         
         self._downTv.set_sensitive(True)
         self._clear(self._downTv)
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, body)
+        buff = self._downTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, body)
         
 class responsePaned(requestResponsePaned):
     def __init__(self, editable=False):
@@ -312,15 +313,15 @@ class responsePaned(requestResponsePaned):
         body = httpResp.getBody()
 
         self._clear(self._upTv)
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, resp)
+        buff = self._upTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, resp)
         
         self._downTv.set_sensitive(True)
         self._clear(self._downTv)
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert(iter, body)
+        buff = self._downTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert(iterl, body)
 
     def show( self, version, code, msg, headers, body, baseURI ):
         '''
@@ -330,10 +331,10 @@ class responsePaned(requestResponsePaned):
         self._clear( self._upTv )
         self._clear( self._downTv )
 
-        buffer = self._upTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, 'HTTP/' + version + ' ' + str(code) + ' ' + str(msg) + '\n')
-        buffer.insert( iter, headers )
+        buff = self._upTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert( iterl, 'HTTP/' + version + ' ' + str(code) + ' ' + str(msg) + '\n')
+        buff.insert( iterl, headers )
         
         # Get the mimeType from the response headers
         mimeType = 'text/html'
@@ -350,9 +351,9 @@ class responsePaned(requestResponsePaned):
             mimeType = 'text/html'
             body = 'The response type is: <i>' + mimeType + '</i>. w3af is still under development, in the future images will be displayed.'
             
-        buffer = self._downTv.get_buffer()
-        iter = buffer.get_end_iter()
-        buffer.insert( iter, body )
+        buff = self._downTv.get_buffer()
+        iterl = buff.get_end_iter()
+        buff.insert( iterl, body )
         
         # Show it rendered
         if self._renderingWidget is not None:

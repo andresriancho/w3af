@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk, gobject
+import gtk, gobject
 from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
 
@@ -72,18 +72,18 @@ class _LineScroller(gtk.TextView):
 
         gobject.timeout_add(500, self.addMessage().next)
 
-    def filter(self, filter):
+    def filter(self, filtinfo):
         '''Applies a different filter to the textview.
 
-        @param filter: the new filter
+        @param filtinfo: the new filter
         '''
-        self.active_filter = filter
+        self.active_filter = filtinfo
         self.textbuffer.set_text("")
         for (mtype, text) in self.all_messages:
-            if mtype in filter:
+            if mtype in filtinfo:
                 colortag = self.bg_colors[mtype]
-                iter = self.textbuffer.get_end_iter()
-                self.textbuffer.insert_with_tags_by_name(iter, text, colortag)
+                iterl = self.textbuffer.get_end_iter()
+                self.textbuffer.insert_with_tags_by_name(iterl, text, colortag)
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def addMessage(self):
@@ -105,9 +105,9 @@ class _LineScroller(gtk.TextView):
             self.text_position += len(text)
 
             if mtype in self.active_filter:
-                iter = self.textbuffer.get_end_iter()
+                iterl = self.textbuffer.get_end_iter()
                 colortag = self.bg_colors[mtype]
-                self.textbuffer.insert_with_tags_by_name(iter, text, colortag)
+                self.textbuffer.insert_with_tags_by_name(iterl, text, colortag)
                 self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
         yield False
@@ -143,8 +143,8 @@ class Messages(gtk.VBox, entries.Searchable):
         # the scrolling lines
         sw_mess = gtk.ScrolledWindow()
         sw_mess.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        filter = [k for k,v in self.filters.items() if v]
-        self.sclines = _LineScroller(filter)
+        newfilter = [k for k,v in self.filters.items() if v]
+        self.sclines = _LineScroller(newfilter)
         sw_mess.add(self.sclines)
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
@@ -152,8 +152,8 @@ class Messages(gtk.VBox, entries.Searchable):
         entries.Searchable.__init__(self, self.sclines)
         self.show()
 
-    def typeFilter(self, button, type):
+    def typeFilter(self, button, ptype):
         '''Applies the filter selected through the checkboxes.'''
-        self.filters[type] = button.get_active()
+        self.filters[ptype] = button.get_active()
         active_types = [k for k,v in self.filters.items() if v]
         self.sclines.filter(active_types)

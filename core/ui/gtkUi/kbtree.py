@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk, gobject
+import gtk, gobject
 
 import core.data.kb.knowledgeBase as kb
 from . import helpers
@@ -44,7 +44,7 @@ class KBTree(gtk.TreeView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, filter, title, strict):
+    def __init__(self, w3af, ifilter, title, strict):
         self.strict = strict
         self.w3af = w3af
 
@@ -72,7 +72,7 @@ class KBTree(gtk.TreeView):
         self.instances = {}
 
         # initial filters
-        self.filter = filter
+        self.filter = ifilter
 
         # button-release-event, to handle right click
         self.connect('button-release-event', self._popup)
@@ -225,29 +225,27 @@ class KBTree(gtk.TreeView):
         if path is None:
             return
 
-        # pop up menu
-        # I'm leaving this commented because I know that in the future I'll want to
-        # do something similar. The code that is commented here, pop-ups a menu
-        '''
-        menu = gtk.Menu()
-        opc = gtk.MenuItem("Show HTTP request and response")
-        menu.append(opc)
-        menu.popup(None, None, None, event.button, event.time)
-
-        # get instance
-        vuln = self.getInstance(path)
-        if isinstance(vuln, core.data.kb.vuln.vuln):
-            vulnid = vuln.getId()
-        
-            def goLog(w):
-                self.w3af.mainwin.httplog.showReqResById(vulnid)
-                self.w3af.mainwin.nb.set_current_page(4)
-            opc.connect('activate', goLog)
-        else:
-            opc.set_sensitive(False)
-
-        menu.show_all()
-        '''
+        # [Andres] I'm leaving this commented because I know that in the future
+        # I'll want to do something similar. The code that is commented here, 
+        # pop-ups a menu:
+        #    ----
+        #    menu = gtk.Menu()
+        #    opc = gtk.MenuItem("Show HTTP request and response")
+        #    menu.append(opc)
+        #    menu.popup(None, None, None, event.button, event.time)
+        #    # get instance
+        #    vuln = self.getInstance(path)
+        #    if isinstance(vuln, core.data.kb.vuln.vuln):
+        #        vulnid = vuln.getId()
+        #    
+        #        def goLog(w):
+        #            self.w3af.mainwin.httplog.showReqResById(vulnid)
+        #            self.w3af.mainwin.nb.set_current_page(4)
+        #        opc.connect('activate', goLog)
+        #    else:
+        #        opc.set_sensitive(False)
+        #    menu.show_all()
+        #    ----
 
     def getInstance(self, path):
         '''Extracts the instance from the tree.

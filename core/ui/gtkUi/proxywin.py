@@ -20,12 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import pygtk, gtk, gobject
+import gtk, gobject
 from . import reqResViewer, helpers, entries, httpLogTab
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException
 from core.data.options.option import option as Option
 from core.controllers.daemons import localproxy
-import os
 
 import core.controllers.outputManager as om
 
@@ -43,6 +42,7 @@ ui_proxy_menu = """
 """
 
 class ProxyOptions(object):
+    '''Stores the proxy options.'''
     def __init__(self):
         self.options = []
 
@@ -474,6 +474,7 @@ class ConfigDialog(gtk.Dialog):
         self.destroy()
 
     def _button(self, text="", stock=None):
+        '''Builds a button.'''
         b = gtk.Button(text, stock)
         b.show()
         self.action_area.pack_start(b)

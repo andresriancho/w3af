@@ -47,9 +47,11 @@ class HistorySuggestion(object):
         return [k for k,v in info]
 
     def insert(self, newtext):
+        '''Inserts new text to the history.'''
         self.history[newtext] = self.history.get(newtext, 0) + 1
 
     def save(self):
+        '''Saves the history information.'''
         fileh = open(self.filename, "w")
         cPickle.dump(self.history, fileh)
         fileh.close()

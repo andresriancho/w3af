@@ -19,14 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk, gobject
-import xml.dom, sys, os
+import gtk, gobject
+import sys, os
 
 from . import confpanel, entries, helpers
 from core.ui.gtkUi.pluginEditor import pluginEditor
 
-from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.misc.homeDir import getHomeDir
 
 # support for <2.5
@@ -287,6 +285,7 @@ class PluginTree(gtk.TreeView):
         self.show()
 
     def _getEditablePlugin(self, pname, ptype):
+        '''Returns if the plugin has options.'''
         plugin = self.w3af.getPluginInstance(pname, ptype)
         options = plugin.getOptions()
         return bool(len(options))
@@ -498,13 +497,13 @@ class PluginTree(gtk.TreeView):
         result = []
         for row in self.treestore:
             plugins = []
-            type = row[3]
+            ptype = row[3]
             for childrow in self._getChildren(row.path):
                 plugin = childrow[3]
                 if childrow[1]:
                     plugins.append(plugin)
             if plugins:
-                result.append((type, plugins))
+                result.append((ptype, plugins))
         return result
 
 
@@ -558,6 +557,7 @@ class PluginConfigBody(gtk.VBox):
         self.show()
 
     def _buildpan(self, profileDescription=None):
+        '''Builds the panel.'''
         pan = gtk.HPaned()
         leftpan = gtk.VPaned()
         self.config_panel = ConfigPanel(profileDescription)
@@ -596,6 +596,7 @@ class PluginConfigBody(gtk.VBox):
         return pan
 
     def _advancedTarget(self, widg):
+        '''Builds the advanced target widget.'''
         # overwrite the plugin info with the target url
         configurableTarget = self.w3af.target
         options = configurableTarget.getOptions()
@@ -616,6 +617,7 @@ class PluginConfigBody(gtk.VBox):
         return self.std_plugin_tree.getActivatedPlugins() + self.out_plugin_tree.getActivatedPlugins()
 
     def editSelectedPlugin(self):
+        '''Edits the selected plugin.'''
         treeToUse = None
         if self.out_plugin_tree.is_focus():
             treeToUse = self.out_plugin_tree

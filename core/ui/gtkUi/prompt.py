@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk, gobject
+import gtk, gobject
 
 class PromptView(gtk.TextView):
     '''Creates a prompt for user interaction.
@@ -62,20 +62,24 @@ class PromptView(gtk.TextView):
         gobject.idle_add(self.grab_focus)
 
     def getText(self):
+        '''Returns the textbuffer content.'''
         iterini = self.textbuffer.get_start_iter()
         iterend = self.textbuffer.get_end_iter()
         text = self.textbuffer.get_text(iterini, iterend)
         return text
 
     def _button_press(self, widg, event):
+        '''The mouse button is down.'''
         if self.cursorPosition is None:
             self.cursorPosition = self.textbuffer.get_property("cursor-position")
         return False
 
     def _button_release(self, widg, event):
+        '''The mouse button is released.'''
         return False
 
     def _key_up(self):
+        '''The key UP was pressed.'''
         self.historyCount -= 1
         if self.historyCount < 0:
             self.historyCount = 0
@@ -84,6 +88,7 @@ class PromptView(gtk.TextView):
         return True
 
     def _key_down(self):
+        '''The key DOWN was pressed.'''
         self.historyCount += 1
         if self.historyCount >= len(self.all_lines):
             self.historyCount = len(self.all_lines) - 1
@@ -92,17 +97,19 @@ class PromptView(gtk.TextView):
         return True
 
     def _showHistory(self, text):
+        '''Handles the history of commands.'''
         # delete all the line content
         iterini = self.textbuffer.get_iter_at_offset(self.cursorLimit)
         iterend = self.textbuffer.get_end_iter()
         self.textbuffer.delete(iterini, iterend)
 
         # insert the text
-        iter = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iter, text)
+        iterl = self.textbuffer.get_end_iter()
+        self.textbuffer.insert(iterl, text)
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
     def _key_backspace(self):
+        '''The key BACKSPACE was pressed.'''
         cursor_pos = self.textbuffer.get_property("cursor-position")
         if cursor_pos <= self.cursorLimit:
             return True
@@ -132,20 +139,20 @@ class PromptView(gtk.TextView):
         '''Process the user input.'''
         result = self.procfunc(text)
         if result != None:
-            iter = self.textbuffer.get_end_iter()
-            self.textbuffer.insert(iter, result+"\n")
+            iterl = self.textbuffer.get_end_iter()
+            self.textbuffer.insert(iterl, result+"\n")
             self.scroll_to_mark(self.textbuffer.get_insert(), 0)
         self._prompt()
         
     def _prompt(self):
         '''Show the prompt.'''
-        iter = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iter, self.promptText + "> ")
+        iterl = self.textbuffer.get_end_iter()
+        self.textbuffer.insert(iterl, self.promptText + "> ")
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
-        iter = self.textbuffer.get_end_iter()
-        self.textbuffer.place_cursor(iter)
+        iterl = self.textbuffer.get_end_iter()
+        self.textbuffer.place_cursor(iterl)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
-        self.user_started = self.textbuffer.create_mark("user-input", iter, True)
+        self.user_started = self.textbuffer.create_mark("user-input", iterl, True)
 
     def _key(self, widg, event):
         '''Separates the special keys from the other.'''
@@ -159,8 +166,8 @@ class PromptView(gtk.TextView):
             # special: don't reset for ctrl-C, as we want to copy the selected stuff
             if event.state & gtk.gdk.CONTROL_MASK and event.keyval == gtk.gdk.keyval_from_name("c"):
                 return False
-            iter = self.textbuffer.get_iter_at_offset(self.cursorPosition)
-            self.textbuffer.place_cursor(iter)
+            iterl = self.textbuffer.get_iter_at_offset(self.cursorPosition)
+            self.textbuffer.place_cursor(iterl)
             self.cursorPosition = None
 
 #        print gtk.gdk.keyval_name(event.keyval)
@@ -200,6 +207,7 @@ class PromptDialog(gtk.Dialog):
         self.show_all()
 
     def _save(self, widg):
+        '''Saves the content to a file.'''
         text = self.prompt.getText()
         dlg = gtk.FileChooserDialog(title="Choose a file...", action=gtk.FILE_CHOOSER_ACTION_OPEN,
                 buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
@@ -213,7 +221,6 @@ class PromptDialog(gtk.Dialog):
         return
 
 if __name__ == "__main__":
-
     def procFunc(x):
         x = x.decode("utf8")
         return x[::-1]

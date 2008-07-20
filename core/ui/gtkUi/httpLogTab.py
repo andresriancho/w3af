@@ -24,9 +24,6 @@ import gtk
 import gobject
 import pango
 
-import core.data.kb.knowledgeBase as kb
-import core.controllers.outputManager as om
-import re
 from .entries import ValidatedEntry
 
 # The elements to create the req/res viewer
@@ -222,8 +219,8 @@ class httpLogTab(gtk.HPaned):
         itemNumber = path[0]
         
         # Now I have the item number in the lstore, the next step is to get the id of that item in the lstore
-        id = self._lstore[ itemNumber ][0]
-        self.showReqResById( id )
+        iid = self._lstore[ itemNumber ][0]
+        self.showReqResById( iid )
     
     def showReqResById( self, search_id ):
         '''
@@ -236,7 +233,7 @@ class httpLogTab(gtk.HPaned):
             self._reqResViewer.request.showObject( request )
             self._reqResViewer.response.showObject( response )
         else:
-            self._showDialog('Error', 'The id ' + str(id) + 'is not inside the database.')
+            self._showDialog('Error', 'The id ' + str(search_id) + 'is not inside the database.')
         
     def _showListView( self, results ):
         '''
@@ -247,7 +244,7 @@ class httpLogTab(gtk.HPaned):
         
         for item in results:
             request, response = item
-            iter = self._lstore.append( [response.getId(), request.getMethod(), request.getURI(), \
+            self._lstore.append( [response.getId(), request.getMethod(), request.getURI(), \
                                                     response.getCode(), response.getMsg(), response.getWaitTime()] )
         
         # Size search results
