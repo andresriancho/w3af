@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-import pygtk, gtk
-from . import reqResViewer, entries, craftedRequests
+import gtk
+from . import entries, craftedRequests
 from .comparator import comparator
 from .clusterView import clusterCellWindow
 import os
@@ -178,6 +178,7 @@ class Compare(entries.RememberingWindow):
         self.pagesControl.setPage(newlen)
 
     def _delete(self, widg):
+        '''Deletes the page from the comparator.'''
         del self.elements[self.showingPage]
         newlen = len(self.elements)
         self.pagesControl.activate(newlen)
@@ -196,6 +197,7 @@ class Compare(entries.RememberingWindow):
         self.comp.setRightPane(title, realtext)
 
     def _getElementText(self, element=None):
+        '''Returns the text of the element.'''
         if element is None:
             element = self.elements[self.showingPage]
         (reqhead, reqbody, httpResp) = element
@@ -211,11 +213,13 @@ class Compare(entries.RememberingWindow):
         return title, realtext
 
     def _rightToLeft(self, widg):
+        '''Sets the right text in the left pane for comparison.'''
         self.leftElement = self.elements[self.showingPage]
         title, realtext = self._getElementText()
         self.comp.setLeftPane(title, realtext)
 
     def _pageChange(self, page):
+        '''Change the selected page.'''
         self.showingPage = page
         title, realtext = self._getElementText()
         self.comp.setRightPane(title, realtext)
@@ -238,6 +242,7 @@ class Compare(entries.RememberingWindow):
         print "FIXME: implement help!!"
 
     def _clearAll(self, action):
+        '''Clear all the panes.'''
         self.elements = []
         self.comp.setLeftPane("", "")
         self.comp.setRightPane("", "")
@@ -248,6 +253,7 @@ class Compare(entries.RememberingWindow):
         self.clusterbut.set_sensitive(False)
 
     def _sendRequests(self, widg, edittype, paneside):
+        '''Send the request to the manual or fuzzy request window.'''
         func = dict(manual=craftedRequests.ManualRequests, fuzzy=craftedRequests.FuzzyRequests)[edittype]
         if paneside == "left":
             element = self.leftElement
@@ -257,5 +263,6 @@ class Compare(entries.RememberingWindow):
         func(self.w3af, (reqhead, reqbody))
 
     def _sendCluster(self, widg):
+        '''Send the request to the cluster window.'''
         data = [r[2] for r in self.elements if r[2] is not None]
         clusterCellWindow(self.w3af, data=data)

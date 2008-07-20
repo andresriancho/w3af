@@ -22,11 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import pygtk, gtk
-from . import helpers, entries
+import gtk
+from . import entries
 import urllib, base64, sha, md5, random
 
 class SimpleTextView(gtk.TextView):
+    '''Simple abstraction of the text view.'''
     def __init__(self):
         gtk.TextView.__init__(self)
         self.buffer = self.get_buffer()
@@ -42,9 +43,9 @@ class SimpleTextView(gtk.TextView):
         @param newtext: the new text of the pane.
         '''
         self.clear()
-        iter = self.buffer.get_end_iter()
+        iterl = self.buffer.get_end_iter()
         newtext = repr(newtext)[1:-1]
-        self.buffer.insert(iter, newtext)
+        self.buffer.insert(iterl, newtext)
 
     def getText(self):
         '''Gets the text of the pane, un-repr'ing it.
@@ -137,6 +138,12 @@ class EncodeDecode(entries.RememberingWindow):
         self.show_all()
 
     def _proc(self, inp, out, func):
+        '''Process the text.
+
+        @param inp: the text input.
+        @param out: the text output.
+        @param func: the processing function.
+        '''
         txt = inp.getText()
         try:
             new = func(txt)

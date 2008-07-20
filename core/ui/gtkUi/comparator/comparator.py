@@ -1,4 +1,4 @@
-import codecs, math, os, re, difflib, struct
+import math, os, re, difflib, struct
 import pango, gobject, gtk
 import diffutil
 import traceback
@@ -388,8 +388,8 @@ class FileDiff(object):
             for c,r in self.regexes:
                 txt = c.sub(killit,txt)
         except AssertionError:
-             print "Regular expression '%s' changed the number of lines in the file. " \
-                   "Comparison will be incorrect. See the user manual for more details." % r
+            print "Regular expression '%s' changed the number of lines in the file. " \
+                  "Comparison will be incorrect. " % r
         return txt
 
     def after_text_insert_text(self, buffer, it, newtext, textlen):
@@ -423,7 +423,7 @@ class FileDiff(object):
         self.pixbuf_copy0  = load_pixbuf("button_copy0.xpm", self.pixels_per_line)
         self.pixbuf_copy1  = load_pixbuf("button_copy1.xpm", self.pixels_per_line)
 
-    def on_key_press_event(self, object, event):
+    def on_key_press_event(self, obj, event):
         x = self.keylookup.get(event.keyval, 0)
         if self.keymask | x != self.keymask:
             self.keymask |= x
@@ -432,7 +432,7 @@ class FileDiff(object):
             self.linkmap.queue_draw_area(0,      0, w, a[3])
             self.linkmap.queue_draw_area(a[2]-w, 0, w, a[3])
 
-    def on_key_release_event(self, object, event):
+    def on_key_release_event(self, obj, event):
         x = self.keylookup.get(event.keyval, 0)
         if self.keymask & ~x != self.keymask:
             self.keymask &= ~x
@@ -464,7 +464,7 @@ class FileDiff(object):
             panetext[i] = text
         panetext = [self._filter_text(p) for p in panetext]
         lines = map(lambda x: x.split("\n"), panetext)
-        step = self.linediffer.set_sequences_iter(*lines)
+        self.linediffer.set_sequences_iter(*lines)
         self.queue_draw()
         lenseq = [len(d) for d in self.linediffer.diffs]
         self.scheduler.add_task( self._update_highlighting( (0,lenseq[0]), (0,lenseq[1]) ).next )

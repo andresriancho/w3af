@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import pygtk, gtk, gobject
+import gtk, gobject
 
-import urllib2, time
+import urllib2
 import re
-from . import helpers, kbtree, messages, httpLogTab, reqResViewer, craftedRequests
+from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests
 import core.data.kb.knowledgeBase as kb
 import webbrowser
-import os
 import core.controllers.outputManager as om
 
 # To show request and responses
@@ -42,8 +41,8 @@ class FullKBTree(kbtree.KBTree):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, kbbrowser, filter):
-        super(FullKBTree,self).__init__(w3af, filter, 'Knowledge Base', strict=False)
+    def __init__(self, w3af, kbbrowser, ifilter):
+        super(FullKBTree,self).__init__(w3af, ifilter, 'Knowledge Base', strict=False)
         self._dbHandler = reqResDBHandler()
         self.kbbrowser = kbbrowser
         self.connect('cursor-changed', self._showDesc)
@@ -151,9 +150,9 @@ class KBBrowser(gtk.HPaned):
         self.set_position(250)
         self.show()
 
-    def typeFilter(self, button, type):
+    def typeFilter(self, button, ptype):
         '''Changes the filter of the KB in the tree.'''
-        self.filters[type] = button.get_active()
+        self.filters[ptype] = button.get_active()
         self.kbtree.setFilter(self.filters)
 
 
@@ -299,6 +298,7 @@ class URLsTree(gtk.TreeView):
         gm.popup( None, None, None, event.button, event.time)
 
     def _openBrowser( self, widg, text):
+        '''Opens the text with an external browser.'''
         webbrowser.open_new_tab(text)
         
     def _sendRequest(self, widg, text, func):

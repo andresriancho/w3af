@@ -61,6 +61,7 @@ class FuzzyGenerator(object):
             self.genr2 = [[]]
 
     def _genIterator(self, text):
+        '''Generates the iterator from the text.'''
         namespace = {"string":__import__("string")}
         try:
             it = eval(text, namespace)
@@ -75,6 +76,10 @@ class FuzzyGenerator(object):
         return it
         
     def _dissect(self, txt):
+        '''Separates the fixed and dynamic part from the text.
+
+        @param txt: the text to process.
+        '''
         # remove the double $$
         txt = txt.replace("$$", "\x00")
 
@@ -96,6 +101,7 @@ class FuzzyGenerator(object):
         return toreplace, saneparts
 
     def generate(self):
+        '''Generates the different possibilities.'''
         for x in self._possib(self.genr1):
             full1 = self._build(self.sane1, x)
             for y in self._possib(self.genr2):
@@ -103,6 +109,7 @@ class FuzzyGenerator(object):
                 yield (full1, full2)
 
     def _build(self, sane, vals):
+        '''Constructs the whole text again.'''
         if vals is None:
             return sane[0]
         full = []
@@ -112,7 +119,10 @@ class FuzzyGenerator(object):
         full.append(str(sane[-1]))
         return "".join(full)
 
-    def _possib(self, generat, constr=[]):
+    def _possib(self, generat, constr=None):
+        '''Builds the different psosibilities.'''
+        if constr is None:
+            constr = []
         pos = len(constr)
         if not generat[pos]:
             yield None
