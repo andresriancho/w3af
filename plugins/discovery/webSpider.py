@@ -222,8 +222,16 @@ class webSpider(baseDiscoveryPlugin):
         Now we compile the regular expressions that are going to be
         used to ignore or follow links.
         '''
-        self._compiledIgnoreRe = re.compile( self._ignoreRegex )
-        self._compiledFollowRe = re.compile( self._followRegex )
+        try:
+            self._compiledIgnoreRe = re.compile( self._ignoreRegex )
+        except:
+            raise w3afException('You specified an invalid regular expression: "' + self._ignoreRegex + '".')
+
+        try:
+            self._compiledFollowRe = re.compile( self._followRegex )
+        except:
+            raise w3afException('You specified an invalid regular expression: "' + self._followRegex + '".')
+        
         
     def getPluginDeps( self ):
         '''
