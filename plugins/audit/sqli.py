@@ -177,6 +177,9 @@ class sqli(baseAuditPlugin):
         
         # Java
         errors.append( ('java\\.sql\\.SQLException', JAVA ))
+
+        # Coldfusion
+        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]\\[SQLServer\\]', MSSQL ))
         
         # Generic errors..
         errors.append( ('SELECT .*? FROM .*?', UNKNOWN ))

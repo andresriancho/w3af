@@ -99,6 +99,10 @@ class errorPages(baseGrepPlugin):
         mesg.append('at org.apache.coyote.')
         mesg.append('at org.apache.tomcat.')
         mesg.append('at org.apache.jasper.')
+
+        # Coldfusion
+        mesg.append('<title>Error Occurred While Processing Request</title></head><body><p></p>')
+        mesg.append('<li>Search the <a href="http://www.macromedia.com/support/coldfusion/" target="new">Knowledge Base</a> to find a solution to your problem.</li>')
         
         # http://www.programacion.net/asp/articulo/kbr_execute/
         mesg.append('Server.Execute Error')
