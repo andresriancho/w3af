@@ -74,13 +74,23 @@ class KBTree(gtk.TreeView):
         # initial filters
         self.filter = ifilter
 
-        # button-release-event, to handle right click
+        # button events
         self.connect('button-release-event', self._popup)
+        self.connect('button-press-event', self._doubleClick)
 
         # get the knowledge base and go live
         self.fullkb = kb.kb.dump()
         gobject.timeout_add(500, self._updateTree, self.treestore, self.treeholder)
         self.show()
+
+    def _doubleClick(self, widg, event):
+        '''If double click, expand/collapse the row.'''
+        if event.type == gtk.gdk._2BUTTON_PRESS:
+            path = self.get_cursor()[0]
+            if self.row_expanded(path):
+                self.collapse_row(path)
+            else:
+                self.expand_row(path, False)
 
     def _filterKB(self):
         '''Calculates the difference between the KB and the tree.

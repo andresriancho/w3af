@@ -174,6 +174,7 @@ class URLsTree(gtk.TreeView):
         self.treestore = gtk.TreeStore(str)
         gtk.TreeView.__init__(self, self.treestore)
         self.connect('button-release-event', self.popup_menu)
+        self.connect('button-press-event', self._doubleClick)
 
         # the TreeView column
         tvcolumn = gtk.TreeViewColumn('URLs')
@@ -190,6 +191,15 @@ class URLsTree(gtk.TreeView):
         self.urls = helpers.IteratedQueue(queue)
         gobject.timeout_add(500, self.addUrl().next)
         self.show()
+
+    def _doubleClick(self, widg, event):
+        '''If double click, expand/collapse the row.'''
+        if event.type == gtk.gdk._2BUTTON_PRESS:
+            path = self.get_cursor()[0]
+            if self.row_expanded(path):
+                self.collapse_row(path)
+            else:
+                self.expand_row(path, False)
 
     def addUrl(self):
         '''Adds periodically the new URLs to the tree.

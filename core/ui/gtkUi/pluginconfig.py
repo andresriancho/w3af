@@ -259,8 +259,9 @@ class PluginTree(gtk.TreeView):
         super(PluginTree,self).__init__(self.treestore)
         self.connect('cursor-changed', self.configure_plugin)
         
-        # button-release-event, to handle right click
+        # button events
         self.connect('button-release-event', self.popup_menu)
+        self.connect('button-press-event', self._doubleClick)
 
         # create a TreeViewColumn for the text and icon
         tvcolumn = gtk.TreeViewColumn(col_title)
@@ -283,6 +284,15 @@ class PluginTree(gtk.TreeView):
         self.append_column(tvcolumn)
 
         self.show()
+
+    def _doubleClick(self, widg, event):
+        '''If double click, expand/collapse the row.'''
+        if event.type == gtk.gdk._2BUTTON_PRESS:
+            path = self.get_cursor()[0]
+            if self.row_expanded(path):
+                self.collapse_row(path)
+            else:
+                self.expand_row(path, False)
 
     def _getEditablePlugin(self, pname, ptype):
         '''Returns if the plugin has options.'''
