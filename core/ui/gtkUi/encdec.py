@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import gtk
+import gtk, threading, gobject
 from . import entries
 import urllib, base64, sha, md5, random
 
@@ -144,14 +144,35 @@ class EncodeDecode(entries.RememberingWindow):
         @param out: the text output.
         @param func: the processing function.
         '''
+        # go busy
+        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+        busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
+        busy.show()
+        while gtk.events_pending():
+            gtk.main_iteration()
+
+        # threading game
+        event = threading.Event()
         txt = inp.getText()
-        try:
-            new = func(txt)
-        except Exception, e:
-            out.setText("ERROR: Invalid input for that operation:  "+str(e))
-            self.w3af.mainwin.sb("Problem processing that string!")
-        else:
-            out.setText(new)
+        proc = ThreadedProc(event, func, txt)
+
+        def procDone():
+            if not event.isSet():
+                return True
+            busy.destroy()
+
+            if proc.ok:
+                out.setText(proc.result)
+            else:
+                out.setText("ERROR: Invalid input for that operation:  "
+                             + str(proc.exception))
+                self.w3af.mainwin.sb("Problem processing that string!")
+            return False
+
+        proc.start()
+        gobject.timeout_add(200, procDone)
+
+
         
     def _encode(self, widg, combo):
         '''Encodes the upper text.'''
@@ -165,6 +186,26 @@ class EncodeDecode(entries.RememberingWindow):
         func = _butNameFunc_dec[opc][1]
         self._proc(self.panedn, self.paneup, func)
         
+
+class ThreadedProc(threading.Thread):
+    '''Encodes or decodes the text in a different thread.'''
+    def __init__(self, event, func, text):
+        self.event = event
+        self.func = func
+        self.text = text
+        threading.Thread.__init__(self)
+
+    def run(self):
+        '''Starts the thread.'''
+        try:
+            self.result = self.func(self.text)
+            self.ok = True
+        except Exception, e:
+            self.exception = e
+            self.ok = False
+        finally:
+            self.event.set()
+            
 
 # These are the encoding and decoding functions:
 
