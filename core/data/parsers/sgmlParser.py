@@ -49,7 +49,8 @@ class sgmlParser(abstractParser, SGMLParser):
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
         self._urlsInDocumentWithTags = []
-        
+        self._urlsInDocument = []
+
         #########
         # Regex URL detection ( normal detection is also done, see below )
         #########
