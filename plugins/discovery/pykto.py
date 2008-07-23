@@ -205,23 +205,16 @@ class pykto(baseDiscoveryPlugin):
                     
                     if self._genericScan or self._serverMatch( server ):
                         
-                        if self._mutateTests and query[0] == '/':
-                            '''
-                            This will guarantee that the urlJoin will mutate...
-                            Example without this:
-                                query = '/bin.out'
-                                url = 'http://a.com/f00/'
-                                joined = 'http://a.com/bin.out'
-                            Example with this:
-                                query = '/bin.out'      --->        'bin.out'
-                                url = 'http://a.com/f00/'
-                                joined = 'http://a.com/f00/bin.out'
-                            '''
-                            query = query[1:]
-                        
                         # I don't use urlJoin here because in some cases pykto needs to
                         # send something like http://abc/../../../../etc/passwd
                         # and after urlJoin the URL would be just http://abc/etc/passwd
+                        
+                        # But I do want is to avoid URLs like this one being generated:
+                        # http://localhost//f00
+                        # (please note the double //)
+                        if query[0] == '/' == url[-1]:
+                            query = query[1:]
+                            
                         finalUrl = url + query
                         
                         response = False

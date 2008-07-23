@@ -50,7 +50,6 @@ class fingerprint404Page:
         '''
         Creates a (response, extension) tuple and saves it in the self._404pageList.
         '''
-        domainPath = urlParser.getDomainPath( httpResponse.getURL() )
         try:
             response, extension = self._generate404( httpResponse.getURL() )
         except w3afException, w3:
@@ -71,7 +70,11 @@ class fingerprint404Page:
                 om.out.information('Server uses ' + str(response.getCode()) + ' instead of HTTP 404 error code. ')
                 self._reported = True
             
-            #om.out.debug('The 404 page for "'+domainPath+'" is : "'+response.getBody()+'".')
+            # This fixes some problems with redirections and with pykto that
+            # sends requests to http://host// which is != from http://host/
+            # This fixes bug #2020211
+            response.setURL( httpResponse.getURL() )
+            
             self._404pageList.append( (response, extension) )
     
     def _byDirectory( self, httpResponse ):
