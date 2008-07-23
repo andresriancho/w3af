@@ -44,26 +44,28 @@ class htmlFile(baseOutputPlugin):
     '''
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        self._fileName = 'report.html'
-        self._styleFilename = 'plugins' + os.path.sep + 'output' + os.path.sep + 'htmlFile' + os.path.sep +'style.css'
-        self._httpFileName = 'output-http.txt'
-        self._flushCounter = 0
-        self._flushNumber = 10
+        
+        # Internal variables
         self._initialized = False
         self._aditionalInfo = ''
+        self._styleFilename = 'plugins' + os.path.sep + 'output' + os.path.sep + 'htmlFile' + os.path.sep +'style.css'        
+        
+        # These attributes hold the file pointers
         self._file = None
+        self._http = None
         
+        # User configured parameters
         self._reportDebug = False
-        
+        self._fileName = 'report.html'
+        self._httpFileName = 'output-http.txt'
     
     def _init( self ):
         self._initialized = True
         try:
             #self._file = codecs.open( self._fileName, "w", "utf-8", 'replace' )            
-            self._fille = open( self._fileName, "w" )
+            self._file = open( self._fileName, "w" )
         except Exception, e:
             raise w3afException('Cant open report file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
-            self._error = True
         
         try:
             # Images aren't ascii, so this file that logs every request/response, will be binary
@@ -71,19 +73,16 @@ class htmlFile(baseOutputPlugin):
             self._http = open( self._httpFileName, "wb" )
         except Exception, e:
             raise w3afException('Cant open file ' + self._httpFileName + ' for output. Exception: ' + str(e) )
-            self._error = True      
+        
         try:
-            self._style = open( self._styleFilename, "r" )
+            styleFile = open( self._styleFilename, "r" )
         except:
             raise w3afException('Cant open style file ' + self._styleFilename + '.')
-            self._error = True          
-        self._writeToFile('<HTML>' + '\n' + '<HEAD>' + '\n' + '<TITLE>' + '\n' +  cgi.escape ( TITLE ) + ' </TITLE>' + '\n' + '<meta http-equiv="Content-Type" content="text/html; charset="iso-8859-1">' + '\n' + '<STYLE TYPE="text/css">' + '\n' + '<!-- ' + '\n' )
-        self._writeToFile( self._style.read() )
-        self._writeToFile('//--> ' + '\n' + '</STYLE>' + '\n' + '</HEAD>' + '\n' + '<BODY BGCOLOR=white> ' + '\n')              
-    
-    def __del__(self):
-        if self._file != None:
-            self._file.close()
+        else:
+            self._writeToFile('<HTML>' + '\n' + '<HEAD>' + '\n' + '<TITLE>' + '\n' +  cgi.escape ( TITLE ) + ' </TITLE>' + '\n' + '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">' + '\n' + '<STYLE TYPE="text/css">' + '\n' + '<!-- ' + '\n' )
+            self._writeToFile( styleFile.read() )
+            self._writeToFile('//--> ' + '\n' + '</STYLE>' + '\n' + '</HEAD>' + '\n' + '<BODY BGCOLOR=white> ' + '\n')
+            styleFile.close()
 
     def _writeToFile( self, msg ):
         try:
@@ -110,8 +109,6 @@ class htmlFile(baseOutputPlugin):
         if self._reportDebug:
             toPrint = unicode ( self._cleanString(message) )
             self._aditionalInfo+= '<tr>\n<td class=content>debug: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
-            self._flush()
-
     
     def information(self, message , newLine = True ):
         '''
@@ -131,7 +128,6 @@ class htmlFile(baseOutputPlugin):
         
         toPrint = unicode ( self._cleanString(message) )
         self._aditionalInfo+= '<tr>\n<td class=content>error: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
-        self._flush()
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
@@ -148,16 +144,7 @@ class htmlFile(baseOutputPlugin):
             self._init()
         toPrint = unicode ( self._cleanString(message) )
         self._aditionalInfo+= '<tr>\n<td class=content>console: ' + cgi.escape ( toPrint ) + ' \n</td></tr>\n'
-        self._flush()
         
-    def _flush(self):
-        '''
-        textfile.flush is called every time a message is sent to this plugin.
-        self._file.flush() is called every self._flushNumber
-        '''
-        if self._flushCounter % self._flushNumber == 0:
-            self._file.flush()
-            
     def setOptions( self, OptionList ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
@@ -208,6 +195,13 @@ class htmlFile(baseOutputPlugin):
         self._http.flush()
 
     def end (self ):
+        '''
+        This method is called when the scan has finished.
+        '''
+        # Just in case...
+        if not self._initialized:
+            self._init()
+            
         #
         # Write the configuration table!
         #
@@ -269,8 +263,15 @@ class htmlFile(baseOutputPlugin):
     <td class=title>w3af  Debug Information </td></tr>''')
         self._writeToFile( self._aditionalInfo )
         self._writeToFile('</tbody></table></td></tr></tbody></table><br>')
-        # Finnish the report 
-        self._writeToFile('</BODY>'+ '\n' + '</HTML>'+ '\n')        
+        # Finish the report 
+        self._writeToFile('</BODY>'+ '\n' + '</HTML>'+ '\n')
+        
+        # Close the files.
+        if self._file != None:
+            self._file.close()
+        
+        if self._http != None:
+            self._http.close()        
     
     def getLongDesc( self ):
         '''

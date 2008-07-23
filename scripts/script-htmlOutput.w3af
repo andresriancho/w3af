@@ -7,6 +7,9 @@ output config htmlFile
 set fileName output-w3af.html
 set verbose True
 back
+output config console
+#set verbose True
+back
 
 discovery config pykto
 set updateScandb True
