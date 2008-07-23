@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import core.controllers.outputManager as om
 import core.data.parsers.urlParser as urlParser
 from core.data.parsers.encode_decode import htmldecode
 import re
 import urllib
+from core.controllers.w3afException import w3afException
 
 class abstractParser:
     '''
@@ -111,4 +113,10 @@ class abstractParser:
         >>> print urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8')
         indéx.html
         '''
-        return urllib.unquote(stringToDecode).decode('utf-8').encode('utf-8')
+        try:
+            return urllib.unquote(stringToDecode).decode('utf-8').encode('utf-8')
+        except UnicodeDecodeError, ude:
+            msg = 'Failed to _decodeString: "' + stringToDecode +'"'
+            om.out.error(msg)
+            raise w3afException(msg)
+            

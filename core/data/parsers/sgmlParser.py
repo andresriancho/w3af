@@ -55,7 +55,16 @@ class sgmlParser(abstractParser, SGMLParser):
         #########
         #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
         urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
-        self._urlsInDocument = [ self._decodeString(x[0]) for x in re.findall(urlRegex, httpResponse.getBody() ) ]
+        for url in re.findall(urlRegex, httpResponse.getBody() ):
+            # This try is here because the _decodeString method raises an exception
+            # whenever it fails to decode a url.
+            try:
+                decoded_url = self._decodeString(url[0])
+            except w3afException:
+                pass
+            else:
+                self._urlsInDocument.append(decoded_url)
+                
         self._urlsInDocument = [ urlParser.normalizeURL(i) for i in self._urlsInDocument ]
         self._urlsInDocument = list(set(self._urlsInDocument))
                 

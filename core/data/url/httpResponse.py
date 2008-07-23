@@ -92,7 +92,7 @@ class httpResponse:
         # A sample header just to remember how they look like: "content-type: text/html; charset=iso-8859-1"
         lowerCaseHeaders = self.getLowerCaseHeaders()
         if not 'content-type' in lowerCaseHeaders:
-            #hmmm... wtf?!
+            om.out.debug('hmmm... wtf?! The remote web server failed to send the content-type header.')
             self._body = body
         else:
             if not re.findall('text/(\w+)', lowerCaseHeaders['content-type'] ):
