@@ -99,7 +99,7 @@ class error500(baseGrepPlugin):
                 v.setId( error500.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unhandled error in web application' )
-                v.setDesc( 'An unidentified error was found at URL ' + v.getURL() +' . Enable all plugins and try again, if this is error still is not identified, please verify mannually.' )
+                v.setDesc( 'An unidentified web application error was found at URL ' + v.getURL() +' . Enable all plugins and try again, if this is error still is not identified, please verify mannually.' )
                 kb.kb.append( self, 'error500', v )
                 
         self.printUniq( kb.kb.getData( 'error500', 'error500' ), 'VAR' )
