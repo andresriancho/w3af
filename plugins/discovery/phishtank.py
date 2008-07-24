@@ -211,8 +211,8 @@ class phishtank(baseDiscoveryPlugin):
 
         
     def setOptions( self, OptionList ):
-        self._phishtankDB = OptionList['dbFile']
-        self._updateDB = OptionList['updateDB']
+        self._phishtankDB = OptionList['dbFile'].getValue()
+        self._updateDB = OptionList['updateDB'].getValue()
     
     def getOptions( self ):
         '''
