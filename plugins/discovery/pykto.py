@@ -204,7 +204,8 @@ class pykto(baseDiscoveryPlugin):
                     (server, query , expectedResponse, method , desc) = parameters
                     
                     if self._genericScan or self._serverMatch( server ):
-                        
+                        om.out.debug('Testing pykto signature: "' + query + '".')
+
                         # I don't use urlJoin here because in some cases pykto needs to
                         # send something like http://abc/../../../../etc/passwd
                         # and after urlJoin the URL would be just http://abc/etc/passwd
