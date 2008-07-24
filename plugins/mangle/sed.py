@@ -96,14 +96,14 @@ class sed(baseManglePlugin):
     
     def setOptions( self, OptionList ):
         
-        self._userOptionfixContentLen = OptionList['fixContentLen']
-        self._priority = OptionList['priority']
+        self._userOptionfixContentLen = OptionList['fixContentLen'].getValue()
+        self._priority = OptionList['priority'].getValue()
         
         if 'expressions' in OptionList.keys(): 
-            self._expressions = ','.join( OptionList['expressions'] )
+            self._expressions = ','.join( OptionList['expressions'].getValue() )
             self._expressions = re.findall( '([qs])([bh])/(.*?)/(.*?)/;?' , self._expressions )
             
-            if len( self._expressions ) == 0 and len ( OptionList['expressions'] ) != 0:
+            if len( self._expressions ) == 0 and len ( OptionList['expressions'].getValue() ) != 0:
                 raise w3afException('The user specified expression is invalid.')
             
             for exp in self._expressions:
