@@ -81,12 +81,16 @@ class allowedMethods(baseDiscoveryPlugin):
         
         # First, try to check available methods using OPTIONS, if OPTIONS aint enabled, do it manually
         res = self._urlOpener.OPTIONS( url )
-        headers = res.getHeaders()
-        if 'allow' in headers:
-            allowedMethods = headers['allow'].split(',')
-            allowedMethods = [ x.strip() for x in allowedMethods ]
-            withOptions = True
-        else:
+        headers = res.getLowerCaseHeaders()
+        allowedMethods = []
+        for headerName in ['allow','public']:
+            if headerName in headers:
+                allowedMethods.extend( headers[headerName].split(',') )
+                allowedMethods = [ x.strip() for x in allowedMethods ]
+                withOptions = True
+                allowedMethods = list(set(allowedMethods))
+
+        if not withOptions:
             # 'DELETE' ain't tested ! I don't want to remove anything...
             for method in ['OPTIONS','GET','HEAD','POST','TRACE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK' ]:
                 methodFunctor = getattr( self._urlOpener, method )
