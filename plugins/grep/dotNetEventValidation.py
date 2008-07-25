@@ -46,11 +46,20 @@ class dotNetEventValidation(baseGrepPlugin):
         evRegex += 'id="__EVENTVALIDATION" value=".*?" />'
         self._eventvalidation = re.compile( evRegex, re.IGNORECASE|re.DOTALL)
 
+        self._alreadyReported = []
+
     def _testResponse(self, request, response):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
         '''
         if isTextOrHtml(response.getHeaders()):
+
+            # First verify if we havent greped this yet
+            if request.getURI() in self._alreadyReported:
+                return
+            else:
+                self._alreadyReported.append(request.getURI())
+
             if self._viewstate.search(response.getBody()):
                 # I have __viewstate!, verify if event validation is enabled
                 if not self._eventvalidation.search(response.getBody()):
