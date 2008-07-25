@@ -121,6 +121,7 @@ class strangeHeaders(baseGrepPlugin):
         headers.append("TRANSFER-ENCODING")
         headers.append("VIA")        
         headers.append("VARY")
+        headers.append("WWW-AUTHENTICATE")
         headers.append("X-POWERED-BY")
         return headers
 
