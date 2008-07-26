@@ -412,7 +412,8 @@ class FuzzyRequests(entries.RememberingWindow):
         busy.destroy()
         self.resultReqResp.set_sensitive(True)
         self.clearButton.set_sensitive(True)
-        self.clusterButton.set_sensitive(True)
+        if len(self.responses) >=3:
+            self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
         self._pageChange(0)
 

@@ -27,6 +27,9 @@ import gtk.gdk
 from extlib.xdot import xdot as xdot
 from core.controllers.misc.levenshtein import relative_distance
 
+# To show request and responses
+from core.data.db.reqResDBHandler import reqResDBHandler
+
 import gobject
 from . import helpers, entries
     
@@ -41,6 +44,9 @@ class clusterGraphWidget(xdot.DotWindow):
         # Now I generate the dotcode based on the data
         dotcode = self._generateDotCode(response_list)
         self.set_dotcode(dotcode)
+        
+        # The database where the requests are saved
+        self._dbHandler = reqResDBHandler()
 
     def _xcombinations(self, items, n):
         if n==0: yield []
@@ -71,16 +77,25 @@ class clusterGraphWidget(xdot.DotWindow):
         
         dotcode += '}'
         
-        print dotcode
-        
         return dotcode
 
-
-    def on_url_clicked(self, widget, url, event):
+    def on_url_clicked(self, widget, id, event):
+        '''
+        When the user clicks on the node, we get here.
+        @parameter id: The id of the request that the user clicked on.
+        '''
+        search_result = self._dbHandler.searchById( int(id) )
+        if len(search_result) == 1:
+            request, response = search_result[0]
+            info = repr(request)
+            info += repr(response)
+        else:
+            info = 'Failed to find request/response with id: ' + str(id) + ' in the database.'
+        
         dialog = gtk.MessageDialog(
                 parent = self, 
                 buttons = gtk.BUTTONS_OK,
-                message_format="%s clicked" % url)
+                message_format="%s" % info)
         dialog.connect('response', lambda dialog, response: dialog.destroy())
         dialog.run()
         return True
