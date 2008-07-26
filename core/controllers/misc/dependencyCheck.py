@@ -104,8 +104,12 @@ def dependencyCheck():
         sys.exit( 1 )
     
     try:
-        os.system('neato -V')
+        exit_code = os.system('neato -V')
     except:
         print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
         sys.exit( 1 )
+    else:
+        if exit_code != 0:
+            print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
+            sys.exit( 1 )
         
