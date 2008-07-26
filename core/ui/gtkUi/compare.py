@@ -23,7 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 from . import entries, craftedRequests
 from .comparator import comparator
-from .clusterView import clusterCellWindow
+
+# Alternative ways of seeing the data
+from .clusterGraph import clusterGraphWidget
+
 import os
 
 ui_menu = """
@@ -265,4 +268,14 @@ class Compare(entries.RememberingWindow):
     def _sendCluster(self, widg):
         '''Send the request to the cluster window.'''
         data = [r[2] for r in self.elements if r[2] is not None]
-        clusterCellWindow(self.w3af, data=data)
+        
+        if data:
+            window = clusterGraphWidget(data)
+            window.connect('destroy', gtk.main_quit)
+            gtk.main()
+        else:
+            # Let the user know ahout the problem
+            msg = "There are no HTTP responses available to cluster."
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()        

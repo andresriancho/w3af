@@ -1,5 +1,5 @@
 '''
-clusterView.py
+clusterTable.py
 
 Copyright 2008 Andres Riancho
 

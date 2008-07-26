@@ -22,7 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk, gobject, threading
 from . import reqResViewer, helpers, entries, fuzzygen
-from .clusterView import clusterCellWindow
+
+# Alternative ways of seeing the data
+from .clusterGraph import clusterGraphWidget
+
 from core.controllers.w3afException import w3afException, w3afMustStopException 
 import os
 
@@ -320,15 +323,18 @@ class FuzzyRequests(entries.RememberingWindow):
         Analyze if we can cluster the responses and do it.
         '''
         data = [r[2] for r in self.responses if r[2] is not None]
+        
         if data:
-            clusterCellWindow( self.w3af, data=data )
+            window = clusterGraphWidget(data)
+            window.connect('destroy', gtk.main_quit)
+            gtk.main()
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             opt = dlg.run()
-            dlg.destroy()            
-        
+            dlg.destroy()
+
     def _analyze(self, widg):
         '''Handles the Analyze part.'''
         (request, postbody) = self.originalReq.getBothTexts()
