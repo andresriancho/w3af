@@ -28,6 +28,7 @@ This module defines a dependencyCheck function.
 
 import core.controllers.outputManager as om
 import sys
+import os
 
 def dependencyCheck():
     om.out.debug('Checking dependencies:')
@@ -103,8 +104,8 @@ def dependencyCheck():
         sys.exit( 1 )
     
     try:
-        import pydot
+        os.system('neato -V')
     except:
-        print 'You have to install pydot library. On Debian based distributions: apt-get install python-pydot'
+        print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
         sys.exit( 1 )
         
