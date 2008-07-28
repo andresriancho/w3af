@@ -48,11 +48,11 @@ class clusterGraphWidget(xdot.DotWindow):
         # The database where the requests are saved
         self._dbHandler = reqResDBHandler()
 
-    def _xcombinations(self, items, n):
+    def _xunique_combinations(self, items, n):
         if n==0: yield []
         else:
             for i in xrange(len(items)):
-                for cc in self._xcombinations(items[:i]+items[i+1:],n-1):
+                for cc in self._xunique_combinations(items[i+1:],n-1):
                     yield [items[i]]+cc
 
     def _generateDotCode(self, response_list):
@@ -67,7 +67,7 @@ class clusterGraphWidget(xdot.DotWindow):
             dotcode += str(response.getId()) + ' [URL="'+ str(response.getId()) +'"];\n'
         
         # Write the links between them
-        for r1, r2 in self._xcombinations(response_list, 2):
+        for r1, r2 in self._xunique_combinations(response_list, 2):
             distance = relative_distance(r1.getBody(), r2.getBody() )
             distance = 1-distance
             distance *= 2
