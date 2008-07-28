@@ -28,7 +28,7 @@ This module defines a dependencyCheck function.
 
 import core.controllers.outputManager as om
 import sys
-import os
+import subprocess
 
 def dependencyCheck():
     om.out.debug('Checking dependencies:')
@@ -104,12 +104,12 @@ def dependencyCheck():
         sys.exit( 1 )
     
     try:
-        exit_code = os.system('neato -V')
+        proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except:
         print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
         sys.exit( 1 )
     else:
-        if exit_code != 0:
+        if 'graphviz' not in proc.stderr.read().lower():
             print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
             sys.exit( 1 )
         
