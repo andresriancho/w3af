@@ -41,9 +41,9 @@ class privateIP(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._classA = re.compile('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-        self._classB = re.compile('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-        self._classC = re.compile('(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
+        self._classA = re.compile('([^\.]10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+        self._classB = re.compile('([^\.]172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+        self._classC = re.compile('([^\.]192\.168\.\d?\d?\d?\.\d?\d?\d?)')
         self._regexList = [self._classA, self._classB, self._classC ]
         
     def _testResponse(self, request, response):
