@@ -113,7 +113,7 @@ class ConfigPanel(gtk.VBox):
             self.add(lab)
         else:
             # put image
-            img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
+            img = gtk.image_new_from_file('core/ui/gtkUi/data/w3af_logo.png')
             self.widg = img
             img.show()
             img.set_sensitive(False)
