@@ -22,17 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.urlParser import *
 import copy
 
-STRING_TO_IDENTIFY_ERRORS = '077b8d51aef4843c24efa7ad11ec56c6'
-
 import codecs
 def _returnEscapedChar(exc):
     slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
     return ( unicode(slash_x_XX) , exc.end)
-def _returnStringToIdentifyError(exc):
-    return ( unicode( STRING_TO_IDENTIFY_ERRORS ) , exc.end)
     
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
-codecs.register_error("returnStringToIdentifyError", _returnStringToIdentifyError)
 
 import re
 
@@ -42,20 +37,26 @@ class httpResponse:
         '''
         @parameter time: The time between the request and the response.
         '''
-        self.setCode(code)
-        self.setHeaders(info)
-        self.setBody(read)
+        # A nice and comfortable default
+        self._charset = 'utf-8'
         
+        # Set the URL variables
         self._realurl = uri2url( originalUrl )
         self._uri = originalUrl
-        
         self._redirectedURL = geturl
         self._redirectedURI = uri2url( geturl )
         
+        # Set the rest
+        self.setCode(code)
+        self.setHeaders(info)
+        self.setBody(read)
         self._msg = msg
+        self._time = time
+        
         # A unique id identifier for the response
         self.id = id
-        self._time = time
+
+        self._fromCache = False
     
     def getId( self ): return self.id
     def getRedirURL( self ): return self._redirectedURL
@@ -131,34 +132,39 @@ class httpResponse:
                     charset = headers_charset
                 elif meta_charset != headers_charset:
                     om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
-                    meta_charset +'" in the HTML body meta tag.')
+                    meta_charset +'" in the HTML body meta tag. Using the HTML charset.')
                     
-                    # decode the body with the headers_charset
-                    decoded_with_headers = body.decode(headers_charset, 'returnStringToIdentifyError')
-                    errors_decoding_with_headers = decoded_with_headers.count(STRING_TO_IDENTIFY_ERRORS)
+                    # Mozilla uses the HTML charset, so I'm going to use it.
+                    charset = meta_charset
                     
-                    # decode the body with the meta_charset
-                    decoded_with_meta = body.decode(meta_charset, 'returnStringToIdentifyError')
-                    errors_decoding_with_meta = decoded_with_meta.count(STRING_TO_IDENTIFY_ERRORS)
-                    
-                    if errors_decoding_with_headers >= errors_decoding_with_meta:
-                        charset = meta_charset
-                    else:
-                        charset = headers_charset
-                    
-                # Now that we have the charset, we use it!
+                # Now that we have the charset, we use it! (and save it)
                 # The return value of the decode function is a unicode string.
                 unicode_str = body.decode(charset, 'returnEscapedChar')
+               
                 # Now we use the unicode_str to create a utf-8 string that will be used in all w3af
                 self._body = unicode_str.encode('utf-8')
                 
                 self._charset = charset
+                
+                print self.getURL(), self._charset
                 
 
     def setHeaders( self, headers ): self._headers = headers
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri
     def setWaitTime( self, t ): self._time = t
+
+    def getFromCache(self):
+        '''
+        @return: True if this response was obtained from the local cache.
+        '''
+        return self._fromCache
+        
+    def setFromCache(self, fcache):
+        '''
+        @parameter fcache: True if this response was obtained from the local cache.
+        '''
+        self._fromCache = fcache
 
     def __repr__( self ):
         return '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL() + ' >'

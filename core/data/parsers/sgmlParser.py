@@ -50,6 +50,8 @@ class sgmlParser(abstractParser, SGMLParser):
         
         self._urlsInDocumentWithTags = []
         self._urlsInDocument = []
+        
+        self._encoding = httpResponse.getCharset()
 
         #########
         # Regex URL detection ( normal detection is also done, see below )
@@ -60,7 +62,7 @@ class sgmlParser(abstractParser, SGMLParser):
             # This try is here because the _decodeString method raises an exception
             # whenever it fails to decode a url.
             try:
-                decoded_url = self._decodeString(url[0])
+                decoded_url = self._decodeString(url[0], self._encoding)
             except w3afException:
                 pass
             else:
@@ -174,7 +176,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     content = attr[1]
                     
             if hasContent and hasHTTP_EQUIV:
-                content = self._decodeString( content )
+                content = self._decodeString( content, self._encoding )
                 self._metaRedirs.append( content )
                 
                 # And finally I add the URL to the list of url's found in the document...
@@ -184,7 +186,7 @@ class sgmlParser(abstractParser, SGMLParser):
                 for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                     url = url.strip()
                     url = urlParser.urlJoin( self._baseUrl , url )
-                    url = self._decodeString(url)
+                    url = self._decodeString(url, self._encoding)
                     
                     self._urlsInDocument.append( url )
                     self._urlsInDocumentWithTags.append( ('meta', url ) )
@@ -199,7 +201,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     if len(  attr[1] ):
                             if attr[1][0] != '#':
                                 url = urlParser.urlJoin( self._baseUrl ,attr[1] )
-                                url = self._decodeString(url)
+                                url = self._decodeString(url, self._encoding)
                                 url = urlParser.normalizeURL( url )
                                 if url not in self._urlsInDocument:
                                     self._urlsInDocument.append( url )

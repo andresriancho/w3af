@@ -108,15 +108,15 @@ class abstractParser:
         '''
         raise Exception('You should create your own parser class and implement the getMetaTags() method.')
         
-    def _decodeString(self, stringToDecode):
+    def _decodeString(self, stringToDecode, encoding='utf-8'):
         '''
         >>> print urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8')
         indéx.html
         '''
         try:
-            return urllib.unquote(stringToDecode).decode('utf-8').encode('utf-8')
+            return urllib.unquote(stringToDecode).decode(encoding).encode('utf-8')
         except UnicodeDecodeError, ude:
-            msg = 'Failed to _decodeString: "' + stringToDecode +'"'
+            msg = 'Failed to _decodeString: "' + stringToDecode +'" using encoding: ' + encoding
             om.out.error(msg)
             raise w3afException(msg)
             
