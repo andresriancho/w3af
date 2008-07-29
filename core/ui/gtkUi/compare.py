@@ -66,12 +66,31 @@ class Compare(entries.RememberingWindow):
             ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding this window', self._help),
             ('ClearAll', gtk.STOCK_CLEAR, '_Clear All', None, 'Clear all the texts', self._clearAll),
         ])
+
+
+        iconfactory = gtk.IconFactory()
+        iconfactory.add_default()
+        def make_iconset(path):
+            return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
+
+        iconfactory.add('req_head', make_iconset('core/ui/gtkUi/data/request-headers.png'))
+        iconfactory.add('req_body', make_iconset('core/ui/gtkUi/data/request-body.png'))
+        iconfactory.add('res_head', make_iconset('core/ui/gtkUi/data/response-headers.png'))
+        iconfactory.add('res_body', make_iconset('core/ui/gtkUi/data/response-body.png'))
+
+        gtk.stock_add((
+            ('req_head', "Show Request Headers", 0, gtk.gdk.keyval_from_name('1'), 'w3af'),
+            ('req_body', "Show Request Body", 0, gtk.gdk.keyval_from_name('2'), 'w3af'),
+            ('res_head', "Show Response Headers", 0, gtk.gdk.keyval_from_name('3'), 'w3af'),
+            ('res_body', "Show Response Body", 0, gtk.gdk.keyval_from_name('4'), 'w3af'),
+        ))
+
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('ReqHeaders', gtk.STOCK_GOTO_TOP, '_Request Headers', None, 'Show/Hide the request headers', self._toggle_reqhead, False),
-            ('ReqBody',    gtk.STOCK_GO_UP,    '_Request Body',    None, 'Show/Hide the request body',    self._toggle_reqbody, False),
-            ('RespHeaders', gtk.STOCK_GO_DOWN,     '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
-            ('RespBody',    gtk.STOCK_GOTO_BOTTOM, '_Response Body',    None, 'Show/Hide the response body',    self._toggle_respbody, True),
+            ('ReqHeaders', 'req_head', '_Request Headers', None, 'Show/Hide the request headers', self._toggle_reqhead, False),
+            ('ReqBody',    'req_body',    '_Request Body',    None, 'Show/Hide the request body',    self._toggle_reqbody, False),
+            ('RespHeaders', 'res_head',     '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
+            ('RespBody',    'res_body', '_Response Body',    None, 'Show/Hide the response body',    self._toggle_respbody, True),
         ])
 
         # finish the toolbar
