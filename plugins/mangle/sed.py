@@ -99,37 +99,36 @@ class sed(baseManglePlugin):
         self._userOptionfixContentLen = OptionList['fixContentLen'].getValue()
         self._priority = OptionList['priority'].getValue()
         
-        if 'expressions' in OptionList.keys(): 
-            self._expressions = ','.join( OptionList['expressions'].getValue() )
-            self._expressions = re.findall( '([qs])([bh])/(.*?)/(.*?)/;?' , self._expressions )
+        self._expressions = ','.join( OptionList['expressions'].getValue() )
+        self._expressions = re.findall( '([qs])([bh])/(.*?)/(.*?)/;?' , self._expressions )
+        
+        if len( self._expressions ) == 0 and len ( OptionList['expressions'].getValue() ) != 0:
+            raise w3afException('The user specified expression is invalid.')
+        
+        for exp in self._expressions:
+            if exp[0] not in ['q','s']:
+                raise w3afException('The first letter of the sed expression should be q(reQuest) or s(reSponse).')
             
-            if len( self._expressions ) == 0 and len ( OptionList['expressions'].getValue() ) != 0:
-                raise w3afException('The user specified expression is invalid.')
+            if exp[1] not in ['b','h']:
+                raise w3afException('The second letter of the sed expression should be b(body) or h(header).')
             
-            for exp in self._expressions:
-                if exp[0] not in ['q','s']:
-                    raise w3afException('The first letter of the sed expression should be q(reQuest) or s(reSponse).')
+            try:
+                regex = re.compile( exp[2] )
+            except:
+                raise w3afException('Invalid regular expression in sed plugin.')
                 
-                if exp[1] not in ['b','h']:
-                    raise w3afException('The second letter of the sed expression should be b(body) or h(header).')
-                
-                try:
-                    regex = re.compile( exp[2] )
-                except:
-                    raise w3afException('Invalid regular expression in sed plugin.')
-                    
-                if exp[0] == 'q':
-                    # The expression mangles the request
-                    if exp[1] == 'b':
-                        self._reqBodyManglers.append( (regex, exp[3]) )
-                    else:
-                        self._reqHeadManglers.append( (regex, exp[3]) )
+            if exp[0] == 'q':
+                # The expression mangles the request
+                if exp[1] == 'b':
+                    self._reqBodyManglers.append( (regex, exp[3]) )
                 else:
-                    # The expression mangles the response
-                    if exp[1] == 'b':
-                        self._resBodyManglers.append( (regex, exp[3]) )
-                    else:
-                        self._resHeadManglers.append( (regex, exp[3]) )
+                    self._reqHeadManglers.append( (regex, exp[3]) )
+            else:
+                # The expression mangles the response
+                if exp[1] == 'b':
+                    self._resBodyManglers.append( (regex, exp[3]) )
+                else:
+                    self._resHeadManglers.append( (regex, exp[3]) )
 
     def getOptions( self ):
         '''
