@@ -34,6 +34,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.request.frFactory import createFuzzableRequestRaw
 
 from core.data.url.httpResponse import httpResponse as httpResponse
+from core.data.url.handlers.localCache import CachedResponse
 from core.controllers.misc.lru import LRU
 
 # For subclassing requests and other things
@@ -481,7 +482,7 @@ class xUrllib:
                 # Clear the log of failed requests; this request is done!
                 if id(req) in self._errorCount:
                     del self._errorCount[ id(req) ]
-                self._decrementGlobalErrorCount()
+                self._zeroGlobalErrorCount()
             
                 if grepResult:
                     self._grepResult( req, httpResObj )
@@ -520,11 +521,14 @@ class xUrllib:
             geturl = res.geturl()
             read = self._readRespose( res )
             httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=res.id, time=time.time() - startTime, msg=res.msg )
+            # Let the upper layers know that this response came from the local cache.
+            if isinstance(res, CachedResponse):
+                httpResObj.setFromCache(True)
             
             # Clear the log of failed requests; this request is done!
             if id(req) in self._errorCount:
                 del self._errorCount[ id(req) ]
-            self._decrementGlobalErrorCount()
+            self._zeroGlobalErrorCount()
             
             if grepResult:
                 self._grepResult( req, httpResObj )
@@ -574,7 +578,7 @@ class xUrllib:
         if self._consecutiveErrorCount >= 10:
             raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
             
-    def _decrementGlobalErrorCount( self ):
+    def _zeroGlobalErrorCount( self ):
         if self._lastRequestFailed or self._consecutiveErrorCount:
             self._lastRequestFailed = False
             self._consecutiveErrorCount = 0

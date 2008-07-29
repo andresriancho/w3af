@@ -42,7 +42,6 @@ class baseGrepPlugin(basePlugin):
     def __init__(self):
         basePlugin.__init__( self )
         self._urlOpener = None
-        self._alreadyTested = []
 
     def testResponse(self, fuzzableRequest, response):
         '''
@@ -54,12 +53,10 @@ class baseGrepPlugin(basePlugin):
         @param fuzzableRequest: This is the fuzzable request object that generated the current response being analyzed.
         @return: If something is found it must be reported to the Output Manager and the KB.
         '''
-        if fuzzableRequest in self._alreadyTested:
-            # The __eq__ includes, url, method and dc !
-            #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it was already tested.' )
+        if response.getFromCache():
+            #om.out.debug('Grep plugins not testing: ' + repr(fuzzableRequest) + ' cause it was already tested.' )
             pass
         elif urlParser.getDomain( fuzzableRequest.getURL() ) in cf.cf.getData('targetDomains'):
-            self._alreadyTested.append( fuzzableRequest )
             self._testResponse( fuzzableRequest, response )
         else:
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )

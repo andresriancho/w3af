@@ -145,9 +145,6 @@ class httpResponse:
                 self._body = unicode_str.encode('utf-8')
                 
                 self._charset = charset
-                
-                print self.getURL(), self._charset
-                
 
     def setHeaders( self, headers ): self._headers = headers
     def setURL( self, url ): self._realurl = url
