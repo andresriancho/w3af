@@ -387,7 +387,7 @@ class pykto(baseDiscoveryPlugin):
                 vulnDesc += '.'
             v.setDesc( vulnDesc )
             v.setId( response.id )
-            v.setName( 'Insecure file' )
+            v.setName( 'Insecure file - ' + urlParser.getPath(response.getURL))
             v.setSeverity(severity.LOW)
 
             kb.kb.append( self, 'vuln', v )
