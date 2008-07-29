@@ -43,6 +43,7 @@ class clusterGraphWidget(xdot.DotWindow):
         
         # Now I generate the dotcode based on the data
         dotcode = self._generateDotCode(response_list)
+        self.set_filter('neato')
         self.set_dotcode(dotcode)
         
         # The database where the requests are saved
