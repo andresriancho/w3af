@@ -53,7 +53,7 @@ class svnUsers(baseGrepPlugin):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )
-                    v.setDesc( 'The URL : '+ response.getURL()  + ' contains a SVN versioning signature with the username: "' + m[0] + '" . ' )
+                    v.setDesc( 'The URL : '+ response.getURL()  + ' contains a SVN versioning signature with the username: "' + m[0] + '" .' )
                     v['user'] = m[0]
                     v.setSeverity(severity.LOW)
                     v.setName( 'SVN user disclosure vulnerability' )
