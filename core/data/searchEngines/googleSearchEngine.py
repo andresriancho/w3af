@@ -123,35 +123,37 @@ class googleSearchEngine(searchEngine):
     
     def met_search(self, query, start = 0, count = 10):
         """
-        search(query, start = 0, count = 10) -> results
-
         Search the web with Google.
-        
-        This method is based from the google.py file from the massive enumeration toolset, 
-        coded by pdp and released under GPL v2.
         
         @return: A tuple with two lists, one of google result objects, the second one is a list of httpResponses
         """
         results = []
         resPages = []
         
-        url = 'http://www.google.com/xhtml?'
-        _query = urllib.urlencode({'q':query, 'start':start, 'num':count})
-
+        url = 'http://www.google.com/search?'
+        
+        # The first 10 results are fetches like this:
+        if start <= 10:
+            # http://www.google.com.ar/search?hl=es&q=abc&btnG=Buscar+con+Google&meta=
+            _query = urllib.urlencode({'hl':'es', 'q':query, 'btnG':'Buscar con Google', 'meta':''})
+        else:
+            # http://www.google.com.ar/search?hl=es&q=abc&start=30&sa=N
+            _query = urllib.urlencode({'hl':'es', 'q':query, 'start':str(start), 'sa':'N'})
+            
         response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
         if 'href="http://www.google.com/support/bin/answer.py?answer=86640">' in response.getBody():
             raise w3afException('Google is telling us to stop doing automated tests.')
             
+        # Save the result page
         resPages.append( response )
         
-        for url in re.findall('<a accesskey="\d+" href="(.*?)" >',
-                                       response.getBody() ):
-            url = url[ url.index(';u=') + 3: ]
+        for url in re.findall('<h2 class=r><a href="(.*?)" class=l', response.getBody() ):
+            # Parse the URL
             url = urllib.unquote_plus( url )
-
             if not url.startswith('https://') and not url.startswith('ftp://') and not url.startswith('http://'):
                 url = 'http://' + url
-
+                
+            # Save the results
             grInstance = googleResult( url )
             results.append( grInstance )
 
