@@ -44,6 +44,7 @@ class ThreadedURLImpact(threading.Thread):
         self.tlow = tlow
         self.w3af = w3af
         self.event = event
+        self.ok = False
         self.fixContentLength = fixContentLength
         threading.Thread.__init__(self)
 
@@ -54,7 +55,6 @@ class ThreadedURLImpact(threading.Thread):
             self.ok = True
         except Exception, e:
             self.exception = e
-            self.ok = False
         finally:
             self.event.set()
             
@@ -377,6 +377,8 @@ class FuzzyRequests(entries.RememberingWindow):
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
+        while gtk.events_pending():
+            gtk.main_iteration()
         
         # Get the fix content length value
         fixContentLength = self._fixContentLengthCB.get_active()
