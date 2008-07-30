@@ -139,7 +139,7 @@ class sed(baseManglePlugin):
         o1 = option('expressions', self._expressions, d1, 'list', help=h1)
         
         d2 = 'Fix the content length header after mangling'
-        o2 = option('fixContentLen', self._fixContentLen, d2, 'boolean')
+        o2 = option('fixContentLen', self._userOptionfixContentLen, d2, 'boolean')
 
         d3 = 'Plugin execution priority'
         h3 = 'Mangle plugins are ordered using the priority parameter'
