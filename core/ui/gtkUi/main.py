@@ -468,6 +468,10 @@ class MainApp(object):
         @param relaxedTarget: if True, return OK even if the target wasn't saved ok
         @return: True if all went ok
         '''
+        # Clear everything
+        for ptype in self.w3af.getPluginTypes():
+            self.w3af.setPlugins([], ptype)
+        
         # save the activated plugins
         for ptype,plugins in self.pcbody.getActivatedPlugins():
             self.w3af.setPlugins(plugins, ptype)
