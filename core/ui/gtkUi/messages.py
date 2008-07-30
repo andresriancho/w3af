@@ -61,12 +61,10 @@ class _LineScroller(gtk.TextView):
         # colors
         self.textbuffer.create_tag("red-fg",  foreground="red")
         self.textbuffer.create_tag("blue-fg", foreground="blue")
-        self.textbuffer.create_tag("grey-fg", foreground="grey")
         self.textbuffer.create_tag("brown-fg", foreground="brown")
         self.bg_colors = {
             "vulnerability": "red-fg",
             "information": "blue-fg",
-            "debug": "grey-fg",
             "error": "brown-fg",
         }
 
@@ -136,7 +134,6 @@ class Messages(gtk.VBox, entries.Searchable):
         makeBut("Vulnerabilities", "vulnerability", True)
         makeBut("Information", "information", True)
         makeBut("Error", "error", True)
-        makeBut("Debug", "debug", False)
         upbox.show()
         self.pack_start(upbox, expand=False, fill=False)
 
