@@ -602,7 +602,10 @@ class Searchable(object):
     '''
     def __init__(self, textview):
         self.textview = textview
-
+        
+        # By default, don't match case
+        self._matchCaseValue = False
+        
         # key definitions
         self.key_f = gtk.gdk.keyval_from_name("f")
         self.key_g = gtk.gdk.keyval_from_name("g")
@@ -661,6 +664,14 @@ class Searchable(object):
         '''Builds the search bar.'''
         tooltips = gtk.Tooltips()
         self.srchtab = gtk.HBox()
+        
+        # close button
+        close = gtk.Image()
+        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR)
+        eventbox = gtk.EventBox()
+        eventbox.add(close)
+        eventbox.connect("button-release-event", self._close)
+        self.srchtab.pack_start(eventbox, expand=False, fill=False, padding=3)
 
         # label
         label = gtk.Label("Find:")
@@ -691,17 +702,24 @@ class Searchable(object):
         newwidth = max(wn, wp)
         butn.set_size_request(newwidth, hn)
         butp.set_size_request(newwidth, hp)
-
-        # close button
-        close = gtk.Image()
-        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR)
-        eventbox = gtk.EventBox()
-        eventbox.add(close)
-        eventbox.connect("button-release-event", self._close)
-        self.srchtab.pack_end(eventbox, expand=False, fill=False, padding=3)
+        
+        # Match case CheckButton
+        butCase = gtk.CheckButton('Match case')
+        butCase.set_active(self._matchCaseValue)
+        butCase.connect("clicked", self._matchCase)
+        butCase.show()
+        self.srchtab.pack_start(butCase, expand=False, fill=False, padding=3)
 
         self.pack_start(self.srchtab, expand=False, fill=False)
         self.searching = False
+
+    def _matchCase(self, widg):
+        '''
+        Toggles self._matchCaseValue and searches again
+        '''
+        self._matchCaseValue = not self._matchCaseValue
+        self._find(None, 'find')
+        
 
     def _find(self, widget, direction):
         '''Actually find the text, and handle highlight and selection.'''
@@ -716,6 +734,10 @@ class Searchable(object):
             return
         (ini, fin) = self.textbuf.get_bounds()
         alltext = self.textbuf.get_text(ini, fin)
+
+        if not self._matchCaseValue:
+            alltext = alltext.lower()
+            tosearch = tosearch.lower()
 
         # find the positions where the phrase is found
         positions = []
