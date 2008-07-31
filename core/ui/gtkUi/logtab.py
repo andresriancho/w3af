@@ -27,7 +27,7 @@ import core.data.constants.severity as severity
 import time
 import pango
 
-# margenes (tienen que ser > 10)
+# margins (they have to be > 10)
 MIZQ = 20
 MDER = 30
 MINF = 30
