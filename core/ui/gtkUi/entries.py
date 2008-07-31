@@ -667,7 +667,7 @@ class Searchable(object):
         
         # close button
         close = gtk.Image()
-        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR)
+        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
         eventbox = gtk.EventBox()
         eventbox.add(close)
         eventbox.connect("button-release-event", self._close)
