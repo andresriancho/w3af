@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import division
 
 import gtk, gobject
-from . import messages
+from . import messages, entries
 import core.data.constants.severity as severity
 import time
 import pango
@@ -231,8 +231,7 @@ class LogGraph(gtk.DrawingArea):
             yield punto, label
 
 
-
-class LogBody(gtk.VPaned):
+class LogBody(entries.ManagedVPaned):
     '''Body of the log tab.
 
     @param w3af: the Core instance.
@@ -240,7 +239,7 @@ class LogBody(gtk.VPaned):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(LogBody,self).__init__()
+        super(LogBody,self).__init__(w3af, "pane-logbody")
         self.w3af = w3af
 
         # top vpan
@@ -270,7 +269,6 @@ class LogBody(gtk.VPaned):
         self.pack1(top_vbox)
         self.pack2(graph)
 
-        self.set_position(300)
         self.show()
 
     def _set_what_is_running( self ):
@@ -280,4 +278,3 @@ class LogBody(gtk.VPaned):
         coreStatus = self.w3af.getCoreStatus()
         self._what_is_being_run.set_text( coreStatus )
         return True
-        

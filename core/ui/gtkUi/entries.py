@@ -984,3 +984,29 @@ wrapperWidgets = {
     "list": ListOption,
     "combo": ComboBoxOption, 
 }
+
+
+class ManagedVPaned(gtk.VPaned):
+    def __init__(self, w3af, widgname):
+        super(ManagedVPaned,self).__init__()
+        self.connect("notify", self.moveHandle)
+        self.winconfig = w3af.mainwin.generalconfig
+        self.widgname = widgname
+
+        # if we have it from before, get the info; otherwise plan to
+        # set it up around its half
+        if widgname in self.winconfig:
+            self.set_position(self.winconfig[widgname])
+        else:
+            self.signal = self.connect("expose-event", self.exposed)
+        
+    def moveHandle(self, widg, what):
+        if what.name == "position-set":
+            pos = self.get_position()
+            self.winconfig[self.widgname] = pos
+
+    def exposed(self, area, event):
+        h = self.window.get_size()[1]
+        self.set_position(h//2)
+        self.disconnect(self.signal)
+        return True

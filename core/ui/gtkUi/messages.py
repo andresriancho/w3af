@@ -43,7 +43,7 @@ class _LineScroller(gtk.TextView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, active_filter):
+    def __init__(self, active_filter, possible):
         '''
         @param active_filter: the filter active at startup.
         '''
@@ -55,6 +55,7 @@ class _LineScroller(gtk.TextView):
         self.show()
         self.messages = getQueueDiverter()
         self.all_messages = []
+        self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
 
@@ -98,6 +99,12 @@ class _LineScroller(gtk.TextView):
                 continue
             text = "[%s] %s\n" % (mess.getTime(), mess.getMsg())
             mtype = mess.getType()
+
+            # only store it if it's of one of the possible filtered
+            if mtype not in self.possible:
+                continue
+
+            # store it
             self.all_messages.append((mtype, text))
             antpos = self.text_position
             self.text_position += len(text)
@@ -141,7 +148,8 @@ class Messages(gtk.VBox, entries.Searchable):
         sw_mess = gtk.ScrolledWindow()
         sw_mess.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         newfilter = [k for k,v in self.filters.items() if v]
-        self.sclines = _LineScroller(newfilter)
+        possible = self.filters.keys()
+        self.sclines = _LineScroller(newfilter, possible)
         sw_mess.add(self.sclines)
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
