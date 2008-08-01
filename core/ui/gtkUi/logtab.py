@@ -231,7 +231,7 @@ class LogGraph(gtk.DrawingArea):
             yield punto, label
 
 
-class LogBody(entries.ManagedVPaned):
+class LogBody(entries.RememberingVPaned):
     '''Body of the log tab.
 
     @param w3af: the Core instance.

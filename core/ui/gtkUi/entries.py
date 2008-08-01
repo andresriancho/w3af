@@ -1008,12 +1008,22 @@ wrapperWidgets = {
 }
 
 
-class ManagedVPaned(gtk.VPaned):
-    def __init__(self, w3af, widgname):
-        super(ManagedVPaned,self).__init__()
+# three classes to provide remembering panes
+
+class _RememberingPane(object):
+    '''Remembering pane class.
+
+    Don't use it directly, you should use the ones provided below this.
+
+    @param w3af: the core
+    @param widgname: the name of the widget (the remembering key)
+    @param dimension: 0 for hztal, 1 for vertical
+    '''
+    def __init__(self, w3af, widgname, dimension):
         self.connect("notify", self.moveHandle)
         self.winconfig = w3af.mainwin.generalconfig
         self.widgname = widgname
+        self.dimension = dimension
 
         # if we have it from before, get the info; otherwise plan to
         # set it up around its half
@@ -1023,12 +1033,37 @@ class ManagedVPaned(gtk.VPaned):
             self.signal = self.connect("expose-event", self.exposed)
         
     def moveHandle(self, widg, what):
+        '''Adjust the record every time the handle is moved.'''
         if what.name == "position-set":
             pos = self.get_position()
             self.winconfig[self.widgname] = pos
 
     def exposed(self, area, event):
-        h = self.window.get_size()[1]
-        self.set_position(h//2)
+        '''Adjust the handle to the remembered position.
+
+        This is done only once.
+        '''
+        altoancho = self.window.get_size()[self.dimension]
+        self.set_position(altoancho//2)
         self.disconnect(self.signal)
         return True
+
+class RememberingHPaned(gtk.HPaned, _RememberingPane):
+    '''Remembering horizontal pane.
+
+    @param w3af: the core
+    @param widgname: the name of the widget (the remembering key)
+    '''
+    def __init__(self, w3af, widgname):
+        gtk.HPaned.__init__(self)
+        _RememberingPane.__init__(self, w3af, widgname, 0)
+
+class RememberingVPaned(gtk.VPaned, _RememberingPane):
+    '''Remembering vertical pane.
+
+    @param w3af: the core
+    @param widgname: the name of the widget (the remembering key)
+    '''
+    def __init__(self, w3af, widgname):
+        gtk.VPaned.__init__(self)
+        _RememberingPane.__init__(self, w3af, widgname, 1)
