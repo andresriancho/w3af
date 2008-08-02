@@ -42,7 +42,7 @@ class Splash(gtk.Window):
         color = gtk.gdk.color_parse('#f2f2ff')
         self.modify_bg(gtk.STATE_NORMAL, color)
         self.set_position(gtk.WIN_POS_CENTER)
-        self.set_size_request(505,260)
+        self.set_size_request(644,300)
 
         # ensure it is rendered immediately
         self.show_all()
@@ -50,6 +50,8 @@ class Splash(gtk.Window):
             gtk.main_iteration()
 
     def push(self, text):
+        import time
+        time.sleep(1)
         '''New text to be shown in the Splash.'''
         self.label.set_text(text)
         while gtk.events_pending():
