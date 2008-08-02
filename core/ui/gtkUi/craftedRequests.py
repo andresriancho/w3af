@@ -30,7 +30,7 @@ from core.controllers.w3afException import w3afException, w3afMustStopException
 import os
 
 request_example = """\
-GET http://localhost/path HTTP/1.0
+GET http://localhost/$[1,2,3,'']$ HTTP/1.0
 Host: www.some_host.com
 User-Agent: w3af.sf.net
 Pragma: no-cache
@@ -66,7 +66,7 @@ class ManualRequests(entries.RememberingWindow):
     '''
     def __init__(self, w3af, initialRequest=None):
         super(ManualRequests,self).__init__(w3af, "manualreq", "w3af - Manual Requests")
-        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 
         # The table to store the checkbox and the button
@@ -217,7 +217,7 @@ class FuzzyRequests(entries.RememberingWindow):
     '''
     def __init__(self, w3af, initialRequest=None):
         super(FuzzyRequests,self).__init__(w3af, "fuzzyreq", "w3af - Fuzzy Requests")
-        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         mainhbox = gtk.HBox()
         

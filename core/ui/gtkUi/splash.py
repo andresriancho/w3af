@@ -50,8 +50,6 @@ class Splash(gtk.Window):
             gtk.main_iteration()
 
     def push(self, text):
-        import time
-        time.sleep(1)
         '''New text to be shown in the Splash.'''
         self.label.set_text(text)
         while gtk.events_pending():

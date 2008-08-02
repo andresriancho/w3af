@@ -210,7 +210,7 @@ class MainApp(object):
     def __init__(self, profile):
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+        self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.window.connect("delete_event", self.quit)
         splash.push("Loading...")
 

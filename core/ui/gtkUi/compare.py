@@ -52,7 +52,7 @@ class Compare(entries.RememberingWindow):
     def __init__(self, w3af, commHandler):
         entries.RememberingWindow.__init__(self, w3af, "compare", "w3af - Compare",
                                            onDestroy=commHandler.destroy)
-        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.jpeg')
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         self.commHandler = commHandler
         commHandler.enable(self, self.addElement)
