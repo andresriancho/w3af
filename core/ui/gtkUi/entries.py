@@ -1030,21 +1030,17 @@ class _RememberingPane(object):
         # if we have it from before, get the info; otherwise plan to
         # set it up around its half
         if widgname in self.winconfig:
-            print widgname, "previo"
             self.set_position(self.winconfig[widgname])
         elif defaultInitPos is not None:
-            print widgname, "default"
             self.set_position(defaultInitPos)
             self.winconfig[self.widgname] = defaultInitPos
         else:
-            print widgname, "mitad"
             self.signal = self.connect("expose-event", self.exposed)
         
     def moveHandle(self, widg, what):
         '''Adjust the record every time the handle is moved.'''
         if what.name == "position-set":
             pos = self.get_position()
-            print self.widgname, pos
             self.winconfig[self.widgname] = pos
 
     def exposed(self, area, event):
