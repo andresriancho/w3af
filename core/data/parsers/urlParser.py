@@ -306,13 +306,17 @@ def getRootDomain( input ):
     else:
         return decomposeURI( url )
         
-def getDomainPath( url):
+def getDomainPath( url ):
     '''
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
     '''
     scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
-    return scheme + '://' +domain+ path[:path.rfind('/')+1]
+    if path:
+        res = scheme + '://' +domain+ path[:path.rfind('/')+1]
+    else:
+        res = scheme + '://' +domain+ '/'
+    return res
 
 def getFileName( url ):
     '''
