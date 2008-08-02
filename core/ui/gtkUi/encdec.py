@@ -77,7 +77,7 @@ class EncodeDecode(entries.RememberingWindow):
         self.w3af = w3af
 
         # splitted panes
-        vpan = gtk.VPaned()
+        vpan = entries.RememberingVPaned(w3af, "pane-encodedecode")
 
         # upper pane
         hbox = gtk.HBox()
@@ -133,7 +133,6 @@ class EncodeDecode(entries.RememberingWindow):
         hbox.pack_start(vbox, False, False, padding=5)
         vpan.pack2(hbox)
 
-        vpan.set_position(300)
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
 

@@ -53,20 +53,19 @@ class reqResViewer(gtk.VBox):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     @author: Facundo Batista ( facundo@taniquetil.com.ar )
     '''
-    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, withCompare=True, editableRequest=False, editableResponse=False ):
+    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, withCompare=True, editableRequest=False, editableResponse=False, widgname="default"):
         super(reqResViewer,self).__init__()
         self.w3af = w3af
         
-        pan = gtk.HPaned()
-        pan.set_position(400)
+        pan = entries.RememberingHPaned(w3af, "pane-reqRV"+widgname, 400)
         self.pack_start(pan)
 
         # request
-        self.request = requestPaned(enableWidget, editable=editableRequest)
+        self.request = requestPaned(w3af, enableWidget, editable=editableRequest, widgname=widgname)
         pan.pack1(self.request.notebook)
 
         # response
-        self.response = responsePaned(editable=editableResponse)
+        self.response = responsePaned(w3af, editable=editableResponse, widgname=widgname)
         pan.pack2(self.response.notebook)
 
         # buttons
@@ -105,9 +104,9 @@ class reqResViewer(gtk.VBox):
         requp,reqdn = self.request.getBothTexts()
         self.w3af.mainwin.commCompareTool((requp, reqdn, self.response.showingResponse))
 
-class requestResponsePaned(gtk.VPaned):
-    def __init__(self, enableWidget=None, editable=False):
-        gtk.VPaned.__init__(self)
+class requestResponsePaned(entries.RememberingVPaned):
+    def __init__(self, w3af, enableWidget=None, editable=False, widgname="default"):
+        entries.RememberingVPaned.__init__(self, w3af, "pane-rRVreqRespPane"+widgname)
         self.childButtons = []
 
         # The textview where a part of the req/res is showed
@@ -139,8 +138,6 @@ class requestResponsePaned(gtk.VPaned):
         sw2.add(self._downTv)
         
         # vertical pan (allows resize of req/res texts)
-        ### TODO: This should be centered
-        self.set_position( 200 )
         self.pack1( sw1 )
         self.pack2( sw2 )
         self.show_all()
@@ -196,8 +193,8 @@ class requestResponsePaned(gtk.VPaned):
 
 
 class requestPaned(requestResponsePaned):
-    def __init__(self, enableWidget=None, editable=False):
-        requestResponsePaned.__init__(self, enableWidget, editable)
+    def __init__(self, w3af, enableWidget=None, editable=False, widgname="default"):
+        requestResponsePaned.__init__(self, w3af, enableWidget, editable, widgname+"request")
 
         self.notebook = gtk.Notebook()
         l = gtk.Label("Request")
@@ -253,8 +250,8 @@ class requestPaned(requestResponsePaned):
         buff.insert(iterl, body)
         
 class responsePaned(requestResponsePaned):
-    def __init__(self, editable=False):
-        requestResponsePaned.__init__(self, editable)
+    def __init__(self, w3af, editable=False, widgname="default"):
+        requestResponsePaned.__init__(self, w3af, editable=editable, widgname=widgname+"response")
         self.notebook = gtk.Notebook()
         self.showingResponse = None
 

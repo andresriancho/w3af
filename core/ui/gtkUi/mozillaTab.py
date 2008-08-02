@@ -24,7 +24,7 @@ import gtk
 import gtkmozembed
 from . import entries
 
-class mozillaTab(gtk.HPaned):
+class mozillaTab(entries.RememberingHPaned):
     '''
     A tab that contains a mozilla browser. There's a bug in the library, 
     that after a change in the Mozilla API makes crash the program, 
@@ -46,7 +46,7 @@ class mozillaTab(gtk.HPaned):
     '''
     # FIXME: See how we can make that library path setup automatically...
     def __init__(self, w3af):
-        super(mozillaTab,self).__init__()
+        super(mozillaTab,self).__init__(w3af, "pane-moztab", 300)
         
         # Create the mozilla browser object
         self.mozilla = gtk.Label("here goes the embedded mozilla widget\n(if we can make it work)")
@@ -90,7 +90,6 @@ class mozillaTab(gtk.HPaned):
         mainvbox.show()
         
         self.add(mainvbox)
-        self.set_position(300)
         self.show()
 
     def _activGo(self, widg, change):

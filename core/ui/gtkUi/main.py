@@ -368,12 +368,11 @@ class MainApp(object):
         self.nb.show()
 
         # scan config tab
-        pan = gtk.HPaned()
+        pan = entries.RememberingHPaned(self.w3af, "pane-scanconfig", 150)
         self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
         self.profiles = profiles.ProfileList(self.w3af, initial=profile)
         pan.pack1(self.profiles)
         pan.pack2(self.pcbody)
-        pan.set_position(150)
         pan.show_all()
         label = gtk.Label("Scan config")
         self.nb.append_page(pan, label)

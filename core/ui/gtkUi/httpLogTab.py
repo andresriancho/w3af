@@ -24,10 +24,8 @@ import gtk
 import gobject
 import pango
 
-from .entries import ValidatedEntry
-
 # The elements to create the req/res viewer
-from . import reqResViewer
+from . import reqResViewer, entries
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
@@ -40,13 +38,13 @@ Here are some <b>examples</b>:
     - <i>url like '%xc%' and id &lt;&gt; 3</i>
 '''
 
-class httpLogTab(gtk.HPaned):
+class httpLogTab(entries.RememberingHPaned):
     '''
     A tab that shows all HTTP requests and responses made by the framework.    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self, w3af):
-        super(httpLogTab,self).__init__()
+        super(httpLogTab,self).__init__(w3af, "pane-httplogtab", 300)
         self.w3af = w3af
         
         # Show the information message about long searchs only one time
@@ -103,10 +101,9 @@ class httpLogTab(gtk.HPaned):
         self._sw.show_all()
         
         # I want all sections to be resizable
-        self._vpan = gtk.VPaned()
+        self._vpan = entries.RememberingVPaned(w3af, "pane-swandrRV", 100)
         self._vpan.pack1( self._sw )
         self._vpan.pack2( self._reqResViewer )
-        self._vpan.set_position(100)
         self._vpan.show()
         
         # Add the menuHbox, the request/response viewer and the r/r selector on the bottom
@@ -116,7 +113,6 @@ class httpLogTab(gtk.HPaned):
         
         # Add everything
         self.add( mainvbox )
-        self.set_position(300)
         self.show()
     
     def __add_columns(self, treeview):
@@ -256,13 +252,13 @@ class httpLogTab(gtk.HPaned):
         self._vpan.set_position(position)
         self._sw.show_all()
             
-class searchEntry(ValidatedEntry):
+class searchEntry(entries.ValidatedEntry):
     '''Class that inherits from validate entry in order to turn yellow if the text is not valid'''
     def __init__(self, value):
         self.default_value = "id = 1"
         self._match = None
         self.rrh = reqResDBHandler()
-        ValidatedEntry.__init__(self, value)
+        entries.ValidatedEntry.__init__(self, value)
         self.set_tooltip_markup(MARKUP_HELP)        
 
     def validate(self, text):

@@ -161,7 +161,7 @@ class PreviewWindow(entries.RememberingWindow):
         self.set_transient_for(parent) 
 
         # content
-        self.panes = reqResViewer.requestPaned(editable=False)
+        self.panes = reqResViewer.requestPaned(w3af, editable=False, widgname="fuzzypreview")
         self.vbox.pack_start(self.panes.notebook)
 
         # the ok button
@@ -238,7 +238,8 @@ class FuzzyRequests(entries.RememberingWindow):
         self._fixContentLengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPaned([analyzBut, sendBut], editable=True)
+        self.originalReq = reqResViewer.requestPaned(w3af, [analyzBut, sendBut],
+                                        editable=True, widgname="fuzzyrequest")
         if initialRequest is None:
             self.originalReq.rawShow(request_example, '')
         else:

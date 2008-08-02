@@ -568,8 +568,8 @@ class PluginConfigBody(gtk.VBox):
 
     def _buildpan(self, profileDescription=None):
         '''Builds the panel.'''
-        pan = gtk.HPaned()
-        leftpan = gtk.VPaned()
+        pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
+        leftpan = entries.RememberingVPaned(self.w3af, "pane-plugconfigleft", 280)
         self.config_panel = ConfigPanel(profileDescription)
         
         # upper left
@@ -589,7 +589,6 @@ class PluginConfigBody(gtk.VBox):
         # pack the left part
         leftpan.pack1(scrollwin1u)
         leftpan.pack2(scrollwin1l)
-        leftpan.set_position(280)
         leftpan.show()
 
         # rigth
@@ -601,7 +600,6 @@ class PluginConfigBody(gtk.VBox):
         # pack it all and show
         pan.pack1(leftpan)
         pan.pack2(scrollwin2)
-        pan.set_position(250)
         pan.show()
         return pan
 

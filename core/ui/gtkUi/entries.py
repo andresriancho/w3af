@@ -1018,8 +1018,10 @@ class _RememberingPane(object):
     @param w3af: the core
     @param widgname: the name of the widget (the remembering key)
     @param dimension: 0 for hztal, 1 for vertical
+    @param defaultInitPos: the default position for the first time 
+                           (overrides "half of the screen").
     '''
-    def __init__(self, w3af, widgname, dimension):
+    def __init__(self, w3af, widgname, dimension, defaultInitPos=None):
         self.connect("notify", self.moveHandle)
         self.winconfig = w3af.mainwin.generalconfig
         self.widgname = widgname
@@ -1028,14 +1030,21 @@ class _RememberingPane(object):
         # if we have it from before, get the info; otherwise plan to
         # set it up around its half
         if widgname in self.winconfig:
+            print widgname, "previo"
             self.set_position(self.winconfig[widgname])
+        elif defaultInitPos is not None:
+            print widgname, "default"
+            self.set_position(defaultInitPos)
+            self.winconfig[self.widgname] = defaultInitPos
         else:
+            print widgname, "mitad"
             self.signal = self.connect("expose-event", self.exposed)
         
     def moveHandle(self, widg, what):
         '''Adjust the record every time the handle is moved.'''
         if what.name == "position-set":
             pos = self.get_position()
+            print self.widgname, pos
             self.winconfig[self.widgname] = pos
 
     def exposed(self, area, event):
@@ -1044,7 +1053,9 @@ class _RememberingPane(object):
         This is done only once.
         '''
         altoancho = self.window.get_size()[self.dimension]
-        self.set_position(altoancho//2)
+        newpos = altoancho//2
+        self.set_position(newpos)
+        self.winconfig[self.widgname] = newpos
         self.disconnect(self.signal)
         return True
 
@@ -1053,17 +1064,21 @@ class RememberingHPaned(gtk.HPaned, _RememberingPane):
 
     @param w3af: the core
     @param widgname: the name of the widget (the remembering key)
+    @param defPos: the default position for the first time (overrides 
+                   "half of the screen").
     '''
-    def __init__(self, w3af, widgname):
+    def __init__(self, w3af, widgname, defPos=None):
         gtk.HPaned.__init__(self)
-        _RememberingPane.__init__(self, w3af, widgname, 0)
+        _RememberingPane.__init__(self, w3af, widgname, 0, defPos)
 
 class RememberingVPaned(gtk.VPaned, _RememberingPane):
     '''Remembering vertical pane.
 
     @param w3af: the core
     @param widgname: the name of the widget (the remembering key)
+    @param defPos: the default position for the first time (overrides 
+                   "half of the screen").
     '''
-    def __init__(self, w3af, widgname):
+    def __init__(self, w3af, widgname, defPos=None):
         gtk.VPaned.__init__(self)
-        _RememberingPane.__init__(self, w3af, widgname, 1)
+        _RememberingPane.__init__(self, w3af, widgname, 1, defPos)

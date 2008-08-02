@@ -23,7 +23,7 @@ import gtk, gobject
 
 import urllib2
 import re
-from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests
+from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 import core.data.kb.knowledgeBase as kb
 import webbrowser
 import core.controllers.outputManager as om
@@ -85,13 +85,13 @@ class FullKBTree(kbtree.KBTree):
             self.kbbrowser.rrV.set_sensitive(False)
             
             
-class KBBrowser(gtk.HPaned):
+class KBBrowser(entries.RememberingHPaned):
     '''Show the Knowledge Base, with the filter and the tree.
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(KBBrowser,self).__init__()
+        super(KBBrowser,self).__init__(w3af, "pane-kbbrowser", 250)
 
         # the filter to the tree
         filterbox = gtk.HBox()
@@ -138,16 +138,14 @@ class KBBrowser(gtk.HPaned):
         # The request/response viewer
         self.rrV = reqResViewer.reqResViewer(w3af)
         self.rrV.set_sensitive(False)
-        vpanedExplainAndView = gtk.VPaned()
+        vpanedExplainAndView = entries.RememberingVPaned(w3af, "pane-kbbexplainview", 100)
         vpanedExplainAndView.pack1( scrollwin22 )
         vpanedExplainAndView.pack2( self.rrV )
-        vpanedExplainAndView.set_position(100)
         vpanedExplainAndView.show_all()
         
         # pack & show
         self.pack1(scrollwin21)
         self.pack2(vpanedExplainAndView)
-        self.set_position(250)
         self.show()
 
     def typeFilter(self, button, ptype):
