@@ -177,6 +177,11 @@ class KBTree(gtk.TreeView):
 
         @return: True to keep being called by gobject.
         '''
+        # if the core is not running, don't have anything to update
+        if not self.w3af.isRunning():
+            return True
+
+        # get the filtered knowledge base info
         filteredKB = self._filterKB()
 
         # Note for the following lines: we store the path in the dict, and then
