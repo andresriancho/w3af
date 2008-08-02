@@ -131,6 +131,9 @@ class EncodeDecode(entries.RememberingWindow):
         @param out: the text output.
         @param func: the processing function.
         '''
+        # clear the output text, this will introduce a small blink
+        out.setText("")
+
         # go busy
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
