@@ -106,10 +106,10 @@ class Compare(entries.RememberingWindow):
 
         # the line with the "send to" buttons
         self.sendto_box = hbox = gtk.HBox()
-        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Left Request to Manual Editor")
+        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Left to Manual Editor")
         b.connect("clicked", self._sendRequests, "manual", "left")
         hbox.pack_start(b, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Left Request to Fuzzy Editor")
+        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Left to Fuzzy Editor")
         b.connect("clicked", self._sendRequests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
@@ -122,10 +122,10 @@ class Compare(entries.RememberingWindow):
         self.clusterbut.connect("clicked", self._sendCluster)
         self.clusterbut.set_sensitive(False)
         hbox.pack_end(self.clusterbut, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send Right Request to Fuzzy Editor")
+        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Right to Fuzzy Editor")
         b.connect("clicked", self._sendRequests, "fuzzy", "right")
         hbox.pack_end(b, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send Right Request to Manual Editor")
+        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Right to Manual Editor")
         b.connect("clicked", self._sendRequests, "manual", "right")
         hbox.pack_end(b, False, False, padding=2)
         self.vbox.pack_start(hbox, False, False, padding=10)
@@ -146,7 +146,8 @@ class Compare(entries.RememberingWindow):
 
         # the send to left button
         box = gtk.HBox()
-        but = gtk.Button("Set the Right text here")
+        but = gtk.Button("Set text to compare")
+        but.set_tooltip_text("Sets the text of the right pane into the left one")
         but.connect("clicked", self._rightToLeft)
         box.pack_start(but, True, False) 
         self.comp.leftBaseBox.pack_start(box, True, False)
