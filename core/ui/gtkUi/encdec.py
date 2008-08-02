@@ -80,58 +80,46 @@ class EncodeDecode(entries.RememberingWindow):
         vpan = entries.RememberingVPaned(w3af, "pane-encodedecode")
 
         # upper pane
-        hbox = gtk.HBox()
+        vbox = gtk.VBox()
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.paneup = SimpleTextView()
         sw.add(self.paneup)
-        hbox.pack_start(sw, True, True, padding=5)
+        vbox.pack_start(sw, True, True, padding=5)
 
-        # upper buttons
-        vbox = gtk.VBox()
-        tit = gtk.Label("Choose an encoding function:")
-        tit.set_alignment(0.0, .5)
-        tit.set_width_chars(30)
-        vbox.pack_start(tit, False, False)
+        # middle buttons, left
+        hbox = gtk.HBox()
         cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_enc:
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        vbox.pack_start(cb, False, False)
-        b = gtk.Button("Encode")
+        hbox.pack_start(cb, False, False, padding=10)
+        b = entries.SemiStockButton("Encode", gtk.STOCK_GO_DOWN, "Encode the upper text")
         b.connect("clicked", self._encode, cb)
-        vbox.pack_start(b, False, False)
-        hbox.pack_start(vbox, False, False, padding=5)
-        vpan.pack1(hbox)
+        hbox.pack_start(b, False, False)
 
-        # lower pane
-        hbox = gtk.HBox()
-        sw = gtk.ScrolledWindow()
-        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.panedn = SimpleTextView()
-        sw.add(self.panedn)
-        hbox.pack_start(sw, True, True, padding=5)
-
-        # lower buttons
-        vbox = gtk.VBox()
-        tit = gtk.Label("Choose a decoding function:")
-        tit.set_width_chars(30)
-        tit.set_alignment(0.0, .5)
-        vbox.pack_start(tit, False, False)
+        # middle buttons, rigth
+        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, "Decode the lower text")
+        b.connect("clicked", self._decode, cb)
+        hbox.pack_end(b, False, False, padding=10)
         cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_dec:
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        vbox.pack_start(cb, False, False)
-        b = gtk.Button("Decode")
-        b.connect("clicked", self._decode, cb)
-        vbox.pack_start(b, False, False)
-        hbox.pack_start(vbox, False, False, padding=5)
-        vpan.pack2(hbox)
+        hbox.pack_end(cb, False, False)
+        vbox.pack_start(hbox, False, False, padding=5)
+        vpan.pack1(vbox)
+
+        # lower pane
+        sw = gtk.ScrolledWindow()
+        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.panedn = SimpleTextView()
+        sw.add(self.panedn)
+        vpan.pack2(sw)
 
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
