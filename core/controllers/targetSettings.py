@@ -91,6 +91,18 @@ class targetSettings(configurable):
         ol.add(o3)
         return ol
     
+    def _verifyURL(self, targetUrl, fileTarget=True):
+        '''
+        Verify if the URL is valid and raise an exception if w3af doesn't support it.
+        '''
+        if fileTarget:
+            aFile = targetUrl.count('file://') and len(targetUrl) > len('file://')
+        else:
+            aFile = False
+        aHTTP = targetUrl.count('http://') and len(targetUrl) > len('http://')
+        aHTTPS = targetUrl.count('https://') and len(targetUrl) > len('https://')
+        if not aFile and not aHTTP and not aHTTPS:
+            raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file) and a domain/IP.' )        
     
     def setOptions( self, optionsMap ):
         '''
@@ -103,12 +115,8 @@ class targetSettings(configurable):
         targetUrls = optionsMap['target'].getValue()
         
         for targetUrl in targetUrls:
-            aFile = targetUrl.count('file://') and len(targetUrl) > len('file://')
-            aHTTP = targetUrl.count('http://') and len(targetUrl) > len('http://')
-            aHTTPS = targetUrl.count('https://') and len(targetUrl) > len('https://')
-            if not aFile and not aHTTP and not aHTTPS:
-                raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file) and a domain/IP.' )
-        
+            self._verifyURL(targetUrl)
+
         for targetUrl in targetUrls:
             if targetUrl.count('file://'):
                 try:
@@ -117,7 +125,9 @@ class targetSettings(configurable):
                     raise w3afException('Cannot open target file: ' + targetUrl.replace( 'file://' , '' ) )
                 else:
                     for line in f:
-                        targetUrls.append( line.strip() )
+                        target_in_file = line.strip()
+                        self._verifyURL(target_in_file, fileTarget=False)
+                        targetUrls.append(target_in_file)
                     f.close()
                 targetUrls.remove( targetUrl )
         
