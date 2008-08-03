@@ -137,7 +137,7 @@ class Messages(gtk.VBox, entries.Searchable):
             but.connect("clicked", self.typeFilter, signal)
             self.filters[signal] = initial
             but.show()
-            upbox.pack_start(but, expand=True, fill=False)
+            upbox.pack_start(but, False, False)
         makeBut("Vulnerabilities", "vulnerability", True)
         makeBut("Information", "information", True)
         makeBut("Error", "error", True)
