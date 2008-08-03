@@ -375,7 +375,7 @@ class searchableTextView(gtk.VBox, entries.Searchable):
         self.show()
         
         # Create the search widget
-        entries.Searchable.__init__(self, self.textView)
+        entries.Searchable.__init__(self, self.textView, small=True)
     
     def set_editable(self, e):
         return self.textView.set_editable(e)

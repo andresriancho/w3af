@@ -598,11 +598,13 @@ class Searchable(object):
     Just inheritate it from the box that has the textview to extend.
 
     @param textview: the textview to extend
+    @param small: True if the buttons will only have the icons
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, textview):
+    def __init__(self, textview, small=False):
         self.textview = textview
+        self.small = small
         
         # By default, don't match case
         self._matchCaseValue = False
@@ -686,13 +688,21 @@ class Searchable(object):
         self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
 
         # find next button
-        butn = SemiStockButton("Next", gtk.STOCK_GO_DOWN)
+        if self.small:
+            but_text = ''
+        else:
+            but_text = 'Next'
+        butn = SemiStockButton(but_text, gtk.STOCK_GO_DOWN)
         butn.connect("clicked", self._find, "next")
         tooltips.set_tip(butn, "Find the next ocurrence of the phrase")
         self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
 
         # find previous button
-        butp = SemiStockButton("Previous", gtk.STOCK_GO_UP)
+        if self.small:
+            but_text = ''
+        else:
+            but_text = 'Previous'
+        butp = SemiStockButton(but_text, gtk.STOCK_GO_UP)
         butp.connect("clicked", self._find, "previous")
         tooltips.set_tip(butp, "Find the previous ocurrence of the phrase")
         self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
