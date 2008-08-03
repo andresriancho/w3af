@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk, gobject
 import threading
-import core.data.kb.knowledgeBase as kb
-import core.data.kb
 from . import history, helpers
 
 class ValidatedEntry(gtk.Entry):
@@ -1120,71 +1118,3 @@ class StatusBar(gtk.Statusbar):
         if self._timer is not None:
             self._timer.cancel()
             self._timer = None
-        
-class _Guarded(object):
-    '''Helper for the guardian.'''
-    def __init__(self, objtype):
-        self.icon = helpers.KB_ICONS[objtype, None]
-        self._quant = 0
-        self.label = gtk.Label("0")
-
-    def _qset(self, newval):
-        self._quant = newval
-        self.label.set_text(str(newval))
-    quant = property(lambda s: s._quant, _qset)
-        
-
-class FoundObjectsGuardian(gtk.HBox):
-    '''Shows the objects found by the core.
-
-    @param w3af: the core
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, w3af):
-        super(FoundObjectsGuardian,self).__init__()
-        self.w3af = w3af
-        print "FIXME: sacar esto de aca..."
-    
-        # what to show
-        self.info = _Guarded("info")
-        self.vuln = _Guarded("vuln")
-        self.shll = _Guarded("shell")
-        self.objcont = {
-            core.data.kb.vuln.vuln: self.vuln,
-            core.data.kb.info.info: self.info,
-        }
-
-        # builds the presentation
-        self.pack_start(self.info.icon, False, False, padding=2)
-        self.pack_start(self.info.label, False, False, padding=2)
-        self.pack_start(self.vuln.icon, False, False, padding=2)
-        self.pack_start(self.vuln.label, False, False, padding=2)
-        self.pack_start(self.shll.icon, False, False, padding=2)
-        self.pack_start(self.shll.label, False, False, padding=2)
-
-        # go live
-        self.fullkb = kb.kb.dump()
-        self.kbholder = set()
-        gobject.timeout_add(1500, self._update)
-        self.show_all()
-
-    def _update(self):
-        '''Updates the objects shown.'''
-        # supervise the kb
-        for pluginname, plugvalues in self.fullkb.items():
-            for variabname, variabobjects in plugvalues.items():
-                if isinstance(variabobjects, list):
-                    for obj in variabobjects:
-                        if type(obj) not in self.objcont:
-                            continue
-                        if id(obj) in self.kbholder:
-                            continue
-                        guard = self.objcont[type(obj)]
-                        guard.quant += 1
-                        self.kbholder.add(id(obj))
-
-        # shells
-        shells = kb.kb.getAllShells()
-        self.shll.quant = len(shells)
-        return True
