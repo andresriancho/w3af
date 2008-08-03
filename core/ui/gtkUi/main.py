@@ -62,6 +62,7 @@ import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
+import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, proxywin
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel, guardian
 from core.controllers.misc.homeDir import getHomeDir
@@ -227,6 +228,9 @@ class MainApp(object):
 
         splash.push("Initializing core...")
         self.w3af = core.controllers.w3afCore.w3afCore()
+        
+        # This is inited before all, to have a full logging facility.
+        om.out.setOutputPlugins( ['gtkOutput'] )
 
         # status bar
         splash.push("Building the status bar...")

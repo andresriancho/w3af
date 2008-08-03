@@ -360,7 +360,7 @@ class w3afCore:
         ''' 
         om.out.debug('Called w3afCore.start()')
         try:
-            # Just in case the gtkUi / consoleUi / WebUi forgot to do this...
+            # Just in case the gtkUi / consoleUi forgot to do this...
             self.verifyEnvironment()
         except Exception,e:
             om.out.error('verifyEnvironment() raised an exception: "' + str(e) + '". This should never happend, are *you* user interface coder sure that you called verifyEnvironment() *before* start() ?')
