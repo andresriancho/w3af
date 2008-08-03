@@ -101,7 +101,8 @@ class ManualRequests(entries.RememberingWindow):
             self.reqresp.request.rawShow(initialUp, initialDn)
         
         # Show all!
-        self.show_all()
+        table.show_all()
+        self.show()
 
     def _send(self, widg):
         '''Actually generates the manual requests.
@@ -250,8 +251,11 @@ class FuzzyRequests(entries.RememberingWindow):
         helplabel = gtk.Label()
         helplabel.set_markup(FUZZYHELP)
         self.originalReq.notebook.append_page(helplabel, gtk.Label("Syntax help"))
+        helplabel.show()
+        self.originalReq.notebook.show()
         vbox.pack_start(self.originalReq.notebook, True, True, padding=5)
-
+        vbox.show()
+        
         # the commands
         t = gtk.Table(2, 3)
         analyzBut.connect("clicked", self._analyze)
@@ -267,8 +271,11 @@ class FuzzyRequests(entries.RememberingWindow):
         self.sendfb.set_sensitive(False)
         t.attach(self.sendfb, 1, 2, 1, 2)
         t.attach(self._fixContentLengthCB, 2, 3, 1, 2)
+        t.show_all()
+        
         vbox.pack_start(t, False, False, padding=5)
-
+        
+        
         # ---- right pane ----
         vbox = gtk.VBox()
         mainhbox.pack_start(vbox, padding=10)
@@ -277,11 +284,13 @@ class FuzzyRequests(entries.RememberingWindow):
         self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False, editableRequest=False, editableResponse=False)
         self.resultReqResp.set_sensitive(False)
         vbox.pack_start(self.resultReqResp, True, True, padding=5)
-
+        vbox.show()
+        
         # result control
         centerbox = gtk.HBox()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False)
+        centerbox.show()
         
         # cluster responses button
         image = gtk.Image()
@@ -305,7 +314,9 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # Show all!
         self.vbox.pack_start(mainhbox)
-        self.show_all()
+        self.vbox.show()
+        mainhbox.show()
+        self.show()
 
     def _clearResponses( self, widg ):
         '''
