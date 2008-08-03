@@ -141,7 +141,7 @@ class KBBrowser(entries.RememberingHPaned):
         vpanedExplainAndView = entries.RememberingVPaned(w3af, "pane-kbbexplainview", 100)
         vpanedExplainAndView.pack1( scrollwin22 )
         vpanedExplainAndView.pack2( self.rrV )
-        vpanedExplainAndView.show_all()
+        vpanedExplainAndView.show()
         
         # pack & show
         self.pack1(scrollwin21)

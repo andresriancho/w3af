@@ -58,14 +58,17 @@ class reqResViewer(gtk.VBox):
         self.w3af = w3af
         
         pan = entries.RememberingHPaned(w3af, "pane-reqRV"+widgname, 400)
+        pan.show()
         self.pack_start(pan)
 
         # request
         self.request = requestPaned(w3af, enableWidget, editable=editableRequest, widgname=widgname)
+        self.request.show()
         pan.pack1(self.request.notebook)
 
         # response
         self.response = responsePaned(w3af, editable=editableResponse, widgname=widgname)
+        self.response.show()
         pan.pack2(self.response.notebook)
 
         # buttons
@@ -88,8 +91,9 @@ class reqResViewer(gtk.VBox):
                 self.response.childButtons.append(b)
                 hbox.pack_end(b, False, False, padding=2)
             self.pack_start(hbox, False, False, padding=5)
+            hbox.show()
 
-        self.show_all()
+        self.show()
 
     def _sendRequest(self, widg, func):
         '''Sends the texts to the manual or fuzzy request.
@@ -110,7 +114,7 @@ class requestResponsePaned(entries.RememberingVPaned):
         self.childButtons = []
 
         # The textview where a part of the req/res is showed
-        self._upTv = gtk.TextView()
+        self._upTv = searchableTextView()
         self._upTv.set_editable(editable)
         self._upTv.set_border_width(5)
         if enableWidget:
@@ -118,29 +122,15 @@ class requestResponsePaned(entries.RememberingVPaned):
             for widg in enableWidget:
                 widg.set_sensitive(False)
         
-        # Scroll where the textView goes
-        sw1 = gtk.ScrolledWindow()
-        sw1.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        
         # The textview where a part of the req/res is showed (this is for postdata and response body)
-        self._downTv = gtk.TextView()
+        self._downTv = searchableTextView()
         self._downTv.set_editable(editable)
         self._downTv.set_border_width(5)
         
-        # Scroll where the textView goes
-        sw2 = gtk.ScrolledWindow()
-        sw2.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw2.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        
-        # Add everything to the scroll views
-        sw1.add(self._upTv)
-        sw2.add(self._downTv)
-        
         # vertical pan (allows resize of req/res texts)
-        self.pack1( sw1 )
-        self.pack2( sw2 )
-        self.show_all()
+        self.pack1( self._upTv )
+        self.pack2( self._downTv )
+        self.show()
 
     def set_sensitive(self, how):
         '''Sets the pane on/off.
@@ -200,6 +190,9 @@ class requestPaned(requestResponsePaned):
         l = gtk.Label("Request")
         self.notebook.append_page(self, l)
         
+        self.notebook.show()
+        self.show()
+        
     def showObject(self, fuzzableRequest):
         '''
         Show the data from a fuzzableRequest object in the textViews.
@@ -219,7 +212,7 @@ class requestPaned(requestResponsePaned):
         iterl = buff.get_end_iter()
         buff.insert(iterl, postdata)
         
-    def show( self, method, uri, version, headers, postData ):
+    def showParsed( self, method, uri, version, headers, postData ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
         '''
@@ -258,6 +251,7 @@ class responsePaned(requestResponsePaned):
         # first page
         l = gtk.Label("Response")
         self.notebook.append_page(self, l)
+        self.notebook.show()
 
         # second page, only there if html renderer available
         self._renderingWidget = None
@@ -276,6 +270,8 @@ class responsePaned(requestResponsePaned):
                 swRenderedHTML = gtk.ScrolledWindow()
                 swRenderedHTML.add(renderWidget)
                 self.notebook.append_page(swRenderedHTML, gtk.Label("Rendered response"))
+        
+        self.show()
 
     def _renderGtkHtml2(self, body, mimeType, baseURI):
         # It doesn't make sense to render something empty
@@ -320,7 +316,7 @@ class responsePaned(requestResponsePaned):
         iterl = buff.get_end_iter()
         buff.insert(iterl, body)
 
-    def show( self, version, code, msg, headers, body, baseURI ):
+    def showParsed( self, version, code, msg, headers, body, baseURI ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
         '''
@@ -355,3 +351,38 @@ class responsePaned(requestResponsePaned):
         # Show it rendered
         if self._renderingWidget is not None:
             self._renderFunction(body, mimeType, baseURI)
+
+
+class searchableTextView(gtk.VBox, entries.Searchable):
+    '''A textview widget that supports searches.
+
+    @author: Andres Riancho ( andres.riancho@gmail.com )
+    '''
+    def __init__(self):
+        gtk.VBox.__init__(self)
+        
+        # Create the textview where the text is going to be shown
+        self.textView = gtk.TextView()
+        self.textView.show()
+        
+        # Scroll where the textView goes
+        sw1 = gtk.ScrolledWindow()
+        sw1.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        sw1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        sw1.add(self.textView)
+        sw1.show()
+        self.pack_start(sw1, expand=True, fill=True)
+        self.show()
+        
+        # Create the search widget
+        entries.Searchable.__init__(self, self.textView)
+    
+    def set_editable(self, e):
+        return self.textView.set_editable(e)
+        
+    def set_border_width(self, b):
+        return self.textView.set_border_width(b)
+        
+    def get_buffer(self):
+        return self.textView.get_buffer()
+        
