@@ -379,37 +379,8 @@ class Throbber(gtk.ToolButton):
         else:
             self.set_icon_widget(self.img_static)
             
-class StatusBar(gtk.Statusbar):
-    '''All status bar functionality.
-    
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, initmsg=None):
-        super(StatusBar,self).__init__()
-        self._context = self.get_context_id("unique_sb")
-        self.show()
-        self._timer = None
 
-        if initmsg is not None:
-            self.__call__(initmsg)
-        
-    def __call__(self, msg, timeout=5):
-        '''Inserts a message in the statusbar.'''
-        if self._timer is not None:
-            self._timer.cancel()
-        self.push(self._context, msg)
-        self._timer = threading.Timer(timeout, self.clear, ())
-        self._timer.start()
-
-    def clear(self):
-        '''Clears the statusbar content.'''
-        self.push(self._context, "")
-        if self._timer is not None:
-            self._timer.cancel()
-            self._timer = None
-        
-
-def loadPixbuf(filename):
+def loadImage(filename):
     '''Loads a pixbuf from disk.
 
     @param filename: the file name, full path
@@ -418,7 +389,7 @@ def loadPixbuf(filename):
     im = gtk.Image()
     im.set_from_file(filename)
     im.show()
-    return im.get_pixbuf()
+    return im
 
 
 class SensitiveAnd(object):
@@ -444,10 +415,12 @@ class SensitiveAnd(object):
         
 import core.data.constants.severity as severity
 KB_ICONS = {
-    ("info", None): loadPixbuf('core/ui/gtkUi/data/information.png'),
-    ("vuln", severity.LOW):  loadPixbuf('core/ui/gtkUi/data/vulnerability_l.png'),
-    ("vuln", severity.MEDIUM):  loadPixbuf('core/ui/gtkUi/data/vulnerability_m.png'),
-    ("vuln", severity.HIGH):  loadPixbuf('core/ui/gtkUi/data/vulnerability_h.png'),
+    ("info", None): loadImage('core/ui/gtkUi/data/information.png'),
+    ("vuln", None):  loadImage('core/ui/gtkUi/data/vulnerability.png'),
+    ("shell", None):  loadImage('core/ui/gtkUi/data/shell.png'),
+    ("vuln", severity.LOW):  loadImage('core/ui/gtkUi/data/vulnerability_l.png'),
+    ("vuln", severity.MEDIUM):  loadImage('core/ui/gtkUi/data/vulnerability_m.png'),
+    ("vuln", severity.HIGH):  loadImage('core/ui/gtkUi/data/vulnerability_h.png'),
 }
 KB_COLOR_LEVEL = {
     ("info", None):            0,
@@ -457,4 +430,3 @@ KB_COLOR_LEVEL = {
 }
 
 KB_COLORS = ["black", "orange", "red", "red"]
-

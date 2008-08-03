@@ -81,6 +81,7 @@ class KBTree(gtk.TreeView):
         # get the knowledge base and go live
         self.fullkb = kb.kb.dump()
         gobject.timeout_add(500, self._updateTree, self.treestore, self.treeholder)
+        self.postcheck = False
         self.show()
 
     def _doubleClick(self, widg, event):
@@ -179,7 +180,12 @@ class KBTree(gtk.TreeView):
         '''
         # if the core is not running, don't have anything to update
         if not self.w3af.isRunning():
-            return True
+            if self.lastcheck:
+                return True
+            else:
+                self.lastcheck = True
+        self.lastcheck = False
+
 
         # get the filtered knowledge base info
         filteredKB = self._filterKB()
@@ -220,7 +226,7 @@ class KBTree(gtk.TreeView):
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
-                        icon = helpers.KB_ICONS.get((obtype, severity))
+                        icon = helpers.KB_ICONS.get((obtype, severity)).get_pixbuf()
                         treestore.append(treevariab, [name, idinstance, icon, 0, color])
                         self.instances[idinstance] = instance
 

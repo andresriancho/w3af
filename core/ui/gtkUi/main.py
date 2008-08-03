@@ -63,7 +63,7 @@ import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, proxywin
-from . import entries, encdec, messages, logtab, pluginconfig, confpanel
+from . import entries, encdec, messages, logtab, pluginconfig, confpanel, guardian
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser, time
 
@@ -225,12 +225,13 @@ class MainApp(object):
         self.window.add(mainvbox)
         mainvbox.show()
 
-        # status bar
-        splash.push("Building the status bar...")
-        self.sb = helpers.StatusBar("Program started ok")
-
         splash.push("Initializing core...")
         self.w3af = core.controllers.w3afCore.w3afCore()
+
+        # status bar
+        splash.push("Building the status bar...")
+        guard = guardian.FoundObjectsGuardian(self.w3af)
+        self.sb = entries.StatusBar("Program started ok", [guard])
 
         # Using print so the user can read this in the console, together with the GTK, python and pygtk versions.
         print '\n  '.join(self.w3af.getVersion().split('\n'))
@@ -731,7 +732,6 @@ class MainApp(object):
         '''Proxies the HTTP calls.'''
         proxywin.ProxiedRequests(self.w3af)
 
-        
     
 def main(profile):
     MainApp(profile)

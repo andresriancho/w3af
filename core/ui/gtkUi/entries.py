@@ -19,8 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import gtk
-from . import history
+import gtk, gobject
+import threading
+import core.data.kb.knowledgeBase as kb
+import core.data.kb
+from . import history, helpers
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
@@ -1078,3 +1081,110 @@ class RememberingVPaned(gtk.VPaned, _RememberingPane):
     def __init__(self, w3af, widgname, defPos=None):
         gtk.VPaned.__init__(self)
         _RememberingPane.__init__(self, w3af, widgname, 1, defPos)
+
+
+class StatusBar(gtk.Statusbar):
+    '''All status bar functionality.
+    
+    @param initmsg: An optional initial message.
+    @param others : Others widgets to add at the right of the texts.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, initmsg=None, others=[]):
+        super(StatusBar,self).__init__()
+        self._context = self.get_context_id("unique_sb")
+        self._timer = None
+
+        # add the others
+        for oth in others[::-1]:
+            self.pack_end(oth, False)
+            self.pack_end(gtk.VSeparator(), False)
+
+        if initmsg is not None:
+            self.__call__(initmsg)
+
+        self.show_all()
+        
+    def __call__(self, msg, timeout=5):
+        '''Inserts a message in the statusbar.'''
+        if self._timer is not None:
+            self._timer.cancel()
+        self.push(self._context, msg)
+        self._timer = threading.Timer(timeout, self.clear, ())
+        self._timer.start()
+
+    def clear(self):
+        '''Clears the statusbar content.'''
+        self.push(self._context, "")
+        if self._timer is not None:
+            self._timer.cancel()
+            self._timer = None
+        
+class _Guarded(object):
+    '''Helper for the guardian.'''
+    def __init__(self, objtype):
+        self.icon = helpers.KB_ICONS[objtype, None]
+        self._quant = 0
+        self.label = gtk.Label("0")
+
+    def _qset(self, newval):
+        self._quant = newval
+        self.label.set_text(str(newval))
+    quant = property(lambda s: s._quant, _qset)
+        
+
+class FoundObjectsGuardian(gtk.HBox):
+    '''Shows the objects found by the core.
+
+    @param w3af: the core
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af):
+        super(FoundObjectsGuardian,self).__init__()
+        self.w3af = w3af
+        print "FIXME: sacar esto de aca..."
+    
+        # what to show
+        self.info = _Guarded("info")
+        self.vuln = _Guarded("vuln")
+        self.shll = _Guarded("shell")
+        self.objcont = {
+            core.data.kb.vuln.vuln: self.vuln,
+            core.data.kb.info.info: self.info,
+        }
+
+        # builds the presentation
+        self.pack_start(self.info.icon, False, False, padding=2)
+        self.pack_start(self.info.label, False, False, padding=2)
+        self.pack_start(self.vuln.icon, False, False, padding=2)
+        self.pack_start(self.vuln.label, False, False, padding=2)
+        self.pack_start(self.shll.icon, False, False, padding=2)
+        self.pack_start(self.shll.label, False, False, padding=2)
+
+        # go live
+        self.fullkb = kb.kb.dump()
+        self.kbholder = set()
+        gobject.timeout_add(1500, self._update)
+        self.show_all()
+
+    def _update(self):
+        '''Updates the objects shown.'''
+        # supervise the kb
+        for pluginname, plugvalues in self.fullkb.items():
+            for variabname, variabobjects in plugvalues.items():
+                if isinstance(variabobjects, list):
+                    for obj in variabobjects:
+                        if type(obj) not in self.objcont:
+                            continue
+                        if id(obj) in self.kbholder:
+                            continue
+                        guard = self.objcont[type(obj)]
+                        guard.quant += 1
+                        self.kbholder.add(id(obj))
+
+        # shells
+        shells = kb.kb.getAllShells()
+        self.shll.quant = len(shells)
+        return True
