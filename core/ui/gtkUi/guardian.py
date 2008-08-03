@@ -49,6 +49,9 @@ class FoundObjectsGuardian(gtk.HBox):
         super(FoundObjectsGuardian,self).__init__()
         self.w3af = w3af
     
+        # tooltip
+        self.set_tooltip_text("Amount of vulnerabilities discovered and generated shells")
+    
         # what to show
         self.info = _Guarded("info")
         self.vuln = _Guarded("vuln")
