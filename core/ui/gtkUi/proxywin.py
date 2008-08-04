@@ -84,6 +84,8 @@ class ProxiedRequests(entries.RememberingWindow):
         separat.set_draw(False)
         separat.set_expand(True)
         self.vbox.pack_start(toolbar, False)
+        self.vbox.show()
+        toolbar.show()
 
         # the buttons
         hbox = gtk.HBox()
@@ -98,6 +100,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.bt_next.set_sensitive(False)
         self.bt_next.connect("clicked", self._next)
         hbox.pack_end(self.bt_next, False, False, padding=10)
+        hbox.show_all()
 
         # request-response viewer
         self.reqresp = reqResViewer.reqResViewer(w3af, [self.bt_drop, self.bt_send], editableRequest=True)
@@ -110,8 +113,11 @@ class ProxiedRequests(entries.RememberingWindow):
         httplog = httpLogTab.httpLogTab(w3af)
         lab2 = gtk.Label("History")
         nb.append_page(httplog, lab2)
+        lab2.show()
+        
         self.vbox.pack_start(nb, True, True)
-
+        nb.show()
+        
         self.vbox.pack_start(hbox, False, False)
         
         # the config options
@@ -131,7 +137,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.waitingRequests = True
         self.keepChecking = True
         gobject.timeout_add(200, self._superviseRequests)
-        self.show_all()
+        self.show()
 
     def _startProxy(self):
         '''Starts the proxy.'''
