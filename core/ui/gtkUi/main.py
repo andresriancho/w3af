@@ -62,11 +62,15 @@ import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
+import core.data.kb.config as cf
+import core.data.parsers.urlParser as urlParser
 import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, proxywin
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel, guardian
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser, time
+
+MAINTITLE = "w3af - Web Application Attack and Audit Framework"
 
 #    Commented out: this has no sense after Results reorganizing
 #    <menu action="ViewMenuScan">
@@ -216,7 +220,7 @@ class MainApp(object):
         splash.push("Loading...")
 
         # title and positions
-        self.window.set_title("w3af - Web Application Attack and Audit Framework")
+        self.window.set_title(MAINTITLE)
         genconfigfile = os.path.join(getHomeDir(),  "generalconfig.pkl") 
         self.generalconfig = shelve.open(genconfigfile)
         self.window.resize(*self.generalconfig.get("mainwindow-size", (800, 600)))
@@ -237,7 +241,8 @@ class MainApp(object):
         guard = guardian.FoundObjectsGuardian(self.w3af)
         self.sb = entries.StatusBar("Program started ok", [guard])
 
-        # Using print so the user can read this in the console, together with the GTK, python and pygtk versions.
+        # Using print so the user can read this in the console, together with 
+        # the GTK, python and pygtk versions.
         print '\n  '.join(self.w3af.getVersion().split('\n'))
 
         self.w3af.mainwin = self
@@ -533,6 +538,10 @@ class MainApp(object):
         self.nb.set_current_page(1)
         self.exploitallsens.set_sensitive(True, "stopstart")
 
+        # sets the title 
+        target_domain = urlParser.getDomain(cf.cf.getData('targets')[0])
+        self.window.set_title("w3af: " + target_domain)
+
     def _scan_pause(self, widget):
         '''Pauses the scan.'''
         shall_pause = widget.get_active()
@@ -588,6 +597,7 @@ class MainApp(object):
         # put the button in start
         self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
         self.scanShould = "start"
+        self.window.set_title(MAINTITLE)
 
     def _scan_superviseStatus(self):
         '''Handles the waiting until core actually stopped.
