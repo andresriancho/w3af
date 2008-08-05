@@ -227,7 +227,9 @@ class KBTree(gtk.TreeView):
                     idinstance = str(id(instance))
                     if idinstance not in holdvariab:
                         holdvariab.add(idinstance)
-                        icon = helpers.KB_ICONS.get((obtype, severity)).get_pixbuf()
+                        icon = helpers.KB_ICONS.get((obtype, severity))
+                        if icon is not None:
+                            icon = icon.get_pixbuf()
                         treestore.append(treevariab, [name, idinstance, icon, 0, color])
                         self.instances[idinstance] = instance
 
