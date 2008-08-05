@@ -539,8 +539,9 @@ class MainApp(object):
         self.exploitallsens.set_sensitive(True, "stopstart")
 
         # sets the title 
-        if cf.cf.getData('targets') != None and len(cf.cf.getData('targets')) != 0:
-            target_domain = urlParser.getDomain(cf.cf.getData('targets')[0])
+        targets = cf.cf.getData('targets')
+        if targets:
+            target_domain = urlParser.getDomain(targets[0])
             self.window.set_title("w3af - " + target_domain)
 
     def _scan_pause(self, widget):
