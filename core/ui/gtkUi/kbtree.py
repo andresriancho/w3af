@@ -73,6 +73,7 @@ class KBTree(gtk.TreeView):
 
         # initial filters
         self.filter = ifilter
+        self.lastcheck = False
 
         # button events
         self.connect('button-release-event', self._popup)
