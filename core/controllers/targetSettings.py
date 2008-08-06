@@ -26,6 +26,7 @@ import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 import time
+import urllib2
 
 # options
 from core.data.options.option import option
@@ -120,9 +121,9 @@ class targetSettings(configurable):
         for targetUrl in targetUrls:
             if targetUrl.count('file://'):
                 try:
-                    f = open( targetUrl.replace( 'file://' , '' ) )
+                    f = urllib2.urlopen(targetUrl)
                 except:
-                    raise w3afException('Cannot open target file: ' + targetUrl.replace( 'file://' , '' ) )
+                    raise w3afException('Cannot open target file: ' + targetUrl )
                 else:
                     for line in f:
                         target_in_file = line.strip()

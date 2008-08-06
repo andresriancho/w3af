@@ -16,7 +16,7 @@ audit all
 audit
 back
 target
-set target file://targets.txt
+set target file:///tmp/targets.txt
 back
 start
 
