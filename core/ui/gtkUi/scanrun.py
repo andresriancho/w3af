@@ -22,11 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 
 import urllib2
-import re
+import re, Queue, threading
 from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 import core.data.kb.knowledgeBase as kb
 import webbrowser
 import core.controllers.outputManager as om
+from extlib.xdot import xdot
 
 # To show request and responses
 from core.data.db.reqResDBHandler import reqResDBHandler
@@ -154,6 +155,96 @@ class KBBrowser(entries.RememberingHPaned):
         self.kbtree.setFilter(self.filters)
 
 
+class URLsGraph(gtk.VBox):
+    '''Graph the URLs that the system discovers.
+    
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af):
+        super(URLsGraph,self).__init__()
+        self.w3af = w3af
+
+        self.toolbox = gtk.HBox()
+        b = entries.SemiStockButton("", gtk.STOCK_ZOOM_IN, 'Zoom In')
+        b.connect("clicked", self._zoom, "in")
+        self.toolbox.pack_start(b, False, False)
+        b = entries.SemiStockButton("", gtk.STOCK_ZOOM_OUT, 'Zoom Out')
+        b.connect("clicked", self._zoom, "out")
+        self.toolbox.pack_start(b, False, False)
+        b = entries.SemiStockButton("", gtk.STOCK_ZOOM_FIT, 'Zoom Fit')
+        b.connect("clicked", self._zoom, "fit")
+        self.toolbox.pack_start(b, False, False)
+        b = entries.SemiStockButton("", gtk.STOCK_ZOOM_100, 'Zoom 100%')
+        b.connect("clicked", self._zoom, "100")
+        self.toolbox.pack_start(b, False, False)
+        self.pack_start(self.toolbox, False, False)
+        self.toolbox.set_sensitive(False)
+
+        # no graph yet
+        self.widget = gtk.Label("No info yet")
+        self.widget.set_sensitive(False)
+
+        self.nodos_code = []
+        self._somethingnew = False
+        self.nodos_traduc = {}
+        self.pack_start(self.widget)
+        self.show_all()
+
+        gobject.timeout_add(500, self._draw_start)
+
+    def _zoom(self, widg, what):
+        f = getattr(self.widget, "on_zoom_"+what)
+        f(None)
+
+    def _draw_start(self):
+        if not self._somethingnew:
+            return True
+
+        # let's draw!
+        q = Queue.Queue()
+        evt = threading.Event()
+        th = threading.Thread(target=self._draw_real, args=(q,evt))
+        th.start()
+        gobject.timeout_add(500, self._draw_end, q, evt)
+        return False
+        
+    def _draw_real(self, q, evt):
+        new_widget = xdot.DotWidget()
+        self._somethingnew = False
+        dotcode = "digraph G {%s}" % "\n".join(self.nodos_code)
+        new_widget.set_dotcode(dotcode)
+        evt.set()
+        q.put(new_widget)
+        
+    def _draw_end(self, q, evt):
+        if not evt:
+            return True
+
+        new_widget = q.get() 
+        new_widget.zoom_to_fit()
+
+        # put that drawing in the widget
+        self.remove(self.widget)
+        self.pack_start(new_widget)
+        self.widget = new_widget
+        new_widget.show()
+        self.toolbox.set_sensitive(True)
+
+        gobject.timeout_add(500, self._draw_start)
+
+
+    def newNode(self, parent, node, name):
+        self.nodos_traduc[node] = name
+        try:
+            parent_name = self.nodos_traduc[parent]
+            nline = '"%s" -> "%s"' % (parent_name, name)
+        except KeyError:
+            nline = '"%s"' % name
+        self.nodos_code.append(nline) 
+        self._somethingnew = True
+
+
+
 HEAD_TO_SEND = """\
 GET %s HTTP/1.0
 Host: %s
@@ -165,8 +256,9 @@ class URLsTree(gtk.TreeView):
     
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af):
+    def __init__(self, w3af, grapher):
         self.w3af = w3af
+        self.grapher = grapher
 
         # simple empty Tree Store
         self.treestore = gtk.TreeStore(str)
@@ -248,6 +340,7 @@ class URLsTree(gtk.TreeView):
 
         @return: The new or modified holder
         '''
+#        self.grapher.draw(parent)
         if not parts:
             return {}
         node = parts[0]
@@ -259,6 +352,7 @@ class URLsTree(gtk.TreeView):
 
         # does not exist, create it
         newtreenode = self.treestore.append(parent, [node])
+        self.grapher.newNode(parent, newtreenode, node)
         newholdnode = self._insertNodes(newtreenode, rest, {})
         holder[node] = (newtreenode, newholdnode)
         return holder
@@ -327,19 +421,23 @@ class ScanRunBody(gtk.Notebook):
         l = gtk.Label("KB Browser")
         self.append_page(kbbrowser, l)
         
-        # urlstree
-        urlstree = URLsTree(w3af)
+        # urlstree, the tree
+        pan = entries.RememberingHPaned(w3af, "pane-urltreegraph")
+        urlsgraph = URLsGraph(w3af)
+        urlstree = URLsTree(w3af, urlsgraph)
         scrollwin1 = gtk.ScrolledWindow()
         scrollwin1.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin1.add_with_viewport(urlstree)
         scrollwin1.show()
+        pan.pack1(scrollwin1)
+        pan.pack2(urlsgraph)
+        pan.show()
         l = gtk.Label("URLs")
-        self.append_page(scrollwin1, l)
+        self.append_page(pan, l)
 
         # Request Response navigator
         httplog = httpLogTab.httpLogTab(w3af)
         l = gtk.Label("Request/Response navigator")
-        l.show()
         self.append_page(httplog, l)
 
         self.show()
