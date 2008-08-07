@@ -56,7 +56,7 @@ class wsdlGreper(baseGrepPlugin):
                     i.setName('WSDL file')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL : ' +  i.getURL() + ' is a Web Services Description Language page.' )
+                    i.setDesc( 'The URL: "' +  i.getURL() + '" is a Web Services Description Language page.' )
                     kb.kb.append( self , 'wsdl' , i )
                 
                 isDisco = False

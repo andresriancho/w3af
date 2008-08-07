@@ -81,7 +81,7 @@ class domXss(baseGrepPlugin):
                                     v.setId( response.id )
                                     v.setSeverity(severity.LOW)
                                     v.setName( 'DOM Cross site scripting' )                                    
-                                    v.setDesc( "The URL : " + v.getURL() + " has a DOM XSS bug using this DOM object: "+ userControlled  + ' .')
+                                    v.setDesc( 'The URL: "' + v.getURL() + '" has a DOM XSS bug using this DOM object: "'+ userControlled  + '".')
                                     kb.kb.append( self, 'domXss', v )
     
     def setOptions( self, OptionList ):

@@ -64,7 +64,7 @@ class pathDisclosure(baseGrepPlugin):
                         v = vuln.vuln()
                         v.setURL( realurl )
                         v.setId( response.id )
-                        v.setDesc( 'The URL : ' + v.getURL() + ' has a path disclosure problem. This is it: "' + match  + '".')
+                        v.setDesc( 'The URL: "' + v.getURL() + '" has a path disclosure problem: "' + match  + '".')
                         v.setSeverity(severity.LOW)
                         v.setName( 'Path disclosure vulnerability' )
                         v['path'] = match

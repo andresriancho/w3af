@@ -54,7 +54,7 @@ class fileUpload(baseGrepPlugin):
                     i.setName('File upload form')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( "The URL : " + response.getURL() + " has form with file upload capabilities." )
+                    i.setDesc( 'The URL: "' + response.getURL() + '" has form with file upload capabilities.' )
                     kb.kb.append( self , 'fileUpload' , i ) 
     
     def setOptions( self, OptionList ):

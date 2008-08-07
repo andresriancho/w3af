@@ -50,7 +50,7 @@ class blankBody(baseGrepPlugin):
             i.setName('Blank body')
             i.setURL( response.getURL() )
             i.setId( response.id )
-            i.setDesc( 'The URL : '+ response.getURL()  + ' returned an empty body. This could indicate an error.')
+            i.setDesc( 'The URL: "'+ response.getURL()  + '" returned an empty body. This could indicate an error.')
             kb.kb.append( self, 'blankBody', i )
         
     def setOptions( self, OptionList ):

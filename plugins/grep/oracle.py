@@ -50,7 +50,7 @@ class oracle(baseGrepPlugin):
                     i.setName('Oracle application')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL : ' + response.getURL() + ' was created using Oracle Application server.' )
+                    i.setDesc( 'The URL: "' + response.getURL() + '" was created using Oracle Application server.' )
                     kb.kb.append( self , 'oracle' , i )
 
     def _getDescriptiveMessages( self ):

@@ -48,7 +48,7 @@ class strangeHeaders(baseGrepPlugin):
                 i.setName('Strange header')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
-                i.setDesc( 'The URL : ' +  i.getURL() + ' sent the Header: "' + headerName + '" with value: "' + response.getHeaders()[headerName] + '"' )
+                i.setDesc( 'The URL: "' +  i.getURL() + '" sent the HTTP header: "' + headerName + '" with value: "' + response.getHeaders()[headerName] + '"' )
                 i['headerName'] = headerName
                 i['headerValue'] = response.getHeaders()[headerName]
                 kb.kb.append( self , 'strangeHeaders' , i )

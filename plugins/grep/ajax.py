@@ -62,7 +62,7 @@ class ajax(baseGrepPlugin):
                             i = info.info()
                             i.setName('Ajax code')
                             i.setURL( response.getURL() )
-                            i.setDesc( "The URL : " + i.getURL() + " has a ajax code."  )
+                            i.setDesc( 'The URL: "' + i.getURL() + '" has a ajax code.'  )
                             i.setId( response.id )
                             kb.kb.append( self, 'ajax', i )
     

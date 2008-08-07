@@ -65,7 +65,7 @@ class privateIP(baseGrepPlugin):
                             v.setSeverity(severity.LOW)
                             v.setName( 'Private IP disclosure vulnerability' )
                             
-                            v.setDesc( "The URL : " + v.getURL() + " returned an HTTP header with an IP address :" +  match )
+                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTTP header with an IP address: ' +  match )
                             v['header'] = header
                             v['IP'] = match                            
                             kb.kb.append( self, 'header', v )       
@@ -85,7 +85,7 @@ class privateIP(baseGrepPlugin):
                             v.setSeverity(severity.LOW)
                             v.setName( 'Private IP disclosure vulnerability' )
                             
-                            v.setDesc( "The URL : " + v.getURL() + " returned an HTML document with an IP address : " + match )
+                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTML document with an IP address: ' + match )
                             v['IP'] = match
                             kb.kb.append( self, 'html', v )     
 
