@@ -79,7 +79,7 @@ class responseSplitting(baseAuditPlugin):
             
         if self._checkHeaders( response.getHeaders() ):
             v = vuln.vuln( mutant )
-            v.setDesc( 'Response Splitting was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+            v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
             v.setId( response.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Response splitting vulnerability' )

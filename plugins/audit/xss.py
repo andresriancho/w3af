@@ -211,7 +211,7 @@ class xss(baseAuditPlugin):
             v.setId( response.id )
             v.setName( 'Cross site scripting vulnerability' )
             v.setSeverity(severity.MEDIUM)
-            v.setDesc( 'Cross Site Scripting was found at: ' + v.getURL() + ' . Using method: ' + v.getMethod() + '. ' + mutant.printModValue() )
+            v.setDesc( 'Cross Site Scripting was found at: ' + mutant.foundAt() )
 
             if (v.getVar(), v.getURL()) in self._reportedLtGt:
                 v['escapesLtGt'] = True

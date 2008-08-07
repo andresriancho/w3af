@@ -142,7 +142,7 @@ class fileUpload(baseAuditPlugin):
                     v.setName( 'Insecure file upload' )
                     v['fileDest'] = response.getURL()
                     v['fileVars'] = mutant.getFileVariables()
-                    v.setDesc( 'A file upload to a directory inside the webroot was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The file was uploaded using this URL: '+ mutant.getURL() +' the data was: ' + str(mutant.getDc()) )
+                    v.setDesc( 'A file upload to a directory inside the webroot was found at: ' + mutant.foundAt() )
                     kb.kb.append( self, 'fileUpload', v )
                     return
     

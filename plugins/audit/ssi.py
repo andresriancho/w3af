@@ -91,7 +91,7 @@ class ssi(baseAuditPlugin):
                 v = vuln.vuln( mutant )
                 v.setName( 'Server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
-                v.setDesc( 'Server Side Include was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'Server Side Include was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
                 kb.kb.append( self, 'ssi', v )
     

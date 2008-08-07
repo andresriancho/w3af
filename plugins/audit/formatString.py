@@ -69,7 +69,7 @@ class formatString(baseAuditPlugin):
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Format string vulnerability' )
-                v.setDesc( 'A possible (detection is really hard...) format string was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'A possible (detection is really hard...) format string was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'formatString', v )
     
     def _getErrors( self ):

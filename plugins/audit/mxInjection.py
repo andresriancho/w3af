@@ -78,7 +78,7 @@ class mxInjection(baseAuditPlugin):
                 v = vuln.vuln( mutant )
                 v.setName( 'MX injection vulnerability' )
                 v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'MX injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
                 kb.kb.append( self, 'mxInjection', v )
     

@@ -105,14 +105,14 @@ class generic(baseAuditPlugin):
                 v.setId( errorResponse.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unidentified vulnerability' )
-                v.setDesc( 'An unidentified vulnerability was found at: ' + errorResponse.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(v.getDc()) )
+                v.setDesc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'generic', v )
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
                 i.setId( errorResponse.id )
                 i.setName( 'Possible unidentified vulnerability' )
-                i.setDesc( '[Manual verification required] A possible vulnerability was found at: ' + errorResponse.getURL() + ' . Using method: ' + i.getMethod() + '. The data sent was: ' + str(i.getDc()) )
+                i.setDesc( '[Manual verification required] A possible vulnerability was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'generic', i )
     
     def _getLimitResponse( self, m ):

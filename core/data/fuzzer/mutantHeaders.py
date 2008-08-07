@@ -37,3 +37,15 @@ class mutantHeaders(mutant):
         
     def setDc( self, dc ):
         self._headers = dc
+    
+    def foundAt(self):
+        '''
+        @return: A string representing WHAT was fuzzed. This string is used like this:
+                - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        '''
+        res = ''
+        res += '"' + self.getURL() + '", using HTTP method '
+        res += self.getMethod() + '. The fuzzed header was: "'
+        res += self.getVar() + '" and it\'s value was: "' + self.getModValue() + '".'
+        return res
+        

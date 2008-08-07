@@ -90,7 +90,7 @@ class sqli(baseAuditPlugin):
                 v.setSeverity(severity.HIGH)
                 v['error'] = sqlError[0]
                 v['db'] = sqlError[1]
-                v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'sqli', v )
                 break
     

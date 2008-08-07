@@ -85,7 +85,7 @@ class phishingVector(baseAuditPlugin):
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'Phishing vector' )
-                v.setDesc( 'Phishing vector was found at: ' + v.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(v.getDc()) )
+                v.setDesc( 'Phishing vector was found at: ' + mutant.foundAt() )
                 res.append( v )
         return res
         

@@ -107,7 +107,7 @@ class osCommanding(baseAuditPlugin):
                 v.setSeverity(severity.HIGH)
                 v['os'] = sentOs
                 v['separator'] = sentSeparator
-                v.setDesc( 'OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
                 v.setDc( mutant.getDc() )
                 v.setId( response.id )
                 v.setURI( response.getURI() )
@@ -122,7 +122,7 @@ class osCommanding(baseAuditPlugin):
                 i.setMethod( mutant.getMethod() )
                 i['os'] = sentOs
                 i['separator'] = sentSeparator
-                i.setDesc( 'A possible OS Commanding was found at: ' + response.getURL() + ' . Using method: ' + mutant.getMethod() + '. The data sent was: ' + str(mutant.getDc()) +' . Please review manually.' )
+                i.setDesc( 'A possible OS Commanding was found at: ' + mutant.foundAt() +' . Please review manually.' )
                 kb.kb.append( self, 'osCommanding', i )
     
     def end(self):

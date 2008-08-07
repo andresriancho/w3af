@@ -104,7 +104,7 @@ class localFileInclude(baseAuditPlugin):
                 v.setId( response.id )
                 v.setName( 'Local file inclusion vulnerability' )
                 v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'Local File Inclusion was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
                 v['filePattern'] = fileContent
                 kb.kb.append( 'localFileInclude', 'localFileInclude', v )
     

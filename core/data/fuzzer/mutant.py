@@ -108,4 +108,27 @@ class mutant:
     #
     def __getattr__( self, name ):
         return getattr( self._freq, name )
-
+        
+    def foundAt(self):
+        '''
+        @return: A string representing WHAT was fuzzed. This string is used like this:
+                - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        '''
+        res = ''
+        res += '"' + self.getURL() + '", using HTTP method '
+        res += self.getMethod() + '. The sent data was: "'
+        
+        # Depending on the data container, print different things:
+        dc_length = 0
+        for i in self._freq._dc:
+            dc_length += len(i) + len(self._freq._dc[i])
+        if dc_length > 65:
+            res += '...' + self.getVar()  + '=' + self.getModValue() + '...'
+            res += '"'
+        else:
+            res += str(self.getDc())
+            res += '".'
+            if len(self.getDc()) > 1:
+                res +=' The modified parameter was "' + self.getVar() +'".'
+        
+        return res

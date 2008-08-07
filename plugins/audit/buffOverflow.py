@@ -140,7 +140,7 @@ class buffOverflow(baseAuditPlugin):
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Buffer overflow vulnerability' )
-                v.setDesc( 'A possible buffer overflow (detection is really hard...) was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'A possible buffer overflow (detection is really hard...) was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'buffOverflow', v )
     
     def end(self):

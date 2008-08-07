@@ -77,3 +77,14 @@ class mutantFileName(mutant):
         The URL will change, don't try to use it to avoid reporting something more than once.
         '''
         return True
+
+    def foundAt(self):
+        '''
+        @return: A string representing WHAT was fuzzed. This string is used like this:
+                - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        '''
+        res = ''
+        res += '"' + self.getURL() + '", using HTTP method '
+        res += self.getMethod() + '. The fuzzed parameter was the target URL, with value: "'
+        res += self.getModValue() + '".'
+        return res

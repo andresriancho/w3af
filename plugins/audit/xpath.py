@@ -84,7 +84,7 @@ class xpath(baseAuditPlugin):
                 v = vuln.vuln( mutant )
                 v.setName( 'XPATH injection vulnerability' )
                 v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'XPATH injection was found at: ' + response.getURL() + ' . Using method: ' + v.getMethod() + '. The data sent was: ' + str(mutant.getDc()) )
+                v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
                 kb.kb.append( self, 'xpath', v )
     
