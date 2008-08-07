@@ -12,7 +12,7 @@ set target http://localhost/w3af/basicAuthBrute/
 back
 start
 
-assert len( kb.kb.getData('httpAuthDetect', 'auth') ) == 2
+assert len( kb.kb.getData('httpAuthDetect', 'auth') ) == 1
 assert len( kb.kb.getData('htaccessMethods', 'auth') ) == 1
 
 exit
