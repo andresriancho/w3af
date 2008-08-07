@@ -196,6 +196,22 @@ class menu:
         self._console.drawTable(table)
         
 
+    def _cmd_print(self, params):
+        if not len(params):
+            raise w3afException('Variable is expected')
+
+        smallLocals = {'kb':kb}
+        smallGlobals = {}
+        
+        evalVariable = ' '.join( params )
+        try:
+            res = eval( evalVariable,  smallGlobals,  smallLocals)
+        except:
+            om.out.console('Unknown variable.')
+        else:
+            om.out.console( repr(res) )
+
+
     def _cmd_assert(self, params):
         if not len(params):
             raise w3afException('Expression is expected')
