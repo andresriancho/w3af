@@ -32,13 +32,83 @@ from core.data.db.reqResDBHandler import reqResDBHandler
 
 import gobject
 from . import helpers, entries
-    
-class clusterGraphWidget(xdot.DotWindow):
+
+
+class w3afDotWindow(xdot.DotWindow):
+
+    ui = '''
+    <ui>
+        <toolbar name="ToolBar">
+            <toolitem action="ZoomIn"/>
+            <toolitem action="ZoomOut"/>
+            <toolitem action="ZoomFit"/>
+            <toolitem action="Zoom100"/>
+        </toolbar>
+    </ui>
+    '''
+
+    def __init__(self):
+        gtk.Window.__init__(self)
+
+        self.graph = xdot.Graph()
+
+        window = self
+
+        window.set_title('HTTP Response Cluster')
+        window.set_default_size(512, 512)
+        vbox = gtk.VBox()
+        window.add(vbox)
+
+        self.widget = xdot.DotWidget()
+
+        # Create a UIManager instance
+        uimanager = self.uimanager = gtk.UIManager()
+
+        # Add the accelerator group to the toplevel window
+        accelgroup = uimanager.get_accel_group()
+        window.add_accel_group(accelgroup)
+
+        # Create an ActionGroup
+        actiongroup = gtk.ActionGroup('Actions')
+        self.actiongroup = actiongroup
+
+        # Create actions
+        actiongroup.add_actions((
+            ('ZoomIn', gtk.STOCK_ZOOM_IN, None, None, None, self.widget.on_zoom_in),
+            ('ZoomOut', gtk.STOCK_ZOOM_OUT, None, None, None, self.widget.on_zoom_out),
+            ('ZoomFit', gtk.STOCK_ZOOM_FIT, None, None, None, self.widget.on_zoom_fit),
+            ('Zoom100', gtk.STOCK_ZOOM_100, None, None, None, self.widget.on_zoom_100),
+        ))
+
+        # Add the actiongroup to the uimanager
+        uimanager.insert_action_group(actiongroup, 0)
+
+        # Add a UI descrption
+        uimanager.add_ui_from_string(self.ui)
+
+        # Create a Toolbar
+        toolbar = uimanager.get_widget('/ToolBar')
+        vbox.pack_start(toolbar, False)
+
+        vbox.pack_start(self.widget)
+
+        self.set_focus(self.widget)
+
+        self.show_all()
+
+    def set_filter(self, filter):
+        self.widget.set_filter(filter)
+
+    def set_dotcode(self, dotcode, filename='<stdin>'):
+        if self.widget.set_dotcode(dotcode, filename):
+            self.widget.zoom_to_fit()
+
+class clusterGraphWidget(w3afDotWindow):
     def __init__(self, response_list):
         '''
         @parameter response_list: A list with the responses to graph.
         '''
-        xdot.DotWindow.__init__(self)
+        w3afDotWindow.__init__(self)
         self.widget.connect('clicked', self.on_url_clicked)
         
         # Now I generate the dotcode based on the data
