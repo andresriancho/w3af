@@ -22,7 +22,8 @@ set target http://localhost/w3af/ , http://localhost/w3af/dav/
 back
 start
 
-assert len( kb.kb.getData('allowedMethods', 'methods') ) == 2
+assert len( kb.kb.getData('allowedMethods', 'methods') ) == 1
+print kb.kb.getData('allowedMethods', 'methods')
 assert len( kb.kb.getData('allowedMethods', 'dav-methods') ) == 1
 
 exit
