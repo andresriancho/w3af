@@ -109,8 +109,8 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
         for form in formList:
             if form.getMethod().upper() == 'GET':
                 qsr = httpQsRequest.httpQsRequest()
-                qsr.setURL( url )
-                qsr.setDc( QSObject )
+                qsr.setURL( form.getAction() )
+                qsr.setDc( form )
                 qsr.setHeaders( headers )
                 qsr.setCookie( cookieObj )
                 res.append( qsr )
