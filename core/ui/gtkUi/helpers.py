@@ -175,6 +175,7 @@ def endThreads():
         if not t.isAlive():
             continue
         t.my_thread_ended = True
+        t.join()
 
 class RegistThread(threading.Thread):
     '''Class to provide registered threads.
