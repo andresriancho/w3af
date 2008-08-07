@@ -58,8 +58,8 @@ class abstractParser:
             documentString = re.sub( '[^\w@\\.]', ' ', documentString )
             
             # Now we have a clean documentString; and we can match the mail addresses!
-            emailRegex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
-            for email in re.findall(emailRegex, documentString,  re.IGNORECASE):
+            emailRegex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
+            for email, domain in re.findall(emailRegex, documentString,  re.IGNORECASE):
                 if email not in self._emails:
                     self._emails.append( email )
                     
