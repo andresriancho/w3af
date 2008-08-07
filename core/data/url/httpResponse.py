@@ -164,7 +164,18 @@ class httpResponse:
         self._fromCache = fcache
 
     def __repr__( self ):
-        return '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL() + ' >'
+        res = '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL()
+
+        # extra info
+        if self.id != None:
+            res += ' | id:'+str(self.id)
+
+        if self._fromCache != False:
+            res += ' | fromCache:True'
+
+        # aaaand close...
+        res += ' >'
+        return res
     
     def dumpResponseHead( self ):
         '''
