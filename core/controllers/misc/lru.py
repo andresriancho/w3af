@@ -112,6 +112,12 @@ class LRU:
     
     def keys(self):
         return self.d.keys()
+        
+    def __len__(self):
+        return len(self.d)
+        
+    def values(self):
+        return [i.me[1] for i in self.d.values()]
 
 def main(): 
     lruTest = LRU(4)
