@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 from . import entries
 
+# To show request and responses
+from core.data.db.reqResDBHandler import reqResDBHandler
+
 useMozilla = False
 useGTKHtml2 = False
 
@@ -388,4 +391,33 @@ class searchableTextView(gtk.VBox, entries.Searchable):
         
     def get_buffer(self):
         return self.textView.get_buffer()
-        
+
+class reqResWindow(entries.RememberingWindow):
+    '''
+    A window to show a request/response pair.
+    '''
+    def __init__(self, w3af, request_id, enableWidget=None, withManual=True, withFuzzy=True,
+    withCompare=True, editableRequest=False, editableResponse=False, widgname="default"):
+        # Create the window
+        entries.RememberingWindow.__init__(self, w3af, "reqResWin", "w3af - HTTP Request/Response")
+#        self.set_title('HTTP Request/Response')
+#        self.set_default_size(512, 512)
+
+        # Create the request response viewer
+        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, withCompare, editableRequest, editableResponse, widgname)
+
+        # Search the id in the DB
+        dbh = reqResDBHandler()
+        search_result = dbh.searchById( request_id )
+        if len(search_result) == 1:
+            request, response = search_result[0]
+
+        # Set
+        rrViewer.request.showObject( request )
+        rrViewer.response.showObject( response )
+        rrViewer.show()
+        self.vbox.pack_start(rrViewer)
+
+        # Show the window
+        self.show()
+

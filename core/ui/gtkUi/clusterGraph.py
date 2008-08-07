@@ -28,7 +28,7 @@ from extlib.xdot import xdot as xdot
 from core.controllers.misc.levenshtein import relative_distance
 
 # To show request and responses
-from core.data.db.reqResDBHandler import reqResDBHandler
+from core.ui.gtkUi.reqResViewer import reqResWindow
 
 import gobject
 from . import helpers, entries
@@ -104,10 +104,11 @@ class w3afDotWindow(xdot.DotWindow):
             self.widget.zoom_to_fit()
 
 class clusterGraphWidget(w3afDotWindow):
-    def __init__(self, response_list):
+    def __init__(self, w3af, response_list):
         '''
         @parameter response_list: A list with the responses to graph.
         '''
+        self.w3af = w3af
         w3afDotWindow.__init__(self)
         self.widget.connect('clicked', self.on_url_clicked)
         
@@ -115,9 +116,6 @@ class clusterGraphWidget(w3afDotWindow):
         dotcode = self._generateDotCode(response_list)
         self.set_filter('neato')
         self.set_dotcode(dotcode)
-        
-        # The database where the requests are saved
-        self._dbHandler = reqResDBHandler()
 
     def _xunique_combinations(self, items, n):
         if n==0: yield []
@@ -155,18 +153,5 @@ class clusterGraphWidget(w3afDotWindow):
         When the user clicks on the node, we get here.
         @parameter id: The id of the request that the user clicked on.
         '''
-        search_result = self._dbHandler.searchById( int(id) )
-        if len(search_result) == 1:
-            request, response = search_result[0]
-            info = repr(request)
-            info += repr(response)
-        else:
-            info = 'Failed to find request/response with id: ' + str(id) + ' in the database.'
-        
-        dialog = gtk.MessageDialog(
-                parent = self, 
-                buttons = gtk.BUTTONS_OK,
-                message_format="%s" % info)
-        dialog.connect('response', lambda dialog, response: dialog.destroy())
-        dialog.run()
+        reqResWindow(self.w3af, int(id))
         return True

@@ -338,7 +338,7 @@ class FuzzyRequests(entries.RememberingWindow):
         data = [r[2] for r in self.responses if r[2] is not None]
         
         if data:
-            window = clusterGraphWidget(data)
+            window = clusterGraphWidget(self.w3af, data)
             window.connect('destroy', gtk.main_quit)
             gtk.main()
         else:

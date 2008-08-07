@@ -290,7 +290,7 @@ class Compare(entries.RememberingWindow):
         data = [r[2] for r in self.elements if r[2] is not None]
         
         if data:
-            window = clusterGraphWidget(data)
+            window = clusterGraphWidget(self.w3af, data)
             window.connect('destroy', gtk.main_quit)
             gtk.main()
         else:
