@@ -382,7 +382,7 @@ class xUrllib:
                 om.out.debug( req.get_method() + ' ' + uri)
                 
                 # def _send( self , req , useCache=False, useMultipart=False, grepResult=True )
-                return self._xurllib._send( req, keywords )
+                return apply(self._xurllib._send, (req,) , keywords )
         
         am = anyMethod( self, methodName )
         return am
