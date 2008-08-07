@@ -372,7 +372,7 @@ class w3afCore:
                 # Create the first fuzzableRequestList
                 for url in cf.cf.getData('targets'):
                     try:
-                        response = self.uriOpener.GET( url )
+                        response = self.uriOpener.GET( url, useCache=True )
                         self._fuzzableRequestList.extend( createFuzzableRequests( response ) )
                     except KeyboardInterrupt:
                         self._end()
