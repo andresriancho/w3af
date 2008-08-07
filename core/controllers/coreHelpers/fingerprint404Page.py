@@ -24,9 +24,10 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
-from core.data.fuzzer.fuzzer import *
-from core.controllers.w3afException import *
+from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.lru import LRU
 
 class fingerprint404Page:
     '''
@@ -37,7 +38,8 @@ class fingerprint404Page:
     def __init__(self, uriOpener):
         self._urlOpener =  uriOpener
         
-        self._404pageList = []
+        self._404_page_LRU = LRU(250)
+        self._LRU_append_id = 0
         
         # This is gooood! It will put the function in a place that's available for all.
         kb.kb.save( 'error404page', '404', self.is404 )
@@ -46,9 +48,16 @@ class fingerprint404Page:
         self._reported = False
         self._alreadyAnalyzed = False
 
+    def _append_to_LRU(self, obj):
+        '''
+        Appends obj to the self._404_page_LRU
+        '''
+        self._LRU_append_id += 1
+        self._404_page_LRU[ self._LRU_append_id ] = obj
+
     def  _add404Knowledge( self, httpResponse ):
         '''
-        Creates a (response, extension) tuple and saves it in the self._404pageList.
+        Creates a (response, extension) tuple and saves it in the self._404_page_LRU.
         '''
         try:
             response, extension = self._generate404( httpResponse.getURL() )
@@ -57,7 +66,7 @@ class fingerprint404Page:
             raise w3
         except KeyboardInterrupt, k:
             raise k
-        except w3afMustStopException, mse:
+        except w3afMustStopException:
             # Someone else will raise this exception and handle it as expected
             # whenever the next call to GET is done
             raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
@@ -65,7 +74,7 @@ class fingerprint404Page:
             om.out.debug('Something went wrong while getting a 404 page...')
             raise e
         else:
-            if response.getCode() not in [404,401,403] and not self._reported:
+            if response.getCode() not in [404, 401, 403] and not self._reported:
                 # Not using 404 in error pages
                 om.out.information('Server uses ' + str(response.getCode()) + ' instead of HTTP 404 error code. ')
                 self._reported = True
@@ -75,14 +84,14 @@ class fingerprint404Page:
             # This fixes bug #2020211
             response.setURL( httpResponse.getURL() )
             
-            self._404pageList.append( (response, extension) )
+            self._append_to_LRU( (response, extension) )
     
     def _byDirectory( self, httpResponse ):
         '''
         @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
         in _404pageList regarding the directory.
         '''
-        tmp = [ response.getBody() for (response, extension) in self._404pageList if \
+        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() if \
         urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL())]
         
         if len( tmp ):
@@ -109,7 +118,7 @@ class fingerprint404Page:
         @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
         in _404pageList regarding the directory AND the file extension.
         '''
-        tmp = [ response.getBody() for (response,extension) in self._404pageList if \
+        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() if \
         urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL()) and \
         (urlParser.getExtension(httpResponse.getURL()) == '' or urlParser.getExtension(httpResponse.getURL()) == extension)]
         
@@ -162,8 +171,8 @@ class fingerprint404Page:
         Try to autodetect how I'm going to handle the 404 messages
         @parameter httpResponse: The URL
         '''
-        if len( self._404pageList ) <= 25:
-            om.out.debug('I can\'t perform autodetection yet (404pageList has '+str(len(self._404pageList))+' items). Keep on working with the worse case')
+        if len( self._404_page_LRU ) <= 25:
+            om.out.debug('I can\'t perform autodetection yet (404pageList has '+str(len(self._404_page_LRU))+' items). Keep on working with the worse case')
             return self._byDirectoryAndExtension( httpResponse )
         else:
             if not self._alreadyAnalyzed:
@@ -191,8 +200,8 @@ class fingerprint404Page:
             
     def _analyzeData( self ):
         # Check if all 404 responses are really HTTP 404
-        tmp = [ (response, extension) for (response, extension) in self._404pageList if response.getCode() == 404 ]
-        if len(tmp) == len(self._404pageList):
+        tmp = [ (response, extension) for (response, extension) in self._404_page_LRU.values() if response.getCode() == 404 ]
+        if len(tmp) == len(self._404_page_LRU):
             om.out.debug('The remote web site uses 404 as 404.')
             kb.kb.save('error404page', 'trust404', True)
             return
@@ -217,7 +226,7 @@ class fingerprint404Page:
         
         # Now I check if all responses have the same extension (which is bad for the analysis)
         # If they all have the same extension, I'll create a new one with a different extension
-        extensionList = [ extension for (response, extension) in self._404pageList ]
+        extensionList = [ extension for (response, extension) in self._404_page_LRU.values() ]
         if areEqual( extensionList, exactComparison=True ):
             responseCopy = response.copy()
             responseURL = response.getURL()
@@ -226,7 +235,7 @@ class fingerprint404Page:
             responseCopy.setURL(fakedURL)
             self._add404Knowledge(responseCopy)
         
-        tmp = [ response.getBody() for (response, extension) in self._404pageList ]
+        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() ]
         if areEqual( tmp ):
             om.out.debug('The remote web site uses always the same body for all 404 responses.')
             kb.kb.save('error404page', 'trustBody', tmp[0] )
