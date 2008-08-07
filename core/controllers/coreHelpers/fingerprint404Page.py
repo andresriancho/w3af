@@ -261,7 +261,9 @@ class fingerprint404Page:
         url404 = urlParser.urlJoin(  domainPath , randAlNumFile )
         
         try:
-            response = self._urlOpener.GET( url404, useCache=True, grepResult=False )
+            # I don't use the cache, because the URLs are random and the only thing that
+            # useCache does is to fill up disk space
+            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
         except w3afException, w3:
             raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
         except w3afMustStopException, mse:
