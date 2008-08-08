@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import socket
 import re
-from core.data.parsers.urlParser import getProtocol, getDomain
+from core.data.parsers.urlParser import getProtocol, getNetLocation
 import core.data.constants.severity as severity
 
 class sslCertificate(baseAuditPlugin):
@@ -51,19 +51,19 @@ class sslCertificate(baseAuditPlugin):
         url = freq.getURL()
         if 'HTTPS' == getProtocol( url ).upper():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            splited = getDomain(url).split(':')
+            splited = getNetLocation(url).split(':')
             if len( splited ) == 1:
                 port = 443
                 host = splited[0]
             else:
-                port = splited[1]
+                port = int(splited[1])
                 host = splited[0]
 
             try:
                 s.connect( ( host , port ) )
                 s = socket.ssl( s )
-            except:
-                pass
+            except IOError, (errno, strerror):
+                om.out.error("In sslCertificate: I/O error(%s): %s" % (errno, strerror) )
             else:
                 # work!
 
