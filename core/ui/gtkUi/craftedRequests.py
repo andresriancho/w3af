@@ -309,6 +309,7 @@ class FuzzyRequests(entries.RememberingWindow):
                                                                     tooltip='Clear all HTTP responses from fuzzer window')
         self.clearButton.connect("clicked", self._clearResponses )
         self.clearButton.set_sensitive( False )
+        self.clearButton.show()
         centerbox.pack_start(self.clearButton, True, False)
         
         vbox.pack_start(centerbox, False, False, padding=5)
