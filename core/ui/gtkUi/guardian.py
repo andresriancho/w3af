@@ -30,11 +30,11 @@ class _Guarded(object):
     def __init__(self, objtype):
         self.icon = helpers.KB_ICONS[objtype, None]
         self._quant = 0
-        self.label = gtk.Label("0")
+        self.label = gtk.Label("0".ljust(5))
 
     def _qset(self, newval):
         self._quant = newval
-        self.label.set_text(str(newval))
+        self.label.set_text(str(newval).ljust(5))
     quant = property(lambda s: s._quant, _qset)
         
 
