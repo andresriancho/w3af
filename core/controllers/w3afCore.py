@@ -67,10 +67,24 @@ class w3afCore:
 
     def __init__(self ):
         self._initializeInternalVariables()
+        self._zeroSelectedPlugins()
         self.uriOpener = xUrllib()
 
         # Create .w3af inside home directory
         createHomeDir()
+
+    def _zeroSelectedPlugins(self):
+        '''
+        Init some internal variables; this method is called when the whole process starts, and when the user
+        loads a new profile.
+        '''
+        # A dict with plugin types as keys and a list of plugin names as values
+        self._strPlugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
+        'evasion':[], 'mangle':[], 'output':[]}
+
+        self._pluginsOptions = {'audit':{}, 'grep':{}, 'bruteforce':{}, 'discovery':{}, \
+        'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
+
     
     def getHomePath( self ):
         '''
@@ -80,18 +94,12 @@ class w3afCore:
         
     def _initializeInternalVariables(self):
         '''
-        Init some internal variables
+        Init some internal variables; this method is called when the whole process starts, and when the user
+        performs a clear() in the gtk user interface.
         '''
-        # A dict with plugin types as keys and a list of plugin names as values
-        self._strPlugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
-        'evasion':[], 'mangle':[], 'output':[]}
-        
         # A dict with plugin types as keys and a list of plugin instances as values
         self._plugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
         'evasion':[], 'mangle':[], 'output':[]}
-
-        self._pluginsOptions = {'audit':{}, 'grep':{}, 'bruteforce':{}, 'discovery':{}, \
-        'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
         
         self._fuzzableRequestList  = []
         
@@ -429,20 +437,23 @@ class w3afCore:
         '''
         # Clean all data that is stored in the kb
         reload(kb)
+
+        # Zero internal variables from the core
+        self._initializeInternalVariables()
         
         # Not cleaning the config is a FEATURE, because the user is most likely going to start a new
         # scan to the same target, and he wants the proxy, timeout and other configs to remain configured
         # as he did it the first time.
-        '''
-        reload(cf)
+        # reload(cf)
         
+        # It is also a feature to keep the mist settings from the last run.
         # Set some defaults for the core
         #import core.controllers.miscSettings as miscSettings
         #miscSettings.miscSettings()
-        '''
         
-        # Zero internal variables from the core
-        self._initializeInternalVariables()
+        # Not calling:
+        # self._zeroSelectedPlugins()
+        # because I wan't to keep the selected plugins and configurations
         
     def stop( self ):
         '''
@@ -1027,7 +1038,7 @@ class w3afCore:
         '''
         # Clear all enabled plugins if profileName is None
         if profileName == None:
-            self._initializeInternalVariables()
+            self._zeroSelectedPlugins()
             return
         
         try:            
