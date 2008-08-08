@@ -58,27 +58,33 @@ class sslCertificate(baseAuditPlugin):
             else:
                 port = splited[1]
                 host = splited[0]
-            s.connect( ( host , port ) )
-            s = socket.ssl( s )
-            
-            def printCert( certStr ):
-                # All of this could be replaced with a smarter re, but i had no time
-                pparsecertstringre = re.compile(    r"""(?:/)(\w(?:\w|))(?:=)""")
-                varNames = pparsecertstringre.findall( certStr )
-                pos = 0
-                for i in xrange( len(varNames) ):
-                    start = certStr.find( varNames[ i ], pos )
-                    if ( i +1 ) != len(varNames):
-                        end = certStr.find( varNames[ i + 1], start )
-                    else:
-                        end = len( certStr ) +1
-                    value = certStr[ start+ len(varNames[ i ]) +1 : end -1 ]
-                    om.out.information('- '+ varNames[ i ] + '=' + value)
-            
-            om.out.information('Issuer of SSL Certificate:')
-            printCert( s.issuer() )
-            om.out.information('Server SSL Certificate:')
-            printCert( s.server() )
+
+            try:
+                s.connect( ( host , port ) )
+                s = socket.ssl( s )
+            except:
+                pass
+            else:
+                # work!
+
+                def printCert( certStr ):
+                    # All of this could be replaced with a smarter re, but i had no time
+                    pparsecertstringre = re.compile(    r"""(?:/)(\w(?:\w|))(?:=)""")
+                    varNames = pparsecertstringre.findall( certStr )
+                    pos = 0
+                    for i in xrange( len(varNames) ):
+                        start = certStr.find( varNames[ i ], pos )
+                        if ( i +1 ) != len(varNames):
+                            end = certStr.find( varNames[ i + 1], start )
+                        else:
+                            end = len( certStr ) +1
+                        value = certStr[ start+ len(varNames[ i ]) +1 : end -1 ]
+                        om.out.information('- '+ varNames[ i ] + '=' + value)
+                
+                om.out.information('Issuer of SSL Certificate:')
+                printCert( s.issuer() )
+                om.out.information('Server SSL Certificate:')
+                printCert( s.server() )
 
     def getOptions( self ):
         '''
