@@ -22,8 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 from . import entries, helpers
 from core.controllers.w3afException import w3afException
+
 from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+
 from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
 
 class OnlyOptions(gtk.VBox):
     '''Only the options for configuration.
@@ -224,7 +228,10 @@ class OnlyOptions(gtk.VBox):
             
         try:
             if isinstance(plugin, basePlugin):
-                helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, self.options)
+                if isinstance(plugin, baseOutputPlugin):
+                    helpers.coreWrap(om.out.setPluginOptions, plugin.pname, self.options)
+                else:
+                    helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, self.options)
             else:
                 helpers.coreWrap(plugin.setOptions, self.options)
         except w3afException:
