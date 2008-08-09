@@ -379,6 +379,9 @@ class xUrllib:
                     req = self._xurllib._addHeaders( req, keywords['headers'] )
                     keywords.pop('headers')
                 
+                if 'getSize' in keywords:
+                    keywords.pop('getSize')
+                    
                 om.out.debug( req.get_method() + ' ' + uri)
                 
                 # def _send( self , req , useCache=False, useMultipart=False, grepResult=True )
