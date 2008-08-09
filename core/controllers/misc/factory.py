@@ -27,6 +27,7 @@ This module defines a factory function that is used around the project.
 '''
 import sys
 from core.controllers.w3afException import w3afException
+import traceback
 
 def factory(moduleName, *args):
     '''
@@ -58,6 +59,9 @@ def factory(moduleName, *args):
             try:
                 res = apply(aClass, args)
             except Exception, e:
-                raise w3afException('Failed to get an instance of "' + className + '". Original exception: "' + str(e) + '".')
+                msg = 'Failed to get an instance of "' + className
+                msg += '". Original exception: "' + str(e) + '".'
+                msg += 'Traceback for this error: ' + str( traceback.format_exc() )
+                raise w3afException(msg)
             else:
                 return res
