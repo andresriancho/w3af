@@ -88,7 +88,7 @@ def dependencyCheck():
     try:
         import sqlite3
     except:
-        print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-sqlite2'
+        print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-pysqlite2'
         sys.exit( 1 )
         
     try:
