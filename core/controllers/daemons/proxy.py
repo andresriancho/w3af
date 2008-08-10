@@ -326,11 +326,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         In our case, we always return True.
         '''
         # This obviously has to be updated
-        print "test"
         om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
-        print 'Got this certificate from remote site: %s' % cert.get_subject() 
-#        return ok
-        return True
+        return ok
 
     def do_CONNECT(self):
         '''
@@ -348,10 +345,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     
                     # Now, transform the socket that connects the browser and the proxy to a SSL socket!
                     ctx = SSL.Context(SSL.SSLv23_METHOD)
-#                    ctx.set_options(SSL.OP_NO_TLSv1)
                     ctx.set_timeout(5)
                     ctx.set_verify(SSL.VERIFY_NONE, self._verify_cb) # Don't demand a certificate
-                    ctx.set_verify(SSL.VERIFY_PEER, self._verify_cb) # Don't demand a certificate
                     
                     try:
                         ctx.use_privatekey_file ( self._urlOpener._proxyCert )
@@ -369,7 +364,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     httpsServer = HTTPServerWrapper(self.__class__, self)
                     httpsServer.w3afLayer = self.server.w3afLayer
                 
-#                    self._do_handshake(self.connection, browCon)
+                    #self._do_handshake(self.connection, sslCon)
                     om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
                     
                     conWrap = SSLConnectionWrapper(browCon, browSoc)
