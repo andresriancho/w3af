@@ -84,7 +84,7 @@ class kbMenu(menu):
                     om.out.console('Type %s is unknown' % p)
         else:
             om.out.console('Parameter type is missed, see the help:')
-            self.__help(['list'])
+            self._cmd_help(['list'])
             
 
     def _para_list(self, params, part):
