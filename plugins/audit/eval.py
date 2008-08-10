@@ -153,6 +153,6 @@ class eval(baseAuditPlugin):
         return '''
         This plugin finds eval() input injection vulnerabilities. These errors are found in web applications, when the developer
         passes user controled data to the eval() function. To check for vulnerabilities of this kind, the plugin sends an echo function
-        with two randomized numbers as a parameters (echo 55313 + 33109) and if the resulting HTML matches the string that corresponds
-        to the evaluation of the expression (88422) then a vulnerability has been found.
+        with two randomized strings as a parameters (echo 'abc' + 'xyz') and if the resulting HTML matches the string that corresponds
+        to the evaluation of the expression ('abcxyz') then a vulnerability has been found.
         '''
