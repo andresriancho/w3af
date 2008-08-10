@@ -57,7 +57,6 @@ class kbMenu(menu):
         }
 
     def _list_objects(self, descriptor, objs):
-        print descriptor
         colNames = descriptor[0]
         colGetters = descriptor[1]
         result = []
