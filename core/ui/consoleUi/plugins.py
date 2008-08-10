@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.config import *
+from core.ui.consoleUi.util import *
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import sys
@@ -128,7 +129,7 @@ class pluginsTypeMenu(menu):
         self._configs = {}
       
 
-    def suggestCommands(self, part):
+    def suggestCommands(self, part, *skip):
         return suggest(self._plugins.keys() + ['all'], part) + \
             suggest(self.getCommands(), part)
 

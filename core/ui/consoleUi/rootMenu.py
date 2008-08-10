@@ -24,6 +24,7 @@ from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.plugins import *
 from core.ui.consoleUi.profiles import *
 from core.ui.consoleUi.exploit import *
+from core.ui.consoleUi.kbMenu import *
 import core.controllers.miscSettings as ms
 #from core.ui.consoleUi.session import *
 from core.ui.consoleUi.util import *
@@ -47,8 +48,14 @@ class rootMenu(menu):
             'http-settings' : (configMenu, self._w3af.uriOpener.settings),
             'profiles' : profilesMenu,
             'exploit' : exploit,
+            'kb': kbMenu
        })
     
+
+#    def _cmd_rungui(self, params):
+#        import core.ui.gtkUi.main
+#        core.ui.gtkUi.main.main(None, self._w3af)
+#
     def _cmd_start(self, params):
         try:
             self._w3af.initPlugins()

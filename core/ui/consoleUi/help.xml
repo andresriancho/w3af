@@ -28,23 +28,23 @@ This is the central help file for the consoleUi
    </topic>
    <topic name="root">
         <category name="menu">
-            <item name="start">Start the scan.  </item>
-            <item name="plugins">Enable and configure plugins.  </item>
-            <item name="exploit">Exploit the vulnerability.  </item>
+            <item name="start">start the scan.  </item>
+            <item name="plugins">enable and configure plugins.  </item>
+            <item name="exploit">exploit the vulnerability.  </item>
             <item name="profiles">
-                <head>List and use scan profiles.</head>
-                <body>You will be able to run predefined scans.</body>
+                <head>list and use scan profiles.</head>
+                <body>you will be able to run predefined scans.</body>
             </item>
         </category>
         <category name="config">
-            <item name="http-settings">Configure the HTTP settings of the framework.  </item>
-            <item name="misc-settings">Configure w3af misc settings.  </item>
-            <item name="target">Configure the target URL.  </item>
+            <item name="http-settings">configure the http settings of the framework.  </item>
+            <item name="misc-settings">configure w3af misc settings.  </item>
+            <item name="target">configure the target url.  </item>
         </category>
         <category name="information">
-            <item name="help">Display help.  Issuing: help [command] , prints more specific help about command</item>
-            <item name="version">Show w3af version information.  </item>
-            <item name="keys">Display key shortcuts. </item>
+            <item name="help">display help.  issuing: help [command] , prints more specific help about command</item>
+            <item name="version">show w3af version information.  </item>
+            <item name="keys">display key shortcuts. </item>
             
          </category>
     </topic>
@@ -139,5 +139,15 @@ Example: fastexploit sqlmap]]></body>
                 <body>Syntax: {parameter} {value}</body>
             </item>
         </category>
+    </topic>
+    <topic name="kb">
+        <category name="menu">
+            <item name="list">
+                <head>List the items in the knowledge base.</head>
+		<body><![CDATA[Syntax: list {type}
+where {type} is one of: vuln, info, shells
+]]></body>
+            </item>
+       </category>
     </topic>
 </help>

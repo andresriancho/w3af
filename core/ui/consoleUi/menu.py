@@ -36,14 +36,14 @@ class menu:
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def suggest(self, tokens, part):
+    def suggest(self, tokens, part, onlyLocalCommands=False):
         '''
         Suggest the possible completions
         @parameter tokens: list of string
         @parameter part: base for completion
         '''
         if len(tokens)==0:
-            return self.suggestCommands(part)
+            return self.suggestCommands(part, onlyLocalCommands)
         return self.suggestParams(tokens[0], tokens[1:], part)
 
     def isRaw(self=None):
@@ -81,11 +81,13 @@ class menu:
 #                self._help.addHelpEntry(cmd, 'UNDOCUMENTED', 'menu')
 
     def _initHandlers( self ):
+        self._universalCommands = ['back', 'exit', 'keys', 'print']
+        
         self._paramHandlers = {}
         for cmd in [c for c in dir(self) if c.startswith('_cmd_')]:
             self._handlers[cmd[5:]] =  getattr(self, cmd)
 
-        for cmd in self.getCommands():
+        for cmd in self._handlers.keys():
             try:
                 pHandler = getattr(self, '_para_'+cmd)
                 self._paramHandlers[cmd] = pHandler
@@ -107,13 +109,13 @@ class menu:
 
         
 
-    def suggestCommands(self, part=''):
+    def suggestCommands(self, part='', onlyLocal=False):
 
         first, rest = splitPath(part)
 
         if rest is None:
             # the command must be in the current menu
-            result = suggest(self.getCommands(), part)
+            result = suggest(self.getCommands(onlyLocal), part)
             if self.getChildren() is not None:
                 result +=   suggest(self.getChildren(), part)
             return result
@@ -121,7 +123,7 @@ class menu:
             try:
                 # delegate to the children
                 subMenu = self.getChildren()[first]
-                return subMenu.suggestCommands(rest)
+                return subMenu.suggestCommands(rest, True)
             except:
                 return []
 
@@ -132,14 +134,19 @@ class menu:
         children = self.getChildren()
         if command in children:
             child = children[command]
-            return child.suggest(params, part)
+            return child.suggest(params, part, True)
 
 
-    def getCommands(self):
+    def getCommands(self, onlyLocal=False):
         '''
         By default, commands are defined by methods _cmd_<command>.
         '''
-        return self._handlers.keys()
+        cmds = self._handlers.keys()
+
+        if onlyLocal:
+            cmds = [c for c in cmds if c not in self._universalCommands]
+
+        return cmds
 
     def getChildren(self):
         return self._children #self.getCommands()

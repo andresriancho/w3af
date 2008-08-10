@@ -32,4 +32,3 @@ start
 
 assert len( kb.kb.getData('xss', 'xss') ) == 1
 
-exit
