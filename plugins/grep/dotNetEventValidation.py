@@ -46,6 +46,10 @@ class dotNetEventValidation(baseGrepPlugin):
         evRegex += 'id="__EVENTVALIDATION" value=".*?" />'
         self._eventvalidation = re.compile( evRegex, re.IGNORECASE|re.DOTALL)
 
+        encryptedVsRegex = r'<input type="hidden" name="__VIEWSTATEENCRYPTED" '
+        encryptedVsRegex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
+        self._encryptedVs = re.compile( encryptedVsRegex, re.IGNORECASE|re.DOTALL)
+
         self._alreadyReported = []
 
     def _testResponse(self, request, response):
@@ -70,6 +74,17 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setId( response.id )
                     msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled.'
                     msg += 'This programming/configuration error should be manually verified.'
+                    i.setDesc( msg )
+                    kb.kb.append( self, 'dotNetEventValidation', i )
+
+                if not self._encryptedVs.search(response.getBody()):
+                    # Nice! We can decode the viewstate! =)
+                    i = info.info()
+                    i.setName('.NET ViewState encryption is disabled')
+                    i.setURL( response.getURL() )
+                    i.setId( response.id )
+                    msg = 'The URL: "' + i.getURL() + '" has .NET ViewState encryption disabled.'
+                    msg += 'This programming/configuration error could be exploited to decode the viewstate contents.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'dotNetEventValidation', i )
 
