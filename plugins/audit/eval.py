@@ -113,7 +113,7 @@ class eval(baseAuditPlugin):
         for evalError in self._getEvalErrors():
             match = re.search( evalError, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found eval() input injection."' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                om.out.information('Verified eval() input injection: "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
                 res.append( evalError )
         return res
         
