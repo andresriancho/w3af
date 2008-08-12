@@ -634,7 +634,7 @@ class Searchable(object):
         # ctrl-something
         if event.state & gtk.gdk.CONTROL_MASK:
             if event.keyval == self.key_f:   # -f
-                self._show_search()
+                self.show_search()
             elif event.keyval == self.key_g:   # -g
                 self._find(None, "next")
             elif event.keyval == self.key_G:   # -G (with shift)
@@ -654,10 +654,10 @@ class Searchable(object):
         menu.append(gtk.SeparatorMenuItem())
         opc = gtk.MenuItem("Find...")
         menu.append(opc)
-        opc.connect("activate", self._show_search)
+        opc.connect("activate", self.show_search)
         menu.show_all()
 
-    def _show_search(self, widget=None):
+    def show_search(self, widget=None):
         '''Shows the search tab.'''
         self.srchtab.show_all()
         self.search_entry.grab_focus()

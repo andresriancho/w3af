@@ -136,12 +136,13 @@ class Messages(gtk.VBox, entries.Searchable):
             but.set_active(initial)
             but.connect("clicked", self.typeFilter, signal)
             self.filters[signal] = initial
-            but.show()
             upbox.pack_start(but, False, False)
         makeBut("Vulnerabilities", "vulnerability", True)
         makeBut("Information", "information", True)
         makeBut("Error", "error", True)
-        upbox.show()
+        search = entries.SemiStockButton("Search", gtk.STOCK_FIND, "Search in the text")
+        upbox.pack_end(search, False, False)
+        upbox.show_all()
         self.pack_start(upbox, expand=False, fill=False)
 
         # the scrolling lines
@@ -155,6 +156,7 @@ class Messages(gtk.VBox, entries.Searchable):
         self.pack_start(sw_mess, expand=True, fill=True)
         
         entries.Searchable.__init__(self, self.sclines)
+        search.connect("clicked", self.show_search)
         self.show()
 
     def typeFilter(self, button, ptype):
