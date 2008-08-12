@@ -484,9 +484,9 @@ class EntryDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, options):
+    def __init__(self, title, stockok, options):
         super(EntryDialog,self).__init__(title, None, gtk.DIALOG_MODAL,
-                      (gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE_AS,gtk.RESPONSE_OK))
+                      (gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,stockok,gtk.RESPONSE_OK))
 
         # the text entries
         self.entries = []

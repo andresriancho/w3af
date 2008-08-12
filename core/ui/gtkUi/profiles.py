@@ -74,7 +74,6 @@ class ProfileList(gtk.TreeView):
         self.profile_instances = {None:None}
 
         # build the list with the profiles name, description, id, changed, permanentname
-        liststore.append(["Empty profile", "Clean profile with nothing configured", None, 0, "Empty profile"])
         tmpprofiles = []
         for profile in self.w3af.getProfileList():
             nom = profile.getName()
@@ -142,6 +141,8 @@ class ProfileList(gtk.TreeView):
 
         # update boldness and info
         path = self.get_cursor()[0]
+        if not path:
+            return
         row = self.liststore[path]
         row[3] = changed
         if changed:
@@ -151,7 +152,7 @@ class ProfileList(gtk.TreeView):
 
         # update the mainwin buttons
         newstatus = self._getActionsSensitivity(path)
-        self.w3af.mainwin.activateProfileActions(newstatus)
+        self.w3af.mainwin.activateProfileActions([True]+newstatus)
 
     def pluginConfig(self, plugin):
         '''Gets executed when a plugin config panel is created.
@@ -175,6 +176,8 @@ class ProfileList(gtk.TreeView):
     def _changeAtempt(self, widget, event):
         '''Let the user change profile if the actual is saved.'''
         path = self.get_cursor()[0]
+        if not path:
+            return
         row = self.liststore[path]
         if row[3]:
             # The profile is changed
@@ -207,6 +210,8 @@ class ProfileList(gtk.TreeView):
 
         # don't allow right button in other widget if actual is not saved
         path = self.get_cursor()[0]
+        if not path:
+            return
         row = self.liststore[path]
         posic = self.get_path_at_pos(int(event.x), int(event.y))
         if posic is None:
@@ -257,14 +262,14 @@ class ProfileList(gtk.TreeView):
         vals = []
         row = self.liststore[path]
 
-        # save: enabled if it's modified and it's not the Default
-        vals.append(row[3] and path[0] != 0)
+        # save: enabled if it's modified
+        vals.append(row[3])
         # save as: always enabled
         vals.append(True)
         # revert: enabled if it's modified
         vals.append(row[3])
-        # delete: enabled if it's not the Default
-        vals.append(path[0] != 0)
+        # delete: enabled
+        vals.append(True)
 
         return vals
 
@@ -274,6 +279,8 @@ class ProfileList(gtk.TreeView):
         @return: The profile instance for the actual cursor position.
         '''
         (path, focus) = self.get_cursor()
+        if path is None:
+            return None
         prfid = self.liststore[path][2]
         profile = self.profile_instances[prfid]
         return profile
@@ -318,6 +325,46 @@ class ProfileList(gtk.TreeView):
         newstatus = self._getActionsSensitivity(path)
         self.w3af.mainwin.activateProfileActions(newstatus)
 
+    def newProfile(self, widget=None):
+        '''Creates a new profile.'''
+        # ask for new profile info
+        dlg = entries.EntryDialog("New profile", gtk.STOCK_NEW, ["Name:", "Description:"])
+        dlg.run()
+        dlgResponse = dlg.inputtexts
+        dlg.destroy()
+        if dlgResponse is None:
+            return
+
+        # use the empty profile
+        try:
+            self.w3af.useProfile(None)
+        except w3afException, w3:
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
+            dlg.run()
+            dlg.destroy()
+            return
+        self.w3af.mainwin.pcbody.reload(None)
+
+        # save it
+        filename,description = dlgResponse
+        filename = cgi.escape(filename)
+        try:
+            helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+        except w3afException:
+            self.w3af.mainwin.sb("Problem hit!")
+            return
+        self.w3af.mainwin.sb("New profile created")
+        self.loadProfiles(filename)
+
+        # get the activated plugins
+        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
+
+        # update the mainwin buttons
+        path = self.get_cursor()[0]
+        newstatus = self._getActionsSensitivity(path)
+        self.w3af.mainwin.activateProfileActions(newstatus)
+
+
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
         profileName = self._getProfileName()
@@ -336,7 +383,7 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
 
-        dlg = entries.EntryDialog("Save as...", ["Name:", "Description:"])
+        dlg = entries.EntryDialog("Save as...", gtk.STOCK_SAVE_AS, ["Name:", "Description:"])
         dlg.run()
         dlgResponse = dlg.inputtexts
         dlg.destroy()

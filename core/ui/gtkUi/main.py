@@ -86,6 +86,7 @@ ui_menu = """
 <ui>
   <menubar name="MenuBar">
     <menu action="ProfilesMenu">
+      <menuitem action="New"/>
       <menuitem action="Save"/>
       <menuitem action="SaveAs"/>
       <menuitem action="Revert"/>
@@ -115,6 +116,7 @@ ui_menu = """
     </menu>
   </menubar>
   <toolbar name="Toolbar">
+    <toolitem action="New"/>
     <toolitem action="Save"/>
     <separator name="s1"/>
     <toolitem action="StartStop"/>
@@ -266,6 +268,7 @@ class MainApp(object):
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
+            ('New', gtk.STOCK_NEW, '_New', None, 'Create a new profile', lambda w: self.profileAction("new")),
             ('Save', gtk.STOCK_SAVE, '_Save', None, 'Save this configuration', lambda w: self.profileAction("save")),
             ('SaveAs', gtk.STOCK_SAVE_AS, 'Save _as...', None, 'Save this configuration in a new profile', lambda w: self.profileAction("saveAs")),
             ('Revert', gtk.STOCK_REVERT_TO_SAVED, '_Revert', None, 'Revert the profile to its saved state', lambda w: self.profileAction("revert")),
@@ -351,13 +354,13 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 12
-        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 2)
+        assert toolbar.get_n_items() == 13
+        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 3)
         self.startstopbtns.addWidget(toolbut_startstop)
-        self.toolbut_pause = toolbar.get_nth_item(3)
+        self.toolbut_pause = toolbar.get_nth_item(4)
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
-        exploitall = toolbar.get_nth_item(5)
+        exploitall = toolbar.get_nth_item(6)
         self.exploitallsens = helpers.SensitiveAnd(exploitall, ("stopstart", "tabinfo"))
         
         # tab dependant widgets
