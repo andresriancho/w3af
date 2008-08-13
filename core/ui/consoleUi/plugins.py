@@ -130,22 +130,18 @@ class pluginsTypeMenu(menu):
       
 
     def suggestCommands(self, part, *skip):
-        return suggest(self._plugins.keys() + ['all'], part) + \
+        return suggest(self._plugins.keys() + ['all'], part.lstrip('!')) + \
             suggest(self.getCommands(), part)
 
     def suggestParams(self, command, params, part):
         if command in self.getCommands():
             return menu.suggestParams(self, command, params, part)
         
-#        alreadySel = command.split(',')
-        alreadySel = [command] + params
+        alreadySel =[lambda s: s.lstrip('!') for s in [command] + params]
+        
         plugins = self._plugins.keys()
-#        plugins.difference_update(alreadySel)
-#        plugins.add('all')
-        return suggest(plugins, part, alreadySel)
+        return suggest(plugins, part.lstrip('!'), alreadySel)
 
-#        return suggest(self._plugins.keys() + ['all'], \
-#            ','.join(alreadySel + params + [part]), True)
 
     def getCommands(self):
         return ['config', 'desc']
@@ -169,7 +165,7 @@ class pluginsTypeMenu(menu):
                 continue 
             if plugin.startswith('!'):
                 disabling = True
-                plugin = plugin[1:]
+                plugin = plugin.lstrip('!')
             else:
                 disabling = False
 

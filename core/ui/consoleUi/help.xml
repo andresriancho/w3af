@@ -145,7 +145,7 @@ Example: fastexploit sqlmap]]></body>
             <item name="list">
                 <head>List the items in the knowledge base.</head>
 		<body><![CDATA[Syntax: list {type}
-where {type} is one of: vuln, info, shells
+where {type} is one of: vulns, info, shells
 ]]></body>
             </item>
        </category>

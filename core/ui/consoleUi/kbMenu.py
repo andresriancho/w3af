@@ -25,6 +25,7 @@ import traceback
 import core.data.kb.knowledgeBase as kb        
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
+import core.data.kb.shell as shell
 from core.ui.consoleUi.util import *
 from core.ui.consoleUi.history import *
 from core.ui.consoleUi.help import *
@@ -53,17 +54,21 @@ class kbMenu(menu):
             'info':  (
                 kb.kb.getAllInfos,
                 ['Info'],
-                [info.info.getDesc])
-        }
+                [info.info.getDesc]),
+            'shells':  (
+                kb.kb.getAllShells,
+                ['Shells'],
+                [shell.shell.getDesc])
+         }
 
     def _list_objects(self, descriptor, objs):
         colNames = descriptor[0]
         colGetters = descriptor[1]
         result = []
         result.append(colNames)
-        result.append([])
 
         for obj in objs:
+            result.append([])
             row = []
             for getter in colGetters:
                 row.append(getter(obj))
