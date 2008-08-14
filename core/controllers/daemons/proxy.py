@@ -327,7 +327,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         # This obviously has to be updated
         om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
-        return ok
+        return True
 
     def do_CONNECT(self):
         '''
