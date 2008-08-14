@@ -47,9 +47,16 @@ class allowedMethods(baseDiscoveryPlugin):
         self._exec = True
         self._alreadyTested = []
         self._badCodes = [ UNAUTHORIZED, NOT_IMPLEMENTED, METHOD_NOT_ALLOWED]
-        self._davMethods = [ 'DELETE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK' ]
-        self._commonMethods = [ 'OPTIONS','GET','HEAD','POST', 'TRACE' ]
-        
+        self._davMethods = [ 'DELETE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK', 'MKCOL']
+        self._commonMethods = [ 'OPTIONS','GET','HEAD','POST', 'TRACE', 'PUT']
+        self._uncommonMethods = ['*', 'SUBSCRIPTIONS', 'NOTIFY', 'DEBUG','TRACK', 'POLL', 'PIN', 'INVOKE', 'SUBSCRIBE', 'UNSUBSCRIBE']
+        # Methods taken from http://www.w3.org/Protocols/HTTP/Methods.html 
+        self._proposedMethods = [ 'CHECKOUT', 'SHOWMETHOD', 'LINK', 'UNLINK', 'CHECKIN', 'TEXTSEARCH', 'SPACEJUMP', 'SEARCH', 'REPLY']
+        self._extraMethods= [ 'CONNECT', 'RMDIR', 'MKDIR', 'REPORT', 'ACL', 'DELETE', 'INDEX', 'LABEL', 'INVALID']
+        self._versionControl = [ 'VERSION_CONTROL', 'CHECKIN', 'UNCHECKOUT', 'PATCH', 'MERGE', 'MKWORKSPACE', 'MKACTIVITY', 'BASELINE_CONTROL']       
+        self._supportedMethods = self._davMethods  + self._commonMethods + self._uncommonMethods + self._proposedMethods + self._extraMethods + self._versionControl
+
+ 
         # User configured variables
         self._execOneTime = False
         self._reportDavOnly = True
@@ -92,7 +99,10 @@ class allowedMethods(baseDiscoveryPlugin):
 
         if not withOptions:
             # 'DELETE' ain't tested ! I don't want to remove anything...
-            for method in ['OPTIONS','GET','HEAD','POST','TRACE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK' ]:
+            methods_to_test = self._supportedMethods[:]
+            methods_to_test.remove('DELETE')
+
+            for method in methods_to_test:
                 methodFunctor = getattr( self._urlOpener, method )
                 try:
                     response = apply( methodFunctor, (url,) , {} )
@@ -139,15 +149,18 @@ class allowedMethods(baseDiscoveryPlugin):
         allMethods = []
         for i in all_info_obj:
             allMethods.append( (i.getURL() , i['methods']) )
-        davMethods = []
-        for i in dav_info_obj:
+        
+	davMethods = []
+        
+	for i in dav_info_obj:
             davMethods.append( (i.getURL() , i['methods']) )
 
         # Now I work the data...
         toShow, type = davMethods, ' DAV'
         if not self._reportDavOnly:
             toShow, type = allMethods, ''
-        
+       
+	 
         # Make it hashable
         tmp = []
         for url, methodList in toShow:
@@ -220,5 +233,5 @@ class allowedMethods(baseDiscoveryPlugin):
         have been found.
         
         The plugin will try to use the OPTIONS method to enumerate all available methods, if that fails, a manual
-        enumeration is done, when doing a manual enumeration,  the "DELETE" method ain't tested for safety.
+        enumeration is done, when doing a manual enumerationy.
         '''
