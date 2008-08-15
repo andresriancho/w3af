@@ -360,6 +360,9 @@ def getPath( url):
     
 def getPathQs( url ):
     '''
+    >>> urlParser.getPathQs( 'http://localhost/a/b/c/hh.html' )
+    >>> '/a/b/c/hh.html'
+
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
     '''
