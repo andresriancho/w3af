@@ -119,7 +119,7 @@ def normalizeURL( url ):
     w3af would try to GET http:/abc/../f00.b4r ; while mozilla would try to get http:/abc/f00.b4r . In some cases, the first is ok, on other
     cases the first one doesn't even work and return a 403 error message.
     
-    So, to sum up, this method takes two parameters, and returns a URL. For the example we were talking before, 
+    So, to sum up, this method takes an URL, and returns a normalized URL. For the example we were talking before,
     it will return: 'http://abc/f00.b4r' instead of the normal response from urlparser.urljoin: 'http://abc/../f00.b4r'
     '''
     baseURL = getProtocol( url ) + '://'+ getNetLocation( url ) + '/'
@@ -127,7 +127,7 @@ def normalizeURL( url ):
     
     commonjoin = _uparse.urljoin( baseURL, relativeURL )
     
-    path = getPath( commonjoin )
+    path = getPathQs( commonjoin )
     
     while path.startswith('../') or path.startswith('/../'):
         if path.startswith('../'):
