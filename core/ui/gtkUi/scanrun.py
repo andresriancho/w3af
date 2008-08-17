@@ -211,7 +211,7 @@ class URLsGraph(gtk.VBox):
     def _draw_real(self, q, evt):
         new_widget = xdot.DotWidget()
         self._somethingnew = False
-        dotcode = "digraph G {%s}" % "\n".join(self.nodos_code)
+        dotcode = "graph G {%s}" % "\n".join(self.nodos_code)
         new_widget.set_dotcode(dotcode)
         evt.set()
         q.put(new_widget)
@@ -233,11 +233,13 @@ class URLsGraph(gtk.VBox):
         gobject.timeout_add(500, self._draw_start)
 
 
-    def newNode(self, parent, node, name):
+    def newNode(self, parent, node, name, isLeaf):
         self.nodos_traduc[node] = name
+        if not isLeaf:
+            self.nodos_code.append('"%s" [shape=box]' % name)
         try:
             parent_name = self.nodos_traduc[parent]
-            nline = '"%s" -> "%s"' % (parent_name, name)
+            nline = '"%s" -- "%s"' % (parent_name, name)
         except KeyError:
             nline = '"%s"' % name
         self.nodos_code.append(nline) 
@@ -340,7 +342,6 @@ class URLsTree(gtk.TreeView):
 
         @return: The new or modified holder
         '''
-#        self.grapher.draw(parent)
         if not parts:
             return {}
         node = parts[0]
@@ -352,7 +353,7 @@ class URLsTree(gtk.TreeView):
 
         # does not exist, create it
         newtreenode = self.treestore.append(parent, [node])
-        self.grapher.newNode(parent, newtreenode, node)
+        self.grapher.newNode(parent, newtreenode, node, not rest)
         newholdnode = self._insertNodes(newtreenode, rest, {})
         holder[node] = (newtreenode, newholdnode)
         return holder
