@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import gtk, gobject, threading
+import gtk, gobject, threading, functools
 from . import reqResViewer, helpers, entries, fuzzygen
 
 # Alternative ways of seeing the data
@@ -87,7 +87,7 @@ class ManualRequests(entries.RememberingWindow):
         table.attach(b, 19, 20, 0, 1, xoptions=gtk.SHRINK)
 
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [b], withManual=False, editableRequest=True)
+        self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive], withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
         self.vbox.pack_start(self.reqresp, True, True)
 
@@ -228,11 +228,14 @@ class FuzzyRequests(entries.RememberingWindow):
         
         # ---- left pane ----
         vbox = gtk.VBox()
-        mainhbox.pack_start(vbox, False, False, padding=10)
+        mainhbox.pack_start(vbox, False, False)
 
         # we create the buttons first, to pass them
         analyzBut = gtk.Button("Analyze")
-        sendBut = gtk.Button("Send all")
+        self.sendPlayBut = entries.SemiStockButton("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendStopBut = entries.SemiStockButton("", gtk.STOCK_MEDIA_STOP, "Stops the request being sent")
+        self.sSB_state = helpers.PropagateBuffer(self.sendStopBut.set_sensitive)
+        self.sSB_state.change(self, False)
         
         # Fix content length checkbox
         self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
@@ -240,7 +243,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self._fixContentLengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPaned(w3af, [analyzBut, sendBut],
+        self.originalReq = reqResViewer.requestPaned(w3af, 
+                                        [analyzBut.set_sensitive, 
+                                         self.sendPlayBut.set_sensitive, 
+                                         functools.partial(self.sSB_state.change, "rRV")],
                                         editable=True, widgname="fuzzyrequest")
         if initialRequest is None:
             self.originalReq.rawShow(request_example, '')
@@ -258,28 +264,37 @@ class FuzzyRequests(entries.RememberingWindow):
         vbox.show()
         
         # the commands
-        t = gtk.Table(2, 3)
+        t = gtk.Table(2, 4)
         analyzBut.connect("clicked", self._analyze)
-        t.attach(analyzBut, 0, 1, 0, 1)
+        t.attach(analyzBut, 0, 2, 0, 1)
         self.analyzefb = gtk.Label("0 requests")
         self.analyzefb.set_sensitive(False)
-        t.attach(self.analyzefb, 1, 2, 0, 1)
+        t.attach(self.analyzefb, 2, 3, 0, 1)
         self.preview = gtk.CheckButton("Preview")
-        t.attach(self.preview, 2, 3, 0, 1)
-        sendBut.connect("clicked", self._send)
-        t.attach(sendBut, 0, 1, 1, 2)
+        t.attach(self.preview, 3, 4, 0, 1)
+        self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_start)
+        t.attach(self.sendPlayBut, 0, 1, 1, 2)
+        self.sendStopBut.connect("clicked", self._send_stop)
+        t.attach(self.sendStopBut, 1, 2, 1, 2)
         self.sendfb = gtk.Label("0 ok, 0 errors")
         self.sendfb.set_sensitive(False)
-        t.attach(self.sendfb, 1, 2, 1, 2)
-        t.attach(self._fixContentLengthCB, 2, 3, 1, 2)
+        t.attach(self.sendfb, 2, 3, 1, 2)
+        t.attach(self._fixContentLengthCB, 3, 4, 1, 2)
         t.show_all()
         
         vbox.pack_start(t, False, False, padding=5)
         
-        
+        # ---- throbber pane ----
+        vbox = gtk.VBox()
+        self.throbber = helpers.Throbber()
+        self.throbber.set_sensitive(False)
+        vbox.pack_start(self.throbber, False, False)
+        vbox.show()
+        mainhbox.pack_start(vbox, False, False)
+
         # ---- right pane ----
         vbox = gtk.VBox()
-        mainhbox.pack_start(vbox, padding=10)
+        mainhbox.pack_start(vbox)
 
         # result itself
         self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False, editableRequest=False, editableResponse=False)
@@ -315,6 +330,7 @@ class FuzzyRequests(entries.RememberingWindow):
         vbox.pack_start(centerbox, False, False, padding=5)
 
         # Show all!
+        self._sendPaused = True
         self.vbox.pack_start(mainhbox)
         self.vbox.show()
         mainhbox.show()
@@ -366,18 +382,39 @@ class FuzzyRequests(entries.RememberingWindow):
         if self.preview.get_active():
             PreviewWindow(self.w3af, self, preview)
 
+    def _send_stop(self, widg=None):
+        '''Stop the requests being sent.'''
+        self._sendStopped = True
+        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendPlayBut.disconnect(self.sPB_signal)
+        self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_start)
+        self.sSB_state.change(self, False)
+        self.throbber.running(False)
 
-    def _send(self, widg):
-        '''Sends the requests.'''
+    def _send_pause(self, widg):
+        '''Pause the requests being sent.'''
+        self._sendPaused = True
+        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendPlayBut.disconnect(self.sPB_signal)
+        self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_play)
+        self.throbber.running(False)
+
+    def _send_play(self, widg):
+        '''Continue sending the requests.'''
+        self._sendPaused = False
+        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
+        self.sendPlayBut.disconnect(self.sPB_signal)
+        self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
+        self.throbber.running(True)
+
+    def _send_start(self, widg):
+        '''Start sending the requests.'''
         (request, postbody) = self.originalReq.getBothTexts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
             return
-            
-        # let's send the requests!
-        result_ok = 0
-        result_err = 0
+
         allrequests = list(fg.generate())
         if len(allrequests) > 20:
             msg = "Are you sure you want to send %d requests?" % len(allrequests)
@@ -387,51 +424,79 @@ class FuzzyRequests(entries.RememberingWindow):
             if opt != gtk.RESPONSE_YES:
                 return
 
-        self.sendfb.set_sensitive(True)
-        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
-        busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
-        busy.show()
-        while gtk.events_pending():
-            gtk.main_iteration()
-        
         # Get the fix content length value
         fixContentLength = self._fixContentLengthCB.get_active()
         
-        for (realreq, realbody) in allrequests:
-            try:
-                httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody, fixContentLength)
-                errorMsg = None
-                result_ok += 1
-            except w3afException, e:
-                errorMsg = str(e)
-                httpResp = None
-                result_err += 1
-            except w3afMustStopException, e:
-                errorMsg = str(e)
-                httpResp = None
-                result_err += 1
+        # initial state
+        self.result_ok = 0
+        self.result_err = 0
+        self._sendPaused = False
+        self._sendStopped = False
+        requestGenerator = fg.generate()
 
-                # Let the user know ahout the problem
-                msg = "Stopped sending requests because " + str(e)
-                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-                opt = dlg.run()
-                dlg.destroy()
-                break
-            self.responses.append((realreq, realbody, httpResp, errorMsg))
+        # change the buttons
+        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PAUSE, "Pauses the requests sending")
+        self.sendPlayBut.disconnect(self.sPB_signal)
+        self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
+        self.sSB_state.change(self, True)
+        self.throbber.running(True)
+
+        # let's send the requests!
+        gobject.timeout_add(100, self._real_send, fixContentLength, requestGenerator)
+
+
+    def _real_send(self, fixContentLength, requestGenerator):
+        '''This is the one that actually sends the requests, if corresponds.
+        
+        @param fixContentLength: if the lenght should be fixed by the core.
+        @param requestGenerator: where to ask for the requests
+        '''
+        if self._sendStopped:
+            return False
+        if self._sendPaused:
+            return True
+
+        try:
+            (realreq, realbody) = requestGenerator.next()
+        except StopIteration:
+            # finished with all the requests!
+            self._send_stop()
+            return False
+
+        try:
+            httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody, fixContentLength)
+            errorMsg = None
+            self.result_ok += 1
+        except w3afException, e:
+            errorMsg = str(e)
+            httpResp = None
+            self.result_err += 1
+        except w3afMustStopException, e:
+            errorMsg = str(e)
+            httpResp = None
+            self.result_err += 1
+
+            # Let the user know ahout the problem
+            msg = "Stopped sending requests because " + str(e)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()
+            return False
+
+        self.responses.append((realreq, realbody, httpResp, errorMsg))
             
-            # Always update the gtk stuff
-            self.sendfb.set_text("%d ok, %d errors" % (result_ok, result_err))
-            while gtk.events_pending():
-                gtk.main_iteration()
+        # always update the gtk stuff
+        self.sendfb.set_sensitive(True)
+        self.sendfb.set_text("%d ok, %d errors" % (self.result_ok, self.result_err))
 
         # activate and show
-        busy.destroy()
         self.resultReqResp.set_sensitive(True)
         self.clearButton.set_sensitive(True)
         if len(self.responses) >=3:
             self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
         self._pageChange(0)
+        return True
 
     def _pageChange(self, page):
         (realreq, realbody, responseObj, errorMsg) = self.responses[page]

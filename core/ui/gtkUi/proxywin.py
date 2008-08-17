@@ -103,7 +103,9 @@ class ProxiedRequests(entries.RememberingWindow):
         hbox.show_all()
 
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [self.bt_drop, self.bt_send], editableRequest=True)
+        self.reqresp = reqResViewer.reqResViewer(w3af, 
+                          [self.bt_drop.set_sensitive, self.bt_send.set_sensitive], 
+                          editableRequest=True)
         self.reqresp.request.set_sensitive(False)
         self.reqresp.response.set_sensitive(False)
 

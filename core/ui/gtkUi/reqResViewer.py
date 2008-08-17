@@ -126,7 +126,7 @@ class requestResponsePaned(entries.RememberingVPaned):
         if enableWidget:
             self._upTv.get_buffer().connect("changed", self._changed, enableWidget)
             for widg in enableWidget:
-                widg.set_sensitive(False)
+                widg(False)
         
         # The textview where a part of the req/res is showed (this is for postdata and response body)
         self._downTv = searchableTextView()
@@ -152,7 +152,7 @@ class requestResponsePaned(entries.RememberingVPaned):
         uppBuf = self._upTv.get_buffer()
         uppText = uppBuf.get_text(uppBuf.get_start_iter(), uppBuf.get_end_iter())
         for widg in toenable:
-            widg.set_sensitive(bool(uppText))
+            widg(bool(uppText))
         
     def _clear( self, textView ):
         '''
