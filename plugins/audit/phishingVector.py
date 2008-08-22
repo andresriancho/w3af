@@ -78,14 +78,14 @@ class phishingVector(baseAuditPlugin):
         htmlBody = response.getBody()
         if htmlBody.find( self._urlForTesting ) != -1:
             # Houston we have a problem ;)
-            frameRegex = re.compile('<(iframe|frame).*src=(\'|")?' + self._urlForTesting + '.*?>', re.DOTALL )
+            frameRegex = re.compile('<(iframe|frame).*?src=(\'|")?' + self._urlForTesting + '.*?>', re.DOTALL )
             if frameRegex.search( htmlBody ):
                 # Vuln vuln!
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'Phishing vector' )
-                v.setDesc( 'Phishing vector was found at: ' + mutant.foundAt() )
+                v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
                 res.append( v )
         return res
         
