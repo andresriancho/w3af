@@ -23,16 +23,17 @@ from __future__ import absolute_import
 
 import sys
 
-# I perform this dependency check here, and not in "core.controllers.misc.dependencyCheck" because
-# these dependencies are *only* for the GTK user interface, and aren't used in any other place
-try:
-    import pygtk
-    pygtk.require('2.0')
-    import gtk, gobject
-    assert gtk.pygtk_version >= (2, 12) 
-except:
-    print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface. On Debian based distributions: apt-get install python-gtk2'
-    sys.exit( 1 )
+# I perform the GTK UI dependency check here
+# please note that there is also a CORE dependency check, which verifies the
+# presence of different libraries.
+# This task is done in different places because the consoleUi has different requirements
+# than the GTK UI.
+from . import dependencyCheck
+dependencyCheck.gtkui_dependency_check()
+
+# Now that I know that I have them, import them!
+import pygtk
+import gtk, gobject
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"

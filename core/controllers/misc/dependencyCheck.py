@@ -20,18 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-'''
-This module defines a dependencyCheck function.
-
-@author: Andres Riancho ( andres.riancho@gmail.com )
-'''
-
 import core.controllers.outputManager as om
 import sys
 import subprocess
 
 def dependencyCheck():
-    om.out.debug('Checking dependencies:')
+    '''
+    This function verifies that the dependencies that are needed by the framework core are met.
+    '''
+
+    om.out.debug('Checking core dependencies')
     
     try:
         import extlib.pygoogle.google as pygoogle
@@ -85,31 +83,3 @@ def dependencyCheck():
         print 'You have to install pyOpenSSL library. On Debian based distributions: apt-get install python-pyopenssl'
         sys.exit( 1 )
 
-    try:
-        import sqlite3
-    except:
-        print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-pysqlite2'
-        sys.exit( 1 )
-        
-    try:
-        import pyparsing
-    except:
-        print 'You have to install pyparsing library. On Debian based distributions: apt-get install python-pyparsing'
-        sys.exit( 1 )
-        
-    try:
-        import pydot
-    except:
-        print 'You have to install pydot library. On Debian based distributions: apt-get install python-pydot'
-        sys.exit( 1 )
-    
-    try:
-        proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except:
-        print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
-        sys.exit( 1 )
-    else:
-        if 'graphviz' not in proc.stderr.read().lower():
-            print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
-            sys.exit( 1 )
-        
