@@ -26,8 +26,6 @@ def usage():
     om.out.information('')
     om.out.information('Options:')
     om.out.information('    -h              Print this help message.')
-    om.out.information('    -s <file>       Execute a script file.')
-    om.out.information('    -g              Run GTK user interface.')
     om.out.information('    -i <dir>        Directory where MSF is installed (only used to install the virtual daemon).')
     om.out.information('    -p <profile>    Run with the selected profile')
     om.out.information('')
@@ -35,33 +33,23 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:i:hs:get", [] )
+        opts, args = getopt.getopt(sys.argv[1:], "p:i:he", [] )
     except getopt.GetoptError:
         # print help information and exit:
         usage()
         return -3
-    scriptFile = None
-    gtkui = False
     profile = None
     for o, a in opts:
         if o in ( "-e"  ):
             # easter egg
             import base64
             om.out.information( base64.b64decode( 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGVzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ==' ) )
-        if o in ( "-t"  ):
-            # Test all scripts that have an assert call
-            from core.controllers.misc.w3afTest import w3afTest
-            w3afTest()
-            return 0
         if o == "-s":
             scriptFile = a
         if o == "-i":
             # Install the virtual daemon module in the MSF directory
             from core.controllers.vdaemon.install import installVdaemon
             installVdaemon( a )
-        if o == '-g':
-            # Go with GTK
-            gtkui = True
         if o in ('-p', '--profile'):
             # selected profile
             profile = a
@@ -69,37 +57,15 @@ def main():
             usage()
             return 0
     
-    if gtkui:
-        # go with GTK, but first check about DISPLAY environment variable
-        if sys.platform != "win32":
-            display = os.getenv("DISPLAY").strip()
-            if not display:
-                om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
-                return -1
-        import core.ui.gtkUi.main
-        core.ui.gtkUi.main.main(profile)
-    else:
-        # console
-        from core.ui.consoleUi.consoleUi import consoleUi
-        
-        if scriptFile != None:
-            try:
-                fd = open( scriptFile )
-            except:
-                om.out.error('Failed to open file : ' + scriptFile )
-                sys.exit(2)
-            else:
-                commandsToRun = []
-                for line in fd:   
-                    line = line.strip()
-                    if line != '' and line[0] != '#':   # if not a comment..
-                        commandsToRun.append( line )
-                fd.close()
-                console = consoleUi( scriptFile=scriptFile, commands=commandsToRun)
-        else:
-            console = consoleUi()
-        console.sh()
 
+    # go with GTK, but first check about DISPLAY environment variable
+    if sys.platform != "win32":
+        display = os.getenv("DISPLAY").strip()
+        if not display:
+            om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
+            return -1
+    import core.ui.gtkUi.main
+    core.ui.gtkUi.main.main(profile)
 
 if __name__ == "__main__":
     errCode = main()
