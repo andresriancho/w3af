@@ -310,6 +310,14 @@ def getDomainPath( url ):
     '''
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
+
+    >>> getDomainPath('http://localhost/')
+    'http://localhost/'
+    >>> getDomainPath('http://localhost/abc/')
+    'http://localhost/abc/'
+    >>> getDomainPath('http://localhost/abc/def.html')
+    'http://localhost/abc/'
+    >>> 
     '''
     scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
     if path:
@@ -321,7 +329,16 @@ def getDomainPath( url ):
 def getFileName( url ):
     '''
     @parameter url: The url to parse.
-    @return: Returns the filename name and the path for the url.
+    @return: Returns the filename name for the given url.
+
+    >>> getFileName('http://localhost/')
+    ''
+    >>> getFileName('http://localhost/abc')
+    'abc'
+    >>> getFileName('http://localhost/abc.html')
+    'abc.html'
+    >>> getFileName('http://localhost/def/abc.html')
+    'abc.html'
     '''
     scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
     return path[path.rfind('/')+1:]
