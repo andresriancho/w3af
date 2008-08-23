@@ -77,7 +77,10 @@ class eval(baseAuditPlugin):
         @return: A list with all the strings to test.
         '''
         Evalstr = []
-        Evalstr.append("echo '"+ Rndn1 +"' . '"+ Rndn2 +"';")
+        # PHP
+        Evalstr.append("echo \x27"+ Rndn1 +"\x27 . \x27"+ Rndn2 +"\x27;")
+        # ASP
+        Evalstr.append("Response.Write\x28\x22"+Rndn1+"+"+Rndn2+"\x22\x29")
         return Evalstr
 
     def _analyzeResult( self, mutant, response ):
@@ -112,8 +115,11 @@ class eval(baseAuditPlugin):
         res = []
         for evalError in self._getEvalErrors():
             match = re.search( evalError, response.getBody() , re.IGNORECASE )
-            if  match:
-                om.out.information('Verified eval() input injection: "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+            if match:
+                msg = 'Verified eval() input injection, found the concatenated random string: "' + response.getBody()[match.start():match.end()] + '" '
+                msg += 'in the response body. '
+                msg += 'The vulnerability was found on response with id ' + str(response.id) + '.'
+                om.out.debug( msg )
                 res.append( evalError )
         return res
         
@@ -151,7 +157,7 @@ class eval(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds eval() input injection vulnerabilities. These errors are found in web applications, when the developer
+        This plugin finds eval() input injection vulnerabilities. These vulnerabilities are found in web applications, when the developer
         passes user controled data to the eval() function. To check for vulnerabilities of this kind, the plugin sends an echo function
         with two randomized strings as a parameters (echo 'abc' + 'xyz') and if the resulting HTML matches the string that corresponds
         to the evaluation of the expression ('abcxyz') then a vulnerability has been found.
