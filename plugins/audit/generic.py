@@ -67,14 +67,22 @@ class generic(baseAuditPlugin):
             # Now I request something that could generate an error
             # If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
             # If http://localhost/a.php?b=abc ; then I should request b=d'kcz'gj'"**5*(((*)
-            m.setModValue( self._getErrorString() )
-            errorResponse = self._sendMutant(  m , analyze=False )
+            # I also try to trigger errors by sending empty strings
+            # If http://localhost/a.php?b=1 ; then I should request b=
+            # If http://localhost/a.php?b=abc ; then I should request b=
+            for errorString in self._getErrorStrings():
+                m.setModValue( errorString )
+                errorResponse = self._sendMutant(  m , analyze=False )
             
-            # Now I compare all responses
-            self._analyzeResponses( oResponse, limitResponse, errorResponse, m )
+                # Now I compare all responses
+                self._analyzeResponses( oResponse, limitResponse, errorResponse, m )
           
-    def _getErrorString( self ):
-        return 'd\'kc"z\'gj\'\"**5*(((;-*`)'
+    def _getErrorStrings( self ):
+        '''
+        @return: A list of strings that could generate errors. Please note that an empty string is something that
+        in most cases ain't tested, but I have found that it could trigger some errors.
+        '''
+        return ['d\'kc"z\'gj\'\"**5*(((;-*`)','']
        
     def _analyzeResponses( self, oResponse, limitResponse, errorResponse, mutant ):
         '''
