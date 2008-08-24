@@ -308,9 +308,9 @@ class IteratedQueue(RegistThread):
             else:
                 self.repository.append(msg)
 
-    def get(self):
+    def get(self, start_idx=0):
         '''Serves the elements taken from the queue.'''
-        idx = 0
+        idx = start_idx
         while True:
             if idx == len(self.repository):
                 msg = None

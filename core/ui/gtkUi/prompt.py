@@ -20,6 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, gobject
+import pango
+import time
+# For the queue diverter
+from . import messages
+
 
 class PromptView(gtk.TextView):
     '''Creates a prompt for user interaction.
@@ -31,7 +36,7 @@ class PromptView(gtk.TextView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, promptText, procfunc):
+    def __init__(self, promptText, procfunc, exploit_tree):
         self.promptText = promptText
         self.procfunc = procfunc
         super(PromptView,self).__init__()
@@ -48,6 +53,18 @@ class PromptView(gtk.TextView):
             gtk.gdk.keyval_from_name("Control_R"): lambda:False,
         }
 
+        # These lines are for printing the om.out.console messages
+        self.exploit_tree = exploit_tree
+        self.messages = messages.getQueueDiverter()
+        gobject.timeout_add(300, self.addMessage().next)
+
+        # mono spaced font looks more like a terminal to me =)
+        # and works better with the output of some unix commands
+        # that are run remotely and displayed in the console
+        pangoFont = pango.FontDescription('Courier 11')
+        self.modify_font(pangoFont)
+
+        # Buttons, buffers and stuff:
         self.textbuffer = self.get_buffer()
         self.user_started = None
         self.all_lines = []
@@ -60,6 +77,79 @@ class PromptView(gtk.TextView):
         self.show()
         gobject.idle_add(self._prompt)
         gobject.idle_add(self.grab_focus)
+
+    def addMessage(self):
+        '''Adds a message to the textview.
+
+        The message is read from the iterated queue, only console message 
+        types are interesting to me.
+
+        @returns: True to gobject to keep calling it, and False when all
+                  it's done.
+        '''
+        for mess in self.messages.get(self.exploit_tree.message_index):
+            if mess is None:
+                yield True
+                continue
+
+            # This is the index to use in the message diverter
+            # The first window that is poped up, has 0 and starts from there
+            # that window consumes messages and increases this number.
+            # The next window will show messages starting from were the
+            # other window left the pointer.
+            self.exploit_tree.message_index += 1
+
+            if mess.getType() != 'console':
+                continue
+
+            # Handling new lines
+            text = mess.getMsg()
+            if mess.getNewLine():
+                text += '\n'
+
+            self.insert_into_textbuffer(text)
+
+        yield False
+
+    def insert_into_textbuffer(self, text):
+        '''
+        Insert a text into the text buffer, taking care of \r, \n, self.user_started.
+
+        @parameter text: The text to insert into the textbuffer
+        @return: None
+        '''
+        iterl = self.textbuffer.get_end_iter()
+        # Handling carriage returns (special case for some apps)
+        if text.startswith('\r'):
+            # overwrite the old text:
+            # 1: delete it
+            # 2: write
+
+            # Start deleting here
+            iterl.backward_line()
+            delete_start = iterl
+
+            # End deleting here
+            text = text[1:]
+            text_length = len(text)
+            iterini = self.textbuffer.get_start_iter()
+            old_text = self.textbuffer.get_text(iterini, delete_start)
+            old_text_length = len(old_text)
+            delete_end = self.textbuffer.get_iter_at_offset(text_length+old_text_length)
+
+            # Delete
+            self.textbuffer.delete(iterl, delete_end)
+
+
+        self.textbuffer.insert(iterl, text)
+        self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+
+        # This is for the user entered command handling
+        iterl = self.textbuffer.get_end_iter()
+        self.textbuffer.place_cursor(iterl)
+        self.cursorLimit = self.textbuffer.get_property("cursor-position")
+        self.user_started = self.textbuffer.create_mark("user-input", iterl, True)
+
 
     def getText(self):
         '''Returns the textbuffer content.'''
@@ -142,6 +232,7 @@ class PromptView(gtk.TextView):
             iterl = self.textbuffer.get_end_iter()
             self.textbuffer.insert(iterl, result+"\n")
             self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+
         self._prompt()
         
     def _prompt(self):
@@ -182,7 +273,7 @@ class PromptDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, promptText, procfunc):
+    def __init__(self, title, promptText, procfunc, exploit_tree):
         super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
 
         # the toolbar
@@ -199,11 +290,11 @@ class PromptDialog(gtk.Dialog):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.prompt = PromptView(promptText, procfunc)
+        self.prompt = PromptView(promptText, procfunc, exploit_tree)
         sw.add(self.prompt)
         self.vbox.pack_start(sw)
 
-        self.resize(600,300)
+        self.resize(800,300)
         self.show_all()
 
     def _save(self, widg):

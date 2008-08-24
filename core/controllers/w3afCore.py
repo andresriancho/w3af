@@ -52,6 +52,8 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # Provide a progress bar for all plugins.
 from core.controllers.coreHelpers.progressBar import progressBar
+
+# 404 detection
 from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
 
 # Profile objects
@@ -694,7 +696,7 @@ class w3afCore:
             # For status
             self._setRunningPlugin( plugin.getName() )
 
-            pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
+            #pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
             
             for fr in self._fuzzableRequestList:
                 # Sends each fuzzable request to the plugin
@@ -707,7 +709,7 @@ class w3afCore:
                 else:
                     tm.join( plugin )
                     # Update the progress bar
-                    pbar.inc()
+                    # pbar.inc()
                     
             # Let the plugin know that we are not going to use it anymore
             try:
