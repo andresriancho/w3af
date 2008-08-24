@@ -33,28 +33,30 @@ class question_target_1(question):
     '''
     def __init__(self):
         self._questionId = 'target_1'
+
+        self._questionTitle = 'Target URL'
         
-        self._questionString = 'In this step you should specify the target URL for the framework.'
-        self._questionString += ' Remember that you can use the file:// handler to speficy a list '
-        self._questionString += ' of target URLs to scan for vulnerabilities.'
+        self._questionString = 'In this step you should specify the URL of the targeted web application.'
+        self._questionString += ' Remember that you can separate different URLs with commas like this: \n'
+        self._questionString += '    - http://localhost/a.php , http://localhost/b.php'
         
-    def getAnswerObjects(self):
+    def getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
+
         d1 = 'Target URL'
-        o1 = option('Target URL', '', d1, 'string')
-        
+        o1 = option('Target URL','', d1, 'string')
+
+        ol = optionList()
         ol.add(o1)
+
         return ol
         
-    def setAnswer(self,  optionsMap ):
-        self._answers = optionsMap
-        
+    def getNextQuestionId(self,  optionsMap ):
         target = optionsMap['Target URL'].getValue()
         if not target:
             raise w3afException('You can not leave the "Target URL" parameter unconfigured.')
 
-    def getNextQuestionId(self,  optionsMap ):
         return 'target_2'
 

@@ -35,14 +35,20 @@ class question:
     def __init__(self):
         self._questionId = ''
         self._questionString = ''
-    
+
+    def getQuestionTitle(self):
+        return self._questionTitle
+        
+    def setQuestionTitle(self, s):
+        self._questionTitle = s    
+
     def getQuestionString(self):
         return self._questionString
         
     def setQuestionString(self, s):
         self._questionString = s
         
-    def getAnswerObjects(self):
+    def getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -52,21 +58,13 @@ class question:
     def getQuestionId(self):
         return self._questionId
         
-    def setQuestionId(self,  qid):
+    def setQuestionId(self, qid):
         self._questionId = qid
         
-    def setAnswer(self,  optionsMap):
+    def getNextQuestionId(self, optionsMap):
         '''
-        This method verifies that the information that the user sent us, is valid.
-        
-        @parameter optionsMap: This is a map with the answers for every question that was made to the user.
-        '''
-        pass
-        
-    def getNextQuestionId(self):
-        '''
-        @return: The id of the next question that the wizard has to ask to the user, based on the answerList.
-                        None if this is the last question of the wizard.
+        @return: The id of the next question that the wizard has to ask to the user, based on the optionsMap.
+                 None if this is the last question of the wizard.
         '''
         return None
         

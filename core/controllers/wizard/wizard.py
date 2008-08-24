@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+from core.controllers.misc.factory import factory
 
 class wizard:
     def __init__( self ):
@@ -28,20 +29,42 @@ class wizard:
         This method should be overwritten by the actual wizards, so they can define what questions they are
         going to ask.
         '''
+        # A list of question objects
         self._questionList = []
+
+        # Internal variables to mantain state
         self._currentQuestion = None
-        self._firstQuestion = None
-        self._nextQuestionId = ''
+        self._firstQuestion = True
+        self._nextQuestionId = None
+
+    def _get_instances( self, question_list ):
+        '''
+        @parameter question_list: A list of question ids
+        @return: A list of question objects
+        '''
+        res = []
+        for question_id in question_list:
+            res.append( factory('core.controllers.wizard.questions.question_' + question_id) )
+        return res        
         
-    def getnext(self):
+    def next(self):
         '''
         The user interface calls this method until it returns None.
         
         @return: The next question that has to be asked to the user.
         '''
-        _nextQuestionId = self._currentQuestion.getNextQuestionId()
-        
-        possibleQuestions = [q for q in self._questionList if q.getQuestionId() == _nextQuestionId ]
+        # Special case for first iteration
+        if self._firstQuestion == True:
+            self._firstQuestion = False
+            self._currentQuestion = self._questionList[0]
+            return self._questionList[0]
+
+        # Special case to end iteration
+        if self._nextQuestionId == None:
+            return None
+
+        # Find the next one
+        possibleQuestions = [q for q in self._questionList if q.getQuestionId() == self._nextQuestionId ]
         if len(possibleQuestions) != 1:
             raise w3afException('We have more than one next question. Please verify your wizard definition.\
                           Possible questions are: ' + str(possibleQuestions) )
@@ -57,11 +80,13 @@ class wizard:
         '''
         return ''
         
-    def setAnswer(self,  optionsMap):
+    def setAnswer(self, optionsMap):
         '''
         Saves the answer for the current question, and finds the next question to be performed to the user.
+
+        This method raises an exception if the selected options are invalid.
         
         @parameter optionsMap: This is a map with the answers for every question that was made to the user.
         '''
-        self._currentQuestion.setAnswer( answerList )
+        self._nextQuestionId = self._currentQuestion.getNextQuestionId( optionsMap )
         
