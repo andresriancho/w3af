@@ -155,8 +155,6 @@ class sqlmap(baseAttackPlugin):
 
         @return: True if the shell is working and the user can start calling rexec
         '''
-        om.out.console( SQLMAPCREATORS )
-            
         if not self.canExploit():
             return []
         else:
@@ -370,7 +368,7 @@ class sqlShellObj(shell):
     
         commandList = command.split(' ')
         if not len( commandList ):
-            om.out.console('Unknown command. Please read the help:')
+            om.out.console('Empty command. Please read the help:')
             self.help()
             return ''
         else:
@@ -383,7 +381,7 @@ class sqlShellObj(shell):
                     self._driver.goodSamaritanContribution( command )
                     return None
                 else:
-                    om.out.console('Unknown command. Please read the help:')
+                    om.out.console('Unknown command: "'+cmd+'". Please read the help:')
                     self.help()
                     return ''
 
