@@ -55,7 +55,7 @@ class localFileInclude(baseAuditPlugin):
         om.out.debug( 'localFileInclude plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        localFiles = self._getLocalFileList()
+        localFiles = self._getLocalFileList(freq.getURL())
         
         mutants = createMutants( freq , localFiles, oResponse=oResponse )
             
@@ -70,28 +70,43 @@ class localFileInclude(baseAuditPlugin):
                 self._tm.startFunction( target=self._sendMutant, args=targs , kwds=kwds, ownerObj=self )
         
             
-    def _getLocalFileList( self ):
+    def _getLocalFileList( self, origUrl):
         '''
         This method returns a list of local files to try to include.
         
         @return: A string, see above.
         '''
         localFiles = []
+
+        extension = urlParser.getExtension(origUrl)
+
         # I will only try to open this files, they are easy to identify of they echoed by a vulnerable
         # web app and they are on all unix or windows default installs. Feel free to mail me ( Andres Riancho )
         # if you know about other default files that could be installed on AIX ? Solaris ? and are not /etc/passwd
         if cf.cf.getData('targetOS') in ['unix', 'unknown']:
             localFiles.append("../../../../../../../../etc/passwd")
             localFiles.append("../../../../../../../../etc/passwd\0")
+            localFiles.append("../../../../../../../../etc/passwd\0.html")
             localFiles.append("/etc/passwd")    
-            localFiles.append("/etc/passwd\0")  
+            localFiles.append("/etc/passwd\0")
+            localFiles.append("/etc/passwd\0.html")
+            if extension != '':
+                localFiles.append("/etc/passwd%00."+ extension)
+                localFiles.append("../../../../../../../../etc/passwd%00."+ extension)
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
-            localFiles.append("../../../../../../../../../../boot.ini\0")           
+            localFiles.append("../../../../../../../../../../boot.ini\0")
+            localFiles.append("../../../../../../../../../../boot.ini\0.html")
             localFiles.append("C:\\boot.ini")
             localFiles.append("C:\\boot.ini\0")
+            localFiles.append("C:\\boot.ini\0.html")
             localFiles.append("%SYSTEMROOT%\\win.ini")
             localFiles.append("%SYSTEMROOT%\\win.ini\0")
+            localFiles.append("%SYSTEMROOT%\\win.ini\0.html")
+            if extension != '':
+                localFiles.append("C:\\boot.ini%00."+extension)
+                localFiles.append("%SYSTEMROOT%\\win.ini%00."+extension)
         return localFiles
+
         
     def _analyzeResult( self, mutant, response ):
         '''
