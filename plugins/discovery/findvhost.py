@@ -124,6 +124,7 @@ class findvhost(baseDiscoveryPlugin):
                 except w3afException, w:
                     pass
                 else:
+                    self._alreadyQueried.append( domain )
                     if relative_distance( vhostResponse.getBody(), baseResponse.getBody() ) < 0.35 and \
                     relative_distance( vhostResponse.getBody(), self._nonExistantResponse.getBody() ) < 0.35:
                         # If they are *really* different (not just different by some chars) I may have found
