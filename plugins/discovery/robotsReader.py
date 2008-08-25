@@ -21,14 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afRunOnce
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afRunOnce
+import core.data.kb.info as info
+
 
 class robotsReader(baseDiscoveryPlugin):
     '''
@@ -62,6 +66,16 @@ class robotsReader(baseDiscoveryPlugin):
             response = self._urlOpener.GET( robotsUrl, useCache=True )
             
             if not self.is404( response ):
+                # Save it to the kb!
+                i = info.info()
+                i.setName('robots.txt file')
+                i.setURL( robotsUrl )
+                i.setDesc( 'A robots.txt file was found at: "'+ robotsUrl )
+                kb.kb.append( self, 'robots.txt', i )
+                om.out.information( i.getDesc() )
+
+
+                # Work with it...
                 dirs.append( robotsUrl )
                 for line in response.getBody().split('\n'):
                     if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or line.upper().find('DISALLOW') == 0 ):
