@@ -70,7 +70,8 @@ class robotsReader(baseDiscoveryPlugin):
                 i = info.info()
                 i.setName('robots.txt file')
                 i.setURL( robotsUrl )
-                i.setDesc( 'A robots.txt file was found at: "'+ robotsUrl )
+                i.setId( response.id )
+                i.setDesc( 'A robots.txt file was found at: "'+ robotsUrl +'".' )
                 kb.kb.append( self, 'robots.txt', i )
                 om.out.information( i.getDesc() )
 
