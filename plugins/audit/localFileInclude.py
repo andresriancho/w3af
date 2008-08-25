@@ -174,7 +174,12 @@ class localFileInclude(baseAuditPlugin):
         filePatterns.append("daemon:x:1:1:")
         filePatterns.append(":/bin/bash")
         filePatterns.append(":/bin/sh")
-        
+
+        # /etc/passwd in AIX
+        filePatterns.append("root:!:x:0:0:")
+        filePatterns.append("daemon:!:x:1:1:")
+        filePatterns.append(":usr/bin/ksh") 
+
         # boot.ini
         filePatterns.append("\\[boot loader\\]")
         filePatterns.append("default=multi\\(")
