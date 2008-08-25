@@ -47,7 +47,7 @@ class strangeHTTPCode(baseGrepPlugin):
             i.setName('Strange HTTP Response code - ' + str(response.getCode()))
             i.setURL( response.getURL() )
             i.setId( response.id )
-            i.setDesc( 'The URL: "' +  i.getURL() + '" sent a strange HTTP response code: "' + response.getCode() + '", manual inspection is adviced.' )
+            i.setDesc( 'The URL: "' +  i.getURL() + '" sent a strange HTTP response code: "' + str(response.getCode()) + '", manual inspection is adviced.' )
             kb.kb.append( self , 'strangeHTTPCode' , i )
     
     def setOptions( self, OptionList ):
