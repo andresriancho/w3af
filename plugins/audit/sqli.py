@@ -145,10 +145,10 @@ class sqli(baseAuditPlugin):
         errors.append( ('Microsoft OLE DB Provider for SQL Server', MSSQL ))
         errors.append( ('Incorrect syntax near', MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', MSSQL ) )
-        
+        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", MSSQL ))        
         
         # ORACLE
-        errors.append( ('ORA-[0-9][0-9][0-9][0-9]', ORACLE ) )
+        errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', ORACLE ) )
         
         # POSTGRE
         errors.append( ('PostgreSQL query failed:', POSTGRE ) )
@@ -164,6 +164,9 @@ class sqli(baseAuditPlugin):
         errors.append( ('MySQL server version for the right syntax to use', MYSQL ) )
         errors.append( ('\\[MySQL\\]\\[ODBC', MYSQL ))
         errors.append( ("Column count doesn't match", MYSQL ))
+        errors.append( ("the used select statements have different number of columns", MYSQL ))
+        errors.append( ("Table '[^']+' doesn't exist", MYSQL ))
+
         
         # Informix
         errors.append( ('com\\.informix\\.jdbc', INFORMIX ))
