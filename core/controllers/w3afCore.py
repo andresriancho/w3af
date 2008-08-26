@@ -1075,7 +1075,7 @@ class w3afCore:
         # Let's check if the user is using a version from SVN
         revision = -1
         try:
-            for line in file('.svn' + os.path.sep +'entries'):
+            for line in file('.svn' + os.path.sep +'entries').readlines()[:4]:
                 line = line.strip()
                 if re.match('^\d+$', line ):
                     if int(line) > int(revision):
