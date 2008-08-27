@@ -62,7 +62,7 @@ class errorPages(baseGrepPlugin):
         mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>Error Occurred While Processing Request</H3><P>')
         
         # VBScript
-        mesg.append('Microsoft VBScript runtime')
+        mesg.append('<p>Microsoft VBScript runtime </font>')
         mesg.append("<font face=\"Arial\" size=2>error '800a000d'</font>")
         
         # ASP error I found during a pentest, the ASP used a foxpro db, not a SQL injection
