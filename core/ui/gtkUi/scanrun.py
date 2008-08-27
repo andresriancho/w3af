@@ -186,7 +186,6 @@ class URLsGraph(gtk.VBox):
 
         self.nodos_code = []
         self._somethingnew = False
-        self.nodos_traduc = {}
         self.pack_start(self.widget)
         self.show_all()
 
@@ -234,14 +233,15 @@ class URLsGraph(gtk.VBox):
 
 
     def newNode(self, parent, node, name, isLeaf):
-        self.nodos_traduc[node] = name
+        print parent, node, name, isLeaf
         if not isLeaf:
-            self.nodos_code.append('"%s" [shape=box]' % name)
+            self.nodos_code.append('"%s" [shape=box]' % node)
+        self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         try:
-            parent_name = self.nodos_traduc[parent]
-            nline = '"%s" -- "%s"' % (parent_name, name)
+            nline = '"%s" -- "%s"' % (parent, node)
         except KeyError:
-            nline = '"%s"' % name
+            nline = '"%s"' % node
+        print nline
         self.nodos_code.append(nline) 
         self._somethingnew = True
 
