@@ -278,6 +278,16 @@ def hex_encoding(t):
     '%41%42%43'
     '''
     return "%" + "%".join(hex(ord(c))[2:] for c in t)
+
+def zero_x_encoding(t):
+    '''0x encoding method.
+    
+    >>> zero_x_encoding("A")
+    '0x41'
+    >>> zero_x_encoding("ABC")
+    '0x414243'
+    '''
+    return "0x" + "".join(hex(ord(c))[2:] for c in t)
  
 def hex_decoding(t):
     '''Hex decoding method.
@@ -431,6 +441,7 @@ _butNameFunc_enc = [
     ("SHA1 Hash",                    sha_encode),
     ("MD5 Hash",                     md5_encode),
     ("Hex Encoding",                 hex_encoding),
+    ("0xFFFF Encoding",              zero_x_encoding),
     ("Double Percent Hex Encoding",  double_percent_hex_encoding),
     ("Double Nibble Hex Encoding",   double_nibble_hex_encoding),
     ("First Nibble Hex Encoding",    first_nibble_hex_encoding),
