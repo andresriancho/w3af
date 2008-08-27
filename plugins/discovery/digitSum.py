@@ -68,7 +68,7 @@ class digitSum(baseDiscoveryPlugin):
         om.out.debug('digitSum is testing ' + fuzzableRequest.getURL() )
         self._ores = originalResponse = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True, headers=self._headers )
         
-        if isTextOrHtml( originalResponse.getHeaders() ) or self._fuzzImages:
+        if originalResponse.is_text_or_html() or self._fuzzImages:
             
             for fr in self._mangleDigits( fuzzableRequest ):
                 if fr.getURL() not in self._alreadyVisited:

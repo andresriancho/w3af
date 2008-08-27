@@ -49,7 +49,7 @@ class ssn(baseGrepPlugin):
         self._re_removeTags = re.compile('(<.*?>|</.*?>)')
         
     def _testResponse(self, request, response):
-        if isTextOrHtml(response.getHeaders()) and response.getCode()==200:
+        if response.is_text_or_html() and response.getCode() == 200:
             found_ssn = self._findSsn(response.getBody())
             if found_ssn:
                 v = vuln.vuln()

@@ -51,14 +51,14 @@ class feeds(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        for regex, type in self._getfeedsNames():
+        for regex, feed_type in self._getfeedsNames():
             res = regex.search( response.getBody() )
             if res:
                 resStr = res.groups()[0]
                 i = info.info()
-                i.setName(type +' feed')
+                i.setName(feed_type +' feed')
                 i.setURL( response.getURL() )
-                i.setDesc( "The URL: " + i.getURL() + " is a " + type + " version " + resStr +" feed."  )
+                i.setDesc( "The URL: " + i.getURL() + " is a " + feed_type + " version " + resStr +" feed."  )
                 i.setId( response.id )
                 kb.kb.append( self, 'feeds', i )
     

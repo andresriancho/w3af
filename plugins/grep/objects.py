@@ -47,7 +47,7 @@ class objects(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()) and response.getURL() not in self._alreadyAddedObject:
+        if response.is_text_or_html() and response.getURL() not in self._alreadyAddedObject:
             res = self._object.findall( response.getBody() )
             if res:
                 i = info.info()

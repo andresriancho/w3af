@@ -26,7 +26,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import isTextOrHtml
 import re
 
 class dotNetEventValidation(baseGrepPlugin):
@@ -56,7 +55,7 @@ class dotNetEventValidation(baseGrepPlugin):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
         '''
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
 
             # First verify if we havent greped this yet
             if request.getURI() in self._alreadyReported:

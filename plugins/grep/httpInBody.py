@@ -26,7 +26,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import isTextOrHtml
 import re
 
 class httpInBody (baseGrepPlugin):
@@ -52,7 +51,7 @@ class httpInBody (baseGrepPlugin):
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        if response.getCode() != 501 and isTextOrHtml(response.getHeaders()):
+        if response.getCode() != 501 and response.is_text_or_html():
             
             # First if, mostly for performance.
             if 'HTTP/1.' in response.getBody():

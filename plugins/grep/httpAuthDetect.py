@@ -90,7 +90,7 @@ class httpAuthDetect(baseGrepPlugin):
             # I also search for authentication URI's in the body
             # I know that by doing this I loose the chance of finding hashes in PDF files, but...
             # This is much faster
-            if isTextOrHtml( response.getHeaders() ):
+            if response.is_text_or_html():
                 for authURI in re.findall( self._authUriRegexStr , response.getBody() ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )

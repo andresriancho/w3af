@@ -43,7 +43,7 @@ class html(basePpPlugin):
         @parameter body: In most common cases, an html. Could be almost anything.
         @return: A map of strings:repetitions.
         '''
-        if isTextOrHtml( response.getHeaders() ):
+        if response.is_text_or_html():
             sp = simpleParser()
             try:
                 sp.parse( response.getBody() )

@@ -203,7 +203,7 @@ class proxyHandler(w3afProxyHandler):
             except Exception, e:
                 self._sendError( e )
             else:
-                if isTextOrHtml( response.getHeaders() ):
+                if response.is_text_or_html():
                     self._spiderMan.extFuzzableRequests( response )
                 
                 for h in response.getHeaders():

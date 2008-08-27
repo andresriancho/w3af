@@ -46,7 +46,7 @@ class motw (baseGrepPlugin):
 
     def _testResponse(self, request, response):
 
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             self.is404 = kb.kb.getData( 'error404page', '404' )
             if not self.is404( response ):
                 motw = self._motw_re.search(response.getBody())

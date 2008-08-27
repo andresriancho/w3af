@@ -46,7 +46,7 @@ class newline(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         self.is404 = kb.kb.getData( 'error404page', '404' )
-        if isTextOrHtml(response.getHeaders()) and request.getMethod() in ['GET','POST']\
+        if response.is_text_or_html() and request.getMethod() in ['GET','POST']\
         and not self.is404( response ):
             unix = self._unix.findall( response.getBody() )
             windows = self._windows.findall( response.getBody() )

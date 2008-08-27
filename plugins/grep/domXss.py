@@ -64,7 +64,7 @@ class domXss(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             
             res = self._scriptre.search( response.getBody() )
             if res:

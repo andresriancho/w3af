@@ -42,7 +42,7 @@ class wsdlGreper(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             htmlString = response.getBody()
             if response.getCode() == 200:
                 isWsdl = False

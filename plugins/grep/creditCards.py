@@ -76,7 +76,7 @@ class creditCards(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()) and response.getCode()==200:
+        if response.is_text_or_html() and response.getCode() == 200:
             found_card = self._findCard(response.getBody())
             if found_card:
                 v = vuln.vuln()

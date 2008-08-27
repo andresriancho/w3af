@@ -46,7 +46,7 @@ class svnUsers(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             
             for regex in self._regexList:
                 for m in regex.findall( response.getBody() ):

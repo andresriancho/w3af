@@ -151,7 +151,7 @@ class webDiff(baseDiscoveryPlugin):
                 response = self._easyGet( url )
             
                 if not self.is404( response ):
-                    if isTextOrHtml( response.getHeaders() ):
+                    if response.is_text_or_html():
                         self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
                     self._checkContent( response, dir + os.path.sep + fname )
                     self._eq.append( url )

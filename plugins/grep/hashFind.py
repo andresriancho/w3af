@@ -44,7 +44,7 @@ class hashFind(baseGrepPlugin):
         
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...
         # This is much faster
-        if isTextOrHtml( response.getHeaders() ):
+        if response.is_text_or_html():
             
             body = response.getBody()
             splittedBody = re.split( '[^\w]', body )

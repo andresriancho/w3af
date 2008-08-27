@@ -71,7 +71,7 @@ class privateIP(baseGrepPlugin):
                             kb.kb.append( self, 'header', v )       
         
         # Search for IP addresses on HTML
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             for regex in self._regexList:
                 res = regex.search(response.getBody())
                 if res:

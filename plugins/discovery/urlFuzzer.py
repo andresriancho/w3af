@@ -69,7 +69,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         else:
             response = self._urlOpener.GET( url, useCache=True, headers=self._headers, getSize=True )
 
-        if isTextOrHtml( response.getHeaders() ) or self._fuzzImages:
+        if response.is_text_or_html() or self._fuzzImages:
             mutants = self._mutate( url )
             om.out.debug('urlFuzzer is testing ' + url )
             for mutant in mutants :

@@ -45,7 +45,7 @@ class directoryIndexing(baseGrepPlugin):
 
     def _testResponse(self, request, response):
 
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             htmlString = response.getBody()
             for directoryIndexingString in self._getdirectoryIndexingStrings():
                 if re.search( directoryIndexingString, htmlString, re.IGNORECASE ):

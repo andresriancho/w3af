@@ -114,7 +114,7 @@ class errorPages(baseGrepPlugin):
         
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             for msg in self._getDescriptiveMessages():
                 if response.getBody().count( msg ) and response.getURL():
                     

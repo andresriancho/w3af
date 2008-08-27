@@ -146,7 +146,44 @@ class httpResponse:
                 
                 self._charset = charset
 
-    def setHeaders( self, headers ): self._headers = headers
+    def setHeaders( self, headers ):
+        '''
+        Sets the headers and also analyzes them in order to get the response mime type (text/html , application/pdf, etc).
+
+        @parameter headers: The headers dict.
+        '''
+        self._headers = headers
+
+        # Analyze
+        for key in headers.keys():
+            if 'Content-Type'.lower() == key.lower():
+                self._content_type = headers[ key ]
+                break
+
+    def getContentType( self ):
+        '''
+        @return: The content type of the response
+        '''
+        return self._content_type
+
+    def is_text_or_html( self ):
+        '''
+        @return: True if this response is text or html
+        '''
+        if self._content_type.lower().count('txt') or self._content_type.lower().count('html'):
+            return True
+        else:
+            return False
+
+    def is_pdf( self ):
+        '''
+        @return: True if this response is pdf
+        '''
+        if self._content_type.lower().count('pdf'):
+            return True
+        else:
+            return False
+
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri
     def setWaitTime( self, t ): self._time = t

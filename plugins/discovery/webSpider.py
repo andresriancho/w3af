@@ -92,7 +92,7 @@ class webSpider(baseDiscoveryPlugin):
             # Modified when I added the pdfParser
             # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze
             # a image file, its useless and consumes cpu power.
-            if isTextOrHtml( response.getHeaders() ) or isPDF( response.getHeaders() ):
+            if response.is_text_or_html() or response.is_pdf():
                 originalURL = response.getRedirURI()
                 try:
                     documentParser = dpCache.dpc.getDocumentParserFor( response )

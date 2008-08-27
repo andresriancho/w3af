@@ -62,7 +62,7 @@ class codeDisclosure(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()) and response.getURL() not in self._alreadyAdded:
+        if response.is_text_or_html() and response.getURL() not in self._alreadyAdded:
             
             for regex, lang in self._regexs:
                 res = regex.search( response.getBody() )

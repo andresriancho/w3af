@@ -47,7 +47,7 @@ class pathDisclosure(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             # Decode the realurl
             realurl = urlParser.urlDecode( response.getURL() )
             

@@ -45,7 +45,7 @@ class fileUpload(baseGrepPlugin):
 
     def _testResponse(self, request, response):
         
-        if isTextOrHtml(response.getHeaders()):
+        if response.is_text_or_html():
             input_res = self._input.search( response.getBody() )
             if input_res: # input tag found
                 file_res = self._file.search(input_res.group())
