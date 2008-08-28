@@ -39,6 +39,7 @@ class httpResponse:
         '''
         # A nice and comfortable default
         self._charset = 'utf-8'
+        self._content_type = ''
         
         # Set the URL variables
         self._realurl = uri2url( originalUrl )
