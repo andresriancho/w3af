@@ -140,8 +140,8 @@ class AboutDialog(gtk.Dialog):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(AboutDialog,self).__init__("About...", None, gtk.DIALOG_MODAL,
-                      ("Check the web site",gtk.RESPONSE_CANCEL,gtk.STOCK_OK,gtk.RESPONSE_OK))
+        super(AboutDialog,self).__init__(_("About..."), None, gtk.DIALOG_MODAL,
+                      (_("Check the web site"),gtk.RESPONSE_CANCEL,gtk.STOCK_OK,gtk.RESPONSE_OK))
 
         # content
         img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
@@ -173,7 +173,7 @@ class WindowsCommunication(object):
         self.winCreator = winCreator
         self.isActive = False
         def e(x):
-            raise RuntimeError("BUG! The communicator was never initialized")
+            raise RuntimeError(_("BUG! The communicator was never initialized"))
         self.callback = e
         self.client = e
 
@@ -225,7 +225,7 @@ class MainApp(object):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.window.connect("delete_event", self.quit)
-        splash.push("Loading...")
+        splash.push(_("Loading..."))
 
         # title and positions
         self.window.set_title(MAINTITLE)
@@ -238,16 +238,16 @@ class MainApp(object):
         self.window.add(mainvbox)
         mainvbox.show()
 
-        splash.push("Initializing core...")
+        splash.push(_("Initializing core..."))
         self.w3af = core.controllers.w3afCore.w3afCore()
         
         # This is inited before all, to have a full logging facility.
         om.out.setOutputPlugins( ['gtkOutput'] )
 
         # status bar
-        splash.push("Building the status bar...")
+        splash.push(_("Building the status bar..."))
         guard = guardian.FoundObjectsGuardian(self.w3af)
-        self.sb = entries.StatusBar("Program started ok", [guard])
+        self.sb = entries.StatusBar(_("Program started ok"), [guard])
 
         # Using print so the user can read this in the console, together with 
         # the GTK, python and pygtk versions.
@@ -260,7 +260,7 @@ class MainApp(object):
         self.menuViews = {}
 
         # Create a UIManager instance
-        splash.push("Creating menu and toolbar...")
+        splash.push(_("Creating menu and toolbar..."))
         uimanager = gtk.UIManager()
         accelgroup = uimanager.get_accel_group()
         self.window.add_accel_group(accelgroup)
@@ -269,40 +269,40 @@ class MainApp(object):
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
-            ('New', gtk.STOCK_NEW, '_New', None, 'Create a new profile', lambda w: self.profileAction("new")),
-            ('Save', gtk.STOCK_SAVE, '_Save', None, 'Save this configuration', lambda w: self.profileAction("save")),
-            ('SaveAs', gtk.STOCK_SAVE_AS, 'Save _as...', None, 'Save this configuration in a new profile', lambda w: self.profileAction("saveAs")),
-            ('Revert', gtk.STOCK_REVERT_TO_SAVED, '_Revert', None, 'Revert the profile to its saved state', lambda w: self.profileAction("revert")),
-            ('Delete', gtk.STOCK_DELETE, '_Delete', None, 'Delete this profile', lambda w: self.profileAction("delete")),
-            ('ProfilesMenu', None, '_Profiles'),
-            ('ViewMenuScan', None, '_View'),
-            ('ViewMenuExploit', None, '_View'),
+            ('New', gtk.STOCK_NEW, _('_New'), None, _('Create a new profile'), lambda w: self.profileAction("new")),
+            ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profileAction("save")),
+            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profileAction("saveAs")),
+            ('Revert', gtk.STOCK_REVERT_TO_SAVED, _('_Revert'), None, _('Revert the profile to its saved state'), lambda w: self.profileAction("revert")),
+            ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _('Delete this profile'), lambda w: self.profileAction("delete")),
+            ('ProfilesMenu', None, _('_Profiles')),
+            ('ViewMenuScan', None, _('_View')),
+            ('ViewMenuExploit', None, _('_View')),
             
-            ('EditPlugin', gtk.STOCK_EDIT, '_Edit plugin', None, 'Edit selected plugin', self._editSelectedPlugin),
-            ('EditMenuScan', None, '_Edit', None, 'Edit', self._editMenu),
+            ('EditPlugin', gtk.STOCK_EDIT, _('_Edit plugin'), None, _('Edit selected plugin'), self._editSelectedPlugin),
+            ('EditMenuScan', None, _('_Edit'), None, _('Edit'), self._editMenu),
             
-            ('URLconfig', None, '_HTTP Config', None, 'HTTP configuration', self.menu_config_http),
-            ('Miscellaneous', None, '_Miscellaneous', None, 'Miscellaneous configuration', self.menu_config_misc),
-            ('ConfigurationMenu', None, '_Configuration'),
+            ('URLconfig', None, _('_HTTP Config'), None, _('HTTP configuration'), self.menu_config_http),
+            ('Miscellaneous', None, _('_Miscellaneous'), None, _('Miscellaneous configuration'), self.menu_config_misc),
+            ('ConfigurationMenu', None, _('_Configuration')),
             
-            ('ManualRequest', gtk.STOCK_INDEX, '_Manual Request', None, 'Generate manual HTTP request', self._manual_request),
-            ('FuzzyRequest', gtk.STOCK_PROPERTIES, '_Fuzzy Request', None, 'Generate fuzzy HTTP requests', self._fuzzy_request),
-            ('EncodeDecode', gtk.STOCK_CONVERT, '_Encode/Decode', None, 'Encodes and Decodes in different ways', self._encode_decode),
-            ('Compare', gtk.STOCK_ZOOM_100, '_Compare', None, 'Compare different requests and responses', self._compare),
-            ('Proxy', gtk.STOCK_CONNECT, '_Proxy', None, 'Proxies the HTTP requests, allowing their modification', self._proxy_tool),
-            ('ToolsMenu', None, '_Tools'),
+            ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), None, _('Generate manual HTTP request'), self._manual_request),
+            ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), None, _('Generate fuzzy HTTP requests'), self._fuzzy_request),
+            ('EncodeDecode', gtk.STOCK_CONVERT, _('_Encode/Decode'), None, _('Encodes and Decodes in different ways'), self._encode_decode),
+            ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), None, _('Compare different requests and responses'), self._compare),
+            ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), None, _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
+            ('ToolsMenu', None, _('_Tools')),
 
-            ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding the framework', self.menu_help),
-            ('About', gtk.STOCK_ABOUT, '_About', None, 'About the framework', self.menu_about),
-            ('HelpMenu', None, '_Help'),
+            ('Help', gtk.STOCK_HELP, _('_Help'), None, _('Help regarding the framework'), self.menu_help),
+            ('About', gtk.STOCK_ABOUT, _('_About'), None, _('About the framework'), self.menu_about),
+            ('HelpMenu', None, _('_Help')),
 
-            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, _('Start scan'), self._scan_director),
-            ('ExploitAll', gtk.STOCK_EXECUTE, '_Multiple Exploit', None, 'Exploit all vulns', self._exploit_all),
+            ('StartStop', gtk.STOCK_MEDIA_PLAY, _('_Start'), None, _('Start scan'), self._scan_director),
+            ('ExploitAll', gtk.STOCK_EXECUTE, _('_Multiple Exploit'), None, _('Exploit all vulns'), self._exploit_all),
         ])
 
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('Pause', gtk.STOCK_MEDIA_PAUSE, '_Pause', None, 'Pause scan',
+            ('Pause', gtk.STOCK_MEDIA_PAUSE, _('_Pause'), None, _('Pause scan'),
                            self._scan_pause, False),
         ])
 
@@ -323,9 +323,9 @@ class MainApp(object):
         # the view menu for exploit
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('ExploitVuln', None, '_Plugins', None, 'Toggle the plugins panel',
+            ('ExploitVuln', None, '_Plugins', None, _('Toggle the plugins panel'),
                            lambda w: self.dynPanels(w, "exploitvuln"), True),
-            ('Interactive', None, '_Shells and Proxies', None, 'Toggle the shells and proxies window', 
+            ('Interactive', None, '_Shells and Proxies', None, _('Toggle the shells and proxies window'), 
                            lambda w: self.dynPanels(w, "interac"), True),
         ])
         ag = actiongroup.get_action("ViewMenuExploit")
@@ -370,7 +370,7 @@ class MainApp(object):
                             ]
 
         # the throbber  
-        splash.push("Building the throbber...")
+        splash.push(_("Building the throbber..."))
         self.throbber = helpers.Throbber()
         separat = gtk.SeparatorToolItem()
         separat.set_draw(False)
@@ -380,7 +380,7 @@ class MainApp(object):
         toolbar.insert(self.throbber, -1)
 
         # notebook
-        splash.push("Building the main screen...")
+        splash.push(_("Building the main screen..."))
         self.nb = gtk.Notebook()
         self.nb.connect("switch-page", self.nbChangedPage)
         mainvbox.pack_start(self.nb, True)
@@ -393,13 +393,13 @@ class MainApp(object):
         pan.pack1(self.profiles)
         pan.pack2(self.pcbody)
         pan.show_all()
-        label = gtk.Label("Scan config")
+        label = gtk.Label(_("Scan config"))
         self.nb.append_page(pan, label)
         self.viewSignalRecipient = self.pcbody
 
         # dummy tabs creation for notebook, real ones are done in setTabs
         self.notetabs = {}
-        for title in ("Log","Results", "Exploit"):
+        for title in (_("Log"),_("Results"), _("Exploit")):
             dummy = gtk.Label("dummy")
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
@@ -455,7 +455,7 @@ class MainApp(object):
         @param event: the event that happened
         @param data: optional data to receive.
         '''
-        msg = "Do you really want to quit?"
+        msg = _("Do you really want to quit?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
@@ -537,7 +537,7 @@ class MainApp(object):
         threading.Thread(target=startScanWrap).start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
-        self.sb("The scan has started")
+        self.sb(_("The scan has started"))
         self.setTabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
@@ -565,18 +565,18 @@ class MainApp(object):
         self.paused = shall_pause
 
         if not shall_pause:
-            self.sb("Resuming the scan...")
+            self.sb(_("Resuming the scan..."))
             # start the status supervisor
             gobject.timeout_add(500, self._scan_superviseStatus)
         else:
-            self.sb("The scan is paused")
+            self.sb(_("The scan is paused"))
 
     def _scan_stop(self):
         '''Stops the scanning.'''
         self.w3af.stop()
         self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
-        self.sb("Stopping the scan...", 15)
+        self.sb(_("Stopping the scan..."), 15)
         self.stoppedByUser = True
 
     def _scan_stopfeedback(self):
@@ -585,15 +585,15 @@ class MainApp(object):
         This is separated because it's called when the process finishes by
         itself or by the user click.
         '''
-        self.startstopbtns.changeInternals("Clear", gtk.STOCK_CLEAR, "Clear all the obtained results")
+        self.startstopbtns.changeInternals(_("Clear"), gtk.STOCK_CLEAR, _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
         self.startstopbtns.set_sensitive(True)
         if self.stoppedByUser:
-            self.sb("The scan has stopped by user request")
+            self.sb(_("The scan has stopped by user request"))
         else:
-            self.sb("The scan has finished")
+            self.sb(_("The scan has finished"))
 
     def _scan_clear(self):
         '''Clears core and gtkUi, and fixes button to next step.'''
@@ -602,11 +602,11 @@ class MainApp(object):
         self.w3af.cleanup()
         messages.getQueueDiverter(reset=True)
         self.setTabs(False)
-        self.sb("Scan results cleared")
+        self.sb(_("Scan results cleared"))
         self.exploitallsens.set_sensitive(False, "stopstart")
 
         # put the button in start
-        self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, _("Start scan"))
+        self.startstopbtns.changeInternals(_("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         self.scanShould = "start"
         self.window.set_title(MAINTITLE)
 
@@ -641,9 +641,9 @@ class MainApp(object):
         self.isRunning = sensit
 
         # ok, the tabs, :p
-        self._setTab(sensit, "Log",     logtab.LogBody)
-        self._setTab(sensit, "Results", scanrun.ScanRunBody)
-        self._setTab(sensit, "Exploit", exploittab.ExploitBody)
+        self._setTab(sensit, _("Log"),     logtab.LogBody)
+        self._setTab(sensit, _("Results"), scanrun.ScanRunBody)
+        self._setTab(sensit, _("Exploit"), exploittab.ExploitBody)
 
     def _setTab(self, sensit, title, realWidget):
         # create title and window/label
@@ -651,7 +651,7 @@ class MainApp(object):
         if sensit:
             newone = realWidget(self.w3af)
         else:
-            newone = gtk.Label("The scan has not started: no info yet")
+            newone = gtk.Label(_("The scan has not started: no info yet"))
             newone.show()
             label.set_sensitive(False)
             newone.set_sensitive(False)
@@ -666,12 +666,12 @@ class MainApp(object):
     def menu_config_http(self, action):
         '''Configure HTTP options.'''
         configurable = self.w3af.uriOpener.settings
-        confpanel.ConfigDialog("Configure HTTP settings", self.w3af, configurable)
+        confpanel.ConfigDialog(_("Configure HTTP settings"), self.w3af, configurable)
 
     def menu_config_misc(self, action):
         '''Configure Misc options.'''
         configurable = core.controllers.miscSettings.miscSettings()
-        confpanel.ConfigDialog("Configure Misc settings", self.w3af, configurable)
+        confpanel.ConfigDialog(_("Configure Misc settings"), self.w3af, configurable)
 
     def dynPanels(self, widget, panel):
         '''Turns on and off the Log Panel.'''
@@ -734,7 +734,7 @@ class MainApp(object):
 
     def _exploit_all(self, action):
         '''Exploits all vulns.'''
-        exploitpage = self.notetabs["Exploit"]
+        exploitpage = self.notetabs[_("Exploit")]
         exploitpage.exploitAll()
 
     def _manual_request(self, action):
