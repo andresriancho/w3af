@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import getopt, sys, os
+import gettext
 
 # First of all, we need to change the working directory to the directory of w3af.
 currentDir = os.getcwd()
@@ -9,6 +10,9 @@ os.chdir( scriptDir )
 
 def backToCurrentDir():
     os.chdir( currentDir )
+
+# Translation stuff
+gettext.install('w3af', 'locales/')
 
 # Now we can load all modules and stuff...
 from core.controllers.w3afException import w3afException

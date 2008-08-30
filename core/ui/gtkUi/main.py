@@ -296,7 +296,7 @@ class MainApp(object):
             ('About', gtk.STOCK_ABOUT, '_About', None, 'About the framework', self.menu_about),
             ('HelpMenu', None, '_Help'),
 
-            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, 'Start scan', self._scan_director),
+            ('StartStop', gtk.STOCK_MEDIA_PLAY, '_Start', None, _('Start scan'), self._scan_director),
             ('ExploitAll', gtk.STOCK_EXECUTE, '_Multiple Exploit', None, 'Exploit all vulns', self._exploit_all),
         ])
 
@@ -541,7 +541,7 @@ class MainApp(object):
         self.setTabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
-        self.startstopbtns.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, "Stop scan")
+        self.startstopbtns.changeInternals("Stop", gtk.STOCK_MEDIA_STOP, _("Stop scan"))
         self.scanShould = "stop"
         self.stoppedByUser = False
         self.nb.set_current_page(1)
@@ -606,7 +606,7 @@ class MainApp(object):
         self.exploitallsens.set_sensitive(False, "stopstart")
 
         # put the button in start
-        self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
+        self.startstopbtns.changeInternals("Start", gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         self.scanShould = "start"
         self.window.set_title(MAINTITLE)
 
