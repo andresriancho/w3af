@@ -72,26 +72,21 @@ class FoundObjectsGuardian(gtk.HBox):
         # go live
         self.fullkb = kb.kb.dump()
         self.kbholder = set()
-        gobject.timeout_add(1500, self._update)
+        gobject.timeout_add(1000, self._update)
         self.show_all()
 
     def _update(self):
         '''Updates the objects shown.'''
-        # supervise the kb
-        for pluginname, plugvalues in self.fullkb.items():
-            for variabname, variabobjects in plugvalues.items():
-                if isinstance(variabobjects, list):
-                    for obj in variabobjects:
-                        if type(obj) not in self.objcont:
-                            continue
-                        if id(obj) in self.kbholder:
-                            continue
-                        guard = self.objcont[type(obj)]
-                        guard.quant += 1
-                        self.kbholder.add(id(obj))
-
         # shells
         shells = kb.kb.getAllShells()
         self.shll.quant = len(shells)
+
+        # infos
+        infos = kb.kb.getAllInfos()
+        self.info.quant = len(infos)
+
+        # vulns
+        vulns = kb.kb.getAllVulns()
+        self.vuln.quant = len(vulns)
         return True
 
