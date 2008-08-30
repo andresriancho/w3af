@@ -32,6 +32,8 @@ class question_target_2(question):
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self):
+        question.__init__( self )
+
         self._questionId = 'target_2'
 
         self._questionTitle = 'Target Location'
@@ -41,7 +43,7 @@ class question_target_2(question):
         self._questionString += ' to know the following:'
 
         
-    def getOptionObjects(self):
+    def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''

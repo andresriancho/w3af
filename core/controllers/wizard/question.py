@@ -36,6 +36,8 @@ class question:
         self._questionId = ''
         self._questionString = ''
 
+        self._previously_answered_values = None
+
     def getQuestionTitle(self):
         return self._questionTitle
         
@@ -50,11 +52,33 @@ class question:
         
     def getOptionObjects(self):
         '''
+        This is the method that is shown to the user interfaces;
+        while the real information is inside the _getOptionObjects().
+
         @return: A list of options for this question.
+        '''
+        if self._previously_answered_values:
+            # We get here when the user hits previous
+            return self._previously_answered_values
+        else:
+            return self._getOptionObjects()
+
+    def _getOptionObjects(self):
+        '''
+        We get here when the user wants to complete this step of the
+        wizard, and he didn't pressed Previous.
+
+        @return: The option objects
         '''
         ol = optionList()
         return ol
-        
+    
+    def setPreviouslyAnsweredValues(self, values):
+        '''
+        This is needed to implement the previous feature!
+        '''
+        self._previously_answered_values = values
+
     def getQuestionId(self):
         return self._questionId
         

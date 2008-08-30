@@ -51,7 +51,7 @@ except Exception, e:
     print 'Failed (as expected):', e
 
 # Now we fill it with a valid value
-i.setValue('http://localhost/')
+i.setValue('http://localhost/value_!')
 try:
     sw.setAnswer(options)
 except Exception, e:
@@ -70,4 +70,14 @@ sw.setAnswer(options)
 
 if sw.next() == None:
     print 'Finished the wizard'
+
+# But wait! Now I remembered that I want to change something from the first question!
+sw.previous()
+q1 = sw.previous()
+print 'q1 title:', q1.getQuestionTitle()
+print 'q1 question:', q1.getQuestionString()
+print 'did we saved the value??'
+options = q1.getOptionObjects()
+for i in options:
+    print i.getValue()
 

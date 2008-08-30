@@ -32,6 +32,8 @@ class question_target_1(question):
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self):
+        question.__init__( self )
+    
         self._questionId = 'target_1'
 
         self._questionTitle = 'Target URL'
@@ -40,7 +42,7 @@ class question_target_1(question):
         self._questionString += ' Remember that you can separate different URLs with commas like this: \n'
         self._questionString += '    - http://localhost/a.php , http://localhost/b.php'
         
-    def getOptionObjects(self):
+    def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''

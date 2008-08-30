@@ -36,6 +36,8 @@ class wizard:
         self._currentQuestion = None
         self._firstQuestion = True
         self._nextQuestionId = None
+        self._already_asked = []
+        self._user_options = None
 
     def _get_instances( self, question_list ):
         '''
@@ -59,6 +61,11 @@ class wizard:
             self._currentQuestion = self._questionList[0]
             return self._questionList[0]
 
+        # Save the user completed values, so we can handle previous button of the wizard
+        self._currentQuestion.setPreviouslyAnsweredValues(self._user_options)
+        self._already_asked.append( self._currentQuestion )
+        print '!!!!!!!!', self._already_asked
+
         # Special case to end iteration
         if self._nextQuestionId == None:
             return None
@@ -69,8 +76,25 @@ class wizard:
             raise w3afException('We have more than one next question. Please verify your wizard definition.\
                           Possible questions are: ' + str(possibleQuestions) )
         else:
+            # return the next question
             self._currentQuestion = possibleQuestions[0]
             return possibleQuestions[0]
+
+    def previous(self):
+        '''
+        We get here when the user clicks on the "Previous" button in the GTK user interface.
+
+        @return: The previous question, with the answers the user selected.
+        '''
+        # Special case, we can't go back because we don't have a previous question
+        if self._firstQuestion:
+            return None
+
+        # There is a list with the questions, and a list with the answers
+        # We have to combine both, to return a question object that has the
+        # already answered values from the user
+        return self._already_asked.pop()
+        
         
     def getWizardDescription(self):
         '''
@@ -94,5 +118,8 @@ class wizard:
         
         @parameter optionsMap: This is a map with the answers for every question that was made to the user.
         '''
+        # This line may rise a w3afException        
         self._nextQuestionId = self._currentQuestion.getNextQuestionId( optionsMap )
         
+        # save the options selected by the user, to be able to perform a "previous"
+        self._user_options = optionsMap
