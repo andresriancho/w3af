@@ -22,8 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 from core.controllers.wizard.wizards.short_wizard import short_wizard
 
+# How to select wizards:
+#   import core.controllers.wizard.wizards as wiz
+#   dir(wiz)
+#       ['__builtins__', '__doc__', '__file__', '__name__', '__path__', 'short_wizard']
+
 # Get a wizard instance:
 sw = short_wizard()
+# description:
+#    sw.getWizardDescription()
 
 # Get the firs step of the wizard
 q1 = sw.next()
