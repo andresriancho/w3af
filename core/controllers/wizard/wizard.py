@@ -79,6 +79,12 @@ class wizard:
         @return: A string that describes what the wizard will let you configure.
         '''
         return ''
+
+    def getName(self):
+        '''
+        @return: The name of the wizard.
+        '''
+        return ''
         
     def setAnswer(self, optionsMap):
         '''
