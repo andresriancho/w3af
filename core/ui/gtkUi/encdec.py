@@ -101,14 +101,14 @@ class EncodeDecode(entries.RememberingWindow):
         hbox.pack_start(b, False, False)
 
         # middle buttons, rigth
-        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, "Decode the lower text")
-        b.connect("clicked", self._decode, cb)
-        hbox.pack_end(b, False, False, padding=10)
         cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_dec:
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
+        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, "Decode the lower text")
+        hbox.pack_end(b, False, False, padding=10)
+        b.connect("clicked", self._decode, cb)
         hbox.pack_end(cb, False, False)
         vbox.pack_start(hbox, False, False, padding=5)
         vpan.pack1(vbox)
