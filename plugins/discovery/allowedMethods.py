@@ -98,7 +98,7 @@ class allowedMethods(baseDiscoveryPlugin):
                 allowedMethods = list(set(allowedMethods))
 
         if not withOptions:
-            # 'DELETE' ain't tested ! I don't want to remove anything...
+            # 'DELETE' is not tested ! I don't want to remove anything...
             methods_to_test = self._supportedMethods[:]
             methods_to_test.remove('DELETE')
 

@@ -79,8 +79,8 @@ class generic(baseAuditPlugin):
           
     def _getErrorStrings( self ):
         '''
-        @return: A list of strings that could generate errors. Please note that an empty string is something that
-        in most cases ain't tested, but I have found that it could trigger some errors.
+        @return: A list of strings that could generate errors. Please note that an empty string is something that,
+        in most cases, is not tested. Although, I have found that it could trigger some errors.
         '''
         return ['d\'kc"z\'gj\'\"**5*(((;-*`)','']
        

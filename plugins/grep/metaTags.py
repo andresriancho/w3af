@@ -86,7 +86,7 @@ class metaTags(baseGrepPlugin):
                                         
                                     self._alreadyReportedInteresting[ response.getURL() ].append( (name,attr[1]) )
                                 else:
-                                    # The attribute ain't interesting
+                                    # The attribute is not interesting
                                     pass
     
     def _findName( self, tag ):

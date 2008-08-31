@@ -214,6 +214,6 @@ class digitSum(baseDiscoveryPlugin):
             - http://a/index0.asp
             - http://a/index2.asp
             
-        If the response for the newly generated URL's ain't a 404 error, then the new URL is a valid one that
+        If the response for the newly generated URL's is not an 404 error, then the new URL is a valid one that
         can contain more information and injection points.      
         '''

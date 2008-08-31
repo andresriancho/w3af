@@ -24,7 +24,7 @@ evasion
 back
 
 target
-# It ain't working on Apache
+# It is not working on Apache
 #set target http://localhost/w3af/xss/test-xss.php?a=f0as9
 set target http://172.16.1.132/index.asp?q=holaMundo
 back

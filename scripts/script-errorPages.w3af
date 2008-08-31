@@ -18,6 +18,7 @@ audit xss
 audit
 back
 target
-set target http://localhost/w3af/a.b.c
+set target http://localhost/w3af/grepPlugins/index.html
 back
 start
+exit
