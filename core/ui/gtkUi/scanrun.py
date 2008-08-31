@@ -233,16 +233,12 @@ class URLsGraph(gtk.VBox):
 
 
     def newNode(self, parent, node, name, isLeaf):
-        print parent, node, name, isLeaf
         if not isLeaf:
             self.nodos_code.append('"%s" [shape=box]' % node)
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
-        try:
+        if parent:
             nline = '"%s" -- "%s"' % (parent, node)
-        except KeyError:
-            nline = '"%s"' % node
-        print nline
-        self.nodos_code.append(nline) 
+            self.nodos_code.append(nline) 
         self._somethingnew = True
 
 
