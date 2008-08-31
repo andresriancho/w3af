@@ -108,6 +108,7 @@ class ConfigPanel(gtk.VBox):
         if profileDescription is not None:
             # put the description
             lab = gtk.Label(profileDescription)
+            lab.set_line_wrap(True)
             self.widg = lab
             lab.show()
             self.add(lab)
