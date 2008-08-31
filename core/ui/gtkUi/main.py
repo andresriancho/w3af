@@ -71,8 +71,9 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 import core.controllers.outputManager as om
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, proxywin
-from . import entries, encdec, messages, logtab, pluginconfig, confpanel, guardian
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from . import entries, encdec, messages, logtab, pluginconfig, confpanel
+from . import wizard, guardian, proxywin
 from core.controllers.misc.homeDir import getHomeDir
 import webbrowser, time
 
@@ -113,10 +114,14 @@ ui_menu = """
     </menu>
     <menu action="HelpMenu">
       <menuitem action="Help"/>
+      <menuitem action="Wizards"/>
+      <separator name="s4"/>
       <menuitem action="About"/>
     </menu>
   </menubar>
   <toolbar name="Toolbar">
+    <toolitem action="Wizards"/>
+    <separator name="s5"/>
     <toolitem action="New"/>
     <toolitem action="Save"/>
     <separator name="s1"/>
@@ -292,6 +297,7 @@ class MainApp(object):
             ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), None, _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
             ('ToolsMenu', None, _('_Tools')),
 
+            ('Wizards', gtk.STOCK_SORT_ASCENDING, _('_Wizards'), None, _('Point & Click Penetration Test'), self._wizards),
             ('Help', gtk.STOCK_HELP, _('_Help'), None, _('Help regarding the framework'), self.menu_help),
             ('About', gtk.STOCK_ABOUT, _('_About'), None, _('About the framework'), self.menu_about),
             ('HelpMenu', None, _('_Help')),
@@ -355,13 +361,13 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 13
-        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 3)
+        assert toolbar.get_n_items() == 15
+        toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 5)
         self.startstopbtns.addWidget(toolbut_startstop)
-        self.toolbut_pause = toolbar.get_nth_item(4)
+        self.toolbut_pause = toolbar.get_nth_item(6)
         self.toolbut_pause.set_sensitive(False)
         self.scanok = helpers.PropagateBuffer(self.startstopbtns.set_sensitive)
-        exploitall = toolbar.get_nth_item(6)
+        exploitall = toolbar.get_nth_item(8)
         self.exploitallsens = helpers.SensitiveAnd(exploitall, ("stopstart", "tabinfo"))
         
         # tab dependant widgets
@@ -756,6 +762,11 @@ class MainApp(object):
     def _proxy_tool(self, action):
         '''Proxies the HTTP calls.'''
         proxywin.ProxiedRequests(self.w3af)
+
+    def _wizards(self, action):
+        '''Execute the wizards machinery.'''
+        reload(wizard)
+        wizard.WizardChooser(self.w3af)
 
     
 def main(profile):
