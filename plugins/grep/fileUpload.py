@@ -46,10 +46,8 @@ class fileUpload(baseGrepPlugin):
     def _testResponse(self, request, response):
         
         if response.is_text_or_html():
-            input_res = self._input.search( response.getBody() )
-            if input_res: # input tag found
-                file_res = self._file.search(input_res.group())
-                if file_res:
+            for input in self._input.findall( response.getBody() ):
+                if self._file.search(input):
                     i = info.info()
                     i.setName('File upload form')
                     i.setURL( response.getURL() )
