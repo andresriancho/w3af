@@ -40,6 +40,9 @@ class hashFind(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
+        # regex to split between words
+        self._split_re = re.compile('[^\w]')
+        
     def _testResponse(self, request, response):
         
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...
@@ -47,7 +50,7 @@ class hashFind(baseGrepPlugin):
         if response.is_text_or_html():
             
             body = response.getBody()
-            splittedBody = re.split( '[^\w]', body )
+            splittedBody = self._split_re.split(body)
             for s in splittedBody:
                 hashType = self._hasHashLen( s )
                 if hashType:
