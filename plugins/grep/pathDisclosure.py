@@ -88,12 +88,8 @@ class pathDisclosure(baseGrepPlugin):
             return: False
         '''
         regex_res = re.findall('<.+?(["|\']'+pathDisclosureString+'["|\']).*?>', responseBody)
-        count_res = responseBody.count( pathDisclosureString )
-        
-        if count_res > len(regex_res):
-            return False
-        else:
-            return True
+        in_res = pathDisclosureString in responseBody
+        return in_res
     
     def _updateKBPathList( self, url ):
         '''

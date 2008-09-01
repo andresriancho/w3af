@@ -122,7 +122,7 @@ class collectCookies(baseGrepPlugin):
         cookie that was sent.
         '''
         for cookie in self._getCookieFPdb():
-            if cookieObj.output(header='').count( cookie[0] ):
+            if cookie[0] in cookieObj.output(header=''):
                 if cookie[1] not in self._alreadyReportedServer:
                     i = info.info()
                     i.setId( response.id )

@@ -47,7 +47,7 @@ class wsdlGreper(baseGrepPlugin):
             if response.getCode() == 200:
                 isWsdl = False
                 for str in self._getStringsWsdl():
-                    if htmlString.count(str):
+                    if str in htmlString:
                         isWsdl = True
                         break
                     
@@ -61,7 +61,7 @@ class wsdlGreper(baseGrepPlugin):
                 
                 isDisco = False
                 for str in ['disco:discovery ']:
-                    if htmlString.count(str):
+                    if str in htmlString:
                         isDisco = True
                         break
                     

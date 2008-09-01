@@ -58,7 +58,7 @@ class ajax(baseGrepPlugin):
                 for scriptCode in res.groups():
                     
                     for ajaxName in self._getAjaxNames():
-                        if scriptCode.count( ajaxName ):
+                        if ajaxName in scriptCode:
                             i = info.info()
                             i.setName('Ajax code')
                             i.setURL( response.getURL() )

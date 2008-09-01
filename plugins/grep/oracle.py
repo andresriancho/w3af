@@ -44,7 +44,7 @@ class oracle(baseGrepPlugin):
         
         if response.is_text_or_html():
             for msg in self._getDescriptiveMessages():
-                if response.getBody().count( msg ) and response.getURL():
+                if msg in response.getBody() and response.getURL():
                     
                     i = info.info()
                     i.setName('Oracle application')

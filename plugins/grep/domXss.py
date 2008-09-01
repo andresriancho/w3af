@@ -75,7 +75,7 @@ class domXss(baseGrepPlugin):
                         
                         if parameters:
                             for userControlled in self._getDOMUserControlled():
-                                if parameters.groups()[0].count( userControlled ):
+                                if userControlled in parameters.groups()[0]:
                                     v = vuln.vuln()
                                     v.setURL( response.getURL() )
                                     v.setId( response.id )
