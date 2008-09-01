@@ -39,32 +39,24 @@ class ajax(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._scriptre = re.compile('< *script *>(.*?)</ *script *>',re.IGNORECASE | re.DOTALL )
         
-    def _getAjaxNames( self ):
-        res = []
-        res.append('XMLHttpRequest')
-        res.append('ActiveXObject("Msxml2.XMLHTTP")')
-        res.append('ActiveXObject("Microsoft.XMLHTTP")')
-        res.append('eval(')     
-        return res
-    
+        # Create the regular expression to search for AJAX
+        regex_string = '< *?script.*?>.*?'
+        regex_string +='(XMLHttpRequest|eval\(\)|ActiveXObject\("Msxml2.XMLHTTP"\)|ActiveXObject\("Microsoft.XMLHTTP"\))'
+        regex_string += '.*?</ *?script *?>'
+        self._scriptre = re.compile( regex_string,re.IGNORECASE | re.DOTALL )
+
     def _testResponse(self, request, response):
         
         if response.is_text_or_html():
-        
             res = self._scriptre.search( response.getBody() )
             if res:
-                for scriptCode in res.groups():
-                    
-                    for ajaxName in self._getAjaxNames():
-                        if ajaxName in scriptCode:
-                            i = info.info()
-                            i.setName('Ajax code')
-                            i.setURL( response.getURL() )
-                            i.setDesc( 'The URL: "' + i.getURL() + '" has a ajax code.'  )
-                            i.setId( response.id )
-                            kb.kb.append( self, 'ajax', i )
+                i = info.info()
+                i.setName('Ajax code')
+                i.setURL( response.getURL() )
+                i.setDesc( 'The URL: "' + i.getURL() + '" has a ajax code.'  )
+                i.setId( response.id )
+                kb.kb.append( self, 'ajax', i )
     
     def setOptions( self, OptionList ):
         pass
