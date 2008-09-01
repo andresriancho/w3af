@@ -50,11 +50,15 @@ class motw (baseGrepPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
             if not self.is404( response ):
                 motw = self._motw_re.search(response.getBody())
-                i = info.info()
-                i.setName('Mark of the web')
-                i.setURL( response.getURL() )
-                i.setId( response.id )
                 
+                # Create the info object
+                if motw or self._withoutMOTW:
+                    i = info.info()
+                    i.setName('Mark of the web')
+                    i.setURL( response.getURL() )
+                    i.setId( response.id )
+                
+                # Act based on finding/non-finding
                 if motw :
                     url_length_indicated = int(motw.group(1))
                     url_length_actual =len(motw.group(2))
