@@ -198,22 +198,22 @@ class pathDisclosure(baseGrepPlugin):
         Return a list of regular expressions to be tested.
         '''
         
-        dirIndexStr = []
-        dirIndexStr.append(r"[A-Z]:\\") 
-        dirIndexStr.append("/root/")
-        dirIndexStr.append("/var/")
-        dirIndexStr.append("/htdocs/")
-        dirIndexStr.append("/usr/")
-        dirIndexStr.append("/home/")
-        dirIndexStr.append("/etc/")
-        dirIndexStr.append("/bin/")
-        dirIndexStr.append("/lib/")
-        dirIndexStr.append("/opt/")
-        dirIndexStr.append("/sbin/")
-        dirIndexStr.append("/sys/")
-        dirIndexStr.append("/mnt/")
-        dirIndexStr.append("/tmp/")
-        return dirIndexStr
+        path_disclosure_strings = []
+        path_disclosure_strings.append(r"[A-Z]:\\") 
+        path_disclosure_strings.append("/root/")
+        path_disclosure_strings.append("/var/")
+        path_disclosure_strings.append("/htdocs/")
+        path_disclosure_strings.append("/usr/")
+        path_disclosure_strings.append("/home/")
+        path_disclosure_strings.append("/etc/")
+        path_disclosure_strings.append("/bin/")
+        path_disclosure_strings.append("/lib/")
+        path_disclosure_strings.append("/opt/")
+        path_disclosure_strings.append("/sbin/")
+        path_disclosure_strings.append("/sys/")
+        path_disclosure_strings.append("/mnt/")
+        path_disclosure_strings.append("/tmp/")
+        return path_disclosure_strings
 
     def getPluginDeps( self ):
         '''
