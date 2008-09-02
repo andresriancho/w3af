@@ -413,7 +413,10 @@ class pykto(baseDiscoveryPlugin):
                 if not self._returnWithoutEval( parameters, uri ):
                     return True
         
-        elif not self.is404( response ) and response.getBody().count( expectedResponse ):
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response
+        elif expectedResponse in response and not self.is404( response ):
             # If the content is found, and it's not in a 404 page, then we have a vuln.
             return True
         

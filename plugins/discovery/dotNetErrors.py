@@ -98,8 +98,11 @@ class dotNetErrors(baseDiscoveryPlugin):
         '''
         @parameter response: The httpResponse object that holds the content of the response to analyze.
         '''
-        if '<b>Details:</b> To enable the details of this specific error message to be viewable on remote machines' not in response.getBody()\
-        and '<h2> <i>Runtime Error</i> </h2></span>' in response.getBody():
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response        
+        if '<b>Details:</b> To enable the details of this specific error message to be viewable on remote machines' not in response\
+        and '<h2> <i>Runtime Error</i> </h2></span>' in response:
             v = vuln.vuln( response )
             v.setId( response.id )
             v.setSeverity(severity.LOW)

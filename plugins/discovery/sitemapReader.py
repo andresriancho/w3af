@@ -59,7 +59,10 @@ class sitemapReader(baseDiscoveryPlugin):
             sitemapUrl = urlParser.urlJoin(  baseUrl , 'sitemap.xml' )
             response = self._urlOpener.GET( sitemapUrl, useCache=True )
             
-            if not self.is404( response ) and '</urlset>' in response.getBody():
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response
+            if '</urlset>' in response and not self.is404( response ):
                 om.out.debug('Analyzing sitemap.xml file.')
                 
                 self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
