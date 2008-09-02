@@ -126,7 +126,10 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        if response.getBody().find( self._getRfiResult() ) != -1:
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response        
+        if self._getRfiResult() in response:
             v = vuln.vuln( mutant )
             v.setId( response.id )
             v.setSeverity(severity.HIGH)
