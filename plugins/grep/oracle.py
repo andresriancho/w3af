@@ -44,7 +44,10 @@ class oracle(baseGrepPlugin):
         
         if response.is_text_or_html():
             for msg in self._getDescriptiveMessages():
-                if msg in response.getBody() and response.getURL():
+                # Remember that httpResponse objects have a faster "__in__" than
+                # the one in strings; so string in response.getBody() is slower than
+                # string in response                         
+                if msg in response:
                     
                     i = info.info()
                     i.setName('Oracle application')

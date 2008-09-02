@@ -54,7 +54,10 @@ class httpInBody (baseGrepPlugin):
         if response.getCode() != 501 and response.is_text_or_html():
             
             # First if, mostly for performance.
-            if 'HTTP/1.' in response.getBody():
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response
+            if 'HTTP/1.' in response:
                 
                 # Now, remove tags
                 bodyWithoutTags = self._re_removeTags.sub('', response.getBody() )

@@ -43,11 +43,11 @@ class wsdlGreper(baseGrepPlugin):
     def _testResponse(self, request, response):
         
         if response.is_text_or_html():
-            htmlString = response.getBody()
+
             if response.getCode() == 200:
                 isWsdl = False
-                for str in self._getStringsWsdl():
-                    if str in htmlString:
+                for wsdl_string in self._getStringsWsdl():
+                    if wsdl_string in response:
                         isWsdl = True
                         break
                     
@@ -60,8 +60,8 @@ class wsdlGreper(baseGrepPlugin):
                     kb.kb.append( self , 'wsdl' , i )
                 
                 isDisco = False
-                for str in ['disco:discovery ']:
-                    if str in htmlString:
+                for disco_string in ['disco:discovery ']:
+                    if disco_string in response:
                         isDisco = True
                         break
                     

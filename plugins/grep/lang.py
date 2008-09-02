@@ -71,8 +71,6 @@ class lang(baseGrepPlugin):
             if self._exec and not self.is404( response ):
                 kb.kb.save( self, 'lang', 'unknown' )
                 
-                splittedBody = response.getBody().split(' ')
-                
                 # Init the count map
                 numberOfmatches = {}
                 for lang in self._prepositions.keys():
@@ -81,7 +79,10 @@ class lang(baseGrepPlugin):
                 # Count prepositions
                 for lang in self._prepositions.keys():
                     for preposition in self._prepositions[ lang ]:
-                        if preposition in splittedBody:
+                        # Remember that httpResponse objects have a faster "__in__" than
+                        # the one in strings; so string in response.getBody() is slower than
+                        # string in response                        
+                        if preposition in response:
                             om.out.debug('Found preposition: ' + preposition)
                             numberOfmatches[ lang ] += 1
                             

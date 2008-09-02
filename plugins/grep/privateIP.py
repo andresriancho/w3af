@@ -72,6 +72,14 @@ class privateIP(baseGrepPlugin):
         
         # Search for IP addresses on HTML
         if response.is_text_or_html():
+            
+            # Performance improvement!
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response; and regular expression matching is way slower!
+            if not (('10' in response) or ('172' in response) or ('192.168' in response)):
+                return
+            
             for regex in self._regexList:
                 res = regex.search(response.getBody())
                 if res:

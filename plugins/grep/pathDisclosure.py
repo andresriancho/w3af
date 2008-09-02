@@ -44,6 +44,18 @@ class pathDisclosure(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._urlList = []
+        
+        # Compile all regular expressions now
+        self._compile_regex()
+        
+    def _compile_regex(self):
+        '''
+        @return: None, the result is saved in self._path_disc_regex_list
+        '''
+        self._path_disc_regex_list = []
+        for pathDisclosureString in self._getPathDisclosureStrings():
+            regex = re.compile( '('+pathDisclosureString + '.*?)[:|\'|"|<|\n|\r|\t]',  re.IGNORECASE)
+            self._path_disc_regex_list.append(regex)
 
     def _testResponse(self, request, response):
         
@@ -52,13 +64,13 @@ class pathDisclosure(baseGrepPlugin):
             realurl = urlParser.urlDecode( response.getURL() )
             
             htmlString = response.getBody()
-            for pathDisclosureString in self._getPathDisclosureStrings():
-                matches = re.findall( pathDisclosureString + '.*?[:|\'|"|<|\n|\r|\t]', htmlString  )
+            for path_disc_regex in self._path_disc_regex_list:
+                matches = path_disc_regex.findall( htmlString  )
                 for match in matches:
                     match = match[:-1]
                     
                     # The if is to avoid false positives
-                    if len(match) < 80 and not self._wasSent( request, pathDisclosureString )\
+                    if len(match) < 80 and not self._wasSent( request, match )\
                     and not self._attrValue( match, htmlString ):
                         
                         v = vuln.vuln()

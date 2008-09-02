@@ -19,17 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+
+# Common imports
 from core.data.parsers.urlParser import *
 import copy
+import re
+import string
 
+# Handle codecs
 import codecs
 def _returnEscapedChar(exc):
     slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
     return ( unicode(slash_x_XX) , exc.end)
-    
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
 
-import re
+# '<>,.;:-_{}[]\'"+*~^' and some others... go to ' ' (whitespace)
+special_chars = ''.join([chr(i) for i in xrange(128) if chr(i) not in string.ascii_letters + string.digits])
+TRANSLATION_TABLE= string.maketrans(special_chars,' '*len(special_chars))
 
 class httpResponse:
     
@@ -90,7 +96,66 @@ class httpResponse:
     def setRedirURI( self, ru ): self._redirectedURI = ru
     def setCode( self, code ): self._code = code
     def setBody( self, body):
+        '''
+        This method decodes the body based on the header(or metadata) encoding and
+        afterwards, it creates the necesary metadata to speed up string searches inside
+        the body string.
+
+        @body: A string that represents the body of the HTTP response
+        @return: None
+        '''
+        self._charset_handling(body)
+        self._any_inside_setup(body)
         
+    def _custom_split(self, string_to_split):
+        translated_string = string_to_split.translate(TRANSLATION_TABLE)
+        return translated_string.split()        
+        
+    def _any_inside_setup(self, body):
+        '''
+        This method creates a dictionary that will be used to speed up searches
+        performed using the "any_inside" method.
+
+        @body: A string that represents the body of the HTTP response
+        @return: None
+        '''
+        self._splitted_http_body = {}
+        for i in self._custom_split(body):
+            self._splitted_http_body[i] = 0
+
+    def __contains__(self, string_to_test):
+        '''
+        Determine if any of the strings inside the string_list match the HTTP response body.
+
+        @parameter string_list: The list of strings
+        '''
+        all_words_inside_http_body = True
+        
+        for word in self._custom_split(string_to_test):
+            if not self._splitted_http_body.has_key(word):
+                all_words_inside_http_body = False
+                break
+
+        if all_words_inside_http_body == True:
+            # All the words in the string_to_test are inside the http_body
+            # this is something really promising, but the important question
+            # is if the words are in the correct order.
+            # The only way to test for this is to "scan" the whole http_body
+            # with an "in" statement.
+            # We only get here 0.01% of the times.
+            if string_to_test in self._body:
+                return True
+
+        return False
+
+
+    def _charset_handling(self, body):
+        '''
+        This method decodes the body based on the header(or metadata) encoding.
+
+        @body: A string that represents the body of the HTTP response
+        @return: None
+        '''
         # A sample header just to remember how they look like: "content-type: text/html; charset=iso-8859-1"
         lowerCaseHeaders = self.getLowerCaseHeaders()
         if not 'content-type' in lowerCaseHeaders:
