@@ -141,7 +141,10 @@ class googleSearchEngine(searchEngine):
             _query = urllib.urlencode({'hl':'es', 'q':query, 'start':str(start), 'sa':'N'})
             
         response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
-        if 'href="http://www.google.com/support/bin/answer.py?answer=86640">' in response.getBody():
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response            
+        if 'href="http://www.google.com/support/bin/answer.py?answer=86640">' in response:
             raise w3afException('Google is telling us to stop doing automated tests.')
             
         # Save the result page
