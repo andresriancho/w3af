@@ -104,7 +104,7 @@ class LDAPi(baseAuditPlugin):
         for ldapError in self._getLDAPErrors():
             match = re.search( ldapError, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found LDAP injection. The error returned by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                om.out.information('Found LDAP error string. The error returned by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
                 res.append( ldapError )
         return res
         
