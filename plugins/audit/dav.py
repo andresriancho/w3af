@@ -81,7 +81,10 @@ class dav(baseAuditPlugin):
         </g:searchrequest>\r\n"
 
         res = self._urlOpener.SEARCH( domainPath , data=content )
-        if res.getCode() in xrange(200,300) and "DAV:" in res.getBody():
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response        
+        if "DAV:" in res and res.getCode() in xrange(200,300):
             v = vuln.vuln()
             v.setURL( res.getURL() )
             v.setId( res.id )
@@ -103,7 +106,10 @@ class dav(baseAuditPlugin):
         </a:propfind>\r\n"
         
         res = self._urlOpener.PROPFIND( domainPath , data=content, headers={'Depth': '1'} )
-        if res.getCode() in xrange(200,300) and "D:href" in res.getBody():
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response               
+        if "D:href" in res and res.getCode() in xrange(200,300):
             v = vuln.vuln()
             v.setURL( res.getURL() )
             v.setId( res.id )

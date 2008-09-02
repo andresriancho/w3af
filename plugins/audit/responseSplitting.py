@@ -73,7 +73,11 @@ class responseSplitting(baseAuditPlugin):
         # When trying to send a response splitting to php 5.1.2 I get :
         # Header may not contain more than a single header, new line detected
         for error in self._getErrors():
-            if response.getBody().count( error ):
+            
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response            
+            if error in response:
                 om.out.information('The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL() +' modifies the headers of the response, but this error was sent while testing for response splitting: ' + error )
                 return
             

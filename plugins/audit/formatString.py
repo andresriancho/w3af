@@ -63,8 +63,12 @@ class formatString(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         '''
         for error in self._getErrors():
-            # hmmm...
-            if response.getBody().count( error ):
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response            
+            #
+            # hmmm... maybe I should check that the string wasn't in the original response?
+            if error in response:
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)

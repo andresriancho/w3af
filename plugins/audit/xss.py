@@ -162,8 +162,11 @@ class xss(baseAuditPlugin):
             
             # restore the mutant values
             mutant.setModValue(oldValue)
-
-            if response.getBody().count( rndNum ):
+            
+            # Remember that httpResponse objects have a faster "__in__" than
+            # the one in strings; so string in response.getBody() is slower than
+            # string in response
+            if rndNum in response:
                 # record that this variable is echoed
                 self._echoed.append( (mutant.getURL(),mutant.getVar()) )
                 om.out.debug('The variable ' + mutant.getVar() + ' is being echoed back.' )
@@ -187,7 +190,11 @@ class xss(baseAuditPlugin):
         
         htmlString = response.getBody()
         vulnerable = False
-        if htmlString.count( mutant.getModValue() ):
+        
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response
+        if mutant.getModValue() in response:
                 # Ok, we MAY have found a xss. Let's remove some false positives.
                 if mutant.getModValue().lower().count( 'javas' ):
                     # I have to check if javascript was written inside a SRC parameter of html
@@ -233,7 +240,10 @@ class xss(baseAuditPlugin):
         Check how special chars are filtered or escaped.
         '''
         htmlString = response.getBody()
-        if htmlString.count( self._rndValue ):
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response        
+        if self._rndValue in response:
             # Input is being echoed back to the user. Lets see what filters are being used !
             start = htmlString.find( self._rndValue )
             zone = htmlString[ start -20 : start + 20 ]
@@ -310,7 +320,10 @@ class xss(baseAuditPlugin):
                 response = self._sendMutant( fr, analyze=False )
                 
                 for mutant in self._xssMutants:
-                    if response.getBody().count( mutant.getModValue() ):
+                    # Remember that httpResponse objects have a faster "__in__" than
+                    # the one in strings; so string in response.getBody() is slower than
+                    # string in response                    
+                    if mutant.getModValue() in response:
                         
                         v = vuln.vuln()
                         v.setURL( fr.getURL() )
