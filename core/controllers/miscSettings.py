@@ -103,7 +103,7 @@ class miscSettings(configurable):
         
         d14 = 'A comma separated list of URLs that w3af should completely ignore'
         h14 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
-        o14 = option('nonTarget', cf.cf.getData('nonTarget'), d14, 'list', tabid='Misc settings')
+        o14 = option('nonTargets', cf.cf.getData('nonTargets'), d14, 'list', tabid='Misc settings')
         
         ol = optionList()
         ol.add(o1)
@@ -146,7 +146,7 @@ class miscSettings(configurable):
         cf.cf.save('localAddress', optionsMap['localAddress'].getValue() )
         cf.cf.save('demo', optionsMap['demo'].getValue()  )
         cf.cf.save('showProgressBar', optionsMap['showProgressBar'].getValue()  )
-        cf.cf.save('nonTargets', optionsMap['nonTarget'].getValue() )
+        cf.cf.save('nonTargets', optionsMap['nonTargets'].getValue() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 miscSettings()
