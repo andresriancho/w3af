@@ -18,7 +18,7 @@ msgstr ""
 
 #: core/ui/gtkUi/main.py:143
 msgid "About..."
-msgstr "Sobre"
+msgstr "Sobre..."
 
 #: core/ui/gtkUi/main.py:144
 msgid "Check the web site"
