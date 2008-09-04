@@ -23,7 +23,7 @@ set target http://localhost/w3af/webSpider/1.html
 back
 
 misc-settings
-set nonTarget http://localhost/w3af/webSpider/2.html
+set nonTargets http://localhost/w3af/webSpider/2.html
 back
 
 start
