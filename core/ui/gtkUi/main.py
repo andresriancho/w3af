@@ -765,7 +765,6 @@ class MainApp(object):
 
     def _wizards(self, action):
         '''Execute the wizards machinery.'''
-        reload(wizard)
         wizard.WizardChooser(self.w3af)
 
     

@@ -29,16 +29,6 @@ from . import entries
 # from core.controllers.w3afException import w3afException
 # from core.controllers.wizard.wizards.short_wizard import short_wizard
 # 
-# # How to select wizards:
-# # Get a wizard instance:
-# sw = short_wizard()
-# # description:
-# #    sw.getWizardDescription()
-# 
-# # Get the firs step of the wizard
-# q1 = sw.next()
-# print 'q1 title:', q1.getQuestionTitle()
-# print 'q1 question:', q1.getQuestionString()
 # 
 # # View the questions in this step, and answer with null
 # options = q1.getOptionObjects()
@@ -84,6 +74,72 @@ from . import entries
 # for i in options:
 #     print i.getValue()
 # 
+
+class Questions(gtk.VBox):
+    def __init__(self):
+        super(Questions,self).__init__()
+
+        self.l = gtk.Label("puto")
+        self.pack_start(self.l)
+        
+        self.show_all()
+
+    def setQuestions(self, quest):
+        self.l.set_text(str(id(quest)))
+
+class Wizard(entries.RememberingWindow):
+    '''The wizard to help the user to create a profile.
+
+    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
+    '''
+    def __init__(self, w3af, wizard):
+        super(Wizard,self).__init__(w3af, "wizard", "w3af Wizard: " + wizard.getName())
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        self.w3af = w3af
+
+        # the image at the left
+        mainhbox = gtk.HBox()
+        self.vbox.pack_start(mainhbox)
+        leftframe = gtk.image_new_from_file('core/ui/gtkUi/data/wizard_frame.png')
+        mainhbox.pack_start(leftframe, False, False)
+        mainvbox = gtk.VBox()
+        mainhbox.pack_start(mainvbox)
+
+        # the structure
+        self.qtitle = gtk.Label()
+        mainvbox.pack_start(self.qtitle, False, False, padding=10)
+        self.quest = gtk.Label()
+        self.quest.set_line_wrap(True)
+        mainvbox.pack_start(self.quest, False, False, padding=10)
+        self.panel = Questions()
+        mainvbox.pack_start(self.panel, False, False, padding=10)
+
+        # fill it
+        quest = wizard.next()
+        self._buildWindow(quest)
+
+        # go button
+        butbox = gtk.HBox()
+        prevbtn = gtk.Button("  Back  ")
+        prevbtn.connect("clicked", self._goBack)
+        butbox.pack_start(prevbtn, True, False)
+        nextbtn = gtk.Button("  Next  ")
+        nextbtn.connect("clicked", self._goNext)
+        butbox.pack_start(nextbtn, True, False)
+        mainvbox.pack_start(butbox, False, False, padding = 10)
+        
+        # Show all!
+        self.show_all()
+
+    def _goNext(self, widg):
+        print "Next!"
+    def _goBack(self, widg):
+        print "Back!"
+
+    def _buildWindow(self, question):
+        self.qtitle.set_markup("<b>%s</b>" % question.getQuestionTitle())
+        self.quest.set_text(question.getQuestionString())
+        self.panel.setQuestions(question)
 
 
 class SimpleRadioButton(gtk.VBox):
@@ -159,7 +215,8 @@ class WizardChooser(entries.RememberingWindow):
 
     def _goWizard(self, widget):
         '''Runs the selected wizard.'''
-        print "go!", self.rbuts.active
+        self.destroy()
+        Wizard(self.w3af, self.rbuts.active)
 
     def _getWizards(self):
         '''Returns the existing wizards.'''
