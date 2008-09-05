@@ -26,8 +26,11 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+import core.data.kb.info as info
+
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce
 import re
@@ -66,13 +69,28 @@ class serverStatus(baseDiscoveryPlugin):
             response = self._urlOpener.GET( serverStatusUrl, useCache=True )
             
             if not self.is404( response ) and response.getCode() not in range(400,404):
-                om.out.information( 'Apache server-status cgi exists. The URL is: ' + response.getURL() )
+                om.out.information( 'Apache server-status cgi exists. The URL is: "' + response.getURL() + '"')
                 
                 # Create some simple fuzzable requests
                 res.extend( self._createFuzzableRequests( response ) )
+
+                # Get the server version
+                # <dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>
+                for version in re.findall('<dl><dt>Server Version: (.*?)</dt>', response.getBody() ):
+                    # Save the results in the KB so the user can look at it
+                    i = info.info()
+                    i.setURL( response.getURL() )
+                    i.setId( response.id )
+                    i.setName( 'Apache Server version' )
+                    msg = 'The web server has the apache server status module enabled, '
+                    msg += 'which discloses the following remote server version: "' + version + '".'
+                    i.setDesc( msg )
+
+                    om.out.information(i.getDesc())
+                    kb.kb.append( self, 'server', i )
                 
                 # Now really parse the file and create custom made fuzzable requests
-                for domain, path in re.findall('<td>.*?<td nowrap>(.*?)<td nowrap>.*? (.*?) HTTP/1', response.getBody() ):
+                for domain, path in re.findall('<td>.*?<td nowrap>(.*?)</td><td nowrap>.*? (.*?) HTTP/1', response.getBody() ):
                     if 'unavailable' in domain:
                         domain = urlParser.getDomain( response.getURL() )
                         
@@ -91,7 +109,7 @@ class serverStatus(baseDiscoveryPlugin):
                 if len( self._sharedHostingHosts ):
                     v = vuln.vuln()
                     v.setURL( fuzzableRequest.getURL() )
-                    v.setId( 0 )
+                    v.setId( response.id )
                     self._sharedHostingHosts = list( set( self._sharedHostingHosts ) )
                     v['alsoInHosting'] = self._sharedHostingHosts
                     v.setDesc( 'The web application under test seems to be in a shared hosting.' )
@@ -106,9 +124,10 @@ class serverStatus(baseDiscoveryPlugin):
                         om.out.vulnerability('- ' + url, severity=severity.MEDIUM )
                 # Check if well parsed
                 elif 'apache' in response.getBody().lower():
-                    om.out.information('Couldn\'t find any URLs in the apache server status page. Two things can trigger this: \
-                    The Apache web server sent a server-status page that the serverStatus plugin failed to parse OR the remote \
-                    web server has no traffic. If you are sure about the first one, please report a bug.')
+                    msg = 'Couldn\'t find any URLs in the apache server status page. Two things can trigger this: '
+                    msg += 'The Apache web server sent a server-status page that the serverStatus plugin failed to parse OR the remote '
+                    msg += 'web server has no traffic. If you are sure about the first one, please report a bug.'
+                    om.out.information( msg )
                     om.out.debug('The server-status body is: "'+response.getBody()+'"')
         
         return res
