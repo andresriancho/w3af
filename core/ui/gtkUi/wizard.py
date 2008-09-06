@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, os
-from . import entries
+from . import entries, confpanel
 
 #
 #  FIXME!! Remove this old "API documentation"
@@ -75,17 +75,34 @@ from . import entries
 #     print i.getValue()
 # 
 
+class Quest(object):
+    def __init__(self, quest):
+        self.quest = quest
+        self.ptype = self.pname = None
+
+    def getOptions(self):
+        opts = self.quest.getOptionObjects()
+        for i in opts:
+            print i.getDesc(), i.getValue()
+        return opts
+
 class Questions(gtk.VBox):
-    def __init__(self):
+    def __init__(self, w3af):
+        self.w3af = w3af
         super(Questions,self).__init__()
 
-        self.l = gtk.Label("puto")
-        self.pack_start(self.l)
+        self.widg = gtk.Label("")
+        self.pack_start(self.widg)
         
         self.show_all()
 
+    def configChanged(self, flag):
+        print "configChanged", flag
+
     def setQuestions(self, quest):
-        self.l.set_text(str(id(quest)))
+        self.remove(self.widg)
+        self.widg = confpanel.OnlyOptions(self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
+        self.pack_start(self.widg)
 
 class Wizard(entries.RememberingWindow):
     '''The wizard to help the user to create a profile.
@@ -110,9 +127,9 @@ class Wizard(entries.RememberingWindow):
         mainvbox.pack_start(self.qtitle, False, False, padding=10)
         self.quest = gtk.Label()
         self.quest.set_line_wrap(True)
-        mainvbox.pack_start(self.quest, False, False, padding=10)
-        self.panel = Questions()
-        mainvbox.pack_start(self.panel, False, False, padding=10)
+        mainvbox.pack_start(self.quest, True, False, padding=10)
+        self.panel = Questions(w3af)
+        mainvbox.pack_start(self.panel, True, False, padding=10)
 
         # fill it
         quest = wizard.next()
@@ -126,7 +143,7 @@ class Wizard(entries.RememberingWindow):
         nextbtn = gtk.Button("  Next  ")
         nextbtn.connect("clicked", self._goNext)
         butbox.pack_start(nextbtn, True, False)
-        mainvbox.pack_start(butbox, False, False, padding = 10)
+        mainvbox.pack_start(butbox, False, False)
         
         # Show all!
         self.show_all()
