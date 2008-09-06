@@ -643,7 +643,7 @@ class PluginConfigBody(gtk.VBox):
             pname = treeToUse.treestore[path][3]
             ptype = treeToUse.treestore[path[:1]][3]
             # Launch the editor
-            self._handleEditPluginEvent(None, pname, ptype, path)
+            treeToUse._handleEditPluginEvent(None, pname, ptype, path)
         
     def reload(self, profileDescription):
         '''Reloads all the configurations.'''
