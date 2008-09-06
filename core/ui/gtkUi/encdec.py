@@ -72,7 +72,7 @@ class EncodeDecode(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(EncodeDecode,self).__init__(w3af, "encodedecode", "w3af - Encode / Decode")
+        super(EncodeDecode,self).__init__(w3af, "encodedecode", _("w3af - Encode / Decode"))
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 
@@ -96,7 +96,7 @@ class EncodeDecode(entries.RememberingWindow):
             b = gtk.Button(lab)
         cb.set_active(0)
         hbox.pack_start(cb, False, False, padding=10)
-        b = entries.SemiStockButton("Encode", gtk.STOCK_GO_DOWN, "Encode the upper text")
+        b = entries.SemiStockButton("Encode", gtk.STOCK_GO_DOWN, _("Encode the upper text"))
         b.connect("clicked", self._encode, cb)
         hbox.pack_start(b, False, False)
 
@@ -106,7 +106,7 @@ class EncodeDecode(entries.RememberingWindow):
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, "Decode the lower text")
+        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, _("Decode the lower text"))
         hbox.pack_end(b, False, False, padding=10)
         b.connect("clicked", self._decode, cb)
         hbox.pack_end(cb, False, False)
@@ -154,9 +154,9 @@ class EncodeDecode(entries.RememberingWindow):
             if proc.ok:
                 out.setText(proc.result)
             else:
-                out.setText("ERROR: Invalid input for that operation:  "
+                out.setText(_("ERROR: Invalid input for that operation:  ")
                              + str(proc.exception))
-                self.w3af.mainwin.sb("Problem processing that string!")
+                self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
 
         proc.start()
@@ -435,31 +435,31 @@ def mssql_encode(t):
 
 
 _butNameFunc_enc = [
-    ("URL Encode",                   urlencode),
-    ("Double URL Encode",            double_urlencode),
-    ("Base64 Encode",                b64encode), 
-    ("SHA1 Hash",                    sha_encode),
-    ("MD5 Hash",                     md5_encode),
-    ("Hex Encoding",                 hex_encoding),
-    ("0xFFFF Encoding",              zero_x_encoding),
-    ("Double Percent Hex Encoding",  double_percent_hex_encoding),
-    ("Double Nibble Hex Encoding",   double_nibble_hex_encoding),
-    ("First Nibble Hex Encoding",    first_nibble_hex_encoding),
-    ("Second Nibble Hex Encoding",   second_nibble_hex_encoding),
-    ("UTF-8 Barebyte Encoding",      utf8_barebyte_encoding),
-    ("UTF-8 Encoding",               utf8_encoding),
-    ("Microsoft %U Encoding",        msu_encoding),
-    ("Random Uppercase",             random_upper),
-    ("Random Lowercase",             random_lower),
-    ("MySQL Encode",                 mysql_encode),
-    ("MS SQL Encode",                mssql_encode),
+    (_("URL Encode"),                   urlencode),
+    (_("Double URL Encode"),            double_urlencode),
+    (_("Base64 Encode"),                b64encode), 
+    (_("SHA1 Hash"),                    sha_encode),
+    (_("MD5 Hash"),                     md5_encode),
+    (_("Hex Encoding"),                 hex_encoding),
+    (_("0xFFFF Encoding"),              zero_x_encoding),
+    (_("Double Percent Hex Encoding"),  double_percent_hex_encoding),
+    (_("Double Nibble Hex Encoding"),   double_nibble_hex_encoding),
+    (_("First Nibble Hex Encoding"),    first_nibble_hex_encoding),
+    (_("Second Nibble Hex Encoding"),   second_nibble_hex_encoding),
+    (_("UTF-8 Barebyte Encoding"),      utf8_barebyte_encoding),
+    (_("UTF-8 Encoding"),               utf8_encoding),
+    (_("Microsoft %U Encoding"),        msu_encoding),
+    (_("Random Uppercase"),             random_upper),
+    (_("Random Lowercase"),             random_lower),
+    (_("MySQL Encode"),                 mysql_encode),
+    (_("MS SQL Encode"),                mssql_encode),
 ]
 
 _butNameFunc_dec = [
-    ("URL Decode",                   urldecode), 
-    ("Double URL Decode",            double_urldecode), 
-    ("Base64 Decode",                b64decode),
-    ("Hex Decoding",                 hex_decoding),
+    (_("URL Decode"),                   urldecode), 
+    (_("Double URL Decode"),            double_urldecode), 
+    (_("Base64 Decode"),                b64decode),
+    (_("Hex Decoding"),                 hex_decoding),
 ] 
 
 

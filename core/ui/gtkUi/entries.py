@@ -652,7 +652,7 @@ class Searchable(object):
     def _populate_popup(self, textview, menu):
         '''Populates the menu with the Find item.'''
         menu.append(gtk.SeparatorMenuItem())
-        opc = gtk.MenuItem("Find...")
+        opc = gtk.MenuItem(_("Find..."))
         menu.append(opc)
         opc.connect("activate", self.show_search)
         menu.show_all()
@@ -682,7 +682,7 @@ class Searchable(object):
 
         # entry
         self.search_entry = gtk.Entry()
-        tooltips.set_tip(self.search_entry, "Type here the phrase you want to find")
+        tooltips.set_tip(self.search_entry, _("Type here the phrase you want to find"))
         self.search_entry.connect("activate", self._find, "next")
         self.search_entry.connect("changed", self._find, "find")
         self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
@@ -694,17 +694,17 @@ class Searchable(object):
             but_text = 'Next'
         butn = SemiStockButton(but_text, gtk.STOCK_GO_DOWN)
         butn.connect("clicked", self._find, "next")
-        tooltips.set_tip(butn, "Find the next ocurrence of the phrase")
+        tooltips.set_tip(butn, _("Find the next ocurrence of the phrase"))
         self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
 
         # find previous button
         if self.small:
             but_text = ''
         else:
-            but_text = 'Previous'
+            but_text = ('Previous')
         butp = SemiStockButton(but_text, gtk.STOCK_GO_UP)
         butp.connect("clicked", self._find, "previous")
-        tooltips.set_tip(butp, "Find the previous ocurrence of the phrase")
+        tooltips.set_tip(butp, _("Find the previous ocurrence of the phrase"))
         self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
 
         # make last two buttons equally width
@@ -715,7 +715,7 @@ class Searchable(object):
         butp.set_size_request(newwidth, hp)
         
         # Match case CheckButton
-        butCase = gtk.CheckButton('Match case')
+        butCase = gtk.CheckButton(_('Match case'))
         butCase.set_active(self._matchCaseValue)
         butCase.connect("clicked", self._matchCase)
         butCase.show()
@@ -954,7 +954,7 @@ class PagesControl(gtk.HBox):
     def _textpage(self, widg):
         val = self.pageentry.get_text()
         if not self.pageentry.isValid():
-            self.w3af.mainwin.sb("%r is not a good value!" % val)
+            self.w3af.mainwin.sb(_("%r is not a good value!") % val)
             return
         self.setPage(int(val))
         

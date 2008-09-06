@@ -59,7 +59,7 @@ class EditWindow(gtk.Window):
         except:
             dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK,
-                                    "Can't open " + fname)
+                                    _("Can't open ") + fname)
             resp = dlg.run()
             dlg.hide()
         return
@@ -113,13 +113,13 @@ class EditWindow(gtk.Window):
             ('EditCut', gtk.STOCK_CUT, None, None, None, self.edit_cut),
             ('EditCopy', gtk.STOCK_COPY, None, None, None, self.edit_copy),
             ('EditPaste', gtk.STOCK_PASTE, None, None, None, self.edit_paste),
-            ('EditClear', gtk.STOCK_REMOVE, 'C_lear', None, None,
+            ('EditClear', gtk.STOCK_REMOVE, _('C_lear'), None, None,
              self.edit_clear),
             ('EditFind', gtk.STOCK_FIND, None, None, None, self.edit_find),
-            ('EditFindNext', None, 'Find _Next', "F3", None,
+            ('EditFindNext', None, _('Find _Next'), "F3", None,
              self.edit_find_next),
             ('HelpMenu', gtk.STOCK_HELP),
-            ('HelpAbout', None, 'A_bout', None, None, self.help_about),
+            ('HelpAbout', None, _('A_bout'), None, None, self.help_about),
             ]
         self.ag = gtk.ActionGroup('edit')
         self.ag.add_actions(actions)
@@ -136,9 +136,9 @@ class EditWindow(gtk.Window):
                              (gtk.STOCK_YES, gtk.RESPONSE_YES,
                               gtk.STOCK_NO, gtk.RESPONSE_NO,
                               gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-            lbl = gtk.Label((self.fname or "Untitled")+
-                            " has not been saved\n" +
-                            "Do you want to save it?")
+            lbl = gtk.Label((self.fname or _("Untitled"))+
+                            _(" has not been saved\n") +
+                            _("Do you want to save it?"))
             lbl.show()
             dlg.vbox.pack_start(lbl)
             ret = dlg.run()
@@ -156,12 +156,12 @@ class EditWindow(gtk.Window):
         self.buffer.set_text('')
         self.buffer.set_modified(False)
         self.fname = None
-        self.set_title("Untitled")
+        self.set_title(_("Untitled"))
         self.new = 1
         return
     def file_open(self, mi=None):
         if self.chk_save(): return
-        fname = pluginEditorDialogs.OpenFile('Open File', self, self.dirname, self.fname)
+        fname = pluginEditorDialogs.OpenFile(_('Open File'), self, self.dirname, self.fname)
         if not fname: return
         self.load_file(fname)
         return
@@ -185,12 +185,12 @@ class EditWindow(gtk.Window):
         except:
             dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK,
-                                    "Error saving file " + self.fname)
+                                    _("Error saving file ") + self.fname)
             resp = dlg.run()
             dlg.hide()
         return ret
     def file_saveas(self, mi=None):
-        fname = pluginEditorDialogs.SaveFile('Save File As', self, self.dirname,
+        fname = pluginEditorDialogs.SaveFile(_('Save File As'), self, self.dirname,
                                   self.fname)
         if not fname: return False
         self.fname = fname
@@ -246,7 +246,7 @@ class EditWindow(gtk.Window):
         s = self.buffer.get_selection_bounds()
         if len(s) > 0:
             search_text.set_text(self.buffer.get_slice(s[0], s[1]))
-        dialog = gtk.Dialog("Search", self,
+        dialog = gtk.Dialog(_("Search"), self,
                             gtk.DIALOG_DESTROY_WITH_PARENT,
                             (gtk.STOCK_FIND, RESPONSE_FORWARD,
                              gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE))
@@ -261,11 +261,11 @@ class EditWindow(gtk.Window):
     def help_about(self, mi):
         dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                 gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
-                                "Text editor creators:\n\n"
-                                "Copyright (C)\n"
-                                "1998 James Henstridge\n"
-                                "2004 John Finlay\n\n"
-                                "The edit.py program is covered by the GPL>=2")
+                                _("Text editor creators:\n\n")
+                                _("Copyright (C)\n")
+                                _("1998 James Henstridge\n")
+                                _("2004 John Finlay\n\n")
+                                _("The edit.py program is covered by the GPL>=2"))
         dlg.run()
         dlg.hide()
         return

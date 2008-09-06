@@ -69,10 +69,10 @@ class OptionsPanel(gtk.VBox):
 
         # last row buttons
         hbox = gtk.HBox()
-        save_btn = gtk.Button("Save configuration")
+        save_btn = gtk.Button(_("Save configuration"))
         save_btn.show()
         hbox.pack_start(save_btn, expand=False, fill=False)
-        rvrt_btn = gtk.Button("Revert to previous values")
+        rvrt_btn = gtk.Button(_("Revert to previous values"))
         rvrt_btn.show()
         hbox.pack_start(rvrt_btn, expand=False, fill=False)
         hbox.show()
@@ -143,7 +143,7 @@ class ConfigPanel(gtk.VBox):
             self.created_panels[idplugin] = newwidg
 
         if newwidg is None:
-            return self.clear(title, longdesc, "This plugins has no options to configure")
+            return self.clear(title, longdesc, _("This plugins has no options to configure"))
 
         self.remove(self.widg)
         self.pack_start(newwidg, expand=True)
@@ -211,10 +211,10 @@ class PluginTree(gtk.TreeView):
         # decide which type in function of style
         if style == "standard":
             plugins_toshow = sorted(x for x in w3af.getPluginTypes() if x != "output")
-            col_title = "Plugin"
+            col_title = _("Plugin")
         elif style == "output":
             plugins_toshow = ("output",)
-            col_title = "Plugin"
+            col_title = _("Plugin")
         else:
             raise ValueError("Invalid PluginTree style: %r" % style)
 
@@ -275,7 +275,7 @@ class PluginTree(gtk.TreeView):
         self.append_column(tvcolumn)
 
         # create a TreeViewColumn for the checkbox
-        tvcolumn = gtk.TreeViewColumn('Active')
+        tvcolumn = gtk.TreeViewColumn(_('Active'))
         cell = gtk.CellRendererToggle()
         cell.set_property('activatable', True)
         cell.connect('toggled', self.activatePlugin)
@@ -381,7 +381,7 @@ class PluginTree(gtk.TreeView):
                 gm = gtk.Menu()
                 
                 # And the items
-                e = gtk.MenuItem("Edit plugin...")
+                e = gtk.MenuItem(_("Edit plugin..."))
                 e.connect('activate', self._handleEditPluginEvent, pname, ptype, path)
                 gm.append( e )
                 gm.show_all()
@@ -532,18 +532,18 @@ class PluginConfigBody(gtk.VBox):
         targetbox = gtk.HBox()
 
         # label
-        lab = gtk.Label("Target:")
+        lab = gtk.Label(_("Target:"))
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
 
         # entry
         histfile = os.path.join(getHomeDir(),  "urlhistory.pkl")
-        self.target = entries.AdvisedEntry("Insert the target URL here", mainwin.scanok.change, histfile)
+        self.target = entries.AdvisedEntry(_("Insert the target URL here"), mainwin.scanok.change, histfile)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insertURL)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
 
         # start/stop button
-        startstop = entries.SemiStockButton("Start", gtk.STOCK_MEDIA_PLAY, "Start scan")
+        startstop = entries.SemiStockButton(_("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         startstop.set_sensitive(False)
         startstop.connect("clicked", mainwin._scan_director)
         startstop.connect("clicked", self.target.insertURL)
@@ -551,7 +551,7 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
 
         # advanced config
-        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, "Advanced Target URL configuration")
+        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, _("Advanced Target URL configuration"))
         advbut.connect("clicked", self._advancedTarget)
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
         targetbox.show_all()
@@ -612,7 +612,7 @@ class PluginConfigBody(gtk.VBox):
         url = self.target.get_text()
 
         # open config
-        confpanel.AdvancedTargetConfigDialog("Advanced target settings", self.w3af, configurableTarget, {"target":url})
+        confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"), self.w3af, configurableTarget, {"target":url})
 
         # update the Entry with plugin info
         options = configurableTarget.getOptions()

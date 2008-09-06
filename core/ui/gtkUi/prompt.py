@@ -300,7 +300,7 @@ class PromptDialog(gtk.Dialog):
     def _save(self, widg):
         '''Saves the content to a file.'''
         text = self.prompt.getText()
-        dlg = gtk.FileChooserDialog(title="Choose a file...", action=gtk.FILE_CHOOSER_ACTION_OPEN,
+        dlg = gtk.FileChooserDialog(title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,
                 buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
         resp = dlg.run()
         fname = dlg.get_filename()

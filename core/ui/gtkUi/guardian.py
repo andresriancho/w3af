@@ -50,7 +50,7 @@ class FoundObjectsGuardian(gtk.HBox):
         self.w3af = w3af
     
         # tooltip
-        self.set_tooltip_text("Amount of discovered vulnerabilities and generated shells")
+        self.set_tooltip_text(_("Amount of discovered vulnerabilities and generated shells"))
     
         # what to show
         self.info = _Guarded("info")

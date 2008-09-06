@@ -64,6 +64,8 @@ class httpResponse:
         self.id = id
 
         self._fromCache = False
+        
+        self._count = 0
     
     def getId( self ): return self.id
     def getRedirURL( self ): return self._redirectedURL
@@ -129,6 +131,9 @@ class httpResponse:
 
         @parameter string_list: The list of strings
         '''
+        self._count += 1
+        print self._count
+        
         all_words_inside_http_body = True
         
         for word in self._custom_split(string_to_test):

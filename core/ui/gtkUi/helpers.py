@@ -239,8 +239,8 @@ def _crash(type, value, tb):
     if issubclass(type, KeyboardInterrupt ):
         endThreads()
         import core.controllers.outputManager as om
-        om.out.console('Thanks for using w3af.')
-        om.out.console('Bye!')
+        om.out.console(_('Thanks for using w3af.'))
+        om.out.console(_('Bye!'))
         sys.exit(0)
         return
         
@@ -249,23 +249,23 @@ def _crash(type, value, tb):
     print exception
 
     # get version info
-    versions = "\nPython version:\n%s\n\n" % sys.version
-    versions += "GTK version:%s\n" % ".".join(str(x) for x in gtk.gtk_version)
-    versions += "PyGTK version:%s\n\n" % ".".join(str(x) for x in gtk.pygtk_version)
+    versions = _("\nPython version:\n%s\n\n") % sys.version
+    versions += _("GTK version:%s\n") % ".".join(str(x) for x in gtk.gtk_version)
+    versions += _("PyGTK version:%s\n\n") % ".".join(str(x) for x in gtk.pygtk_version)
 
     # save the info to a file
     # FIXME: What if I can't create the file ?
     arch = file("w3af_crash.txt", "w")
-    arch.write('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 \n')
+    arch.write(_('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 \n'))
     arch.write(versions)
     arch.write(exception)
     arch.close()
 
     # inform the user
-    exception += "\nAll this info is in a file called w3af_crash.txt for later review. Please report this bug here https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 (this URL is also printed in the file), thank you!"
-    exception += "\n\nThe program will exit after you close this window."
+    exception += _("\nAll this info is in a file called w3af_crash.txt for later review. Please report this bug here https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 (this URL is also printed in the file), thank you!")
+    exception += _("\n\nThe program will exit after you close this window.")
     dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, exception)
-    dlg.set_title('Bug detected!')
+    dlg.set_title(_('Bug detected!'))
     dlg.run()
     dlg.destroy()
     endThreads()

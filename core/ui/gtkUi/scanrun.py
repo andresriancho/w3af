@@ -76,7 +76,7 @@ class FullKBTree(kbtree.KBTree):
                     self.kbbrowser.rrV.response.showObject( response )
                     success = True
                 else:
-                    om.out.error('Failed to find request/response with id: ' + str(instance.getId()) + ' in the database.' )
+                    om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
         
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
@@ -181,7 +181,7 @@ class URLsGraph(gtk.VBox):
         self.toolbox.set_sensitive(False)
 
         # no graph yet
-        self.widget = gtk.Label("No info yet")
+        self.widget = gtk.Label(_("No info yet"))
         self.widget.set_sensitive(False)
 
         self.nodos_code = []
@@ -375,7 +375,7 @@ class URLsTree(gtk.TreeView):
 
         gm = gtk.Menu()
 
-        e = gtk.ImageMenuItem("Open with Manual Request Editor...")
+        e = gtk.ImageMenuItem(_("Open with Manual Request Editor..."))
         image = gtk.Image()
         image.set_from_stock(gtk.STOCK_INDEX,  gtk.ICON_SIZE_MENU)
         e.set_image(image)
@@ -384,12 +384,12 @@ class URLsTree(gtk.TreeView):
         
         image = gtk.Image()
         image.set_from_stock(gtk.STOCK_PROPERTIES,  gtk.ICON_SIZE_MENU)
-        e = gtk.ImageMenuItem("Open with Fuzzy Request Editor...")
+        e = gtk.ImageMenuItem(_("Open with Fuzzy Request Editor..."))
         e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
         gm.append( e )
         
-        e = gtk.ImageMenuItem("Open with default browser...")
+        e = gtk.ImageMenuItem(_("Open with default browser..."))
         e.connect('activate', self._openBrowser, fullurl)
         gm.append( e )
 
@@ -415,7 +415,7 @@ class ScanRunBody(gtk.Notebook):
         # this one does not go inside a scrolled window, because that's handled
         # in each widget of itself
         kbbrowser = KBBrowser(w3af)
-        l = gtk.Label("KB Browser")
+        l = gtk.Label(_("KB Browser"))
         self.append_page(kbbrowser, l)
         
         # urlstree, the tree
@@ -434,7 +434,7 @@ class ScanRunBody(gtk.Notebook):
 
         # Request Response navigator
         httplog = httpLogTab.httpLogTab(w3af)
-        l = gtk.Label("Request/Response navigator")
+        l = gtk.Label(_("Request/Response navigator"))
         self.append_page(httplog, l)
 
         self.show()

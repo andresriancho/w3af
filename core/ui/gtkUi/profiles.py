@@ -45,7 +45,7 @@ class ProfileList(gtk.TreeView):
         self._rightButtonMenu = None
         
         # create a TreeViewColumn for the text
-        tvcolumn = gtk.TreeViewColumn('Profiles')
+        tvcolumn = gtk.TreeViewColumn(_('Profiles'))
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
         tvcolumn.add_attribute(cell, 'markup', 0)
@@ -99,7 +99,7 @@ class ProfileList(gtk.TreeView):
                     self._useProfile()
                     break
             else:
-                raise ValueError("The profile %r does not exists!" % selected)
+                raise ValueError(_("The profile %r does not exists!") % selected)
         
     def _controlDifferences(self):
         '''Returns if something is different agains initial state.'''
@@ -185,7 +185,7 @@ class ProfileList(gtk.TreeView):
                 return True
 
             # Clicked with left button
-            msg = "Do you want to discard the changes in the Profile?"
+            msg = _("Do you want to discard the changes in the Profile?")
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
             stayhere = dlg.run() != gtk.RESPONSE_YES
             dlg.destroy()
@@ -195,7 +195,7 @@ class ProfileList(gtk.TreeView):
                 # not modified 
                 row[0] = row[4]
                 row[3] = False
-                self.w3af.mainwin.sb("The previous profile configuration was discarded")
+                self.w3af.mainwin.sb(_("The previous profile configuration was discarded"))
             return stayhere
         return False
 
@@ -226,16 +226,16 @@ class ProfileList(gtk.TreeView):
             self._rightButtonMenu = gm
         
             # the items
-            e = gtk.MenuItem("Save configuration to profile")
+            e = gtk.MenuItem(_("Save configuration to profile"))
             e.connect('activate', self.saveProfile)
             gm.append(e)
-            e = gtk.MenuItem("Save configuration to a new profile")
+            e = gtk.MenuItem(_("Save configuration to a new profile"))
             e.connect('activate', self.saveAsProfile)
             gm.append(e)
-            e = gtk.MenuItem("Revert to saved profile state")
+            e = gtk.MenuItem(_("Revert to saved profile state"))
             e.connect('activate', self.revertProfile)
             gm.append(e)
-            e = gtk.MenuItem("Delete this profile")
+            e = gtk.MenuItem(_("Delete this profile"))
             e.connect('activate', self.deleteProfile)
             gm.append(e)
             gm.show_all()
@@ -328,7 +328,7 @@ class ProfileList(gtk.TreeView):
     def newProfile(self, widget=None):
         '''Creates a new profile.'''
         # ask for new profile info
-        dlg = entries.EntryDialog("New profile", gtk.STOCK_NEW, ["Name:", "Description:"])
+        dlg = entries.EntryDialog(_("New profile"), gtk.STOCK_NEW, [_("Name:"), _("Description:")])
         dlg.run()
         dlgResponse = dlg.inputtexts
         dlg.destroy()
@@ -351,9 +351,10 @@ class ProfileList(gtk.TreeView):
         try:
             helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
         except w3afException:
-            self.w3af.mainwin.sb("Problem hit!")
+            #FIXME: This message should be more descriptive
+            self.w3af.mainwin.sb(_("Problem hit!"))
             return
-        self.w3af.mainwin.sb("New profile created")
+        self.w3af.mainwin.sb(_("New profile created"))
         self.loadProfiles(filename)
 
         # get the activated plugins
@@ -371,7 +372,7 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
         self.w3af.saveCurrentToProfile( profileName )
-        self.w3af.mainwin.sb("Profile saved")
+        self.w3af.mainwin.sb(_("Profile saved"))
         path = self.get_cursor()[0]
         row = self.liststore[path]
         row[0] = row[4]
@@ -383,7 +384,7 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
 
-        dlg = entries.EntryDialog("Save as...", gtk.STOCK_SAVE_AS, ["Name:", "Description:"])
+        dlg = entries.EntryDialog(_("Save as..."), gtk.STOCK_SAVE_AS, [_("Name:"), _("Description:")])
         dlg.run()
         dlgResponse = dlg.inputtexts
         dlg.destroy()
@@ -393,14 +394,15 @@ class ProfileList(gtk.TreeView):
             try:
                 helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
             except w3afException:
-                self.w3af.mainwin.sb("Problem hit!")
+                #FIXME: This message should be more descriptive
+                self.w3af.mainwin.sb(_("Problem hit!"))
                 return
-            self.w3af.mainwin.sb("New profile created")
+            self.w3af.mainwin.sb(_("New profile created"))
             self.loadProfiles(filename)
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
-        msg = "Do you really want to discard the changes in the the profile and load the previous saved configuration?"
+        msg = _("Do you really want to discard the changes in the the profile and load the previous saved configuration?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
@@ -412,18 +414,18 @@ class ProfileList(gtk.TreeView):
             row[0] = row[4]
             row[3] = False
             self._useProfile()
-            self.w3af.mainwin.sb("The profile configuration was reverted to its last saved state")
+            self.w3af.mainwin.sb(_("The profile configuration was reverted to its last saved state"))
 
     def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
         profile = self._getProfileName()
 
-        msg = "Do you really want to DELETE the profile '%s'?" % profile
+        msg = _("Do you really want to DELETE the profile '%s'?") % profile
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
 
         if opt == gtk.RESPONSE_YES:
             self.w3af.removeProfile( profile )
-            self.w3af.mainwin.sb("The profile was deleted")
+            self.w3af.mainwin.sb(_("The profile was deleted"))
             self.loadProfiles()

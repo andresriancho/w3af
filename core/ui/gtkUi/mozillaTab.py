@@ -65,7 +65,7 @@ class mozillaTab(entries.RememberingHPaned):
         self.gobtn.connect("clicked", self.go)
 
         # url entry
-        self.urlentry = entries.AdvisedEntry("Insert the target URL here", self._activGo)
+        self.urlentry = entries.AdvisedEntry(_("Insert the target URL here"), self._activGo)
         self.urlentry.connect("activate", self.go)
 
         # back button

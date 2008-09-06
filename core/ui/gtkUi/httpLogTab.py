@@ -29,14 +29,14 @@ from . import reqResViewer, entries
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException
 
-MARKUP_HELP = '''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i>, <i>url</i> and <i>code</i> columns.
+MARKUP_HELP = _('''The w3af framework saves all the requests to a database. This database can be searched using a SQL like syntax that combines the <i>id</i>, <i>url</i> and <i>code</i> columns.
 
 Here are some <b>examples</b>:
     - <i>id = 3 or id = 4</i>
     - <i>code &lt;&gt; 404 and code &gt; 400</i>
     - <i>url like '%xc.php'</i>
     - <i>url like '%xc%' and id &lt;&gt; 3</i>
-'''
+''')
 
 class httpLogTab(entries.RememberingHPaned):
     '''
@@ -51,7 +51,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._alreadyReported = True
         
         # This is a search bar for request/responses
-        searchLabel = gtk.Label("Search:")
+        searchLabel = gtk.Label(_("Search:"))
         
         # The search entry
         self._searchText = searchEntry('id = 1')
@@ -119,12 +119,12 @@ class httpLogTab(entries.RememberingHPaned):
         model = treeview.get_model()
         
         # column for id's
-        column = gtk.TreeViewColumn('ID', gtk.CellRendererText(),text=0)
+        column = gtk.TreeViewColumn(_('ID'), gtk.CellRendererText(),text=0)
         column.set_sort_column_id(0)
         treeview.append_column(column)
 
         # column for METHOD
-        column = gtk.TreeViewColumn('Method', gtk.CellRendererText(),text=1)
+        column = gtk.TreeViewColumn(_('Method'), gtk.CellRendererText(),text=1)
         column.set_sort_column_id(1)
         treeview.append_column(column)
 
@@ -137,18 +137,18 @@ class httpLogTab(entries.RememberingHPaned):
         treeview.append_column(column)
         
         # column for Code
-        column = gtk.TreeViewColumn('Code', gtk.CellRendererText(),text=3)
+        column = gtk.TreeViewColumn(_('Code'), gtk.CellRendererText(),text=3)
         column.set_sort_column_id(3)
         treeview.append_column(column)
 
         # column for response message
-        column = gtk.TreeViewColumn('Message', gtk.CellRendererText(),text=4)
+        column = gtk.TreeViewColumn(_('Message'), gtk.CellRendererText(),text=4)
         column.set_sort_column_id(4)
         column.set_resizable(True)
         treeview.append_column(column)
         
         # column for response time
-        column = gtk.TreeViewColumn('Time (ms)', gtk.CellRendererText(),text=5)
+        column = gtk.TreeViewColumn(_('Time (ms)'), gtk.CellRendererText(),text=5)
         column.set_sort_column_id(5)
         treeview.append_column(column)
     
@@ -171,7 +171,7 @@ class httpLogTab(entries.RememberingHPaned):
             self._reqResViewer.set_sensitive(False)
             self._sw.set_sensitive(False)
             self._lstore.clear()
-            self._showDialog('No results', str(w3) )
+            self._showDialog(_('No results'), str(w3) )
         else:
             # no results ?
             if len( searchResultObjects ) == 0:
@@ -180,7 +180,7 @@ class httpLogTab(entries.RememberingHPaned):
                 self._reqResViewer.set_sensitive(False)
                 self._sw.set_sensitive(False)
                 self._lstore.clear()
-                self._showDialog('No results', 'The search you performed returned no results.' )
+                self._showDialog(_('No results'), _('The search you performed returned no results.') )
                 return
             elif len( searchResultObjects ) > 10000:
                 self._reqResViewer.request.clearPanes()
@@ -188,8 +188,8 @@ class httpLogTab(entries.RememberingHPaned):
                 self._reqResViewer.set_sensitive(False)
                 self._sw.set_sensitive(False)
                 self._lstore.clear()
-                msg = 'The search you performed returned too many results (' + str(len(searchResultObjects)) + ').\n'
-                msg += 'Please refine your search and try again.'
+                msg = _('The search you performed returned too many results (') + str(len(searchResultObjects)) + ').\n'
+                msg += _('Please refine your search and try again.')
                 self._showDialog('Too many results', msg )
                 return
             else:
@@ -229,7 +229,7 @@ class httpLogTab(entries.RememberingHPaned):
             self._reqResViewer.request.showObject( request )
             self._reqResViewer.response.showObject( response )
         else:
-            self._showDialog('Error', 'The id ' + str(search_id) + 'is not inside the database.')
+            self._showDialog(_('Error'), _('The id ') + str(search_id) + _('is not inside the database.'))
         
     def _showListView( self, results ):
         '''

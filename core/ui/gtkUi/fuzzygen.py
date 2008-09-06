@@ -66,13 +66,13 @@ class FuzzyGenerator(object):
         try:
             it = eval(text, namespace)
         except Exception, e:
-            msg = "%s: %s (generated from %r)" % (e.__class__.__name__, e, text)
+            msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e, text)
             raise FuzzyError(msg)
 
         try:
             iter(it)
         except TypeError:
-            raise FuzzyError("%r is not iterable! (generated from %r)" % (it,text))
+            raise FuzzyError(_("%r is not iterable! (generated from %r)") % (it,text))
         return it
         
     def _dissect(self, txt):
