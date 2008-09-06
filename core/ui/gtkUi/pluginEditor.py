@@ -261,10 +261,10 @@ class EditWindow(gtk.Window):
     def help_about(self, mi):
         dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                 gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
-                                _("Text editor creators:\n\n")
-                                _("Copyright (C)\n")
-                                _("1998 James Henstridge\n")
-                                _("2004 John Finlay\n\n")
+                                _("Text editor creators:\n\n") +
+                                _("Copyright (C)\n") +
+                                _("1998 James Henstridge\n") +
+                                _("2004 John Finlay\n\n") +
                                 _("The edit.py program is covered by the GPL>=2"))
         dlg.run()
         dlg.hide()
