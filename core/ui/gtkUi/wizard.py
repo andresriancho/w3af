@@ -21,59 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, os
-from . import entries, confpanel
-
-#
-#  FIXME!! Remove this old "API documentation"
-#
-# from core.controllers.w3afException import w3afException
-# from core.controllers.wizard.wizards.short_wizard import short_wizard
-# 
-# 
-# # View the questions in this step, and answer with null
-# options = q1.getOptionObjects()
-# for i in options:
-#     print i.getDesc()
-#     i.setValue('')
-# 
-# # this has to fail, because the question requires that
-# # you enter some value in the field
-# try:
-#     sw.setAnswer(options)
-# except Exception, e:
-#     print 'Failed (as expected):', e
-# 
-# # Now we fill it with a valid value
-# i.setValue('http://localhost/value_!')
-# try:
-#     sw.setAnswer(options)
-# except Exception, e:
-#     print 'Failed! (not expected... something went wrong):', e
-# else:
-#     print 'Ok'
-# 
-# # Now that we have setted the answer, we get the next question
-# q2 = sw.next()
-# print 'q2 title:', q1.getQuestionTitle()
-# print 'q2 question:', q1.getQuestionString()
-# 
-# # The user doesn't change anything
-# options = q2.getOptionObjects()
-# sw.setAnswer(options)
-# 
-# if sw.next() == None:
-#     print 'Finished the wizard'
-# 
-# # But wait! Now I remembered that I want to change something from the first question!
-# sw.previous()
-# q1 = sw.previous()
-# print 'q1 title:', q1.getQuestionTitle()
-# print 'q1 question:', q1.getQuestionString()
-# print 'did we saved the value??'
-# options = q1.getOptionObjects()
-# for i in options:
-#     print i.getValue()
-# 
+from . import entries, confpanel, helpers
+from core.controllers.w3afException import w3afException
 
 class Quest(object):
     def __init__(self, quest):
@@ -82,26 +31,63 @@ class Quest(object):
 
     def getOptions(self):
         opts = self.quest.getOptionObjects()
-        for i in opts:
-            print i.getDesc(), i.getValue()
         return opts
 
-class Questions(gtk.VBox):
-    def __init__(self, w3af):
+class QuestOptions(gtk.VBox):
+    def __init__(self, w3af, wizard):
         self.w3af = w3af
-        super(Questions,self).__init__()
+        self.wizard = wizard
+        super(QuestOptions,self).__init__()
 
         self.widg = gtk.Label("")
         self.pack_start(self.widg)
+        self.activeQuestion = None
         
         self.show_all()
 
-    def configChanged(self, flag):
-        print "configChanged", flag
+    def saveOptions(self):
+        '''Saves the changed options.'''
 
-    def setQuestions(self, quest):
+#        import pdb;pdb.set_trace()
+        options = self.widg.options
+        invalid = []
+        for opt in options:
+            if hasattr(opt.widg, "isValid"):
+                if not opt.widg.isValid():
+                    invalid.append(opt.getName())
+        if invalid:
+            msg = "The configuration can't be saved, there is a problem in the following parameter(s):\n\n"
+            msg += "\n-".join(invalid)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg.set_title('Configuration error')
+            dlg.run()
+            dlg.destroy()
+            return
+
+        print "Grabamos!!!"
+        for opt in options:
+            print opt
+            opt.setValue( opt.widg.getValue() )
+
+        try:
+            helpers.coreWrap(self.wizard.setAnswer, options)
+        except w3afException:
+            return
+
+    def configChanged(self, flag):
+        # just to comply with API
+        pass
+
+    def setQuestOptions(self, quest):
+        print "set quest!", quest
+        self.activeQuestion = quest
         self.remove(self.widg)
         self.widg = confpanel.OnlyOptions(self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
+        self.pack_start(self.widg)
+
+    def clear(self):
+        self.remove(self.widg)
+        self.widg = gtk.Label("")
         self.pack_start(self.widg)
 
 class Wizard(entries.RememberingWindow):
@@ -113,6 +99,7 @@ class Wizard(entries.RememberingWindow):
         super(Wizard,self).__init__(w3af, "wizard", "w3af Wizard: " + wizard.getName())
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
+        self.wizard = wizard
 
         # the image at the left
         mainhbox = gtk.HBox()
@@ -128,36 +115,63 @@ class Wizard(entries.RememberingWindow):
         self.quest = gtk.Label()
         self.quest.set_line_wrap(True)
         mainvbox.pack_start(self.quest, True, False, padding=10)
-        self.panel = Questions(w3af)
+        self.panel = QuestOptions(w3af, wizard)
         mainvbox.pack_start(self.panel, True, False, padding=10)
 
         # fill it
-        quest = wizard.next()
+        quest = self.wizard.next()
+        self._firstQuestion = quest
         self._buildWindow(quest)
 
         # go button
         butbox = gtk.HBox()
-        prevbtn = gtk.Button("  Back  ")
-        prevbtn.connect("clicked", self._goBack)
-        butbox.pack_start(prevbtn, True, False)
-        nextbtn = gtk.Button("  Next  ")
-        nextbtn.connect("clicked", self._goNext)
-        butbox.pack_start(nextbtn, True, False)
+        self.prevbtn = gtk.Button("  Back  ")
+        self.prevbtn.set_sensitive(False)
+        self.prevbtn.connect("clicked", self._goBack)
+        butbox.pack_start(self.prevbtn, True, False)
+        self.nextbtn = gtk.Button("  Next  ")
+        self.nextbtn.connect("clicked", self._goNext)
+        butbox.pack_start(self.nextbtn, True, False)
         mainvbox.pack_start(butbox, False, False)
         
         # Show all!
         self.show_all()
 
     def _goNext(self, widg):
-        print "Next!"
+        '''Shows the next question.'''
+        self.panel.saveOptions()
+        quest = self.wizard.next()
+        self.prevbtn.set_sensitive(True)
+        if quest is None:
+            self._buildFinal()
+            self.nextbtn.set_sensitive(False)
+        else:
+            self._buildWindow(quest)
+            self.nextbtn.set_sensitive(True)
+
     def _goBack(self, widg):
-        print "Back!"
+        '''Shows the previous question.'''
+        self.panel.saveOptions()
+        quest = self.wizard.previous()
+        self.nextbtn.set_sensitive(True)
+        if quest is self._firstQuestion:
+            self.prevbtn.set_sensitive(False)
+        self._buildWindow(quest)
 
     def _buildWindow(self, question):
+        '''Builds the useful pane for a question.
+
+        @param question: the question with the info to build.
+        '''
         self.qtitle.set_markup("<b>%s</b>" % question.getQuestionTitle())
         self.quest.set_text(question.getQuestionString())
-        self.panel.setQuestions(question)
+        self.panel.setQuestOptions(question)
 
+    def _buildFinal(self):
+        '''End titles window.'''
+        self.qtitle.set_markup("<b>Game Over</b>")
+        self.quest.set_text("No more questions!! FIXME: here you'll be able to save")
+        self.panel.clear()
 
 class SimpleRadioButton(gtk.VBox):
     '''Simple to use radiobutton.'''
