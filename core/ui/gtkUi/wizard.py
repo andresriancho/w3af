@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import gtk, os
+import gtk, os, cgi
 from . import entries, confpanel, helpers
 from core.controllers.w3afException import w3afException
 
@@ -85,9 +85,19 @@ class QuestOptions(gtk.VBox):
         self.widg = confpanel.OnlyOptions(self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
         self.pack_start(self.widg)
 
-    def clear(self):
+    def askFinal(self):
+        # the text entries
+        table = gtk.Table(2, 2)
+        for row,tit in enumerate(("Name", "Description")):
+            titlab = gtk.Label(tit)
+            titlab.set_alignment(0.0, 0.5)
+            table.attach(titlab, 0,1,row,row+1)
+            entry = gtk.Entry()
+            table.attach(entry, 1,2,row,row+1)
+        table.show_all()
+        # insert it
         self.remove(self.widg)
-        self.widg = gtk.Label("")
+        self.widg = table
         self.pack_start(self.widg)
 
 class Wizard(entries.RememberingWindow):
@@ -119,6 +129,7 @@ class Wizard(entries.RememberingWindow):
         mainvbox.pack_start(self.panel, True, False, padding=10)
 
         # fill it
+        self.nextbtn = gtk.Button("  Next  ")
         quest = self.wizard.next()
         self._firstQuestion = quest
         self._buildWindow(quest)
@@ -129,31 +140,54 @@ class Wizard(entries.RememberingWindow):
         self.prevbtn.set_sensitive(False)
         self.prevbtn.connect("clicked", self._goBack)
         butbox.pack_start(self.prevbtn, True, False)
-        self.nextbtn = gtk.Button("  Next  ")
         self.nextbtn.connect("clicked", self._goNext)
         butbox.pack_start(self.nextbtn, True, False)
         mainvbox.pack_start(butbox, False, False)
         
         # Show all!
+        self.finalQ = False
         self.show_all()
+
+    def _saveEverything(self):
+        '''Saves all the info to a profile.'''
+        filename = self.panel.widg.get_children()[2].get_text()
+        description = self.panel.widg.get_children()[0].get_text()
+        if not filename:
+            msg = "The configuration can't be saved, you need to insert a profile name!\n\n"
+            msg += "\n-".join(invalid)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg.set_title('Missing info')
+            dlg.run()
+            dlg.destroy()
+            return
+
+        filename = cgi.escape(filename)
+        try:
+            helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+        except w3afException:
+            self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
+            return
+        self.w3af.mainwin.profiles.loadProfiles(filename)
+        self.w3af.mainwin.sb(_("New profile created"))
+        self.destroy()
 
     def _goNext(self, widg):
         '''Shows the next question.'''
+        if self.finalQ:
+            self._saveEverything()
+            return
         self.panel.saveOptions()
         quest = self.wizard.next()
         self.prevbtn.set_sensitive(True)
         if quest is None:
             self._buildFinal()
-            self.nextbtn.set_sensitive(False)
         else:
             self._buildWindow(quest)
-            self.nextbtn.set_sensitive(True)
 
     def _goBack(self, widg):
         '''Shows the previous question.'''
         self.panel.saveOptions()
         quest = self.wizard.previous()
-        self.nextbtn.set_sensitive(True)
         if quest is self._firstQuestion:
             self.prevbtn.set_sensitive(False)
         self._buildWindow(quest)
@@ -166,12 +200,16 @@ class Wizard(entries.RememberingWindow):
         self.qtitle.set_markup("<b>%s</b>" % question.getQuestionTitle())
         self.quest.set_text(question.getQuestionString())
         self.panel.setQuestOptions(question)
+        self.nextbtn.set_label("  Next  ")
+        self.finalQ = False
 
     def _buildFinal(self):
         '''End titles window.'''
         self.qtitle.set_markup("<b>Game Over</b>")
-        self.quest.set_text("No more questions!! FIXME: here you'll be able to save")
-        self.panel.clear()
+        self.quest.set_text("No more questions! The wizard has finished.")
+        self.panel.askFinal()
+        self.nextbtn.set_label("  Save  ")
+        self.finalQ = True
 
 class SimpleRadioButton(gtk.VBox):
     '''Simple to use radiobutton.'''

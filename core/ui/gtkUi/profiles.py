@@ -394,8 +394,7 @@ class ProfileList(gtk.TreeView):
             try:
                 helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
             except w3afException:
-                #FIXME: This message should be more descriptive
-                self.w3af.mainwin.sb(_("Problem hit!"))
+                self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
                 return
             self.w3af.mainwin.sb(_("New profile created"))
             self.loadProfiles(filename)
