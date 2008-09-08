@@ -47,8 +47,6 @@ class QuestOptions(gtk.VBox):
 
     def saveOptions(self):
         '''Saves the changed options.'''
-
-#        import pdb;pdb.set_trace()
         options = self.widg.options
         invalid = []
         for opt in options:
@@ -64,9 +62,7 @@ class QuestOptions(gtk.VBox):
             dlg.destroy()
             return
 
-        print "Grabamos!!!"
         for opt in options:
-            print opt
             opt.setValue( opt.widg.getValue() )
 
         try:
@@ -79,7 +75,6 @@ class QuestOptions(gtk.VBox):
         pass
 
     def setQuestOptions(self, quest):
-        print "set quest!", quest
         self.activeQuestion = quest
         self.remove(self.widg)
         self.widg = confpanel.OnlyOptions(self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
@@ -186,7 +181,9 @@ class Wizard(entries.RememberingWindow):
 
     def _goBack(self, widg):
         '''Shows the previous question.'''
-        self.panel.saveOptions()
+        if not self.finalQ:
+            self.panel.saveOptions()
+        self.finalQ = False
         quest = self.wizard.previous()
         if quest is self._firstQuestion:
             self.prevbtn.set_sensitive(False)
