@@ -24,7 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk, threading, gobject
 from . import entries
-import urllib, base64, sha, md5, random
+import urllib, base64, sha, md5, random, cgi
+import core.data.parsers.encode_decode as encode_decode
 
 class SimpleTextView(gtk.TextView):
     '''Simple abstraction of the text view.'''
@@ -249,6 +250,24 @@ def urldecode(t):
     '''
     return urllib.unquote(t)
 
+def html_escape(t):
+    '''Encoder doing HTML escaping.
+
+    >>> cgi.escape('<script>')
+    '&lt;script&gt;'
+    >>> 
+    '''
+    return cgi.escape(t)
+
+def html_unescape(t):
+    '''Decoder doing HTML unescaping.
+
+    >>> encode_decode.htmldecode('&lt;script&gt;')
+    '<script>'
+    >>> 
+    '''
+    return encode_decode.htmldecode(t)
+
 def double_urlencode(t):
     '''Encoder doing Double URL Encode.
 
@@ -436,6 +455,25 @@ def mssql_encode(t):
 
 _butNameFunc_enc = [
     (_("URL Encode"),                   urlencode),
+    (_("HTML Escape"),  		        html_escape),
+    (_("Double URL Encode"),            double_urlencode),
+    (_("Base64 Encode"),                b64encode), 
+    (_("SHA1 Hash"),                    sha_encode),
+    (_("MD5 Hash"),                     md5_encode),
+    (_("Hex Encoding"),                 hex_encoding),
+    (_("0xFFFF Encoding"),              zero_x_encoding),
+    (_("Double Percent Hex Encoding"),  double_percent_hex_encoding),
+    (_("Double Nibble Hex Encoding"),   double_nibble_hex_encoding),
+    (_("First Nibble Hex Encoding"),    first_nibble_hex_encoding),
+    (_("Second Nibble Hex Encoding"),   second_nibble_hex_encoding),
+    (_("UTF-8 Barebyte Encoding"),      utf8_barebyte_encoding),
+    (_("UTF-8 Encoding"),               utf8_encoding),
+    (_("Microsoft %U Encoding"),        msu_encoding),
+    (_("Random Uppercase"),             random_upper),
+    (_("Random Lowercase"),             random_lower),
+    (_("MySQL Encode"),                 mysql_encode),
+    (_("MS SQL Encode"),                mssql_encode),
+    (_("URL Encode"),                   urlencode),
     (_("Double URL Encode"),            double_urlencode),
     (_("Base64 Encode"),                b64encode), 
     (_("SHA1 Hash"),                    sha_encode),
@@ -456,6 +494,11 @@ _butNameFunc_enc = [
 ]
 
 _butNameFunc_dec = [
+    (_("URL Decode"),                   urldecode), 
+    (_("HTML unescape"),                html_unescape), 
+    (_("Double URL Decode"),            double_urldecode), 
+    (_("Base64 Decode"),                b64decode),
+    (_("Hex Decoding"),                 hex_decoding),
     (_("URL Decode"),                   urldecode), 
     (_("Double URL Decode"),            double_urldecode), 
     (_("Base64 Decode"),                b64decode),
