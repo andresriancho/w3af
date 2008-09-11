@@ -102,7 +102,7 @@ class Wizard(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, wizard):
-        super(Wizard,self).__init__(w3af, "wizard", "w3af Wizard: " + wizard.getName())
+        super(Wizard,self).__init__(w3af, "wizard", "w3af Wizard: " + wizard.getName(), guessResize=False)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         self.wizard = wizard
@@ -240,7 +240,7 @@ class WizardChooser(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(WizardChooser,self).__init__(w3af, "wizardchooser", "w3af - Wizard Chooser")
+        super(WizardChooser,self).__init__(w3af, "wizardchooser", "w3af - Wizard Chooser", guessResize=False)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 
@@ -248,7 +248,13 @@ class WizardChooser(entries.RememberingWindow):
         mainhbox = gtk.HBox()
         self.vbox.pack_start(mainhbox)
         leftframe = gtk.image_new_from_file('core/ui/gtkUi/data/wizard_frame.png')
-        mainhbox.pack_start(leftframe, False, False)
+        vb = gtk.VBox()
+        vb.pack_end(leftframe, False, False)
+        eb = gtk.EventBox()
+        eb.add(vb)
+        color = gtk.gdk.color_parse('#FFFFFF')
+        eb.modify_bg(gtk.STATE_NORMAL, color)
+        mainhbox.pack_start(eb, False, False)
         mainvbox = gtk.VBox()
         mainhbox.pack_start(mainvbox)
 
@@ -267,7 +273,7 @@ class WizardChooser(entries.RememberingWindow):
         innerbox.pack_start(self.rbuts, True, False)
 
         self.wizdesc = gtk.Label(initlabel)
-        innerbox.pack_start(self.wizdesc)
+        innerbox.pack_start(self.wizdesc, padding=10)
         mainvbox.pack_start(innerbox, True, False)
 
         # go button

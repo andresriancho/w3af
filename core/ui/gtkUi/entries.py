@@ -832,7 +832,7 @@ class RememberingWindow(gtk.Window):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, idstring, title, onDestroy=None):
+    def __init__(self, w3af, idstring, title, onDestroy=None, guessResize=True):
         super(RememberingWindow,self).__init__(gtk.WINDOW_TOPLEVEL)
         self.onDestroy = onDestroy
 
@@ -840,10 +840,11 @@ class RememberingWindow(gtk.Window):
         self.winconfig = w3af.mainwin.generalconfig
         self.id_size = idstring + "-size"
         self.id_position = idstring + "-position"
-        conf_size = self.winconfig.get(self.id_size, (1000, 500))
         conf_position = self.winconfig.get(self.id_position, (100, 100))
-        self.resize(*conf_size)
         self.move(*conf_position)
+        if guessResize or self.id_size in self.winconfig:
+            conf_size = self.winconfig.get(self.id_size, (1000, 500))
+            self.resize(*conf_size)
 
         # main vertical box
         self.vbox = gtk.VBox()
