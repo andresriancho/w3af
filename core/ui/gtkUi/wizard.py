@@ -69,6 +69,7 @@ class QuestOptions(gtk.VBox):
             helpers.coreWrap(self.wizard.setAnswer, options)
         except w3afException:
             return
+        return True
 
     def configChanged(self, flag):
         # just to comply with API
@@ -171,7 +172,8 @@ class Wizard(entries.RememberingWindow):
         if self.finalQ:
             self._saveEverything()
             return
-        self.panel.saveOptions()
+        if not self.panel.saveOptions():
+            return
         quest = self.wizard.next()
         self.prevbtn.set_sensitive(True)
         if quest is None:
@@ -182,7 +184,8 @@ class Wizard(entries.RememberingWindow):
     def _goBack(self, widg):
         '''Shows the previous question.'''
         if not self.finalQ:
-            self.panel.saveOptions()
+            if not self.panel.saveOptions():
+                return
         self.finalQ = False
         quest = self.wizard.previous()
         if quest is self._firstQuestion:
