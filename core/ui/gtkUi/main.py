@@ -422,6 +422,10 @@ class MainApp(object):
         splash.destroy()
         gtk.main()
 
+    def profileChanged(self, *args, **kwargs):
+        if hasattr(self, "profiles"):
+            self.profiles.pluginChanged(*args, **kwargs)
+
     def _editMenu( self, widget ):
         '''
         This handles the click action of the user over the edit menu.

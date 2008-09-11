@@ -413,7 +413,7 @@ class AdvisedEntry(gtk.Entry):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, message, alertb=None, historyfile=None):
+    def __init__(self, message, alertb=None, historyfile=None, alertmodif=None):
         super(AdvisedEntry,self).__init__()
         self.connect("focus-in-event", self._focus)
         self.firstfocus = True
@@ -424,6 +424,10 @@ class AdvisedEntry(gtk.Entry):
             self.alertb(self, False)
         tooltips = gtk.Tooltips()
         tooltips.set_tip(self, message)
+
+        if alertmodif is not None:
+            self.alertmodif = alertmodif
+            self.connect("changed", self._changed)
 
         # suggestion handling if history file is passed
         if historyfile is not None:
@@ -444,6 +448,9 @@ class AdvisedEntry(gtk.Entry):
 
         self.show()
 
+    def _changed(self, widg):
+        self.alertmodif(urlchanged = self.get_text() != self.origMessage)
+
     def _focus(self, *vals):
         '''Cleans it own text.'''
         if self.firstfocus:
@@ -460,6 +467,7 @@ class AdvisedEntry(gtk.Entry):
     def setText(self, message):
         '''Sets the widget text.'''
         self.firstfocus = False
+        self.origMessage = message
         self.set_text(message)
         
     def reset(self):

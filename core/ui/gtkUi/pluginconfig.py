@@ -537,7 +537,8 @@ class PluginConfigBody(gtk.VBox):
 
         # entry
         histfile = os.path.join(getHomeDir(),  "urlhistory.pkl")
-        self.target = entries.AdvisedEntry(_("Insert the target URL here"), mainwin.scanok.change, histfile)
+        self.target = entries.AdvisedEntry(_("Insert the target URL here"), 
+                mainwin.scanok.change, histfile, alertmodif=mainwin.profileChanged)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insertURL)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)

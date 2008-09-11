@@ -129,7 +129,7 @@ class ProfileList(gtk.TreeView):
 
         return False
 
-    def pluginChanged(self, plugin=None):
+    def pluginChanged(self, plugin=None, urlchanged=None):
         '''Get executed when a plugin is changed.
 
         @param plugin: The plugin which changed.
@@ -137,7 +137,10 @@ class ProfileList(gtk.TreeView):
         When executed, this check if the saved config is equal or not to the 
         original one, and enables color and buttons.
         '''
-        changed = self._controlDifferences()
+        if urlchanged is None:
+            changed = self._controlDifferences()
+        else:
+            changed = urlchanged
 
         # update boldness and info
         path = self.get_cursor()[0]
