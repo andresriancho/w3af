@@ -64,7 +64,6 @@ class wizard:
         # Save the user completed values, so we can handle previous button of the wizard
         self._currentQuestion.setPreviouslyAnsweredValues(self._user_options)
         self._already_asked.append( self._currentQuestion )
-        print '!!!!!!!!', self._already_asked
 
         # Special case to end iteration
         if self._nextQuestionId == None:
@@ -93,7 +92,8 @@ class wizard:
         # There is a list with the questions, and a list with the answers
         # We have to combine both, to return a question object that has the
         # already answered values from the user
-        return self._already_asked.pop()
+        self._currentQuestion = self._already_asked.pop()
+        return self._currentQuestion
         
         
     def getWizardDescription(self):
