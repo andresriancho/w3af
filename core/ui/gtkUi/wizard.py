@@ -205,8 +205,10 @@ class Wizard(entries.RememberingWindow):
 
     def _buildFinal(self):
         '''End titles window.'''
-        self.qtitle.set_markup("<b>Game Over</b>")
-        self.quest.set_text("No more questions! The wizard has finished.")
+        self.qtitle.set_markup("<b>The wizard has finished</b>")
+        self.quest.set_text("There are no more questions, you correctly created a new "
+                            "configuration for w3af.\n\nPlease provide a name and a "
+                            "description for the new profile:")
         self.panel.askFinal()
         self.nextbtn.set_label("  Save  ")
         self.finalQ = True
