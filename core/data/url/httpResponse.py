@@ -64,8 +64,6 @@ class httpResponse:
         self.id = id
 
         self._fromCache = False
-        
-        self._count = 0
     
     def getId( self ): return self.id
     def getRedirURL( self ): return self._redirectedURL
@@ -107,23 +105,6 @@ class httpResponse:
         @return: None
         '''
         self._charset_handling(body)
-        self._any_inside_setup(body)
-        
-    def _custom_split(self, string_to_split):
-        translated_string = string_to_split.translate(TRANSLATION_TABLE)
-        return translated_string.split()        
-        
-    def _any_inside_setup(self, body):
-        '''
-        This method creates a dictionary that will be used to speed up searches
-        performed using the "any_inside" method.
-
-        @body: A string that represents the body of the HTTP response
-        @return: None
-        '''
-        self._splitted_http_body = {}
-        for i in self._custom_split(body):
-            self._splitted_http_body[i] = 0
 
     def __contains__(self, string_to_test):
         '''
@@ -131,28 +112,7 @@ class httpResponse:
 
         @parameter string_list: The list of strings
         '''
-        self._count += 1
-        print self._count
-        
-        all_words_inside_http_body = True
-        
-        for word in self._custom_split(string_to_test):
-            if not self._splitted_http_body.has_key(word):
-                all_words_inside_http_body = False
-                break
-
-        if all_words_inside_http_body == True:
-            # All the words in the string_to_test are inside the http_body
-            # this is something really promising, but the important question
-            # is if the words are in the correct order.
-            # The only way to test for this is to "scan" the whole http_body
-            # with an "in" statement.
-            # We only get here 0.01% of the times.
-            if string_to_test in self._body:
-                return True
-
-        return False
-
+        return string_to_test in self._body
 
     def _charset_handling(self, body):
         '''
