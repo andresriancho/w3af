@@ -329,6 +329,10 @@ class mysqlWebShell(baseAttackPlugin):
         h7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
         o7 = option('changeToPost', self._changeToPost, d7, 'boolean', help=h7)
         
+        d8 = 'True if you want to try to exploit this vulnerability even if the database and the web application are in different hosts.'
+        h8 = 'When the web application and the database seem to be in different hosts, and you still want to exploit, set the forceNotLocal setting to True and run again.'
+        o8 = option('forceNotLocal', self._forceNotLocal, d8, 'boolean', help=h8)
+        
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
@@ -337,6 +341,7 @@ class mysqlWebShell(baseAttackPlugin):
         ol.add(o5)
         ol.add(o6)
         ol.add(o7)
+        ol.add(o8)
         return ol
         
     def setOptions( self, optionsMap ):
