@@ -221,6 +221,8 @@ class requestPaned(requestResponsePaned):
     def showParsed( self, method, uri, version, headers, postData ):
         '''
         Show the data in the corresponding order in self._upTv and self._downTv
+        
+        FIXME: This method AIN'T USED. Please deprecate in the future!
         '''
         # Clear previous results
         self._clear( self._upTv )
