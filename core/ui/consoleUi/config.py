@@ -89,10 +89,7 @@ class configMenu(menu):
             if value not in mem:
                 mem.append(value)
             if isinstance( self._configurable, basePlugin ):
-                if isinstance( self._configurable, baseOutputPlugin ):
-                    om.out.setPluginOptions( self._configurable.getName() , self._options )
-                else:
-                    self._w3af.setPluginOptions( self._configurable.getType(), self._configurable.getName(), self._options )
+                self._w3af.setPluginOptions( self._configurable.getType(), self._configurable.getName(), self._options )
             else:
                 try:
                     self._configurable.setOptions( self._options )
