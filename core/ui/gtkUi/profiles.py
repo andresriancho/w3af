@@ -102,7 +102,7 @@ class ProfileList(gtk.TreeView):
                 raise ValueError(_("The profile %r does not exists!") % selected)
         
     def _controlDifferences(self):
-        '''Returns if something is different agains initial state.'''
+        '''Returns if something is different against initial state.'''
         # Always check activation status
         nowActive = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
         if nowActive != self.origActPlugins:
@@ -129,19 +129,18 @@ class ProfileList(gtk.TreeView):
 
         return False
 
-    def pluginChanged(self, plugin=None, urlchanged=None):
+    def profileChanged(self, plugin=None, changed=None):
         '''Get executed when a plugin is changed.
 
         @param plugin: The plugin which changed.
+        @parameter changed: Force a change.
 
         When executed, this check if the saved config is equal or not to the 
         original one, and enables color and buttons.
         '''
-        if urlchanged is None:
+        if changed is None:
             changed = self._controlDifferences()
-        else:
-            changed = urlchanged
-
+        
         # update boldness and info
         path = self.get_cursor()[0]
         if not path:

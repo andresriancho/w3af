@@ -317,7 +317,7 @@ class PluginTree(gtk.TreeView):
             # we just alert the changing here, as if it's not saved, the
             # profile shouldn't really be changed
             plugin = self._getPluginInstance(path)
-            self.mainwin.profiles.pluginChanged(plugin)
+            self.mainwin.profiles.profileChanged(plugin)
         else:
             row[0] = "<b>%s</b>" % row[3]
 
@@ -498,7 +498,7 @@ class PluginTree(gtk.TreeView):
                 father[2] = True
 
         # alert the profiles that something changed here
-        self.mainwin.profiles.pluginChanged()
+        self.mainwin.profiles.profileChanged()
 
     def getActivatedPlugins(self):
         '''Return the activated plugins.

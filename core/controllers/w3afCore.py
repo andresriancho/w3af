@@ -1019,6 +1019,11 @@ class w3afCore:
         if cf.cf.getData('targets'):
             newProfile.setTarget( ' , '.join(cf.cf.getData('targets')) )
         
+        # Config the misc and http settings
+        misc_settings = miscSettings.miscSettings()
+        newProfile.setMiscSettings(misc_settings.getOptions())
+        newProfile.setHttpSettings(self.uriOpener.settings.getOptions())
+        
         # Config the profile name and description
         newProfile.setDesc( profileDesc )
         newProfile.setName( profileName )
@@ -1058,7 +1063,7 @@ class w3afCore:
                 self.setPlugins( pluginNames, pluginType )
                 '''
                 def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
-                    @parameter PluginsOptions: A dict with the options for a plugin. For example:\
+                    @parameter PluginsOptions: An option list with the options for a plugin. For example:\
                     { 'script':'AAAA', 'timeout': 10 }
                 '''
                 for pluginName in profileInstance.getEnabledPlugins( pluginType ):
@@ -1073,6 +1078,11 @@ class w3afCore:
                     
             # Set the target settings of the profile to the core
             self.target.setOptions( profileInstance.getTarget() )
+            
+            # Set the misc and http settings
+            misc_settings = miscSettings.miscSettings()
+            misc_settings.setOptions( profileInstance.getMiscSettings() )
+            self.uriOpener.settings.setOptions( profileInstance.getHttpSettings() )
     
     def getVersion( self ):
         # Let's check if the user is using a version from SVN

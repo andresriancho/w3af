@@ -183,12 +183,80 @@ class profile:
                         try:
                             value = self._config.get(section, option)
                         except KeyError,k:
+                            # We should never get here...
                             raise w3afException('The option "' + option + '" is unknown for the "'+ pluginName + '" plugin.')
                         else:
                             optionsMap[option].setValue(value)
 
         return optionsMap
         
+    def setMiscSettings( self, options ):
+        '''
+        Set the misc settings options.
+        @parameter options: an optionList object
+        @return: None
+        '''
+        self._set_x_settings('misc-settings', options)
+
+    def setHttpSettings( self, options ):
+        '''
+        Set the http settings options.
+        @parameter options: an optionList object
+        @return: None
+        '''
+        self._set_x_settings('http-settings', options)    
+        
+    def _set_x_settings( self, section, options ):
+        '''
+        Set the section options.
+        
+        @parameter section: The section name
+        @parameter options: an optionList object
+        @return: None
+        '''
+        if section not in self._config.sections():
+            self._config.add_section( section )
+            
+        for option in options:
+            self._config.set( section, option.getName(), option.getValueStr() )
+
+    def getMiscSettings( self ):
+        '''
+        Get the misc settings options.
+        @return: The misc settings in an optionList object
+        '''
+        import core.controllers.miscSettings as miscSettings
+        misc_settings = miscSettings.miscSettings()
+        return self._get_x_settings('misc-settings', misc_settings)
+
+    def getHttpSettings( self ):
+        '''
+        Get the http settings options.
+        @return: The http settings in an optionList object
+        '''
+        # I just need the xUrllib configuration, but I import all the core
+        # because I want to use the singleton
+        import core.controllers.w3afCore
+        w3af = core.controllers.w3afCore.w3afCore()
+        return self._get_x_settings('http-settings', w3af.uriOpener.settings)
+        
+    def _get_x_settings( self, section, configurable_instance ):
+        '''
+        @return: An optionList object with the options for a configurable object.
+        '''
+        optionsMap = configurable_instance.getOptions()
+        
+        for option in self._config.options(section):
+            try:
+                value = self._config.get(section, option)
+            except KeyError,k:
+                # We should never get here...
+                raise w3afException('The option "' + option + '" is unknown for the "'+ section + '" section.')
+            else:
+                optionsMap[option].setValue(value)
+
+        return optionsMap
+
     def setName( self, name ):
         '''
         Set the name of the profile.

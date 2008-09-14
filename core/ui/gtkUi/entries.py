@@ -449,7 +449,7 @@ class AdvisedEntry(gtk.Entry):
         self.show()
 
     def _changed(self, widg):
-        self.alertmodif(urlchanged = self.get_text() != self.origMessage)
+        self.alertmodif(changed = self.get_text() != self.origMessage)
 
     def _focus(self, *vals):
         '''Cleans it own text.'''

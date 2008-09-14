@@ -235,6 +235,11 @@ class OnlyOptions(gtk.VBox):
             return
         for opt in self.options:
             opt.widg.save()
+            
+        # Tell the profile tree that something changed
+        self.w3af.mainwin.profiles.profileChanged(changed=True)
+        
+        # Status bar
         self.w3af.mainwin.sb("Plugin configuration saved successfully")
 
     def _revertPanel(self, *vals):

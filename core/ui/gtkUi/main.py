@@ -424,7 +424,7 @@ class MainApp(object):
 
     def profileChanged(self, *args, **kwargs):
         if hasattr(self, "profiles"):
-            self.profiles.pluginChanged(*args, **kwargs)
+            self.profiles.profileChanged(*args, **kwargs)
 
     def _editMenu( self, widget ):
         '''
