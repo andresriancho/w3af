@@ -760,6 +760,9 @@ class w3afCore:
         
         @return: No value is returned.
         '''
+        if pluginType.lower() == 'output':
+            om.out.setPluginOptions(pluginName, pluginOptions)
+            
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
         pI = self.getPluginInstance( pluginName, pluginType )
@@ -779,7 +782,7 @@ class w3afCore:
         IMPORTANT NOTE: This method only returns the options for a plugin that was previously configured using setPluginOptions.
         If you wan't to get the default options for a plugin, get a plugin instance and perform a plugin.getOptions()
         
-        @return: A map with the plugin options.
+        @return: An optionList with the plugin options.
         '''
         if pluginType in self._pluginsOptions:
             if pluginName in self._pluginsOptions[pluginType]:
