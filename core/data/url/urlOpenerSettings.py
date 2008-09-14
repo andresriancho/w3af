@@ -30,7 +30,6 @@ import core.data.url.handlers.localCache as localCache
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
-import core.data.url.handlers.certHTTPSHandler as certHTTPSHandler
 import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 
@@ -69,42 +68,36 @@ class urlOpenerSettings( configurable ):
         # Openers
         self._nonCacheOpener = None
         self._cacheOpener = None
-        
-        # User configured variables
-        self._timeout = 10
-        self._socket.setdefaulttimeout(self._timeout)
-        self._headersFile = ''
-        self._cookieJarFile = ''
-        self._userAgent = 'w3af.sourceforge.net'
-        cf.cf.save('User-Agent', self._userAgent)
-        
-        self._proxyAddress = ''
-        self._proxyPort = 8080
-        
-        self._basicAuthPass = ''
-        self._basicAuthUser = ''
-        self._basicAuthDomain = ''
-        
-        self.HeaderList = [('User-Agent',self._userAgent)]
-        
-        self._sslCertFile = ''
-        self._sslKeyFile = ''
-        
-        self._ignoreSessCookies = False
-        self._maxFileSize = 400000
-        self._maxRetrys = 2
-        
+
         # Some internal variables
         self.needUpdate = True
-        self._proxy = None
+        self.HeaderList = [('User-Agent','w3af.sourceforge.net')]        
         
         # By default, dont mangle any request/responses
         self._manglePlugins = []
+
+        # User configured variables
+        if cf.cf.getData('timeout') == None:
+            # This is the first time we are executed...
         
-        # 404 settings
-        if cf.cf.getData('404exceptions') == None:
-            # It's the first time I'm runned
-            # Set defaults
+            cf.cf.save('timeout', 10 )
+            self._socket.setdefaulttimeout(cf.cf.getData('timeout'))
+            cf.cf.save('headersFile', '' )
+            cf.cf.save('cookieJarFile', '' )
+            cf.cf.save('User-Agent', 'w3af.sourceforge.net' )
+            
+            cf.cf.save('proxyAddress', '' )
+            cf.cf.save('proxyPort', 8080 )            
+            
+            cf.cf.save('basicAuthPass', '' )
+            cf.cf.save('basicAuthUser', '' )
+            cf.cf.save('basicAuthDomain', '' )
+            
+            cf.cf.save('ignoreSessCookies', False )
+            cf.cf.save('maxFileSize', 400000 )
+            cf.cf.save('maxRetrys', 2 )
+            
+            # 404 settings
             cf.cf.save('404exceptions', []  )
             cf.cf.save('always404', [] )
             cf.cf.save('autodetect404', True )
@@ -135,7 +128,7 @@ class urlOpenerSettings( configurable ):
                 hList.append( (HeaderName,HeaderValue) )
             
             self.setHeadersList( hList )
-            self._headersFile = HeadersFile
+            cf.cf.save('headersFile', HeadersFile )
     
     def setHeadersList( self, hList ):
         '''
@@ -146,9 +139,8 @@ class urlOpenerSettings( configurable ):
             self.HeaderList.append( (h,v) )
             om.out.debug( 'Added the following header: '+ h+ ': '+ v)
         
-    
     def getHeadersFile( self ):
-        return self._headersFile
+        return cf.cf.getData('headersFile')
         
     def setCookieJarFile(self, CookieJarFile ):
         om.out.debug( 'Called SetCookie')
@@ -161,68 +153,41 @@ class urlOpenerSettings( configurable ):
                 raise w3afException( 'Error while loading cookiejar file. Description: ' + str(e) )
                 
             self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
-            self._cookieJarFile = CookieJarFile
+            cf.cf.save('cookieJarFile', CookieJarFile )
         
     def getCookieJarFile( self ):
-        return self._cookieJarFile
-    
-    def getSSLKeyFile( self ):
-        '''
-        @return: A string with the SSL key path and filename.
-        '''
-        return self._sslKeyFile
-        
-    def setSSLKeyFile( self, keyFile ):
-        '''
-        @parameter keyFile: A string with the SSL key path and filename.
-        @return: None
-        ''' 
-        self._sslKeyFile = keyFile
-        
-    def getSSLCertFile( self ):
-        '''
-        @return: A string with the SSL cert path and filename.
-        '''
-        return self._sslCertFile
-        
-    def setSSLCertFile( self, file ):
-        '''
-        @parameter file: A string with the SSL cert path and filename.
-        @return: None
-        '''     
-        self._sslCertFile = file
+        return cf.cf.getData('cookieJarFile')
     
     def setTimeout( self, timeout ):
         om.out.debug( 'Called SetTimeout(' + str(timeout)  + ')' )
         if timeout > 60 or timeout < 1:
             raise w3afException('The timeout parameter should be between 1 and 60 seconds.')
         else:
-            self._timeout = timeout
+            cf.cf.save('timeout', timeout )
             
             # Set the default timeout
             # I dont need to use timeoutsocket.py , it has been added to python sockets
-            self._socket.setdefaulttimeout(self._timeout)
+            self._socket.setdefaulttimeout(cf.cf.getData('timeout'))
         
     def getTimeout( self ):
-        return self._timeout
+        return cf.cf.getData('timeout')
         
     def setUserAgent( self, useragent ):
         om.out.debug( 'Called SetUserAgent')
         self.HeaderList = [ i for i in self.HeaderList if i[0]!='User-Agent']
         self.HeaderList.append( ('User-Agent',useragent) )
-        self._userAgent = useragent
         cf.cf.save('User-Agent', useragent)
         
     def getUserAgent( self ):
-        return self._userAgent
+        return cf.cf.getData('User-Agent')
         
     def setProxy( self, ip , port):
         om.out.debug( 'Called SetProxy(' + ip + ',' + str(port) + ')')
         if port > 65535 or port < 1:
             raise w3afException('Invalid port number: '+ str(port) )
 
-        self._proxyPort = port
-        self._proxyAddress = ip
+        cf.cf.save('proxyAddress', ip )
+        cf.cf.save('proxyPort', port )         
         
         # Remember that this line:
         #proxyMap = { 'http' : "http://" + ip + ":" + str(port) , 'https' : "https://" + ip + ":" + str(port) }
@@ -230,18 +195,17 @@ class urlOpenerSettings( configurable ):
         # The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
         proxyMap = { 'http' : "http://" + ip + ":" + str(port) }
         self._proxyHandler = self._ulib.ProxyHandler( proxyMap )
-        self._proxy = ip + ":" + str(port) 
 
     def getProxy( self ):
-        return self._proxy
+        return cf.cf.getData('proxyAddress') + ':' + str(cf.cf.getData('proxyPort'))
         
     def setBasicAuth( self, url, username, password ):
         if url == '':
             raise w3afException('To properly configure the basic authentication settings, you should also set the auth domain. If you are unsure, you can set it to the target domain name.')
-            
-        self._basicAuthDomain = url
-        self._basicAuthUser = username
-        self._basicAuthPass = password
+        
+        cf.cf.save('basicAuthPass',  password)
+        cf.cf.save('basicAuthUser', username )
+        cf.cf.save('basicAuthDomain', url )            
         
         om.out.debug( 'Called SetBasicAuth')
         
@@ -266,18 +230,19 @@ class urlOpenerSettings( configurable ):
         self.needUpdate = True
     
     def getBasicAuth( self ):
-        return self._basicAuthStr
+        scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( cf.cf.getData('basicAuthDomain') )
+        return scheme + '://' + cf.cf.getData('basicAuthUser') + ':' + cf.cf.getData('basicAuthPass') + '@' + domain + '/'
         
     def buildOpeners(self):
         om.out.debug( 'Called buildOpeners')
         
-        if self._cookieHandler == None and not self._ignoreSessCookies:
+        if self._cookieHandler == None and not cf.cf.getData('ignoreSessCookies'):
             cj = self._cookielib.MozillaCookieJar()
             self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
         
         # Instanciate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
-        self._kAHTTPS = kAHTTPS(self._proxy)
+        self._kAHTTPS = kAHTTPS(self.getBasicAuth())
         
         # Prepare the list of handlers
         handlers = []
@@ -323,16 +288,16 @@ class urlOpenerSettings( configurable ):
         return self._manglePlugins
         
     def getMaxFileSize( self ):
-        return self._maxFileSize
+        return cf.cf.getData('maxFileSize')
         
     def setMaxFileSize( self, fsize ):
-        self._maxFileSize = 400000
+        cf.cf.save('maxFileSize', fsize)
         
     def setMaxRetrys( self, retryN ):
-        self._maxRetrys = retryN
+        cf.cf.save('maxRetrys', retryN)
     
     def getMaxRetrys( self ):
-        return self._maxRetrys
+        return cf.cf.getData('maxRetrys')
     
 
     def getOptions( self ):
@@ -341,50 +306,50 @@ class urlOpenerSettings( configurable ):
         '''        
         d1 = 'The timeout for connections to the HTTP server'
         h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
-        o1 = option('timeout', self._timeout, d1, 'integer', help=h1)
+        o1 = option('timeout', cf.cf.getData('timeout'), d1, 'integer', help=h1)
         
         d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
-        o2 = option('headersFile', self._headersFile, d2, 'string')
+        o2 = option('headersFile', cf.cf.getData('headersFile'), d2, 'string')
 
         d3 = 'Set the basic authentication username for HTTP requests'
-        o3 = option('basicAuthUser', self._basicAuthUser, d3, 'string', tabid='Basic HTTP Authentication')
+        o3 = option('basicAuthUser', cf.cf.getData('basicAuthUser'), d3, 'string', tabid='Basic HTTP Authentication')
 
         d4 = 'Set the basic authentication password for HTTP requests'
-        o4 = option('basicAuthPass', self._basicAuthPass, d4, 'string', tabid='Basic HTTP Authentication')
+        o4 = option('basicAuthPass', cf.cf.getData('basicAuthPass'), d4, 'string', tabid='Basic HTTP Authentication')
 
         d5 = 'Set the basic authentication domain for HTTP requests'
         h5 = 'This configures on which requests to send the authentication settings configured in basicAuthPass and basicAuthUser. If you are unsure, just set it to the target domain name.'
-        o5 = option('basicAuthDomain', self._basicAuthDomain, d5, 'string', help=h5, tabid='Basic HTTP Authentication')
+        o5 = option('basicAuthDomain', cf.cf.getData('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
 
         d6 = 'Set the cookiejar filename.'
         h6 = 'The cookiejar file must be in mozilla format'
-        o6 = option('cookieJarFile', self._cookieJarFile, d6, 'string', help=h6, tabid='Cookies')
+        o6 = option('cookieJarFile', cf.cf.getData('cookieJarFile'), d6, 'string', help=h6, tabid='Cookies')
 
         d7 = 'Ignore session cookies'
         h7 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
-        o7 = option('ignoreSessCookies', self._ignoreSessCookies, d7, 'boolean', help=h7, tabid='Cookies')
+        o7 = option('ignoreSessCookies', cf.cf.getData('ignoreSessCookies'), d7, 'boolean', help=h7, tabid='Cookies')
        
         d8 = 'Proxy TCP port'
         h8 = 'TCP port for the remote proxy server to use. On windows systems, if you left this setting blank '
         h8 += 'w3af will use the system settings that are configured in Internet Explorer.'
-        o8 = option('proxyPort', self._proxyPort, d8, 'integer', help=h8, tabid='Outgoing proxy')
+        o8 = option('proxyPort', cf.cf.getData('proxyPort'), d8, 'integer', help=h8, tabid='Outgoing proxy')
 
         d9 = 'Proxy IP address'
         h9 = 'IP address for the remote proxy server to use. On windows systems, if you left this setting blank '
         h9 += 'w3af will use the system settings that are configured in Internet Explorer.'
-        o9 = option('proxyAddress', self._proxyAddress, d9, 'string', help=h9, tabid='Outgoing proxy')
+        o9 = option('proxyAddress', cf.cf.getData('proxyAddress'), d9, 'string', help=h9, tabid='Outgoing proxy')
 
         d10 = 'User Agent header'
         h10 = 'User Agent header to send in request.'
-        o10 = option('userAgent', self._userAgent, d10, 'string', help=h10, tabid='Misc')
+        o10 = option('userAgent', cf.cf.getData('User-Agent'), d10, 'string', help=h10, tabid='Misc')
 
         d11 = 'Maximum file size'
         h11 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
-        o11 = option('maxFileSize', self._maxFileSize, d11, 'integer', help=h11, tabid='Misc')
+        o11 = option('maxFileSize', cf.cf.getData('maxFileSize'), d11, 'integer', help=h11, tabid='Misc')
 
         d12 = 'Maximum number of retries'
         h12 = 'Indicates the maximum number of retries when requesting an URL.'
-        o12 = option('maxRetrys', self._maxRetrys, d12, 'integer', help=h12, tabid='Misc')
+        o12 = option('maxRetrys', cf.cf.getData('maxRetrys'), d12, 'integer', help=h12, tabid='Misc')
 
         d13 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
         o13 = option('always404', cf.cf.getData('always404'), d13, 'list', tabid='404 settings')
@@ -431,26 +396,25 @@ class urlOpenerSettings( configurable ):
         @parameter optionsMap: An optionList object with the option objects for a plugin.
         @return: No value is returned.
         ''' 
-        if optionsMap['timeout'].getValue() != self._timeout:
-            self.setTimeout( optionsMap['timeout'].getValue() )
-            
-        if optionsMap['headersFile'].getValue() != self._headersFile:
-            self.setHeadersFile( optionsMap['headersFile'].getValue() )
-            
-        if optionsMap['basicAuthDomain'].getValue() != self._basicAuthDomain or \
-        optionsMap['basicAuthUser'].getValue() != self._basicAuthUser or \
-        optionsMap['basicAuthPass'].getValue() != self._basicAuthPass:
-            self.setBasicAuth( optionsMap['basicAuthDomain'].getValue(), optionsMap['basicAuthUser'].getValue(), optionsMap['basicAuthPass'].getValue()  )
+        self.setTimeout( optionsMap['timeout'].getValue() )
         
-        if optionsMap['cookieJarFile'].getValue() != self._cookieJarFile:
-            self.setCookieJarFile( optionsMap['cookieJarFile'].getValue() )
-            
-        if optionsMap['proxyAddress'].getValue() != self._proxyAddress or optionsMap['proxyPort'].getValue() != self._proxyPort:
+        # Only apply changes if they exist
+        if optionsMap['basicAuthDomain'].getValue() != cf.cf.getData('basicAuthDomain') or\
+        optionsMap['basicAuthUser'].getValue() != cf.cf.getData('basicAuthUser') or\
+        optionsMap['basicAuthPass'].getValue() != cf.cf.getData('basicAuthPass'):
+            self.setBasicAuth( optionsMap['basicAuthDomain'].getValue(), optionsMap['basicAuthUser'].getValue(), optionsMap['basicAuthPass'].getValue()  )
+
+        # Only apply changes if they exist
+        if optionsMap['proxyAddress'].getValue() != cf.cf.getData('proxyAddress') or\
+        optionsMap['proxyPort'].getValue() != cf.cf.getData('proxyPort'):
             self.setProxy( optionsMap['proxyAddress'].getValue(), optionsMap['proxyPort'].getValue() )
-            
+        
+        self.setCookieJarFile( optionsMap['cookieJarFile'].getValue() )
+        self.setHeadersFile( optionsMap['headersFile'].getValue() )        
         self.setUserAgent( optionsMap['userAgent'].getValue() )
+        cf.cf.save('ignoreSessCookies', optionsMap['ignoreSessCookies'].getValue() )
+        
         self.setMaxFileSize( optionsMap['maxFileSize'].getValue() )
-        self._ignoreSessCookies = optionsMap['ignoreSessCookies'].getValue()
         self.setMaxRetrys( optionsMap['maxRetrys'].getValue() )
         
         # 404 settings are saved here
@@ -459,7 +423,6 @@ class urlOpenerSettings( configurable ):
         cf.cf.save('autodetect404', optionsMap['autodetect404'].getValue() )
         cf.cf.save('byDirectory404', optionsMap['byDirectory404'].getValue() )
         cf.cf.save('byDirectoryAndExtension404', optionsMap['byDirectoryAndExtension404'].getValue() )
-        
         
     def getDesc( self ):
         return 'This section is used to configure URL settings that affect the core and all plugins.'

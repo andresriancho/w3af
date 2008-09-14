@@ -27,6 +27,8 @@ import core.controllers.outputManager as om
 class certHTTPSConnection( httplib.HTTPSConnection ):
     '''
     An HTTPSConnection abstraction for easy integration with urllib2.
+    
+    #FIXME: This file ain't used, because it wasn't actually working!
     '''
     key_file = None
     cert_file = None
