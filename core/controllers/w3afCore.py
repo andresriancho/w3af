@@ -360,6 +360,8 @@ class w3afCore:
             om.out.error( 'Unhandled error, traceback: ' + str( traceback.format_exc() ) )
             om.out.error('')
             raise e
+        else:
+            om.out.information('Finished scanning process.')
             
     def _realStart(self):
         '''
