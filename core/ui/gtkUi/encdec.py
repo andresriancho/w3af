@@ -481,10 +481,6 @@ _butNameFunc_dec = [
     (_("Double URL Decode"),            double_urldecode), 
     (_("Base64 Decode"),                b64decode),
     (_("Hex Decoding"),                 hex_decoding),
-    (_("URL Decode"),                   urldecode), 
-    (_("Double URL Decode"),            double_urldecode), 
-    (_("Base64 Decode"),                b64decode),
-    (_("Hex Decoding"),                 hex_decoding),
 ] 
 
 
