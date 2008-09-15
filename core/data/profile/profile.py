@@ -245,15 +245,20 @@ class profile:
         @return: An optionList object with the options for a configurable object.
         '''
         optionsMap = configurable_instance.getOptions()
-        
-        for option in self._config.options(section):
-            try:
-                value = self._config.get(section, option)
-            except KeyError,k:
-                # We should never get here...
-                raise w3afException('The option "' + option + '" is unknown for the "'+ section + '" section.')
-            else:
-                optionsMap[option].setValue(value)
+
+        try:
+            for option in self._config.options(section):
+                try:
+                    value = self._config.get(section, option)
+                except KeyError,k:
+                    # We should never get here...
+                    raise w3afException('The option "' + option + '" is unknown for the "'+ section + '" section.')
+                else:
+                    optionsMap[option].setValue(value)
+        except:
+            # This is for back compatibility with old profiles
+            # that don't have a http-settings nor misc-settings section 
+            return optionsMap
 
         return optionsMap
 
