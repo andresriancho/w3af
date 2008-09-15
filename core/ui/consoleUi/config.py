@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.ui.consoleUi.menu import *
+from core.ui.consoleUi.util import *
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
@@ -36,6 +37,7 @@ class configMenu(menu):
         menu.__init__(self, 'config:' + name, console, w3af, parent)
         self._configurable = configurable
         self._options = self._configurable.getOptions()
+        self._optDict = {}
         self._memory = {}
         self._plainOptions = {}
         for o in self._options:
@@ -43,6 +45,7 @@ class configMenu(menu):
             v = o.getDefaultValue()
             self._memory[k] = [v]
             self._plainOptions[k] = v
+            self._optDict[k] = o
         self._groupOptionsByTabId()
         self._loadHelp('config')
       
@@ -96,7 +99,6 @@ class configMenu(menu):
                 except w3afException, w3:
                     om.out.error( str(w3) )
 
-    
 
     def _para_set(self, params, part):
         if len(params) == 0:
@@ -119,3 +121,20 @@ class configMenu(menu):
         else:
             return []
 
+
+    def _cmd_help(self, params):
+        if len(params)==1:
+            optName = params[0]
+            if optName in self._optDict:
+                opt = self._optDict[optName]
+                om.out.console(opt.getDesc())
+                om.out.console("Type: %s" % opt.getType())
+                om.out.console("Current value is: %s" % opt.getDefaultValue())
+                return
+
+        menu._cmd_help(self, params)
+
+    def _para_help(self, params, part):
+        result = menu._para_help(self, params, part)
+        result.extend(suggest(self._optDict, part))
+        return result
