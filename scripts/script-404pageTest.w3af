@@ -27,7 +27,7 @@ set target http://localhost/w3af/
 back
 start
 
-#a#ssert len(kb.kb.getData('urls','urlList')) == 8
-#a#ssert len(kb.kb.getData('pykto','vuln')) == 8
+assert len(kb.kb.getData('urls','urlList')) == 6
+assert len(kb.kb.getData('pykto','vuln')) == 4
 
 exit

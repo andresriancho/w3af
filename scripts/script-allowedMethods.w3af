@@ -12,18 +12,17 @@ set verbose False
 back
 discovery allowedMethods
 discovery
-#grep all
-#grep
-#audit xss
-#audit
 back
+
 target
 set target http://localhost/w3af/ , http://localhost/w3af/dav/
 back
+
 start
 
-assert len( kb.kb.getData('allowedMethods', 'methods') ) == 1
+assert len( kb.kb.getData('allowedMethods', 'methods') ) == 2
 print kb.kb.getData('allowedMethods', 'methods')
 assert len( kb.kb.getData('allowedMethods', 'dav-methods') ) == 1
+print kb.kb.getData('allowedMethods', 'dav-methods')
 
 exit

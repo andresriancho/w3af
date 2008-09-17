@@ -15,7 +15,7 @@ discovery webSpider
 grep
 back
 target
-set target http://localhost/w3af/grepEmpty/abc.html
+set target http://localhost/w3af/grep/grepEmpty/abc.html
 back
 start
 

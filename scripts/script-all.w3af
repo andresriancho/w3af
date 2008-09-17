@@ -1,9 +1,5 @@
-# all demo!
+# all usage demo!
 
-#http-settings
-#set proxyAddress 127.0.0.1 
-#set proxyPort 8080
-#back
 plugins
 output console,textFile
 output

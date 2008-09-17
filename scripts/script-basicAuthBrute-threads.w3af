@@ -20,7 +20,7 @@ set verbose False
 back
 back
 target
-set target http://localhost/w3af/basicAuthBrute/
+set target http://localhost/w3af/bruteforce/basic_auth/
 back
 start
 exit

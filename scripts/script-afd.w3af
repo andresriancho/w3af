@@ -22,8 +22,6 @@ discovery
 back
 
 target
-#set target http://200.32.71.75/cash/validaAdministrador.jsp
-#set target http://www.cybsec.com/
 set target http://www.bancohipotecario.com.ar/
 back
 
@@ -32,3 +30,4 @@ start
 assert len(kb.kb.getData('afd','afd')) == 1
 
 exit
+

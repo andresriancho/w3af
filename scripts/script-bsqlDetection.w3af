@@ -14,7 +14,11 @@ back
 
 back
 target
-set target http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1,http://localhost/w3af/blindSqli/blindSqli-str.php?email=acho@cybsec.com, http://localhost/w3af/blindSqli/blindSqli-rnd.php?email=acho@cybsec.com
+set target http://localhost/w3af/audit/blind_sql_injection/bsqli-integer.php?id=1,http://localhost/w3af/audit/blind_sql_injection/bsqli-string.php?email=acho@cybsec.com, http://localhost/w3af/audit/blind_sql_injection/bsqli_string_rnd.php?email=acho@cybsec.com
 back
 start
+
+assert len( kb.kb.getData('blindSqli', 'blindSqli') ) == 3
+
 exit
+

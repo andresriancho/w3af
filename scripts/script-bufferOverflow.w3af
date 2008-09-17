@@ -14,7 +14,7 @@ audit buffOverflow
 audit
 back
 target
-set target http://localhost/w3af/cgic/buffOverflow.cgi
+set target http://localhost/w3af/audit/cgic/buffOverflow.cgi
 back
 start
 
