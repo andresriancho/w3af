@@ -150,7 +150,6 @@ class Wizard(entries.RememberingWindow):
         description = self.panel.widg.get_children()[0].get_text()
         if not filename:
             msg = "The configuration can't be saved, you need to insert a profile name!\n\n"
-            msg += "\n-".join(invalid)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Missing info')
             dlg.run()
