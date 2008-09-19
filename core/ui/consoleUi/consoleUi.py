@@ -47,8 +47,7 @@ class consoleUi:
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def __init__(self, scriptFile=None, commands=[], parent=None):
-        self._scriptFile = scriptFile
+    def __init__(self, commands=[], parent=None):
         self._commands = commands 
         self._line = [] # the line which is being typed
         self._position = 0 # cursor position

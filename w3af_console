@@ -71,6 +71,7 @@ def main():
     # console
     from core.ui.consoleUi.consoleUi import consoleUi
     
+    commandsToRun = []
     if scriptFile != None:
         try:
             fd = open( scriptFile )
@@ -83,10 +84,11 @@ def main():
                 line = line.strip()
                 if line != '' and line[0] != '#':   # if not a comment..
                     commandsToRun.append( line )
-            fd.close()
-            console = consoleUi( scriptFile=scriptFile, commands=commandsToRun)
-    else:
-        console = consoleUi()
+            fd.close() 
+    elif profile is not None:
+        commandsToRun = ["profiles use %s" % profile]
+
+    console = consoleUi(commands=commandsToRun)
     console.sh()
 
 
