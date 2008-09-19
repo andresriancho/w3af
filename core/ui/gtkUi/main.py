@@ -139,6 +139,10 @@ ui_menu = """
 </ui>
 """
 
+class FakeShelve(dict):
+    def close(self):
+        pass
+
 class AboutDialog(gtk.Dialog):
     '''A dialog with the About information.
 
@@ -235,7 +239,14 @@ class MainApp(object):
         # title and positions
         self.window.set_title(MAINTITLE)
         genconfigfile = os.path.join(getHomeDir(),  "generalconfig.pkl") 
-        self.generalconfig = shelve.open(genconfigfile)
+        try:
+            self.generalconfig = shelve.open(genconfigfile)
+        except Exception, e:
+            print "WARNING: something bad happened when trying to open the general config!"
+            print "    File: %r" % genconfigfile
+            print "    Problem:", e
+            print 
+            self.generalconfig = FakeShelve()
         self.window.resize(*self.generalconfig.get("mainwindow-size", (800, 600)))
         self.window.move(*self.generalconfig.get("mainwindow-position", (50, 50)))
 
