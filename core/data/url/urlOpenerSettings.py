@@ -242,7 +242,7 @@ class urlOpenerSettings( configurable ):
         
         # Instanciate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
-        self._kAHTTPS = kAHTTPS(self.getBasicAuth())
+        self._kAHTTPS = kAHTTPS(self.getProxy())
         
         # Prepare the list of handlers
         handlers = []

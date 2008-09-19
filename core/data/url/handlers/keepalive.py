@@ -115,6 +115,7 @@ DEBUG = None
 MAXCONNECTIONS = 500
 
 import sys
+from core.controllers.w3afException import w3afException
 if sys.version_info < (2, 4): HANDLE_ERRORS = 1
 else: HANDLE_ERRORS = 0
     
@@ -520,18 +521,22 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, proxy):
         KeepAliveHandler.__init__(self)
         self._proxy = proxy
+        host = port = ''
         try:
             host, port = self._proxy.split(':')
         except:
             raise w3afException('The proxy you are specifying is invalid! (' + self._proxy + '), IP:Port is expected.')
+
+        if not host or not port:
+            self._proxy = None
             
     def https_open(self, req):
         return self.do_open(req)
 
     def _get_connection(self, host):
         if self._proxy:
-            host, port = self._proxy.split(':')
-            return ProxyHTTPSConnection(host, port)
+            proxyHost, port = self._proxy.split(':')
+            return ProxyHTTPSConnection(proxyHost, port)
         else:
             return HTTPSConnection(host)
 

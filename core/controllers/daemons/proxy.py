@@ -130,9 +130,9 @@ class proxy(w3afThread):
         return self._running
     
     def run(self):
-        '''
+        """
         Starts the proxy daemon; usually this method isn't called directly. In most cases you'll call start2()
-        '''
+        """
         if self._proxyHandler == None:
             self._proxyHandler = w3afProxyHandler
         
@@ -232,7 +232,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 res = httpCommandMethod( path, data=postData, headers=self.headers )
             except w3afException, w:
                 om.out.error('The proxy request failed, error: ' + str(w) )
-                raise w
             except Exception, e:
                 raise e
             return res
@@ -245,6 +244,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 httpCommandMethod = getattr( self._urlOpener, self.command )
                 res = httpCommandMethod( url, data=str(qs), headers=self.headers,  grepResult=grep )
             except w3afException, w:
+                traceback.print_exc()
                 om.out.error('The proxy request failed, error: ' + str(w) )
                 raise w
             except:
