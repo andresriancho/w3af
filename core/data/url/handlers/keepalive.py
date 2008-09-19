@@ -520,6 +520,10 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, proxy):
         KeepAliveHandler.__init__(self)
         self._proxy = proxy
+        try:
+            host, port = self._proxy.split(':')
+        except:
+            raise w3afException('The proxy you are specifying is invalid! (' + self._proxy + '), IP:Port is expected.')
             
     def https_open(self, req):
         return self.do_open(req)
