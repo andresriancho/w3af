@@ -568,6 +568,9 @@ class MainApp(object):
         self.nb.set_current_page(1)
         self.exploitallsens.set_sensitive(True, "stopstart")
 
+        # Save the target URL to the history
+        self.pcbody.target.insertURL()
+
         # sets the title 
         targets = cf.cf.getData('targets')
         if targets:
