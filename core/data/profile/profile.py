@@ -54,9 +54,9 @@ class profile:
             # Verify if I can find the file
             if not os.path.exists(profile_file_name):
 
-                # The file isn't there, let's try with a .ini ...
-                if not profile_file_name.endswith('.ini'):
-                    profile_file_name += '.ini'
+                # The file isn't there, let's try with a .pw3af ...
+                if not profile_file_name.endswith('.pw3af'):
+                    profile_file_name += '.pw3af'
                 if not os.path.exists(profile_file_name):
                 
                     # Search in the default path...        
@@ -95,8 +95,8 @@ class profile:
             newProfilePathAndName = os.path.join( dir, copyProfileName )
         
         # Check extension
-        if not newProfilePathAndName.endswith('.ini'):
-            newProfilePathAndName += '.ini'
+        if not newProfilePathAndName.endswith('.pw3af'):
+            newProfilePathAndName += '.pw3af'
         
         try:
             shutil.copyfile( self._profile_file_name, newProfilePathAndName )
@@ -350,8 +350,8 @@ class profile:
             raise w3afException('Error while saving profile, you didn\'t specified the filename.')
         elif fileName != '' and self._profile_file_name == None:
             # The user is specifiyng a filename!
-            if not fileName.endswith('.ini'):
-                fileName += '.ini'
+            if not fileName.endswith('.pw3af'):
+                fileName += '.pw3af'
             if os.path.sep not in fileName:
                 fileName = 'profiles' + os.path.sep + fileName
             self._profile_file_name = fileName

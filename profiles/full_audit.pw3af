@@ -96,7 +96,7 @@ onlyForward = False
 [audit.sslCertificate]
 
 [profile]
-description = 
+description = This profile performs a full audit of the target website, using only the webSpider plugin for discovery.
 name = full_audit
 
 [grep.errorPages]

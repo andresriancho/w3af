@@ -947,8 +947,8 @@ class w3afCore:
         '''
         @return: A string list of the names of all available profiles.
         '''
-        strProfileList = self._getListOfFiles( 'profiles' + os.path.sep, extension='.ini' )
-        instanceList = [ profile('profiles' + os.path.sep + p + '.ini' ) for p in strProfileList ]
+        strProfileList = self._getListOfFiles( 'profiles' + os.path.sep, extension='.pw3af' )
+        instanceList = [ profile('profiles' + os.path.sep + p + '.pw3af' ) for p in strProfileList ]
         return instanceList
         
     def _getListOfFiles( self, directory, extension='.py' ):

@@ -1,6 +1,6 @@
 [profile]
 name = fast_scan
-description = 
+description = Perform a fast scan of the target site, using only a few discovery plugins and the fastest audit plugins.
 
 [output.gtkOutput]
 

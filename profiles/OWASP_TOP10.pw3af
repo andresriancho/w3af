@@ -40,7 +40,7 @@ onlyForward = False
 [grep.hashFind]
 
 [profile]
-description = 
+description = The Open Web Application Security Project (OWASP) is a worldwide free and open community focused on improving the security of application software. OWASP searched for and published the ten most common security flaws. This profile search for this top 10 security flaws. For more information about the security flaws: http://www.owasp.org/index.php/OWASP_Top_Ten_Project
 name = OWASP_TOP10
 
 [misc-settings]

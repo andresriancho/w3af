@@ -105,7 +105,7 @@ onlyForward = False
 [audit.sslCertificate]
 
 [profile]
-description = 
+description = Perform a manual discovery using the spiderMan plugin, and afterwards scan the site for any known vulnerabilities.
 name = full_audit_manual_disc
 
 [grep.errorPages]
