@@ -49,7 +49,8 @@ class w3afDotWindow(xdot.DotWindow):
 
     def __init__(self):
         gtk.Window.__init__(self)
-
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        
         self.graph = xdot.Graph()
 
         window = self
