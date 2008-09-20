@@ -49,6 +49,8 @@ class proxy(w3afThread):
     Or like this, if you want to override the proxyHandler (most times you want to do it...):
         ws = proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
     
+    If the IP:Port is already in use, an exception will be raised while creating the ws instance.
+    
     To start the proxy, and given that this is a w3afThread class, you can do this:
         ws.start2()
         
@@ -95,6 +97,15 @@ class proxy(w3afThread):
         self._ip = ip
         self._port = port
         self._proxyCert = proxyCert
+        
+        # Start the proxy server
+        try:
+            self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
+        except socket.error, se:
+            if se[0] == 98:
+                raise w3afException('Address already in use ' + self._ip + ':' + str(self._port))
+            else:
+                raise w3afException(str(se))
     
     def getBindIP( self ):
         return self._ip
@@ -143,16 +154,12 @@ class proxy(w3afThread):
         self._proxyHandler._urlOpener = self._urlOpener
         self._proxyHandler._urlOpener._proxyCert = self._proxyCert
         
-        try:
-            self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
-        except Exception, e:
-            om.out.error('Failed to start proxy server, error: ' + str(e) )
-        else:
-            message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
-            om.out.debug( message )
-            self._server.w3afLayer = self
-            self._running = True
-            self._server.serve_forever()
+        # Starting to handle requests
+        message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
+        om.out.debug( message )
+        self._server.w3afLayer = self
+        self._running = True
+        self._server.serve_forever()
 
 class w3afProxyHandler(BaseHTTPRequestHandler):    
     def handle_one_request(self):

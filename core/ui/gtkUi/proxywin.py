@@ -134,20 +134,32 @@ class ProxiedRequests(entries.RememberingWindow):
                 Option("Fix content length", False, "Fix content length", "boolean"))
 
         # finish it
-        self._startProxy()
-        self.fuzzable = None
-        self.waitingRequests = True
-        self.keepChecking = True
-        gobject.timeout_add(200, self._superviseRequests)
-        self.show()
+        try:
+            self._startProxy()
+        except w3afException:
+            pass
+        else:
+            self.fuzzable = None
+            self.waitingRequests = True
+            self.keepChecking = True
+            gobject.timeout_add(200, self._superviseRequests)
+            self.show()
 
     def _startProxy(self):
         '''Starts the proxy.'''
         ipport = self.proxyoptions.ipport.getValue() 
         ip, port = ipport.split(":")
         self.w3af.mainwin.sb(_("Starting local proxy"))
-        self.proxy = localproxy.localproxy(ip, int(port))
-        self.proxy.start2()
+        try:
+            self.proxy = localproxy.localproxy(ip, int(port))
+        except w3afException, w3:
+            msg = _(str(w3))
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()
+            raise w3
+        else:
+            self.proxy.start2()
 
     def _superviseRequests(self, *a):
         '''Supervise if there're requests to show.
