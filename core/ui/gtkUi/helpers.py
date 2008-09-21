@@ -26,6 +26,11 @@ import  traceback
 import gtk
 from core.controllers.w3afException import w3afException
 
+# w3af crash File creation
+import tempfile
+from core.data.fuzzer.fuzzer import createRandAlNum
+import os
+
 RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
 
 def all(iterable):
@@ -254,15 +259,15 @@ def _crash(type, value, tb):
     versions += _("PyGTK version:%s\n\n") % ".".join(str(x) for x in gtk.pygtk_version)
 
     # save the info to a file
-    # FIXME: What if I can't create the file ?
-    arch = file("w3af_crash.txt", "w")
+    filename = tempfile.gettempdir() + os.path.sep + "w3af_crash-" + createRandAlNum(5) + ".txt"
+    arch = file(filename, "w")
     arch.write(_('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 \n'))
     arch.write(versions)
     arch.write(exception)
     arch.close()
 
     # inform the user
-    exception += _("\nAll this info is in a file called w3af_crash.txt for later review. Please report this bug here https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 (this URL is also printed in the file), thank you!")
+    exception += _("\nAll this info is in a file called ") + filename + _(" for later review. Please report this bug here https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 (this URL is also printed in the file), thank you!")
     exception += _("\n\nThe program will exit after you close this window.")
     dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, exception)
     dlg.set_title(_('Bug detected!'))
