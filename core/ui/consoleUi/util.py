@@ -128,7 +128,7 @@ def suggest(tree, part, skipList=[]):
        
 
     lp = len(part)
-    completions += [(part, v) for v in list if v.startswith(part) and v not in skipList and lp!=len(v)]
+    completions += [(part, v) for v in map(str, list) if v.startswith(part) and v not in skipList and lp!=len(v)]
     
 #    suffix = allowSet and ',' or ' '
     suffix = ' '
