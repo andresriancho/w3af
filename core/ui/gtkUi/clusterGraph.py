@@ -136,18 +136,62 @@ class clusterGraphWidget(w3afDotWindow):
         for response in response_list:
             dotcode += str(response.getId()) + ' [URL="'+ str(response.getId()) +'"];\n'
         
-        # Write the links between them
+        # Calculate the distances
+        dist_dict = {}
         for r1, r2 in self._xunique_combinations(response_list, 2):
-            distance = relative_distance(r1.getBody(), r2.getBody() )
-            distance = 1-distance
-            distance *= 2
-            if distance == 0:
-                distance = 0.5
+            dist_dict[(r1, r2)] = 1- relative_distance(r1.getBody(), r2.getBody() )
+            
+        # Normalize
+        dist_dict = self._normalize_distances(dist_dict)
+        
+        # Write the links between them
+        for r1, r2 in dist_dict:
+            distance = dist_dict[(r1, r2)]
             dotcode += str(r1.getId()) + ' -- ' + str(r2.getId()) + ' [len='+str(distance)+', style=invis];\n'
         
         dotcode += '}'
         
         return dotcode
+
+    def _normalize_distances(self, dist_dict):
+        '''
+        Perform some magic in order to get a nice graph
+        @return: A normalized distance dict
+        '''
+        # Find max
+        max = 0
+        for d in dist_dict.values():
+            if d > max:
+                max = d
+                
+        # Find min
+        min = 9999
+        for d in dist_dict.values():
+            if d < min:
+                min = d
+
+        # Find avg
+        sum = 0
+        for d in dist_dict.values():
+            sum += d
+        avg = sum / len(dist_dict)
+        
+        # Normalize
+        res = {}
+        for r1, r2 in dist_dict:
+            actual_value = dist_dict[(r1, r2)]
+            if actual_value > avg:
+                new_value = avg
+            else:
+                new_value = actual_value
+            
+            if actual_value < 0.1:
+                new_value = min + avg / 3
+            
+            res[(r1, r2)] = new_value
+        
+        return res
+        
 
     def on_url_clicked(self, widget, id, event):
         '''
