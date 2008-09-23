@@ -73,7 +73,7 @@ class sqlmap(baseAttackPlugin):
         self._injvar = ''
         
         # User configured variables
-        self._equalLimit = 0.85
+        self._equalLimit = 0.9
         self._equAlgorithm = 'setIntersection'
         self._goodSamaritan = True
         self._generateOnlyOne = True

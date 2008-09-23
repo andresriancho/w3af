@@ -131,7 +131,8 @@ class dbDriverFunctions:
                     evilResult = self.queryPage(evilUrl)
                     if self._cmpFunction( evilResult, self.args.trueResult ):
                         value += tt2
-                        index += len(tt2)
+                        if len(tt2) != 1:
+                            index += len(tt2) - 1
                         om.out.console('\r\nGOOD guess: "%s", current blind string is: "%s"' % (value, value))
                         om.out.console('\rgoodSamaritan('+value+')>>>', newLine=False)
                     else:
