@@ -39,7 +39,7 @@ class blindSqli(baseAuditPlugin):
         self._bsqliTools = blindSqliTools()
         
         # User configured variables
-        self._equalLimit = 0.8
+        self._equalLimit = 0.9
         self._equAlgorithm = 'setIntersection'
 
     def _fuzzRequests(self, freq ):
