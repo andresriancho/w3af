@@ -1,0 +1,1146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="CREATED" CONTENT="20070514;16454200">
+	<META NAME="CHANGEDBY" CONTENT="Facundo Batista">
+	<META NAME="CHANGED" CONTENT="20080924;13435800">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { size: 21.59cm 27.94cm; margin: 2cm }
+		P { margin-left: 0.5cm; text-indent: 0.5cm; margin-top: 0.3cm; margin-bottom: 0cm; text-align: justify }
+		H2 { margin-top: 0.8cm; margin-bottom: 0.2cm; background: transparent; page-break-before: auto }
+		H2.western { font-family: "Bitstream Vera Sans", sans-serif; font-size: 14pt; font-style: normal }
+		H2.cjk { font-family: "Bitstream Vera Sans"; font-size: 14pt; font-style: italic; font-weight: medium }
+		H2.ctl { font-family: "Bitstream Vera Sans"; font-size: 14pt; font-style: italic; font-weight: medium }
+		H3 { margin-top: 0.5cm; margin-bottom: 0.1cm }
+		H3.western { font-family: "Bitstream Vera Sans", sans-serif; font-size: 12pt }
+		H3.cjk { font-family: "Bitstream Vera Sans" }
+		H3.ctl { font-family: "Bitstream Vera Sans" }
+		P.cuerpo-de-texto-con-sangría { margin-left: 1.5cm }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<BR><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+<FONT FACE="Bitstream Vera Sans, sans-serif"><FONT SIZE=4 STYLE="font-size: 16pt"><U><B>w3af
+gtkUi User Guide</B></U></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<FONT SIZE=2>Document version: <B>0.2</B></FONT></P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<FONT SIZE=2>Original author: <B>Facundo Batista</B></FONT></P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; font-weight: medium; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; font-style: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<FONT SIZE=2><I><U><B>September, 2008</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm; page-break-before: always">
+<BR>
+</P>
+<DIV ID="Índice de contenido1" DIR="LTR">
+	<DIV ID="Table of Contents1_Head" DIR="LTR">
+		<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0.42cm; margin-bottom: 0.21cm; page-break-after: avoid">
+		<FONT FACE="Bitstream Vera Sans, sans-serif"><FONT SIZE=4 STYLE="font-size: 16pt"><B>Table
+		of Contents</B></FONT></FONT></P>
+	</DIV>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	1.Introduction	3</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">1.1.Just the
+	graphical interface	3</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">1.2.Running
+	the program	3</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	2.General structure	3</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">2.1.The
+	toolbar	4</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	3.Scanning	5</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">3.1.Configuring
+	the scan	5</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">3.2.Using
+	the Profiles	7</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">3.3.Running
+	the scan	8</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	4.Analyzing the results	10</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">4.1.Browsing
+	the Knowledge Base	10</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">4.2.Site
+	structure	12</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">4.3.Requests
+	and Responses	12</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	5.Exploitation	13</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">5.1.Executing
+	an exploit	14</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">5.2.Using a
+	shell	16</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	6.Other tools	16</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">6.1.Manual
+	Requests	16</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">6.2.Fuzzy
+	Requests	17</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">6.3.Encode
+	and Decode	19</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">6.4.Comparing
+	HTTP traffic	21</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">6.5.Using
+	the Proxy	21</P>
+	<P ALIGN=LEFT STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+	7.Configurations	23</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">7.1.HTTP
+	Configuration	23</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">7.2.Miscellaneous
+	Configuration	24</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">7.3.Advanced
+	target	26</P>
+	<P ALIGN=LEFT STYLE="text-indent: 0cm; margin-top: 0cm">7.4.Proxy
+	Configuration	26</P>
+</DIV>
+<P ALIGN=CENTER STYLE="margin-left: 0cm; text-indent: 0cm; margin-top: 0cm">
+<BR>
+</P>
+<OL>
+	<LI><H2 CLASS="western" STYLE="page-break-before: always"><A NAME="Introduction"></A><A NAME="SECTION00200000000000000000"></A>
+	Introduction</H2>
+</OL>
+<P>This document is a user guide for the 1.0 version of the Web
+Application Attack and Audit Framework ( w3af ), its goal is to
+provide a basic overview of how to use the application, how it works,
+and what you can do with it. 
+</P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western"><A NAME="Just_the_graphical_interface"></A>Just
+		the graphical interface</H3>
+	</OL>
+</OL>
+<P>w3af is a complete environment for auditing and attacking web
+applications. This environment provides a solid platform for auditing
+and penetration-testing. 
+</P>
+<P>The w3af is a framework that you can use in different ways. This
+document explains how to use it through the GTK Graphic User
+Interface, but you can also use w3af from command line, and even new
+user interfaces could be implemented in the future.</P>
+<P>In any case, w3af is a core independent of the user interface, and
+it will be referred as <I>the Core</I> throughout this documentation.
+It's implemented in pure Python, as this graphic user interface.</P>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western"><A NAME="Running_the_program"></A>Running
+		the program</H3>
+	</OL>
+</OL>
+<P>You can execute this program just doing double click in the icon,
+or selecting it from you operating system menu after installing it.</P>
+<P>You can also run it from command line calling to the <I>w3af_gui</I>
+executable, and in this case you'll see any debug or warning message
+appear in the terminal. If you need to submit a bug or ask for a new
+feature, use this way to execute the program, because it'll provide
+useful information about the Python and PyGTK versions.</P>
+<OL START=2>
+	<LI><H2 CLASS="western"><A NAME="General_structure"></A>General
+	structure</H2>
+</OL>
+<P>In this section is explained the general structure of the w3af
+Interface. 
+</P>
+<P>The following is the main window, the first image that you'll see
+from the system after it's completely loaded (during the load you'll
+see a splash image that gives you information about how the system is
+loading):</P>
+<IMG SRC="gtkUiUsersGuide_html_m545886e1.png" NAME="graphics1" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=606 HEIGHT=355 BORDER=0><BR CLEAR=LEFT>
+<P>In the image you can see different sections. On top, as usual
+there's the menu [1] and the toolbar [2]. The body of the window is
+separated in different notebook tabs [3]. At the bottom of the window
+you have the the toolbar [4] and an indicator about the found
+elements [5].</P>
+<P>In the notebook tab that you can see at the program beginning,
+there are three vertical panes: the profiles [6], the plugin selector
+[7], and the plugin configuration area [8] (where so far you see the
+w3af icon because you didn't select any plugin yet). Above them you
+also have the target URL [9].</P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="The_toolbar"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">The toolbar</FONT></H3>
+	</OL>
+</OL>
+<P>The toolbar is separated in different functional groupings.</P>
+<IMG SRC="gtkUiUsersGuide_html_m1b308ac.png" NAME="graphics2" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=54 HEIGHT=46 BORDER=0><BR CLEAR=LEFT>
+<P>The first button opens the <I>Point and Click Penetration Test</I>,
+that is a <I>Wizard</I> that allows you to create profiles in an easy
+way, without having specific security related knowledge.</P>
+<IMG SRC="gtkUiUsersGuide_html_642cbc2.png" NAME="graphics4" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=136 HEIGHT=54 BORDER=0><BR CLEAR=LEFT>
+<P>The second and third buttons, <I>New</I> and <I>Save</I>, operate
+on the Profiles. <I>New</I> will create a new Profile, and for this
+the system will ask you the profile name and a description, be
+creative! If you change a profile, you also can save the
+modifications it to disk, using the second button.</P>
+<IMG SRC="gtkUiUsersGuide_html_1bd5f7b1.png" NAME="graphics3" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=137 HEIGHT=55 BORDER=0><BR CLEAR=LEFT>
+<P>The third and fourth buttons, <I>Play</I> and <I>Pause</I>,
+control the state of the working Core. These buttons are mutable, as
+change over time, look the next section (<I>Running the scan</I>) for
+a deeper explanation of how these buttons behave.</P>
+<IMG SRC="gtkUiUsersGuide_html_19e0370.png" NAME="graphics5" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=98 HEIGHT=51 BORDER=0><BR CLEAR=LEFT>
+<P>The sixth button is to trigger Multiple Exploits. It will be
+enabled only in the Exploits window, check that part of the
+documentation for a more detailed information about this.</P>
+<P>The rest of the buttons are to open and use different tools:</P>
+<IMG SRC="gtkUiUsersGuide_html_138eb8c6.png" NAME="graphics6" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=427 HEIGHT=54 BORDER=0><BR CLEAR=LEFT>
+<P>Check the <I>Other Tools</I> section of the documentation for an
+explanation of this different tools.</P>
+<IMG SRC="gtkUiUsersGuide_html_33d39b79.png" NAME="graphics8" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=61 HEIGHT=54 BORDER=0><BR CLEAR=LEFT>
+<P>Finally, at the very right, there's a throbber that shows when the
+Core is working or not.</P>
+<OL START=3>
+	<LI><H2 CLASS="western"><A NAME="Scanning"></A>Scanning</H2>
+</OL>
+<P>In this section is explained the different steps to configure,
+start and supervise a security scanning over a web site.</P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western"><A NAME="Configuring_the_scan"></A>Configuring
+		the scan</H3>
+	</OL>
+</OL>
+<P>To scan the web sites in different ways there are different
+plugins that can be configured in different ways. 
+</P>
+<P>In the second column of the main window you can select which
+plugins to configure. This plugins are separated in two big sections,
+as you can see in the following picture.</P>
+<P>The first section has all the scan plugins, in the upper part of
+the column [1]. There you have the different plugins grouped
+regarding the scan type. They are separated in:</P>
+<UL>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">audit</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">bruteforce</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">discovery</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">evasion</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">grep</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">mangle</P>
+</UL>
+<IMG SRC="gtkUiUsersGuide_html_m2d93f383.png" NAME="graphics7" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=606 HEIGHT=355 BORDER=0><BR CLEAR=LEFT>
+<P>In the lower part of the column [2] there are the output plugins.
+As this is the GTK user interface, the gtkOutput plugin is always
+enabled, but note that you can enable here the console plugin to see
+all the information in the standard output, and also have plugins to
+send all that information to a file in different formats.</P>
+<P>If you select on any plugin you will see in the right pane [3]
+some information of that plugin. If that plugin is configurable
+(something that you can know in advance, because the plugin has an
+editable icon in the plugin trees [1] &amp; [2]. 
+</P>
+<P>To configure the plugin, just select it, and modify the options
+that appears on in the right pane [3]. Note that you need to Save the
+configuration to use it. You can see easily if any plugin is modified
+and not saved because its name will be in bold font.</P>
+<P>Even if you configure a plugin, to actually use it during a scan,
+you need to check it. You have, at the right of each plugin, a check
+box that you need to select to use that plugin during the scan. If
+you click on the group check box, all the plugins in that group will
+be selected and deselected. If some plugins in that group are
+selected, and others are not, you'll see the group's check box in an
+intermediary state (as you can see in [2] for <I>output</I>).</P>
+<P>If you make right-click over a plugin (or select <I><SPAN STYLE="text-decoration: none">Edit
+Plugin </SPAN></I>in the Edit menu), a text editor will open and
+you'll be able to actually edit the plugin source code.</P>
+<P>To finish configuration the scan, you need to insert a target URL
+in the upper text entry. When everything is ready to run, you will
+note that the Play buttons are automatically enabled.</P>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western"><A NAME="Using_the_Profiles"></A>Using the
+		Profiles</H3>
+	</OL>
+</OL>
+<P>In the profiles you can save different configurations. You can
+think a Profile as the collection of configured plugins and target
+URL.</P>
+<P>In the column of the left [1] you can see which plugins do you
+have:</P>
+<IMG SRC="gtkUiUsersGuide_html_40c50a7e.png" NAME="graphics9" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=606 HEIGHT=355 BORDER=0><BR CLEAR=LEFT>
+<P>In this example, I selected a <I>test</I> plugin. In the moment I
+select it, the plugins and the target URL are all reconfigured [2].
+Also, in the pane at the right, you can see a description of that
+plugin [3].</P>
+<P>See, as now we have all the information needed to start the scan,
+that the Start buttons [4] are enabled. Note, however, that is
+possible that in the profile there was no saved URL, so the target
+URL will remain empty (you'll find it with a “<I>Insert the target
+URL here</I>” message).</P>
+<P>In the Profiles menu,or doing right-click over any profile, you
+can see different actions that you can apply over the plugins:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría">Save: Save the
+	actual configuration to the profile. This will be enabled only if
+	you changed some of the profile configuration.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">Save as: Save
+	configuration a new profile, without affecting the one selected so
+	far. If you click on this option, you will need to enter a new
+	profile name and description.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">Revert: Discard the
+	actual configuration and reload the one that is saved in the
+	profile.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría">Delete: Delete this
+	profile</P>
+</UL>
+<P><BR>
+</P>
+<P>To create a new profile, you have the <I>New</I> button in the
+toolbar, and also the <I>New</I> option in the <I>Profiles</I> menu.
+To create a new profile, you will need to enter a name and
+descriptions. After creating the new profile, you'll be able to
+configure to your needs. Remember that you can always create a new
+profile using the Point and Click Penetration test tool, with the
+Wizard button at the toolbar's left.</P>
+<OL>
+	<OL START=3>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Running_the_scan"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Running the scan</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">To
+actually run the scan some conditions need to be met: at least one
+plugin needs to be activated, and a target URL must be set. You'll
+notice that everything is OK to go, because the <I>Start</I> button
+will be enabled.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m6817cbb9.png" NAME="graphics10" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=73 HEIGHT=194 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+whole scan process is controlled with two buttons that you can find
+in the toolbar. The first button is the <I>Start</I> one. When you
+click on it, the scan will start running, and you will see the
+throbber spinning. After the process starts, it can be stopped
+anytime, or you can let it go until the end, and it will finish
+automatically. To stop the process you can use the same button, note
+that it mutated and now it is called <I>Stop</I>: if you click on it
+you will see that it gets disabled, and there's some delay until the
+process is effectively stopped, you can check it because the throbber
+stopped spinning. When the scan is stopped, you can study the results
+all that you want, but if you want to start another scan you will
+need to clear the current results and start over. For this, you'll
+use again the same button as before, but note that it  is called
+<I>Clear</I> now.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_434411c8.png" NAME="graphics11" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=74 HEIGHT=115 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+second button to control the process is the <I>Pause</I> one. It will
+be enabled only when the process is running, and if you click on it,
+it will be pressed down (and the process paused) until you click on
+it again. Note that if you pause the process you can not cancel it
+until you restart it.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+the scanning process is started, the system will switch automatically
+to the <I>Log</I> tab. In this tab you can see how the scan evolves
+through the different indicators.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+tab has two main sections. In the upper part you have the logging
+text, where you can see all the information generated by the system.
+In the principal section of that part [1] you can see all the
+messages generated by the system, from the first one to the last
+generated. As this log is normally a large quantity of text, you can
+enable and disable the different type of messages, using the
+checkboxes in the log bar [4]. Note that these different types have
+different colors in the text itself. In the same bar you have a
+<I>Search</I> button, which enables the search functionality
+(explained in detail below).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Also,
+below that messages you can see exactly what the system is currently
+doing, through a single line message [2].</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_4809e930.png" NAME="graphics12" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=605 HEIGHT=354 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+the lower part of the window you can see a graph that represents what
+is going on with the scanning process in a visual way. In the <I>x
+axis</I> you can see the time (automatically rescaled), and in the <I>y
+axis</I> you can find three indicators: a grey bar which height
+indicates the quantity of debug messages at that time, a blue dot if
+there're information messages, and a vertical red bar with the
+quantity of vulnerabilities found there.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m5b06553e.png" NAME="graphics13" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=179 HEIGHT=39 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">All
+this information is updated in real time. For a better visual
+following of the process, you also have, at the right of the toolbar,
+three indicators showing the quantity of information items found, of
+vulnerabilities found, and the shell which were successfully
+exploited (you'll find more information about this <I>Shells</I> in
+the <I>Exploit</I> section of this document).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Sometimes
+the log information is too much, even if you can separate it in the
+different message types, so there's a search functionality to help
+you. You can open the <I>search bar</I> using the previously
+mentioned button, or pressing CTRL-F when the log text window is in
+focus.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+the search bar opens, you'll see a text entry where you can write
+what you want to find, a <I>Next</I> and <I>Previous</I> buttons, and
+a <I>Match case </I>checkbox:</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m60e54cd5.png" NAME="graphics14" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=606 HEIGHT=171 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+system will find what you write in the text entry in real time,
+taking the letter case in consideration if the <I>Match case</I>
+checkbox is selected. If the inserted text doesn't match with
+anything in the whole text, the entry background will turn red.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Also
+in real time the matching text will be highlighted in yellow. If you
+hit the <I>Next</I> or <I>Previous</I> buttons, the system will walk
+the matching texts.</FONT></P>
+<OL START=4>
+	<LI><H2 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Analyzing_the_results"></A>
+	<FONT FACE="Bitstream Vera Sans, sans-serif">Analyzing the results</FONT></H2>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+can explore and analyze the scanning results after the scan process
+is completed (or before it's finished, because the system let's you
+work concurrently with that process). In this section I'll explain
+the different windows you have to work with the results.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">There's
+a complete tab for results in w3af, and as there're a lot of
+information to analyze, this tab is also divided in tabs, as you can
+check the Knowledge Base, see the site structure, or navigate through
+the individual requests and responses.</FONT></P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Browsing_the_Knowledge_Base"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Browsing the Knowledge
+		Base</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+Knowledge Base is a collection of discovered items, that can be
+classified in Vulnerabilities, Informations, and other stuff. The <I>KB
+Browser tab</I> lets you dive into this information.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+the left part of the window [1] you'll find the information of the
+Knowledge Base. By default it only shows you the vulnerabilities and
+informations, but you can enable also the miscellaneous stuff or hide
+any of them, using the checkboxes above the info [2].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+information is grouped in a tree way, but you have different nodes to
+expand. If you select one of the items, and that item corresponds to
+a HTTP request originated by the scanning, you will see in the right
+part of the window all the information about that request and its
+response (more info about this below).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+items in the tree has a color that indicates the severity of the
+issue: black for informations, orange for low-severity
+vulnerabilities, and red for medium or high severity ones. As they're
+in a tree structure, each node in the tree will have the color of the
+more severe of its children.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_52654ed2.png" NAME="gráficos1" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=563 HEIGHT=319 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">As
+said above, when you click on a tree node that actually is generated
+by a HTTP request, you can see in the left part of the window
+information about this request and its response. This part is
+separated in different panes.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Above
+everything [3] you have general information about when the request
+was found (actually, this is the same line that you can find in the
+logs regarding this request). Below that info you have the request
+headers [4], the request body [5], the response headers [6], and the
+response body [7].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">At the bottom
+[8] you have some buttons that will enable you to make some actions
+with the request and response. With the buttons at the left you can
+send the HTTP Request to the Manua<FONT FACE="Bitstream Vera Sans, sans-serif">l
+and Fuzzy Request tools. With the button at the right you can send
+everything to the Compare tool. These buttons refer to the same tools
+that have the same icon in the toolbar, but actually send the shown
+information to that tools, which is very handy.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+structure, the HTTP request and response with both panes each, and
+the buttons to use that information w</FONT>ith other tools, is
+repeated all over the program interface, so it's good to get used to
+it.</P>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Site_structure"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Site structure</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+<I>URLs tab</I> shows the structure of the site that the system
+worked on. It's separated In two parts, but both parts show actually
+the same information, although they show it in different ways.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_490ccf4d.png" NAME="gráficos2" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=375 HEIGHT=255 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">At
+the left [1] you can see the site structure in the old fashion way:
+with a tree-like list of nodes.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">At
+the right [2] you have the same information but graphically. Above
+the drawing [3] you have different buttons that help you to see the
+graph better: zoom in, zoom out, fit all the graph in the window, and
+show the graph in the original size.</FONT></P>
+<OL>
+	<OL START=3>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Requests_and_Responses"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Requests and Responses</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+this window you will be able to search for any request (and the
+associated  response) that the system had generated during the
+scanning.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_5df47c66.png" NAME="graphics15" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=329 HEIGHT=183 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+the upper text entry [1] you can insert a query to search the
+knowledge database for requests and responses. You have a flexible
+syntax to build your query, for details about the syntax, click on
+the <I>Help</I> button on the right, and a similar window to the one
+shown here will be presented to you.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">After
+you enter the query, and hit the Find button, the system will
+retrieve all the requests and responses that match, and will present
+them to you in the results list [2]. If you click on any of those
+results, you'll see the request and response details [3].</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m2de7cfe6.png" NAME="graphics16" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=568 HEIGHT=257 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">As
+usual when seeing requests and responses, you'll have the tool
+buttons [4] to use these data in the already familiar tools.</FONT></P>
+<OL START=5>
+	<LI><H2 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Exploitation"></A>
+	<FONT FACE="Bitstream Vera Sans, sans-serif">Exploitation</FONT></H2>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+this section I'll explain you how to exploit the vulnerabilities
+found. </FONT>
+</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+the scan is running or after the scan finished running, as you can
+check the results, you also can start with the exploitation. For
+this, go to the fourth tab in the system, called <I>Exploit</I><SPAN STYLE="font-style: normal"><SPAN STYLE="text-decoration: none">:</SPAN></SPAN></FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_4efa8b8b.png" NAME="graphics17" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=575 HEIGHT=342 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+window is separated in different panes.  At the very left [1] you
+have a list of all the exploits that you can execute over the
+vulnerabilities that you found, which are listed in the second column
+[2]. You can see there that we found three vulnerabilities, as you
+can also check in the left bottom corner of the window [3]. </FONT>
+</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">At
+the right part of the window, there're two panes: one [4] for the
+exploited shells (more on this below), and one [5] for the proxies
+(this functionality is not yet developed).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Finally,
+you can see that when you enter to this tab, the <I>Multiple Exploit
+</I>button in the toolbar [6] is enabled.</FONT></P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Executing_an_exploit"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Executing an exploit</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Exploits act on
+vulnerabilities. But not all exploits act on every vulnerabilities.
+It is well known if any exploit could act on some vulnerability,
+though, but to be sure and actually<FONT FACE="Bitstream Vera Sans, sans-serif">
+exploit it some verification needs to be done. Fortunately, the
+system easies very much this process to you.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">To
+exploit a vulnerability, you need to drag the exploit and drop it on
+the vulnerability you want to exploit. This drag &amp; drop process
+is all you need to activate one specific exploit; if you want
+multiple exploiting see below. But, as all exploits don't act on all
+vulnerabilities, how do you know what to drag and drop where?</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+you click on any exploit, the system will put in bold font those
+vulnerabilities that <I>could</I> be exploited by that exploit [1].
+This works also in the other way: if you click on any vulnerability,
+the system will put in bold those exploits that <I>could</I> act on
+that vulnerability [2]. I put emphasis on the “could”, because
+there's no certainty that the match will be useful... but for sure,
+if you trigger an exploit over a vulnerability that don't have both
+fonts in bold, it will not act.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m529b81c5.png" NAME="graphics18" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=560 HEIGHT=304 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">On
+the other hand, if you actually drag a marked exploit on a marked
+vulnerability, the system will try to exploit it. A new window will
+pop up [3], showing the actions that the system is taken. See in the
+example that the system first checks the suitability of that exploit
+over that vulnerability, and if OK, it actually triggers the exploit.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_7254acf5.png" NAME="graphics19" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=159 HEIGHT=257 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+the example, everything is fine and the exploit succeeds, creating a
+Shell in the shell window [4].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">If
+you want to trigger more than one exploit at once, you should click
+on the <I>Multiple Exploit</I> button in the toolbar, and a window
+like the one here at the right will appear. There you can select all
+the exploits that you want to trigger, and when you click on the
+<I>Execute</I> button, the system will try all the marked exploits on
+all the possible vulnerabilities. If you activate the <I>First
+successful </I>checkbox, the system will stop after the first time
+that an exploit succeeds when working on any vulnerability.</FONT></P>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Using_a_shell"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Using a shell</FONT></H3>
+	</OL>
+</OL>
+<IMG SRC="gtkUiUsersGuide_html_744f5eda.png" NAME="gráficos3" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=268 HEIGHT=224 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">If
+the vulnerability generates a Shell as the result of being exploited,
+you will see the shell (or shells if it generates more than one)
+appear in a pane of this window, as we saw above.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">If
+you double click on that shell, you will start using it, and a new
+window will pop up for you to use it, a window very similar to the
+one you see here at the right.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">There
+you can see that you have a shell like environment. Well, it is
+exactly that: it is the shell opened in the remote equipment as a
+result of the exploited vulnerability. </FONT>
+</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Also,
+you have a <I>Save</I> button that let you save all the session to a
+file, in the case you want to keep all the text for a later analysis.</FONT></P>
+<OL START=6>
+	<LI><H2 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Other_tools"></A>
+	<FONT FACE="Bitstream Vera Sans, sans-serif">Other tools</FONT></H2>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Apart
+from the w3af core functionality, that is to scan for vulnerabilities
+and exploit them, there are other tools that help you in the day by
+day work.</FONT></P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Manual_Requests"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Manual Requests</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">This tool lets
+you generate <FONT FACE="Bitstream Vera Sans, sans-serif">manual HTTP
+requests.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m3291ea61.png" NAME="graphics20" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=514 HEIGHT=254 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">When <FONT FACE="Bitstream Vera Sans, sans-serif">opening
+the tool you will find the typical four panes window for HTTP
+requests and responses. In this case you'll find only active the
+request part [1], filled with an example request (if you opened this
+tool from the toolbar) or with a request that you may brought from
+another part of the program (using the small button under other
+requests, as is explained above).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+can edit the request, not only the headers part but also the body of
+the HTTP request, an</FONT>d when ready, click on the <I>Send</I>
+button [2] to issue that manually crafted request. Note that you can
+check the <I>Fix length header </I>button if you want the system to
+correct the Length header in the request that is sending (which lets
+you modify the request without fixing that header every time).</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+system will issue the request and put the response (headers and body)
+in the right part [4].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Also
+you have the normal <I>send data to tools</I> buttons in the usual
+places [5].</FONT></P>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Fuzzy_Requests"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Fuzzy Requests</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+tool lets you create multiple manual requests in an easy and
+controllable way. </FONT>
+</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+part of building the HTTP request is pretty similar to the manual
+request, as you have also panes for the headers and the body [1], but
+using a special syntax you can create what is called a <I>Fuzzy
+Request</I>, which is actually a request that is expanded to multiple
+ones. You have a quick helper for this syntax in that very window
+[2], but here it is explained in detail.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+you create a request, all the text is sent as is to the destination,
+except those that are inside two dollar signs (<I>$</I>). This text
+is used by the system to create a text generator, that it will
+consumed creating the multiple requests (they're called <I>fuzzy
+generators</I>). If you don't put any double dollar signs, it will be
+exactly the same as if you used the <I>Manual Request </I>tool. If
+you actually want to include a dollar sign in the request, just use
+<I>$$</I>.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">But
+if you put a text between two dollar signs that generates <I>three</I>
+items, you will actually creating <I>three</I> requests, and you will
+get <I>three</I> responses at the right. You can put as many fuzzy
+generators as you want, and the system will create multiple requests
+using all the possible combinations. So, if you keep the first
+generator (that generated three items), and insert a new one that
+generates, say, five items, the system will create fifteen requests
+(3 x 5 = 15).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+system will generate the different items using the text between the
+dollar signs as a Python statement, using directly <I>eval()</I>,
+with an almost clean namespace (there's only the already imported
+<I>string</I> module). There's no security mechanism in this
+evaluation, but there's no risks as the evaluated text is only
+between the dollar signs, and you're responsible about that.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Using
+this evaluation, for example, you could do:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Numbers
+	from 0 to 4: <FONT FACE="Bitstream Vera Sans Mono, sans-serif">$range(5)$</FONT></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>First ten
+	letters: <FONT FACE="Bitstream Vera Sans Mono, sans-serif">$string.lowercase[:10]$</FONT></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>The words
+	<I>spam</I> and <I>eggs</I>: <FONT FACE="Bitstream Vera Sans Mono, sans-serif">$['spam',
+	'eggs']$</FONT></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>The
+	content of a file: <FONT FACE="Bitstream Vera Sans Mono, sans-serif">$[l.strip()
+	for l in file('input.txt')]$</FONT></P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+can actually check how many request the system will generate, using
+the <I>Analyze </I>button [3]. Just clicking on it the indicator at
+its right will be updated to this value. Also, if you check the
+<I>Preview</I> checkbox [4], the system will generate the different
+requests, and will show you them in a new pop up window.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_69079678.png" NAME="graphics21" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=595 HEIGHT=314 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+you're ready to actually send the generated requests, you can use the
+<I>Play</I> and <I>Stop</I> buttons [5], which will let you start,
+stop, and even pause the generated requests of being sent (the <I>Play</I>
+button will mutate to a <I>Pause</I> one when the system is sending
+the requests). Also, another indicator that the system is working is
+the throbber [6].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+system will show all the responses (even as they're being generated)
+in the classic four pane arrangement [7]: the request that was
+actually sent (not the fuzzy request, but one of the generated ones,
+with the text between the <I>$</I> replaced), and the response to
+that specific request. Of course, the system will not show you all
+the requests at once, but you have a control [8] that lets you see
+any of the generated request/response (using the arrows, or you're
+even able to just enter the number that you want to see).</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m14d55490.png" NAME="graphics22" ALIGN=LEFT HSPACE=18 VSPACE=18 WIDTH=255 HEIGHT=263 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Beyond
+the standard tool buttons [9] to send the request and/or response to
+the Manual Request tool or the Compare tool, you have a <I>Clear
+Responses </I>button [A] that will erase all the results, and a
+<I>Cluster Responses</I> one [B] that will send all the responses to
+the <I>Cluster</I> tool (note that this tool is only accessible
+through here, as it only has sense to use it from multiple generated
+responses).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+Cluster Responses tool lets you analyze all the responses seeing
+graphically how different they're between themselves. The graph will
+show you the responses, and the distance between them, grouping for a
+better analysis.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Also
+you have different buttons that help you to see the graph better:
+zoom in, zoom out, fit all the graph in the window, and show the
+graph in the original size.</FONT></P>
+<OL>
+	<OL START=3>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Encode_and_Decode"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Encode and Decode</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+tool allows you to apply a lot of encoding and decoding functions in
+the text that you want.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m368527fb.png" NAME="graphics23" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=437 HEIGHT=194 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+have two panes where you can insert the text you want; put the text
+to Encode in the upper pane [1], and when encoded it will appear in
+the lower pane [2], and viceversa: to decode something put the text
+in the lower pane and after decoding it will appear in the upper
+pane.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">To
+apply an encode, choose it from the encoding functions [3], and click
+on the <I>Encode</I> button. To apply a decode, choose it from the
+decoding functions [4], and click on the <I>Decode</I> button.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+have the following encoding and decoding functions:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>0xFFFF
+	Encoding: 0x encoding method</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Base64
+	Encode / Decode: Encode and decode using <I>Base64</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Double
+	Nibble Hex Encoding: This is based on the standard hex encoding
+	method. Each hexadecimal nibble value is encoded using the standard
+	hex encoding</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Double
+	Percent Hex Encoding: This is based on the normal method of hex
+	encoding. The percent is encoded using hex encoding followed by the
+	hexadecimal byte value to be encoded</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Double URL
+	Encode / Decode: Encode and decode doing <I>Double URL Encode</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>First
+	Nibble Hex Encoding: This is very similar to double nibble hex
+	encoding. The difference is that only the first nibble is encoded</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>HTML
+	Escape / Unescape: Encode and decode doing <I>HTML escaping</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Hex
+	Encoding / Decoding: This is one of the RFC compliant ways for
+	encoding a URL. It is also the simplest method of encoding a URL.
+	The encoding method consists of escaping a hexadecimal byte value
+	for the encoded character with a <I>%</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>MD5 Hash:
+	Encode using <I>MD5</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>MS SQL
+	Encode: Convert the text to a CHAR-like MS SQL command</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Microsoft
+	%U Encoding: This presents a different way to encode Unicode code
+	point values up to 65535 (or two bytes). The format is simple; %U
+	precedes 4 hexadecimal nibble values that represent the Unicode code
+	point value</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>MySQL
+	Encode: Convert the text to a CHAR-like MySQL command</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Random
+	Lowercase: Change random chars of the string to lower case</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Random
+	Uppercase: Change random chars of the string to upper case</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>SHA1 Hash:
+	Encode using <I>SHA1</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>Second
+	Nibble Hex Encoding: This is very similar to double nibble hex
+	encoding. The difference is that only the second nibble is encoded</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>URL Encode
+	/ Decode: Encode and decode doing <I>URL Encode</I></P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>UTF-8
+	Barebyte Encoding: Just a normal <I>UTF-8</I> encoding</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>UTF-8
+	Encoding: Just that. Note that the hexadecimal values are shown with
+	a <I>%</I></P>
+</UL>
+<OL>
+	<OL START=4>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Comparing_HTTP_traffic"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Comparing HTTP traffic</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">With
+this tool you will be able to compare different requests and
+responses. </FONT>
+</P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+Comparator window is separated mainly in two panes: both request and
+responses that you're comparing. In this tool all the information is
+concatenated in the same text, to ease the comparison, but you have
+four buttons [1] to control which part of the information appear in
+the text: request headers, request body, response headers, and
+response body.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+comparison itself is done between the request/response at the left
+[2], and whatever request/response you have at the right [3]. This
+tool is prepared to handle more than two requests/responses: you
+always will have one request/response at the left, and all the
+requests/responses that you added at the right. To see exactly what
+you're comparing, the system shows you each Id [4].</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_3b3360d1.png" NAME="graphics24" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=606 HEIGHT=286 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">You
+have a control [5] to select which of the requests/responses that you
+added will compare to the one at the right. If you want to change the
+request/response that is at the left (the one that you compare to),
+you can set it using the <I>Set text to compare</I> button [6]. You
+can delete any of the requests/responses at the right using the
+<I>Delete</I> button [7], or delete them all with the <I>Clear All
+</I>one [8].</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+requests can also sent from this tool to the <I>Manual Requests</I>
+or <I>Fuzzy Requests</I> ones, using the buttons above the texts [9].
+ There's also a button [A] to send all the responses at the right to
+the <I>Cluster Responses</I> tool.</FONT></P>
+<OL>
+	<OL START=5>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Using_the_Proxy"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Using the Proxy</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">This tool is a
+<FONT FACE="Bitstream Vera Sans, sans-serif">proxy that listen to a
+port in the machine you're running the </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
+program. You can configure any program that issues HTTP request (like
+your internet browser, for example) to use this proxy.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">When
+this other program issues the request, the proxy captures it and
+shows it to you [1]. You can choose to drop this request, using the
+<I>Drop</I> button [2], or let the request continue. If you choose
+the latter, you can edit the request as you want, and then click on
+the <I>Send</I> button [3].</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_715eb766.png" NAME="graphics25" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=487 HEIGHT=341 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">So
+the system will send the request, and catch the response when
+arrives, and will show it to you at the right pane [4]. After
+analyzing the response, you can click on the <I>Next </I>button [5],
+and the system will pass the response to the other program, and
+prepare itself to catch the next HTTP request.</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">As
+usual when working with HTTP requests and responses you have some
+buttons [6] to send that information to other tools. Also you have a
+<I>History</I> pane [7] that let you search on all the requests and
+responses (for help about this window, check chapter 4.3 on this
+documentation, as it's the very same interface).</FONT></P>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">In
+the toolbar [8] of this window you have a </FONT>Activate<FONT FACE="Bitstream Vera Sans, sans-serif">
+button that controls if the proxy is activated or not, a </FONT>Trap
+Request<FONT FACE="Bitstream Vera Sans, sans-serif"> button that will
+determine if the proxy is letting the request pass through without
+the procedure explained above, and a </FONT>Configuration<FONT FACE="Bitstream Vera Sans, sans-serif">
+button (see chapter 7.4 for help about this configuration).</FONT></P>
+<OL START=7>
+	<LI><H2 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Configurations"></A>
+	<FONT FACE="Bitstream Vera Sans, sans-serif">Configurations</FONT></H2>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">There're
+different configuration panels all across the w3af system. Here all
+of them are explained.</FONT></P>
+<OL>
+	<OL>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="HTTP_Configuration"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">HTTP Configuration</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">This
+section is used to configure URL settings that affect the core and
+all plugins.</FONT></P>
+<IMG SRC="gtkUiUsersGuide_html_m786b396b.png" NAME="graphics26" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=463 HEIGHT=151 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">General
+configuration:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>timeout:
+	The timeout for connections to the HTTP server. Set low timeouts for
+	LAN use and high timeouts for slow Internet connections.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">headersFile:
+	Set the headers filename. This file has additi</FONT>onal headers
+	that are added to each request.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Basic
+HTTP Authentication:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>basicAuthUser:
+	Set the basic authentication username for HTTP requests.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>basicAuthPass:
+	Set the basic authentication password for HTTP requests.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>basicAuthDomain:
+	Set the basic authentication domain for HTTP requests. This
+	configures on which requests to send the authentication settings
+	configured in basicAuthPass and basicAuthUser. If you are unsure,
+	just set it to the target domain name.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Cookies:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>cookieJarFile:
+	Set the cookiejar filename.  The cookiejar file must be in mozilla
+	format.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>ignoreSessCookies:
+	Ignore session cookies. If set to True, w3af will ignore all session
+	cookies sent by the web application.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Outgoing
+proxy:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>proxyPort:
+	Proxy TCP port TCP port for the remote proxy server to use. On
+	windows systems, if you left this setting blank w3af will use the
+	system settings that are configured in Internet Explorer.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>proxyAddress:
+	Proxy IP address IP address for the remote proxy server to use. On
+	windows systems, if you left this setting blank w3af will use the
+	system settings that are configured in Internet Explorer.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><FONT FACE="Bitstream Vera Sans, sans-serif">Misc:</FONT></P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>userAgent:
+	User Agent header. User Agent header to send in request.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>maxFileSize:
+	Maximum file size. Indicates the maximum file size (in bytes) that
+	w3af will GET/POST.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>maxRetrys:
+	Maximum number of retries. Indicates the maximum number of retries
+	when requesting an URL.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">404 settings:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>always404:
+	A comma separated list that determines what URLs will ALWAYS be
+	detected as 404 pages.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>404exceptions:
+	A comma separated list that determines what URLs will NEVER be
+	detected as 404 pages.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>autodetect404:
+	Perform 404 page autodetection.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>byDirectory404:
+	Perform 404 page detection based on the knowledge found in the
+	directory of the file. Only used when autoDetect404 is False.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>byDirectoryAndExtension404:
+	Perform 404 page detection based on the knowledge found in the
+	directory of the file AND the file extension. Only used when
+	autoDetect404 and byDirectory404 are False.</P>
+</UL>
+<OL>
+	<OL START=2>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Miscellaneous_Configuration"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Miscellaneous
+		Configuration</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">This section is
+used to configure misc settings that affect the core and all plugins.</P>
+<IMG SRC="gtkUiUsersGuide_html_m1578427e.png" NAME="graphics27" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=454 HEIGHT=163 BORDER=0><BR CLEAR=LEFT>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Fuzzer
+parameters:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fuzzCookie:
+	Indicates if w3af plugins will use cookies as a fuzzable parameter.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fuzzFileContent:
+	Indicates if w3af plugins will send the fuzzed payload to the file
+	forms.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fuzzFileName:
+	Indicates if w3af plugins will send fuzzed filenames in order to
+	find vulnerabilities. For example, if the discovered URL is
+	http://test/filename.php, and fuzzFileName is enabled, w3af will
+	request among other things: http://test/file'a'a'name.php in order
+	to find SQL injections. This type of vulns are getting more common
+	every day!</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fuzzFCExt:
+	Indicates the extension to use when fuzzing file content.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fuzzableHeaders:
+	A list with all fuzzable header names.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Core parameters:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>autoDependencies:
+	Automatic dependency enabling for plugins. If autoDependencies is
+	enabled, and pluginA depends on pluginB that wasn't enabled, then
+	pluginB is automatically enabled.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>maxDepth:
+	Maximum depth of the discovery phase. For example, if set to 10, the
+	webSpider plugin will only follow 10 link levels while spidering the
+	site. This applies to the whole discovery phase; not only to the
+	webSpider.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>maxThreads:
+	Maximum number of threads that the w3af process will spawn.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>maxDiscoveryLoops:
+	Maximum number of times the discovery function is called.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Network
+parameters:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>interface:
+	Local interface name to use when sniffing, doing reverse
+	connections, etc.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>localAddress:
+	Local IP address to use when doing reverse connections.</P>
+</UL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Misc:</P>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>demo:
+	Enable this when you are doing a demo in a conference.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>showProgressBar:
+	Enables or disables the progress bar that is shown by audit plugins.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>nonTargets:
+	A comma separated list of URLs that w3af should completely ignore.
+	Sometimes it's a good idea to ignore some URLs and test them
+	manually.</P>
+</UL>
+<OL>
+	<OL START=3>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Advanced_target"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Advanced target</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">Configure target
+URLs.</P>
+<IMG SRC="gtkUiUsersGuide_html_m40b18f70.png" NAME="graphics28" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=426 HEIGHT=103 BORDER=0><BR CLEAR=LEFT>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>target:
+	A comma separated list of URLs</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>targetOS:
+	Target operating system.  This setting is here to enhance w3af
+	performance.</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>targetFramework:
+	Target programming framework.  This setting is here to enhance w3af
+	performance.</P>
+</UL>
+<OL>
+	<OL START=4>
+		<LI><H3 CLASS="western" STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm"><A NAME="Proxy_Configuration"></A>
+		<FONT FACE="Bitstream Vera Sans, sans-serif">Proxy Configuration</FONT></H3>
+	</OL>
+</OL>
+<P STYLE="margin-top: 0.42cm; margin-bottom: 0.21cm">These are the
+options to configure the Proxy tool.</P>
+<IMG SRC="gtkUiUsersGuide_html_m81acf4d.png" NAME="graphics29" ALIGN=LEFT HSPACE=18 VSPACE=7 WIDTH=424 HEIGHT=121 BORDER=0><BR CLEAR=LEFT>
+<UL>
+	<LI VALUE=1><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>ignoreimgs:
+	Ignore images by extension</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>ipport: IP
+	and port where to listen</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>trap:
+	REGEX that indicates what URL to trap</P>
+	<LI><P CLASS="cuerpo-de-texto-con-sangría" ALIGN=JUSTIFY>fixlength:
+	Fix content length</P>
+</UL>
+</BODY>
+</HTML>

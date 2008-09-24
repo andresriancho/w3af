@@ -748,7 +748,7 @@ class MainApp(object):
 
     def menu_help(self, action):
         '''Shows the help message.'''
-        helpfile = os.path.join(os.getcwd(), "readme/w3afUsersGuide.html")
+        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html")
         webbrowser.open("file://" + helpfile)
 
     def menu_about(self, action):

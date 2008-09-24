@@ -25,6 +25,7 @@ from . import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option as Option
 from core.controllers.daemons import localproxy
+import os, webbrowser
 
 import core.controllers.outputManager as om
 
@@ -263,7 +264,8 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def _help(self, action):
         '''Shows the help.'''
-        print "FIXME: implement the help!"
+        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html#Using_the_Proxy")
+        webbrowser.open("file://" + helpfile)
 
 
 class ConfigOptions(gtk.VBox):

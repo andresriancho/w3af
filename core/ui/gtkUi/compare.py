@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-import gtk
+import gtk, webbrowser
 from . import entries, craftedRequests
 from .comparator import comparator
 
@@ -262,7 +262,8 @@ class Compare(entries.RememberingWindow):
         self.comp.setRightPane(*self._getElementText())
 
     def _help(self, action):
-        print "FIXME: implement help!!"
+        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html#Comparing_HTTP_traffic")
+        webbrowser.open("file://" + helpfile)
 
     def _clearAll(self, action):
         '''Clear all the panes.'''
