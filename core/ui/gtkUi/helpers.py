@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # This module is a collection of useful code snippets for the GTK gui
 
 import threading, re, sys, Queue
-import  traceback
+import  traceback, webbrowser
 import gtk
 from core.controllers.w3afException import w3afException
 
@@ -436,3 +436,14 @@ KB_COLOR_LEVEL = {
 }
 
 KB_COLORS = ["black", "orange", "red", "red"]
+
+
+def open_help(chapter=''):
+    '''Opens the help file in user's preferred browser.
+
+    @param chapter: the chapter of the help, optional.
+    '''
+    if chapter:
+        chapter = '#' + chapter
+    helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html" + chapter)
+    webbrowser.open("file://" + helpfile)

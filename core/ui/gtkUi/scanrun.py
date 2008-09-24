@@ -410,6 +410,9 @@ class ScanRunBody(gtk.Notebook):
     '''
     def __init__(self, w3af):
         super(ScanRunBody,self).__init__()
+        self.w3af = w3af
+        self.helpChapter = ("Browsing_the_Knowledge_Base", "Site_structure", "Requests_and_Responses")
+        self.connect("switch-page", self.changedPage) 
         
         # KB Browser
         # this one does not go inside a scrolled window, because that's handled
@@ -438,3 +441,7 @@ class ScanRunBody(gtk.Notebook):
         self.append_page(httplog, l)
 
         self.show()
+
+    def changedPage(self, notebook, page, page_num):
+        '''Changed the page in the Notebook.'''
+        self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]

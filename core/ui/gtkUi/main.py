@@ -222,7 +222,6 @@ class WindowsCommunication(object):
         self.client = window
         self.callback = callback
 
-
 class MainApp(object):
     '''Main GTK application
 
@@ -234,6 +233,7 @@ class MainApp(object):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.window.connect("delete_event", self.quit)
+        self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
 
         # title and positions
@@ -395,6 +395,11 @@ class MainApp(object):
         separat.show()
         toolbar.insert(separat, -1)
         toolbar.insert(self.throbber, -1)
+
+        # help structure
+        self.w3af.helpChapters = dict(main="Configuring_the_scan", 
+                                      scanrun="Browsing_the_Knowledge_Base")
+        self.helpChapter = ("Configuring_the_scan", "Running_the_scan", "--RESULTS--", "Exploitation")
 
         # notebook
         splash.push(_("Building the main screen..."))
@@ -711,6 +716,7 @@ class MainApp(object):
         '''
         ch = notebook.get_nth_page(page_num)
         page = notebook.get_tab_label(ch).get_text()
+        self.w3af.helpChapters["main"] = self.helpChapter[page_num]
 
         self.viewSignalRecipient = None
         for name,menu in self.menuViews.items():
@@ -748,8 +754,7 @@ class MainApp(object):
 
     def menu_help(self, action):
         '''Shows the help message.'''
-        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html")
-        webbrowser.open("file://" + helpfile)
+        helpers.open_help()
 
     def menu_about(self, action):
         '''Shows the about message.'''
@@ -784,6 +789,16 @@ class MainApp(object):
     def _wizards(self, action):
         '''Execute the wizards machinery.'''
         wizard.WizardChooser(self.w3af)
+
+    def helpF1(self, widget, event):
+        if event.keyval != 65470: # F1, check: gtk.gdk.keyval_name(event.keyval)
+            return
+
+        chapter = self.w3af.helpChapters["main"]
+        if chapter == "--RESULTS--":
+            chapter = self.w3af.helpChapters["scanrun"] 
+
+        helpers.open_help(chapter)
 
     
 def main(profile):
