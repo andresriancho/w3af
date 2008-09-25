@@ -22,9 +22,11 @@
 6. Other_tools
 6.1. Manual_Requests
 6.2. Fuzzy_Requests
+     ClusterResponseTool
 6.3. Encode_and_Decode
 6.4. Comparing_HTTP_traffic
 6.5. Using_the_Proxy
+6.6. Wizards
 
 7. Configurations
 7.1. HTTP_Configuration
