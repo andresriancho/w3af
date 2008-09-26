@@ -398,12 +398,12 @@ class reqResWindow(entries.RememberingWindow):
     '''
     A window to show a request/response pair.
     '''
-    def __init__(self, w3af, request_id, enableWidget=None, withManual=True, withFuzzy=True,
-    withCompare=True, editableRequest=False, editableResponse=False, widgname="default"):
+    def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
+                 withFuzzy=True, withCompare=True, editableRequest=False, 
+                 editableResponse=False, widgname="default"):
         # Create the window
-        entries.RememberingWindow.__init__(self, w3af, "reqResWin", _("w3af - HTTP Request/Response"))
-#        self.set_title('HTTP Request/Response')
-#        self.set_default_size(512, 512)
+        entries.RememberingWindow.__init__(
+            self, w3af, "reqResWin", _("w3af - HTTP Request/Response"), "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
         rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, withCompare, editableRequest, editableResponse, widgname)

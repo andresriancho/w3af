@@ -102,7 +102,9 @@ class Wizard(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, wizard):
-        super(Wizard,self).__init__(w3af, "wizard", "w3af Wizard: " + wizard.getName(), guessResize=False)
+        super(Wizard,self).__init__(
+            w3af, "wizard", "w3af Wizard: " + wizard.getName(), "Wizards",
+            guessResize=False)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         self.wizard = wizard
@@ -239,7 +241,9 @@ class WizardChooser(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(WizardChooser,self).__init__(w3af, "wizardchooser", "w3af - Wizard Chooser", guessResize=False)
+        super(WizardChooser,self).__init__(
+            w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards", 
+            guessResize=False)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 

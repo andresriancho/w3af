@@ -73,7 +73,9 @@ class EncodeDecode(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(EncodeDecode,self).__init__(w3af, "encodedecode", _("w3af - Encode / Decode"))
+        super(EncodeDecode,self).__init__(
+            w3af, "encodedecode", _("w3af - Encode / Decode"),
+            "Encode_and_Decode")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 

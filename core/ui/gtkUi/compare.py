@@ -50,8 +50,9 @@ class Compare(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, commHandler):
-        entries.RememberingWindow.__init__(self, w3af, "compare", "w3af - Compare",
-                                           onDestroy=commHandler.destroy)
+        entries.RememberingWindow.__init__(
+            self, w3af, "compare", "w3af - Compare", "Comparing_HTTP_traffic",
+            onDestroy=commHandler.destroy)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         self.commHandler = commHandler

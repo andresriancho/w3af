@@ -65,7 +65,8 @@ class ManualRequests(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(ManualRequests,self).__init__(w3af, "manualreq", "w3af - Manual Requests")
+        super(ManualRequests,self).__init__(
+            w3af, "manualreq", "w3af - Manual Requests", "Manual_Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 
@@ -156,7 +157,8 @@ class PreviewWindow(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, parent, pages):
-        super(PreviewWindow,self).__init__(w3af, "fuzzypreview", "Preview")
+        super(PreviewWindow,self).__init__(
+            w3af, "fuzzypreview", "Preview", "Fuzzy_Requests")
         self.pages = pages
         self.set_modal(True)
         self.set_transient_for(parent) 
@@ -218,7 +220,8 @@ class FuzzyRequests(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(FuzzyRequests,self).__init__(w3af, "fuzzyreq", "w3af - Fuzzy Requests")
+        super(FuzzyRequests,self).__init__(
+            w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         mainhbox = gtk.HBox()

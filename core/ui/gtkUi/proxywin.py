@@ -57,7 +57,9 @@ class ProxiedRequests(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(ProxiedRequests,self).__init__(w3af, "proxytool", _("w3af - Proxy"), onDestroy=self._close)
+        super(ProxiedRequests,self).__init__(
+            w3af, "proxytool", _("w3af - Proxy"), "Using_the_Proxy",
+            onDestroy=self._close)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
 

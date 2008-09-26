@@ -829,12 +829,19 @@ class RememberingWindow(gtk.Window):
     @param w3af: the w3af core
     @param idstring: an id for the configuration
     @param title: the window title
+    @param helpid: the chapter of the help guide
+    @param onDestroy: a function (if not None) that will be called when the 
+                      user wants to close the window. If returns False the
+                      window is not closed.
+    @param guessResize: if there's no saved configuration for the window, 
+                        the system will guess the size or not.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, idstring, title, onDestroy=None, guessResize=True):
+    def __init__(self, w3af, idstring, title, helpid='', onDestroy=None, guessResize=True):
         super(RememberingWindow,self).__init__(gtk.WINDOW_TOPLEVEL)
         self.onDestroy = onDestroy
+        self.helpid = helpid
 
         # position and dimensions
         self.winconfig = w3af.mainwin.generalconfig
@@ -853,6 +860,13 @@ class RememberingWindow(gtk.Window):
 
         self.set_title(title)
         self.connect("delete_event", self.quit)
+        self.connect('key_press_event', self.helpF1)
+
+    def helpF1(self, widget, event):
+        if event.keyval != 65470: # F1, check: gtk.gdk.keyval_name(event.keyval)
+            return
+
+        helpers.open_help(self.helpid)
 
 
     def quit(self, widget, event):
