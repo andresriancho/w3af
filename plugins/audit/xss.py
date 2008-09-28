@@ -111,8 +111,12 @@ class xss(baseAuditPlugin):
         # The number 2 is to inject in permanent xss and not "letting the user know we are testing the site"
         # And also please note that I don't have this: alert2('abc') ; this "failure" will let me find XSS in web applications
         # that have magic_quotes enabled and will also "double" invalidate the JS code, because RANDOMIZE will be
-        # replaced by something like j0a9sf877 and that will be an undefined variables.
-        xss_strings.append("<SCRIPT>alert2(RANDOMIZE)</SCRIPT>")
+        # replaced by something like ecd6c00b7 and that will be an undefined variables.
+        
+        # I use SCrIPT instead of script of SCRIPT, just because there are some programmers that use blacklists that
+        # have those words, and they may be doing the comparison with a case sensitive function (if 'script' in user_input...
+        # if 'SCRIPT' in user_input)
+        xss_strings.append("<SCrIPT>alert2(RANDOMIZE)</SCrIPT>")
         
         # Single quotes
         xss_strings.append("<SCRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRIPT>")
@@ -144,6 +148,7 @@ class xss(baseAuditPlugin):
         Verify if the parameter we are fuzzing is really being echoed back in the
         HTML response or not. If it aint echoed there is no chance we are going to
         find a XSS here.
+        
         @parameter mutant: The request to send.
         @return: True if variable is echoed
         '''
