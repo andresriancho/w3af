@@ -60,7 +60,7 @@ class blindSqli(baseAuditPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'The algorithm to use in the comparison of true and false response for blind sql.'
-        h1 = 'The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the long description for details.'
+        h1 = 'The options are: "stringEq" and "setIntersection". Read the long description for details.'
         o1 = option('equAlgorithm', self._equAlgorithm, d1, 'string', help=h1)
         
         d2 = 'Set the equal limit variable'
@@ -104,12 +104,9 @@ class blindSqli(baseAuditPlugin):
         The equAlgorithm parameter configures how the comparison of pages is done, the options for equAlgorithm are:
             - stringEq
             - setIntersection
-            - intelligentCut
             
         The classic way of matching two strings is "stringEq" , in python this is "string1 == string2" , but other ways have been
         developed for sites that have changing banners and random data on their HTML response. "setIntersection" will create
         two different sets with the words inside the two HTML responses, and do an intersection. If number of words that are
         in the intersection set divided by the total words are more than "equalLimit", then the responses are equal.
-        
-        "intelligentCut" aint implemented yet.
         '''

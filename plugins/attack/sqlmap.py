@@ -244,7 +244,7 @@ class sqlmap(baseAttackPlugin):
         o4 = option('injvar', self._injvar, d4, 'string')
 
         d5 = 'The algorithm to use in the comparison of true and false response for blind sql.'
-        h5 = 'The options are: "stringEq", "setIntersection" and "intelligentCut" . Read the user documentation for details.'
+        h5 = 'The options are: "stringEq" and "setIntersection". Read the user documentation for details.'
         o5 = option('equAlgorithm', self._equAlgorithm, d5, 'string', help=h5)
 
         d6 = 'Set the equal limit variable'
