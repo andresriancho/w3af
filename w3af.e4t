@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
+<!-- eric4 tasks file for project w3af -->
+<!-- Saved: 2008-09-27, 17:10:35 -->
+<Tasks version="4.1">
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
+    <Description></Description>
+    <Created>2008-02-11, 19:00:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>scantab.py</Name>
+      </Filename>
+      <Linenumber>106</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Stop not implemented yet!"</Summary>
+    <Description></Description>
+    <Created>2008-02-11, 19:00:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>scantab.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This sends plugin options from output plugins to w3afCore</Summary>
+    <Description></Description>
+    <Created>2008-02-23, 19:46:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>pluginConfig.py</Name>
+      </Filename>
+      <Linenumber>144</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: How to handle this case ?!</Summary>
+    <Description></Description>
+    <Created>2008-03-17, 09:09:50</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>mysqlmap.py</Name>
+      </Filename>
+      <Linenumber>501</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: verify if I need to add more values here, IIS !!!</Summary>
+    <Description></Description>
+    <Created>2008-03-30, 18:55:27</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>directoryIndexing.py</Name>
+      </Filename>
+      <Linenumber>73</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Summary>
+    <Description></Description>
+    <Created>2008-03-30, 18:57:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>passwordProfiling.py</Name>
+      </Filename>
+      <Linenumber>50</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: verify if I need to add more values here</Summary>
+    <Description></Description>
+    <Created>2008-03-30, 18:58:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>98</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: autocomplete for raw menu</Summary>
+    <Description></Description>
+    <Created>2008-05-04, 00:24:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>consoleUi.py</Name>
+      </Filename>
+      <Linenumber>278</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: When finished migrating from XML to object options, remove this lines.</Summary>
+    <Description></Description>
+    <Created>2008-05-06, 21:13:00</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>plugins.py</Name>
+      </Filename>
+      <Linenumber>228</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I dont like globals, please see TODO below.</Summary>
+    <Description></Description>
+    <Created>2008-05-09, 22:05:44</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>45</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I really dislike this, if someone knows how to send variables to</Summary>
+    <Description></Description>
+    <Created>2008-05-09, 22:05:44</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>180</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: This is duplicated code!! see above.</Summary>
+    <Description></Description>
+    <Created>2008-05-09, 22:14:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>remoteFileIncludeShell.py</Name>
+      </Filename>
+      <Linenumber>380</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Not 100% sure about this...</Summary>
+    <Description></Description>
+    <Created>2008-05-19, 00:54:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>options</Dir>
+        <Name>option.py</Name>
+      </Filename>
+      <Linenumber>130</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: In the future, xUrllib should only raise w3afException</Summary>
+    <Description></Description>
+    <Created>2008-05-27, 10:06:54</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>yahooSiteExplorer.py</Name>
+      </Filename>
+      <Linenumber>35</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Review this logic... I think its flawed</Summary>
+    <Description></Description>
+    <Created>2008-05-30, 01:37:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>findvhost.py</Name>
+      </Filename>
+      <Linenumber>100</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2008-07-25, 18:06:58</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterView.py</Name>
+      </Filename>
+      <Linenumber>362</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2008-07-25, 18:06:58</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterView.py</Name>
+      </Filename>
+      <Linenumber>384</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work?</Summary>
+    <Description></Description>
+    <Created>2008-07-28, 18:44:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>mangleHandler.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: What if we have something like this: &amp;aacute ?!?!</Summary>
+    <Description></Description>
+    <Created>2008-07-29, 19:06:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>encode_decode.py</Name>
+      </Filename>
+      <Linenumber>36</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: See how we can make that library path setup automatically...</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 16:23:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>47</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create a html file, and load that file, so no connections are made</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 16:23:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>mozillaTab.py</Name>
+      </Filename>
+      <Linenumber>56</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: poner un HELP aca</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 16:23:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>prompt.py</Name>
+      </Filename>
+      <Linenumber>196</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 16:25:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterTable.py</Name>
+      </Filename>
+      <Linenumber>362</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 16:25:57</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterTable.py</Name>
+      </Filename>
+      <Linenumber>384</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: review this code !!</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 18:48:50</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>urlFuzzer.py</Name>
+      </Filename>
+      <Linenumber>150</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
+    <Description></Description>
+    <Created>2008-08-02, 19:01:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>213</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: implement help!!"</Summary>
+    <Description></Description>
+    <Created>2008-08-03, 13:27:44</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>compare.py</Name>
+      </Filename>
+      <Linenumber>265</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add mod_perl ssi injection support</Summary>
+    <Description></Description>
+    <Created>2008-08-06, 21:28:53</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>82</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This two strings generate false positives</Summary>
+    <Description></Description>
+    <Created>2008-08-06, 21:31:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>mxInjection.py</Name>
+      </Filename>
+      <Linenumber>125</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This two strings generate false positives</Summary>
+    <Description></Description>
+    <Created>2008-08-06, 21:31:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>mxInjection.py</Name>
+      </Filename>
+      <Linenumber>126</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 15:07:00</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>225</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Show images</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 15:07:00</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>350</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 15:17:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>409</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This file ain't used, because it wasn't actually working!</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 15:29:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>certHTTPSHandler.py</Name>
+      </Filename>
+      <Linenumber>31</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This re is buggy</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 16:14:12</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>reqResDBHandler.py</Name>
+      </Filename>
+      <Linenumber>66</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 16:24:05</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>82</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2008-09-14, 16:24:05</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>176</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This message should be more descriptive</Summary>
+    <Description></Description>
+    <Created>2008-09-16, 23:50:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>356</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-09-19, 08:10:23</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>695</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-09-19, 08:10:23</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>733</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2008-09-19, 08:10:23</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1074</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Maybe I should perform some more detailed error handling...</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 00:30:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>daemons</Dir>
+        <Name>proxy.py</Name>
+      </Filename>
+      <Linenumber>194</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Make this error look nicer</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 00:30:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>daemons</Dir>
+        <Name>proxy.py</Name>
+      </Filename>
+      <Linenumber>276</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO:  more efficient to append to list</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>100</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: is this sufficient???</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>158</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this is redundant with later test...</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>222</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: repeat all these with HEAD and OTHER</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>292</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this is the same code as above just copied!!!</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>476</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe do this recursively????</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>495</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: remember that header size et all are configurable in apache</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>496</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: note that don't call get_characteristics</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>504</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: base these on "best guess" of what talking to</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>507</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: put this global declaration somewhere easier to find....</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>565</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: probably don't need a data type just look at data...</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>573</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: make each of these it's own function....</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>706</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: get this working....</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>799</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This eval is awful, I should change it to pickle.</Summary>
+    <Description></Description>
+    <Created>2008-09-20, 17:36:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Dir>oHmap</Dir>
+        <Name>hmap.py</Name>
+      </Filename>
+      <Linenumber>875</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: implement the help!"</Summary>
+    <Description></Description>
+    <Created>2008-09-21, 19:45:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>proxywin.py</Name>
+      </Filename>
+      <Linenumber>266</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve the second if condition (works it the</Summary>
+    <Description></Description>
+    <Created>2008-09-23, 15:53:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>372</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve this check (works it the web</Summary>
+    <Description></Description>
+    <Created>2008-09-23, 15:53:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>387</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: scale from points to pixels</Summary>
+    <Description></Description>
+    <Created>2008-09-27, 16:24:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>587</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: handle start/end points</Summary>
+    <Description></Description>
+    <Created>2008-09-27, 16:24:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>641</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: show an error message</Summary>
+    <Description></Description>
+    <Created>2008-09-27, 16:24:43</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>1214</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
+    <Description></Description>
+    <Created>2008-09-27, 16:28:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>sqlmap.py</Name>
+      </Filename>
+      <Linenumber>204</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: analyze http://ha.ckers.org/xss.html and decide what to use</Summary>
+    <Description></Description>
+    <Created>2008-09-27, 17:08:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>xss.py</Name>
+      </Filename>
+      <Linenumber>108</Linenumber>
+    </Resource>
+  </Task>
+</Tasks>

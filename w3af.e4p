@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Project SYSTEM "Project-3.9.dtd">
-<!-- Project file for project w3af -->
-<!-- Saved: 2008-06-17, 09:27:44 -->
+<!DOCTYPE Project SYSTEM "Project-4.2.dtd">
+<!-- eric4 project file for project w3af -->
+<!-- Saved: 2008-09-27, 17:10:33 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
-<Project version="3.9">
+<Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
-  <UIType>Console</UIType>
+  <ProjectType>Console</ProjectType>
   <Description>Web Application Attack and Audit Framework</Description>
-  <Version>0.1</Version>
+  <Version>0.9</Version>
   <Author>Andres Riancho</Author>
   <Email>andres.riancho@gmail.com</Email>
   <Sources>
@@ -19,12 +19,6 @@
       <Dir>core</Dir>
       <Dir>ui</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>consoleUi</Dir>
-      <Name>tools.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -299,12 +293,6 @@
       <Dir>data</Dir>
       <Dir>searchEngines</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>data</Dir>
-      <Dir>searchEngines</Dir>
-      <Name>google.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -2069,9 +2057,6 @@
       <Name>users.txt</Name>
     </Source>
     <Source>
-      <Name>w3af</Name>
-    </Source>
-    <Source>
       <Dir>scripts</Dir>
       <Name>script-404pageTest.w3af</Name>
     </Source>
@@ -2097,19 +2082,11 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-bsqlExploit.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-bufferOverflow.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
       <Name>script-crossDomain.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-detectPhishing.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2324,10 +2301,6 @@
       <Name>script-xssBeEF-Permanent.w3af</Name>
     </Source>
     <Source>
-      <Dir>scripts</Dir>
-      <Name>trueBankingSites.txt</Name>
-    </Source>
-    <Source>
       <Dir>readme</Dir>
       <Name>GPL</Name>
     </Source>
@@ -2468,12 +2441,6 @@
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
       <Name>davShell.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>attack</Dir>
-      <Dir>agentManager</Dir>
-      <Name>agentManager.py</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -3806,12 +3773,6 @@
     </Source>
     <Source>
       <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>gtkUi</Dir>
-      <Name>clusterView.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
       <Dir>data</Dir>
       <Dir>db</Dir>
       <Name>persist.py</Name>
@@ -3850,11 +3811,87 @@
       <Dir>gtkUi</Dir>
       <Name>compare.py</Name>
     </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>searchEngines</Dir>
+      <Name>googleSearchEngine.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>clusterTable.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>clusterGraph.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>levenshtein.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>encdec.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>proxywin.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>webshells</Dir>
+      <Name>cmd.aspx</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>guardian.py</Name>
+    </Source>
+    <Source>
+      <Name>w3af_console</Name>
+    </Source>
+    <Source>
+      <Name>w3af_gui</Name>
+    </Source>
+    <Source>
+      <Dir>extlib</Dir>
+      <Dir>xdot</Dir>
+      <Name>dot_parser.py</Name>
+    </Source>
+    <Source>
+      <Dir>extlib</Dir>
+      <Dir>xdot</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>extlib</Dir>
+      <Dir>xdot</Dir>
+      <Name>xdot.py</Name>
+    </Source>
+    <Source>
+      <Dir>extlib</Dir>
+      <Dir>xdot</Dir>
+      <Name>pydot.py</Name>
+    </Source>
   </Sources>
   <Forms>
   </Forms>
   <Translations>
   </Translations>
+  <Resources>
+  </Resources>
   <Interfaces>
   </Interfaces>
   <Others>
@@ -3887,9 +3924,6 @@
       <Name>urlencode</Name>
     </Other>
     <Other>
-      <Name>w3af</Name>
-    </Other>
-    <Other>
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
       <Dir>webshells</Dir>
@@ -3907,68 +3941,128 @@
       <Dir>webshells</Dir>
       <Name>cmd.php</Name>
     </Other>
+    <Other>
+      <Name>w3af_gui</Name>
+    </Other>
+    <Other>
+      <Name>w3af_console</Name>
+    </Other>
   </Others>
   <MainScript>
-    <Name>w3af</Name>
+    <Name>w3af_gui</Name>
   </MainScript>
   <Vcs>
     <VcsType>Subversion</VcsType>
-    <VcsOptions>(dp0
-S'status'
-p1
-(lp2
-S''
-p3
-asS'log'
-p4
-(lp5
-g3
-asS'global'
-p6
-(lp7
-g3
-asS'update'
-p8
-(lp9
-g3
-asS'remove'
-p10
-(lp11
-g3
-asS'add'
-p12
-(lp13
-g3
-asS'tag'
-p14
-(lp15
-g3
-asS'export'
-p16
-(lp17
-g3
-asS'commit'
-p18
-(lp19
-g3
-asS'diff'
-p20
-(lp21
-g3
-asS'checkout'
-p22
-(lp23
-g3
-asS'history'
-p24
-(lp25
-g3
-as.</VcsOptions>
-    <VcsOtherData>(dp0
-S'standardLayout'
-p1
-I00
-s.</VcsOtherData>
+    <VcsOptions>
+      <dict>
+        <key>
+          <string>add</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>checkout</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>commit</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>diff</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>export</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>global</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>history</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>log</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>remove</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>status</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>tag</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+        <key>
+          <string>update</string>
+        </key>
+        <value>
+          <list>
+            <string></string>
+          </list>
+        </value>
+      </dict>
+    </VcsOptions>
+    <VcsOtherData>
+      <dict>
+        <key>
+          <string>standardLayout</string>
+        </key>
+        <value>
+          <bool>False</bool>
+        </value>
+      </dict>
+    </VcsOtherData>
   </Vcs>
   <FiletypeAssociations>
     <FiletypeAssociation pattern="*.ui" type="FORMS" />
