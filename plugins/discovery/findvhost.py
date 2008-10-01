@@ -143,7 +143,6 @@ class findvhost(baseDiscoveryPlugin):
                     i.setURL( fuzzableRequest.getURL() )
                     i.setMethod( 'GET' )
                     i.setDesc('Found a page that references a non existant domain: "' + link + '"' )
-                    i.setId( vhostResponse.id )
                     kb.kb.append( self, 'findvhost', i )
                     om.out.information( i.getDesc() )
         
