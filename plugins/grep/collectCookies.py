@@ -29,6 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import Cookie
+from Cookie import CookieError
 import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
@@ -53,32 +54,41 @@ class collectCookies(baseGrepPlugin):
                 # save
                 headers = response.getHeaders()
                 
-                # Load the cookie in the kb
+                # Create the object to save the cookie in the kb
                 i = info.info()
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
                 i['cookie-string'] = headers[key].strip()
                 
                 C = Cookie.SimpleCookie()
-                C.load( headers[ key ].strip() )
-                i['cookie-object'] = C
-                
-                '''
-                The expiration date tells the browser when to delete the cookie. If no expiration date is provided, the cookie is 
-                deleted at the end of the user session, that is, when the user quits the browser. As a result, specifying an expiration 
-                date is a means for making cookies to survive across browser sessions. For this reason, cookies that have an expiration
-                date are called persistent.
-                '''
-                i['persistent'] = False
-                if 'expires' in C:
-                    i['persistent'] = True
+                try:
+                    C.load( headers[ key ].strip() )
+                except CookieError,  ce:
+                    # The cookie is invalid, this is worth mentioning ;)
+                    msg = 'The cookie that was sent by the remote web application doesn\'t respect the RFC.'
+                    om.out.information(msg)
+                    i.setDesc(msg)
+                    i.setName('Invalid cookie')
+                    kb.kb.append( self, 'invalid-cookies', i )
+                else:
+                    i['cookie-object'] = C
                     
-                i.setId( response.id )
-                i.setDesc( 'The URL: "' + i.getURL() + '" sent the cookie: ' + i['cookie-string'] )
-                kb.kb.append( self, 'cookies', i )
-                
-                # Find if the cookie introduces any vulnerability, or discloses information
-                self._analyzeCookie( request, response, C )
+                    '''
+                    The expiration date tells the browser when to delete the cookie. If no expiration date is provided, the cookie is 
+                    deleted at the end of the user session, that is, when the user quits the browser. As a result, specifying an expiration 
+                    date is a means for making cookies to survive across browser sessions. For this reason, cookies that have an expiration
+                    date are called persistent.
+                    '''
+                    i['persistent'] = False
+                    if 'expires' in C:
+                        i['persistent'] = True
+                        
+                    i.setId( response.id )
+                    i.setDesc( 'The URL: "' + i.getURL() + '" sent the cookie: ' + i['cookie-string'] )
+                    kb.kb.append( self, 'cookies', i )
+                    
+                    # Find if the cookie introduces any vulnerability, or discloses information
+                    self._analyzeCookie( request, response, C )
         
         # do this check everytime
         self._sslCookieValueUsedInHTTP( request, response )
