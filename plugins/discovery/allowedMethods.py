@@ -124,10 +124,11 @@ class allowedMethods(baseDiscoveryPlugin):
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
             i['methods'] = allowedMethods
-            i.setDesc( 'The URL "' + url + '" has the following allowed methods, including DAV methods: ' + ', '.join(allowedMethods) )
+            i.setDesc( 'The URL "' + url + '" has the following allowed methods, which include DAV methods: ' + ', '.join(allowedMethods) )
             kb.kb.append( self , 'dav-methods' , i )
         else:
             # Save the results in the KB so that other plugins can use this information
+            # Do not remove these information, other plugins REALLY use it !
             i = info.info()
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
@@ -150,9 +151,9 @@ class allowedMethods(baseDiscoveryPlugin):
         for i in all_info_obj:
             allMethods.append( (i.getURL() , i['methods']) )
         
-	davMethods = []
+        davMethods = []
         
-	for i in dav_info_obj:
+        for i in dav_info_obj:
             davMethods.append( (i.getURL() , i['methods']) )
 
         # Now I work the data...
@@ -160,7 +161,7 @@ class allowedMethods(baseDiscoveryPlugin):
         if not self._reportDavOnly:
             toShow, type = allMethods, ''
        
-	 
+
         # Make it hashable
         tmp = []
         for url, methodList in toShow:
