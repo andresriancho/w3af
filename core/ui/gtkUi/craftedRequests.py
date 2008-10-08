@@ -259,6 +259,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # help
         helplabel = gtk.Label()
+        helplabel.set_selectable(True)
         helplabel.set_markup(FUZZYHELP)
         self.originalReq.notebook.append_page(helplabel, gtk.Label("Syntax help"))
         helplabel.show()
