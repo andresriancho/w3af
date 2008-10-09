@@ -377,13 +377,12 @@ class FuzzyRequests(entries.RememberingWindow):
         except fuzzygen.FuzzyError:
             return
             
-        # 
-        preview = list(fg.generate())
-        self.analyzefb.set_text("%d requests" % len(preview))
+        self.analyzefb.set_text("%d requests" % fg.calculateQuantity())
         self.analyzefb.set_sensitive(True)
 
         # raise the window only if preview is active
         if self.preview.get_active():
+            preview = list(fg.generate())
             PreviewWindow(self.w3af, self, preview)
 
     def _send_stop(self, widg=None):

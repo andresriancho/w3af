@@ -60,6 +60,14 @@ class FuzzyGenerator(object):
         if not self.genr2:
             self.genr2 = [[]]
 
+    def calculateQuantity(self):
+        combin = 1
+        for oit in self.genr1+self.genr2:
+            nit = iter(oit)
+            q = len(list(nit))
+            combin *= q
+        return combin
+
     def _genIterator(self, text):
         '''Generates the iterator from the text.'''
         namespace = {"string":__import__("string")}
