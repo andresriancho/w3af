@@ -177,6 +177,7 @@ class requestResponsePaned(entries.RememberingVPaned):
         iter = buff.get_end_iter()
         buff.insert(iter, text)
         
+        self._clear(self._downTv)
         self._downTv.set_sensitive(False)
         
     def getBothTexts(self):
