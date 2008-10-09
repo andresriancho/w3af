@@ -171,7 +171,6 @@ class PreviewWindow(entries.RememberingWindow):
         # the ok button
         centerbox = gtk.HBox()
         quant = fg.calculateQuantity()
-        print "Q", quant
         self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
         centerbox.pack_start(self.pagesControl, True, False) 
         self.vbox.pack_start(centerbox, False, False, padding=5)
@@ -180,7 +179,6 @@ class PreviewWindow(entries.RememberingWindow):
         self.show_all()
 
     def _pageChange(self, page):
-        print page, self.pages
         while len(self.pages) <= page:
             it = self.generator.next()
             self.pages.append(it)
@@ -424,9 +422,9 @@ class FuzzyRequests(entries.RememberingWindow):
         except fuzzygen.FuzzyError:
             return
 
-        allrequests = list(fg.generate())
-        if len(allrequests) > 20:
-            msg = "Are you sure you want to send %d requests?" % len(allrequests)
+        quant = fg.calculateQuantity()
+        if quant > 20:
+            msg = "Are you sure you want to send %d requests?" % quant
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
             opt = dlg.run()
             dlg.destroy()
