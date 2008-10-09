@@ -55,6 +55,7 @@ class htmlParser(sgmlParser):
         # An internal list to be used to save input tags that are found outside
         # of the scope of a form tag.
         self._saved_inputs = []
+        self._saved_selects = []
         
         sgmlParser.__init__(self, httpResponse, normalizeMarkup, verbose)
         
@@ -187,14 +188,24 @@ class htmlParser(sgmlParser):
             self._handle_input_tag_inside_form(tag, attrs)
 
     def _handle_select_tag_inside_form(self, tag, attrs):
-        self._insideSelect = True
         try:
             self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
         except Exception,  e:
-            om.out.debug('htmlParser found a select tag without a name attr !')
-            self._selectTagName = 'kludge_added_by_w3af'
+            om.out.debug('htmlParser found a select tag without a name attr, IGNORING!')
+            self._insideSelect = False
+        else:
+            self._insideSelect = True
+
+    def _handle_select_tag_outside_form(self, tag, attrs):
+        ### TODO: Code this!
+        pass
     
     def _handle_option_tag_inside_form(self, tag, attrs):    
         if self._insideSelect:
             attrs.append( ('name',self._selectTagName) ) 
             f.addInput( attrs )
+    
+    def _handle_option_tag_outside_form(self, tag, attrs):    
+        ### TODO: Code this!
+        pass
+
