@@ -106,8 +106,12 @@ class formAuthBrute(baseBruteforcePlugin):
             freq.setDc( dc )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
+            body = response.getBody()
+            body = body.replace(user, '')
+            body = body.replace(passwd, '')
+            
             # Save it
-            self._loginFailedResultList.append( response.getBody() )
+            self._loginFailedResultList.append( body )
         
         # Now I perform a self test, before starting with the actual bruteforcing
         # The first tuple is an invalid username and a password
@@ -121,21 +125,28 @@ class formAuthBrute(baseBruteforcePlugin):
             dc[ passwdField ] = passwd
             freq.setDc( dc )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
-            if not self._matchesFailedLogin( response.getBody() ):
-                raise w3afException('Failed to generate a regular expression that matches the failed login page.')
+            
+            body = response.getBody()
+            body = body.replace(user, '')
+            body = body.replace(passwd, '')            
+            
+            if not self._matchesFailedLogin( body ):
+                raise w3afException('Failed to generate a response that matches the failed login page.')
+                
         
     def _matchesFailedLogin(self, responseBody):
         '''
         @return: True if the responseBody matches the previously created responses that
         are stored in self._loginFailedResultList.
         '''
+        # In the ratio, 1 is completely equal.
         ratio0 = relative_distance( responseBody, self._loginFailedResultList[0])
-        ratio1 = relative_distance(responseBody, self._loginFailedResultList[1])
-        
-        if ratio0 > 0.9 or ratio1 > 0.9:
+        ratio1 = relative_distance( responseBody, self._loginFailedResultList[1])
+
+        if ratio0 > 0.5 or ratio1 > 0.5:
             return True
         else:
-            # I'm happy!
+            # I'm happy! The responseBody IS NOT a failed login page.
             return False
         
     def _isLoginForm( self, freq ):
@@ -203,8 +214,12 @@ class formAuthBrute(baseBruteforcePlugin):
             # This "if" is for multithreading
             if not self._found or not self._stopOnFirst:
                 response = self._sendMutant( freq, analyze=False, grepResult=False )
-            
-                if not self._matchesFailedLogin( response.getBody() ):
+                
+                body = response.getBody()
+                body = body.replace(combination[0], '')
+                body = body.replace(combination[1], '')
+                
+                if not self._matchesFailedLogin( body ):
                     self._found = True
                     v = vuln.vuln()
                     v.setURL( freq.getURL() )

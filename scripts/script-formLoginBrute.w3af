@@ -15,7 +15,7 @@ set verbose False
 back
 back
 target
-set target http://localhost/w3af/formLogin/formLogin.html
+set target http://localhost/w3af/bruteforce/formLogin/formLogin.html
 back
 start
 exit
