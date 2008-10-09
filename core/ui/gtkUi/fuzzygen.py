@@ -47,27 +47,32 @@ class FuzzyGenerator(object):
     '''
     def __init__(self, txt1, txt2):
         # separate the sane and replaceable info
-        torp1, self.sane1 = self._dissect(txt1)
-        torp2, self.sane2 = self._dissect(txt2)
+        self.torp1, self.sane1 = self._dissect(txt1)
+        self.torp2, self.sane2 = self._dissect(txt2)
 
-        # generate the generators, :)
-        self.genr1 = [self._genIterator(x) for x in torp1]
-        self.genr2 = [self._genIterator(x) for x in torp2]
-
-        # if one of them is empty, put a dummy
-        if not self.genr1:
-            self.genr1 = [[]]
-        if not self.genr2:
-            self.genr2 = [[]]
+        # check validity
+        self._genGenerators()
 
     def calculateQuantity(self):
         combin = 1
-        for oit in self.genr1+self.genr2:
-            nit = iter(oit)
-            q = len(list(nit))
-            combin *= q
+        genr1, genr2 = self._genGenerators()
+        for elem in genr1+genr2:
+            if elem:
+                combin *= len(elem)
         return combin
 
+    def _genGenerators(self):
+        # generate the generators, :)
+        genr1 = [self._genIterator(x) for x in self.torp1]
+        genr2 = [self._genIterator(x) for x in self.torp2]
+
+        # if one of them is empty, put a dummy
+        if not genr1:
+            genr1 = [[]]
+        if not genr2:
+            genr2 = [[]]
+        return genr1, genr2
+        
     def _genIterator(self, text):
         '''Generates the iterator from the text.'''
         namespace = {"string":__import__("string")}
@@ -110,9 +115,10 @@ class FuzzyGenerator(object):
 
     def generate(self):
         '''Generates the different possibilities.'''
-        for x in self._possib(self.genr1):
+        genr1, genr2 = self._genGenerators()
+        for x in self._possib(genr1):
             full1 = self._build(self.sane1, x)
-            for y in self._possib(self.genr2):
+            for y in self._possib(genr2):
                 full2 = self._build(self.sane2, y)
                 yield (full1, full2)
 
@@ -128,7 +134,7 @@ class FuzzyGenerator(object):
         return "".join(full)
 
     def _possib(self, generat, constr=None):
-        '''Builds the different psosibilities.'''
+        '''Builds the different possibilities.'''
         if constr is None:
             constr = []
         pos = len(constr)
@@ -144,6 +150,7 @@ class FuzzyGenerator(object):
         
 if __name__ == "__main__":
     import unittest
+    globals()["_"] = lambda x: x
 
     class TestAll(unittest.TestCase):
         def test_simple_doubledollar(self):
@@ -156,6 +163,13 @@ if __name__ == "__main__":
             fg = FuzzyGenerator("Hola $$mundo\ncruel$$asdfg$$$$gh", "")
             self.assertEqual(fg.sane1, ["Hola $mundo\ncruel$asdfg$$gh"])
 
+        def test_quantities(self):
+            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
+            self.assertEqual(fg.calculateQuantity(), 4)
+        
+            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp$string.lowercase[:2]$")
+            self.assertEqual(fg.calculateQuantity(), 8)
+        
         def test_generations(self):
             fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
             self.assertEqual(list(fg.generate()), [
@@ -166,6 +180,13 @@ if __name__ == "__main__":
                 ('0 dnda', 'ppa'), ('0 dnda', 'ppb'), ('0 dnds', 'ppa'), ('0 dnds', 'ppb'),
                 ('1 dnda', 'ppa'), ('1 dnda', 'ppb'), ('1 dnds', 'ppa'), ('1 dnds', 'ppb'),
             ])
+        
+        def test_quant_gen_gen(self):
+            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
+            self.assertEqual(fg.calculateQuantity(), 4)
+
+            self.assertEqual(list(fg.generate()), [
+                ('0 dnda', 'pp'), ('0 dnds', 'pp'), ('1 dnda', 'pp'), ('1 dnds', 'pp')])
         
         def test_noniterable(self):
             self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $3$ bb")

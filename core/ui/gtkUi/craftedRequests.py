@@ -156,10 +156,11 @@ class PreviewWindow(entries.RememberingWindow):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, w3af, parent, pages):
+    def __init__(self, w3af, parent, fg):
         super(PreviewWindow,self).__init__(
             w3af, "fuzzypreview", "Preview", "Fuzzy_Requests")
-        self.pages = pages
+        self.pages = []
+        self.generator = fg.generate()
         self.set_modal(True)
         self.set_transient_for(parent) 
 
@@ -169,7 +170,9 @@ class PreviewWindow(entries.RememberingWindow):
 
         # the ok button
         centerbox = gtk.HBox()
-        self.pagesControl = entries.PagesControl(w3af, self._pageChange, len(pages))
+        quant = fg.calculateQuantity()
+        print "Q", quant
+        self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
         centerbox.pack_start(self.pagesControl, True, False) 
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
@@ -177,6 +180,10 @@ class PreviewWindow(entries.RememberingWindow):
         self.show_all()
 
     def _pageChange(self, page):
+        print page, self.pages
+        while len(self.pages) <= page:
+            it = self.generator.next()
+            self.pages.append(it)
         (txtup, txtdn) = self.pages[page]
         self.panes.rawShow(txtup, txtdn)
 
@@ -382,8 +389,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # raise the window only if preview is active
         if self.preview.get_active():
-            preview = list(fg.generate())
-            PreviewWindow(self.w3af, self, preview)
+            PreviewWindow(self.w3af, self, fg)
 
     def _send_stop(self, widg=None):
         '''Stop the requests being sent.'''
