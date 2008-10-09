@@ -52,6 +52,10 @@ class htmlParser(sgmlParser):
                 'div', 'layer', 'ilayer', 'bgsound', 'form')
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
+        # An internal list to be used to save input tags that are found outside
+        # of the scope of a form tag.
+        self._saved_inputs = []
+        
         sgmlParser.__init__(self, httpResponse, normalizeMarkup, verbose)
         
     def _preParse( self, HTMLDocument ):
@@ -88,62 +92,109 @@ class htmlParser(sgmlParser):
         '''
         
         if tag.lower() == 'form' :
-            #Find the method
-            method = 'GET'
-            foundMethod = False
-            for attr in attrs:
-                if attr[0].lower() == 'method':
-                    method = attr[1].upper()
-                    foundMethod = True
-            
-            if not foundMethod:
-                om.out.debug('htmlParser found a form without a method. Using GET as the default.')
-            
-            #Find the action
-            foundAction = False
-            for attr in attrs:
-                if attr[0].lower() == 'action':
-                    action = urlParser.urlJoin( self._baseUrl, attr[1] )
-                    foundAction = True
-                    
-            if not foundAction:
-                om.out.debug('htmlParser found a form without an action. Javascript is being used.')
-                # <form name="frmRegistrar" onsubmit="valida();">
-            else:
-                self._insideForm = True
-                f = form.form()
-                f.setMethod( method )           
-                f.setAction( action )
-                self._forms.append( f )
+            self._handle_form_tag(tag, attrs)
         
-        if self._insideForm:
-            # We are working with the last form
-            f = self._forms[ len(self._forms) -1 ]
-
-            # I am inside a form, I should parse input tags
-            if tag.lower() == 'input':
-                # Try to get the type of input
-                for attr in attrs:
-                    if attr[0].lower() == 'type' and attr[1].lower() == 'file':
-                        # Let the form know, that this is a file input
-                        f.hasFileInput = True
-                        f.addFileInput( attrs )
-                        break
-                
-                # Simply add all the other input types
-                f.addInput( attrs )
-                    
-            elif tag.lower() == 'select':
-                self._insideSelect = True
-                try:
-                    self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
-                except Exception,  e:
-                    om.out.debug('htmlParser found a select tag without a name attr !')
-                    self._selectTagName = 'kludge_added_by_w3af'
+        # I changed the logic of this section of the parser because of this bug:
+        # http://groups.google.com/group/beautifulsoup/browse_thread/thread/21ecff548dfda934/469d45ac13dc0162#469d45ac13dc0162
+        # That the guys from BeautifulSoup ignored :S
+        if tag.lower() in ['input','select', 'option']:
             
-            if self._insideSelect:
-                if tag.lower() == 'option':
-                    attrs.append( ('name',self._selectTagName) ) 
-                    f.addInput( attrs )
+            # I may be inside a form tag or not... damn bug!
+            # I'm going to use this ruleset:
+            # - If there is an input tag outside a form, and there is no form in self._forms
+            #   then I'm going to "save" the input tag until I find a form, and then I'll put
+            #   it there.
+            #
+            # - If there is an input tag outside a form, and there IS a form in self._forms
+            #   then I'm going to append the input tag to that form
+            if self._insideForm:
+                method = getattr(self, '_handle_'+tag.lower()+'_tag_inside_form')
+                method(tag, attrs)
+                
+            else:
+                # Outside a form!
+                method = getattr(self, '_handle_'+tag.lower()+'_tag_outside_form')
+                method(tag, attrs)
+    
+    def _handle_form_tag(self, tag, attrs):
+        '''
+        Handles the form tags.
+        
+        This method also looks if there are "pending inputs" in the self._saved_inputs list
+        and parses them.
+        '''
+        #Find the method
+        method = 'GET'
+        foundMethod = False
+        for attr in attrs:
+            if attr[0].lower() == 'method':
+                method = attr[1].upper()
+                foundMethod = True
+        
+        if not foundMethod:
+            om.out.debug('htmlParser found a form without a method. Using GET as the default.')
+        
+        #Find the action
+        foundAction = False
+        for attr in attrs:
+            if attr[0].lower() == 'action':
+                action = urlParser.urlJoin( self._baseUrl, attr[1] )
+                foundAction = True
+                
+        if not foundAction:
+            om.out.debug('htmlParser found a form without an action. Javascript is being used.')
+            # <form name="frmRegistrar" onsubmit="valida();">
+        else:
+            self._insideForm = True
+            f = form.form()
+            f.setMethod( method )           
+            f.setAction( action )
+            self._forms.append( f )
+            
+        # Now I verify if they are any input tags that were found outside the scope of a form tag
+        for tag, attrs in self._saved_inputs:
+            # Parse them just like if they were found AFTER the form tag opening
+            self._handle_input_tag_inside_form(tag, attrs)
+        # All parsed, remove them.
+        self._saved_inputs = []
+    
+    def _handle_input_tag_inside_form(self, tag, attrs):
+        # We are working with the last form
+        f = self._forms[-1]
 
+        # Try to get the type of input
+        for attr in attrs:
+            if attr[0].lower() == 'type' and attr[1].lower() == 'file':
+                # Let the form know, that this is a file input
+                f.hasFileInput = True
+                f.addFileInput( attrs )
+                return
+        
+        # Simply add all the other input types
+        f.addInput( attrs )
 
+    def _handle_input_tag_outside_form(self, tag, attrs):
+        # I'm going to use this ruleset:
+        # - If there is an input tag outside a form, and there is no form in self._forms
+        #   then I'm going to "save" the input tag until I find a form, and then I'll put
+        #   it there.
+        #
+        # - If there is an input tag outside a form, and there IS a form in self._forms
+        #   then I'm going to append the input tag to that form
+        if not self._forms:
+            self._saved_inputs.append( (tag, attrs) )
+        else:
+            self._handle_input_tag_inside_form(tag, attrs)
+
+    def _handle_select_tag_inside_form(self, tag, attrs):
+        self._insideSelect = True
+        try:
+            self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
+        except Exception,  e:
+            om.out.debug('htmlParser found a select tag without a name attr !')
+            self._selectTagName = 'kludge_added_by_w3af'
+    
+    def _handle_option_tag_inside_form(self, tag, attrs):    
+        if self._insideSelect:
+            attrs.append( ('name',self._selectTagName) ) 
+            f.addInput( attrs )
