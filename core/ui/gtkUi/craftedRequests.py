@@ -26,6 +26,7 @@ from . import reqResViewer, helpers, entries, fuzzygen
 # Alternative ways of seeing the data
 from .clusterGraph import clusterGraphWidget
 
+from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException, w3afMustStopException 
 import os
 
@@ -229,6 +230,7 @@ class FuzzyRequests(entries.RememberingWindow):
             w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
+        self.dbh = reqResDBHandler()
         mainhbox = gtk.HBox()
         
         # To store the responses
@@ -361,7 +363,12 @@ class FuzzyRequests(entries.RememberingWindow):
         '''
         Analyze if we can cluster the responses and do it.
         '''
-        data = [r[2] for r in self.responses if r[2] is not None]
+        data = []
+        for resp in self.responses:
+            if resp[0]:
+                reqid = resp[1]
+                request, response = self.dbh.searchById( reqid )[0]
+                data.append( response )
         
         if data:
             window = clusterGraphWidget(self.w3af, data)
@@ -490,7 +497,10 @@ class FuzzyRequests(entries.RememberingWindow):
             dlg.destroy()
             return False
 
-        self.responses.append((realreq, realbody, httpResp, errorMsg))
+        if httpResp is not None:
+            self.responses.append((True, httpResp.getId()))
+        else:
+            self.responses.append((False, realreq, realbody, errorMsg))
             
         # always update the gtk stuff
         self.sendfb.set_sensitive(True)
@@ -506,10 +516,16 @@ class FuzzyRequests(entries.RememberingWindow):
         return True
 
     def _pageChange(self, page):
-        (realreq, realbody, responseObj, errorMsg) = self.responses[page]
-
-        self.resultReqResp.request.rawShow(realreq, realbody)
-        if responseObj is not None:
-            self.resultReqResp.response.showObject(responseObj)
+        info = self.responses[page]
+        if info[0]:
+            reqid = info[1]
+            # no need to verify if it was ok: the request was succesful and 
+            # surely existant
+            request, response = self.dbh.searchById( reqid )[0]
+            self.resultReqResp.request.showObject( request )
+            self.resultReqResp.response.showObject( response )
         else:
-            self.resultReqResp.response.showError(errorMsg)
+            # the request brought problems
+            realreq, realbody, errorMsg = info[1:]
+            self.resultReqResp.request.rawShow( realreq, realbody )
+            self.resultReqResp.response.showError( errorMsg )
