@@ -96,7 +96,23 @@ class collectCookies(baseGrepPlugin):
     def _analyzeCookie( self, request, response, cookieObj ):
         self._identifyServer( request, response, cookieObj )
         self._secureOverHTTP( request, response, cookieObj )
+        self._httpOnly( request, response, cookieObj )
         
+    def _httpOnly(self, request, response, cookieObj ):
+        '''
+        Verify if the cookie has the httpOnly parameter set
+        
+        Reference:
+            http://www.owasp.org/index.php/HTTPOnly
+            http://en.wikipedia.org/wiki/HTTP_cookie
+        
+        @parameter request: The http request object
+        @parameter response: The http response object
+        @parameter cookieObj: The cookie object to analyze
+        @return: None
+        '''
+        pass
+            
     def _sslCookieValueUsedInHTTP( self, request, response ):
         '''
         Analyze if a cookie value, sent in a HTTPS request, is now used for identifying the user in an insecure page.
@@ -149,7 +165,19 @@ class collectCookies(baseGrepPlugin):
     def _secureOverHTTP( self, request, response, cookieObj ):
         '''
         Checks if a cookie marked as secure is sent over http.
+        
+        Reference:
+            http://en.wikipedia.org/wiki/HTTP_cookie
+        
+        @parameter request: The http request object
+        @parameter response: The http response object
+        @parameter cookieObj: The cookie object to analyze
+        @return: None
         '''
+        ### BUGBUG: There is a bug in python cookie.py which makes this
+        ### code useless! The secure parameter is never parsed in the cookieObj
+        ### http://bugs.python.org/issue1028088
+        ### https://sourceforge.net/tracker2/?func=detail&aid=2139517&group_id=170274&atid=853655
         if 'secure' in cookieObj and response.getURL().startswith('http://'):
             v = vuln.vuln()
             v.setURL( response.getURL() )
