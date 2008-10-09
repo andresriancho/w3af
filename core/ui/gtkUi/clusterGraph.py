@@ -114,9 +114,26 @@ class clusterGraphWidget(w3afDotWindow):
         self.widget.connect('clicked', self.on_url_clicked)
         
         # Now I generate the dotcode based on the data
-        dotcode = self._generateDotCode(response_list)
+        #dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
+        dotcode = self._generateDotCode(response_list, distance_function=relative_distance)
         self.set_filter('neato')
         self.set_dotcode(dotcode)
+
+    def _response_length_distance(self, a, b):
+        '''
+        Calculates the distance between two responses based on the length of the response body
+        
+        @return: The distance
+        '''
+        if len(a) >= len(b):
+            gt = a
+            lt = b
+        else:
+            gt = b
+            lt = a
+        
+        distance = len(gt) - len(lt)
+        return distance
 
     def _xunique_combinations(self, items, n):
         if n==0: yield []
@@ -125,7 +142,7 @@ class clusterGraphWidget(w3afDotWindow):
                 for cc in self._xunique_combinations(items[i+1:],n-1):
                     yield [items[i]]+cc
 
-    def _generateDotCode(self, response_list):
+    def _generateDotCode(self, response_list, distance_function=relative_distance):
         '''
         Generate the dotcode for the current window, based on all the responses.
         
@@ -139,7 +156,7 @@ class clusterGraphWidget(w3afDotWindow):
         # Calculate the distances
         dist_dict = {}
         for r1, r2 in self._xunique_combinations(response_list, 2):
-            dist_dict[(r1, r2)] = 1- relative_distance(r1.getBody(), r2.getBody() )
+            dist_dict[(r1, r2)] = 1- distance_function(r1.getBody(), r2.getBody() )
             
         # Normalize
         dist_dict = self._normalize_distances(dist_dict)
