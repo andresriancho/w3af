@@ -139,15 +139,15 @@ msgstr "Generar requerimiento HTTP manual"
 
 #: core/ui/gtkUi/main.py:288
 msgid "_Manual Request"
-msgstr "Request _Manual"
+msgstr "Pedido _Manual"
 
 #: core/ui/gtkUi/main.py:289
 msgid "Generate fuzzy HTTP requests"
-msgstr "Generar requests HTTP fuzzeados"
+msgstr "Generar requests HTTP difusos"
 
 #: core/ui/gtkUi/main.py:289
 msgid "_Fuzzy Request"
-msgstr "Request _fuzzeado"
+msgstr "Pedido _difuso"
 
 #: core/ui/gtkUi/main.py:290
 msgid "Encodes and Decodes in different ways"
@@ -159,7 +159,7 @@ msgstr "_Encode/Decode"
 
 #: core/ui/gtkUi/main.py:291
 msgid "Compare different requests and responses"
-msgstr "Comparar diferentes requerimientos y respuestas"
+msgstr "Comparar diferentes pedidos y respuestas"
 
 #: core/ui/gtkUi/main.py:291
 msgid "_Compare"
@@ -167,7 +167,7 @@ msgstr "_Comparar"
 
 #: core/ui/gtkUi/main.py:292
 msgid "Proxies the HTTP requests, allowing their modification"
-msgstr "Intercepta requests HTTP, permitiendo su modificacion"
+msgstr "Intercepta pedidos HTTP, permitiendo su modificacion"
 
 #: core/ui/gtkUi/main.py:292
 msgid "_Proxy"
@@ -289,7 +289,7 @@ msgstr "Limpiar los resultados obtenidos"
 
 #: core/ui/gtkUi/main.py:594
 msgid "The scan has stopped by user request"
-msgstr "El análisis se detuvo debido al requerimiento del usuario"
+msgstr "El análisis se detuvo a pedido del usuario"
 
 #: core/ui/gtkUi/main.py:596
 msgid "The scan has finished"
