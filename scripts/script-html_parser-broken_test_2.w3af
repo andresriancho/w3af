@@ -1,0 +1,19 @@
+# Unit test for html parser
+
+plugins
+discovery allowedMethods
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+back
+target
+set target http://localhost/w3af/core/htmlParser/input_out_of_form_2.html
+back
+start
+exit
