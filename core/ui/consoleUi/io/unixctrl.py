@@ -93,3 +93,6 @@ def moveForward(steps=1):
     if steps>0:
     	sys.stdout.write(CSI_CUF % steps)
 
+def clearScreen():
+    """Clears the screen"""
+    sys.stdout.write(SEQ_PREFIX + '[H' + SEQ_PREFIX + '[2J')

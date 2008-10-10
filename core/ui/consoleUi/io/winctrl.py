@@ -59,3 +59,6 @@ def moveBack(steps=1):
     for i in range(steps):
         sys.stdout.write('\x08')
 
+def clearScreen():
+    """Clears the screen (Plug)"""
+    pass

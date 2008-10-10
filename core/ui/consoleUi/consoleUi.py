@@ -63,6 +63,7 @@ class consoleUi:
             term.KEY_DOWN : self._onDown, \
             '^C' : self._backOrExit, \
             '^D' : self._backOrExit,
+            '^L' : self._clearScreen,
             '^W' : self._delWord,
             '^H' : self._onBackspace,
             '^A' : self._toLineStart,
@@ -209,6 +210,12 @@ class consoleUi:
             del self._line[-1]
 #            term.write(' ')
 
+    def _clearScreen(self):
+        """Clears the screen"""
+        term.clearScreen()
+        self._initPrompt()
+        self._showPrompt()
+
     def _execute(self):
         # term.writeln()
 
@@ -258,7 +265,6 @@ class consoleUi:
         self._execute()
         self._initPrompt()
         self._showPrompt()
-
 
     def _delWord(self):
         filt = str.isspace
@@ -392,7 +398,7 @@ class consoleUi:
         
 
     def _showPrompt(self):
-        term.write(self._context.getPath() + ">>>")
+        term.write(self._context.getPath() + ">>> ")
         
     def _showLine(self):
         strLine = self._getLineStr()
