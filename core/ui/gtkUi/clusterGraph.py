@@ -115,9 +115,35 @@ class clusterGraphWidget(w3afDotWindow):
         
         # Now I generate the dotcode based on the data
         #dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
-        dotcode = self._generateDotCode(response_list, distance_function=relative_distance)
+        #dotcode = self._generateDotCode(response_list, distance_function=self._http_code_distance)
+        dotcode = self._generateDotCode(response_list, distance_function=self._relative_distance)
         self.set_filter('neato')
+        
+        # The problem with the delay is HERE ! The self._generateDotCode method is FAST.
+        # The real problem is inside "tokens = graphparser.parseString(data)" (dot_parser.py)
+        # which is called inside set_dotcode
         self.set_dotcode(dotcode)
+
+    def _relative_distance(self, a, b):
+        '''
+        Calculates the distance between two responses based on the levenshtein distance
+        
+        @return: The distance
+        '''
+        return 1 - relative_distance(a.getBody(), b.getBody())
+        
+    def _http_code_distance(self, a, b):
+        '''
+        Calculates the distance between two responses based on the HTTP response code
+        
+        @return: The distance
+        '''
+        distance = 0.1
+        for i in [100, 200, 300, 400, 500]:
+            if a.getCode() in xrange(i, i+100) and not b.getCode() in xrange(i, i+100):
+                distance = 1
+                return distance
+        return distance
 
     def _response_length_distance(self, a, b):
         '''
@@ -125,14 +151,10 @@ class clusterGraphWidget(w3afDotWindow):
         
         @return: The distance
         '''
-        if len(a) >= len(b):
-            gt = a
-            lt = b
-        else:
-            gt = b
-            lt = a
+        distance = abs(len(b.getBody()) - len(a.getBody()))
+        distance = distance % 100
+        distance = distance / 100.0
         
-        distance = len(gt) - len(lt)
         return distance
 
     def _xunique_combinations(self, items, n):
@@ -156,7 +178,7 @@ class clusterGraphWidget(w3afDotWindow):
         # Calculate the distances
         dist_dict = {}
         for r1, r2 in self._xunique_combinations(response_list, 2):
-            dist_dict[(r1, r2)] = 1- distance_function(r1.getBody(), r2.getBody() )
+            dist_dict[(r1, r2)] = distance_function(r1, r2)
             
         # Normalize
         dist_dict = self._normalize_distances(dist_dict)
@@ -182,7 +204,7 @@ class clusterGraphWidget(w3afDotWindow):
                 max = d
                 
         # Find min
-        min = 9999
+        min = dist_dict.values()[0]
         for d in dist_dict.values():
             if d < min:
                 min = d
