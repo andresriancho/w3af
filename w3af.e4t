@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2008-09-30, 06:41:56 -->
+<!-- Saved: 2008-10-11, 22:31:45 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -359,20 +359,6 @@
       <Linenumber>213</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: implement help!!"</Summary>
-    <Description></Description>
-    <Created>2008-08-03, 13:27:44</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>compare.py</Name>
-      </Filename>
-      <Linenumber>265</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add mod_perl ssi injection support</Summary>
     <Description></Description>
@@ -410,48 +396,6 @@
         <Name>mxInjection.py</Name>
       </Filename>
       <Linenumber>126</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 15:07:00</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>225</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Show images</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 15:07:00</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>350</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 15:17:41</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>409</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -523,45 +467,6 @@
         <Name>profiles.py</Name>
       </Filename>
       <Linenumber>356</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2008-09-19, 08:10:23</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>695</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2008-09-19, 08:10:23</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>733</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
-    <Description></Description>
-    <Created>2008-09-19, 08:10:23</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1074</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -831,45 +736,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: scale from points to pixels</Summary>
-    <Description></Description>
-    <Created>2008-09-27, 16:24:43</Created>
-    <Resource>
-      <Filename>
-        <Dir>extlib</Dir>
-        <Dir>xdot</Dir>
-        <Name>xdot.py</Name>
-      </Filename>
-      <Linenumber>587</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: handle start/end points</Summary>
-    <Description></Description>
-    <Created>2008-09-27, 16:24:43</Created>
-    <Resource>
-      <Filename>
-        <Dir>extlib</Dir>
-        <Dir>xdot</Dir>
-        <Name>xdot.py</Name>
-      </Filename>
-      <Linenumber>641</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: show an error message</Summary>
-    <Description></Description>
-    <Created>2008-09-27, 16:24:43</Created>
-    <Resource>
-      <Filename>
-        <Dir>extlib</Dir>
-        <Dir>xdot</Dir>
-        <Name>xdot.py</Name>
-      </Filename>
-      <Linenumber>1214</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
     <Description></Description>
     <Created>2008-09-27, 16:28:22</Created>
@@ -893,6 +759,126 @@
         <Name>xss.py</Name>
       </Filename>
       <Linenumber>108</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-10-08, 23:59:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>695</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-10-08, 23:59:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>733</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2008-10-08, 23:59:11</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1074</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 20:28:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>226</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Show images</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 20:28:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>351</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: scale from points to pixels</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 20:54:51</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>587</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: handle start/end points</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 20:54:51</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>641</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: show an error message</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 20:54:51</Created>
+    <Resource>
+      <Filename>
+        <Dir>extlib</Dir>
+        <Dir>xdot</Dir>
+        <Name>xdot.py</Name>
+      </Filename>
+      <Linenumber>1214</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
+    <Description></Description>
+    <Created>2008-10-11, 21:21:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>409</Linenumber>
     </Resource>
   </Task>
 </Tasks>
