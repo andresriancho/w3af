@@ -31,7 +31,7 @@ from core.controllers.w3afException import w3afException, w3afMustStopException
 import os
 
 request_example = """\
-GET http://localhost/path HTTP/1.0
+GET http://localhost/$xrange(10)$ HTTP/1.0
 Host: www.some_host.com
 User-Agent: w3af.sf.net
 Pragma: no-cache
@@ -168,16 +168,21 @@ class PreviewWindow(entries.RememberingWindow):
         # content
         self.panes = reqResViewer.requestPaned(w3af, editable=False, widgname="fuzzypreview")
         self.vbox.pack_start(self.panes.notebook)
+        self.panes.show()
+        
 
         # the ok button
         centerbox = gtk.HBox()
         quant = fg.calculateQuantity()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
         centerbox.pack_start(self.pagesControl, True, False) 
+        centerbox.show()
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
         self._pageChange(0)
-        self.show_all()
+        
+        self.vbox.show()
+        self.show()
 
     def _pageChange(self, page):
         while len(self.pages) <= page:
@@ -306,6 +311,11 @@ class FuzzyRequests(entries.RememberingWindow):
         # ---- right pane ----
         vbox = gtk.VBox()
         mainhbox.pack_start(vbox)
+
+        # A label to show the id of the response
+        self.title0 = gtk.Label()
+        self.title0.show()
+        vbox.pack_start(self.title0, False, True)
 
         # result itself
         self.resultReqResp = reqResViewer.reqResViewer(w3af, withFuzzy=False, editableRequest=False, editableResponse=False)
@@ -478,7 +488,7 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         try:
-            httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody, fixContentLength)
+            httpResp = self.w3af.uriOpener.sendRawRequest(realreq, realbody, fixContentLength, get_size=False)
             errorMsg = None
             self.result_ok += 1
         except w3afException, e:
@@ -524,8 +534,10 @@ class FuzzyRequests(entries.RememberingWindow):
             request, response = self.dbh.searchById( reqid )[0]
             self.resultReqResp.request.showObject( request )
             self.resultReqResp.response.showObject( response )
+            self.title0.set_markup( "<b>Id: %d</b>" % reqid )
         else:
             # the request brought problems
             realreq, realbody, errorMsg = info[1:]
             self.resultReqResp.request.rawShow( realreq, realbody )
             self.resultReqResp.response.showError( errorMsg )
+            self.title0.set_markup( "<b>Error</b>")
