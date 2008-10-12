@@ -20,7 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from __future__ import with_statement
 import urllib2
+import thread
+
 import core.controllers.outputManager as om
 import core.data.request.fuzzableRequest as fuzzableRequest
 import core.data.url.httpResponse as httpResponse
@@ -34,34 +37,30 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     handler_order = urllib2.HTTPErrorProcessor.handler_order -1
     
     def __init__(self):
-        pass
+        self._lock = thread.allocate_lock()
     
     def _getCounter( self ):
         '''
         @return: The next number to assign as the id for responses.
         '''
-        c = kb.kb.getData('idHandler', 'counter')
-        if c == []:
-            kb.kb.save('idHandler', 'counter', 0 )
-            c = 0
+        
+        # Use a lock to make sure that we don't have problems with different
+        # threads that are requesting things to the xUrllib 
+        with self._lock:
+            c = kb.kb.getData('idHandler', 'counter')
+            if c == []:
+                kb.kb.save('idHandler', 'counter', 0 )
+                c = 0
 
-        c += 1
-        kb.kb.save('idHandler', 'counter', c)
-        return c
-    
+            c += 1
+            kb.kb.save('idHandler', 'counter', c)
+            return c
+
     def http_error_default(self, req, fp, code, msg, hdrs):
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, fp)
-        err.id = self._getCounter()
-        
-        # Also log errors to the output manager
-        # Create the response object
-        url = req.get_full_url()
-        body = fp.read()
-        id = err.id
-        res = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg, id=id)
-        self._logRequestResponse(req, res)
+        err.id = req.id
         raise err
-        
+
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         '''
         This was added for some special cases where the redirect handler cries a lot...
@@ -153,12 +152,12 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             body = response.read()
             id = response.id
             res = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg, id=id)
-
         om.out.logHttp( fr, res )
     
     def http_response(self, request, response):
         response.id = self._getCounter()
         self._logRequestResponse( request, response )
+        request.id = response.id
         return response
 
     https_request = http_request

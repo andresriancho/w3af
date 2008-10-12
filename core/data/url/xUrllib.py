@@ -220,7 +220,7 @@ class xUrllib:
         
         return False
     
-    def sendRawRequest( self, head, postdata, fixContentLength=True):
+    def sendRawRequest( self, head, postdata, fixContentLength=True, get_size=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed in a textbox or is stored in a file.
         When something like that happens, this library allows the user to send the request by specifying two parameters
@@ -250,7 +250,7 @@ class xUrllib:
         # Send it
         functionReference = getattr( self , fuzzReq.getMethod() )
         return functionReference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
-                                                useCache=False, grepResult=False, getSize=True )
+                                                useCache=False, grepResult=False, getSize=get_size )
         
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
         '''
