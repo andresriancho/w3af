@@ -152,13 +152,16 @@ class osCommanding(baseAuditPlugin):
                 commands.append( command( specialChar + ' ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
             if cf.cf.getData('targetOS') in ['unix', 'unknown']:                
                 commands.append( command( specialChar + ' ping -c '+str(self._waitTime)+' localhost','unix',specialChar))
+                # This is needed for solaris 10
+                commands.append( command( specialChar + ' /usr/sbin/ping -s localhost 1000 10 ','unix',specialChar))
         
+        # Using execution quotes
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
             commands.append( command( '` ping -n '+str(self._waitTime -1)+' localhost`','windows',specialChar))
         if cf.cf.getData('targetOS') in ['unix', 'unknown']:            
             commands.append( command( '` ping -c '+str(self._waitTime)+' localhost`','unix',specialChar))
             
-        # FoxPro uses run to run os commands. I found one of this vulns !!
+        # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
         if cf.cf.getData('targetOS') in ['windows', 'unknown']:
             commands.append( command( 'run ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
         
