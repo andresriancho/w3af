@@ -140,7 +140,7 @@ class ghdb(baseDiscoveryPlugin):
         else:
             return False
             
-    def _createRegexs( gh ):
+    def _createRegexs( self, gh ):
         '''
         Create a regular expression based on a google search
         @return: A tuple with ( urlRegex, bodyRegex )

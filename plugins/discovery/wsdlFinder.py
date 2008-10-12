@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 import core.data.parsers.wsdlParser
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce, w3afException
 
 class wsdlFinder(baseDiscoveryPlugin):
     '''
