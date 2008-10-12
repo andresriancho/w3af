@@ -202,6 +202,8 @@ class htmlParser(sgmlParser):
     
     def _handle_option_tag_inside_form(self, tag, attrs):    
         if self._insideSelect:
+            # We are working with the last form
+            f = self._forms[-1]
             attrs.append( ('name',self._selectTagName) ) 
             f.addInput( attrs )
     
