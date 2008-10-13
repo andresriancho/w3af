@@ -132,7 +132,7 @@ class xss(baseAuditPlugin):
     def _get_allowed_chars(self, mutant):
         '''
         These are the special characters that are tested:
-            ['']
+            ['<', '>', '"', "'", '(', ')']
         
         @return: A list with the special characters that are allowed by the XSS filter
         '''
