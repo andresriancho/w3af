@@ -48,6 +48,6 @@ verbose = False
 resultLimit = 300
 
 [audit.xss]
-checkPersistent = True
-numberOfChecks = 2
+checkStored = True
+numberOfChecks = 3
 

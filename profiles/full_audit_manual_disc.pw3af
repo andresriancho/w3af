@@ -55,8 +55,8 @@ nonTargets =
 [grep.strangeParameters]
 
 [audit.xss]
-checkPersistent = True
-numberOfChecks = 2
+checkStored = True
+numberOfChecks = 3
 
 [audit.fileUpload]
 extensions = gif,html
