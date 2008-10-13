@@ -1,0 +1,35 @@
+# This is a simple xss detection demo:
+
+#http-settings
+#set proxyAddress 127.0.0.1
+#set proxyPort 8080
+#back
+
+misc-settings
+set fuzzCookie False
+back
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+
+audit xss
+audit
+back
+
+target
+set target http://localhost/w3af/audit/xss/simple_xss_no_quotes.php?text=1
+back
+start
+
+assert len( kb.kb.getData('xss', 'xss') ) == 1
+
+exit
