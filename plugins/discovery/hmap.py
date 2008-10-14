@@ -114,7 +114,7 @@ class hmap(baseDiscoveryPlugin):
                     
                     i = info.info()
                     i.setName('Webserver Fingerprint')
-                    i.setDesc('The most accurate fingerprint for this HTTP server is: ' + str(server))
+                    i.setDesc('The most accurate fingerprint for this HTTP server is: "' + str(server) + '".')
                     i['server'] = server
                     om.out.information( i.getDesc() )
                     
