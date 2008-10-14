@@ -49,7 +49,7 @@ class xssBeef(baseAttackPlugin):
         
     def fastExploit(self, url, method, data ):
         '''
-        Exploits a web app with osCommanding vuln.
+        Exploits a web app with BeEF.
         
         @parameter url: A string containing the Url to exploit ( http://somehost.com/foo.php )
         @parameter method: A string containing the method to send the data ( post / get )
@@ -66,7 +66,7 @@ class xssBeef(baseAttackPlugin):
                 
     def exploit( self, vulnToExploit=None ):
         '''
-        Exploits a remoteFileInclude vuln that was found and stored in the kb.
+        Exploits a XSS vuln that was found and stored in the kb.
 
         @return: True if the shell is working and the user can start calling rexec
         '''
