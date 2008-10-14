@@ -123,6 +123,8 @@ class strangeHeaders(baseGrepPlugin):
         headers.append("VARY")
         headers.append("WWW-AUTHENTICATE")
         headers.append("X-POWERED-BY")
+        headers.append("X-ASPNET-VERSION")
+        headers.append("X-CACHE")
         return headers
 
     def getPluginDeps( self ):
