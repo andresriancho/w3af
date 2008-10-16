@@ -255,9 +255,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 traceback.print_exc()
                 om.out.error('The proxy request failed, error: ' + str(w) )
                 raise w
-            except:
+            except Exception, e:
                 traceback.print_exc()
-                raise
+                raise e
             else:
                 return res
     
