@@ -1,5 +1,5 @@
 '''
-detectWAF.py
+fingerprint_WAF.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
 import re
 
-class detectWAF(baseDiscoveryPlugin):
+class fingerprint_WAF(baseDiscoveryPlugin):
     '''
     Identify if a Web Application Firewall is present and if possible identify the vendor and version.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -52,21 +52,21 @@ class detectWAF(baseDiscoveryPlugin):
             # to be runned.
             raise w3afRunOnce()
         else:
-            # I will only run this one time. All calls to detectWAF return 
+            # I will only run this one time. All calls to fingerprint_WAF return 
             # the same url's ( none! )
             self._run = False
-            self._identifyURLScan( fuzzableRequest )
-            self._identifyModSecurity( fuzzableRequest )
-            self._identifySecureIIS( fuzzableRequest )
-            self._identifyAirlock( fuzzableRequest )
-            self._identifyBarracuda( fuzzableRequest )
-            self._identifyDenyAll( fuzzableRequest )
-            self._identifyF5ASM( fuzzableRequest )
-            self._identifyHyperGuard( fuzzableRequest )
+            self._fingerprint_URLScan( fuzzableRequest )
+            self._fingerprint_ModSecurity( fuzzableRequest )
+            self._fingerprint_SecureIIS( fuzzableRequest )
+            self._fingerprint_Airlock( fuzzableRequest )
+            self._fingerprint_Barracuda( fuzzableRequest )
+            self._fingerprint_DenyAll( fuzzableRequest )
+            self._fingerprint_F5ASM( fuzzableRequest )
+            self._fingerprint_HyperGuard( fuzzableRequest )
 
         return []
     
-    def _identifySecureIIS(self,  fuzzableRequest):
+    def _fingerprint_SecureIIS(self,  fuzzableRequest):
         '''
         Try to verify if SecureIIS is installed or not.
         '''
@@ -81,13 +81,13 @@ class detectWAF(baseDiscoveryPlugin):
             if lockResponse2.getCode() == 404:
                 self._reportFinding('SecureIIS', lockResponse2)
         
-    def _identifyModSecurity(self,  fuzzableRequest):
+    def _fingerprint_ModSecurity(self,  fuzzableRequest):
         '''
         Try to verify if mod_security is installed or not AND try to get the installed version.
         '''
         pass
 
-    def _identifyAirlock(self,  fuzzableRequest):
+    def _fingerprint_Airlock(self,  fuzzableRequest):
         '''
         Try to verify if Airlock is present.
         '''
@@ -107,7 +107,7 @@ class detectWAF(baseDiscoveryPlugin):
                 # else 
                     # more checks, like path /error_path or encrypted URL in response
 
-    def _identifyBarracuda(self,  fuzzableRequest):
+    def _fingerprint_Barracuda(self,  fuzzableRequest):
         '''
         Try to verify if Barracuda is present.
         '''
@@ -128,7 +128,7 @@ class detectWAF(baseDiscoveryPlugin):
                 # else 
                     # don't know ...
 
-    def _identifyDenyAll(self,  fuzzableRequest):
+    def _fingerprint_DenyAll(self,  fuzzableRequest):
         '''
         Try to verify if Deny All rWeb is present.
         '''
@@ -148,7 +148,7 @@ class detectWAF(baseDiscoveryPlugin):
                 # else
                     # more checks like detection=detected cookie
 
-    def _identifyF5ASM(self,  fuzzableRequest):
+    def _fingerprint_F5ASM(self,  fuzzableRequest):
         '''
         Try to verify if F5 ASM (also TrafficShield) is present.
         '''
@@ -168,7 +168,7 @@ class detectWAF(baseDiscoveryPlugin):
                 # else
                     # more checks like special string in response
 
-    def _identifyHyperGuard(self,  fuzzableRequest):
+    def _fingerprint_HyperGuard(self,  fuzzableRequest):
         '''
         Try to verify if HyperGuard is present.
         '''
@@ -188,7 +188,7 @@ class detectWAF(baseDiscoveryPlugin):
                 # else
                     # more checks like special string in response
 
-    def _identifyURLScan(self,  fuzzableRequest):
+    def _fingerprint_URLScan(self,  fuzzableRequest):
         '''
         Try to verify if URLScan is installed or not.
         '''
@@ -252,12 +252,15 @@ class detectWAF(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return []
+        return ['discovery.afd']
 
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Identify if a Web Application Firewall is present and if possible identify the vendor and version.
+        Try to fingerprint the Web Application Firewall that is running on the remote end.
+        
+        Please note that the detection of the WAF is performed by the discovery.afd plugin ( afd stands
+        for Active Filter Detection).
         '''
