@@ -204,7 +204,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # Note: This is the way that the HTTPServer and the Handler work in python; this wasn't my choice.
             res = self._sendToServer()
         except Exception, e:
-            self._sendError( e )
+            self._sendError( e, trace=str(traceback.format_exc()) )
         else:
             try:
                 self._sendToBrowser( res )
@@ -241,7 +241,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 om.out.error('The proxy request failed, error: ' + str(w) )
             except Exception, e:
                 raise e
-            return res
+            else:
+                return res
             
         else:
             # most likely a GET request
@@ -257,9 +258,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             except:
                 traceback.print_exc()
                 raise
-            return res
+            else:
+                return res
     
-    def _sendError( self, exceptionObj ):
+    def _sendError( self, exceptionObj, trace=None ):
         '''
         Send an error to the browser.
         
@@ -274,7 +276,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.send_header( 'Content-type', 'text/html')      
             self.end_headers()
             # FIXME: Make this error look nicer
-            self.wfile.write( 'Proxy error: ' + str(exceptionObj) )
+            self.wfile.write( 'w3af proxy error: ' + str(exceptionObj) + '<br/><br/>')
+            if trace:
+                self.wfile.write( 'Traceback for this error: <br/><br/>' + trace.replace('\n','<br/>') )
+
         except Exception, e:
             traceback.print_exc()
             om.out.debug('An error ocurred in proxy._sendError(). Maybe the browser closed the connection?')
