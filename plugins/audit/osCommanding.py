@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
-import core.data.parsers.urlParser as urlParser
 import re
 
 # kb stuff
@@ -47,7 +46,7 @@ class osCommanding(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Some internal variables
-        self._special_chars = ['','&&','|',';']
+        self._special_chars = ['', '&&', '|', ';']
         # The wait time of the unfuzzed request
         self._originalWaitTime = 0
         
@@ -80,8 +79,8 @@ class osCommanding(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        # Send the fuzzableRequest without any fuzzing, so we can measure the response time of this script
-        # in order to compare it later
+        # Send the fuzzableRequest without any fuzzing, so we can measure the response 
+        # time of this script in order to compare it later
         self._originalWaitTime = self._sendMutant( freq, analyze=False, grepResult=False ).getWaitTime()
         
         # Prepare the strings to create the mutants
@@ -90,7 +89,7 @@ class osCommanding(baseAuditPlugin):
         mutants = createMutants( freq , onlyCommands )
         
         for mutant in mutants:
-            if self._hasNoBug( 'osCommanding','osCommanding',mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'osCommanding', 'osCommanding', mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
@@ -111,7 +110,7 @@ class osCommanding(baseAuditPlugin):
         mutants = createMutants( freq , onlyCommands, oResponse=oResponse )
         
         for mutant in mutants:
-            if self._hasNoBug( 'osCommanding','osCommanding',mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'osCommanding', 'osCommanding', mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
@@ -182,8 +181,9 @@ class osCommanding(baseAuditPlugin):
         response.getWaitTime() < (self._originalWaitTime + self._waitTime+2):
             sentOs, sentSeparator = self._get_os_separator(mutant)
                     
-            # This could be because of an osCommanding vuln, or because of an error that generates a delay
-            # in the response; so I'll resend changing the time and see what happens
+            # This could be because of an osCommanding vuln, or because of an error that
+            # generates a delay in the response; so I'll resend changing the time and see 
+            # what happens
             moreWaitParam = mutant.getModValue().replace( str(self._waitTime), str(self._secondWaitTime) )
             mutant.setModValue( moreWaitParam )
             response = self._sendMutant( mutant, analyze=False )
@@ -228,13 +228,13 @@ class osCommanding(baseAuditPlugin):
         '''
         commands = []
         for specialChar in self._special_chars:
-            commands.append( command(specialChar + " /bin/cat /etc/passwd",'unix',specialChar))
-            commands.append( command(specialChar + " type %SYSTEMROOT%\\win.ini",'windows',specialChar))
+            commands.append( command(specialChar + " /bin/cat /etc/passwd", 'unix', specialChar))
+            commands.append( command(specialChar + " type %SYSTEMROOT%\\win.ini", 'windows', specialChar))
         
         # Execution quotes
-        commands.append( command("`/bin/cat /etc/passwd`",'unix','`'))		
+        commands.append( command("`/bin/cat /etc/passwd`", 'unix', '`'))		
         # FoxPro uses run to run os commands. I found one of this vulns !!
-        commands.append( command("run type %SYSTEMROOT%\\win.ini",'windows','run'))
+        commands.append( command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
         
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
@@ -249,17 +249,17 @@ class osCommanding(baseAuditPlugin):
         '''
         commands = []
         for specialChar in self._special_chars:
-                commands.append( command( specialChar + ' ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
-                commands.append( command( specialChar + ' ping -c '+str(self._waitTime)+' localhost','unix',specialChar))
-                # This is needed for solaris 10
-                commands.append( command( specialChar + ' /usr/sbin/ping -s localhost 1000 10 ','unix',specialChar))
+            commands.append( command( specialChar + ' ping -n '+str(self._waitTime -1)+' localhost', 'windows', specialChar))
+            commands.append( command( specialChar + ' ping -c '+str(self._waitTime)+' localhost', 'unix', specialChar))
+            # This is needed for solaris 10
+            commands.append( command( specialChar + ' /usr/sbin/ping -s localhost 1000 10 ', 'unix', specialChar))
         
         # Using execution quotes
-        commands.append( command( '` ping -n '+str(self._waitTime -1)+' localhost`','windows',specialChar))
-        commands.append( command( '` ping -c '+str(self._waitTime)+' localhost`','unix',specialChar))
+        commands.append( command( '` ping -n '+str(self._waitTime -1)+' localhost`', 'windows', '`'))
+        commands.append( command( '` ping -c '+str(self._waitTime)+' localhost`', 'unix', '`'))
         
         # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
-        commands.append( command( 'run ping -n '+str(self._waitTime -1)+' localhost','windows',specialChar))
+        commands.append( command( 'run ping -n '+str(self._waitTime -1)+' localhost', 'windows', 'run '))
         
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
@@ -322,6 +322,20 @@ class command:
         self._os = os
         self._sep = sep
     
-    def getOs( self ): return self._os
-    def getCommand( self ): return self._comm
-    def getSeparator( self ): return self._sep
+    def getOs( self ):
+        '''
+        @return: The OS
+        '''
+        return self._os
+        
+    def getCommand( self ):
+        '''
+        @return: The Command to be executed
+        '''
+        return self._comm
+        
+    def getSeparator( self ):
+        '''
+        @return: The separator, could be one of ; && | etc.
+        '''
+        return self._sep
