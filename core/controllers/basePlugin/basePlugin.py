@@ -141,7 +141,7 @@ class basePlugin(configurable):
             else:
                 om.out.information( i.getDesc() )
             
-    def _sendMutant( self, mutant, analyze=True, grepResult=True ):
+    def _sendMutant( self, mutant, analyze=True, grepResult=True, analyze_callback=None ):
         '''
         Sends a mutant to the remote web server.
         '''
@@ -161,7 +161,12 @@ class basePlugin(configurable):
         res = apply( functor, args, {'data': data, 'headers': headers, 'grepResult': grepResult } )
         
         if analyze:
-            self._analyzeResult( mutant, res )
+            if analyze_callback:
+                # The user specified a custom callback for analyzing the sendMutant result
+                analyze_callback(mutant, res)
+            else:
+                # Calling the default callback
+                self._analyzeResult(mutant, res)
         return res
     
     def _analyzeResult(self,  mutant,  res):
