@@ -125,7 +125,8 @@ class fingerprint404Page:
         if len( tmp ):
             # All items in this directory/extension combination should be the same...
             responseBody = tmp[0]
-            ratio = relative_distance( responseBody, httpResponse.getBody() )
+            html_body = httpResponse.getBody().replace(urlParser.getFileName(httpResponse.getURL()), '')
+            ratio = relative_distance( responseBody, html_body )
             if ratio > 0.90:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.90' )
                 return True
@@ -188,7 +189,8 @@ class fingerprint404Page:
                 else:
                     return False
             elif kb.kb.getData('error404page', 'trustBody'):
-                ratio = relative_distance( httpResponse.getBody(), kb.kb.getData('error404page', 'trustBody') )
+                html_body = httpResponse.getBody().replace(urlParser.getFileName(httpResponse.getURL()), '')
+                ratio = relative_distance( html_body, kb.kb.getData('error404page', 'trustBody') )
                 if ratio > 0.90:
                     om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.90' )
                     return True
@@ -274,7 +276,7 @@ class fingerprint404Page:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
         
         responseBody = response.getBody()
-        responseBody.replace(randAlNumFile, '')
+        responseBody = responseBody.replace(randAlNumFile, '')
         response.setBody(responseBody)
         
         return response, extension
