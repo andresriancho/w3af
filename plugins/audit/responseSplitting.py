@@ -28,9 +28,8 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
+import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 class responseSplitting(baseAuditPlugin):
@@ -54,16 +53,20 @@ class responseSplitting(baseAuditPlugin):
         mutants = createMutants( freq , rsList )
             
         for mutant in mutants:
-            if self._hasNoBug( 'responseSplitting','responseSplitting',mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'responseSplitting', 'responseSplitting', mutant.getURL(), mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-        
             
     def _getErrors( self ):
+        '''
+        @return: A list of error strings produced by the programming framework when
+        we try to modify a header, and the HTML output is already being written to
+        the cable, or something similar.
+        '''
         res = []
-        res.append( 'Header may not contain more than a single header, new line detected.' )
+        res.append( 'Header may not contain more than a single header, new line detected' )
         return res
     
     def _analyzeResult( self, mutant, response ):
@@ -78,10 +81,19 @@ class responseSplitting(baseAuditPlugin):
             # the one in strings; so string in response.getBody() is slower than
             # string in response            
             if error in response:
-                om.out.information('The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL() +' modifies the headers of the response, but this error was sent while testing for response splitting: ' + error )
+                msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
+                msg += ' modifies the headers of the response, but this error was sent while '
+                msg += 'testing for response splitting: "' + error + '"'
+                
+                i = info.info()
+                i.setDesc( msg )
+                i.setId( response.id )
+                i.setName( 'Parameter modifies headers' )
+                kb.kb.append( self, 'responseSplitting', i )
+
                 return
             
-        if self._checkHeaders( response.getHeaders() ):
+        if self._checkHeaders( response ):
             v = vuln.vuln( mutant )
             v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
             v.setId( response.id )
@@ -127,17 +139,29 @@ class responseSplitting(baseAuditPlugin):
         ''' 
         pass
         
-    def _checkHeaders( self, headers ):
+    def _checkHeaders( self, response ):
         '''
         This method verifies if a header was successfully injected
         
+        @parameter response: The HTTP response where I want to find the injected header.
         @return: True / False
         '''
+        headers = response.getHeaders()
         if 'vulnerable' in headers.keys():
             if headers['vulnerable'] == 'Yes':
                 return True
             else:
-                om.out.information('The vulnerable header was added, but the value aint what w3af expected. Please verify.')
+                msg = 'The vulnerable header was added to the HTTP response, '
+                msg += 'but the value is not what w3af expected (Vulnerable: Yes)'
+                msg += ' Please verify manually.'
+                om.out.information(msg)
+                
+                i = info.info()
+                i.setDesc( msg )
+                i.setId( response.id )
+                i.setName( 'Parameter modifies headers' )
+                kb.kb.append( self, 'responseSplitting', i )
+                
                 return False
         else:
             return False

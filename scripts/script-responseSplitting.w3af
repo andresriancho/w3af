@@ -12,8 +12,12 @@ back
 back
 
 target
-#set target http://localhost/w3af/responseSplitting/responseSplitting.php?header=f00, http://172.16.1.128/responseSplitting.asp?testing=f0000
-set target http://172.16.1.128/responseSplitting.asp?testing=f0000
+set target http://localhost/w3af/audit/response_splitting/response_splitting.php?header=None
 back
 start
+
+assert len( kb.kb.getData('responseSplitting','responseSplitting') ) == 1
+
+exit
+
 
