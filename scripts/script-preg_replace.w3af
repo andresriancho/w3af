@@ -20,10 +20,13 @@ back
 
 audit
 discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 
 target
-set target http://localhost/w3af/preg_replace/
+set target http://localhost/w3af/audit/preg_replace/
 back
 start
 

@@ -52,8 +52,7 @@ class preg_replace(baseAuditPlugin):
         
         # First I check If I get the error message from php
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        mutants = createMutants( freq , ['a' + ')/' * 100 ,] , oResponse=oResponse )
-        self._errorGeneration = True
+        mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
         
         for mutant in mutants:
             if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
@@ -94,7 +93,12 @@ class preg_replace(baseAuditPlugin):
         for pregError in self._getPregError():
             match = re.search( pregError, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found unsafe usage of preg_replace(). The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
+                msg = 'Found unsafe usage of preg_replace() function, the error that was sent '
+                msg += 'by the web application is (only a fragment is shown): "'
+                msg += response.getBody()[match.start():match.end()] + '" ; and was found '
+                msg += 'in the response with id ' + str(response.id) + '.'
+                
+                om.out.information(msg)
                 res.append(pregError)
         return res
 
