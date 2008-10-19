@@ -11,11 +11,15 @@ output config console
 set verbose False
 back
 audit phishingVector
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 target
-set target http://localhost/w3af/phishingVector/phishingVector.php?url=http://www.google.com
+set target http://localhost/w3af/audit/phishing_vector/
 back
 start
 
-assert len( kb.kb.getData('phishingVector', 'phishingVector') ) == 1
+assert len( kb.kb.getData('phishingVector', 'phishingVector') ) == 3
 exit

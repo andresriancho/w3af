@@ -42,7 +42,12 @@ class phishingVector(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._urlForTesting = 'http://w3af.sf.net/'
+        
+        # Some internal vars
+        # I test this with different URL handlers because the developer may have
+        # blacklisted http:// and https:// but missed ftp://.
+        # I also use hTtp instead of http because I want to evade some case sensitive filters
+        self._test_urls = ['hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/', 'fTp://w3af.sf.net/']
 
     def _fuzzRequests(self, freq ):
         '''
@@ -52,7 +57,7 @@ class phishingVector(baseAuditPlugin):
         '''
         om.out.debug( 'phishingVector plugin is testing: ' + freq.getURL() )
         
-        mutants = createMutants( freq , [self._urlForTesting] )
+        mutants = createMutants( freq , self._test_urls )
             
         for mutant in mutants:
             if self._hasNoBug( 'phishingVector' , 'phishingVector' , mutant.getURL() , mutant.getVar() ):
@@ -60,7 +65,6 @@ class phishingVector(baseAuditPlugin):
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-        
             
     def _analyzeResult( self, mutant, response ):
         '''
@@ -76,20 +80,21 @@ class phishingVector(baseAuditPlugin):
         '''
         res = []
         htmlBody = response.getBody()
-        if htmlBody.find( self._urlForTesting ) != -1:
-            # Houston we have a problem ;)
-            frameRegex = re.compile('<(iframe|frame).*?src=(\'|")?' + self._urlForTesting + '.*?>', re.DOTALL )
-            if frameRegex.search( htmlBody ):
-                # Vuln vuln!
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setSeverity(severity.LOW)
-                v.setName( 'Phishing vector' )
-                v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
-                res.append( v )
+        for url in self._test_urls:
+            if htmlBody.count( url ):
+                # Houston we *may* have a problem ;)
+                regex = '<(iframe|frame).*?src=(\'|")?' + url + '.*?>'
+                frameRegex = re.compile(regex, re.DOTALL )
+                if frameRegex.search( htmlBody ):
+                    # Vuln vuln!
+                    v = vuln.vuln( mutant )
+                    v.setId( response.id )
+                    v.setSeverity(severity.LOW)
+                    v.setName( 'Phishing vector' )
+                    v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
+                    res.append( v )
         return res
         
-    
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -127,9 +132,9 @@ class phishingVector(baseAuditPlugin):
         '''
         return '''
         This plugins finds phishing vectors in web applications, for example, a bug of this type is found
-        if I request the URL "http://www.XXX.com/asd.asp?info=http://www.google.com" and in the response
+        if I request the URL "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
         HTML the web application sends: 
-        ... 
-        <iframe src="http://www.google.com">
-        ....
+            ... 
+            <iframe src="http://attacker.tld">
+            ....
         '''
