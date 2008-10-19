@@ -19,7 +19,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/eval/eval.php?c=
+set target http://localhost/w3af/audit/eval/eval.php?c=
 back
 start
 

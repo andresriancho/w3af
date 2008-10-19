@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.kb.vuln as vuln
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.fuzzer.fuzzer import createRandAlpha
 import core.controllers.outputManager as om
@@ -32,15 +31,10 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+from core.controllers.w3afException import w3afException
 import re
-
-#Create some random strings, which the plugin will use.
-Rndn1 = createRandAlpha(5)
-Rndn2 = createRandAlpha(5)
-Rndn = Rndn1 + Rndn2
 
 class eval(baseAuditPlugin):
     '''
@@ -52,6 +46,11 @@ class eval(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
+        #Create some random strings, which the plugin will use.
+        self._rnd1 = createRandAlpha(5)
+        self._rnd2 = createRandAlpha(5)
+        self._rndn = self._rnd1 + self._rnd2
+        
     def _fuzzRequests(self, freq ):
         '''
         Tests an URL for eval() user input injection vulnerabilities.
@@ -61,8 +60,8 @@ class eval(baseAuditPlugin):
         om.out.debug( 'eval plugin is testing: ' + freq.getURL() )
 
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        evalStrings = self._getEvalStrings()
-        mutants = createMutants( freq , evalStrings, oResponse=oResponse )
+        eval_strings = self._get_eval_strings()
+        mutants = createMutants( freq , eval_strings, oResponse=oResponse )
 
         for mutant in mutants:
             if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
@@ -71,25 +70,25 @@ class eval(baseAuditPlugin):
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
 
-    def _getEvalStrings( self ):
+    def _get_eval_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         @return: A list with all the strings to test.
         '''
-        Evalstr = []
+        eval_strings = []
         # PHP
-        Evalstr.append("echo \x27"+ Rndn1 +"\x27 . \x27"+ Rndn2 +"\x27;")
+        eval_strings.append("echo \x27"+ self._rnd1 +"\x27 . \x27"+ self._rnd2 +"\x27;")
         # ASP
-        Evalstr.append("Response.Write\x28\x22"+Rndn1+"+"+Rndn2+"\x22\x29")
-        return Evalstr
+        eval_strings.append("Response.Write\x28\x22"+self._rnd1+"+"+self._rnd2+"\x22\x29")
+        return eval_strings
 
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
         '''
 
-        EvalErrorList = self._findEvalError( response )
-        for evalError in EvalErrorList:
+        eval_error_list = self._findEvalError( response )
+        for evalError in eval_error_list:
             if not re.search( evalError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
@@ -107,7 +106,7 @@ class eval(baseAuditPlugin):
 
     def _findEvalError( self, response ):
         '''
-        This method searches for the randomized Rndn string in html's.
+        This method searches for the randomized self._rndn string in html's.
         
         @parameter response: The HTTP response object
         @return: A list of error found on the page
@@ -116,7 +115,8 @@ class eval(baseAuditPlugin):
         for evalError in self._getEvalErrors():
             match = re.search( evalError, response.getBody() , re.IGNORECASE )
             if match:
-                msg = 'Verified eval() input injection, found the concatenated random string: "' + response.getBody()[match.start():match.end()] + '" '
+                msg = 'Verified eval() input injection, found the concatenated random string: "'
+                msg += response.getBody()[match.start():match.end()] + '" '
                 msg += 'in the response body. '
                 msg += 'The vulnerability was found on response with id ' + str(response.id) + '.'
                 om.out.debug( msg )
@@ -124,8 +124,11 @@ class eval(baseAuditPlugin):
         return res
         
     def _getEvalErrors( self ):
+        '''
+        @return: The string that results from the evaluation of what I sent.
+        '''
         errorStr = []
-        errorStr.append( Rndn )
+        errorStr.append( self._rndn )
         return errorStr
 
     def getOptions( self ):
