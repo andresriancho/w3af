@@ -67,6 +67,7 @@ class responseSplitting(baseAuditPlugin):
         '''
         res = []
         res.append( 'Header may not contain more than a single header, new line detected' )
+        res.append( 'Cannot modify header information - headers already sent' )
         return res
     
     def _analyzeResult( self, mutant, response ):
