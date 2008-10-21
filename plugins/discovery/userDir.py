@@ -52,7 +52,7 @@ class userDir(baseDiscoveryPlugin):
         self._identifyApplications = True
         
         # For testing
-        self._doFastSearch = True
+        self._doFastSearch = False
     
     def discover(self, fuzzableRequest ):
         '''
