@@ -41,9 +41,9 @@ class privateIP(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._classA = re.compile('([^\.]10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-        self._classB = re.compile('([^\.]172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-        self._classC = re.compile('([^\.]192\.168\.\d?\d?\d?\.\d?\d?\d?)')
+        self._classA = re.compile('([^\.]10\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?[^\.])')
+        self._classB = re.compile('([^\.]172\.[1-3]\d?\d?\.\d\d?\d?\.\d\d?\d?[^\.])')
+        self._classC = re.compile('([^\.]192\.168\.\d\d?\d?\.\d\d?\d?[^\.])')
         self._regexList = [self._classA, self._classB, self._classC ]
         
     def _testResponse(self, request, response):
@@ -65,7 +65,7 @@ class privateIP(baseGrepPlugin):
                             v.setSeverity(severity.LOW)
                             v.setName( 'Private IP disclosure vulnerability' )
                             
-                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTTP header with an IP address: ' +  match )
+                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTTP header with an IP address: "' +  match + '".' )
                             v['header'] = header
                             v['IP'] = match                            
                             kb.kb.append( self, 'header', v )       
@@ -77,13 +77,14 @@ class privateIP(baseGrepPlugin):
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response; and regular expression matching is way slower!
-            if not (('10' in response) or ('172' in response) or ('192.168' in response)):
+            if not (('10.' in response) or ('172.' in response) or ('192.168.' in response)):
                 return
             
             for regex in self._regexList:
                 res = regex.search(response.getBody())
                 if res:
                     for match in res.groups():
+                        match = match.strip()
                         # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
                         if match != urlParser.getDomain(response.getURL()) and not self._wasSent( request, match ):
 
@@ -93,7 +94,7 @@ class privateIP(baseGrepPlugin):
                             v.setSeverity(severity.LOW)
                             v.setName( 'Private IP disclosure vulnerability' )
                             
-                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTML document with an IP address: ' + match )
+                            v.setDesc( 'The URL: "' + v.getURL() + '" returned an HTML document with an IP address: "' +  match + '".' )
                             v['IP'] = match
                             kb.kb.append( self, 'html', v )     
 

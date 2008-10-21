@@ -24,7 +24,7 @@ grep
 back
 
 target
-set target http://localhost/w3af/grepPlugins/index.html
+set target http://localhost/w3af/grepPlugins/private_ip.html
 back
 
 start
