@@ -120,7 +120,7 @@ class hmap(baseDiscoveryPlugin):
                     
                     # Save the results in the KB so that other plugins can use this information
                     kb.kb.append( self, 'server', i )
-                    kb.kb.save( self, 'serverString', i )
+                    kb.kb.save( self, 'serverString', server )
                     
                     # Fingerprint file generated
                     if self._genFpF:
