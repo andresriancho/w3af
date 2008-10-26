@@ -20,7 +20,7 @@
 
 __author__ = "Jose Fonseca"
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 import os
@@ -29,6 +29,7 @@ import subprocess
 import math
 import colorsys
 import time
+import re
 
 import gobject
 import gtk
@@ -37,11 +38,6 @@ import gtk.keysyms
 import cairo
 import pango
 import pangocairo
-
-import pydot
-
-if pydot.__version__ != '0.9.10':
-    sys.stderr('pydot version 0.9.10 required, but version %s found\n' % pydot.__version__)
 
 
 # See http://www.graphviz.org/pub/scm/graphviz-cairo/plugin/cairo/gvrender_cairo.c
@@ -244,6 +240,25 @@ class PolygonShape(Shape):
             cr.set_line_width(pen.linewidth)
             cr.set_source_rgba(*pen.color)
             cr.stroke()
+
+
+class LineShape(Shape):
+
+    def __init__(self, pen, points):
+        Shape.__init__(self)
+        self.pen = pen.copy()
+        self.points = points
+
+    def draw(self, cr, highlight=False):
+        x0, y0 = self.points[0]
+        cr.move_to(x0, y0)
+        for x1, y1 in self.points[1:]:
+            cr.line_to(x1, y1)
+        pen = self.select_pen(highlight)
+        cr.set_dash(pen.dash)
+        cr.set_line_width(pen.linewidth)
+        cr.set_source_rgba(*pen.color)
+        cr.stroke()
 
 
 class BezierShape(Shape):
@@ -543,6 +558,9 @@ class XDotAttrParser:
                 w = s.read_number()
                 h = s.read_number()
                 shapes.append(EllipseShape(pen, x0, y0, w, h))
+            elif op == "L":
+                p = self.read_polygon()
+                shapes.append(LineShape(pen, p))
             elif op == "B":
                 p = self.read_polygon()
                 shapes.append(BezierShape(pen, p))
@@ -563,22 +581,417 @@ class XDotAttrParser:
         return self.parser.transform(x, y)
 
 
-class GraphParseError(Exception):
-    pass
+EOF = -1
+SKIP = -2
 
 
-class XDotParser:
+class ParseError(Exception):
 
-    def __init__(self, xdotcode):
-        self.xdotcode = xdotcode
+    def __init__(self, msg=None, filename=None, line=None, col=None):
+        self.msg = msg
+        self.filename = filename
+        self.line = line
+        self.col = col
+
+    def __str__(self):
+        return ':'.join([str(part) for part in (self.filename, self.line, self.col, self.msg) if part != None])
+        
+
+class Scanner:
+    """Stateless scanner."""
+
+    # should be overriden by derived classes
+    tokens = []
+    symbols = {}
+    literals = {}
+    ignorecase = False
+
+    def __init__(self):
+        flags = re.DOTALL
+        if self.ignorecase:
+            flags |= re.IGNORECASE
+        self.tokens_re = re.compile(
+            '|'.join(['(' + regexp + ')' for type, regexp, test_lit in self.tokens]),
+             flags
+        )
+
+    def next(self, buf, pos):
+        if pos >= len(buf):
+            return EOF, '', pos
+        mo = self.tokens_re.match(buf, pos)
+        if mo:
+            text = mo.group()
+            type, regexp, test_lit = self.tokens[mo.lastindex - 1]
+            pos = mo.end()
+            if test_lit:
+                type = self.literals.get(text, type)
+            return type, text, pos
+        else:
+            c = buf[pos]
+            return self.symbols.get(c, None), c, pos + 1
+
+
+class Token:
+
+    def __init__(self, type, text, line, col):
+        self.type = type
+        self.text = text
+        self.line = line
+        self.col = col
+
+
+class Lexer:
+
+    # should be overriden by derived classes
+    scanner = None
+    tabsize = 8
+
+    newline_re = re.compile(r'\r\n?|\n')
+
+    def __init__(self, buf = None, pos = 0, filename = None, fp = None):
+        if fp is not None:
+            try:
+                fileno = fp.fileno()
+                length = os.path.getsize(fp.name)
+                import mmap
+            except:
+                # read whole file into memory
+                buf = fp.read()
+                pos = 0
+            else:
+                # map the whole file into memory
+                if length:
+                    # length must not be zero
+                    buf = mmap.mmap(fileno, length, access = mmap.ACCESS_READ)
+                    pos = os.lseek(fileno, 0, 1)
+                else:
+                    buf = ''
+                    pos = 0
+
+            if filename is None:
+                try:
+                    filename = fp.name
+                except AttributeError:
+                    filename = None
+
+        self.buf = buf
+        self.pos = pos
+        self.line = 1
+        self.col = 1
+        self.filename = filename
+
+    def next(self):
+        while True:
+            # save state
+            pos = self.pos
+            line = self.line
+            col = self.col
+
+            type, text, endpos = self.scanner.next(self.buf, pos)
+            assert pos + len(text) == endpos
+            self.consume(text)
+            type, text = self.filter(type, text)
+            self.pos = endpos
+
+            if type == SKIP:
+                continue
+            elif type is None:
+                msg = 'unexpected char '
+                if text >= ' ' and text <= '~':
+                    msg += "'%s'" % text
+                else:
+                    msg += "0x%X" % ord(text)
+                raise ParseError(msg, self.filename, line, col)
+            else:
+                break
+        return Token(type = type, text = text, line = line, col = col)
+
+    def consume(self, text):
+        # update line number
+        pos = 0
+        for mo in self.newline_re.finditer(text, pos):
+            self.line += 1
+            self.col = 1
+            pos = mo.end()
+
+        # update column number
+        while True:
+            tabpos = text.find('\t', pos)
+            if tabpos == -1:
+                break
+            self.col += tabpos - pos
+            self.col = ((self.col - 1)//self.tabsize + 1)*self.tabsize + 1
+            pos = tabpos + 1
+        self.col += len(text) - pos
+
+
+class Parser:
+
+    def __init__(self, lexer):
+        self.lexer = lexer
+        self.lookahead = self.lexer.next()
+
+    def match(self, type):
+        if self.lookahead.type != type:
+            raise ParseError(
+                msg = 'unexpected token %r' % self.lookahead.text, 
+                filename = self.lexer.filename, 
+                line = self.lookahead.line, 
+                col = self.lookahead.col)
+
+    def skip(self, type):
+        while self.lookahead.type != type:
+            self.consume()
+
+    def consume(self):
+        token = self.lookahead
+        self.lookahead = self.lexer.next()
+        return token
+
+
+ID = 0
+STR_ID = 1
+HTML_ID = 2
+EDGE_OP = 3
+
+LSQUARE = 4
+RSQUARE = 5
+LCURLY = 6
+RCURLY = 7
+COMMA = 8
+COLON = 9
+SEMI = 10
+EQUAL = 11
+PLUS = 12
+
+STRICT = 13
+GRAPH = 14
+DIGRAPH = 15
+NODE = 16
+EDGE = 17
+SUBGRAPH = 18
+
+
+class DotScanner(Scanner):
+
+    # token regular expression table
+    tokens = [
+        # whitespace and comments
+        (SKIP,
+            r'[ \t\f\r\n\v]+|'
+            r'//[^\r\n]*|'
+            r'/\*.*?\*/|'
+            r'#[^\r\n]*',
+        False),
+
+        # Alphanumeric IDs
+        (ID, r'[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*', True),
+
+        # Numeric IDs
+        (ID, r'-?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)', False),
+
+        # String IDs
+        (STR_ID, r'"[^"\\]*(?:\\.[^"\\]*)*"', False),
+
+        # HTML IDs
+        (HTML_ID, r'<[^<>]*(?:<[^<>]*>[^<>]*)*>', False),
+
+        # Edge operators
+        (EDGE_OP, r'-[>-]', False),
+    ]
+
+    # symbol table
+    symbols = {
+        '[': LSQUARE,
+        ']': RSQUARE,
+        '{': LCURLY,
+        '}': RCURLY,
+        ',': COMMA,
+        ':': COLON,
+        ';': SEMI,
+        '=': EQUAL,
+        '+': PLUS,
+    }
+
+    # literal table
+    literals = {
+        'strict': STRICT,
+        'graph': GRAPH,
+        'digraph': DIGRAPH,
+        'node': NODE,
+        'edge': EDGE,
+        'subgraph': SUBGRAPH,
+    }
+
+    ignorecase = True
+
+
+class DotLexer(Lexer):
+
+    scanner = DotScanner()
+
+    def filter(self, type, text):
+        # TODO: handle charset
+        if type == STR_ID:
+            text = text[1:-1]
+
+            # line continuations
+            text = text.replace('\\\r\n', '')
+            text = text.replace('\\\r', '')
+            text = text.replace('\\\n', '')
+            
+            text = text.replace('\\r', '\r')
+            text = text.replace('\\n', '\n')
+            text = text.replace('\\t', '\t')
+            text = text.replace('\\', '')
+
+            type = ID
+
+        elif type == HTML_ID:
+            text = text[1:-1]
+            type = ID
+
+        return type, text
+
+
+class DotParser(Parser):
+
+    def __init__(self, lexer):
+        Parser.__init__(self, lexer)
+        self.graph_attrs = {}
+        self.node_attrs = {}
+        self.edge_attrs = {}
 
     def parse(self):
-        graph = pydot.graph_from_dot_data(self.xdotcode)
+        self.parse_graph()
+        self.match(EOF)
 
-        if graph.bb is None:
-            return GraphParseError()
+    def parse_graph(self):
+        if self.lookahead.type == STRICT:
+            self.consume()
+        self.skip(LCURLY)
+        self.consume()
+        while self.lookahead.type != RCURLY:
+            self.parse_stmt()
+        self.consume()
 
-        xmin, ymin, xmax, ymax = map(int, graph.bb.split(","))
+    def parse_subgraph(self):
+        id = None
+        if self.lookahead.type == SUBGRAPH:
+            self.consume()
+            if self.lookahead.type == ID:
+                id = self.lookahead.text
+                self.consume()
+        if self.lookahead.type == LCURLY:
+            self.consume()
+            while self.lookahead.type != RCURLY:
+                self.parse_stmt()
+            self.consume()
+        return id
+
+    def parse_stmt(self):
+        if self.lookahead.type == GRAPH:
+            self.consume()
+            attrs = self.parse_attrs()
+            self.graph_attrs.update(attrs)
+            self.handle_graph(attrs)
+        elif self.lookahead.type == NODE:
+            self.consume()
+            self.node_attrs.update(self.parse_attrs())
+        elif self.lookahead.type == EDGE:
+            self.consume()
+            self.edge_attrs.update(self.parse_attrs())
+        elif self.lookahead.type in (SUBGRAPH, LCURLY):
+            self.parse_subgraph()
+        else:
+            id = self.parse_node_id()
+            if self.lookahead.type == EDGE_OP:
+                self.consume()
+                node_ids = [id, self.parse_node_id()]
+                while self.lookahead.type == EDGE_OP:
+                    node_ids.append(self.parse_node_id())
+                attrs = self.parse_attrs()
+                for i in range(0, len(node_ids) - 1):
+                    self.handle_edge(node_ids[i], node_ids[i + 1], attrs)
+            elif self.lookahead.type == EQUAL:
+                self.consume()
+                self.parse_id()
+            else:
+                attrs = self.parse_attrs()
+                self.handle_node(id, attrs)
+        if self.lookahead.type == SEMI:
+            self.consume()
+
+    def parse_attrs(self):
+        attrs = {}
+        while self.lookahead.type == LSQUARE:
+            self.consume()
+            while self.lookahead.type != RSQUARE:
+                name, value = self.parse_attr()
+                attrs[name] = value
+                if self.lookahead.type == COMMA:
+                    self.consume()
+            self.consume()
+        return attrs
+
+    def parse_attr(self):
+        name = self.parse_id()
+        if self.lookahead.type == EQUAL:
+            self.consume()
+            value = self.parse_id()
+        else:
+            value = 'true'
+        return name, value
+
+    def parse_node_id(self):
+        node_id = self.parse_id()
+        if self.lookahead.type == COLON:
+            self.consume()
+            port = self.parse_id()
+            if self.lookahead.type == COLON:
+                self.consume()
+                compass_pt = self.parse_id()
+            else:
+                compass_pt = None
+        else:
+            port = None
+            compass_pt = None
+        # XXX: we don't really care about port and compass point values when parsing xdot
+        return node_id
+
+    def parse_id(self):
+        self.match(ID)
+        id = self.lookahead.text
+        self.consume()
+        return id
+
+    def handle_graph(self, attrs):
+        pass
+
+    def handle_node(self, id, attrs):
+        pass
+
+    def handle_edge(self, src_id, dst_id, attrs):
+        pass
+
+
+class XDotParser(DotParser):
+
+    def __init__(self, xdotcode):
+        lexer = DotLexer(buf = xdotcode)
+        DotParser.__init__(self, lexer)
+        
+        self.nodes = []
+        self.edges = []
+        self.node_by_name = {}
+
+    def handle_graph(self, attrs):
+        try:
+            bb = attrs['bb']
+        except KeyError:
+            return
+
+        xmin, ymin, xmax, ymax = map(int, bb.split(","))
 
         self.xoffset = -xmin
         self.yoffset = -ymax
@@ -586,46 +999,50 @@ class XDotParser:
         self.yscale = -1.0
         # FIXME: scale from points to pixels
 
-        width = xmax - xmin
-        height = ymax - ymin
+        self.width = xmax - xmin
+        self.height = ymax - ymin
 
-        nodes = []
-        edges = []
-        node_by_name = {}
+    def handle_node(self, id, attrs):
+        try:
+            pos = attrs['pos']
+        except KeyError:
+            return
 
-        for node in graph.get_node_list():
-            if node.pos is None:
-                continue
-            x, y = self.parse_node_pos(node.pos)
-            w = float(node.width)*72
-            h = float(node.height)*72
-            shapes = []
-            for attr in ("_draw_", "_ldraw_"):
-                if hasattr(node, attr):
-                    parser = XDotAttrParser(self, getattr(node, attr))
-                    shapes.extend(parser.parse())
-            url = node.URL
-            my_node = Node(x, y, w, h, shapes, url)
-            node_name = node.get_name().strip('"') # XXX
-            node_by_name[node_name] = my_node
-            if shapes:
-                nodes.append(my_node)
+        x, y = self.parse_node_pos(pos)
+        w = float(attrs['width'])*72
+        h = float(attrs['height'])*72
+        shapes = []
+        for attr in ("_draw_", "_ldraw_"):
+            if attr in attrs:
+                parser = XDotAttrParser(self, attrs[attr])
+                shapes.extend(parser.parse())
+        url = attrs.get('URL', None)
+        node = Node(x, y, w, h, shapes, url)
+        self.node_by_name[id] = node
+        if shapes:
+            self.nodes.append(node)
 
-        for edge in graph.get_edge_list():
-            if edge.pos is None:
-                continue
-            points = self.parse_edge_pos(edge.pos)
-            shapes = []
-            for attr in ("_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_", "_tldraw_"):
-                if hasattr(edge, attr):
-                    parser = XDotAttrParser(self, getattr(edge, attr))
-                    shapes.extend(parser.parse())
-            if shapes:
-                src = node_by_name[edge.get_source()]
-                dst = node_by_name[edge.get_destination()]
-                edges.append(Edge(src, dst, points, shapes))
+    def handle_edge(self, src_id, dst_id, attrs):
+        try:
+            pos = attrs['pos']
+        except KeyError:
+            return
+        
+        points = self.parse_edge_pos(pos)
+        shapes = []
+        for attr in ("_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_", "_tldraw_"):
+            if attr in attrs:
+                parser = XDotAttrParser(self, attrs[attr])
+                shapes.extend(parser.parse())
+        if shapes:
+            src = self.node_by_name[src_id]
+            dst = self.node_by_name[dst_id]
+            self.edges.append(Edge(src, dst, points, shapes))
 
-        return Graph(width, height, nodes, edges)
+    def parse(self):
+        DotParser.parse(self)
+
+        return Graph(self.width, self.height, self.nodes, self.edges)
 
     def parse_node_pos(self, pos):
         x, y = pos.split(",")
@@ -901,10 +1318,9 @@ class DotWidget(gtk.DrawingArea):
         xdotcode = p.communicate(dotcode)[0]
         try:
             self.set_xdotcode(xdotcode)
-        except GraphParseError, e:
-            msg = "Could not parse %s, is it a valid dot file?" % filename
+        except ParseError, ex:
             error_dlg = gtk.MessageDialog(type=gtk.MESSAGE_ERROR,
-                                          message_format=msg,
+                                          message_format=str(ex),
                                           buttons=gtk.BUTTONS_OK)
             error_dlg.set_title('Dot Viewer')
             error_dlg.run()
@@ -958,10 +1374,17 @@ class DotWidget(gtk.DrawingArea):
             self.highlight = items
             self.queue_draw()
 
-    def zoom_image(self, zoom_ratio, center=False):
+    def zoom_image(self, zoom_ratio, center=False, pos=None):
         if center:
             self.x = self.graph.width/2
             self.y = self.graph.height/2
+        elif pos is not None:
+            rect = self.get_allocation()
+            x, y = pos
+            x -= 0.5*rect.width
+            y -= 0.5*rect.height
+            self.x += x / self.zoom_ratio - x / zoom_ratio
+            self.y += y / self.zoom_ratio - y / zoom_ratio
         self.zoom_ratio = zoom_ratio
         self.zoom_to_fit_on_resize = False
         self.queue_draw()
@@ -1094,10 +1517,12 @@ class DotWidget(gtk.DrawingArea):
 
     def on_area_scroll_event(self, area, event):
         if event.direction == gtk.gdk.SCROLL_UP:
-            self.zoom_image(self.zoom_ratio * self.ZOOM_INCREMENT)
+            self.zoom_image(self.zoom_ratio * self.ZOOM_INCREMENT,
+                            pos=(event.x, event.y))
             return True
         if event.direction == gtk.gdk.SCROLL_DOWN:
-            self.zoom_image(self.zoom_ratio / self.ZOOM_INCREMENT)
+            self.zoom_image(self.zoom_ratio / self.ZOOM_INCREMENT,
+                            pos=(event.x, event.y))
             return True
         return False
 
@@ -1202,6 +1627,11 @@ class DotWindow(gtk.Window):
 
     def set_dotcode(self, dotcode, filename='<stdin>'):
         if self.widget.set_dotcode(dotcode, filename):
+            self.set_title(os.path.basename(filename) + ' - Dot Viewer')
+            self.widget.zoom_to_fit()
+
+    def set_xdotcode(self, xdotcode, filename='<stdin>'):
+        if self.widget.set_xdotcode(xdotcode):
             self.set_title(os.path.basename(filename) + ' - Dot Viewer')
             self.widget.zoom_to_fit()
 
