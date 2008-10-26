@@ -164,10 +164,9 @@ class KBTree(gtk.TreeView):
 
         @return: The best obj name possible
         '''
-
-        if hasattr(obj, "getName"):
+        try:
             name = obj.getName()
-        else:
+        except:
             name = repr(obj)
         return name
         

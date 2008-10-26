@@ -41,6 +41,12 @@ class privateIP(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        # This regular expressions aren't perfect
+        # for example, 10.333.344.999 is matched... but...
+        # I haven't really found a lot of false positives and I'm lazy =)
+        # If you feel like changing them, just send me an email to 
+        # andres.riancho@gmail.com
         self._classA = re.compile('[^\.](10\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?[^\.])')
         self._classB1 = re.compile('[^\.](169\.254.\d\d?\d?\.\d\d?\d?[^\.])')
         self._classB2 = re.compile('[^\.](172\.[1-3]\d?\d?\.\d\d?\d?\.\d\d?\d?[^\.])')

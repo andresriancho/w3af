@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-10-12, 16:17:05 -->
+<!-- Saved: 2008-10-19, 21:16:41 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2366,11 +2366,6 @@
     <Source>
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
-      <Name>localProxy.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
       <Dir>localProxy</Dir>
       <Name>default.css</Name>
     </Source>
@@ -2468,10 +2463,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-grepAll.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-xssWithLogging.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3596,11 +3587,6 @@
       <Name>creditCards.py</Name>
     </Source>
     <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>detectWAF.py</Name>
-    </Source>
-    <Source>
       <Dir>core</Dir>
       <Dir>data</Dir>
       <Dir>db</Dir>
@@ -3884,6 +3870,27 @@
       <Dir>extlib</Dir>
       <Dir>xdot</Dir>
       <Name>pydot.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Name>xss_bf.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>fingerprint_WAF.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>daemons</Dir>
+      <Name>localproxy.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>audit</Dir>
+      <Name>eval.py</Name>
     </Source>
   </Sources>
   <Forms>
