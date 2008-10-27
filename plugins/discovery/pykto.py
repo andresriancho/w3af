@@ -33,9 +33,8 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 import os.path
 import re
-import traceback
-from core.data.fuzzer.fuzzer import *
 import core.data.constants.severity as severity
+from core.data.fuzzer.fuzzer import createRandAlNum
 
 class pykto(baseDiscoveryPlugin):
     '''
@@ -47,13 +46,14 @@ class pykto(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         self._exec = True
         self._cgiDirs = ['/cgi-bin/']
-        self._adminDirs = ['/admin/','/adm/'] 
-        self._users = ['adm','bin','daemon','ftp','guest','listen','lp',
-        'mysql','noaccess','nobody','nobody4','nuucp','operator',
-        'root','smmsp','smtp','sshd','sys','test','unknown']                  
-        self._nuke = ['/','/postnuke/','/postnuke/html/','/modules/','/phpBB/','/forum/']
+        self._adminDirs = ['/admin/', '/adm/'] 
+        self._users = ['adm', 'bin', 'daemon', 'ftp', 'guest', 'listen', 'lp',
+        'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp', 'operator',
+        'root', 'smmsp', 'smtp', 'sshd', 'sys', 'test', 'unknown']                  
+        self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/', '/phpBB/', '/forum/']
 
         self._dbFile = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'scan_database.db'
+        self._extra_db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'w3af_scan_database.db'
         self._mutateTests = False
         self._genericScan = False
         self._updateScandb = False
@@ -76,7 +76,6 @@ class pykto(baseDiscoveryPlugin):
             
         else:
             # run!
-
             if self._updateScandb:
                 self._updateDb()
             
@@ -103,93 +102,107 @@ class pykto(baseDiscoveryPlugin):
         '''
         Really run the plugin.
         '''
-        # read the nikto database.
         try:
-            f = open(self._dbFile, "r")
-        except:
-            raise w3afException('Could not open nikto scan database.')
+            # read the nikto database.
+            db_file_1 = open(self._dbFile, "r")
+            # read the w3af scan database.
+            db_file_2 = open(self._extra_db_file, "r")
+        except Exception, e:
+            raise w3afException('Failed to open the scan databases. Exception: "' + str(e) + '".')
         else:
+
+            # Put all the tests in a list
+            test_list = db_file_1.readlines()
+            test_list.extend(db_file_2.readlines())
+            # Close the files
+            db_file_1.close()
+            db_file_2.close()
+
             # pykto that site !
-            self._pykto( url , f )
-            f.close()
+            self._pykto( url , test_list )
         
     def _updateDb( self ):
         '''
-        This method updates the scandatabase from cirt.net .
+        This method updates the scan_database from cirt.net .
         '''
         # Only update once
         self._updateScandb = False
-        self._versionFile = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'versions.txt'
+
+        # Here we have the versions
+        _version_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'versions.txt'
         
         try:
-            fd = file( self._versionFile )
+            version_file = file( _version_file )
         except:
-            raise w3afException('Could not open: ' + self._versionFile + ' while updating pykto scandatabase.' )
+            raise w3afException('Could not open: ' + _version_file + ' while updating pykto scan_database.' )
         
         try:
-            for line in fd:
+            for line in version_file:
                 if line.count('scan_database.db'):
-                    name, localVersion = line.strip().split(',')
+                    _, localVersion = line.strip().split(',')
                     break
         except:
-            raise w3afException('Format error in file: ' + self._versionFile + ' while updating pykto scandatabase.' )
+            raise w3afException('Format error in file: ' + _version_file + ' while updating pykto scan_database.' )
         
-        fd.close()
-        om.out.debug('Local version of pykto scandatabase.db is: ' + localVersion)
+        version_file.close()
+        om.out.debug('Local version of pykto scan_database.db is: ' + localVersion)
         
         # fetching remote version
-        resVersion = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.35/versions.txt')
+        resVersion = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
         
         fetchedVersion = False
         for line in resVersion.getBody().split():
             if line.count('scan_database.db'):
-                name, remoteVersion = line.strip().split(',')
+                _, remoteVersion = line.strip().split(',')
                 fetchedVersion = True
         
         if not fetchedVersion:
             om.out.error('pykto can\'t update the scan database, an error ocurred while fetching the versions.txt file from cirt.net .')
         else:
-            om.out.debug('Remote version of nikto scandatabase.db is: ' + remoteVersion)
+            om.out.debug('Remote version of nikto scan_database.db is: "' + remoteVersion + '".')
             
             localVersion = float( localVersion )
             remoteVersion = float( remoteVersion )
             
             if localVersion == remoteVersion:
-                om.out.information('Local and Remote version of nikto scandatabase.db match, no update needed.')
+                om.out.information('Local and Remote version of nikto scan_database.db match, no update needed.')
             elif localVersion > remoteVersion:
-                om.out.information('Local version of scandatabase.db is grater than remote version... this is odd... check this.')
+                om.out.information('Local version of scan_database.db is grater than remote version... this is odd... check this.')
             else:
-                om.out.information('Updating to scandatabase version: ' + str(remoteVersion) )
-                res = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.35/scan_database.db')
+                om.out.information('Updating to scan_database version: "' + str(remoteVersion) + '".' )
+                res = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
                 try:
-                    # Write new scandatabase
+                    # Write new scan_database
                     os.unlink( self._dbFile )
                     fdNewDb = file( self._dbFile , 'w')
                     fdNewDb.write( res.getBody() )
                     fdNewDb.close()
                     
                     # Write new version file
-                    os.unlink( self._versionFile )
-                    fdNewVersion = file( self._versionFile , 'w')
+                    os.unlink( _version_file )
+                    fdNewVersion = file( _version_file , 'w')
                     fdNewVersion.write( resVersion.getBody() )
                     fdNewVersion.close()
                     
-                    om.out.information('Successfully updated scandatabase.db to version: ' + str(remoteVersion) )
+                    om.out.information('Successfully updated scan_database.db to version: ' + str(remoteVersion) )
                     
                 except:
-                    raise w3afException('There was an error while writing the new scandatabase.db file to disk.')
+                    raise w3afException('There was an error while writing the new scan_database.db file to disk.')
                 
     
-    def _pykto(self, url , scanDbHandle ):
+    def _pykto(self, url , test_list ):
         '''
         This method does all the real work. Writes vulns to the KB.
-        
+
+
+        @parameter url: The base URL
+        @parameter test_list: The list of all the tests that have to be performed        
         @return: A list with new url's found.
         '''
         toReturn = []
         lines = 0
         linesSent = 0
-        for line in scanDbHandle:
+        for line in test_list:
             #om.out.debug( 'Read scan_database: '+ line[:len(line)-1] )
             if not self._isComment( line ):
                 # This is a sample scan_database.db line :
@@ -266,7 +279,7 @@ class pykto(baseDiscoveryPlugin):
         else:
             return False
         
-    def _isComment( self ,line ):
+    def _isComment( self, line ):
         '''
         The simplest method ever.
         
@@ -382,12 +395,18 @@ class pykto(baseDiscoveryPlugin):
             v = vuln.vuln()
             v.setURI( response.getURI() )
             v.setMethod( method )
-            vulnDesc = 'pykto plugin found a vulnerability at URL: ' + v.getURL() + ' . Vulnerability description: ' + desc.strip()
-            if not vulnDesc.endswith('.'):
-                vulnDesc += '.'
-            v.setDesc( vulnDesc )
+            vuln_desc = 'pykto plugin found a vulnerability at URL: "' + v.getURL() + '". '
+            vuln_desc += 'Vulnerability description: "' + desc.strip() + '"'
+            if not vuln_desc.endswith('.'):
+                vuln_desc += '.'
+            v.setDesc( vuln_desc )
             v.setId( response.id )
-            v.setName( 'Insecure file - ' + urlParser.getPath(response.getURL()))
+
+            if not urlParser.getPath(response.getURL()).endswith('/'):
+                msg = 'Insecure file - ' + urlParser.getPath(response.getURL())
+            else:
+                msg = 'Insecure directory - ' + urlParser.getPath(response.getURL())
+            v.setName( msg )
             v.setSeverity(severity.LOW)
 
             kb.kb.append( self, 'vuln', v )
@@ -476,7 +495,7 @@ class pykto(baseDiscoveryPlugin):
         h5 = 'Define if we will test all files with all root directories.'
         o5 = option('mutateTests', self._mutateTests, d5, 'boolean', help=h5)        
 
-        d6 = 'Verify that pykto is using the latest scandatabase from cirt.net.'
+        d6 = 'Verify that pykto is using the latest scan_database from cirt.net.'
         o6 = option('updateScandb', self._updateScandb, d6, 'boolean')
 
         d7 = 'If generic scan is enabled all tests are sent to the remote server without checking the server type.'
@@ -485,11 +504,16 @@ class pykto(baseDiscoveryPlugin):
     server reported "iis" then the test is sent anyway.'
         o7 = option('genericScan', self._genericScan, d7, 'boolean', help=h7)        
 
+        d8 = 'The path to the w3af_scan_databse.db file.'
+        h8 = 'This is a file which has some extra checks for files that are not present in the nikto database.'
+        o8 = option('extra_db_file', self._extra_db_file, d8, 'string', help=h8)
+
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
         ol.add(o4)
+        ol.add(o8)  # Intentionally out of order
         ol.add(o5)
         ol.add(o6)
         ol.add(o7)
@@ -507,6 +531,7 @@ class pykto(baseDiscoveryPlugin):
         self._cgiDirs = optionsMap['cgiDirs'].getValue()
         self._adminDirs = optionsMap['adminDirs'].getValue()
         self._nuke = optionsMap['nukeDirs'].getValue()
+        self._dbFile = optionsMap['extra_db_file'].getValue()
         self._dbFile = optionsMap['dbFile'].getValue()
         self._mutateTests = optionsMap['mutateTests'].getValue()
         self._genericScan = optionsMap['genericScan'].getValue()
@@ -525,7 +550,7 @@ class pykto(baseDiscoveryPlugin):
         '''
         return '''
         This plugin is a nikto port to python.
-        It uses the scandatabase file from nikto to search for new and vulnerable URL's.
+        It uses the scan_database file from nikto to search for new and vulnerable URL's.
         
         Seven configurable parameters exist:
             - updateScandb
@@ -533,10 +558,11 @@ class pykto(baseDiscoveryPlugin):
             - adminDirs
             - nukeDirs
             - dbFile
+            - extra_db_file
             - mutateTests
             - genericScan
         
-        This plugin reads every line in the scandatabase and based on the configuration ( "cgiDirs", "adminDirs" , 
-        "nukeDirs" and "genericScan" ) it does requests to the remote server searching for common files that may
-        introduce vulnerabilities.
+        This plugin reads every line in the scan_database (and extra_db_file) and based on the configuration 
+        ( "cgiDirs", "adminDirs" , "nukeDirs" and "genericScan" ) it performs requests to the remote server
+        searching for common files that may contain vulnerabilities.
         '''
