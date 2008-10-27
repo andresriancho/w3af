@@ -98,9 +98,11 @@ class allowedMethods(baseDiscoveryPlugin):
                 allowedMethods = list(set(allowedMethods))
 
         if not withOptions:
-            # 'DELETE' is not tested ! I don't want to remove anything...
+            # 'DELETE' is not tested! I don't want to remove anything...
+            # 'PUT' is not tested! I don't want to overwrite anything...
             methods_to_test = self._supportedMethods[:]
             methods_to_test.remove('DELETE')
+            methods_to_test.remove('PUT')
 
             for method in methods_to_test:
                 methodFunctor = getattr( self._urlOpener, method )

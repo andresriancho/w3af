@@ -84,7 +84,7 @@ class collectCookies(baseGrepPlugin):
                         i['persistent'] = True
                         
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' + i.getURL() + '" sent the cookie: ' + i['cookie-string'] )
+                    i.setDesc( 'The URL: "' + i.getURL() + '" sent the cookie: "' + i['cookie-string'] + '".')
                     kb.kb.append( self, 'cookies', i )
                     
                     # Find if the cookie introduces any vulnerability, or discloses information
@@ -210,6 +210,7 @@ class collectCookies(baseGrepPlugin):
         
         # ASP
         cookieDB.append( ('ASPSESSIONID','ASP') )
+        cookieDB.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT','Outlook Web Access') )
         
         # PHP
         cookieDB.append( ('PHPSESSID=','PHP') )

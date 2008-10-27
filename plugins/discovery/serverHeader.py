@@ -74,7 +74,7 @@ class serverHeader(baseDiscoveryPlugin):
                     i = info.info()
                     i.setName('Server header')
                     i.setId( response.getId() )
-                    i.setDesc('The server header for the remote web server is: ' + server )
+                    i.setDesc('The server header for the remote web server is: "' + server + '".' )
                     i['server'] = server
                     om.out.information( i.getDesc() )
                     
@@ -119,7 +119,7 @@ class serverHeader(baseDiscoveryPlugin):
                         i = info.info()
                         i.setName('Powered by header')
                         i.setId( response.getId() )
-                        i.setDesc(h + ' header for this HTTP server is: ' + poweredBy )
+                        i.setDesc('"' + h + '" header for this HTTP server is: "' + poweredBy + '".' )
                         i['poweredBy'] = poweredBy
                         om.out.information( i.getDesc() )
                         
