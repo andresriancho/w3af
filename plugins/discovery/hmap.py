@@ -33,26 +33,16 @@ import plugins.discovery.oHmap.hmap as originalHmap
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce,  w3afException
-from core.controllers.misc.levenshtein import relative_distance
 
 class hmap(baseDiscoveryPlugin):
     '''
     Fingerprint the server type, i.e apache, iis, tomcat, etc.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    
-    '''
-    It uses fingerprinting, not just the Server header returned by remote server.
-    This plugin is a wrapper for Dustin Lee's hmap.
-    
-    @author: Andres Riancho ( andres.riancho@gmail.com )
-    '''
-
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
         # Control flow
-        self._foundOS = False
         self._runnedHmap = False
         self._exec = True
         
@@ -73,13 +63,10 @@ class hmap(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             
-            if self._foundOS and self._runnedHmap:
+            if self._runnedHmap:
                 # Nothing else to do here.
                 self._exec = False
-                
-            if not self._foundOS:
-                self._findOS( fuzzableRequest )
-            
+                            
             if not self._runnedHmap:
                 self._runnedHmap = True
                 
@@ -130,40 +117,6 @@ class hmap(baseDiscoveryPlugin):
             
         return []
     
-    def _findOS( self, fuzzableRequest ):
-        '''
-        Analyze responses and determine if remote web server runs on windows or *nix
-        @Return: None, the knowledge is saved in the knowledgeBase
-        '''
-        dirs = urlParser.getDirectories( fuzzableRequest.getURL() )
-        filename = urlParser.getFileName( fuzzableRequest.getURL() )
-        if len( dirs ) > 1 and filename:
-            last = dirs[-1]
-            windowsURL = last[0:-1] + '\\' + filename
-            windowsResponse = self._urlOpener.GET( windowsURL )
-            
-            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
-            self._foundOS = True
-            
-            if relative_distance( originalResponse.getBody(), windowsResponse.getBody() ) > 0.98:
-                i = info.info()
-                i.setName('Operating system')
-                i.setURL( windowsResponse.getURL() )
-                i.setMethod( 'GET' )
-                i.setDesc('Fingerprinted this host as a Microsoft Windows system.' )
-                i.setId( windowsResponse.id )
-                kb.kb.append( self, 'operatingSystem', 'windows' )
-                om.out.information( i.getDesc() )
-            else:
-                i = info.info()
-                i.setName('Operating system')
-                i.setURL( originalResponse.getURL() )
-                i.setMethod( 'GET' )
-                i.setDesc('Fingerprinted this host as a *nix system. Detection for this operating system is weak, "if not windows: is linux".' )
-                i.setId( originalResponse.id )
-                kb.kb.append( self, 'operatingSystem', 'unix' )
-                om.out.information( i.getDesc() )
-    
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -201,11 +154,13 @@ class hmap(baseDiscoveryPlugin):
         '''
         return '''
         This plugin fingerprints the remote web server and tries to determine the
-        server type, version and patch level.
+        server type, version and patch level. It uses fingerprinting, not just the Server
+        header returned by remote server. This plugin is a wrapper for Dustin Lee's hmap.
         
         One configurable parameters exist:
             - genFpF
             
-        if genFpF is set to True, a fingerprint file is generated. Fingerprint files are used to identify unknown web servers, if you
-        generate new files please send them to w3af.project@gmail.com so we can add them to the framework.
+        if genFpF is set to True, a fingerprint file is generated. Fingerprint files are 
+        used to identify unknown web servers, if you generate new files please send them 
+        to w3af.project@gmail.com so we can add them to the framework.
         '''
