@@ -35,18 +35,6 @@ def gtkui_dependency_check():
     except:
         print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-pysqlite2'
         sys.exit( 1 )
-        
-    try:
-        import pyparsing
-    except:
-        print 'You have to install pyparsing library. On Debian based distributions: apt-get install python-pyparsing'
-        sys.exit( 1 )
-        
-    try:
-        import pydot
-    except:
-        print 'You have to install pydot library. On Debian based distributions: apt-get install python-pydot'
-        sys.exit( 1 )
     
     try:
         proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
