@@ -207,6 +207,7 @@ class HTTPResponse(httplib.HTTPResponse):
     def read(self, amt=None):
         # w3af does always read all the content of the response...
         # and I also need to do multiple reads to this response...
+        # BUGBUG: Is this OK? What if a HEAD method actually returns something?!
         if self._method == 'HEAD':
             return ''
             
