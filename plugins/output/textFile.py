@@ -46,7 +46,10 @@ class textFile(baseOutputPlugin):
         # User configured parameters
         self._fileName = 'output.txt'
         self._httpFileName = 'output-http.txt'
-        self._showCaller = True
+        # I changed this to false because the performance is enhanced A LOT
+        # Show Caller False: Performed 4001 requests in 10 seconds (400.100000 req/sec)
+        # Show Caller True: Performed 4001 requests in 28 seconds (142.892857 req/sec)
+        self._showCaller = False
         self.verbose = True
         
         # Internal variables
