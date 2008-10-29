@@ -10,17 +10,20 @@ back
 output config console
 set verbose False
 back
-discovery webSpider
+
 grep error500
 grep
+
 audit xss
 audit
 back
+
 target
-set target http://localhost/w3af/basicAuthBrute/
+set target http://localhost/w3af/grep/error_500/500.php?id=1
 back
+
 start
 
-assert len(kb.kb.getData('error500','error500')) == 2
+assert len(kb.kb.getData('error500','error500')) == 4
 
 exit

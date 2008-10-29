@@ -23,9 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import re
 
 class dotNetEventValidation(baseGrepPlugin):
@@ -58,6 +61,7 @@ class dotNetEventValidation(baseGrepPlugin):
         if response.is_text_or_html():
 
             # First verify if we havent greped this yet
+            ### FIXME: Memory usage!!!
             if request.getURI() in self._alreadyReported:
                 return
             else:
@@ -83,7 +87,8 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                     msg = 'The URL: "' + i.getURL() + '" has .NET ViewState encryption disabled.'
-                    msg += 'This programming/configuration error could be exploited to decode the viewstate contents.'
+                    msg += 'This programming/configuration error could be exploited '
+                    msg += 'to decode the viewstate contents.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'dotNetEventValidation', i )
 
