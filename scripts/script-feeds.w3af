@@ -2,7 +2,7 @@
 
 plugins
 output console,textFile
-output
+
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -12,12 +12,12 @@ set verbose False
 back
 
 grep feeds
-grep
+back
 
-back
 target
-set target http://localhost/w3af/grepPlugins/feeds.html
+set target http://localhost/w3af/grep/feeds.html
 back
+
 start
 
 assert len( kb.kb.getData('feeds', 'feeds') ) == 1

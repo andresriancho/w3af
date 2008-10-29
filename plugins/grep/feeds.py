@@ -21,14 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import re
-from core.data.getResponseType import *
 
 class feeds(baseGrepPlugin):
     '''
@@ -41,26 +44,41 @@ class feeds(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._compiledRegex = []
         
-    def _getfeedsNames( self ):
+    def _get_feeds( self ):
         if not self._compiledRegex:
-            self._compiledRegex.append( (re.compile('<rss version="(.*?)">'), 'RSS') )  # rss 0.9, rss 2.0
-            self._compiledRegex.append( (re.compile('xmlns="http://purl.org/rss/(.*?)/"'), 'RSS') ) #rss 1.0
-            self._compiledRegex.append( (re.compile('<feed version="(.*?)"'), 'OPML') )
+            # rss 0.9, rss 2.0
+            self._compiledRegex.append( (re.compile('<rss version="(.*?)">', re.IGNORECASE), 'RSS') )
+            # rss 1.0
+            self._compiledRegex.append( (re.compile('xmlns="http://purl.org/rss/(.*?)/"', re.IGNORECASE), 'RSS') )
+            # OPML
+            self._compiledRegex.append( (re.compile('<feed version="(.*?)"', re.IGNORECASE), 'OPML') )
+            self._compiledRegex.append( (re.compile('<opml version="(.*?)">', re.IGNORECASE), 'OPML') )
             
         return self._compiledRegex
         
     def _testResponse(self, request, response):
-        
-        for regex, feed_type in self._getfeedsNames():
-            res = regex.search( response.getBody() )
-            if res:
-                resStr = res.groups()[0]
-                i = info.info()
-                i.setName(feed_type +' feed')
-                i.setURL( response.getURL() )
-                i.setDesc( "The URL: " + i.getURL() + " is a " + feed_type + " version " + resStr +" feed."  )
-                i.setId( response.id )
-                kb.kb.append( self, 'feeds', i )
+        '''
+        Plugin entry point, find feeds.
+        @return: None
+        '''
+
+        # Performance enhancement
+        # (this was the longer string I could find that intersecter all the feed strings)
+        if '="' in response.getBody():
+
+            # Now do the real work
+            for regex, feed_type in self._get_feeds():
+                match = regex.search( response.getBody() )
+                if match:
+                    match_string = match.groups()[0]
+                    i = info.info()
+                    i.setName(feed_type +' feed')
+                    i.setURL( response.getURL() )
+                    msg = 'The URL: "' + i.getURL() + '" is a ' + feed_type + ' version "' 
+                    msg += match_string + '" feed.'
+                    i.setDesc( msg )
+                    i.setId( response.id )
+                    kb.kb.append( self, 'feeds', i )
     
     def setOptions( self, OptionList ):
         pass
