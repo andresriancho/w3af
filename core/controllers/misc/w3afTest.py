@@ -47,7 +47,7 @@ def getScripts():
 def runScript( scriptName ):
     om.out.information('Running: ' + scriptName )
     try:
-        output = commands.getoutput('python w3af -s ' + scriptName)
+        output = commands.getoutput('python w3af_console -s ' + scriptName)
     except KeyboardInterrupt, k:
         output = ''
         om.out.information('User cancelled the script. Hit Ctrl+C again to cancel all the test or wait two seconds to continue with the next script.')
