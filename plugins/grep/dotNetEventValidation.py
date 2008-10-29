@@ -75,7 +75,7 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setName('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled.'
+                    msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled. '
                     msg += 'This programming/configuration error should be manually verified.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'dotNetEventValidation', i )
@@ -86,7 +86,7 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setName('.NET ViewState encryption is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    msg = 'The URL: "' + i.getURL() + '" has .NET ViewState encryption disabled.'
+                    msg = 'The URL: "' + i.getURL() + '" has .NET ViewState encryption disabled. '
                     msg += 'This programming/configuration error could be exploited '
                     msg += 'to decode the viewstate contents.'
                     i.setDesc( msg )
