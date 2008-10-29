@@ -50,7 +50,7 @@ class domXss(baseGrepPlugin):
         self._script_re = re.compile('< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL )
 
         # Function regular expressions
-        self._function_names_re = [ re.compile(i) for i in self._get_function_names() ]
+        self._function_names_re = [ re.compile(i, re.IGNORECASE) for i in self._get_function_names() ]
         
     def _get_function_names( self ):
         '''
@@ -99,7 +99,7 @@ class domXss(baseGrepPlugin):
                 for script_code in match.groups():
                     
                     for function_re in self._function_names_re:
-                        parameters = function_re.search( script_code, re.IGNORECASE )
+                        parameters = function_re.search( script_code )
                         
                         if parameters:
                             for user_controlled in self._get_DOM_user_controlled():

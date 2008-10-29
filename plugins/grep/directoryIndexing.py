@@ -47,7 +47,7 @@ class directoryIndexing(baseGrepPlugin):
         # Added performance by compiling all the regular expressions
         # before using them. The setup time of the whole plugin raises,
         # but the execution time is lowered *a lot*.
-        self._compiled_regex_list = [ re.compile(regex) for regex in self._get_indexing_regex() ]
+        self._compiled_regex_list = [ re.compile(regex, re.IGNORECASE | re.DOTALL) for regex in self._get_indexing_regex() ]
 
     def _testResponse(self, request, response):
         '''
@@ -57,7 +57,7 @@ class directoryIndexing(baseGrepPlugin):
         if response.is_text_or_html():
             html_string = response.getBody()
             for indexing_regex in self._compiled_regex_list:
-                if indexing_regex.search( html_string, re.IGNORECASE ):
+                if indexing_regex.search( html_string ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     msg = 'The URL: "' + response.getURL() + '" has a directory '
