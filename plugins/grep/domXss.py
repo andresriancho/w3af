@@ -21,15 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import re
-from core.data.getResponseType import *
 import core.data.constants.severity as severity
+
+import re
 
 class domXss(baseGrepPlugin):
     '''
@@ -40,9 +43,20 @@ class domXss(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._scriptre = re.compile('< *script *>(.*?)</ *script *>',re.IGNORECASE | re.DOTALL )
+
+        #
+        # Compile the regular expressions
+        #
+        self._script_re = re.compile('< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL )
+
+        # Function regular expressions
+        self._function_names_re = [ re.compile(i) for i in self._get_function_names() ]
         
-    def _getFunctionNames( self ):
+    def _get_function_names( self ):
+        '''
+        @return: A list of function names that can be used as an attack
+        vector in DOM XSS
+        '''
         res = []
         res.append('document.write')
         res.append('document.writeln')
@@ -51,9 +65,20 @@ class domXss(baseGrepPlugin):
         res.append('window.open')
         res.append('eval')
         res.append('window.execScript')
+
+        # Add the function invocation regex that matches:
+        # eval( a )
+        # eval ( abc )
+        # eval( 'def' )
+        res = [ i + ' *\((.*?)\)' for i in res ]
+
         return res
     
-    def _getDOMUserControlled( self ):
+    def _get_DOM_user_controlled( self ):
+        '''
+        @return: A list of user controlled variables that can be used as an attack 
+        vector in DOM XSS.
+        '''
         res = []
         res.append('document.URL')
         res.append('document.URLUnencoded')
@@ -63,25 +88,30 @@ class domXss(baseGrepPlugin):
         return res
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, search for the DOM XSS vulns.
+        @return: None
+        '''
         if response.is_text_or_html():
             
-            res = self._scriptre.search( response.getBody() )
-            if res:
-                for scriptCode in res.groups():
+            match = self._script_re.search( response.getBody() )
+            if match:
+                for script_code in match.groups():
                     
-                    for functionName in self._getFunctionNames():
-                        parameters = re.search( functionName + ' *\((.*?)\)', scriptCode , re.IGNORECASE )
+                    for function_re in self._function_names_re:
+                        parameters = function_re.search( script_code, re.IGNORECASE )
                         
                         if parameters:
-                            for userControlled in self._getDOMUserControlled():
-                                if userControlled in parameters.groups()[0]:
+                            for user_controlled in self._get_DOM_user_controlled():
+                                if user_controlled in parameters.groups()[0]:
                                     v = vuln.vuln()
                                     v.setURL( response.getURL() )
                                     v.setId( response.id )
                                     v.setSeverity(severity.LOW)
-                                    v.setName( 'DOM Cross site scripting' )                                    
-                                    v.setDesc( 'The URL: "' + v.getURL() + '" has a DOM XSS bug using this DOM object: "'+ userControlled  + '".')
+                                    v.setName( 'DOM Cross site scripting' )
+                                    msg = 'The URL: "' + v.getURL() + '" has a DOM XSS '
+                                    msg += 'bug using this DOM object: "'+ user_controlled  + '".'
+                                    v.setDesc(msg)
                                     kb.kb.append( self, 'domXss', v )
     
     def setOptions( self, OptionList ):
@@ -113,5 +143,6 @@ class domXss(baseGrepPlugin):
         '''
         return '''
         This plugin greps every page for traces of DOM XSS. An interesting paper about DOM XSS
-        can be found here : http://www.webappsec.org/projects/articles/071105.shtml .
+        can be found here:
+            - http://www.webappsec.org/projects/articles/071105.shtml
         '''

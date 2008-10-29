@@ -104,6 +104,8 @@ class errorPages(baseGrepPlugin):
 
         # Coldfusion
         mesg.append('<title>Error Occurred While Processing Request</title></head><body><p></p>')
+        mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>')
+        mesg.append('<TR><TD><H4>Error Diagnostic Information</H4><P><P>')
         mesg.append('<li>Search the <a href="http://www.macromedia.com/support/coldfusion/" target="new">Knowledge Base</a> to find a solution to your problem.</li>')
         
         # http://www.programacion.net/asp/articulo/kbr_execute/
@@ -111,7 +113,8 @@ class errorPages(baseGrepPlugin):
         
         # IIS
         mesg.append('<h2 style="font:8pt/11pt verdana; color:000000">HTTP 403.6 - Forbidden: IP address rejected<br>')
-        
+        mesg.append('<TITLE>500 Internal Server Error</TITLE>')
+       
         return mesg
         
     def _testResponse(self, request, response):
@@ -193,5 +196,5 @@ class errorPages(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for error Pages.
+        This plugin greps every page for error pages.
         '''

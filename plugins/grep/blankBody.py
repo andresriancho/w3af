@@ -20,17 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import *
-from core.data.getResponseType import *
-import re
 
 class blankBody(baseGrepPlugin):
     '''
@@ -43,17 +40,25 @@ class blankBody(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, find the blank bodies and report them.
+        @return: None
+        '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
         and response.getCode() != 401 and 'location' not in response.getLowerCaseHeaders():
             i = info.info()
             i.setName('Blank body')
             i.setURL( response.getURL() )
             i.setId( response.id )
-            i.setDesc( 'The URL: "'+ response.getURL()  + '" returned an empty body. This could indicate an error.')
+            msg = 'The URL: "'+ response.getURL()  + '" returned an empty body. '
+            msg += 'This could indicate an error.'
+            i.setDesc(msg)
             kb.kb.append( self, 'blankBody', i )
         
     def setOptions( self, OptionList ):
+        '''
+        Nothing to do here, no options.
+        '''
         pass
     
     def getOptions( self ):
@@ -81,5 +86,6 @@ class blankBody(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds blank body responses, this responses may indicate errors and misconfigurations.
+        This plugin finds HTTP responses with a blank body, these responses may indicate errors or
+        misconfigurations in the web application or the web server.
         '''

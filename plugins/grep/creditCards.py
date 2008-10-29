@@ -81,7 +81,10 @@ class creditCards(baseGrepPlugin):
         self._markupRegex = re.compile(markupRegex)
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, search for the credit cards.
+        @return: None
+        '''
         if response.is_text_or_html() and response.getCode() == 200:
             found_cards = self._find_card(response.getBody())
             for card in found_cards:

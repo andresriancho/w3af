@@ -20,20 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.htmlParser as htmlParser
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import Cookie
-from Cookie import CookieError
-import core.data.parsers.urlParser as urlParser
 import core.data.kb.vuln as vuln
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
 import core.data.constants.severity as severity
+
+import Cookie
+
+import core.data.parsers.urlParser as urlParser
+from core.controllers.misc.groupbyMinKey import groupbyMinKey
+
 
 class collectCookies(baseGrepPlugin):
     '''
@@ -45,10 +49,13 @@ class collectCookies(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._alreadyReportedServer = []
-        self._cookieHeaders = ['Set-Cookie'.upper(),'Cookie'.upper(),'Cookie2'.upper()]
+        self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
     
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, search for cookies.
+        @return: None
+        '''
         for key in response.getHeaders():  
             if key.upper() in self._cookieHeaders:
                 # save
@@ -63,7 +70,7 @@ class collectCookies(baseGrepPlugin):
                 C = Cookie.SimpleCookie()
                 try:
                     C.load( headers[ key ].strip() )
-                except CookieError,  ce:
+                except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
                     msg = 'The cookie that was sent by the remote web application doesn\'t respect the RFC.'
                     om.out.information(msg)
@@ -74,17 +81,21 @@ class collectCookies(baseGrepPlugin):
                     i['cookie-object'] = C
                     
                     '''
-                    The expiration date tells the browser when to delete the cookie. If no expiration date is provided, the cookie is 
-                    deleted at the end of the user session, that is, when the user quits the browser. As a result, specifying an expiration 
-                    date is a means for making cookies to survive across browser sessions. For this reason, cookies that have an expiration
-                    date are called persistent.
+                    The expiration date tells the browser when to delete the cookie. If no 
+                    expiration date is provided, the cookie is deleted at the end of the user
+                    session, that is, when the user quits the browser. As a result, specifying an
+                    expiration date is a means for making cookies to survive across browser 
+                    sessions. For this reason, cookies that have an expiration date are called 
+                    persistent.
                     '''
                     i['persistent'] = False
                     if 'expires' in C:
                         i['persistent'] = True
                         
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' + i.getURL() + '" sent the cookie: "' + i['cookie-string'] + '".')
+                    msg = 'The URL: "' + i.getURL() + '" sent the cookie: "'
+                    msg += i['cookie-string'] + '".'
+                    i.setDesc( msg )
                     kb.kb.append( self, 'cookies', i )
                     
                     # Find if the cookie introduces any vulnerability, or discloses information
@@ -94,11 +105,15 @@ class collectCookies(baseGrepPlugin):
         self._sslCookieValueUsedInHTTP( request, response )
     
     def _analyzeCookie( self, request, response, cookieObj ):
-        self._identifyServer( request, response, cookieObj )
-        self._secureOverHTTP( request, response, cookieObj )
-        self._httpOnly( request, response, cookieObj )
+        '''
+        In this method I call all the other methods that perform a specific
+        analysis of the already catched cookie.
+        '''
+        self._match_cookie_fingerprint( request, response, cookieObj )
+        self._secure_over_http( request, response, cookieObj )
+        self._http_only( request, response, cookieObj )
         
-    def _httpOnly(self, request, response, cookieObj ):
+    def _http_only(self, request, response, cookieObj ):
         '''
         Verify if the cookie has the httpOnly parameter set
         
@@ -111,6 +126,7 @@ class collectCookies(baseGrepPlugin):
         @parameter cookieObj: The cookie object to analyze
         @return: None
         '''
+        ### TODO: Code this!
         pass
             
     def _sslCookieValueUsedInHTTP( self, request, response ):
@@ -138,16 +154,19 @@ class collectCookies(baseGrepPlugin):
                                     v['cookie-object'] = cookie
                                     v.setSeverity(severity.HIGH)
                                     v.setId( response.id )
-                                    v.setName( 'Secure cookies over insecure channel' )                                    
-                                    v.setDesc( 'Cookie values that were set over HTTPS, are sent over an insecure channel when requesting URL: ' + request.getURL() + ' , parameter ' + item[0] )
+                                    v.setName( 'Secure cookies over insecure channel' )
+                                    msg = 'Cookie values that were set over HTTPS, are sent over '
+                                    msg += 'an insecure channel when requesting URL: "' 
+                                    msg += request.getURL() + '" , parameter ' + item[0]
+                                    v.setDesc( msg )
                                     kb.kb.append( self, 'cookies', v )
             
-    def _identifyServer( self, request, response, cookieObj ):
+    def _match_cookie_fingerprint( self, request, response, cookieObj ):
         '''
         Now we analize and try to guess the remote web server based on the
         cookie that was sent.
         '''
-        for cookie in self._getCookieFPdb():
+        for cookie in self._get_fingerprint_db():
             if cookie[0] in cookieObj.output(header=''):
                 if cookie[1] not in self._alreadyReportedServer:
                     i = info.info()
@@ -162,7 +181,7 @@ class collectCookies(baseGrepPlugin):
                     kb.kb.append( self, 'cookies', i )
                     self._alreadyReportedServer.append( cookie[1] )
 
-    def _secureOverHTTP( self, request, response, cookieObj ):
+    def _secure_over_http( self, request, response, cookieObj ):
         '''
         Checks if a cookie marked as secure is sent over http.
         
@@ -189,50 +208,50 @@ class collectCookies(baseGrepPlugin):
             v.setDesc( 'A cookie marked as secure was sent over an insecure channel when requesting the URL: ' + response.getURL() )
             kb.kb.append( self, 'cookies', v )
         
-    def _getCookieFPdb(self):
+    def _get_fingerprint_db(self):
         '''
         @return: A list of tuples with ( CookieString, WebServerType )
         '''
         # This is a simplificated version of ramon's cookie db.
-        cookieDB = []
+        cookie_db = []
         
         # Web application firewalls
-        cookieDB.append( ('st8id=','Teros web application firewall') )
-        cookieDB.append( ('ASINFO=','F5 TrafficShield') )
-        cookieDB.append( ('NCI__SessionId=','Netcontinuum') )
+        cookie_db.append( ('st8id=','Teros web application firewall') )
+        cookie_db.append( ('ASINFO=','F5 TrafficShield') )
+        cookie_db.append( ('NCI__SessionId=','Netcontinuum') )
         
         # oracle
-        cookieDB.append( ('$OC4J_','Oracle container for java') )
+        cookie_db.append( ('$OC4J_','Oracle container for java') )
         
         # Java
-        cookieDB.append( ('JSESSIONID=','Jakarta Tomcat / Apache') )
-        cookieDB.append( ('JServSessionIdroot=','Apache JServ') )
+        cookie_db.append( ('JSESSIONID=','Jakarta Tomcat / Apache') )
+        cookie_db.append( ('JServSessionIdroot=','Apache JServ') )
         
         # ASP
-        cookieDB.append( ('ASPSESSIONID','ASP') )
-        cookieDB.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT','Outlook Web Access') )
+        cookie_db.append( ('ASPSESSIONID','ASP') )
+        cookie_db.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT','Outlook Web Access') )
         
         # PHP
-        cookieDB.append( ('PHPSESSID=','PHP') )
+        cookie_db.append( ('PHPSESSID=','PHP') )
         
         # Others
-        cookieDB.append( ('WebLogicSession=','BEA Logic') )
-        cookieDB.append( ('SaneID=','Sane NetTracker') )
-        cookieDB.append( ('ssuid=','Vignette') )
-        cookieDB.append( ('vgnvisitor=','Vignette') )
-        cookieDB.append( ('SESSION_ID=','IBM Net.Commerce') )
-        cookieDB.append( ('NSES40Session=','Netscape Enterprise Server') )
-        cookieDB.append( ('iPlanetUserId=','iPlanet') )
-        cookieDB.append( ('RMID=','RealMedia OpenADStream') )
-        cookieDB.append( ('cftoken=','Coldfusion') )
-        cookieDB.append( ('PORTAL-PSJSESSIONID=','PeopleSoft') )
-        cookieDB.append( ('WEBTRENDS_ID=','WebTrends') )
-        cookieDB.append( ('sesessionid=','IBM WebSphere') )
-        cookieDB.append( ('CGISESSID=','Perl CGI::Session') )
-        cookieDB.append( ('GX_SESSION_ID','GeneXus') )
-        cookieDB.append( ('WC_SESSION_ESTABLISHED','WSStore') )
+        cookie_db.append( ('WebLogicSession=','BEA Logic') )
+        cookie_db.append( ('SaneID=','Sane NetTracker') )
+        cookie_db.append( ('ssuid=','Vignette') )
+        cookie_db.append( ('vgnvisitor=','Vignette') )
+        cookie_db.append( ('SESSION_ID=','IBM Net.Commerce') )
+        cookie_db.append( ('NSES40Session=','Netscape Enterprise Server') )
+        cookie_db.append( ('iPlanetUserId=','iPlanet') )
+        cookie_db.append( ('RMID=','RealMedia OpenADStream') )
+        cookie_db.append( ('cftoken=','Coldfusion') )
+        cookie_db.append( ('PORTAL-PSJSESSIONID=','PeopleSoft') )
+        cookie_db.append( ('WEBTRENDS_ID=','WebTrends') )
+        cookie_db.append( ('sesessionid=','IBM WebSphere') )
+        cookie_db.append( ('CGISESSID=','Perl CGI::Session') )
+        cookie_db.append( ('GX_SESSION_ID','GeneXus') )
+        cookie_db.append( ('WC_SESSION_ESTABLISHED','WSStore') )
         
-        return cookieDB
+        return cookie_db
         
     def setOptions( self, OptionList ):
         pass
@@ -283,5 +302,7 @@ class collectCookies(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every response for session cookies that the web app sends to the client.
+        This plugin greps every response for session cookies that the web application sends
+        to the client, and analyzes them in order to identify potential vulnerabilities, the
+        remote web application framework and other interesting information.
         '''

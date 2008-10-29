@@ -27,30 +27,30 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as uparser
-from core.data.getResponseType import *
 import re
 import core.data.constants.severity as severity
 
 class codeDisclosure(baseGrepPlugin):
     '''
-    Grep every page for code disclosure bugs.
+    Grep every page for code disclosure vulnerabilities.
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        # This regex means: "find all tags that are of the form <? something ?> but if that something
-        # is "xml .*" ignore it completely. This is to remove the false positive in the detection of code disclosure
+        # This regex means: "find all tags that are of the form <? something ?> 
+        # but if that something is "xml .*" ignore it completely. This is to 
+        # remove the false positive in the detection of code disclosure
         # that is added when the web application uses something like
         # <?xml version="1.0" encoding="UTF-8"?>
         # This was added to fix bug #1989056
-        php = re.compile( '<\?(?! *xml).*\?>' ,re.IGNORECASE | re.DOTALL)
+        php = re.compile( '<\?(?! *xml).*\?>', re.IGNORECASE | re.DOTALL)
+
         # The rest of the regex are ok, because this patterns aren't used in html / xhtml
-        asp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
-        jsp = re.compile( '<%.*%>' ,re.IGNORECASE | re.DOTALL)
-        jsp2 = re.compile( '<jsp:.*>' ,re.IGNORECASE | re.DOTALL)
+        asp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
+        jsp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
+        jsp2 = re.compile( '<jsp:.*>', re.IGNORECASE | re.DOTALL)
         
         self._regexs = []
         self._regexs.append( (php, 'PHP') )
@@ -61,7 +61,10 @@ class codeDisclosure(baseGrepPlugin):
         self._alreadyAdded = []
 
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, search for the code disclosures.
+        @return: None
+        '''
         if response.is_text_or_html() and response.getURL() not in self._alreadyAdded:
             
             for regex, lang in self._regexs:
@@ -71,12 +74,16 @@ class codeDisclosure(baseGrepPlugin):
                     v.setURL( response.getURL() )
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
-                    v.setName( 'Code disclosure vulnerability' )
-                    v.setDesc( "The URL: " + v.getURL() + " has a code disclosure vulnerability." )
+                    v.setName( lang + ' code disclosure vulnerability' )
+                    msg = 'The URL: "' + v.getURL() + '" has a code disclosure vulnerability.'
+                    v.setDesc( msg )
                     kb.kb.append( self, 'codeDisclosure', v )
                     self._alreadyAdded.append( response.getURL() )
     
     def setOptions( self, OptionList ):
+        '''
+        No options to set.
+        '''
         pass
     
     def getOptions( self ):
@@ -107,4 +114,7 @@ class codeDisclosure(baseGrepPlugin):
         return '''
         This plugin greps every page in order to find code disclosures. Basically it greps for
         '<?.*?>' and '<%.*%>' using the re module and reports findings.
+
+        Code disclosures are usually generated due to web server misconfigurations, or wierd web
+        application "features".
         '''
