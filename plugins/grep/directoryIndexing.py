@@ -47,7 +47,7 @@ class directoryIndexing(baseGrepPlugin):
         # Added performance by compiling all the regular expressions
         # before using them. The setup time of the whole plugin raises,
         # but the execution time is lowered *a lot*.
-        self._compiled_regex_list = [ re.compile() for regex in self._get_indexing_regex() ]
+        self._compiled_regex_list = [ re.compile(regex) for regex in self._get_indexing_regex() ]
 
     def _testResponse(self, request, response):
         '''
