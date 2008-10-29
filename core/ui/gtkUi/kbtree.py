@@ -89,10 +89,13 @@ class KBTree(gtk.TreeView):
         '''If double click, expand/collapse the row.'''
         if event.type == gtk.gdk._2BUTTON_PRESS:
             path = self.get_cursor()[0]
-            if self.row_expanded(path):
-                self.collapse_row(path)
-            else:
-                self.expand_row(path, False)
+            # This "if path" fixed bug #2205544
+            # https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2205544&group_id=170274
+            if path:
+                if self.row_expanded(path):
+                    self.collapse_row(path)
+                else:
+                    self.expand_row(path, False)
 
     def _filterKB(self):
         '''Calculates the difference between the KB and the tree.
@@ -164,9 +167,12 @@ class KBTree(gtk.TreeView):
 
         @return: The best obj name possible
         '''
-        try:
-            name = obj.getName()
-        except:
+        if hasattr(obj, 'getName'):
+            try:
+                name = obj.getName()
+            except:
+                name = repr(obj)
+        else:
             name = repr(obj)
         return name
         
