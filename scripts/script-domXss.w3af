@@ -10,16 +10,13 @@ back
 output config console
 set verbose False
 back
-discovery allowedMethods,webSpider
-discovery
 grep domXss
-grep
-audit xss
-audit
 back
+
 target
 set target http://localhost/w3af/grepPlugins/domXss.html
 back
+
 start
 
 assert len( kb.kb.getData('domXss', 'domXss') ) == 1
