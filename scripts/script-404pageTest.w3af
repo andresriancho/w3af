@@ -1,12 +1,7 @@
 # This is a test for the 404 fingerprinting of the core
 
-#http-settings
-#set proxyAddress 127.0.0.1
-#set proxyPort 8081
-#back
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -14,20 +9,22 @@ back
 output config console
 set verbose False
 back
-discovery pykto,serverHeader
-discovery
 
-discovery config pykto
-#set mutateTests True
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 
-back
 target
-set target http://localhost/w3af/
+set target http://localhost/w3af/core/404/simple_test.html
 back
+
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 6
-assert len(kb.kb.getData('pykto','vuln')) == 4
+# 1- The simple_test.html page
+# 2- The exists.html page
+# 3- The index page for the 404 directory
+assert len(kb.kb.getData('urls','urlList')) == 3
 
 exit
