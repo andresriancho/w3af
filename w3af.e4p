@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-10-19, 21:16:41 -->
+<!-- Saved: 2008-10-28, 08:57:37 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3854,22 +3854,12 @@
     <Source>
       <Dir>extlib</Dir>
       <Dir>xdot</Dir>
-      <Name>dot_parser.py</Name>
-    </Source>
-    <Source>
-      <Dir>extlib</Dir>
-      <Dir>xdot</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
       <Dir>extlib</Dir>
       <Dir>xdot</Dir>
       <Name>xdot.py</Name>
-    </Source>
-    <Source>
-      <Dir>extlib</Dir>
-      <Dir>xdot</Dir>
-      <Name>pydot.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
