@@ -26,7 +26,7 @@ import urllib2
 import httplib
 import unittest
 import md5
-from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.homeDir import get_home_dir
 
 import StringIO
 import core.controllers.outputManager as om
@@ -57,7 +57,7 @@ class CacheHandler(urllib2.BaseHandler):
     @author: Version 0.2 by Andres Riancho
     '''
     def __init__( self ):
-        self.cacheLocation = getHomeDir() + os.path.sep + 'urllib2cache'
+        self.cacheLocation = get_home_dir() + os.path.sep + 'urllib2cache'
         if not os.path.exists(self.cacheLocation):
             os.makedirs(self.cacheLocation)
         

@@ -25,7 +25,7 @@ import sys, os
 from . import confpanel, entries, helpers
 from core.ui.gtkUi.pluginEditor import pluginEditor
 
-from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.homeDir import get_home_dir
 
 # support for <2.5
 if sys.version_info[:2] < (2,5):
@@ -536,7 +536,7 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
 
         # entry
-        histfile = os.path.join(getHomeDir(),  "urlhistory.pkl")
+        histfile = os.path.join(get_home_dir(),  "urlhistory.pkl")
         self.target = entries.AdvisedEntry(_("Insert the target URL here"), 
                 mainwin.scanok.change, histfile, alertmodif=mainwin.profileChanged)
         self.target.connect("activate", mainwin._scan_director)

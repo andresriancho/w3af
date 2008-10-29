@@ -32,7 +32,7 @@ import core.controllers.miscSettings as miscSettings
 
 import os, sys
 
-from core.controllers.misc.homeDir import createHomeDir, getHomeDir
+from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
 from core.controllers.misc.factory import factory
 
 from core.data.url.xUrllib import xUrllib
@@ -73,7 +73,8 @@ class w3afCore:
         self.uriOpener = xUrllib()
 
         # Create .w3af inside home directory
-        createHomeDir()
+        home_dir_is_writable()
+        create_home_dir()
 
     def _zeroSelectedPlugins(self):
         '''
@@ -92,7 +93,7 @@ class w3afCore:
         '''
         @return: The location of the w3af directory inside the home directory of the current user.
         '''
-        return getHomeDir()
+        return get_home_dir()
         
     def _initializeInternalVariables(self):
         '''

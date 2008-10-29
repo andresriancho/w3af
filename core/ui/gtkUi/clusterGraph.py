@@ -84,7 +84,7 @@ class w3afDotWindow(xdot.DotWindow):
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
 
-        # Add a UI descrption
+        # Add a UI description
         uimanager.add_ui_from_string(self.ui)
 
         # Create a Toolbar

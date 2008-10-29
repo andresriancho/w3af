@@ -43,7 +43,7 @@ import urllib
 
 import time
 import os
-from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.memoryUsage import dumpMemoryUsage
 
 # for better debugging of handlers
@@ -138,7 +138,7 @@ class xUrllib:
         This method is called when the xUrllib is not going to be used anymore.
         '''
         try:
-            cacheLocation = getHomeDir() + os.path.sep + 'urllib2cache' + os.path.sep + str(os.getpid())
+            cacheLocation = get_home_dir() + os.path.sep + 'urllib2cache' + os.path.sep + str(os.getpid())
             if os.path.exists(cacheLocation):
                 for f in os.listdir(cacheLocation):
                     os.unlink( cacheLocation + os.path.sep + f)
@@ -620,7 +620,7 @@ class xUrllib:
             # I'll create a fuzzable request based on the urllib2 request object
             fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )
             targs = (fuzzReq, response)
-            self._tm.startFunction( target=self._grepWorker, args=targs, ownerObj=self, restrict=False )
+            self._tm.startFunction( target=self._grepWorker, args=targs, ownerObj=self, restrict=True )
     
     def _grepWorker( self , request, response):
         '''

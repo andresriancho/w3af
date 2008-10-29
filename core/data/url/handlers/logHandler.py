@@ -126,7 +126,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         
         return request
 
-    def _logRequestResponse( self, request, response ):
+    def _log_request_response( self, request, response ):
         '''
         Send the request and the response to the output manager.
         '''
@@ -156,7 +156,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     
     def http_response(self, request, response):
         response.id = self._getCounter()
-        self._logRequestResponse( request, response )
+        self._log_request_response( request, response )
         request.id = response.id
         return response
 

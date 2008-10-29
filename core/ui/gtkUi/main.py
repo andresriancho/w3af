@@ -74,7 +74,7 @@ import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
-from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.homeDir import get_home_dir
 import webbrowser, time
 
 MAINTITLE = "w3af - Web Application Attack and Audit Framework"
@@ -238,7 +238,7 @@ class MainApp(object):
 
         # title and positions
         self.window.set_title(MAINTITLE)
-        genconfigfile = os.path.join(getHomeDir(),  "generalconfig.pkl") 
+        genconfigfile = os.path.join(get_home_dir(),  "generalconfig.pkl") 
         try:
             self.generalconfig = shelve.open(genconfigfile)
         except Exception, e:

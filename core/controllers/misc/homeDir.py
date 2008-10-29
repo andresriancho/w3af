@@ -22,24 +22,40 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import user
 import os
+import sys
+from core.controllers.w3afException import w3afException
 
-def createHomeDir():
+def create_home_dir():
     '''
     Creates the w3af home directory, on linux: /home/user/.w3af/
     @return: True if success.
     '''
     # Create .w3af inside home directory
-    homeLocation = getHomeDir()
-    if not os.path.exists(homeLocation):
+    home_path = get_home_dir()
+    if not os.path.exists(home_path):
         try:
-            os.makedirs(homeLocation)
+            os.makedirs(home_path)
         except OSError:
             return False
     return True
     
-def getHomeDir():
+def get_home_dir():
     '''
     @return: The location of the w3af directory inside the home directory of the current user.
     '''
-    homeLocation = user.home + os.path.sep + '.w3af'
-    return homeLocation
+    home_path = user.home + os.path.sep + '.w3af'
+    return home_path
+
+def home_dir_is_writable():
+    '''
+    Verify if the home directory is writable by the user.
+    @return: True if success, an exception is raised when False.
+    '''
+    home_path = get_home_dir()
+    if os.access(home_path,os.W_OK):
+        return True
+    else:
+        msg = 'The w3af home directory "' + home_path + '" is not writable. '
+        msg += 'Please set the correct permissions and ownership.'
+        print msg
+        sys.exit(-3)

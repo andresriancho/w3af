@@ -33,7 +33,7 @@ from core.data.db.persist import persist
 
 import Queue
 
-from core.controllers.misc.homeDir import getHomeDir
+from core.controllers.misc.homeDir import get_home_dir
 
 # Only to be used with care.
 import core.controllers.outputManager as om
@@ -69,15 +69,15 @@ class gtkOutput(baseOutputPlugin):
             kb.kb.save( 'gtkOutput', 'queue' , self.queue )
             
             sessionName = cf.cf.getData('sessionName')
-            db_name = os.path.join(getHomeDir(), 'sessions', 'db_' + sessionName )
+            db_name = os.path.join(get_home_dir(), 'sessions', 'db_' + sessionName )
             
             # Just in case the directory doesn't exist...
             try:
-                os.mkdir(os.path.join(getHomeDir() , 'sessions'))
+                os.mkdir(os.path.join(get_home_dir() , 'sessions'))
             except OSError, oe:
                 # [Errno 17] File exists
                 if oe.errno != 17:
-                    raise w3afException('Unable to write to the user home directory: ' + getHomeDir() )
+                    raise w3afException('Unable to write to the user home directory: ' + get_home_dir() )
             
             self._db = persist()
             
