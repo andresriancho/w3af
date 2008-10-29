@@ -24,12 +24,13 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import *
+
 import re
-import core.data.constants.severity as severity
 
 class errorPages(baseGrepPlugin):
     '''
@@ -42,13 +43,17 @@ class errorPages(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         self._alreadyReportedVersions = []
-        self._compiledRegex = []
+        self._compiled_regex = []
 
-    def _getDescriptiveMessages( self ):
+    def _get_error_strings( self ):
+        '''
+        @return: A list of strings that are present in different error pages.
+        '''
         mesg = []
         
         mesg.append('<H1>Error page exception</H1>')
-        # This signature fires up also in default 404 pages of aspx which generates a lot of noise, so ... disabling it
+        # This signature fires up also in default 404 pages of aspx which generates 
+        # a lot of noise, so ... disabling it
         #mesg.append('<span><H1>Server Error in ')
         mesg.append('<h2> <i>Runtime Error</i> </h2></span>')
         mesg.append('<h2> <i>Access is denied</i> </h2></span>')
@@ -59,7 +64,9 @@ class errorPages(baseGrepPlugin):
         
         mesg.append('<font face="Arial" size=2>Type mismatch: ')
         mesg.append('[an error occurred while processing this directive]')
-        mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>Error Occurred While Processing Request</H3><P>')
+        error_msg = '<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE>'
+        error_msg += '</HEAD><BODY><HR><H3>Error Occurred While Processing Request</H3><P>'
+        mesg.append(error_msg)
         
         # VBScript
         mesg.append('<p>Microsoft VBScript runtime </font>')
@@ -106,7 +113,9 @@ class errorPages(baseGrepPlugin):
         mesg.append('<title>Error Occurred While Processing Request</title></head><body><p></p>')
         mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>')
         mesg.append('<TR><TD><H4>Error Diagnostic Information</H4><P><P>')
-        mesg.append('<li>Search the <a href="http://www.macromedia.com/support/coldfusion/" target="new">Knowledge Base</a> to find a solution to your problem.</li>')
+        error_msg = '<li>Search the <a href="http://www.macromedia.com/support/coldfusion/" '
+        error_msg += 'target="new">Knowledge Base</a> to find a solution to your problem.</li>'
+        mesg.append(error_msg)
         
         # http://www.programacion.net/asp/articulo/kbr_execute/
         mesg.append('Server.Execute Error')
@@ -118,9 +127,12 @@ class errorPages(baseGrepPlugin):
         return mesg
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, find the error pages and report them.
+        @return: None
+        '''
         if response.is_text_or_html():
-            for msg in self._getDescriptiveMessages():
+            for msg in self._get_error_strings():
                 # Remember that httpResponse objects have a faster "__in__" than
                 # the one in strings; so string in response.getBody() is slower than
                 # string in response
@@ -136,37 +148,37 @@ class errorPages(baseGrepPlugin):
                     
             # Now i'll check if I can get a version number from the error page
             # This is common in apache, tomcat, etc...
-            if response.getCode() in range( 400,600 ):
+            if response.getCode() in range(400, 600):
                 
-                for server, errorRegex in self._getRegexTuples():
-                    res = errorRegex.search( response.getBody() )
-                    if res:
-                        resStr = res.groups()[0]
-                        if resStr not in self._alreadyReportedVersions:
+                for server, error_regex in self._get_regex_tuples():
+                    match = error_regex.search( response.getBody() )
+                    if match:
+                        match_string = match.groups()[0]
+                        if match_string not in self._alreadyReportedVersions:
                             # Save the info obj
                             i = info.info()
                             i.setName('Error page with information disclosure')
                             i.setURL( response.getURL() )
                             i.setId( response.id )
                             i.setName( 'Error page with information disclosure' )
-                            i.setDesc( 'An error page sent this ' + server +' version: ' + resStr  )
+                            i.setDesc( 'An error page sent this ' + server +' version: "' + match_string + '".'  )
                             kb.kb.append( self , 'server' , i )
                             # Save the string
-                            kb.kb.append( self , 'server' , resStr )
-                            self._alreadyReportedVersions.append( resStr )
+                            kb.kb.append( self , 'server' , match_string )
+                            self._alreadyReportedVersions.append( match_string )
 
-    def _getRegexTuples( self ):
+    def _get_regex_tuples( self ):
         '''
         @return: A list of tuples with ( serverName, regexError )
         '''
-        if not self._compiledRegex:
-            self._compiledRegex.append( ('Apache', re.compile('<address>(.*?)</address>') ) )
-            self._compiledRegex.append( ('Apache Tomcat',re.compile('<HR size="1" noshade="noshade"><h3>(.*?)</h3></body>') ) )
-            self._compiledRegex.append( ('IIS', re.compile('<a href="http://www.microsoft.com/ContentRedirect.asp\?prd=iis&sbp=&pver=(.*?)&pid=&ID') ) )
+        if not self._compiled_regex:
+            self._compiled_regex.append( ('Apache', re.compile('<address>(.*?)</address>') ) )
+            self._compiled_regex.append( ('Apache Tomcat', re.compile('<HR size="1" noshade="noshade"><h3>(.*?)</h3></body>') ) )
+            self._compiled_regex.append( ('IIS', re.compile('<a href="http://www.microsoft.com/ContentRedirect.asp\?prd=iis&sbp=&pver=(.*?)&pid=&ID') ) )
             # <b>Version Information:</b>&nbsp;Microsoft .NET Framework Version:1.1.4322.2300; ASP.NET Version:1.1.4322.2300
-            self._compiledRegex.append( ('ASP .Net', re.compile('<b>Version Information:</b>&nbsp;(.*?)\n') ) )
+            self._compiled_regex.append( ('ASP .Net', re.compile('<b>Version Information:</b>&nbsp;(.*?)\n') ) )
 
-        return self._compiledRegex
+        return self._compiled_regex
         
     def setOptions( self, OptionList ):
         pass
@@ -196,5 +208,6 @@ class errorPages(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for error pages.
+        This plugin scans every page for error pages, and if possible extracts the web server
+        or programming framework information.
         '''
