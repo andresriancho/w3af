@@ -34,7 +34,7 @@ import re
 import core.data.constants.severity as severity
 
 # We define some constants
-DB2 = 'IBM db2 database'
+DB2 = 'IBM DB2 database'
 MSSQL = 'Microsoft SQL database'
 ORACLE = 'Oracle database'
 SYBASE = 'Sybase database'
