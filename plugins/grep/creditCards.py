@@ -111,7 +111,7 @@ class creditCards(baseGrepPlugin):
             if luhnCheck(possible_cc):
                 res.append(possible_cc)
 
-        return []
+        return res
 
     
     def end(self):
