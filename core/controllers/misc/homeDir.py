@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import user
 import os
-import sys
-from core.controllers.w3afException import w3afException
 
 def create_home_dir():
     '''
@@ -49,13 +47,12 @@ def get_home_dir():
 def home_dir_is_writable():
     '''
     Verify if the home directory is writable by the user.
-    @return: True if success, an exception is raised when False.
+    @return: True if success, False if the home dir is not writable.
     '''
     home_path = get_home_dir()
     if os.access(home_path,os.W_OK):
         return True
     else:
-        msg = 'The w3af home directory "' + home_path + '" is not writable. '
-        msg += 'Please set the correct permissions and ownership.'
-        print msg
-        sys.exit(-3)
+        # Maybe the directory doesn't exist, and I get False because of that...
+        return False
+

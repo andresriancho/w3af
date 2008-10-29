@@ -68,13 +68,33 @@ class w3afCore:
     '''
 
     def __init__(self ):
+        '''
+        Init some variables and files.
+        Create the URI opener.
+        '''
+        self._home_directory()
         self._initializeInternalVariables()
         self._zeroSelectedPlugins()
         self.uriOpener = xUrllib()
 
-        # Create .w3af inside home directory
-        home_dir_is_writable()
+    def _home_directory(self):
+        '''
+        Handle all the work related to creating/managing the home directory.
+        @return: None
+        '''
+        # Start by trying to create the home directory (linux: /home/user/.w3af/)
         create_home_dir()
+
+        # If this fails, maybe it is because the home directory doesn't exist
+        # or simply because it ain't writable
+        if not home_dir_is_writable():
+
+            # We have a problem!
+            # The home directory isn't writable, we can't create .w3af ...
+            msg = 'The w3af home directory "' + get_home_dir() + '" is not writable. '
+            msg += 'Please set the correct permissions and ownership.'
+            print msg
+            sys.exit(-3)
 
     def _zeroSelectedPlugins(self):
         '''
