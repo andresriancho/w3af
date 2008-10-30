@@ -22,15 +22,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.data.parsers.dpCache as dpCache
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import *
+
 from core.controllers.w3afException import w3afException
+
 import re
+
 
 class findComments(baseGrepPlugin):
     '''
@@ -41,19 +46,28 @@ class findComments(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+
+        # Internal variables
         self._comments = {}
-        self._search404 = False
         self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit','stupid', 'tonto', 'porqueria',
         'ciudado', 'usuario', 'contrase', 'puta']
         self._alreadyReportedInteresting = []
+        self.is404 = None
+
+        # User configurations
+        self._search404 = False
         
     def _testResponse(self, request, response):
-        
-        if response.is_text_or_html():
-            
+        '''
+        Plugin entry point, parse those comments!
+        @return: None
+        '''
+        # Set the is404 method if not already set
+        if not self.is404:
             self.is404 = kb.kb.getData( 'error404page', '404' )
-            
+
+        if response.is_text_or_html():
             if not self.is404( response ) or self._search404:
                 
                 try:
@@ -80,7 +94,9 @@ class findComments(baseGrepPlugin):
                         if word in comment and ( word, response.getURL() ) not in self._alreadyReportedInteresting:
                             i = info.info()
                             i.setName('HTML comment with "' + word + '" inside')
-                            i.setDesc( 'A comment with the string "' + word + '" was found in: ' + response.getURL() + ' . This could be interesting.' )
+                            msg = 'A comment with the string "' + word + '" was found in: "' + response.getURL() + '".'
+                            msg += 'This could be interesting.'
+                            i.setDesc( msg )
                             i.setId( response.id )
                             i.setDc( request.getDc )
                             i.setURI( response.getURI() )

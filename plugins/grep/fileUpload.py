@@ -24,11 +24,12 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.parsers.urlParser import *
-from core.data.getResponseType import *
+
 import re
 
 class fileUpload(baseGrepPlugin):
@@ -40,19 +41,33 @@ class fileUpload(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._input = re.compile('< *input(.*?)>',re.IGNORECASE)
-        self._file = re.compile('type= *"file"?',re.IGNORECASE)
+
+        # FIXME: This method sucks, I should do something like
+        # input_elems = html_parser.get_elements_of_type('input')
+        # for input in input_elems:
+        # ...
+        # ...
+        # The bad thing about this is that I have to store all the
+        # response in memory, and right now I only store the parsed
+        # information.
+        self._input = re.compile('< *input(.*?)>', re.IGNORECASE)
+        self._file = re.compile('type= *"file"?', re.IGNORECASE)
 
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, verify if the HTML has a form with file uploads.
+        @return: None
+        '''
         if response.is_text_or_html():
-            for input in self._input.findall( response.getBody() ):
-                if self._file.search(input):
+            for input_tag in self._input.findall( response.getBody() ):
+                if self._file.search(input_tag):
                     i = info.info()
                     i.setName('File upload form')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' + response.getURL() + '" has form with file upload capabilities.' )
+                    msg = 'The URL: "' + response.getURL() + '" has form '
+                    msg += 'with file upload capabilities.'
+                    i.setDesc( msg )
                     kb.kb.append( self , 'fileUpload' , i ) 
     
     def setOptions( self, OptionList ):
