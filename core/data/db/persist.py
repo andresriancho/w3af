@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from __future__ import with_statement
+
 import sqlite3
 import thread
 
@@ -48,29 +50,7 @@ class persist:
         self._primary_key_columns = None
         
         self._insertion_count = 0
-        self.createLock()
-    
-    def destroyLock( self ):
-        self._kbLock = None
-    
-    def createLock( self ):
-        self._kbLock = thread.allocate_lock()
-        
-    def getLock(self):
-        try:
-            self._kbLock.acquire()
-        except:
-            return False
-        else:
-            return True
-    
-    def releaseLock(self):
-        try:
-            self._kbLock.release()
-        except:
-            return False
-        else:
-            return True
+        self._db_lock = thread.allocate_lock()
             
     def open( self, filename ):
         '''
@@ -142,14 +122,11 @@ class persist:
         bindings.append( f.getvalue() )
         
         # Save the object
-        self.getLock()
-        
-        c = self._db.cursor()
-        c.execute( insert_stm, bindings )
-        c.close()
-        self._commit_if_needed()
-        
-        self.releaseLock()
+        with self._db_lock:
+            c = self._db.cursor()
+            c.execute( insert_stm, bindings )
+            c.close()
+            self._commit_if_needed()
         
     def _commit_if_needed( self ):
         '''
@@ -224,19 +201,17 @@ class persist:
             select_stm += column_name + '= (?)'
             bindings.append( primary_key[column_number] )
         
-        self.getLock()
-        try:
-            c.execute( select_stm, bindings )
-            row = c.fetchone()
-        except Exception, e:
-            self.releaseLock()
-            raise e
-        else:
-            self.releaseLock()
-            # unpickle
-            f = StringIO( str(row[-1]) )
-            obj = Unpickler(f).load()
-            return obj
+        with self._db_lock:
+            try:
+                c.execute( select_stm, bindings )
+                row = c.fetchone()
+            except Exception, e:
+                raise e
+            else:
+                # unpickle
+                f = StringIO( str(row[-1]) )
+                obj = Unpickler(f).load()
+                return obj
     
     def retrieve_all( self, search_string ):
         '''
@@ -260,24 +235,22 @@ class persist:
         # This is a SQL injection! =)
         select_stm += " where " + search_string
         
-        self.getLock()
-        try:
-            c.execute( select_stm )
-            rows = c.fetchall()
-        except Exception, e:
-            self.releaseLock()
-            raise w3afException(str(e))
-        else:
-            self.releaseLock()
-            res = []
-            
-            # unpickle
-            for row in rows:
-                f = StringIO( str(row[-1]) )
-                obj = Unpickler(f).load()
-                res.append(obj)
+        with self._db_lock:
+            try:
+                c.execute( select_stm )
+                rows = c.fetchall()
+            except Exception, e:
+                raise w3afException(str(e))
+            else:
+                res = []
                 
-            return res
+                # unpickle
+                for row in rows:
+                    f = StringIO( str(row[-1]) )
+                    obj = Unpickler(f).load()
+                    res.append(obj)
+                    
+                return res
             
     def raw_stm( self, stm ):
         '''
