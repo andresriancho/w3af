@@ -12,8 +12,14 @@ output config console
 set verbose False
 back
 back
+
 target
 set target http://localhost/w3af/core/htmlParser/textarea.html
 back
+
+
 start
+
+assert len(w3af_core._fuzzableRequestList[1].getDc()) == 1
+
 exit

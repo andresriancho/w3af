@@ -207,12 +207,12 @@ class menu:
         if not len(params):
             raise w3afException('Variable is expected')
 
-        smallLocals = {'kb':kb}
-        smallGlobals = {}
+        small_locals = {'kb':kb, 'w3af_core':self._w3af }
+        small_globals = {}
         
         evalVariable = ' '.join( params )
         try:
-            res = eval( evalVariable,  smallGlobals,  smallLocals)
+            res = eval( evalVariable,  small_globals,  small_locals)
         except:
             om.out.console('Unknown variable.')
         else:
@@ -223,13 +223,13 @@ class menu:
         if not len(params):
             raise w3afException('Expression is expected')
 
-        smallLocals = {'kb':kb}
-        smallGlobals = {}
+        small_locals = {'kb':kb, 'w3af_core':self._w3af }
+        small_globals = {}
         
-        assertCommand = 'assert '
-        assertCommand += ' '.join( params )
+        assert_command = 'assert '
+        assert_command += ' '.join( params )
         try:
-            exec( assertCommand,  smallGlobals,  smallLocals)
+            exec( assert_command,  small_globals,  small_locals)
         except AssertionError, ae:
             msg = 'Assert **FAILED**'
 
@@ -237,7 +237,7 @@ class menu:
             try:
                 # Get the value of the first argument
                 a = params[0]
-                exec( 'aRes = ' + a,  smallGlobals,  smallLocals)
+                exec( 'aRes = ' + a,  small_globals,  small_locals)
             except:
                 pass
             else:
@@ -245,7 +245,7 @@ class menu:
             om.out.error( msg )
         except Exception, e:
             om.out.error('An unexpected exception was raised during assertion: ' + str(e) )
-            om.out.error('The executed command was: ' + assertCommand )
+            om.out.error('The executed command was: ' + assert_command )
         else:
             om.out.console('Assert succeded.')
         
