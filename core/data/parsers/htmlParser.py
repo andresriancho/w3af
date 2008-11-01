@@ -98,7 +98,7 @@ class htmlParser(sgmlParser):
         # I changed the logic of this section of the parser because of this bug:
         # http://groups.google.com/group/beautifulsoup/browse_thread/thread/21ecff548dfda934/469d45ac13dc0162#469d45ac13dc0162
         # That the guys from BeautifulSoup ignored :S
-        if tag.lower() in ['input','select', 'option']:
+        if tag.lower() in ['input','select', 'option', 'textarea']:
             
             # I may be inside a form tag or not... damn bug!
             # I'm going to use this ruleset:
@@ -186,6 +186,37 @@ class htmlParser(sgmlParser):
             self._saved_inputs.append( (tag, attrs) )
         else:
             self._handle_input_tag_inside_form(tag, attrs)
+
+    def _handle_textarea_tag_inside_form(self, tag, attrs):
+        """
+        Handler for textarea tag inside a form
+        """
+        try:
+            self._textareaTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
+        except Exception,  e:
+            om.out.debug('htmlParser found a textarea tag without a name attr, IGNORING!')
+            self._insideTextarea = False
+        else:
+            self._insideTextarea = True
+
+    def handle_data(self, data):
+        """
+        This method is called to process arbitrary data.
+        """
+        attrs = []
+        if self._insideTextarea:
+            f = self._forms[-1]
+            attrs.append( ('name',self._textareaTagName) )
+            attrs.append( ('value', data) )
+            f.addInput( attrs )
+            self._insideTextarea = False
+
+    def _handle_textarea_tag_outside_form(self, tag, attrs):
+        """
+        Handler for textarea tag outside a form
+        """
+         ### TODO: Code this!
+        pass
 
     def _handle_select_tag_inside_form(self, tag, attrs):
         try:

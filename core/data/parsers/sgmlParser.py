@@ -78,6 +78,7 @@ class sgmlParser(abstractParser, SGMLParser):
         self._forms = []
         self._insideForm = False
         self._insideSelect = False
+        self._insideTextarea = False
         self._insideScript = False
         self._commentsInDocument = []
         self._scriptsInDocument = []
@@ -111,13 +112,16 @@ class sgmlParser(abstractParser, SGMLParser):
         '''
         if tag.lower() == 'form' :
             self._insideForm = False
-        
+
         if tag.lower() == 'select' :
             self._insideSelect = False
-            
+
         if tag.lower() == 'script':
             self._insideScript = False
-            
+
+        if tag.lower() == 'textarea' :
+            self._insideTextarea = False
+
     def unknown_starttag(self, tag, attrs):
         '''
         Called for each start tag
