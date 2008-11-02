@@ -24,7 +24,7 @@ import gtk, gobject, threading, functools
 from . import reqResViewer, helpers, entries, fuzzygen
 
 # Alternative ways of seeing the data
-from .clusterGraph import clusterGraphWidget
+from .clusterGraph import distance_function_selector
 
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException, w3afMustStopException 
@@ -381,9 +381,7 @@ class FuzzyRequests(entries.RememberingWindow):
                 data.append( response )
         
         if data:
-            window = clusterGraphWidget(self.w3af, data)
-            window.connect('destroy', gtk.main_quit)
-            gtk.main()
+            distance_function_selector(self.w3af, data)
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."

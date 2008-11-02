@@ -34,6 +34,113 @@ import gobject
 from . import helpers, entries
 
 
+# Constants that define the distance available distance functions
+LEVENSHTEIN = 0
+CONTENT_LENGTH = 1
+HTTP_RESPONSE = 2
+
+SELECT_HELP = """\
+<b>Clustering method selection</b>
+
+The framework provides different clustering methods. Each method defines a way in which 
+the distance between two different HTTP responses is going to be calculated. The distance 
+between the HTTP responses is then used to group the responses and create the clusters.
+
+Please select the clustering method:
+"""
+
+class distance_function_selector(entries.RememberingWindow):
+    '''A small window to select which distance_function the w3afDotWindow
+    will use to generate the graph.
+    
+    @author: Andres Riancho ( andres.riancho@gmail.com )
+    '''
+    def __init__(self, w3af, response_list):
+        super(distance_function_selector,self).__init__(
+            w3af, "distance_function_selector", "w3af - Select distance function",
+            "select_distance_function")
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        self.resize( 300, 200 )
+        
+        # Save for later usage
+        self.w3af = w3af
+        self.data = response_list
+
+        # Create a label that explains what this window is all about
+        helplabel = gtk.Label()
+        helplabel.set_selectable(False)
+        helplabel.set_markup(SELECT_HELP)
+        helplabel.show()
+        self.vbox.pack_start(helplabel, True, True, 0)
+
+        # The vbox where everything is stored
+        box2 = gtk.VBox(False, 10)
+        box2.set_border_width(10)
+        self.vbox.pack_start(box2, True, True, 0)
+        box2.show()
+
+        # Adding the radio buttons
+        self._levenshtein_button = gtk.RadioButton(None, "Levenshtein distance of the HTTP bodies")
+        self._levenshtein_button.set_active(True) # This one is the default
+        box2.pack_start(self._levenshtein_button, True, True, 0)
+        self._levenshtein_button.show()
+
+        self._cl_button = gtk.RadioButton(self._levenshtein_button, "Content Lengths")
+        box2.pack_start(self._cl_button, True, True, 0)
+        self._cl_button.show()
+
+        self._http_res_button = gtk.RadioButton(self._cl_button, "HTTP response codes")
+        box2.pack_start(self._http_res_button, True, True, 0)
+        self._http_res_button.show()
+
+        separator = gtk.HSeparator()
+        self.vbox.pack_start(separator, False, True, 0)
+        separator.show()
+
+        box2 = gtk.VBox(False, 10)
+        box2.set_border_width(10)
+        self.vbox.pack_start(box2, False, True, 0)
+        box2.show()
+
+        # And the select button at the end
+        button = gtk.Button("Select")
+        button.connect_object("clicked", self._launch_graph_generator, None)
+        box2.pack_start(button, True, True, 0)
+        button.set_flags(gtk.CAN_DEFAULT)
+        button.grab_default()
+        
+        # Show!
+        button.show()
+        
+        # Show the window
+        self.show()
+        
+    def _launch_graph_generator(self, widget):
+        '''
+        The button action.
+        Launch the graph window!
+        
+        @return: None
+        '''
+        selected_function = None
+        if self._cl_button.get_active():
+            selected_function = CONTENT_LENGTH
+        elif self._levenshtein_button.get_active():
+            selected_function = LEVENSHTEIN
+        elif self._http_res_button.get_active():
+            selected_function = HTTP_RESPONSE
+        
+        # Don't show the window anymore
+        self.hide()
+        
+        # Create the new window, with the graph
+        window = clusterGraphWidget(self.w3af, self.data, distance_function=selected_function)
+        window.connect('destroy', gtk.main_quit)
+        gtk.main()
+        
+        # Quit myself, my job is done.
+        self.quit(None, None)
+        
 class w3afDotWindow(xdot.DotWindow):
 
     ui = '''
@@ -105,7 +212,7 @@ class w3afDotWindow(xdot.DotWindow):
             self.widget.zoom_to_fit()
 
 class clusterGraphWidget(w3afDotWindow):
-    def __init__(self, w3af, response_list):
+    def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN):
         '''
         @parameter response_list: A list with the responses to graph.
         '''
@@ -114,9 +221,15 @@ class clusterGraphWidget(w3afDotWindow):
         self.widget.connect('clicked', self.on_url_clicked)
         
         # Now I generate the dotcode based on the data
-        #dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
-        #dotcode = self._generateDotCode(response_list, distance_function=self._http_code_distance)
-        dotcode = self._generateDotCode(response_list, distance_function=self._relative_distance)
+        if distance_function == LEVENSHTEIN:
+            dotcode = self._generateDotCode(response_list, distance_function=self._relative_distance)
+        elif distance_function == HTTP_RESPONSE:
+            dotcode = self._generateDotCode(response_list, distance_function=self._http_code_distance)
+        elif distance_function == CONTENT_LENGTH:
+            dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
+        else:
+            raise Exception('Please review your buggy code ;)')
+        
         self.set_filter('neato')
         
         # The problem with the delay is HERE ! The self._generateDotCode method is FAST.

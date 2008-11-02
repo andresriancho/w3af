@@ -25,7 +25,7 @@ from . import entries, craftedRequests
 from .comparator import comparator
 
 # Alternative ways of seeing the data
-from .clusterGraph import clusterGraphWidget
+from .clusterGraph import distance_function_selector
 
 import os
 
@@ -292,9 +292,7 @@ class Compare(entries.RememberingWindow):
         data = [r[2] for r in self.elements if r[2] is not None]
         
         if data:
-            window = clusterGraphWidget(self.w3af, data)
-            window.connect('destroy', gtk.main_quit)
-            gtk.main()
+            distance_function_selector(self.w3af, data)
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."
