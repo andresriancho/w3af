@@ -26,6 +26,7 @@ import gtk, threading, gobject
 from . import entries
 import urllib, base64, sha, md5, random, cgi
 import core.data.parsers.encode_decode as encode_decode
+from core.controllers.w3afException import w3afException
 
 class SimpleTextView(gtk.TextView):
     '''Simple abstraction of the text view.'''
@@ -38,14 +39,17 @@ class SimpleTextView(gtk.TextView):
         start, end = self.buffer.get_bounds()
         self.buffer.delete(start, end)
 
-    def setText(self, newtext):
+    def setText(self, newtext, use_repr=True):
         '''Sets a new text in the pane, repr'ing it.
         
         @param newtext: the new text of the pane.
         '''
         self.clear()
         iterl = self.buffer.get_end_iter()
-        newtext = repr(newtext)[1:-1]
+        if use_repr:
+            newtext = repr(newtext)[1:-1]
+        else:
+            newtext = newtext
         self.buffer.insert(iterl, newtext)
 
     def getText(self):
@@ -158,7 +162,7 @@ class EncodeDecode(entries.RememberingWindow):
                 out.setText(proc.result)
             else:
                 out.setText(_("ERROR: Invalid input for that operation:  ")
-                             + str(proc.exception))
+                             + str(proc.exception), use_repr=False)
                 self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
 
@@ -200,6 +204,21 @@ class ThreadedProc(threading.Thread):
             self.event.set()
             
 
+# A helper function for the decoding functions
+
+def _get_nibbles(char):
+    '''
+    @return: The first ans second nibble of the ascii value of the char
+    '''
+    try:
+        x,y = hex(ord(char))[2:]
+    except:
+        # We get here with chars like \t
+        # that translate to 0x9 (they "don't have" first and second nibble")
+        x = '0'
+        y = hex(ord(char))[2:]
+    return x, y
+
 # These are the encoding and decoding functions:
 
 def sha_encode(t):
@@ -234,7 +253,14 @@ def b64decode(t):
     >>> b64decode("SG9sYSBtdW5kbw==")
     'Hola mundo'
     '''
-    return base64.b64decode(t)
+    try:
+        result = base64.b64decode(t)
+    except TypeError:
+        msg = 'The base64 encoded string doesn\'t have '
+        msg += 'a correct padding.\nYou can try to fix this error by adding characters '
+        msg += 'to the end of the string.'
+        raise w3afException(msg)
+    return result
 
 def urlencode(t):
     '''Encoder doing URL Encode.
@@ -350,7 +376,7 @@ def double_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = hex(ord(c))[2:]
+        x,y = _get_nibbles(c)
         parts.append("%%%X%%%X" % (ord(x), ord(y)))
     return "%" + "%".join(parts) 
 
@@ -367,7 +393,7 @@ def first_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = hex(ord(c))[2:]
+        x,y = _get_nibbles(c)
         parts.append("%%%X%s" % (ord(x), y))
     return "%" + "%".join(parts) 
 
@@ -384,12 +410,12 @@ def second_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = hex(ord(c))[2:]
+        x,y = _get_nibbles(c)
         parts.append("%s%%%X" % (x, ord(y)))
     return "%" + "%".join(parts) 
 
 def utf8_barebyte_encoding(t):
-    '''UTF-8 Barebyte Encoding, just a normal UTF-8 encoding.
+    '''UTF-8 Bare byte Encoding, just a normal UTF-8 encoding.
 
     >>> utf8_barebyte_encoding("A")
     'A'
@@ -468,7 +494,7 @@ _butNameFunc_enc = [
     (_("Double Nibble Hex Encoding"),   double_nibble_hex_encoding),
     (_("First Nibble Hex Encoding"),    first_nibble_hex_encoding),
     (_("Second Nibble Hex Encoding"),   second_nibble_hex_encoding),
-    (_("UTF-8 Barebyte Encoding"),      utf8_barebyte_encoding),
+    (_("UTF-8 Bare byte Encoding"),      utf8_barebyte_encoding),
     (_("UTF-8 Encoding"),               utf8_encoding),
     (_("Microsoft %U Encoding"),        msu_encoding),
     (_("Random Uppercase"),             random_upper),
