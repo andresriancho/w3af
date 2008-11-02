@@ -234,6 +234,9 @@ class collectCookies(baseGrepPlugin):
         # PHP
         cookie_db.append( ('PHPSESSID=','PHP') )
         
+        # SAP
+        cookie_db.append( ('sap-usercontext=sap-language=','SAP') )
+        
         # Others
         cookie_db.append( ('WebLogicSession=','BEA Logic') )
         cookie_db.append( ('SaneID=','Sane NetTracker') )
