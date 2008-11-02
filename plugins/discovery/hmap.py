@@ -160,7 +160,10 @@ class hmap(baseDiscoveryPlugin):
         One configurable parameters exist:
             - genFpF
             
-        if genFpF is set to True, a fingerprint file is generated. Fingerprint files are 
+        If genFpF is set to True, a fingerprint file is generated. Fingerprint files are 
         used to identify unknown web servers, if you generate new files please send them 
         to w3af.project@gmail.com so we can add them to the framework.
+        
+        One important thing to notice is that hmap connects directly to the remote web
+        server, without using the framework HTTP configurations (like proxy or authentication).
         '''
