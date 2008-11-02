@@ -88,7 +88,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_FLOAT)
+        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_FLOAT)
         # create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -147,9 +147,14 @@ class httpLogTab(entries.RememberingHPaned):
         column.set_resizable(True)
         treeview.append_column(column)
         
-        # column for response time
-        column = gtk.TreeViewColumn(_('Time (ms)'), gtk.CellRendererText(),text=5)
+        # column for content-length
+        column = gtk.TreeViewColumn(_('Content-Length'), gtk.CellRendererText(),text=5)
         column.set_sort_column_id(5)
+        treeview.append_column(column)        
+        
+        # column for response time
+        column = gtk.TreeViewColumn(_('Time (ms)'), gtk.CellRendererText(),text=6)
+        column.set_sort_column_id(6)
         treeview.append_column(column)
     
     def _showHelp(self,  widget):
@@ -241,7 +246,7 @@ class httpLogTab(entries.RememberingHPaned):
         for item in results:
             request, response = item
             self._lstore.append( [response.getId(), request.getMethod(), request.getURI(), \
-                                                    response.getCode(), response.getMsg(), response.getWaitTime()] )
+                                                    response.getCode(), response.getMsg(), len(response.getBody()), response.getWaitTime()] )
         
         # Size search results
         if len(results) < 10:
