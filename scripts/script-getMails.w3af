@@ -3,7 +3,6 @@
 plugins
 
 output console,textFile
-output
 
 output config textFile
 set fileName output-w3af.txt
@@ -15,16 +14,15 @@ set verbose False
 back
 
 grep getMails
-grep
 
-#discovery webSpider
-#discovery config webSpider
-#set onlyForward True
-#back
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 
 target
-set target http://localhost/w3af/grepPlugins/index.html
+set target http://localhost/w3af/grep/get_mails/index.html
 back
 
 start
