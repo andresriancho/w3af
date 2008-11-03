@@ -21,15 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
 
 class getMails(baseGrepPlugin):
     '''
@@ -42,6 +47,10 @@ class getMails(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
 
     def _testResponse(self, request, response):
+        '''
+        Plugin entry point, get the emails and save them to the kb.
+        @return: None
+        '''
         
         # Modified when I added the pdfParser
         #if isTextOrHtml(response.getHeaders()):
