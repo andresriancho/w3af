@@ -21,14 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import re
-from core.data.getResponseType import *
+
 
 class hashFind(baseGrepPlugin):
     '''
@@ -44,57 +48,67 @@ class hashFind(baseGrepPlugin):
         self._split_re = re.compile('[^\w]')
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point, identify hashes in the HTTP response.
+        @return: None
+        '''
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...
         # This is much faster
         if response.is_text_or_html():
             
             body = response.getBody()
-            splittedBody = self._split_re.split(body)
-            for s in splittedBody:
-                hashType = self._hasHashLen( s )
-                if hashType:
-                    if self._hasHashDistribution( s ):
+            splitted_body = self._split_re.split(body)
+            for possible_hash in splitted_body:
+                hash_type = self._get_hash_type( possible_hash )
+                if hash_type:
+                    if self._has_hash_distribution( possible_hash ):
                         i = info.info()
-                        i.setName('Hash in HTML content')
+                        i.setName( hash_type + 'hash in HTML content')
                         i.setURL( response.getURL() )
                         i.setId( response.id )
-                        i.setDesc( 'The URL: "'+ response.getURL()  + '" returned a response that may contain a '+hashType+' hash. The string is: "'+ s +'". This is uncommon and requires human verification.')
+                        msg = 'The URL: "'+ response.getURL()  + '" returned a response that may contain a "'
+                        msg += hash_type+'" hash. The hash is: "'+ possible_hash +'". '
+                        msg += 'This is uncommon and requires human verification.'
+                        i.setDesc( msg )
                         kb.kb.append( self, 'hashFind', i )
     
-    def _hasHashDistribution( self, s ):
+    def _has_hash_distribution( self, possible_hash ):
         '''
+        @parameter possible_hash: A string that may be a hash.
         @return: True if the string s has an equal(aprox.) distribution of numbers and letters
         '''
         numbers = 0
         letters = 0
-        for c in s:
-            if c.isdigit():
+        for char in possible_hash:
+            if char.isdigit():
                 numbers += 1
             else:
                 letters += 1
         
-        if numbers in range( letters - len(s) / 2 , letters + len(s) / 2 ):
+        if numbers in range( letters - len(possible_hash) / 2 , letters + len(possible_hash) / 2 ):
             # Seems to be a hash, let's make a final test to avoid false positives with strings like:
             # 2222222222222222222aaaaaaaaaaaaa
-            isHash = True
-            for c in s:
-                if s.count(c) > len(s) / 5:
-                    isHash = False
+            is_hash = True
+            for char in possible_hash:
+                if possible_hash.count(char) > len(possible_hash) / 5:
+                    is_hash = False
                     break
-            return isHash
+            return is_hash
             
         else:
             return False
         
-    def _hasHashLen( self, s ):
+    def _get_hash_type( self, possible_hash ):
         '''
-        @return: True if the string has a lenght of a md5 / sha1 hash.
+        @parameter possible_hash: A string that may be a hash.
+        @return: The hash type if the string seems to be a md5 / sha1 hash.
+        None otherwise.
         '''
-        if len( s ) == 32:
-            return 'md5'
-        elif len( s ) == 40:
-            return 'sha1'
+        # FIXME: Add more here!
+        if len( possible_hash ) == 32:
+            return 'MD5'
+        elif len( possible_hash ) == 40:
+            return 'SHA1'
         else:
             return None
     
