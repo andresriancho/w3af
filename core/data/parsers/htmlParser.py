@@ -56,6 +56,9 @@ class htmlParser(sgmlParser):
         # of the scope of a form tag.
         self._saved_inputs = []
         self._saved_selects = []
+
+        # Save for using in form parsing
+        self._source_url = httpResponse.getURL()
         
         sgmlParser.__init__(self, httpResponse, normalizeMarkup, verbose)
         
@@ -143,14 +146,19 @@ class htmlParser(sgmlParser):
                 foundAction = True
                 
         if not foundAction:
-            om.out.debug('htmlParser found a form without an action. Javascript is being used.')
-            # <form name="frmRegistrar" onsubmit="valida();">
-        else:
-            self._insideForm = True
-            f = form.form()
-            f.setMethod( method )           
-            f.setAction( action )
-            self._forms.append( f )
+            msg = 'htmlParser found a form without an action attribute. Javascript may be used...'
+            msg += ' but another option (mozilla does this) is that the form is expected to be '
+            msg += ' posted back to the same URL (the one that returned the HTML that we are '
+            msg += ' parsing).'
+            om.out.debug(msg)
+            action = self._source_url
+
+        # Create the form object and store everything for later use
+        self._insideForm = True
+        f = form.form()
+        f.setMethod( method )           
+        f.setAction( action )
+        self._forms.append( f )
             
         # Now I verify if they are any input tags that were found outside the scope of a form tag
         for tag, attrs in self._saved_inputs:
