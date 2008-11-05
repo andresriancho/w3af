@@ -23,11 +23,15 @@ from __future__ import with_statement
 import thread
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
+
 
 class lang(baseGrepPlugin):
     '''
@@ -45,20 +49,23 @@ class lang(baseGrepPlugin):
         # Some constants
         self._prepositions = {}
         
-        self._prepositions[ 'en' ] = ['aboard','about','above','absent','across','after','against','along','alongside','amid','amidst',\
-        'among','amongst','around','as','astride','at','atop','before','behind','below','beneath','beside','besides',\
-        'between','beyond','but','by','despite','down','during','except','following','for','from','in','inside','into','like','mid',\
-        'minus','near',\
-        'nearest','notwithstanding','of','off','on','onto','opposite','out','outside','over','past','re','round','save',\
-        'since','than','through','throughout','till','to','toward','towards','under','underneath','unlike','until','up',\
-        'upon','via','with','within','without']
+        self._prepositions[ 'en' ] = ['aboard', 'about', 'above', 'absent', 'across', 'after', 
+        'against', 'along', 'alongside', 'amid', 'amidst', 'among', 'amongst', 'around', 'as', 
+        'astride', 'at', 'atop', 'before', 'behind', 'below', 'beneath', 'beside', 'besides',
+        'between', 'beyond', 'but', 'by', 'despite', 'down', 'during', 'except', 'following',
+        'for', 'from', 'in', 'inside', 'into', 'like', 'mid', 'minus', 'near', 'nearest', 
+        'notwithstanding', 'of', 'off', 'on', 'onto', 'opposite', 'out', 'outside', 'over', 
+        'past', 're', 'round', 'save', 'since', 'than', 'through', 'throughout', 'till', 'to',
+        'toward', 'towards', 'under', 'underneath', 'unlike', 'until', 'up', 'upon', 'via',
+        'with', 'within', 'without']
 
         
         # The 'a' preposition was removed, cause its also used in english
-        self._prepositions[ 'es' ] = ['ante', 'bajo', 'cabe', 'con' , 'contra' , 'de', \
-        'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por' , 'segun', 'si', 'so', 'sobre', 'tras']
+        self._prepositions[ 'es' ] = ['ante', 'bajo', 'cabe', 'con' , 'contra' , 'de',
+        'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por' , 'segun', 'si', 'so', 
+        'sobre', 'tras']
         
-        self._langLock = thread.allocate_lock()
+        self._lang_lock = thread.allocate_lock()
         
     def _testResponse(self, request, response):
         '''
@@ -66,31 +73,31 @@ class lang(baseGrepPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        with self._langLock:
+        with self._lang_lock:
             self.is404 = kb.kb.getData( 'error404page', '404' )
             if self._exec and not self.is404( response ):
                 kb.kb.save( self, 'lang', 'unknown' )
                 
                 # Init the count map
-                numberOfmatches = {}
-                for lang in self._prepositions.keys():
-                    numberOfmatches[ lang ] = 0
+                number_of_matches = {}
+                for i in self._prepositions.keys():
+                    number_of_matches[ i ] = 0
                 
                 # Count prepositions
-                for lang in self._prepositions.keys():
-                    for preposition in self._prepositions[ lang ]:
+                for possible_lang in self._prepositions.keys():
+                    for preposition in self._prepositions[ possible_lang ]:
                         # Remember that httpResponse objects have a faster "__in__" than
                         # the one in strings; so string in response.getBody() is slower than
                         # string in response                        
                         if preposition in response:
                             om.out.debug('Found preposition: ' + preposition)
-                            numberOfmatches[ lang ] += 1
+                            number_of_matches[ possible_lang ] += 1
                             
                 # Determine who is the winner
                 def sortfunc(x,y):
                     return cmp(y[1],x[1])
                     
-                items = numberOfmatches.items()
+                items = number_of_matches.items()
                 items.sort( sortfunc )
                 
                 if items[0][1] > items[1][1] * 2:
@@ -104,7 +111,9 @@ class lang(baseGrepPlugin):
                         kb.kb.save( self, 'lang', items[0][0] )
                 
                 else:
-                    om.out.debug('Could not determine the page language using ' + response.getURL() +', not enough text to make a good analysis.')
+                    msg = 'Could not determine the page language using ' + response.getURL() 
+                    msg += ', not enough text to make a good analysis.'
+                    om.out.debug(msg)
                     # Keep running until giving a good response...
                     self._exec = True
             

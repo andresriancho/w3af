@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,10 +10,15 @@ output config console
 set verbose False
 back
 grep lang
+
+discovery webSpider
+discovery config webSpider
+set onlyForward true
+back
 back
 
 target
-set target http://localhost/w3af/w3af.html
+set target http://localhost/w3af/grep/langTest/en.html
 back
 
 start
