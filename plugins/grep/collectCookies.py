@@ -229,6 +229,7 @@ class collectCookies(baseGrepPlugin):
         
         # ASP
         cookie_db.append( ('ASPSESSIONID','ASP') )
+        cookie_db.append( ('ASP.NET_SessionId=','ASP.NET') )
         cookie_db.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT','Outlook Web Access') )
         
         # PHP
