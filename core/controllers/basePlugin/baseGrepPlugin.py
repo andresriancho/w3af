@@ -62,11 +62,15 @@ class baseGrepPlugin(basePlugin):
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )
             pass
     
-    def _wasSent( self, request, somethingInteresting ):
+    def _wasSent( self, request, something_interesting ):
         '''
-        Checks if the somethingInteresting was sent in the request.
+        Checks if the something_interesting was sent in the request.
+
+        @parameter request: The HTTP request
+        @parameter something_interesting: The string
+        @return: True if it was sent
         '''
-        url = urllib.unquote( request.getURI() )
+        url = urllib.unquote_plus( request.getURI() )
 
         sentData = ''
         if request.getMethod().upper() == 'POST':
@@ -81,13 +85,13 @@ class baseGrepPlugin(basePlugin):
         # False positive with http://localhost/home/f00.html and
         # /home/user/
         path = urlParser.getPath(url)
-        if somethingInteresting[0:5] in path:
+        if something_interesting[0:5] in path:
             return True
 
-        if url.count( somethingInteresting ) or sentData.count( somethingInteresting ):
+        if url.count( something_interesting ) or sentData.count( something_interesting ):
             return True
 
-        # I didn't sent the somethingInteresting in any way
+        # I didn't sent the something_interesting in any way
         return False
             
     def _testResponse( self, request, response ):
