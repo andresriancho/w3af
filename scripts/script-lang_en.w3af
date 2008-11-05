@@ -11,18 +11,18 @@ set verbose False
 back
 grep lang
 
-#discovery webSpider
-#discovery config webSpider
-#set onlyForward true
-#back
+discovery webSpider
+discovery config webSpider
+set onlyForward true
+back
 back
 
 target
-set target http://localhost/w3af/grep/lang/es.html
+set target http://localhost/w3af/grep/lang/en.html
 back
 
 start
 
-assert kb.kb.getData( 'lang', 'lang' ) == 'es'
+assert kb.kb.getData( 'lang', 'lang' ) == 'en'
 
 exit

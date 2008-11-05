@@ -31,7 +31,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 import core.data.kb.knowledgeBase as kb
-
+import re
 
 class lang(baseGrepPlugin):
     '''
@@ -86,11 +86,10 @@ class lang(baseGrepPlugin):
                 # Count prepositions
                 for possible_lang in self._prepositions.keys():
                     for preposition in self._prepositions[ possible_lang ]:
-                        # Remember that httpResponse objects have a faster "__in__" than
-                        # the one in strings; so string in response.getBody() is slower than
-                        # string in response                        
-                        if preposition in response:
-                            om.out.debug('Found preposition: ' + preposition)
+                        # I want to match WHOLE words
+                        response_words = re.split('[^\w]', response.getBody())
+                        if preposition in response_words:
+                            om.out.debug('Found preposition: "' + preposition + '"')
                             number_of_matches[ possible_lang ] += 1
                             
                 # Determine who is the winner
