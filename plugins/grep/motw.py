@@ -20,15 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as uparser
-from core.data.getResponseType import *
+
 import re
+
 
 class motw (baseGrepPlugin):
     """
@@ -37,43 +40,59 @@ class motw (baseGrepPlugin):
     """
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        #The following regex matches a valid url as well as the text about:internet. 
-        # Also it validates the number in the parenthesis. It should be a 4 digit number and must tell about the 
-        # length of the url that follows
-        self._motw_re = re.compile(r"""^<!-\-\s{1}saved from url=\(([\d]{4})\)(https?://([-\w\.]+)+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?|about:internet)\s{1}\-\->""")
+
+        # The following regex matches a valid url as well as the text about:internet.
+        # Also it validates the number in the parenthesis. It should be a 4 digit number
+        # and must tell about the length of the url that follows
+        regex = r"""<!--\s*saved from url=\(([\d]{4})\)(https?://([-\w\.]+)"""
+        regex += r"""+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?|about:internet)\s{1}\-\->"""
+        self._motw_re = re.compile(regex)
+
+        # User configured parameter
         self._withoutMOTW = False
 
-
     def _testResponse(self, request, response):
-
+        '''
+        Plugin entry point, search for motw.
+        @return: None
+        '''
         if response.is_text_or_html():
-            self.is404 = kb.kb.getData( 'error404page', '404' )
-            if not self.is404( response ):
-                motw = self._motw_re.search(response.getBody())
-                
+
+            is_404 = kb.kb.getData( 'error404page', '404' )
+
+            if not is_404( response ):
+                motw_match = self._motw_re.search(response.getBody())
+
                 # Create the info object
-                if motw or self._withoutMOTW:
+                if motw_match or self._withoutMOTW:
                     i = info.info()
                     i.setName('Mark of the web')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                 
                 # Act based on finding/non-finding
-                if motw :
-                    url_length_indicated = int(motw.group(1))
-                    url_length_actual =len(motw.group(2))
+                if motw_match:
+
+                    # This int() can't fail because the regex validated
+                    # the data before
+                    url_length_indicated = int(motw_match.group(1))
+                    url_length_actual = len(motw_match.group(2))
                     if (url_length_indicated <= url_length_actual):
-                        msg = 'The  URL: '  + response.getURL() + ' contains a  valid Mark of the Web.'
+                        msg = 'The  URL: "'  + response.getURL() + '"'
+                        msg += ' contains a  valid Mark of the Web.'
                         i.setDesc( msg )
                         kb.kb.append( self, 'motw', i )
                     else:
-                        msg = 'The URL: ' + response.getURL() + ' will be executed in Local Machine Zone security context because the indicated length is greater than the actual URL length.'
+                        msg = 'The URL: "' + response.getURL() + '" will be executed in Local '
+                        msg += 'Machine Zone security context because the indicated length is '
+                        msg += 'greater than the actual URL length.'
                         i['localMachine'] = True
                         i.setDesc( msg )
                         kb.kb.append( self, 'motw', i )
               
-                elif  self._withoutMOTW:
-                    msg = "The URL: " + response.getURL() + " doesn't contain a Mark of the Web."
+                elif self._withoutMOTW:
+                    msg = 'The URL: "' + response.getURL()
+                    msg += '" doesn\'t contain a Mark of the Web.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'no_motw', i )
 
@@ -96,21 +115,22 @@ class motw (baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print the results to the user
-        prettyMsg = {}
-        prettyMsg['motw'] = 'The following URLs contain a MOTW:'
-        prettyMsg['no_motw'] = 'The following URLs don\'t contain a MOTW:'
-        for type in prettyMsg:
+        pretty_msg = {}
+        pretty_msg['motw'] = 'The following URLs contain a MOTW:'
+        pretty_msg['no_motw'] = 'The following URLs don\'t contain a MOTW:'
+        for motw_type in pretty_msg:
             inform = []
-            for i in kb.kb.getData( 'motw', type ):
+            for i in kb.kb.getData( 'motw', motw_type ):
                 inform.append( i )
         
             if len( inform ):
-                om.out.information( prettyMsg[ type ] )
+                om.out.information( pretty_msg[ motw_type ] )
                 for i in inform:
                     if 'localMachine' not in i:
                         om.out.information( '- ' + i.getURL() )
                     else:
-                        om.out.information( '- ' + i.getURL() + ' [Executed in Local machine context]')
+                        msg = '- ' + i.getURL() + ' [Executed in Local machine context]'
+                        om.out.information( msg )
     
     def getPluginDeps( self ):
         '''

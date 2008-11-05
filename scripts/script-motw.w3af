@@ -2,24 +2,25 @@
 
 plugins
 output console
-output
-#output config textFile
-#set fileName output-w3af.txt
-#set verbose True
-#back
-output config console
+output config textFile
+set fileName output-w3af.txt
 set verbose True
 back
+output config console
+set verbose False
+back
+
 grep motw
 grep config motw
-set withoutMOTW True
-back
-grep
+set withoutMOTW False
 
 back
-target
-set target http://localhost/w3af/motw/compliant-motw.html , http://localhost/w3af/motw/non-compliant-motw.html
 back
+
+target
+set target http://localhost/w3af/grep/motw/valid_MOTW.html , http://localhost/w3af/grep/motw/invalid_MOTW.html
+back
+
 start
 
 assert len( kb.kb.getData( 'motw', 'motw' ) ) == 1
