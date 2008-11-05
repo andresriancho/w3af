@@ -21,17 +21,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
-import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import *
-import re
+
 from core.controllers.w3afException import w3afException
+import core.data.parsers.dpCache as dpCache
+import core.data.parsers.urlParser as urlParser
+
+import re
+
 
 class strangeParameters(baseGrepPlugin):
     '''
@@ -53,25 +59,32 @@ class strangeParameters(baseGrepPlugin):
             references = dp.getReferences()
             
             for ref in references:
-                qs = getQueryString( ref )
+                qs = urlParser.getQueryString( ref )
                 for param in qs:
-                    if self._isStrange( param, qs[param] ):
+                    if self._is_strange( request, param, qs[param] ):
                         i = info.info()
                         i.setName('Strange parameter')
                         i.setURI( ref )
                         i.setId( response.id )
-                        i.setDesc( 'The URI : ' +  i.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is quite odd.' )
+                        msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param
+                        msg += '" with value: "' + qs[param] + '", which is quite odd.'
+                        i.setDesc( msg )
                         i.setVar( param )
                         i['parameterValue'] = qs[param]
                         kb.kb.append( self , 'strangeParameters' , i )
-                    if self._isSQL( param, qs[param] ): 
+
+                    if self._is_SQL( request, param, qs[param] ): 
                         # To find this kind of vulns
-                        # http://thedailywtf.com/Articles/Oklahoma-Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-Sensitive-Data.aspx
+                        # http://thedailywtf.com/Articles/Oklahoma-
+                        # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
+                        # Sensitive-Data.aspx
                         v = vuln.vuln()
                         v.setName('Parameter has SQL sentence')
                         v.setURI( ref )
                         v.setId( response.id )
-                        v.setDesc( 'The URI : ' +  v.getURI() + ' has a parameter named: "' + param + '" with value: "' + qs[param] + '", which is a SQL sentence.' )
+                        msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param
+                        msg +='" with value: "' + qs[param] + '", which is a SQL sentence.'
+                        v.setDesc( msg )
                         v.setVar( param )
                         v['parameterValue'] = qs[param]
                         kb.kb.append( self , 'strangeParameters' , v )
@@ -92,31 +105,37 @@ class strangeParameters(baseGrepPlugin):
         '''
         self.printUniq( kb.kb.getData( 'strangeParameters', 'strangeParameters' ), 'VAR' )
 
-    def _isSQL(self, parameter, value):
+    def _is_SQL(self, request, parameter, value):
         '''
         @return: True if the parameter value contains SQL sentences
         '''
         regex = '(SELECT .*? FROM|INSERT INTO .*? VALUES|UPDATE .*? SET .*? WHERE)'
-        if re.search( regex, value, re.IGNORECASE):
-            return True
+        for match in re.findall( regex, value, re.IGNORECASE):
+            if not self._wasSent(request, match):
+                return True
         
         return False
 
-    def _isStrange(self, parameter, value):
+    def _is_strange(self, request, parameter, value):
         '''
         @return: True if the parameter value is strange
         '''
-        self._strangeParameterRegex = []
-        # Seems to be a function
-        self._strangeParameterRegex.append('\w+\(.*?\)')
+        _strange_parameter_re = []
 
-        for regex in self._strangeParameterRegex:
-            if re.match( regex, value ):
-                return True
+        # Seems to be a function
+        _strange_parameter_re.append('\w+\(.*?\)')
+        # Add more here...
+        #_strange_parameter_re.append('....')
+
+        for regex in _strange_parameter_re:
+            for match in re.findall( regex, value ):
+                if not self._wasSent(request, match):
+                    return True
         
-        splittedValue = [ x for x in re.split( r'([a-zA-Z0-9. ]+)', value ) if x != '' ]
-        if len( splittedValue ) > 4:
-            return True
+        splitted_value = [ x for x in re.split( r'([a-zA-Z0-9. ]+)', value ) if x != '' ]
+        if len( splitted_value ) > 4:
+            if not self._wasSent(request, value):
+                return True
         
         return False
     
