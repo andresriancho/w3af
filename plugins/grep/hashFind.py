@@ -126,7 +126,7 @@ class hashFind(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'hashFind', 'hashFind' ), 'URL' )
+        self.printUniq( kb.kb.getData( 'hashFind', 'hashFind' ), None )
     
     def getPluginDeps( self ):
         '''
