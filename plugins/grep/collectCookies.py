@@ -157,7 +157,7 @@ class collectCookies(baseGrepPlugin):
                                     v.setName( 'Secure cookies over insecure channel' )
                                     msg = 'Cookie values that were set over HTTPS, are sent over '
                                     msg += 'an insecure channel when requesting URL: "' 
-                                    msg += request.getURL() + '" , parameter ' + item[0]
+                                    msg += request.getURL() + '" , parameter "' + item[0] + '"'
                                     v.setDesc( msg )
                                     kb.kb.append( self, 'cookies', v )
             
@@ -177,7 +177,8 @@ class collectCookies(baseGrepPlugin):
                     i['cookie-object'] = cookieObj
                     i['httpd'] = cookie[1]
                     i.setDesc( 'A cookie matching the cookie fingerprint DB ' +
-                    'has been found when requesting ' + response.getURL() + ' . The remote platform is: ' + cookie[1] )
+                    'has been found when requesting "' + response.getURL() + '" . ' +
+                    'The remote platform is: "' + cookie[1] + '"')
                     kb.kb.append( self, 'cookies', i )
                     self._alreadyReportedServer.append( cookie[1] )
 
@@ -204,8 +205,10 @@ class collectCookies(baseGrepPlugin):
             v['cookie-string'] = cookieObj.output(header='')
             v['cookie-object'] = cookieObj
             v.setSeverity(severity.HIGH)
-            v.setName( 'Secure cookies over insecure channel' )                  
-            v.setDesc( 'A cookie marked as secure was sent over an insecure channel when requesting the URL: ' + response.getURL() )
+            v.setName( 'Secure cookies over insecure channel' )
+            msg = 'A cookie marked as secure was sent over an insecure channel'
+            msg += ' when requesting the URL: "' + response.getURL() + '"'
+            v.setDesc( msg )
             kb.kb.append( self, 'cookies', v )
         
     def _get_fingerprint_db(self):
