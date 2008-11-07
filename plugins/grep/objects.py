@@ -21,15 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as uparser
-from core.data.getResponseType import *
+
 import re
+
 
 class objects(baseGrepPlugin):
     '''
@@ -40,14 +43,17 @@ class objects(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._object = re.compile(r'< *object([^>]*)>',re.IGNORECASE)
-        self._applet = re.compile(r'< *applet([^>]*)>',re.IGNORECASE)
-        self._alreadyAddedObject = []
-        self._alreadyAddedApplet = []
+        self._object = re.compile(r'< *object([^>]*)>', re.IGNORECASE)
+        self._applet = re.compile(r'< *applet([^>]*)>', re.IGNORECASE)
+        self._already_added_object = []
+        self._already_added_applet = []
 
     def _testResponse(self, request, response):
-        
-        if response.is_text_or_html() and response.getURL() not in self._alreadyAddedObject:
+        '''
+        Plugin entry point. Parse the object tags.
+        '''
+
+        if response.is_text_or_html() and response.getURL() not in self._already_added_object:
             res = self._object.findall( response.getBody() )
             if res:
                 i = info.info()
@@ -56,9 +62,9 @@ class objects(baseGrepPlugin):
                 i.setId( response.id )
                 i.setDesc( 'The URL: "' + i.getURL() + '" has an object tag.' )          
                 kb.kb.append( self, 'object', i )
-                self._alreadyAddedObject.append( response.getURL() )
+                self._already_added_object.append( response.getURL() )
         
-        if response.getURL() not in self._alreadyAddedApplet:
+        if response.getURL() not in self._already_added_applet:
             res = self._applet.findall( response.getBody() )
             if res:
                 i = info.info()
@@ -67,7 +73,7 @@ class objects(baseGrepPlugin):
                 i.setId( response.id )
                 i.setDesc( 'The URL: "' + i.getURL() + '" has an applet tag.' )          
                 kb.kb.append( self, 'applet', i )
-                self._alreadyAddedApplet.append( response.getURL() )
+                self._already_added_applet.append( response.getURL() )
     
     def setOptions( self, OptionList ):
         pass

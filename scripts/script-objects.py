@@ -1,0 +1,28 @@
+# grep demo that find HTTP dump in response body
+
+plugins
+output console
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+back
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+grep objects
+back
+
+target
+set target http://localhost/w3af/grep/objects/index.html
+back
+
+start
+
+assert len( kb.kb.getData( 'objects', 'object' ) ) == 1
+assert len( kb.kb.getData( 'objects', 'applet' ) ) == 1
+
+exit
