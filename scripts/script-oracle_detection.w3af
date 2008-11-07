@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,17 +10,19 @@ output config console
 set verbose False
 back
 
-discovery oracleDiscovery
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 grep oracle
 back
 
 target
-set target http://localhost/w3af/oracle/1.html
+set target http://localhost/w3af/grep/oracle/index.html
 back
 
 start
 
-assert len(kb.kb.getData('oracle','oracle')) == 1
-assert len(kb.kb.getData('oracleDiscovery', 'info')) == 1
+assert len(kb.kb.getData('oracle','oracle')) == 3
 
 exit
