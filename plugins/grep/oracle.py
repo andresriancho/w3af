@@ -21,14 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import *
-import re
+
 
 class oracle(baseGrepPlugin):
     '''
@@ -41,19 +43,25 @@ class oracle(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
     def _testResponse(self, request, response):
-        
+        '''
+        Plugin entry point. Grep for oracle applications.
+        @return: None
+        '''
+
         if response.is_text_or_html():
             for msg in self._getDescriptiveMessages():
                 # Remember that httpResponse objects have a faster "__in__" than
                 # the one in strings; so string in response.getBody() is slower than
-                # string in response                         
+                # string in response
                 if msg in response:
                     
                     i = info.info()
                     i.setName('Oracle application')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' + response.getURL() + '" was created using Oracle Application server.' )
+                    msg = 'The URL: "' + response.getURL() + '" was created using Oracle'
+                    msg += ' Application server.'
+                    i.setDesc( msg )
                     kb.kb.append( self , 'oracle' , i )
 
     def _getDescriptiveMessages( self ):

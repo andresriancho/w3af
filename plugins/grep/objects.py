@@ -51,6 +51,7 @@ class objects(baseGrepPlugin):
     def _testResponse(self, request, response):
         '''
         Plugin entry point. Parse the object tags.
+        @return: None
         '''
 
         if response.is_text_or_html() and response.getURL() not in self._already_added_object:

@@ -52,6 +52,7 @@ class newline(baseGrepPlugin):
     def _testResponse(self, request, response):
         '''
         Plugin entry point. Analyze the new line convention of the site.
+        @return: None
         '''
 
         is404 = kb.kb.getData( 'error404page', '404' )
