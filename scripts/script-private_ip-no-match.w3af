@@ -15,16 +15,11 @@ set verbose False
 back
 
 grep privateIP
-grep
 
-#discovery webSpider
-#discovery config webSpider
-#set onlyForward True
-#back
 back
 
 target
-set target http://localhost/w3af/xss/test-xss.php?a=10.10.10.1&b=whoami
+set target http://localhost/w3af/audit/xss/simple_xss.php?text=10.10.1.2
 back
 
 start
