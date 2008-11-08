@@ -21,17 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import *
-from core.data.getResponseType import *
-import re
 import core.data.constants.severity as severity
+
+import re
+
 
 class svnUsers(baseGrepPlugin):
     '''
@@ -42,18 +44,28 @@ class svnUsers(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._regexList = [ re.compile('\$.*?: .*? .*? \d{4}[-/]\d{1,2}[-/]\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$') ]
+        
+        # Add the regex
+        regex = '\$.*?: .*? .*? \d{4}[-/]\d{1,2}[-/]\d{1,2}'
+        regex += ' \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$'
+        self._regex_list = [ re.compile(regex) ]
         
     def _testResponse(self, request, response):
+        '''
+        Plugin entry point.
         
+        @return: None, all results are saved in the kb.
+        '''
         if response.is_text_or_html():
             
-            for regex in self._regexList:
+            for regex in self._regex_list:
                 for m in regex.findall( response.getBody() ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )
-                    v.setDesc( 'The URL : '+ response.getURL()  + ' contains a SVN versioning signature with the username: "' + m[0] + '" .' )
+                    msg = 'The URL: "'+ response.getURL()  + '" contains a SVN versioning '
+                    msg += 'signature with the username: "' + m[0] + '" .' 
+                    v.setDesc( msg )
                     v['user'] = m[0]
                     v.setSeverity(severity.LOW)
                     v.setName( 'SVN user disclosure vulnerability' )
@@ -74,7 +86,7 @@ class svnUsers(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'svnUsers', 'users' ), None )
+        self.printUniq( kb.kb.getData( 'svnUsers', 'users' ), 'URL' )
     
     def getPluginDeps( self ):
         '''
