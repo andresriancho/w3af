@@ -20,12 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import re
 
 class httpInBody (baseGrepPlugin):
@@ -57,7 +61,7 @@ class httpInBody (baseGrepPlugin):
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
-            if 'HTTP/1.' in response:
+            if 'HTTP' in response:
                 
                 # Now, remove tags
                 bodyWithoutTags = self._re_removeTags.sub('', response.getBody() )
@@ -67,7 +71,7 @@ class httpInBody (baseGrepPlugin):
                     i.setName('HTTP Request in HTTP body')
                     i.setURI( response.getURI() )
                     i.setId( response.id )
-                    i.setDesc( 'A HTTP request was found in the HTTP body of a response' )
+                    i.setDesc( 'An HTTP request was found in the HTTP body of a response' )
                     kb.kb.append( self, 'httpInBody', i )
                     
                 if self._re_response.search( bodyWithoutTags ):
@@ -75,7 +79,7 @@ class httpInBody (baseGrepPlugin):
                     i.setName('HTTP Response in HTTP body')
                     i.setURI( response.getURI() )
                     i.setId( response.id )
-                    i.setDesc( 'A HTTP response was found in the HTTP body of a response' )
+                    i.setDesc( 'An HTTP response was found in the HTTP body of a response' )
                     kb.kb.append( self, 'httpInBody', i )
 
     def setOptions( self, optionsMap ):
@@ -93,11 +97,11 @@ class httpInBody (baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         if kb.kb.getData('httpInBody', 'httpInBody'):
-            om.out.information('The following URLs have a HTTP request or response in the HTTP response body:')
+            msg = 'The following URLs have a HTTP request or response in the HTTP response body:'
+            om.out.information(msg)
             for i in kb.kb.getData('httpInBody', 'httpInBody'):
                 om.out.information('- ' + i.getURI() + '  (id:' + str(i.getId()) + ')' )
             
-    
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the

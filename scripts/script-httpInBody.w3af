@@ -2,19 +2,24 @@
 
 plugins
 output console
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
-set verbose True
+#set verbose True
 back
 grep httpInBody
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+
 back
 
 target
-set target http://localhost/w3af/httpInBody/body.html
+set target http://localhost/w3af/grep/http_in_body/index.html
 back
 
 start
