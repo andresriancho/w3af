@@ -12,9 +12,11 @@ set verbose False
 back
 grep creditCards
 back
+
 target
-set target http://localhost/w3af/grepPlugins/index.html
+set target http://localhost/w3af/grep/index.html
 back
+
 start
 
 assert len(kb.kb.getData('creditCards','creditCards')) == 0
