@@ -20,15 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.htmlParser as htmlParser
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.getResponseType import *
+
 
 class wsdlGreper(baseGrepPlugin):
     '''
@@ -40,35 +42,44 @@ class wsdlGreper(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
+        # Only generate the lists once.
+        # Adding 0,001% performance ;)
+        self._wsdl_strings = self._get_WSDL_strings()
+        self._disco_strings = ['disco:discovery ']
+
     def _testResponse(self, request, response):
         
         if response.is_text_or_html():
 
             if response.getCode() == 200:
-                isWsdl = False
-                for wsdl_string in self._getStringsWsdl():
+                is_WSDL = False
+                for wsdl_string in self._wsdl_strings:
                     if wsdl_string in response:
-                        isWsdl = True
+                        is_WSDL = True
                         break
                     
-                if isWsdl:
+                if is_WSDL:
                     i = info.info()
                     i.setName('WSDL file')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setDesc( 'The URL: "' +  i.getURL() + '" is a Web Services Description Language page.' )
+                    msg = 'The URL: "' +  i.getURL() + '" is a Web Services '
+                    msg += 'Description Language page.'
+                    i.setDesc( msg )
                     kb.kb.append( self , 'wsdl' , i )
                 
-                isDisco = False
-                for disco_string in ['disco:discovery ']:
+                is_Disco = False
+                for disco_string in self._disco_strings:
                     if disco_string in response:
-                        isDisco = True
+                        is_Disco = True
                         break
                     
-                if isDisco:
+                if is_Disco:
                     i = info.info()
                     i.setURL( response.getURL() )
-                    i.setDesc( 'The URL : ' +  i.getURL() + ' is a DISCO file that contains references to WSDLs.' )
+                    msg = 'The URL: "' +  i.getURL() + '" is a DISCO file that contains'
+                    msg += ' references to WSDLs.'
+                    i.setDesc( msg )
                     kb.kb.append( self , 'disco' , i )
             
     def setOptions( self, OptionList ):
@@ -81,7 +92,7 @@ class wsdlGreper(baseGrepPlugin):
         ol = optionList()
         return ol
 
-    def _getStringsWsdl( self ):
+    def _get_WSDL_strings( self ):
         res = []
         
         res.append( 'xs:int' )
