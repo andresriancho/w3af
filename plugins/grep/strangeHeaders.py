@@ -21,13 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
+
 
 class strangeHeaders(baseGrepPlugin):
     '''
@@ -38,19 +43,25 @@ class strangeHeaders(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._commonHeaders = self._getCommonHeaders()
+        self._common_headers = self._getCommonHeaders()
 
     def _testResponse(self, request, response):
+        '''
+        Plugin entry point.
         
-        for headerName in response.getHeaders().keys():
-            if headerName.upper() not in self._commonHeaders:
+        @return: None, all results are saved in the kb.
+        '''
+        for header_name in response.getHeaders().keys():
+            if header_name.upper() not in self._common_headers:
                 i = info.info()
                 i.setName('Strange header')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
-                i.setDesc( 'The URL: "' +  i.getURL() + '" sent the HTTP header: "' + headerName + '" with value: "' + response.getHeaders()[headerName] + '"' )
-                i['headerName'] = headerName
-                i['headerValue'] = response.getHeaders()[headerName]
+                msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "' + header_name
+                msg += '" with value: "' + response.getHeaders()[header_name] + '"'
+                i.setDesc( msg )
+                i['header_name'] = header_name
+                i['headerValue'] = response.getHeaders()[header_name]
                 kb.kb.append( self , 'strangeHeaders' , i )
     
     def setOptions( self, OptionList ):
@@ -69,20 +80,20 @@ class strangeHeaders(baseGrepPlugin):
         '''
         headers = kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )
         # This is how I saved the data:
-        #i['headerName'] = headerName
-        #i['headerValue'] = response.getHeaders()[headerName]
+        #i['header_name'] = header_name
+        #i['headerValue'] = response.getHeaders()[header_name]
         
         # Group correctly
         tmp = []
         for i in headers:
-            tmp.append( (i['headerName'], i.getURL() ) )
+            tmp.append( (i['header_name'], i.getURL() ) )
         
         # And don't print duplicates
         tmp = list(set(tmp))
         
         resDict, itemIndex = groupbyMinKey( tmp )
         if itemIndex == 0:
-            # Grouped by headerName
+            # Grouped by header_name
             msg = 'The header: "%s" was sent by these URLs:'
         else:
             # Grouped by URL

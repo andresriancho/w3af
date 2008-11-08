@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,12 +9,14 @@ back
 output config console
 set verbose False
 back
+
 grep strangeHeaders
-grep
 back
+
 target
-set target http://localhost/w3af/grepPlugins/strangeHeader.php
+set target http://localhost/w3af/grep/strange_headers/strange_header.php
 back
+
 start
 
 assert len(kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )) == 1
