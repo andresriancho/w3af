@@ -20,9 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
-from core.data.getResponseType import *
 
 import sgmllib
 
@@ -52,8 +50,6 @@ class html(basePpPlugin):
                 # continue to the next pp plugin.
                 return None
             else:
-                res = {}
-                
                 data = sp.getData()
                 
                 # I think that titles have more password material that normal data:
@@ -62,12 +58,11 @@ class html(basePpPlugin):
                     titles[ t ] *= 5
                 
                 # join both maps
-                for i in titles.keys():
-                    res[i] = titles[i]
-                for i in data.keys():
-                    res[i] = data[i]
-                
-                return res
+                for word in titles:
+                    if word in data:
+                        data[word] += titles[word]
+               
+                return data
     
 class simpleParser(sgmllib.SGMLParser):
     "A simple parser class."

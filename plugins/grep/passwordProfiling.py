@@ -21,19 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.misc.factory import *
-from core.data.getResponseType import *
-import urllib
-from core.data.parsers.urlParser import *
+
+from core.controllers.misc.factory import factory
+
 
 class passwordProfiling(baseGrepPlugin):
     '''
-    Create a list of possible passwords by reading HTTP responses.
+    Create a list of possible passwords by reading HTTP response bodies.
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -49,58 +51,69 @@ class passwordProfiling(baseGrepPlugin):
         # names of plugins to run
         ### TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata
         ### it will be usefull for doing A LOT of plugins
-        self._pluginsStr = ['html', 'pdf']
+        self._plugin_name_list = ['html', 'pdf']
         
-        # plugin instances, they are created in the first call to self._runPpPlugins
+        # plugin instances, they are created in the first call to self._run_plugins
         self._plugins = []
         
         # This are common words I dont want to use as passwords
         self._commonWords = {}
-        self._commonWords['en'] = [ 'type', 'that', 'from', 'this', 'been', 'there', 'which', 'line', 'error', 'warning', 'file'\
-        'fatal', 'failed', 'open', 'such', 'required', 'directory', 'valid', 'result', 'argument', 'there', 'some']
+        self._commonWords['en'] = [ 'type', 'that', 'from', 'this', 'been', 'there', 'which', 
+        'line', 'error', 'warning', 'file', 'fatal', 'failed', 'open', 'such', 'required', 
+        'directory', 'valid', 'result', 'argument', 'there', 'some']
         
-        self._commonWords['es'] = [ 'otro', 'otra', 'para', 'pero', 'hacia', 'algo', 'poder', 'error']
+        self._commonWords['es'] = [ 'otro', 'otra', 'para', 'pero', 'hacia', 'algo', 'poder',
+        'error']
         
         self._commonWords['unknown'] = self._commonWords['en']
         
         
         # Some words that are banned
-        self._bannerWords = [ 'Forbidden', 'browsing', 'Index' ]
+        self._banned_words = [ 'Forbidden', 'browsing', 'Index' ]
         
     def _testResponse(self, request, response):
-        
-        self.is404 = kb.kb.getData( 'error404page', '404' )
-        self.lang = kb.kb.getData( 'lang', 'lang' )
-        if self.lang == []:
-            self.lang = 'unknown'
+        '''
+        Plugin entry point. Get responses, analyze words, create dictionary.
+        @return: None.
+        '''
+        # Initial setup
+        is_404 = kb.kb.getData( 'error404page', '404' )
+        lang = kb.kb.getData( 'lang', 'lang' )
+        if lang == []:
+            lang = 'unknown'
 
-        if not self.is404( response ) and request.getMethod() in ['POST', 'GET'] and \
-        response.getCode() not in [500,401,403]:
-            data = self._runPpPlugins( response )
-            oldData = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+        # I added the 404 code here to avoid doing some is_404 lookups
+        if response.getCode() not in [500, 401, 403, 404] and \
+        not is_404( response ) and \
+        request.getMethod() in ['POST', 'GET']:
+            # Run the plugins
+            data = self._run_plugins( response )
+            old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+            
             # "merge" both maps and update the repetitions
             for d in data.keys():
-                if d.lower() not in self._commonWords[ self.lang ] \
+                if d.lower() not in self._commonWords[ lang ] \
                 and not self._wasSent( request, d ) and len(d) > 3 \
-                and d.isalnum() and d not in self._bannerWords:
-                    if d in oldData.keys():
-                        oldData[ d ] += data[ d ]
+                and d.isalnum() and d not in self._banned_words:
+                    if d in old_data:
+                        old_data[ d ] += data[ d ]
                     else:
-                        oldData[ d ] = data[ d ]
+                        old_data[ d ] = data[ d ]
             
             # save the merged map
-            kb.kb.save( self, 'passwordProfiling', oldData )
+            kb.kb.save( self, 'passwordProfiling', old_data )
     
-    def _runPpPlugins( self, response ):
+    def _run_plugins( self, response ):
         '''
         Runs password profiling plugins to collect data from HTML, TXT, PDF, etc files.
         @parameter response: A httpResponse object
         @return: A map with word:repetitions
         '''
+        # Create plugin instances only once
         if len(self._plugins)==0:
-            # Create plugins
-            for pluginName in self._pluginsStr:
-                self._plugins.append( factory( 'plugins.grep.passwordProfilingPlugins.' +  pluginName ) )
+            for plugin_name in self._plugin_name_list:
+                plugin_instance = factory( 'plugins.grep.passwordProfilingPlugins.' +  plugin_name )
+                self._plugins.append( plugin_instance )
         
         res = {}
         for plugin in self._plugins:
@@ -126,8 +139,8 @@ class passwordProfiling(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        def sortfunc(x,y):
-            return cmp(y[1],x[1])
+        def sortfunc(x_obj, y_obj):
+            return cmp(y_obj[1], x_obj[1])
             
         items = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' ).items()
         if len( items ) != 0:
@@ -142,7 +155,9 @@ class passwordProfiling(baseGrepPlugin):
                 xLen = listLen
             
             for i in xrange(xLen):
-                om.out.information('- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) + ' repetitions.' )
+                msg = '- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) 
+                msg += ' repetitions.'
+                om.out.information( msg )
             
 
     def getPluginDeps( self ):

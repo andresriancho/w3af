@@ -20,11 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
 import extlib.pyPdf.pyPdf as pyPdf
 import StringIO
-from core.data.getResponseType import *
+from core.data.getResponseType import isPDF
 
 class pdf(basePpPlugin):
     '''
