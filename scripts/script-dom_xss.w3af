@@ -1,4 +1,3 @@
-# domXss
 
 plugins
 output console,textFile
@@ -10,11 +9,12 @@ back
 output config console
 set verbose False
 back
+
 grep domXss
 back
 
 target
-set target http://localhost/w3af/grepPlugins/domXss.html
+set target http://localhost/w3af/grep/dom_xss.html
 back
 
 start
