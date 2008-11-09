@@ -124,25 +124,35 @@ class LDAPi(baseAuditPlugin):
         error_strings.append('LDAPException')
         
         # http://support.microsoft.com/kb/218185
-        error_strings.append('Protocol error occurred.')
-        error_strings.append('Size limit has exceeded.')
-        error_strings.append('An inappropriate matching occurred.')
-        error_strings.append('A constraint violation occurred.')
-        error_strings.append('The syntax is invalid.')
-        error_strings.append('Object does not exist.')
-        error_strings.append('The alias is invalid.')
-        error_strings.append('The distinguished name has an invalid syntax.')
-        error_strings.append('The server does not handle directory requests.')
-        error_strings.append('There was a naming violation.')
-        error_strings.append('There was an object class violation.')
-        error_strings.append('Results returned are too large.')
-        error_strings.append('Unknown error occurred.')
-        error_strings.append('Local error occurred.')
-        error_strings.append('The search filter is incorrect.')
+        error_strings.append('Protocol error occurred')
+        error_strings.append('Size limit has exceeded')
+        error_strings.append('An inappropriate matching occurred')
+        error_strings.append('A constraint violation occurred')
+        error_strings.append('The syntax is invalid')
+        error_strings.append('Object does not exist')
+        error_strings.append('The alias is invalid')
+        error_strings.append('The distinguished name has an invalid syntax')
+        error_strings.append('The server does not handle directory requests')
+        error_strings.append('There was a naming violation')
+        error_strings.append('There was an object class violation')
+        error_strings.append('Results returned are too large')
+        error_strings.append('Unknown error occurred')
+        error_strings.append('Local error occurred')
+        error_strings.append('The search filter is incorrect')
+        error_strings.append('The search filter is invalid')
+        error_strings.append('The search filter cannot be recognized')
         
         # OpenLDAP
         error_strings.append('Invalid DN syntax')
         error_strings.append('No Such Object')
+        
+        # IPWorks LDAP
+        # http://www.tisc-insight.com/newsletters/58.html
+        error_strings.append('IPWorksASP.LDAP')
+        
+        # ???
+        # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
+        error_strings.append('Module Products.LDAPMultiPlugins')
 
         return [ e.lower() for e in error_strings ]
         
