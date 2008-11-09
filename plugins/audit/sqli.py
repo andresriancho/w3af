@@ -134,18 +134,25 @@ class sqli(baseAuditPlugin):
         errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2', DB2 ) )
         errors.append( ('\\[SQL Server\\]', MSSQL ) )
         errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', MSSQL ) )
-        errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', ACCESS ) )
         errors.append( ('\\[SQLServer JDBC Driver\\]', MSSQL ) )
         errors.append( ('\\[SqlException', MSSQL ) )
+        errors.append( ('System.Data.SqlClient.SqlException', MSSQL ) )
+        errors.append( ('Unclosed quotation mark after the character string', MSSQL ) )
         errors.append( ("'80040e14'", MSSQL ) )
         errors.append( ('mssql_query\\(\\)', MSSQL ) )
         errors.append( ('odbc_exec\\(\\)', MSSQL ) )
-        errors.append( ('Microsoft JET Database Engine error', ACCESS ))
         errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', MSSQL ))
         errors.append( ('Microsoft OLE DB Provider for SQL Server', MSSQL ))
         errors.append( ('Incorrect syntax near', MSSQL ) )
+        errors.append( ('Syntax error in string in query expression', MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', MSSQL ) )
-        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", MSSQL ))        
+        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", MSSQL ))
+        
+        # Access
+        errors.append( ('Syntax error in query expression', ACCESS ))
+        errors.append( ('Data type mismatch in criteria expression.', ACCESS ))
+        errors.append( ('Microsoft JET Database Engine', ACCESS ))
+        errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', ACCESS ) )
         
         # ORACLE
         errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', ORACLE ) )
@@ -153,6 +160,8 @@ class sqli(baseAuditPlugin):
         # POSTGRE
         errors.append( ('PostgreSQL query failed:', POSTGRE ) )
         errors.append( ('supplied argument is not a valid PostgreSQL result', POSTGRE ) )
+        errors.append( ('pg_query() [:', POSTGRE ) )
+        errors.append( ('pg_exec() [:', POSTGRE ) )
         
         # MYSQL
         errors.append( ('supplied argument is not a valid MySQL', MYSQL ) )
@@ -182,7 +191,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('java\\.sql\\.SQLException', JAVA ))
 
         # Coldfusion
-        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]\\[SQLServer\\]', MSSQL ))
+        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', MSSQL ))
         
         # Generic errors..
         errors.append( ('SELECT .*? FROM .*?', UNKNOWN ))
