@@ -275,6 +275,7 @@ class PromptDialog(gtk.Dialog):
     '''
     def __init__(self, title, promptText, procfunc, exploit_tree):
         super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+        self.set_icon_from_file('core/ui/gtkUi/data/shell.png')
 
         # the toolbar
         box = gtk.HBox()
