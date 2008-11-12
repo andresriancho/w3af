@@ -21,14 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.info as info
+
+from core.controllers.w3afException import w3afRunOnce
 from core.data.fuzzer.fuzzer import createRandAlNum
 import urllib
 
@@ -39,12 +42,14 @@ class afd(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+
+        # Internal variable
         self._exec = True
         
     def discover(self, fuzzableRequest ):
         '''
-        Nothing strange, just do some GET requests to the first URL with an invented parameter and the
-        custom payloads that are supposed to be filtered, and analyze the response.
+        Nothing strange, just do some GET requests to the first URL with an invented parameter and 
+        the custom payloads that are supposed to be filtered, and analyze the response.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
@@ -73,8 +78,10 @@ class afd(baseDiscoveryPlugin):
         
         try:
             originalResponseBody = self._urlOpener.GET( originalURL , useCache=True ).getBody()
-        except:
-            om.out.error('Active filter detection plugin failed to recieve a response for the first request.')
+        except Exception:
+            msg = 'Active filter detection plugin failed to recieve a '
+            msg += 'response for the first request.'
+            om.out.error( msg )
         else:
             originalResponseBody = originalResponseBody.replace( rndParam, '' )
             originalResponseBody = originalResponseBody.replace( rndValue, '' )
@@ -104,10 +111,13 @@ class afd(baseDiscoveryPlugin):
         '''
         Analyze the test results and save the conclusion to the kb.
         '''
-        if len( filtered ) >= len(self._getFilteredStrings()) / 5:
+        if len( filtered ) >= len(self._getFilteredStrings()) / 5.0:
             i = info.info()
             i.setName('Active filter detected')
-            i.setDesc('The remote network has an active filter. IMPORTANT: The result of all the other plugins will be unaccurate, web applications could be vulnerable but "protected" by the active filter.')
+            msg = 'The remote network has an active filter. IMPORTANT: The result of all the other'
+            msg += ' plugins will be unaccurate, web applications could be vulnerable but '
+            msg += '"protected" by the active filter.'
+            i.setDesc( msg )
             i['filtered'] = filtered
             kb.kb.append( self, 'afd', i )
             om.out.information( i.getDesc() )
@@ -170,13 +180,14 @@ class afd(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin sends custom requests to the remote web server in order to verify if the remote network
-        is protected by an IPS or WAF. 
+        This plugin sends custom requests to the remote web server in order to verify if the
+        remote network is protected by an IPS or WAF. 
         
-        afd plugin detects both TCP-Connection-reset and HTTP level filters, the first one (usually implemented 
-        by IPS devices) is easy to verify: if afd requests the custom page and the GET method raises an exception, 
-        then its being probably blocked by an active filter. The second one (usually implemented by Web Application Firewalls 
-        like mod_security) is a little harder to verify: first afd requests a page without adding any special parameters, afterwards it 
-        requests the same URL but with a faked parameter and customized values; if the response bodies differ, then 
-        its safe to say that the remote end has an active filter.
+        afd plugin detects both TCP-Connection-reset and HTTP level filters, the first one (usually
+         implemented by IPS devices) is easy to verify: if afd requests the custom page and the GET
+        method raises an exception, then its being probably blocked by an active filter. The second
+        one (usually implemented by Web Application Firewalls like mod_security) is a little harder
+         to verify: first afd requests a page without adding any special parameters, afterwards it 
+        requests the same URL but with a faked parameter and customized values; if the response 
+        bodies differ, then its safe to say that the remote end has an active filter.
         '''
