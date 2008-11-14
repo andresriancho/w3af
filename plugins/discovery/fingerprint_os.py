@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -43,7 +44,7 @@ class fingerprint_os(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Control flow
-        self._foundOS = False
+        self._found_OS = False
         self._exec = True
         
     def discover(self, fuzzableRequest ):
@@ -57,13 +58,15 @@ class fingerprint_os(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             
-            if self._foundOS:
+            if self._found_OS:
                 # Nothing else to do here.
                 self._exec = False
-                
-            self._findOS( fuzzableRequest )
+
+            else:
+                # Work!
+                self._find_OS( fuzzableRequest )
     
-    def _findOS( self, fuzzableRequest ):
+    def _find_OS( self, fuzzableRequest ):
         '''
         Analyze responses and determine if remote web server runs on windows or *nix
         @Return: None, the knowledge is saved in the knowledgeBase
@@ -76,7 +79,7 @@ class fingerprint_os(baseDiscoveryPlugin):
             windowsResponse = self._urlOpener.GET( windowsURL )
             
             originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
-            self._foundOS = True
+            self._found_OS = True
             
             if relative_distance( originalResponse.getBody(), windowsResponse.getBody() ) > 0.98:
                 i = info.info()
