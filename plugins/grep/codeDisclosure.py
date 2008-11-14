@@ -21,14 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import re
 import core.data.constants.severity as severity
+
+import re
+
 
 class codeDisclosure(baseGrepPlugin):
     '''
@@ -59,17 +64,23 @@ class codeDisclosure(baseGrepPlugin):
         self._regexs.append( (jsp2, 'JSP') )
         
         self._alreadyAdded = []
+        self._first_404 = True
 
     def _testResponse(self, request, response):
         '''
         Plugin entry point, search for the code disclosures.
         @return: None
         '''
+
         if response.is_text_or_html() and response.getURL() not in self._alreadyAdded:
+    
+            is_404 = kb.kb.getData( 'error404page', '404' )
             
             for regex, lang in self._regexs:
                 res = regex.search( response.getBody() )
-                if res:
+
+                # Check also for 404
+                if res and not is_404( response ):
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )
@@ -79,6 +90,18 @@ class codeDisclosure(baseGrepPlugin):
                     v.setDesc( msg )
                     kb.kb.append( self, 'codeDisclosure', v )
                     self._alreadyAdded.append( response.getURL() )
+
+                # It's a 404!
+                if res and is_404( response ) and self._first_404:
+                    self._first_404 = False
+                    v = vuln.vuln()
+                    v.setURL( response.getURL() )
+                    v.setId( response.id )
+                    v.setSeverity(severity.LOW)
+                    v.setName( lang + ' code disclosure vulnerability in 404 page' )
+                    msg = 'The URL: "' + v.getURL() + '" has a code disclosure vulnerability.'
+                    v.setDesc( msg )
+                    kb.kb.append( self, 'codeDisclosure', v )
     
     def setOptions( self, OptionList ):
         '''
