@@ -64,7 +64,8 @@ class msn(searchEngine):
 
         results = []
 
-        urls = re.findall('<h3><a href="(.*?)" gping=".*?">',   response.getBody())
+        # This regex MAY become outdated
+        urls = re.findall('<h3><a href="(.*?)" onmousedown',   response.getBody())
         if len(urls) == 11:
             urls = urls[:-1]
         
