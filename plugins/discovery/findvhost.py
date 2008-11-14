@@ -142,6 +142,7 @@ class findvhost(baseDiscoveryPlugin):
                     i.setName('Internal hostname in HTML link')
                     i.setURL( fuzzableRequest.getURL() )
                     i.setMethod( 'GET' )
+                    i.setId( originalResponse.id )
                     msg = 'The content of "'+ fuzzableRequest.getURL() +'" references a non '
                     msg += 'existant domain: "' + link + '"'
                     i.setDesc( msg )
