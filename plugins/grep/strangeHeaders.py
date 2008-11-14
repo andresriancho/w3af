@@ -80,7 +80,7 @@ class strangeHeaders(baseGrepPlugin):
         if 'content-location' in response.getLowerCaseHeaders() \
         and response.getCode() not in xrange(300,310):
             i = info.info()
-            i.setName('HTTP header anomaly')
+            i.setName('Content-Location HTTP header anomaly')
             i.setURL( response.getURL() )
             i.setId( response.id )
             msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "content-location"' 
@@ -88,7 +88,7 @@ class strangeHeaders(baseGrepPlugin):
             msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
             msg += ' a violation to the RFC.'
             i.setDesc( msg )
-            kb.kb.append( self , 'strangeHeaders' , i )
+            kb.kb.append( self , 'anomaly' , i )
 
     def setOptions( self, OptionList ):
         pass
