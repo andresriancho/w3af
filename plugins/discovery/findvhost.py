@@ -142,7 +142,9 @@ class findvhost(baseDiscoveryPlugin):
                     i.setName('Internal hostname in HTML link')
                     i.setURL( fuzzableRequest.getURL() )
                     i.setMethod( 'GET' )
-                    i.setDesc('Found a page that references a non existant domain: "' + link + '"' )
+                    msg = 'The content of "'+ fuzzableRequest.getURL() +'" references a non '
+                    msg += 'existant domain: "' + link + '"'
+                    i.setDesc( msg )
                     kb.kb.append( self, 'findvhost', i )
                     om.out.information( i.getDesc() )
         
