@@ -99,7 +99,7 @@ class codeDisclosure(baseGrepPlugin):
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
                     v.setName( lang + ' code disclosure vulnerability in 404 page' )
-                    msg = 'The URL: "' + v.getURL() + '" has a code disclosure vulnerability.'
+                    msg = 'The URL: "' + v.getURL() + '" has a code disclosure vulnerability in the customized 404 script.'
                     v.setDesc( msg )
                     kb.kb.append( self, 'codeDisclosure', v )
     
