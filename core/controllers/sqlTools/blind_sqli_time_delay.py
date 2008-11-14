@@ -36,7 +36,7 @@ import re
 # importing this to have sendMutant and setUrlOpener
 from core.controllers.basePlugin.basePlugin import basePlugin
 
-class blind_sqli_response_diff(basePlugin):
+class blind_sqli_time_delay(basePlugin):
     '''
     This class tests for blind SQL injection bugs, the logic is here and not as an audit plugin cause 
     this logic is also used in attack plugins.
