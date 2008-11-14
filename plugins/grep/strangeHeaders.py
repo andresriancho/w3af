@@ -51,6 +51,8 @@ class strangeHeaders(baseGrepPlugin):
         
         @return: None, all results are saved in the kb.
         '''
+
+        # Check if the header names are common or not
         for header_name in response.getHeaders().keys():
             if header_name.upper() not in self._common_headers:
                 i = info.info()
@@ -63,7 +65,31 @@ class strangeHeaders(baseGrepPlugin):
                 i['header_name'] = header_name
                 i['headerValue'] = response.getHeaders()[header_name]
                 kb.kb.append( self , 'strangeHeaders' , i )
-    
+
+
+        # Now check for protocol anomalies
+        self._content_location_not_300(request, response)
+
+    def _content_location_not_300( self, request, response):
+        '''
+        Check if the response has a content-location header and the response code
+        is not in the 300 range.
+        
+        @return: None, all results are saved in the kb.
+        '''
+        if 'content-location' in response.getLowerCaseHeaders() \
+        and response.getCode() not in xrange(300,310):
+            i = info.info()
+            i.setName('HTTP header anomaly')
+            i.setURL( response.getURL() )
+            i.setId( response.id )
+            msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "content-location"' 
+            msg += ' with value: "' + response.getLowerCaseHeaders()['content-location']
+            msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
+            msg += ' a violation to the RFC.'
+            i.setDesc( msg )
+            kb.kb.append( self , 'strangeHeaders' , i )
+
     def setOptions( self, OptionList ):
         pass
     
