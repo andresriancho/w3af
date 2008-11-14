@@ -160,8 +160,8 @@ class sqli(baseAuditPlugin):
         # POSTGRE
         errors.append( ('PostgreSQL query failed:', POSTGRE ) )
         errors.append( ('supplied argument is not a valid PostgreSQL result', POSTGRE ) )
-        errors.append( ('pg_query() [:', POSTGRE ) )
-        errors.append( ('pg_exec() [:', POSTGRE ) )
+        errors.append( ('pg_query\\(\\) \\[:', POSTGRE ) )
+        errors.append( ('pg_exec\\(\\) \\[:', POSTGRE ) )
         
         # MYSQL
         errors.append( ('supplied argument is not a valid MySQL', MYSQL ) )
