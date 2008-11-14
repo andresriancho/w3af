@@ -222,7 +222,7 @@ class sqli(baseAuditPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return []
+        return ['grep.error500']
     
     def getLongDesc( self ):
         '''
