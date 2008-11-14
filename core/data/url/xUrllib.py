@@ -640,7 +640,11 @@ class xUrllib:
                 # Correct control+c handling...
                 raise
             except Exception, e:
-                om.out.error( 'Error in grep plugin, "' + grepPlugin.getName() + '" raised the exception: ' + str(e) + '. Please report this bug to the w3af sourceforge project page [ http://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 ] \nException: ' + str(traceback.format_exc(1)) )
+                msg = 'Error in grep plugin, "' + grepPlugin.getName() + '" raised the exception: '
+                msg += str(e) + '. Please report this bug to the w3af sourceforge project page '
+                msg += '[ http://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 ] '
+                msg += '\nException: ' + str(traceback.format_exc(1))
+                om.out.error( msg )
                 om.out.error( str(traceback.format_exc()) )
         
         om.out.debug('Finished grepWorker for response: ' + repr(response) )
