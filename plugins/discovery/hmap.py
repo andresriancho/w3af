@@ -93,9 +93,9 @@ class hmap(baseDiscoveryPlugin):
                 try:
                     results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
                 except w3afException, w3:
-                    om.out.debug('A w3afException ocurred while running hmamp: ' + str(w3) )
+                    om.out.error('A w3afException ocurred while running hmap: "' + str(w3) + '"' )
                 except Exception,  e:
-                    om.out.error('An unhandled exception ocurred while running hmamp: ' + str(e) )
+                    om.out.error('An unhandled exception ocurred while running hmap: "' + str(e) + '"' )
                 else:
                     server = results[0]
                     
