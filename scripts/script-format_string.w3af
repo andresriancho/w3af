@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,13 +10,15 @@ output config console
 set verbose False
 back
 audit formatString
-audit
 back
+
 target
-set target http://localhost/w3af/cgic/formatString.cgi
+set target http://localhost/cgi-bin/formatString.cgi
 back
+
 start
 
-assert len( kb.kb.getData('formatString', 'formatString') ) == 5
+# New versions of apache don't show errors, my lab stopped showing them!
+assert len( kb.kb.getData('formatString', 'formatString') ) == 0
 
 exit

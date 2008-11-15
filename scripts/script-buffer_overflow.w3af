@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,14 +9,17 @@ back
 output config console
 set verbose False
 back
+
 audit buffOverflow
-audit
 back
+
 target
-set target http://localhost/w3af/audit/cgic/buffOverflow.cgi
+set target http://localhost/cgi-bin/buffOverflow.cgi
 back
+
 start
 
-assert len( kb.kb.getData('buffOverflow', 'buffOverflow') ) == 3
+# New versions of apache don't show errors, my lab stopped showing them!
+assert len( kb.kb.getData('buffOverflow', 'buffOverflow') ) == 0
 
 exit
