@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,14 +9,19 @@ back
 output config console
 set verbose False
 back
+
 discovery allowedMethods,webSpider
-discovery
+discovery config webSpider
+set onlyForward True
+back
+
 audit globalRedirect
-audit
 back
+
 target
-set target http://localhost/w3af/globalRedirect/
+set target http://localhost/w3af/audit/global_redirect/
 back
+
 start
 
 assert len(kb.kb.getData('globalRedirect','globalRedirect')) == 3
