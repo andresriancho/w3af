@@ -27,9 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
-import core.data.constants.severity as severity
 
 # Import the logic to find the vulnerabilities
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
