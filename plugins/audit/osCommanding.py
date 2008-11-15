@@ -48,12 +48,12 @@ class osCommanding(baseAuditPlugin):
         # Some internal variables
         self._special_chars = ['', '&&', '|', ';']
         # The wait time of the unfuzzed request
-        self._originalWaitTime = 0
+        self._original_wait_time = 0
         
         # The wait time of the first test I'm going to perform
-        self._waitTime = 4
+        self._wait_time = 4
         # The wait time of the second test I'm going to perform (this one is just to be sure!)
-        self._secondWaitTime = 9
+        self._second_wait_time = 9
         
 
     def _fuzzRequests(self, freq ):
@@ -81,7 +81,7 @@ class osCommanding(baseAuditPlugin):
         '''
         # Send the fuzzableRequest without any fuzzing, so we can measure the response 
         # time of this script in order to compare it later
-        self._originalWaitTime = self._sendMutant( freq, analyze=False, grepResult=False ).getWaitTime()
+        self._original_wait_time = self._sendMutant( freq, analyze=False, grepResult=False ).getWaitTime()
         
         # Prepare the strings to create the mutants
         cList = self._get_wait_commands()
@@ -177,19 +177,19 @@ class osCommanding(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method that was sent in the _with_time_delay method.
         '''
-        if response.getWaitTime() > (self._originalWaitTime + self._waitTime-2) and \
-        response.getWaitTime() < (self._originalWaitTime + self._waitTime+2):
+        if response.getWaitTime() > (self._original_wait_time + self._wait_time-2) and \
+        response.getWaitTime() < (self._original_wait_time + self._wait_time+2):
             sentOs, sentSeparator = self._get_os_separator(mutant)
                     
             # This could be because of an osCommanding vuln, or because of an error that
             # generates a delay in the response; so I'll resend changing the time and see 
             # what happens
-            moreWaitParam = mutant.getModValue().replace( str(self._waitTime), str(self._secondWaitTime) )
+            moreWaitParam = mutant.getModValue().replace( str(self._wait_time), str(self._second_wait_time) )
             mutant.setModValue( moreWaitParam )
             response = self._sendMutant( mutant, analyze=False )
             
-            if response.getWaitTime() > (self._originalWaitTime + self._secondWaitTime-3) and \
-            response.getWaitTime() < (self._originalWaitTime + self._secondWaitTime+3):
+            if response.getWaitTime() > (self._original_wait_time + self._second_wait_time-3) and \
+            response.getWaitTime() < (self._original_wait_time + self._second_wait_time+3):
                 # Now I can be sure that I found a vuln, I control the time of the response.
                 v = vuln.vuln( mutant )
                 v.setName( 'OS commanding vulnerability' )
@@ -249,17 +249,17 @@ class osCommanding(baseAuditPlugin):
         '''
         commands = []
         for specialChar in self._special_chars:
-            commands.append( command( specialChar + ' ping -n '+str(self._waitTime -1)+' localhost', 'windows', specialChar))
-            commands.append( command( specialChar + ' ping -c '+str(self._waitTime)+' localhost', 'unix', specialChar))
+            commands.append( command( specialChar + ' ping -n '+str(self._wait_time -1)+' localhost', 'windows', specialChar))
+            commands.append( command( specialChar + ' ping -c '+str(self._wait_time)+' localhost', 'unix', specialChar))
             # This is needed for solaris 10
             commands.append( command( specialChar + ' /usr/sbin/ping -s localhost 1000 10 ', 'unix', specialChar))
         
         # Using execution quotes
-        commands.append( command( '` ping -n '+str(self._waitTime -1)+' localhost`', 'windows', '`'))
-        commands.append( command( '` ping -c '+str(self._waitTime)+' localhost`', 'unix', '`'))
+        commands.append( command( '` ping -n '+str(self._wait_time -1)+' localhost`', 'windows', '`'))
+        commands.append( command( '` ping -c '+str(self._wait_time)+' localhost`', 'unix', '`'))
         
         # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
-        commands.append( command( 'run ping -n '+str(self._waitTime -1)+' localhost', 'windows', 'run '))
+        commands.append( command( 'run ping -n '+str(self._wait_time -1)+' localhost', 'windows', 'run '))
         
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
