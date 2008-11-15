@@ -114,13 +114,25 @@ class sgmlParser(abstractParser, SGMLParser):
             self._insideForm = False
 
         if tag.lower() == 'select' :
-            self._insideSelect = False
+            self._handle_select_endtag()
 
         if tag.lower() == 'script':
             self._insideScript = False
 
         if tag.lower() == 'textarea' :
-            self._insideTextarea = False
+            self._handle_textarea_endtag()
+
+    def _handle_textarea_endtag(self):
+        """
+        Handler for textarea end tag
+        """
+        self._insideTextarea = False
+
+    def _handle_select_endtag(self):
+        """
+        Handler for select end tag
+        """
+        self._insideSelect = False
 
     def unknown_starttag(self, tag, attrs):
         '''
