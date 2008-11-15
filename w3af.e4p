@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-10-28, 08:57:37 -->
+<!-- Saved: 2008-11-07, 07:24:48 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2174,10 +2174,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-langTest.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-localFileInclude+pathDisc.w3af</Name>
     </Source>
     <Source>
@@ -2499,10 +2495,6 @@
       <Dir>plugins</Dir>
       <Dir>grep</Dir>
       <Name>metaTags.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-metaTags.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3881,6 +3873,12 @@
       <Dir>plugins</Dir>
       <Dir>audit</Dir>
       <Name>eval.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>homeDir.py</Name>
     </Source>
   </Sources>
   <Forms>

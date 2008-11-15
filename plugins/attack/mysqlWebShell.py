@@ -37,7 +37,9 @@ import urllib
 
 from plugins.attack.webshells.getShell import getShell
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
-from core.controllers.sqlTools.blindSqli import blindSqli as blindSqliTools
+# TODO: It should be possible to perform these tasks with the time delay also!
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+
 
 class mysqlWebShell(baseAttackPlugin):
     '''
@@ -116,14 +118,14 @@ class mysqlWebShell(baseAttackPlugin):
             vulns = self.getExploitableVulns()
             
             # Create the blind sql handler
-            self._bsql = blindSqliTools()
+            self._bsql = blind_sqli_response_diff()
             self._bsql.setUrlOpener( self._urlOpener )
             self._bsql.setEqualLimit( self._equalLimit )
             self._bsql.setEquAlgorithm( self._equAlgorithm )
             
             vulns2 = []
             for v in vulns:
-                vulns2.extend( self._bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
+                vulns2.extend( self._bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() ) )
             vulns = vulns2
             
             for vuln in vulns:

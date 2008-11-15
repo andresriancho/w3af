@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -31,21 +32,9 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
 import re
-import core.data.constants.severity as severity
 
-# We define some constants
-DB2 = 'IBM DB2 database'
-MSSQL = 'Microsoft SQL database'
-ORACLE = 'Oracle database'
-SYBASE = 'Sybase database'
-POSTGRE = 'PostgreSQL database'
-MYSQL = 'MySQL database'
-JAVA = 'Java connector'
-ACCESS = 'Microsoft Access database'
-INFORMIX = 'Informix database'
-INTERBASE = 'Interbase database'
-DMLDATABASE = 'DML Language database'
-UNKNOWN = 'Unknown database'
+import core.data.constants.severity as severity
+import core.data.constants.dbms as dbms
 
 class sqli(baseAuditPlugin):
     '''
@@ -130,73 +119,73 @@ class sqli(baseAuditPlugin):
         errors = []
         
         # ASP / MSSQL
-        errors.append( ('System\.Data\.OleDb\.OleDbException', MSSQL ) )
-        errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2', DB2 ) )
-        errors.append( ('\\[SQL Server\\]', MSSQL ) )
-        errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', MSSQL ) )
-        errors.append( ('\\[SQLServer JDBC Driver\\]', MSSQL ) )
-        errors.append( ('\\[SqlException', MSSQL ) )
-        errors.append( ('System.Data.SqlClient.SqlException', MSSQL ) )
-        errors.append( ('Unclosed quotation mark after the character string', MSSQL ) )
-        errors.append( ("'80040e14'", MSSQL ) )
-        errors.append( ('mssql_query\\(\\)', MSSQL ) )
-        errors.append( ('odbc_exec\\(\\)', MSSQL ) )
-        errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', MSSQL ))
-        errors.append( ('Microsoft OLE DB Provider for SQL Server', MSSQL ))
-        errors.append( ('Incorrect syntax near', MSSQL ) )
-        errors.append( ('Syntax error in string in query expression', MSSQL ) )
-        errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', MSSQL ) )
-        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", MSSQL ))
+        errors.append( ('System\.Data\.OleDb\.OleDbException', dbms.MSSQL ) )
+        errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2', dbms.DB2 ) )
+        errors.append( ('\\[SQL Server\\]', dbms.MSSQL ) )
+        errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', dbms.MSSQL ) )
+        errors.append( ('\\[SQLServer JDBC Driver\\]', dbms.MSSQL ) )
+        errors.append( ('\\[SqlException', dbms.MSSQL ) )
+        errors.append( ('System.Data.SqlClient.SqlException', dbms.MSSQL ) )
+        errors.append( ('Unclosed quotation mark after the character string', dbms.MSSQL ) )
+        errors.append( ("'80040e14'", dbms.MSSQL ) )
+        errors.append( ('mssql_query\\(\\)', dbms.MSSQL ) )
+        errors.append( ('odbc_exec\\(\\)', dbms.MSSQL ) )
+        errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', dbms.MSSQL ))
+        errors.append( ('Microsoft OLE DB Provider for SQL Server', dbms.MSSQL ))
+        errors.append( ('Incorrect syntax near', dbms.MSSQL ) )
+        errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
+        errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
+        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
         
         # Access
-        errors.append( ('Syntax error in query expression', ACCESS ))
-        errors.append( ('Data type mismatch in criteria expression.', ACCESS ))
-        errors.append( ('Microsoft JET Database Engine', ACCESS ))
-        errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', ACCESS ) )
+        errors.append( ('Syntax error in query expression', dbms.ACCESS ))
+        errors.append( ('Data type mismatch in criteria expression.', dbms.ACCESS ))
+        errors.append( ('Microsoft JET Database Engine', dbms.ACCESS ))
+        errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', dbms.ACCESS ) )
         
         # ORACLE
-        errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', ORACLE ) )
+        errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE ) )
         
         # POSTGRE
-        errors.append( ('PostgreSQL query failed:', POSTGRE ) )
-        errors.append( ('supplied argument is not a valid PostgreSQL result', POSTGRE ) )
-        errors.append( ('pg_query\\(\\) \\[:', POSTGRE ) )
-        errors.append( ('pg_exec\\(\\) \\[:', POSTGRE ) )
+        errors.append( ('PostgreSQL query failed:', dbms.POSTGRE ) )
+        errors.append( ('supplied argument is not a valid PostgreSQL result', dbms.POSTGRE ) )
+        errors.append( ('pg_query\\(\\) \\[:', dbms.POSTGRE ) )
+        errors.append( ('pg_exec\\(\\) \\[:', dbms.POSTGRE ) )
         
         # MYSQL
-        errors.append( ('supplied argument is not a valid MySQL', MYSQL ) )
-        errors.append( ('mysql_fetch_array\\(\\)', MYSQL ) )
-        errors.append( ('mysql_', MYSQL ) )
-        errors.append( ('on MySQL result index', MYSQL ) )
-        errors.append( ('You have an error in your SQL syntax;', MYSQL ) )
-        errors.append( ('You have an error in your SQL syntax near', MYSQL ) )
-        errors.append( ('MySQL server version for the right syntax to use', MYSQL ) )
-        errors.append( ('\\[MySQL\\]\\[ODBC', MYSQL ))
-        errors.append( ("Column count doesn't match", MYSQL ))
-        errors.append( ("the used select statements have different number of columns", MYSQL ))
-        errors.append( ("Table '[^']+' doesn't exist", MYSQL ))
+        errors.append( ('supplied argument is not a valid MySQL', dbms.MYSQL ) )
+        errors.append( ('mysql_fetch_array\\(\\)', dbms.MYSQL ) )
+        errors.append( ('mysql_', dbms.MYSQL ) )
+        errors.append( ('on MySQL result index', dbms.MYSQL ) )
+        errors.append( ('You have an error in your SQL syntax;', dbms.MYSQL ) )
+        errors.append( ('You have an error in your SQL syntax near', dbms.MYSQL ) )
+        errors.append( ('MySQL server version for the right syntax to use', dbms.MYSQL ) )
+        errors.append( ('\\[MySQL\\]\\[ODBC', dbms.MYSQL ))
+        errors.append( ("Column count doesn't match", dbms.MYSQL ))
+        errors.append( ("the used select statements have different number of columns", dbms.MYSQL ))
+        errors.append( ("Table '[^']+' doesn't exist", dbms.MYSQL ))
 
         
         # Informix
-        errors.append( ('com\\.informix\\.jdbc', INFORMIX ))
-        errors.append( ('Dynamic Page Generation Error:', INFORMIX ))
-        errors.append( ('<b>Warning</b>:  ibase_', INTERBASE ))
+        errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
+        errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
+        errors.append( ('<b>Warning</b>:  ibase_', dbms.INTERBASE ))
         
         # DML
-        errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', DMLDATABASE ))
-        errors.append( ('has occurred in the vicinity of:', DMLDATABASE ))
-        errors.append( ('A Parser Error \\(syntax error\\)', DMLDATABASE ))
+        errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', dbms.DMLDATABASE ))
+        errors.append( ('has occurred in the vicinity of:', dbms.DMLDATABASE ))
+        errors.append( ('A Parser Error \\(syntax error\\)', dbms.DMLDATABASE ))
         
         # Java
-        errors.append( ('java\\.sql\\.SQLException', JAVA ))
+        errors.append( ('java\\.sql\\.SQLException', dbms.JAVA ))
 
         # Coldfusion
-        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', MSSQL ))
+        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', dbms.MSSQL ))
         
         # Generic errors..
-        errors.append( ('SELECT .*? FROM .*?', UNKNOWN ))
-        errors.append( ('UPDATE .*? SET .*?', UNKNOWN ))
-        errors.append( ('INSERT INTO .*?', UNKNOWN ))
+        errors.append( ('SELECT .*? FROM .*?', dbms.UNKNOWN ))
+        errors.append( ('UPDATE .*? SET .*?', dbms.UNKNOWN ))
+        errors.append( ('INSERT INTO .*?', dbms.UNKNOWN ))
         
         return errors
         

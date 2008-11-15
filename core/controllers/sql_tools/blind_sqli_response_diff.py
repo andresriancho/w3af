@@ -1,5 +1,5 @@
 '''
-blindSqli.py
+blind_sqli_response_diff.py
 
 Copyright 2006 Andres Riancho
 
@@ -38,8 +38,8 @@ from core.controllers.basePlugin.basePlugin import basePlugin
 
 class blind_sqli_response_diff(basePlugin):
     '''
-    This class tests for blind SQL injection bugs, the logic is here and not as an audit plugin cause 
-    this logic is also used in attack plugins.
+    This class tests for blind SQL injection bugs using response diffing,
+    the logic is here and not as an audit plugin because this logic is also used in attack plugins.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -68,9 +68,13 @@ class blind_sqli_response_diff(basePlugin):
         '''
         self._equAlgorithm = _equAlgorithm
         
-    def verifyBlindSQL( self, freq, parameter ):
+    def is_injectable( self, freq, parameter ):
         '''
-        Verify the existance of an already found vuln.
+        Check if "parameter" of the fuzzable request object is injectable or not.
+        
+        @freq: The fuzzableRequest object that I have to modify
+        @parameter: A string with the parameter name to test
+        @return: A vulnerability object or None if nothing is found
         '''
         dummy = ['', ]
         parameter_to_test = [ parameter, ]
@@ -79,28 +83,11 @@ class blind_sqli_response_diff(basePlugin):
         for mutant in mutants:
             statements = self._get_statements( mutant )
             for statement_type in statements:
-                vulns = self._findBsql( mutant, statements[statement_type], statement_type )
-                if len( vulns ):
-                    return vulns
+                vuln = self._findBsql( mutant, statements[statement_type], statement_type )
+                if vuln:
+                    return vuln
         
-        return []
-        
-    def findBlindSQL(self, fuzzableRequest, saveToKb=False ):
-        '''
-        Tests an URL for blind Sql injection vulnerabilities.
-        
-        @param freq: A fuzzableRequest
-        '''
-        dummy = ['', ]
-        mutants = createMutants( fuzzableRequest , dummy )
-        
-        for mutant in mutants:
-            statements = self._get_statements( mutant )
-            for statement_type in statements:
-                targs = (mutant, statements[ statement_type ], statement_type, saveToKb)
-                self._tm.startFunction( target=self._findBsqlAux, args=targs, ownerObj=self )
-        
-        self._tm.join( self )
+        return None
     
     def _get_statements( self, mutant, excludeNumbers=[] ):
         '''
@@ -154,14 +141,14 @@ class blind_sqli_response_diff(basePlugin):
         if saveToKb:
             for bsqlVuln in bsqlVulns:
                 om.out.vulnerability( bsqlVuln.getDesc() )
-                kb.kb.append( self, 'blindSqli', bsqlVuln )
+                kb.kb.append( 'blindSqli', 'blindSqli', bsqlVuln )
                 
     def _findBsql( self, mutant, statementTuple, statement_type ):
         '''
         Is the main algorithm for finding blind sql injections.
-        '''
-        res = []
         
+        @return: A vulnerability object or None if nothing is found
+        '''
         trueStatement = statementTuple[0]
         falseStatement = statementTuple[1]
         
@@ -205,9 +192,9 @@ class blind_sqli_response_diff(basePlugin):
                         v.getMutant().setOriginalValue( '' )
                         v.getMutant().setModValue( '' )
                         
-                        desc = 'Blind SQL injection was found at: ' + v.getURL()  + ' .'
-                        desc += ' Using method: ' + v.getMethod() + '.'
-                        desc += 'The injectable parameter is: ' + mutant.getVar()
+                        desc = 'Blind SQL injection was found at: "' + v.getURL()  + '",'
+                        desc += ' using HTTP method ' + v.getMethod() + '.'
+                        desc += ' The injectable parameter is: "' + mutant.getVar() + '".'
                         v.setDesc( desc )
                         om.out.debug( v.getDesc() )
                         
@@ -215,9 +202,9 @@ class blind_sqli_response_diff(basePlugin):
                         v['trueHtml'] = secondTrueResponse.getBody()
                         v['falseHtml'] = secondFalseResponse.getBody()
                         v['errorHtml'] = seResponse.getBody()
-                        res.append( v )
+                        return v
                         
-        return res
+        return None
         
     def equal( self, body1, body2 ):
         '''
@@ -227,17 +214,9 @@ class blind_sqli_response_diff(basePlugin):
             return self._setIntersection( body1, body2)
         elif self._equAlgorithm == 'stringEq':
             return self._stringEq( body1, body2)
-        elif self._equAlgorithm == 'intelligentCut':
-            return self._intelligentCut( body1, body2)
             
         raise w3afException('Unknown algorithm selected.')
     
-    def _intelligentCut( self, body1, body2 ):
-        '''
-        This is one of the equal algorithms. The idea is to remove the sections of the html that change from one call to another.
-        '''
-        raise w3afException('_intelligentCut is not implemented yet.')
-        
     def _stringEq( self, body1 , body2 ):
         '''
         This is one of the equal algorithms.

@@ -35,7 +35,7 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
-from core.controllers.sqlTools.blindSqli import blindSqli as blindSqliTools
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
@@ -102,14 +102,14 @@ class sqlmap(baseAttackPlugin):
             freq.setDc( urlParser.getQueryString( 'http://a/a.txt?' + self._data ) )
             freq.setHeaders( {} )
             
-            bsql = blindSqliTools()
+            bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )
             bsql.setEqualLimit( self._equalLimit )
             bsql.setEquAlgorithm( self._equAlgorithm )
             
-            res = bsql.verifyBlindSQL( freq, self._injvar )
+            res = bsql.is_injectable( freq, self._injvar )
             if res == []:
-                raise w3afException('Could not verify sql injection.')
+                raise w3afException('Could not verify SQL injection.')
             else:
                 om.out.console('SQL injection could be verified, trying to create the DB driver.')
                 for vuln in res:
@@ -144,7 +144,7 @@ class sqlmap(baseAttackPlugin):
         if len(vulns) != 0:
             return True
         else:
-            om.out.information( 'No [blind] sql injection vulnerabilities have been found.' )
+            om.out.information( 'No [blind] SQL injection vulnerabilities have been found.' )
             om.out.information( 'Hint #1: Try to find vulnerabilities using the audit plugins.' )
             om.out.information( 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.' )
             return False
@@ -161,7 +161,7 @@ class sqlmap(baseAttackPlugin):
             vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
             vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
             
-            bsql = blindSqliTools()
+            bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )
             bsql.setEqualLimit( self._equalLimit )
             bsql.setEquAlgorithm( self._equAlgorithm )
@@ -179,13 +179,13 @@ class sqlmap(baseAttackPlugin):
                 v.setMutant( mutant )
             
                 # The user didn't selected anything, or we are in the selected vuln!
-                om.out.debug('Verifying vulnerability in URL: ' + v.getURL() )
-                vulns2.extend( bsql.verifyBlindSQL( v.getMutant().getFuzzableReq(), v.getVar() ) )
+                om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
+                vulns2.extend( bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() ) )
             
             # Ok, go to the next stage with the filtered vulnerabilities
             vulns = vulns2
             if len(vulns) == 0:
-                om.out.debug('Failed to verifyBlindSQL for all vulnerabilities.')
+                om.out.debug('is_injectable failed for all vulnerabilities.')
                 return []
             else:
                 exploitable = False
@@ -209,7 +209,7 @@ class sqlmap(baseAttackPlugin):
         @parameter vuln: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
         @return: A sqlmap shell object if sqlmap could fingerprint the database.
         '''
-        bsql = blindSqliTools()
+        bsql = blind_sqli_response_diff()
         bsql.setEqualLimit( self._equalLimit )
         bsql.setEquAlgorithm( self._equAlgorithm )
             
