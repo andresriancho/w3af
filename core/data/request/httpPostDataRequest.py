@@ -41,11 +41,11 @@ class httpPostDataRequest(fuzzableRequest):
     def getData( self ):
         return str( self._dc )
         
-    def setFileVariables( self, fileVars ):
+    def setFileVariables( self, file_variables ):
         '''
-        @parameter fileVars: A list of postdata parameters that contain a file
+        @parameter file_variables: A list of postdata parameters that contain a file
         '''
-        self._files = fileVars
+        self._files = file_variables
     
     def getFileVariables( self ):
         '''

@@ -53,11 +53,11 @@ from core.data.fuzzer.mutantJSON import mutantJSON
 from core.data.fuzzer.mutantCookie import mutantCookie
 from core.data.fuzzer.mutantFileContent import mutantFileContent
 
-def createMutants( freq, mutantStrList, append=False, fuzzableParamList = [] , oResponse = None ):
+def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] , oResponse = None ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
-    @parameter mutantStrList: a list with mutant strings to use
-    @parameter append: This indicates if the content of mutantStrList should be appended to the variable value
+    @parameter mutant_str_list: a list with mutant strings to use
+    @parameter append: This indicates if the content of mutant_str_list should be appended to the variable value
     @parameter fuzzableParamList: If [] then all params are fuzzed. If ['a'] , then only 'a' is fuzzed.
     @return: A Mutant object List.
     '''
@@ -65,22 +65,22 @@ def createMutants( freq, mutantStrList, append=False, fuzzableParamList = [] , o
     
     _fuzzable = _createFuzzable( freq )
     if isinstance( freq, httpQsRequest ):
-        result.extend( _createMutantsWorker( freq, mutantQs, mutantStrList, fuzzableParamList , append ) )
+        result.extend( _createMutantsWorker( freq, mutantQs, mutant_str_list, fuzzableParamList , append ) )
     if isinstance( freq, httpPostDataRequest ):
         if isJSON( freq ):
             # If this is a POST request, it could be a JSON request, and I want to fuzz it !
-            result.extend( _createJSONMutants( freq, mutantJSON, mutantStrList, fuzzableParamList , append ) )
+            result.extend( _createJSONMutants( freq, mutantJSON, mutant_str_list, fuzzableParamList , append ) )
         else:
-            result.extend( _createMutantsWorker( freq, mutantPostData, mutantStrList, fuzzableParamList , append ) )
+            result.extend( _createMutantsWorker( freq, mutantPostData, mutant_str_list, fuzzableParamList , append ) )
         
     if 'fuzzedFname' in _fuzzable and isinstance( freq, httpQsRequest ):
-        result.extend( _createFileNameMutants( freq, mutantFileName, mutantStrList, fuzzableParamList , append ) )
+        result.extend( _createFileNameMutants( freq, mutantFileName, mutant_str_list, fuzzableParamList , append ) )
     if 'headers' in _fuzzable:
-        result.extend( _createMutantsWorker( freq, mutantHeaders, mutantStrList, fuzzableParamList , append, dataContainer=_fuzzable['headers'] ) )
+        result.extend( _createMutantsWorker( freq, mutantHeaders, mutant_str_list, fuzzableParamList , append, dataContainer=_fuzzable['headers'] ) )
     if 'cookie' in _fuzzable and freq.getCookie():
-        result.extend( _createMutantsWorker( freq, mutantCookie, mutantStrList, fuzzableParamList , append, dataContainer=freq.getCookie() ) )
+        result.extend( _createMutantsWorker( freq, mutantCookie, mutant_str_list, fuzzableParamList , append, dataContainer=freq.getCookie() ) )
     if 'fuzzFileContent' in _fuzzable and isinstance( freq, httpPostDataRequest ):
-        result.extend( _createFileContentMutants( freq, mutantFileContent, mutantStrList, fuzzableParamList , append ) )
+        result.extend( _createFileContentMutants( freq, mutantFileContent, mutant_str_list, fuzzableParamList , append ) )
     
     # Get the original response, and apply it to all mutants
     if oResponse:
@@ -89,20 +89,20 @@ def createMutants( freq, mutantStrList, append=False, fuzzableParamList = [] , o
     
     return result
 
-def _createJSONMutants( freq, mutantClass, mutantStrList, fuzzableParamList , append ):
+def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
-    @parameter mutantStrList: a list with mutant strings to use
-    @return: Mutants that have the JSON postdata changed with the strings at mutantStrList
+    @parameter mutant_str_list: a list with mutant strings to use
+    @return: Mutants that have the JSON postdata changed with the strings at mutant_str_list
     '''
     # We define a function that creates the mutants...
-    def _makeMutants( freq, mutantClass, mutantStrList, fuzzableParamList , append, jsonPostData):
+    def _makeMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append, jsonPostData):
         res = []
         
-        for fuzzed in _fuzzJSON( mutantStrList, jsonPostData, append ):
+        for fuzzed in _fuzzJSON( mutant_str_list, jsonPostData, append ):
         
             # Create the mutants
             freqCopy = freq.copy()
@@ -115,30 +115,30 @@ def _createJSONMutants( freq, mutantClass, mutantStrList, fuzzableParamList , ap
         return res
         
     # Now we define a function that does the work...
-    def _fuzzJSON( mutantStrList, jsonPostData, append ):
+    def _fuzzJSON( mutant_str_list, jsonPostData, append ):
         res = []
         
         if isinstance(jsonPostData, int):
-            for mutantStr in mutantStrList:
-                if mutantStr.isdigit():
+            for mutant_str in mutant_str_list:
+                if mutant_str.isdigit():
                     # This (a mutant str that really is an integer) will happend once every 100000 years, 
                     # but I wanted to be sure to cover all cases
                     if append:
-                        res.append( int(str(jsonPostData) +  str(mutantStr)) )
+                        res.append( int(str(jsonPostData) +  str(mutant_str)) )
                     else:
-                        res.append( int(mutantStr) )
+                        res.append( int(mutant_str) )
         
         elif isinstance(jsonPostData, basestring):
-            for mutantStr in mutantStrList:
+            for mutant_str in mutant_str_list:
                 if append:
-                    res.append( jsonPostData +  mutantStr )
+                    res.append( jsonPostData +  mutant_str )
                 else:
-                    res.append( mutantStr )
+                    res.append( mutant_str )
                     
                     
         elif isinstance( jsonPostData, list ):
             for item, i in zip( jsonPostData,xrange(len(jsonPostData)) ):
-                fuzzedItemList = _fuzzJSON( mutantStrList, jsonPostData[i] , append )
+                fuzzedItemList = _fuzzJSON( mutant_str_list, jsonPostData[i] , append )
                 for fuzzedItem in fuzzedItemList:
                     jsonPostDataCopy = copy.deepcopy( jsonPostData )
                     jsonPostDataCopy[ i ] = fuzzedItem
@@ -146,7 +146,7 @@ def _createJSONMutants( freq, mutantClass, mutantStrList, fuzzableParamList , ap
         
         elif isinstance( jsonPostData, dict ):
             for key in jsonPostData:
-                fuzzedItemList = _fuzzJSON( mutantStrList, jsonPostData[key] , append )
+                fuzzedItemList = _fuzzJSON( mutant_str_list, jsonPostData[key] , append )
                 for fuzzedItem in fuzzedItemList:
                     jsonPostDataCopy = copy.deepcopy( jsonPostData )
                     jsonPostDataCopy[ key ] = fuzzedItem
@@ -157,7 +157,7 @@ def _createJSONMutants( freq, mutantClass, mutantStrList, fuzzableParamList , ap
     # Now, fuzz the parsed JSON data...
     postdata = freq.getData()
     jsonPostData = json.read( postdata )
-    return _makeMutants( freq, mutantClass, mutantStrList, fuzzableParamList , append, jsonPostData )
+    return _makeMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append, jsonPostData )
 
 def isJSON( freq ):
     # Only do the JSON stuff if this is really a JSON request...
@@ -179,48 +179,49 @@ def isJSON( freq ):
         # No need to do any JSON stuff, the postdata is urlencoded
         return False
     
-def _createFileContentMutants( freq, mutantClass, mutantStrList, fuzzableParamList , append ):
+def _createFileContentMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
-    @parameter mutantStrList: a list with mutant strings to use
-    @return: Mutants that have the file content changed with the strings at mutantStrList
+    @parameter mutant_str_list: a list with mutant strings to use
+    @return: Mutants that have the file content changed with the strings at mutant_str_list
     '''
     res = []
+    tmp = []
     if freq.getFileVariables():
-        for mutantStr in mutantStrList:
-            if type( mutantStr ) == str:
-                # I have to create the fileStr with a "name" attr. This is needed for MultipartPostHandler
-                fStr = fileStr( mutantStr )
+        for mutant_str in mutant_str_list:
+            if type( mutant_str ) == str:
+                # I have to create the string_file with a "name" attr. This is needed for MultipartPostHandler
+                str_file_instance = string_file( mutant_str )
                 extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
-                fStr.name = createRandAlpha( 7 ) + '.' + extension
-                mutantStrList.append( fStr )
-        res.extend( _createMutantsWorker( freq, mutantClass, mutantStrList, freq.getFileVariables() , append ) )
+                str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
+                tmp.append( str_file_instance )
+        res = _createMutantsWorker( freq, mutantClass, tmp, freq.getFileVariables() , append )
     return res
     
-def _createFileNameMutants( freq, mutantClass, mutantStrList, fuzzableParamList , append ):
+def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
-    @parameter mutantStrList: a list with mutant strings to use
-    @return: Mutants that have the filename URL changed with the strings at mutantStrList
+    @parameter mutant_str_list: a list with mutant strings to use
+    @return: Mutants that have the filename URL changed with the strings at mutant_str_list
     '''
     res = []
     fileName = urlParser.getFileName( freq.getURL() )
     splittedFileName = [ x for x in re.split( r'([a-zA-Z0-9]+)', fileName ) if x != '' ]
     for i in xrange( len( splittedFileName ) ):
-        for mutantStr in mutantStrList:
+        for mutant_str in mutant_str_list:
             if re.match('[a-zA-Z0-9]', splittedFileName[i] ):
                 dividedFileName = dc()
                 dividedFileName['start'] = ''.join( splittedFileName[: i] )
                 if append:
-                    dividedFileName['fuzzedFname'] = splittedFileName[i] + urllib.quote_plus( mutantStr )
+                    dividedFileName['fuzzedFname'] = splittedFileName[i] + urllib.quote_plus( mutant_str )
                 else:
-                    dividedFileName['fuzzedFname'] = urllib.quote_plus( mutantStr )
+                    dividedFileName['fuzzedFname'] = urllib.quote_plus( mutant_str )
                 dividedFileName['end'] = ''.join( splittedFileName[i+1:] )
                 
                 freqCopy = freq.copy()
@@ -231,7 +232,7 @@ def _createFileNameMutants( freq, mutantClass, mutantStrList, fuzzableParamList 
                 m.setOriginalValue( splittedFileName[i] )
                 m.setVar( 'fuzzedFname' )
                 m.setDc( dividedFileName )
-                m.setModValue( mutantStr )
+                m.setModValue( mutant_str )
                 # Special for filename fuzzing and some configurations of mod_rewrite
                 m.setDoubleEncoding( False )
                 
@@ -243,7 +244,7 @@ def _createFileNameMutants( freq, mutantClass, mutantStrList, fuzzableParamList 
                 res.append( m2 )
     return res
     
-def _createMutantsWorker( freq, mutantClass, mutantStrList, fuzzableParamList,append, dataContainer=None):
+def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,append, dataContainer=None):
     '''
     An auxiliary function to createMutants.
     '''
@@ -253,18 +254,19 @@ def _createMutantsWorker( freq, mutantClass, mutantStrList, fuzzableParamList,ap
         dataContainer = freq.getDc()
         
     for var_to_mod in dataContainer.keys():
-        for mutantStr in mutantStrList:
+        for mutant_str in mutant_str_list:
             
-            # Only fuzz the specified parameters
+            # Only fuzz the specified parameters (if any)
+            # or fuzz all of them (the fuzzableParamList == [] case)
             if var_to_mod in fuzzableParamList or fuzzableParamList == []:
                 
                 dataContainerCopy = dataContainer.copy()
                 originalValue = dataContainer[var_to_mod]
                 
                 if append :
-                    dataContainerCopy[var_to_mod] = dataContainerCopy[var_to_mod] + mutantStr
+                    dataContainerCopy[var_to_mod] = dataContainerCopy[var_to_mod] + mutant_str
                 else:
-                    dataContainerCopy[var_to_mod] = mutantStr
+                    dataContainerCopy[var_to_mod] = mutant_str
                 
                 # Create the mutant
                 freqCopy = freq.copy()
@@ -272,7 +274,7 @@ def _createMutantsWorker( freq, mutantClass, mutantStrList, fuzzableParamList,ap
                 m.setVar( var_to_mod )
                 m.setDc( dataContainerCopy )
                 m.setOriginalValue( originalValue )
-                m.setModValue( mutantStr )
+                m.setModValue( mutant_str )
                 
                 # Done, add it to the result
                 result.append ( m )
@@ -336,7 +338,7 @@ def createFormatString(  length ):
     result = '%n' * length
     return result
 
-class fileStr( str ):
+class string_file( str ):
     isFile = True
     name = ''
     def read( self, size = 0 ):

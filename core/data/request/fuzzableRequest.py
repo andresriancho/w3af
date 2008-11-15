@@ -90,8 +90,6 @@ class fuzzableRequest:
             result_string += ' | Parameters: ('
             for i in self._dc:
                 result_string += i + ', '
-            for i in self.getFileVariables():
-                result_string += i + ', '
             result_string = result_string[: -2]
             result_string += ')'
         return result_string

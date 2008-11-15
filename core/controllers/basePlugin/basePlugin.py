@@ -146,7 +146,7 @@ class basePlugin(configurable):
         Sends a mutant to the remote web server.
         '''
         url = mutant.getURI()
-        data = mutant.getData()
+        data = mutant.getDc()
         headers = mutant.getHeaders()
         # Also add the cookie header.
         cookie = mutant.getCookie()

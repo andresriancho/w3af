@@ -70,6 +70,7 @@ class form(dataContainer):
                 break
 
         self._files.append( name )
+        self[name] = ''
     
     def __str__( self ):
         '''

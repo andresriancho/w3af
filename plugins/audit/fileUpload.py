@@ -20,21 +20,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
+import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
+
+from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
+
 import os
 import os.path
 import shutil
-import core.data.constants.severity as severity
+
 
 class fileUpload(baseAuditPlugin):
     '''
@@ -45,15 +50,15 @@ class fileUpload(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self.is404 = None
         
         # Internal vars
-        self._templateDir = 'plugins' + os.path.sep + 'audit'+ os.path.sep + 'fileUpload'
-        self._fnameList = []
-        self._fileList = []
+        self._template_dir = 'plugins' + os.path.sep + 'audit'+ os.path.sep + 'fileUpload'
+        self._file_name_list = []
+        self._file_list = []
+        self._is_404 = None
         
         # User configured
-        self._extensions = ['gif','html']
+        self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
     def _fuzzRequests(self, freq ):
         '''
@@ -62,26 +67,31 @@ class fileUpload(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         # Init...
-        if self.is404 == None:
-            self.is404 = kb.kb.getData( 'error404page', '404' )
+        if self._is_404 == None:
+            self._is_404 = kb.kb.getData( 'error404page', '404' )
         
         # Start
-        if freq.getMethod().upper() == 'POST':
-            if len ( freq.getFileVariables() ) != 0:
-                om.out.debug( 'fileUpload plugin is testing: ' + freq.getURL() )
-                
-                self._fileList = self._getFiles()
-                mutants = createMutants( freq , self._fileList )
+        if freq.getMethod().upper() == 'POST' and len ( freq.getFileVariables() ) != 0:
+            om.out.debug( 'fileUpload plugin is testing: ' + freq.getURL() )
             
+            # I do all this to be able to perform the enumerate() below
+            for file_parameter in freq.getFileVariables():
+                self._file_list = self._get_files()
+                # Only file handlers are passed to the createMutants functions
+                file_handlers = [ i[0] for i in self._file_list ]
+                mutants = createMutants( freq, file_handlers, fuzzableParamList=[file_parameter, ] )
+        
+                for i, mutant in enumerate(mutants):
+                    mutant.uploaded_file_name = self._file_list[i][1]
+       
                 for mutant in mutants:
-                    if self._hasNoBug( 'fileUpload' , 'fileUpload' , mutant.getURL() , mutant.getVar() ) and\
-                    mutant.getVar() in freq.getFileVariables():
+                    if self._hasNoBug( 'fileUpload' , 'fileUpload' , mutant.getURL() , mutant.getVar()):
                         # Only spawn a thread if the mutant has a modified variable
                         # that has no reported bugs in the kb
                         targs = (mutant,)
                         self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
-    def _getFiles( self ):
+    def _get_files( self ):
         '''
         If the extension is in the templates dir, open it and return the handler.
         If the extension aint in the templates dir, create a file with random content, open it and return the handler.
@@ -90,59 +100,70 @@ class fileUpload(baseAuditPlugin):
         result = []
 
         # Create a tmp directory
-        dir = '.tmp' + os.path.sep
+        tmp_dir = '.tmp' + os.path.sep
         try:
-            if not os.path.exists( dir ):
-                os.mkdir( dir )
+            if not os.path.exists( tmp_dir ):
+                os.mkdir( tmp_dir )
         except:
-            raise w3afException('Could not create '+ dir + ' directory.')
+            raise w3afException('Could not create "'+ tmp_dir + '" directory.')
 
         for ext in self._extensions:
             filename = 'template.' + ext
-            if filename in os.listdir( self._templateDir ):
-                tmpFilename = createRandAlNum( 8 ) + '.' + ext
-                shutil.copy( os.path.join( self._templateDir, filename ), os.path.join( dir , tmpFilename ) )
+            if filename in os.listdir( self._template_dir ):
+                # Copy to .tmp
+                tmp_filename = createRandAlNum( 8 ) + '.' + ext
+                src = os.path.join( self._template_dir, filename )
+                dst = os.path.join( tmp_dir , tmp_filename )
+                shutil.copy( src, dst )
+                
+                # Open
                 try:
-                    fd = file( os.path.join( dir , tmpFilename ) , 'r')
+                    file_handler = file( os.path.join( tmp_dir , tmp_filename ) , 'r')
                 except:
-                    raise w3afException('Failed to open temp file: ' + tmpFilename )
+                    raise w3afException('Failed to open temp file: "' + tmp_filename  + '".')
                 else:
-                    result.append( fd )
-                    self._fnameList.append( tmpFilename )
+                    result.append( (file_handler, tmp_filename) )
+                    self._file_name_list.append( tmp_filename )
                     
             else:
                 # I dont have a template for this file extension!
-                fname = createRandAlNum( 8 ) + ext
-                self._pathName = dir + fname
+                file_name = createRandAlNum( 8 ) + ext
+                path_and_name = tmp_dir + file_name
                 try:
-                    fd = file(  self._pathName , 'w' )
-                    fd.write( self._pathName )
+                    file_handler = file(  path_and_name , 'w' )
+                    file_handler.write( path_and_name )
                 except:
                     raise w3afException('Failed to create tmp file for upload.')
                 else:
-                    result.append( fd )
-                    self._fnameList.append( fname )
+                    result.append( (file_handler, file_name) )
+                    self._file_name_list.append( file_name )
         
         return result
         
     def _analyzeResult( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method. In this case, check if the file was uploaded.
+        Analyze results of the _sendMutant method. 
+        
+        In this case, check if the file was uploaded to any of the known directories,
+        or one of the "default" ones like "upload" or "files".
         '''
         for url in kb.kb.getData( 'urls' , 'urlList' ):
-            for path in self._generatePaths( url ):
+            for path in self._generate_paths( url, mutant.uploaded_file_name ):
+
                 response = self._urlOpener.GET( path, useCache=False )
-                if not self.is404( response ):
+                if not self._is_404( response ):
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
-                    mutant.setModValue( '<fileObject>' )
+                    mutant.setModValue( '<file_object>' )
                     v = vuln.vuln( mutant )
                     v.setId( response.id )
                     v.setSeverity(severity.HIGH)
                     v.setName( 'Insecure file upload' )
                     v['fileDest'] = response.getURL()
                     v['fileVars'] = mutant.getFileVariables()
-                    v.setDesc( 'A file upload to a directory inside the webroot was found at: ' + mutant.foundAt() )
+                    msg = 'A file upload to a directory inside the webroot was found at: '
+                    msg += mutant.foundAt()
+                    v.setDesc( msg )
                     kb.kb.append( self, 'fileUpload', v )
                     return
     
@@ -154,13 +175,18 @@ class fileUpload(baseAuditPlugin):
         self.printUniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
         
         # Clean up
-        for file in self._fileList:
-            file.close()
+        for tmp_file, tmp_file_name in self._file_list:
+            tmp_file.close()
             
-        for file in self._fnameList:
-            os.unlink( '.tmp'+ os.path.sep + file )     
+        for tmp_file, tmp_file_name in self._file_list:
+            os.unlink( '.tmp'+ os.path.sep + tmp_file_name )     
         
-    def _generatePaths( self, url ):
+    def _generate_paths( self, url, uploaded_file_name ):
+        '''
+        @parameter url: A URL where the uploaded_file_name could be
+        @parameter uploaded_file_name: The name of the file that was uploaded to the server
+        @return: A list of paths where the file could be.
+        '''
         tmp = []
         tmp.append('uploads')
         tmp.append('upload')
@@ -173,19 +199,19 @@ class fileUpload(baseAuditPlugin):
         tmp.append('down')
         
         res = []
-        for r in tmp:
-            for dir in urlParser.getDirectories( url ):
-                for fname in self._fnameList:
-                    r2 = dir + r + '/'  + fname
-                    res.append( r2 )
+        for default_path in tmp:
+            for path in urlParser.getDirectories( url ):
+                possible_location = path + default_path + '/'  + uploaded_file_name
+                res.append( possible_location )
         return res
         
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Extensions that w3af will try to upload'
-        h1 = 'When finding a form with a file upload, this plugin will try to upload a set of files with the extensions specified here.'
+        d1 = 'Extensions that w3af will try to upload through the form.'
+        h1 = 'When finding a form with a file upload, this plugin will try to upload a set of files'
+        h1 += ' with the extensions specified here.'
         o1 = option('extensions', self._extensions, d1, 'list', help=h1)
 
         ol = optionList()

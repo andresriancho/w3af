@@ -43,7 +43,7 @@ import urllib
 import urllib2
 import mimetools, mimetypes
 import os, stat, md5
-from core.data.fuzzer.fuzzer import fileStr
+from core.data.fuzzer.fuzzer import string_file
 
 class Callable:
     def __init__(self, anycallable):
@@ -124,7 +124,7 @@ def getFileSize( file ):
     '''
     Aux function to get the file size. Needed if I want to use my modified string to fuzz file content.
     '''
-    if type( file ) == fileStr:
+    if type( file ) == string_file:
         return len( file )
     else:
         return os.fstat(file.fileno())[stat.ST_SIZE]
