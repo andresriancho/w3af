@@ -177,6 +177,9 @@ class buffOverflow(baseAuditPlugin):
         res.append( error )
         
         res.append('*** stack smashing detected ***:')
+        res.append('Backtrace:')
+        res.append('Memory map:')
+        
         return res
     
     def getOptions( self ):
