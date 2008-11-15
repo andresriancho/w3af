@@ -20,19 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants, createRandNum, createRandAlNum
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
-from core.controllers.misc.levenshtein import relative_distance
 import core.data.constants.severity as severity
+
+from core.controllers.w3afException import w3afException
+from core.data.fuzzer.fuzzer import createMutants, createRandNum, createRandAlNum
+from core.controllers.misc.levenshtein import relative_distance
+
 
 class generic(baseAuditPlugin):
     '''
@@ -44,7 +48,7 @@ class generic(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # User configured variables
-        self._diffRatio = 0.35
+        self._diff_ratio = 0.35
 
     def _fuzzRequests(self, freq ):
         '''
@@ -54,15 +58,15 @@ class generic(baseAuditPlugin):
         '''
         om.out.debug( 'generic plugin is testing: ' + freq.getURL() )
         
-        # First, get the original response.
+        # First, get the original response and create the mutants
         oResponse = self._sendMutant( freq , analyze=False )
+        mutants = createMutants( freq , ['', ] , oResponse=oResponse )
         
-        mutants = createMutants( freq , ['',], oResponse=oResponse )
         for m in mutants:
             # Now, we request the limit (something that doesn't exist)
             # If http://localhost/a.php?b=1 ; then I should request b=12938795  (random number)
-            # If http://localhost/a.php?b=abc ; then I should request b=nasd9a8syfalsifyhalsf9y (random alnum)
-            limitResponse = self._getLimitResponse( m )
+            # If http://localhost/a.php?b=abc ; then I should request b=hnv98yks (random alnum)
+            limit_response = self._get_limit_response( m )
             
             # Now I request something that could generate an error
             # If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
@@ -70,47 +74,51 @@ class generic(baseAuditPlugin):
             # I also try to trigger errors by sending empty strings
             # If http://localhost/a.php?b=1 ; then I should request b=
             # If http://localhost/a.php?b=abc ; then I should request b=
-            for errorString in self._getErrorStrings():
-                m.setModValue( errorString )
-                errorResponse = self._sendMutant(  m , analyze=False )
+            for error_string in self._get_error_strings():
+                m.setModValue( error_string )
+                error_response = self._sendMutant(  m , analyze=False )
             
                 # Now I compare all responses
-                self._analyzeResponses( oResponse, limitResponse, errorResponse, m )
+                self._analyzeResponses( oResponse, limit_response, error_response, m )
           
-    def _getErrorStrings( self ):
+    def _get_error_strings( self ):
         '''
         @return: A list of strings that could generate errors. Please note that an empty string is something that,
         in most cases, is not tested. Although, I have found that it could trigger some errors.
         '''
-        return ['d\'kc"z\'gj\'\"**5*(((;-*`)','']
+        return ['d\'kc"z\'gj\'\"**5*(((;-*`)', '']
        
-    def _analyzeResponses( self, oResponse, limitResponse, errorResponse, mutant ):
+    def _analyzeResponses( self, oResponse, limit_response, error_response, mutant ):
         '''
-        Analyze responses; if errorResponse doesn't look like oResponse nor limitResponse, then we have a vuln.
+        Analyze responses; if error_response doesn't look like oResponse nor limit_response,
+        then we have a vuln.
+        
         @return: None
         '''
-        originalToError = relative_distance(oResponse.getBody(), errorResponse.getBody() )
-        limitToError = relative_distance( limitResponse.getBody(), errorResponse.getBody() )
-        originalToLimit = relative_distance( limitResponse.getBody(), oResponse.getBody() )
+        original_to_error = relative_distance(oResponse.getBody(), error_response.getBody() )
+        limit_to_error = relative_distance( limit_response.getBody(), error_response.getBody() )
+        original_to_limit = relative_distance( limit_response.getBody(), oResponse.getBody() )
         
-        ratio = self._diffRatio + ( 1 - originalToLimit )
+        ratio = self._diff_ratio + ( 1 - original_to_limit )
         
-        #om.out.debug('originalToError: ' +  str(originalToError) )
-        #om.out.debug('limitToError: ' +  str(limitToError) )
-        #om.out.debug('originalToLimit: ' +  str(originalToLimit) )
+        #om.out.debug('original_to_error: ' +  str(original_to_error) )
+        #om.out.debug('limit_to_error: ' +  str(limit_to_error) )
+        #om.out.debug('original_to_limit: ' +  str(original_to_limit) )
         #om.out.debug('ratio: ' +  str(ratio) )
         
-        if originalToError < ratio and limitToError < ratio:
-            # Maybe the limit I requested wasn't really a non-existant one (and the error page really found the limit), 
+        if original_to_error < ratio and limit_to_error < ratio:
+            # Maybe the limit I requested wasn't really a non-existant one
+            # (and the error page really found the limit), 
             # let's request a new limit (one that hopefully doesn't exist)
-            # This removes some false positives
-            limitResponse2 = self._getLimitResponse( mutant )
+            # in order to remove some false positives
+            limit_response2 = self._get_limit_response( mutant )
             
-            if relative_distance( limitResponse2.getBody(), limitResponse.getBody() ) > 1 - self._diffRatio:
-                # The two limits are "equal"; It's safe to suppose that we have found the limit here
-                # and that the error string really produced an error
+            if relative_distance( limit_response2.getBody(), limit_response.getBody() ) > \
+            1 - self._diff_ratio:
+                # The two limits are "equal"; It's safe to suppose that we have found the
+                # limit here and that the error string really produced an error
                 v = vuln.vuln( mutant )
-                v.setId( errorResponse.id )
+                v.setId( error_response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unidentified vulnerability' )
                 v.setDesc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
@@ -118,12 +126,21 @@ class generic(baseAuditPlugin):
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
-                i.setId( errorResponse.id )
+                i.setId( error_response.id )
                 i.setName( 'Possible unidentified vulnerability' )
-                i.setDesc( '[Manual verification required] A possible vulnerability was found at: ' + mutant.foundAt() )
+                msg = '[Manual verification required] A possible vulnerability was found at: '
+                msg += mutant.foundAt()
+                i.setDesc( msg )
                 kb.kb.append( self, 'generic', i )
     
-    def _getLimitResponse( self, m ):
+    def _get_limit_response( self, m ):
+        '''
+        We request the limit (something that doesn't exist)
+            - If http://localhost/a.php?b=1 ; then I should request b=12938795  (random number)
+            - If http://localhost/a.php?b=abc ; then I should request b=hnv98yks (random alnum)
+        
+        @return: The limit response object
+        '''
         # Copy the dc, needed to make a good vuln report
         dc = m.getDc().copy()
         
@@ -131,11 +148,11 @@ class generic(baseAuditPlugin):
             m.setModValue( createRandNum(length=8) )
         else:
             m.setModValue( createRandAlNum(length=8) )
-        limitResponse = self._sendMutant(  m , analyze=False )
+        limit_response = self._sendMutant(  m , analyze=False )
         
         # restore the dc
         m.setDc( dc )
-        return limitResponse
+        return limit_response
     
     def end(self):
         '''
@@ -150,8 +167,9 @@ class generic(baseAuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'If two strings have a diff ratio less than diffRatio, then they are *really* different'
-        o1 = option('diffRatio', self._diffRatio, d1, 'float')
+        d1 = 'If two strings have a diff ratio less than diffRatio, then they are '
+        d1 += '*really* different'
+        o1 = option('diffRatio', self._diff_ratio, d1, 'float')
         
         ol = optionList()
         ol.add(o1)
@@ -165,7 +183,7 @@ class generic(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._diffRatio = optionsMap['diffRatio'].getValue()
+        self._diff_ratio = optionsMap['diffRatio'].getValue()
 
     def getPluginDeps( self ):
         '''

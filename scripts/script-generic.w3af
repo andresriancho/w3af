@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,13 +10,15 @@ output config console
 set verbose False
 back
 audit generic
-audit
+
 back
+
 target
-set target http://localhost/w3af/sqli/sqli3.php?nombre=apr
+set target http://localhost/w3af/audit/sql_injection/select/sql_injection_integer.php?id=1
 back
+
 start
 
-assert len(kb.kb.getData('generic','generic')) == 1
+assert len(kb.kb.getData('generic','generic')) == 2
 
 exit
