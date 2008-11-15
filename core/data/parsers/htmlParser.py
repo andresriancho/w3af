@@ -54,8 +54,8 @@ class htmlParser(sgmlParser):
         # An internal list to be used to save input tags that are found outside
         # of the scope of a form tag.
         self._saved_inputs = []
-        self._saved_selects = []
-
+        self._textareaData = ""
+        self._optionAttrs = []
         # Save for using in form parsing
         self._source_url = httpResponse.getURL()
         
@@ -77,7 +77,7 @@ class htmlParser(sgmlParser):
         '''
         This method finds forms inside an HTML document.
         '''
-        
+
         '''
         <FORM action="http://somesite.com/prog/adduser" method="post">
         <P>
@@ -93,15 +93,15 @@ class htmlParser(sgmlParser):
         </P>
         </FORM>
         '''
-        
+
         if tag.lower() == 'form' :
             self._handle_form_tag(tag, attrs)
-        
+
         # I changed the logic of this section of the parser because of this bug:
         # http://groups.google.com/group/beautifulsoup/browse_thread/thread/21ecff548dfda934/469d45ac13dc0162#469d45ac13dc0162
         # That the guys from BeautifulSoup ignored :S
         if tag.lower() in ['input','select', 'option', 'textarea']:
-            
+
             # I may be inside a form tag or not... damn bug!
             # I'm going to use this ruleset:
             # - If there is an input tag outside a form, and there is no form in self._forms
@@ -113,16 +113,16 @@ class htmlParser(sgmlParser):
             if self._insideForm:
                 method = getattr(self, '_handle_'+tag.lower()+'_tag_inside_form')
                 method(tag, attrs)
-                
+
             else:
                 # Outside a form!
                 method = getattr(self, '_handle_'+tag.lower()+'_tag_outside_form')
                 method(tag, attrs)
-    
+
     def _handle_form_tag(self, tag, attrs):
         '''
         Handles the form tags.
-        
+
         This method also looks if there are "pending inputs" in the self._saved_inputs list
         and parses them.
         '''
@@ -133,17 +133,17 @@ class htmlParser(sgmlParser):
             if attr[0].lower() == 'method':
                 method = attr[1].upper()
                 foundMethod = True
-        
+
         if not foundMethod:
             om.out.debug('htmlParser found a form without a method. Using GET as the default.')
-        
+
         #Find the action
         foundAction = False
         for attr in attrs:
             if attr[0].lower() == 'action':
                 action = urlParser.urlJoin( self._baseUrl, attr[1] )
                 foundAction = True
-                
+
         if not foundAction:
             msg = 'htmlParser found a form without an action attribute. Javascript may be used...'
             msg += ' but another option (mozilla does this) is that the form is expected to be '
@@ -155,17 +155,17 @@ class htmlParser(sgmlParser):
         # Create the form object and store everything for later use
         self._insideForm = True
         f = form.form()
-        f.setMethod( method )           
+        f.setMethod( method )
         f.setAction( action )
         self._forms.append( f )
-            
+
         # Now I verify if they are any input tags that were found outside the scope of a form tag
         for tag, attrs in self._saved_inputs:
             # Parse them just like if they were found AFTER the form tag opening
             self._handle_input_tag_inside_form(tag, attrs)
         # All parsed, remove them.
         self._saved_inputs = []
-    
+
     def _handle_input_tag_inside_form(self, tag, attrs):
         # We are working with the last form
         f = self._forms[-1]
@@ -198,6 +198,7 @@ class htmlParser(sgmlParser):
         """
         Handler for textarea tag inside a form
         """
+        self._textareaData = ""
         try:
             self._textareaTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
         except Exception,  e:
@@ -210,22 +211,36 @@ class htmlParser(sgmlParser):
         """
         This method is called to process arbitrary data.
         """
-        attrs = []
         if self._insideTextarea:
-            f = self._forms[-1]
-            attrs.append( ('name',self._textareaTagName) )
-            attrs.append( ('value', data) )
-            f.addInput( attrs )
-            self._insideTextarea = False
+            self._textareaData = data
 
     def _handle_textarea_tag_outside_form(self, tag, attrs):
         """
         Handler for textarea tag outside a form
         """
-         ### TODO: Code this!
-        pass
+        self._handle_textarea_tag_inside_form(tag, attrs)
+
+    def _handle_textarea_endtag(self):
+        """
+        Handler for textarea end tag
+        """
+        sgmlParser._handle_textarea_endtag(self)
+
+        attrs = []
+        attrs.append( ('name', self._textareaTagName) )
+        attrs.append( ('value', self._textareaData) )
+
+        if not self._forms:
+            self._saved_inputs.append( ('input', attrs) )
+        else:
+            f = self._forms[-1]
+            f.addInput( attrs )
 
     def _handle_select_tag_inside_form(self, tag, attrs):
+        """
+        Handler for select tag inside a form
+        """
+        self._optionAttrs = []
         try:
             self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
         except Exception,  e:
@@ -235,17 +250,32 @@ class htmlParser(sgmlParser):
             self._insideSelect = True
 
     def _handle_select_tag_outside_form(self, tag, attrs):
-        ### TODO: Code this!
-        pass
-    
-    def _handle_option_tag_inside_form(self, tag, attrs):    
-        if self._insideSelect:
-            # We are working with the last form
-            f = self._forms[-1]
-            attrs.append( ('name',self._selectTagName) ) 
-            f.addInput( attrs )
-    
-    def _handle_option_tag_outside_form(self, tag, attrs):    
-        ### TODO: Code this!
-        pass
+        """
+        Handler for select tag outside a form
+        """
+        self._handle_select_tag_inside_form(tag, attrs)
 
+    def _handle_select_endtag(self):
+        """
+        Handler for select end tag
+        """
+        sgmlParser._handle_select_endtag(self)
+        self._optionAttrs.append( ('name', self._selectTagName) )
+        if not self._forms:
+            self._saved_inputs.append( ('input', self._optionAttrs) )
+        else:
+            f = self._forms[-1]
+            f.addInput( self._optionAttrs )
+
+    def _handle_option_tag_inside_form(self, tag, attrs):
+        """
+        Handler for option tag inside a form
+        """
+        if self._insideSelect:
+            self._optionAttrs = attrs
+
+    def _handle_option_tag_outside_form(self, tag, attrs):
+        """
+        Handler for option tag outside a form
+        """
+        self._handle_option_tag_inside_form(tag, attrs)
