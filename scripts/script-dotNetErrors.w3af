@@ -3,8 +3,6 @@
 plugins
 
 output console,textFile
-output
-
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -24,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('dotNetErrors','dotNetErrors')) == 1
+print len(kb.kb.getData('dotNetErrors','dotNetErrors'))
 
 exit

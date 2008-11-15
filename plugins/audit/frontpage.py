@@ -20,18 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
-import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
+import core.data.kb.vuln as vuln
+
+import core.data.parsers.urlParser as urlParser
+from core.data.fuzzer.fuzzer import createRandAlpha
+from core.controllers.w3afException import w3afException
+
 
 class frontpage(baseAuditPlugin):
     '''
@@ -45,8 +49,8 @@ class frontpage(baseAuditPlugin):
         
         # Internal variables
         self.is404 = None
-        self._alreadyTested = []
-        self._stopOnFirst = True
+        self._already_tested = []
+        self._stop_on_first = True
         
 
     def _fuzzRequests(self, freq ):
@@ -60,47 +64,53 @@ class frontpage(baseAuditPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
 
         # Set some value
-        domainPath = urlParser.getDomainPath( freq.getURL() )
+        domain_path = urlParser.getDomainPath( freq.getURL() )
         
         # Start
-        if self._stopOnFirst and kb.kb.getData('frontpage', 'fileUpload'):
+        if self._stop_on_first and kb.kb.getData('frontpage', 'fileUpload'):
             # Nothing to do, I have found vuln(s) and I should stop on first
-            om.out.debug('Not verifying if I can upload files to: "' + domainPath + '" using author.dll')
+            msg = 'Not verifying if I can upload files to: "' + domain_path + '" using author.dll'
+            msg += '. Because I already found one vulnerability.'
+            om.out.debug(msg)
         else:
-            # I haven't found any vulns yet, OR i'm trying to find every directory where I can write a file.
-            if domainPath not in self._alreadyTested:
+            # I haven't found any vulns yet, OR i'm trying to find every
+            # directory where I can write a file.
+            if domain_path not in self._already_tested:
                 om.out.debug( 'frontpage plugin is testing: ' + freq.getURL() )
-                self._alreadyTested.append( domainPath )
+                self._already_tested.append( domain_path )
                 
                 # Find a file that doesn't exist
                 found404 = False
                 for i in xrange(3):
                     randFile = createRandAlpha( 5 ) + '.html'
-                    randPathFile= urlParser.urlJoin(domainPath,  randFile)
+                    randPathFile = urlParser.urlJoin(domain_path,  randFile)
                     res = self._urlOpener.GET( randPathFile )
                     if self.is404( res ):
                         found404 = True
                         break
                 
                 if found404:
-                    uploadId = self._uploadFile( domainPath,  randFile )
-                    self._verifyUpload( domainPath,  randFile,  uploadId )
+                    upload_id = self._upload_file( domain_path,  randFile )
+                    self._verify_upload( domain_path,  randFile,  upload_id )
                 else:
-                    om.out.error('frontpage plugin failed to find a 404 page. This is mostly because of an error in 404 page detection.')
+                    msg = 'frontpage plugin failed to find a 404 page. This is mostly because of an'
+                    msg += ' error in 404 page detection.'
+                    om.out.error(msg)
             
-    def _uploadFile( self, domainPath,  randFile ):
+    def _upload_file( self, domain_path,  randFile ):
         '''
         Upload the file using author.dll
-        @parameter domainPath: http://localhost/f00/
+        
+        @parameter domain_path: http://localhost/f00/
         @parameter randFile: fj01afka.html
         '''
-        filePath = urlParser.getPath(domainPath) + randFile
+        filePath = urlParser.getPath(domain_path) + randFile
         
         content = "method=put document:4.0.2.4715&service_name=&document=[document_name="
         content += filePath
-        content +=";meta_info=[]]&put_option=overwrite&comment=&keep_checked_out=false"
+        content += ";meta_info=[]]&put_option=overwrite&comment=&keep_checked_out=false"
         
-        targetURL = urlParser.urlJoin( domainPath, '_vti_bin/_vti_aut/author.dll' )
+        targetURL = urlParser.urlJoin( domain_path, '_vti_bin/_vti_aut/author.dll' )
 
         try:
             res = self._urlOpener.POST( targetURL , data=content )
@@ -108,29 +118,42 @@ class frontpage(baseAuditPlugin):
             om.out.debug('Exception while uploading file using author.dll: ' + str(e))
         else:
             if res.getCode() in [200]:
-                om.out.debug('frontpage plugin seems to have successfully uploaded a file to the remote server.')
+                msg = 'frontpage plugin seems to have successfully uploaded a file to'
+                msg += ' the remote server.'
+                om.out.debug(msg)
                 return res.id
         
         return None
             
-    def _verifyUpload(self,  domainPath,  randFile,  id):
-        targetURL = urlParser.urlJoin( domainPath, randFile )
+    def _verify_upload(self,  domain_path,  randFile,  request_id):
+        '''
+        Verify if the file was uploaded.
+        
+        @parameter domain_path: http://localhost/f00/
+        @parameter randFile: The filename that was supposingly uploaded
+        @parameter request_id: The id of the POST request to author.dll
+        '''        
+        targetURL = urlParser.urlJoin( domain_path, randFile )
         
         try:
             res = self._urlOpener.GET( targetURL )
         except w3afException,  e:
-            om.out.debug('Exception while verifying if the file that was uploaded using author.dll was there: ' + str(e))
+            msg = 'Exception while verifying if the file that was uploaded using '
+            msg += 'author.dll was there: ' + str(e)
+            om.out.debug(msg)
         else:
             # The file I upload has blank content
             # And it must be there
             if res.getBody() == '' and not self.is404( res ):
                 v = vuln.vuln()
                 v.setURL( targetURL )
-                v.setId( id )
+                v.setId( request_id )
                 v.setSeverity(severity.HIGH)
                 v.setName( 'Insecure Frontpage extensions configuration' )
                 v.setMethod( 'POST' )
-                v.setDesc( 'An insecure configuration in the frontpage extensions allows unauthenticated users to upload files to the remote web server.' )
+                msg = 'An insecure configuration in the frontpage extensions allows'
+                msg += ' unauthenticated users to upload files to the remote web server.' 
+                v.setDesc( msg )
                 om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
                 kb.kb.append( self, 'fileUpload', v )
             else:
@@ -141,8 +164,11 @@ class frontpage(baseAuditPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Stop on the first successfull file upload'
-        h1 = 'The default value is usually a good idea, because if we can upload a file to a directory, the chances are that we can upload to every directory; and if this is the case, we would get a lot of vulnerabilities reported, that are really only one.'
-        o1 = option('stopOnFirst', self._stopOnFirst, d1, 'boolean', help=h1)
+        h1 = 'The default value is usually a good idea, because if we can upload a file '
+        h1 += 'to a directory, the chances are that we can upload to every directory;'
+        h1 += ' and if this is the case, we would get a lot of vulnerabilities reported,'
+        h1 += ' that are really only one.'
+        o1 = option('stopOnFirst', self._stop_on_first, d1, 'boolean', help=h1)
         
         ol = optionList()
         ol.add(o1)
@@ -156,7 +182,7 @@ class frontpage(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._stopOnFirst = optionsMap['stopOnFirst'].getValue()
+        self._stop_on_first = optionsMap['stopOnFirst'].getValue()
 
     def getPluginDeps( self ):
         '''
@@ -170,5 +196,6 @@ class frontpage(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will audits the frontpage extension configuration by trying to upload a file to the remote server using the author.dll program.
+        This plugin audits the frontpage extension configuration by trying to upload a file to the remote server
+        using the author.dll script provided by FrontPage.
         '''
