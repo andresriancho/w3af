@@ -45,7 +45,6 @@ class htmlParser(sgmlParser):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    
     def __init__(self, httpResponse, normalizeMarkup=True, verbose=0):
         self._tagsContainingURLs =  ('a', 'img', 'link', 'script', 'iframe', 'object',
                 'embed', 'area', 'frame', 'applet', 'input', 'base',

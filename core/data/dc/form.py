@@ -67,6 +67,7 @@ class form(dataContainer):
         for attr in attrs:
             if attr[0] == 'name' or attr[0] == 'id':
                 name = attr[1]
+                break
 
         self._files.append( name )
     

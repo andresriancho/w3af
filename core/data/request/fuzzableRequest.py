@@ -55,11 +55,11 @@ class fuzzableRequest:
         '''
         @return: a DETAILED str representation of this fuzzable request.
         '''
-        strRes = ''
-        strRes += self.dumpRequestHead()
-        strRes += '\n\n'
-        strRes += str( self.getData() )
-        return strRes
+        result_string = ''
+        result_string += self.dumpRequestHead()
+        result_string += '\n\n'
+        result_string += str( self.getData() )
+        return result_string
     
     def dumpRequestHead( self ):
         '''
@@ -74,25 +74,27 @@ class fuzzableRequest:
         '''
         @return: a str representation of the headers.
         '''
-        strRes = ''
+        result_string = ''
         for header in self._headers:
-            strRes += header + ': ' + self._headers[ header ] + '\n'
-        return strRes
+            result_string += header + ': ' + self._headers[ header ] + '\n'
+        return result_string
         
     def __str__( self ):
         '''
         Return a str representation of this fuzzable request.
         '''
-        strRes = ''
-        strRes += self._url
-        strRes += ' | Method: ' + self._method
+        result_string = ''
+        result_string += self._url
+        result_string += ' | Method: ' + self._method
         if self._dc:
-            strRes += ' | Parameters: ('
+            result_string += ' | Parameters: ('
             for i in self._dc:
-                strRes += i + ','
-            strRes = strRes[: -1]
-            strRes += ')'
-        return strRes
+                result_string += i + ', '
+            for i in self.getFileVariables():
+                result_string += i + ', '
+            result_string = result_string[: -2]
+            result_string += ')'
+        return result_string
         
     def __eq__( self, other ):
         if self._uri == other._uri and\
@@ -183,7 +185,7 @@ class fuzzableRequest:
             return None
     
     def getFileVariables( self ):
-        return None
+        return []
     
     def copy( self ):
         newFr = copy.deepcopy( self )
