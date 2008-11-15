@@ -38,7 +38,7 @@ import re
 
 class eval(baseAuditPlugin):
     '''
-    Finds incorrect usage of the eval().
+    Find insecure eval() usage.
 
     @author: Viktor Gazdag ( woodspeed@gmail.com ) & Andres Riancho ( andres.riancho@gmail.com )
     '''
