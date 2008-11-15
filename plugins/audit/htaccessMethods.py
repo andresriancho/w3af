@@ -21,16 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
-from core.data.constants.httpConstants import *
 import core.data.constants.severity as severity
+
+from core.controllers.w3afException import w3afException
+import core.data.constants.httpConstants as http_constants
+
 
 class htaccessMethods(baseAuditPlugin):
     '''
@@ -40,9 +44,11 @@ class htaccessMethods(baseAuditPlugin):
     
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._firstTime = True
+        
+        # Internal variables
         self._authURIs = []
-        self._badMethods = [ UNAUTHORIZED, NOT_IMPLEMENTED, METHOD_NOT_ALLOWED]
+        self._bad_methods = [ http_constants.UNAUTHORIZED, 
+                    http_constants.NOT_IMPLEMENTED, http_constants.METHOD_NOT_ALLOWED]
 
     def _fuzzRequests(self, freq ):
         '''
@@ -50,42 +56,47 @@ class htaccessMethods(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        authURLList = [ v.getURL() for v in kb.kb.getData( 'httpAuthDetect', 'auth' ) ]
-        if freq.getURL() in authURLList:
+        auth_URL_list = [ v.getURL() for v in kb.kb.getData( 'httpAuthDetect', 'auth' ) ]
+        if freq.getURL() in auth_URL_list:
             # Try to get/post/put/index that uri and check that all
             # responses are 401
-            self._checkMethods( freq.getURL() )
+            self._check_methods( freq.getURL() )
         else:
             # Just in case grep plugin did not find this before
             # this only happends if the page wasnt requested
             response = self._urlOpener.GET( freq.getURL() , useCache=True )
-            if response.getCode() == UNAUTHORIZED:
-                self._checkMethods( freq.getURL() )
+            if response.getCode() == http_constants.UNAUTHORIZED:
+                self._check_methods( freq.getURL() )
                 # not needed, the grep plugin will do this for us
                 # kb.kb.save( 'httpAuthDetect', 'auth', response )
 
-    def _checkMethods( self, url ):
-        allowedMethods = []
-        for method in ['OPTIONS','GET','HEAD','POST','DELETE','TRACE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK' ]:
-            methodFunctor = getattr( self._urlOpener, method )
+    def _check_methods( self, url ):
+        '''
+        Perform some requests in order to check if we are able to retrieve
+        some data with methods that may be wrongly enabled.
+        '''
+        allowed_methods = []
+        for method in ['GET', 'POST', 'ABCD', 'HEAD']:
+            method_functor = getattr( self._urlOpener, method )
             try:
-                response = apply( methodFunctor, (url,) , {} )
+                response = apply( method_functor, (url,) , {} )
                 code = response.getCode()
             except:
                 pass
             else:
-                if code not in self._badMethods:
-                    allowedMethods.append( method )
+                if code not in self._bad_methods:
+                    allowed_methods.append( method )
         
-        if len(allowedMethods)>0:
+        if len(allowed_methods)>0:
             v = vuln.vuln()
             v.setURL( url )
             v.setName( 'Misconfigured access control' )
             v.setSeverity(severity.MEDIUM)
-            v.setDesc( 'The resource: '+ url + ' requires authentication but htaccess is misconfigured' +
-            ' and can be bypassed using these methods: ' + ' '.join(allowedMethods) )
-            v['methods'] = allowedMethods
-            
+            msg = 'The resource: "'+ url + '" requires authentication but the access'
+            msg += ' is misconfigured and can be bypassed using these methods: ' 
+            msg += ', '.join(allowed_methods) + '.'
+            v.setDesc( msg )
+            v['methods'] = allowed_methods
             kb.kb.append( self , 'auth' , v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )             
                 
@@ -118,17 +129,18 @@ class htaccessMethods(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find htaccess misconfiguration in the LIMIT configuration parameter.
+        This plugin finds .htaccess misconfigurations in the LIMIT configuration parameter.
         
         This plugin is based on a paper written by Frame and madjoker from 
         kernelpanik.org. The paper is called : "htaccess: bilbao method exposed"
         
-        The idea of this method (and the plugin) is to exploit common misconfigurations
+        The idea of the technique (and the plugin) is to exploit common misconfigurations
         of .htaccess files like this one:
-        <LIMIT GET>
-        require valid-used
-        </LIMIT>
         
-        The misconfiguration above is that using other methods an unauthorized user
-        can still obtain the information from that directory. 
+            <LIMIT GET>
+                require valid-used
+            </LIMIT>
+        
+        The configuration only allows authenticated users to perform GET requests, but POST
+        requests (for example) can be performed by any user.
         '''
