@@ -20,22 +20,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants, createRandAlpha, createRandAlNum
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
 import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
+
+from core.controllers.w3afException import w3afException
+import core.data.parsers.urlParser as urlParser
+from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+
 
 class dav(baseAuditPlugin):
     '''
-    Tries to upload a file using HTTP PUT method.
+    Verify if the WebDAV module is properly configured.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -44,9 +48,8 @@ class dav(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self.is404 = None
-        self._alreadyTested = []
-        self._rand = createRandAlpha( 5 )
+        self.is_404 = None
+        self._already_tested_dirs = []
 
     def _fuzzRequests(self, freq ):
         '''
@@ -55,76 +58,79 @@ class dav(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         # Init...
-        if self.is404 == None:
-            self.is404 = kb.kb.getData( 'error404page', '404' )
+        if self.is_404 == None:
+            self.is_404 = kb.kb.getData( 'error404page', '404' )
 
         # Start
-        davURLs = [ i.getURL() for i in kb.kb.getData( 'allowedMethods' , 'dav-methods' ) ]
-        domainPath = urlParser.getDomainPath( freq.getURL() )
-        if domainPath in davURLs and domainPath not in self._alreadyTested:
+        domain_path = urlParser.getDomainPath( freq.getURL() )
+        if domain_path not in self._already_tested_dirs:
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
-            self._alreadyTested.append( domainPath )
+            self._already_tested_dirs.append( domain_path )
             
-            self._PUT( domainPath )
-            self._PROPFIND( domainPath )
-            self._SEARCH( domainPath )
+            self._PUT( domain_path )
+            self._PROPFIND( domain_path )
+            self._SEARCH( domain_path )
             
-    def _SEARCH( self, domainPath ):
+    def _SEARCH( self, domain_path ):
         '''
         Test SEARCH method.
         '''
-        content = "<?xml version='1.0'?>\r\n\
-        <g:searchrequest xmlns:g='DAV:'>\r\n\
-        <g:sql>\r\n\
-        Select 'DAV:displayname' from scope()\r\n\
-        </g:sql>\r\n\
-        </g:searchrequest>\r\n"
+        content = "<?xml version='1.0'?>\r\n"
+        content += "<g:searchrequest xmlns:g='DAV:'>\r\n"
+        content += "<g:sql>\r\n"
+        content += "Select 'DAV:displayname' from scope()\r\n"
+        content += "</g:sql>\r\n"
+        content += "</g:searchrequest>\r\n"
 
-        res = self._urlOpener.SEARCH( domainPath , data=content )
+        res = self._urlOpener.SEARCH( domain_path , data=content )
         # Remember that httpResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response        
-        if "DAV:" in res and res.getCode() in xrange(200,300):
+        if "DAV:" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
             v.setURL( res.getURL() )
             v.setId( res.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
-            v.setDesc( 'Directory listing with HTTP SEARCH method was found at directory: ' + domainPath )
+            msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
+            msg += domain_path + '"'
+            v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
             
-    def _PROPFIND( self, domainPath ):
+    def _PROPFIND( self, domain_path ):
         '''
         Test PROPFIND method
         '''
-        content = "<?xml version='1.0'?>\r\n\
-        <a:propfind xmlns:a='DAV:'>\r\n\
-        <a:prop>\r\n\
-        <a:displayname:/>\r\n\
-        </a:prop>\r\n\
-        </a:propfind>\r\n"
+        content = "<?xml version='1.0'?>\r\n"
+        content += "<a:propfind xmlns:a='DAV:'>\r\n"
+        content += "<a:prop>\r\n"
+        content += "<a:displayname:/>\r\n"
+        content += "</a:prop>\r\n"
+        content += "</a:propfind>\r\n"
         
-        res = self._urlOpener.PROPFIND( domainPath , data=content, headers={'Depth': '1'} )
+        res = self._urlOpener.PROPFIND( domain_path , data=content, headers={'Depth': '1'} )
         # Remember that httpResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response               
-        if "D:href" in res and res.getCode() in xrange(200,300):
+        if "D:href" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
             v.setURL( res.getURL() )
             v.setId( res.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
-            v.setDesc( 'Directory listing with HTTP PROPFIND method was found at directory: ' + domainPath )
+            msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
+            msg += domain_path + '"'
+            v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
         
-    def _PUT( self, domainPath ):
+    def _PUT( self, domain_path ):
         '''
         Tests PUT method.
         '''
         # upload
-        url = urlParser.urlJoin( domainPath, self._rand )
+        url = urlParser.urlJoin( domain_path, createRandAlpha( 5 ) )
         rndContent = createRandAlNum(6)
         self._urlOpener.PUT( url , data=rndContent )
         
@@ -137,7 +143,9 @@ class dav(baseAuditPlugin):
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
-            v.setDesc( 'File upload with HTTP PUT method was found at directory: ' + domainPath + ' . Uploaded test file: ' + res.getURL() )
+            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path + '".'
+            msg += ' A test file was uploaded to: "' + res.getURL() + '".'
+            v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
 
     def end(self):
@@ -175,7 +183,7 @@ class dav(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find webdav configuration errors. This errors are generally server configuration errors rather
-        than a web application error. To check for vulnerabilities of this kind, the plugin will try to PUT a file on a directory
-        that has webDav enabled, if the file is uploaded successfully, then we have found a bug.        
+        This plugin finds WebDAV configuration errors. These errors are generally server configuration errors rather
+        than a web application errors. To check for vulnerabilities of this kind, the plugin will try to PUT a file on a directory
+        that has WebDAV enabled, if the file is uploaded successfully, then we have found a bug.
         '''
