@@ -20,18 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
 import re
+
 
 class mxInjection(baseAuditPlugin):
     '''
@@ -39,13 +43,12 @@ class mxInjection(baseAuditPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    '''
-    Plugin added just for completeness... I dont really expect to find one of this bugs
-    in my life... but well.... if someone , somewhere in the planet ever finds a bug of using
-    this plugin... THEN my job has been done :P
-    '''
-    
     def __init__(self):
+        '''
+        Plugin added just for completeness... I dont really expect to find one of this bugs
+        in my life... but well.... if someone , somewhere in the planet ever finds a bug of using
+        this plugin... THEN my job has been done :P
+        '''
         baseAuditPlugin.__init__(self)
 
     def _fuzzRequests(self, freq ):
@@ -109,22 +112,26 @@ class mxInjection(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for mxError in self._getmxErrors():
+        for mxError in self._get_mx_errors():
             match = re.search( mxError, response.getBody() )
             if  match:
                 res.append(mxError)
         return res
 
-    def _getmxErrors(self):
+    def _get_mx_errors(self):
+        '''
+        @return: A list of MX errors.
+        '''
         errors = []
         
         errors.append( 'Unexpected extra arguments to Select' )
         errors.append( 'Bad or malformed request' )
-        errors.append( 'Could not access the following folders' )       
-        errors.append( 'To check for outside changes to the folder list go to the folders page' )       
-        errors.append( 'A000' ) #FIXME: This two strings generate false positives
-        errors.append( 'A001' ) #FIXME: This two strings generate false positives     
-        errors.append( 'Invalid mailbox name' )     
+        errors.append( 'Could not access the following folders' )
+        msg = 'To check for outside changes to the folder list go to the folders page'
+        errors.append( msg )
+        errors.append( 'A000' )
+        errors.append( 'A001' )
+        errors.append( 'Invalid mailbox name' )
         
         return errors
         
@@ -157,7 +164,8 @@ class mxInjection(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find MX injections. This kind of web application errors are mostly seen in webmail software.
-        The tests are simple, for every injectable parameter a string with special meaning in the mail server is sent, and if
-        in the response I find a mail server error, a vulnerability was found.
+        This plugin will find MX injections. This kind of web application errors are mostly seen in
+        webmail software. The tests are simple, for every injectable parameter a string with 
+        special meaning in the mail server is sent, and if in the response I find a mail server error,
+        a vulnerability was found.
         '''
