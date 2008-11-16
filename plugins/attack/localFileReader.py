@@ -48,21 +48,21 @@ class localFileReader(baseAttackPlugin):
         self._url = ''
         self._method = 'GET'
         self._data = ''
-        self._filePattern = ''
+        self._file_pattern = ''
         self._generateOnlyOne = True
         
     def fastExploit( self ):
         '''
         Exploits a web app with local file include vuln.
         '''
-        if self._url == ''or self._filePattern == '' or self._data == '':
+        if self._url == ''or self._file_pattern == '' or self._data == '':
             om.out.error('You have to configure the "url" parameter.')
         else:
             v = vuln.vuln()
             v.setURL( self._url )
             v.setMethod( self._method )
             v.setDc( self._data )
-            v['filePattern'] = self._filePattern
+            v['file_pattern'] = self._file_pattern
             kb.kb.append( 'localFileInclude', 'localFileInclude', v )
     
     def getAttackType(self):
@@ -108,7 +108,7 @@ class localFileReader(baseAttackPlugin):
             om.out.error( str(e) )
             return False
         else:
-            if self._defineCut( response.getBody(), vuln['filePattern'], exact=False ):
+            if self._defineCut( response.getBody(), vuln['file_pattern'], exact=False ):
                 return True
             else:
                 return False
@@ -131,7 +131,7 @@ class localFileReader(baseAttackPlugin):
         o3 = option('data', self._data, d3, 'string')
 
         d4 = 'The file pattern to search for while verifiyng the vulnerability. Only used in fastExploit()'
-        o4 = option('filePattern', self._filePattern, d4, 'string')
+        o4 = option('file_pattern', self._file_pattern, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
         o5 = option('generateOnlyOne', self._generateOnlyOne, d5, 'boolean')
@@ -157,7 +157,7 @@ class localFileReader(baseAttackPlugin):
         self._url = optionsMap['url'].getValue()
         self._method = optionsMap['method'].getValue()
         self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
-        self._filePattern = optionsMap['filePattern'].getValue()
+        self._file_pattern = optionsMap['file_pattern'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         
     def getPluginDeps( self ):
