@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.kb.vuln as vuln
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
 
 # options
@@ -31,11 +29,16 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
+import core.data.kb.info as info
+import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
 import core.data.parsers.urlParser as urlParser
-import core.data.constants.severity as severity
+from core.data.fuzzer.fuzzer import createMutants
+
 import re
+
 
 class localFileInclude(baseAuditPlugin):
     '''
@@ -45,6 +48,10 @@ class localFileInclude(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        
+        # Internal variables
+        self._file_compiled_regex = []
+        self._error_compiled_regex = []
 
     def _fuzzRequests(self, freq ):
         '''
@@ -55,73 +62,93 @@ class localFileInclude(baseAuditPlugin):
         om.out.debug( 'localFileInclude plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        localFiles = self._getLocalFileList(freq.getURL())
+        local_files = self._get_local_file_list(freq.getURL())
         
-        mutants = createMutants( freq , localFiles, oResponse=oResponse )
+        mutants = createMutants( freq , local_files, oResponse=oResponse )
             
         for mutant in mutants:
-            if self._hasNoBug( 'localFileInclude','localFileInclude',mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'localFileInclude', 'localFileInclude', mutant.getURL() , \
+            mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
-                # I don't grep the result, because if I really find a local file inclusion, I will be requesting
-                # /etc/passwd and that would generate A LOT of false positives in the grep.pathDisclosure plugin
+                # I don't grep the result, because if I really find a local file inclusion,
+                # I will be requesting /etc/passwd and that would generate A LOT of false
+                # positives in the grep.pathDisclosure plugin
                 kwds = {'grepResult':False}
-                self._tm.startFunction( target=self._sendMutant, args=targs , kwds=kwds, ownerObj=self )
+                self._tm.startFunction( target=self._sendMutant, args=targs , \
+                                                    kwds=kwds, ownerObj=self )
         
-            
-    def _getLocalFileList( self, origUrl):
+    def _get_local_file_list( self, origUrl):
         '''
         This method returns a list of local files to try to include.
         
-        @return: A string, see above.
+        @return: A string list, see above.
         '''
-        localFiles = []
+        local_files = []
 
         extension = urlParser.getExtension(origUrl)
 
-        # I will only try to open this files, they are easy to identify of they echoed by a vulnerable
-        # web app and they are on all unix or windows default installs. Feel free to mail me ( Andres Riancho )
-        # if you know about other default files that could be installed on AIX ? Solaris ? and are not /etc/passwd
+        # I will only try to open this files, they are easy to identify of they 
+        # echoed by a vulnerable web app and they are on all unix or windows default installs.
+        # Feel free to mail me ( Andres Riancho ) if you know about other default files that
+        # could be installed on AIX ? Solaris ? and are not /etc/passwd
         if cf.cf.getData('targetOS') in ['unix', 'unknown']:
-            localFiles.append("../../../../../../../../etc/passwd")
-            localFiles.append("../../../../../../../../etc/passwd\0")
-            localFiles.append("../../../../../../../../etc/passwd\0.html")
-            localFiles.append("/etc/passwd")    
-            localFiles.append("/etc/passwd\0")
-            localFiles.append("/etc/passwd\0.html")
+            local_files.append("../" * 15 + "etc/passwd")
+            local_files.append("../" * 15 + "etc/passwd\0")
+            local_files.append("../" * 15 + "etc/passwd\0.html")
+            local_files.append("/etc/passwd")    
+            local_files.append("/etc/passwd\0")
+            local_files.append("/etc/passwd\0.html")
             if extension != '':
-                localFiles.append("/etc/passwd%00."+ extension)
-                localFiles.append("../../../../../../../../etc/passwd%00."+ extension)
-        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
-            localFiles.append("../../../../../../../../../../boot.ini\0")
-            localFiles.append("../../../../../../../../../../boot.ini\0.html")
-            localFiles.append("C:\\boot.ini")
-            localFiles.append("C:\\boot.ini\0")
-            localFiles.append("C:\\boot.ini\0.html")
-            localFiles.append("%SYSTEMROOT%\\win.ini")
-            localFiles.append("%SYSTEMROOT%\\win.ini\0")
-            localFiles.append("%SYSTEMROOT%\\win.ini\0.html")
-            if extension != '':
-                localFiles.append("C:\\boot.ini%00."+extension)
-                localFiles.append("%SYSTEMROOT%\\win.ini%00."+extension)
-        return localFiles
-
+                local_files.append("/etc/passwd%00."+ extension)
+                local_files.append("../" * 15 + "etc/passwd%00."+ extension)
         
+        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+            local_files.append("../" * 15 + "boot.ini\0")
+            local_files.append("../" * 15 + "boot.ini\0.html")
+            local_files.append("C:\\boot.ini")
+            local_files.append("C:\\boot.ini\0")
+            local_files.append("C:\\boot.ini\0.html")
+            local_files.append("%SYSTEMROOT%\\win.ini")
+            local_files.append("%SYSTEMROOT%\\win.ini\0")
+            local_files.append("%SYSTEMROOT%\\win.ini\0.html")
+            if extension != '':
+                local_files.append("C:\\boot.ini%00."+extension)
+                local_files.append("%SYSTEMROOT%\\win.ini%00."+extension)
+        
+        return local_files
+
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
         '''
-        fileContentList = self._findFile( response )
-        for fileContent in fileContentList:
-            if not re.search( fileContent, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        # Try to find the local file inclusions
+        file_content_list = self._find_file( response )
+        for file_content in file_content_list:
+            # TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!
+            if not re.search( file_content, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setName( 'Local file inclusion vulnerability' )
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
-                v['filePattern'] = fileContent
+                v['file_pattern'] = file_content
                 kb.kb.append( 'localFileInclude', 'localFileInclude', v )
+                return
+        
+        # Check for interesting errors
+        for regex in self.get_include_errors():
+            match = regex.search( response.getBody() )
+            # TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!
+            if match and not \
+            re.search( match.group(0), mutant.getOriginalResponseBody(),  re.IGNORECASE ):
+                i = info.info( mutant )
+                i.setId( response.id )
+                i.setName( 'File read error' )
+                i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
+                kb.kb.append( 'localFileInclude', 'error', i )
+                
     
     def end(self):
         '''
@@ -129,6 +156,7 @@ class localFileInclude(baseAuditPlugin):
         '''
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'localFileInclude', 'localFileInclude' ), 'VAR' )
+        self.printUniq( kb.kb.getData( 'localFileInclude', 'error' ), 'VAR' )
 
     def getOptions( self ):
         '''
@@ -147,7 +175,7 @@ class localFileInclude(baseAuditPlugin):
         ''' 
         pass
         
-    def _findFile( self, response ):
+    def _find_file( self, response ):
         '''
         This method finds out if the local file has been successfully included in 
         the resulting HTML.
@@ -156,46 +184,86 @@ class localFileInclude(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for filePattern in self._getFilePatterns():
-            match = re.search( filePattern, response.getBody() , re.IGNORECASE )
+        for file_pattern_regex in self._get_file_patterns():
+            match = file_pattern_regex.search( response.getBody() )
             if  match:
-                om.out.information('Found file fragment. The section where the file is included is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.')
-                res.append( filePattern ) 
+                res.append( match.group(0) )
+        
+        if len(res) == 1:
+            msg = 'A file fragment was found. The section where the file is included is (only'
+            msg += ' a fragment is shown): "' + res[0] 
+            msg += '". This is just an informational message, which might be related to a'
+            msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
+            om.out.information( msg )
+        if len(res) > 1:
+            msg = 'File fragments have been found. The following is a list of file fragments'
+            msg += ' that were returned by the web application while testing for local file'
+            msg += ' inclusion: \n'
+            for i in res:
+                msg += '- "' + i + '" \n'
+            #msg = msg[:-1]
+            msg += '". This is just an informational message, which might be related to a'
+            msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
+            om.out.information( msg )
         return res
     
-    def _getFilePatterns(self):
+    def _get_file_patterns(self):
         '''
         @return: A list of strings to find in the resulting HTML in order to check for local file includes.
         '''
-        filePatterns = []
+        if self._file_compiled_regex:
+            # returning the already compiled regular expressions
+            return self._file_compiled_regex
         
-        # /etc/passwd
-        filePatterns.append("root:x:0:0:")  
-        filePatterns.append("daemon:x:1:1:")
-        filePatterns.append(":/bin/bash")
-        filePatterns.append(":/bin/sh")
+        else:
+            # Compile them for the first time, and return the compiled regular expressions
+            
+            file_patterns = []
+            
+            # /etc/passwd
+            file_patterns.append("root:x:0:0:")  
+            file_patterns.append("daemon:x:1:1:")
+            file_patterns.append(":/bin/bash")
+            file_patterns.append(":/bin/sh")
 
-        # /etc/passwd in AIX
-        filePatterns.append("root:!:x:0:0:")
-        filePatterns.append("daemon:!:x:1:1:")
-        filePatterns.append(":usr/bin/ksh") 
+            # /etc/passwd in AIX
+            file_patterns.append("root:!:x:0:0:")
+            file_patterns.append("daemon:!:x:1:1:")
+            file_patterns.append(":usr/bin/ksh") 
 
-        # boot.ini
-        filePatterns.append("\\[boot loader\\]")
-        filePatterns.append("default=multi\\(")
-        filePatterns.append("\\[operating systems\\]")
-        
-        # win.ini
-        filePatterns.append("\\[fonts\\]")
-        
-        # Inclusion errors
-        filePatterns.append("java.io.FileNotFoundException:")
-        filePatterns.append("fread\\(\\):")
-        filePatterns.append("for inclusion '\\(include_path=")
-        filePatterns.append("Failed opening required")
-        
-        return filePatterns
+            # boot.ini
+            file_patterns.append("\\[boot loader\\]")
+            file_patterns.append("default=multi\\(")
+            file_patterns.append("\\[operating systems\\]")
+            
+            # win.ini
+            file_patterns.append("\\[fonts\\]")
+            
+            self._file_compiled_regex = [re.compile(i, re.IGNORECASE) for i in file_patterns]
+            
+            return self._file_compiled_regex
     
+    def get_include_errors(self):
+        '''
+        @return: A list of file inclusion / file read errors generated by the web application.
+        '''
+        # In previous versions of the plugin I these
+        # "Inclusion errors" listed in the _get_file_patterns method
+        # at first they made sense... but... it seems that they trigger false positives...
+        # So I moved them here and report them as something "interesting"
+        # if the actual file inclusion is not possible
+        if self._error_compiled_regex:
+            return self._error_compiled_regex
+        else:
+            read_errors = []
+            read_errors.append("java.io.FileNotFoundException:")
+            read_errors.append("fread\\(\\):")
+            read_errors.append("for inclusion '\\(include_path=")
+            read_errors.append("Failed opening required")
+            
+            self._error_compiled_regex = [re.compile(i, re.IGNORECASE) for i in read_errors]
+            return self._error_compiled_regex
+
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the
