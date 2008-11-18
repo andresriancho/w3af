@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -14,11 +13,7 @@ back
 
 plugins
 audit preg_replace
-audit config preg_replace
-set exhaustiveSearch True
-back
 
-audit
 discovery webSpider
 discovery config webSpider
 set onlyForward True
@@ -30,6 +25,6 @@ set target http://localhost/w3af/audit/preg_replace/
 back
 start
 
-assert len(kb.kb.getData('preg_replace','preg_replace')) >= 1
+assert len(kb.kb.getData('preg_replace','preg_replace')) == 2
 
 exit

@@ -20,18 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
 import re
+
 
 class preg_replace(baseAuditPlugin):
     '''
@@ -55,7 +59,8 @@ class preg_replace(baseAuditPlugin):
         mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
         
         for mutant in mutants:
-            if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'preg_replace' , 'preg_replace' , \
+                                        mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
@@ -65,9 +70,9 @@ class preg_replace(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        pregErrorList = self._findpregError( response )
-        for pregError in pregErrorList:
-            if not re.search( pregError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        preg_error_list = self._find_preg_error( response )
+        for preg_error in preg_error_list:
+            if not re.search( preg_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.HIGH)
@@ -82,7 +87,7 @@ class preg_replace(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
     
-    def _findpregError( self, response ):
+    def _find_preg_error( self, response ):
         '''
         This method searches for preg_replace errors in html's.
         
@@ -90,19 +95,19 @@ class preg_replace(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for pregError in self._getPregError():
-            match = re.search( pregError, response.getBody() , re.IGNORECASE )
+        for preg_error in self._get_preg_error():
+            match = re.search( preg_error, response.getBody() , re.IGNORECASE )
             if  match:
-                msg = 'Found unsafe usage of preg_replace() function, the error that was sent '
-                msg += 'by the web application is (only a fragment is shown): "'
-                msg += response.getBody()[match.start():match.end()] + '" ; and was found '
-                msg += 'in the response with id ' + str(response.id) + '.'
+                msg = 'An unsafe usage of preg_replace() function was found, the error that was'
+                msg += ' sent by the web application is (only a fragment is shown): "'
+                msg += response.getBody()[match.start():match.end()] + '" ; and was found'
+                msg += ' in the response with id ' + str(response.id) + '.'
                 
                 om.out.information(msg)
-                res.append(pregError)
+                res.append(preg_error)
         return res
 
-    def _getPregError(self):
+    def _get_preg_error(self):
         errors = []
         errors.append( 'Compilation failed: unmatched parentheses at offset' )
         errors.append( '<b>Warning</b>:  preg_replace\\(\\) \\[<a' )
@@ -142,5 +147,5 @@ class preg_replace(baseAuditPlugin):
         has the 'e' modifier.
         
         Right now this plugin will only find preg_replace vulnerabilities when PHP is configured to show errors,
-        but a new version will find "blind" preg_replace errors .
+        but a new version will find "blind" preg_replace errors.
         '''
