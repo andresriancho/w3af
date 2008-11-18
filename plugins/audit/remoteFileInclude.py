@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -135,7 +134,8 @@ class remoteFileInclude(baseAuditPlugin):
         mutants = createMutants( freq, rfi_url_list )
         
         for mutant in mutants:
-            if self._hasNoBug( 'remoteFileInclude','remoteFileInclude',mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'remoteFileInclude', 'remoteFileInclude', \
+                                        mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
@@ -175,20 +175,24 @@ class remoteFileInclude(baseAuditPlugin):
         php_code += ' ?>'
         
         # Write the php to the webroot
-        f = open( os.path.join('webroot' + os.path.sep, filename ) , 'w')
-        f.write( php_code )
-        f.close()
+        file_handler = open( os.path.join('webroot' + os.path.sep, filename ) , 'w')
+        file_handler.write( php_code )
+        file_handler.close()
         
         # Define the required parameters
-        self._rfi_url = 'http://' + self._listen_address +':' + str(self._listen_port) +'/' + filename
+        self._rfi_url = 'http://' + self._listen_address +':' + str(self._listen_port)
+        self._rfi_url += '/' + filename
         self._rfi_result = rand1 + rand2
         
-        self._webserver = webserver( self._listen_address, self._listen_port , 'webroot' + os.path.sep)
+        webroot = 'webroot' + os.path.sep
+        self._webserver = webserver( self._listen_address, self._listen_port , webroot )
         self._webserver.start2()
         time.sleep( 0.2 )
         
     def _stop_server( self ):
-
+        '''
+        Stop the server, remove the file from the webroot.
+        '''
         if self._webserver != None:
             self._webserver.stop()
             # Remove the file
