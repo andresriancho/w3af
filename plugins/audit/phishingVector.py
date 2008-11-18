@@ -20,18 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import re
 import core.data.constants.severity as severity
+
+import re
+
 
 class phishingVector(baseAuditPlugin):
     '''
@@ -44,9 +48,11 @@ class phishingVector(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Some internal vars
+        
         # I test this with different URL handlers because the developer may have
         # blacklisted http:// and https:// but missed ftp://.
-        # I also use hTtp instead of http because I want to evade some case sensitive filters
+        # I also use hTtp instead of http because I want to evade some (stupid) case sensitive
+        # filters
         self._test_urls = ['hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/', 'fTp://w3af.sf.net/']
 
     def _fuzzRequests(self, freq ):
@@ -60,7 +66,8 @@ class phishingVector(baseAuditPlugin):
         mutants = createMutants( freq , self._test_urls )
             
         for mutant in mutants:
-            if self._hasNoBug( 'phishingVector' , 'phishingVector' , mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug( 'phishingVector' , 'phishingVector' , \
+                                        mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
@@ -70,22 +77,22 @@ class phishingVector(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        response = self._findPhishingVector( mutant, response )
+        response = self._find_phishing_vector( mutant, response )
         for v in response:
             kb.kb.append( self, 'phishingVector', v )
     
-    def _findPhishingVector( self, mutant, response ):
+    def _find_phishing_vector( self, mutant, response ):
         '''
         Find the phishing vectors!
         '''
         res = []
-        htmlBody = response.getBody()
+        html_body = response.getBody()
         for url in self._test_urls:
-            if htmlBody.count( url ):
+            if html_body.count( url ):
                 # Houston we *may* have a problem ;)
                 regex = '<(iframe|frame).*?src=(\'|")?' + url + '.*?>'
-                frameRegex = re.compile(regex, re.DOTALL )
-                if frameRegex.search( htmlBody ):
+                frame_regex = re.compile(regex, re.DOTALL )
+                if frame_regex.search( html_body ):
                     # Vuln vuln!
                     v = vuln.vuln( mutant )
                     v.setId( response.id )
