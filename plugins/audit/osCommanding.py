@@ -20,15 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
-import re
+from core.data.fuzzer.fuzzer import createMutants
 
 # kb stuff
 import core.data.kb.vuln as vuln
@@ -36,6 +35,9 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
+
+import re
+
 
 class osCommanding(baseAuditPlugin):
     '''
@@ -81,12 +83,13 @@ class osCommanding(baseAuditPlugin):
         '''
         # Send the fuzzableRequest without any fuzzing, so we can measure the response 
         # time of this script in order to compare it later
-        self._original_wait_time = self._sendMutant( freq, analyze=False, grepResult=False ).getWaitTime()
+        res = self._sendMutant( freq, analyze=False, grepResult=False )
+        self._original_wait_time = res.getWaitTime()
         
         # Prepare the strings to create the mutants
-        cList = self._get_wait_commands()
-        onlyCommands = [ v.getCommand() for v in cList ]
-        mutants = createMutants( freq , onlyCommands )
+        command_list = self._get_wait_commands()
+        only_command_strings = [ v.getCommand() for v in command_list ]
+        mutants = createMutants( freq , only_command_strings )
         
         for mutant in mutants:
             if self._hasNoBug( 'osCommanding', 'osCommanding', mutant.getURL() , mutant.getVar() ):
@@ -94,7 +97,8 @@ class osCommanding(baseAuditPlugin):
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 kwds = {'analyze_callback':self._analyze_wait}
-                self._tm.startFunction( target=self._sendMutant, args=targs , kwds=kwds, ownerObj=self )
+                self._tm.startFunction( target=self._sendMutant, args=targs , \
+                                                    kwds=kwds, ownerObj=self )
 
     def _with_echo(self, freq):
         '''
@@ -103,11 +107,11 @@ class osCommanding(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        original_response = self._sendMutant( freq , analyze=False ).getBody()
         # Prepare the strings to create the mutants
-        cList = self._get_echo_commands()
-        onlyCommands = [ v.getCommand() for v in cList ]
-        mutants = createMutants( freq , onlyCommands, oResponse=oResponse )
+        command_list = self._get_echo_commands()
+        only_command_strings = [ v.getCommand() for v in command_list ]
+        mutants = createMutants( freq , only_command_strings, oResponse=original_response )
         
         for mutant in mutants:
             if self._hasNoBug( 'osCommanding', 'osCommanding', mutant.getURL() , mutant.getVar() ):
@@ -115,7 +119,8 @@ class osCommanding(baseAuditPlugin):
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 kwds = {'analyze_callback':self._analyze_echo}
-                self._tm.startFunction( target=self._sendMutant, args=targs , kwds=kwds, ownerObj=self )
+                self._tm.startFunction( target=self._sendMutant, args=targs , \
+                                                    kwds=kwds, ownerObj=self )
                 
     def _analyze_echo( self, mutant, response ):
         '''
@@ -184,8 +189,11 @@ class osCommanding(baseAuditPlugin):
             # This could be because of an osCommanding vuln, or because of an error that
             # generates a delay in the response; so I'll resend changing the time and see 
             # what happens
-            moreWaitParam = mutant.getModValue().replace( str(self._wait_time), str(self._second_wait_time) )
-            mutant.setModValue( moreWaitParam )
+            original_wait_param = mutant.getModValue()
+            more_wait_param = original_wait_param.replace( \
+                                                        str(self._wait_time), \
+                                                        str(self._second_wait_time) )
+            mutant.setModValue( more_wait_param )
             response = self._sendMutant( mutant, analyze=False )
             
             if response.getWaitTime() > (self._original_wait_time + self._second_wait_time-3) and \
@@ -211,7 +219,9 @@ class osCommanding(baseAuditPlugin):
                 i.setMethod( mutant.getMethod() )
                 i['os'] = sentOs
                 i['separator'] = sentSeparator
-                i.setDesc( 'A possible OS Commanding was found at: ' + mutant.foundAt() +' . Please review manually.' )
+                msg = 'A possible OS Commanding was found at: ' + mutant.foundAt() 
+                msg += ' . Please review manually.'
+                i.setDesc( msg )
                 kb.kb.append( self, 'osCommanding', i )
     
     def end(self):
@@ -227,9 +237,13 @@ class osCommanding(baseAuditPlugin):
         to print the content of a known file.
         '''
         commands = []
-        for specialChar in self._special_chars:
-            commands.append( command(specialChar + " /bin/cat /etc/passwd", 'unix', specialChar))
-            commands.append( command(specialChar + " type %SYSTEMROOT%\\win.ini", 'windows', specialChar))
+        for special_char in self._special_chars:
+            # Unix
+            cmd_string = special_char + " /bin/cat /etc/passwd"
+            commands.append( command(cmd_string, 'unix', special_char))
+            # Windows
+            cmd_string = special_char + " type %SYSTEMROOT%\\win.ini"
+            commands.append( command(cmd_string, 'windows', special_char))
         
         # Execution quotes
         commands.append( command("`/bin/cat /etc/passwd`", 'unix', '`'))		
@@ -248,11 +262,16 @@ class osCommanding(baseAuditPlugin):
         to introduce a time delay.
         '''
         commands = []
-        for specialChar in self._special_chars:
-            commands.append( command( specialChar + ' ping -n '+str(self._wait_time -1)+' localhost', 'windows', specialChar))
-            commands.append( command( specialChar + ' ping -c '+str(self._wait_time)+' localhost', 'unix', specialChar))
+        for special_char in self._special_chars:
+            # Windows
+            cmd_string = special_char + ' ping -n '+str(self._wait_time -1)+' localhost'
+            commands.append( command( cmd_string, 'windows', special_char))
+            # Unix
+            cmd_string = special_char + ' ping -c '+str(self._wait_time)+' localhost'
+            commands.append( command( cmd_string, 'unix', special_char))
             # This is needed for solaris 10
-            commands.append( command( specialChar + ' /usr/sbin/ping -s localhost 1000 10 ', 'unix', specialChar))
+            cmd_string = special_char + ' /usr/sbin/ping -s localhost 1000 10 '
+            commands.append( command( cmd_string, 'unix', special_char))
         
         # Using execution quotes
         commands.append( command( '` ping -n '+str(self._wait_time -1)+' localhost`', 'windows', '`'))
