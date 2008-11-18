@@ -20,17 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+
+HEADER_NAME = 'vulnerable073b'
+HEADER_VALUE = 'ae5cw3af'
 
 class responseSplitting(baseAuditPlugin):
     '''
@@ -49,17 +54,18 @@ class responseSplitting(baseAuditPlugin):
         '''
         om.out.debug( 'responseSplitting plugin is testing: ' + freq.getURL() )
         
-        rsList = self._getResponseSplitStrings()
+        rsList = self._get_header_inj()
         mutants = createMutants( freq , rsList )
             
         for mutant in mutants:
-            if self._hasNoBug( 'responseSplitting', 'responseSplitting', mutant.getURL(), mutant.getVar() ):
+            if self._hasNoBug( 'responseSplitting', 'responseSplitting', \
+                                        mutant.getURL(), mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
-    def _getErrors( self ):
+    def _get_errors( self ):
         '''
         @return: A list of error strings produced by the programming framework when
         we try to modify a header, and the HTML output is already being written to
@@ -76,11 +82,8 @@ class responseSplitting(baseAuditPlugin):
         '''
         # When trying to send a response splitting to php 5.1.2 I get :
         # Header may not contain more than a single header, new line detected
-        for error in self._getErrors():
+        for error in self._get_errors():
             
-            # Remember that httpResponse objects have a faster "__in__" than
-            # the one in strings; so string in response.getBody() is slower than
-            # string in response            
             if error in response:
                 msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
                 msg += ' modifies the headers of the response, but this error was sent while '
@@ -94,7 +97,7 @@ class responseSplitting(baseAuditPlugin):
 
                 return
             
-        if self._checkHeaders( response ):
+        if self._header_was_injected( response ):
             v = vuln.vuln( mutant )
             v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
             v.setId( response.id )
@@ -109,7 +112,7 @@ class responseSplitting(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'responseSplitting', 'responseSplitting' ), 'VAR' )
     
-    def _getResponseSplitStrings( self ):
+    def _get_header_inj( self ):
         '''
         With setOptions the user entered a URL that is the one to be included.
         This method returns that URL.
@@ -119,7 +122,7 @@ class responseSplitting(baseAuditPlugin):
         responseSplitStrings = []
         # This will simply add a header saying : "Vulnerable: Yes"  (if vulnerable)
         # \r\n will be encoded to %0d%0a
-        responseSplitStrings.append("w3af\r\nVulnerable: Yes")
+        responseSplitStrings.append("w3af\r\n" + HEADER_NAME +": " + HEADER_VALUE)
                 
         return responseSplitStrings
         
@@ -140,32 +143,48 @@ class responseSplitting(baseAuditPlugin):
         ''' 
         pass
         
-    def _checkHeaders( self, response ):
+    def _header_was_injected( self, response ):
         '''
         This method verifies if a header was successfully injected
         
         @parameter response: The HTTP response where I want to find the injected header.
         @return: True / False
         '''
-        headers = response.getHeaders()
-        if 'vulnerable' in headers.keys():
-            if headers['vulnerable'] == 'Yes':
+        # Get the lower case headers
+        headers = response.getLowerCaseHeaders()
+        
+        # Analyze injection
+        for header, value in headers.items():
+            if HEADER_NAME in header and value.lower() == HEADER_VALUE:
                 return True
-            else:
+                
+            elif HEADER_NAME in header and value.lower() != HEADER_VALUE:
                 msg = 'The vulnerable header was added to the HTTP response, '
-                msg += 'but the value is not what w3af expected (Vulnerable: Yes)'
+                msg += 'but the value is not what w3af expected ('+HEADER_NAME+': '+HEADER_VALUE+')'
                 msg += ' Please verify manually.'
                 om.out.information(msg)
-                
+
                 i = info.info()
                 i.setDesc( msg )
                 i.setId( response.id )
                 i.setName( 'Parameter modifies headers' )
                 kb.kb.append( self, 'responseSplitting', i )
-                
                 return False
-        else:
-            return False
+                
+            elif HEADER_NAME in value.lower():
+                msg = 'The vulnerable header wasn\'t added to the HTTP response, '
+                msg += 'but the value of one of the headers was successfully modified.'
+                msg += ' Please verify manually.'
+                om.out.information(msg)
+
+                i = info.info()
+                i.setDesc( msg )
+                i.setId( response.id )
+                i.setName( 'Parameter modifies headers' )
+                kb.kb.append( self, 'responseSplitting', i )
+                return False
+            
+        return False
 
     def getPluginDeps( self ):
         '''
