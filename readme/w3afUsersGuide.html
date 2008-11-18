@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0">
-	<META NAME="CHANGED" CONTENT="20081026;14055900">
+	<META NAME="CHANGED" CONTENT="20081118;10033500">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in; margin: 0.79in }
@@ -85,8 +85,8 @@ User Guide</B></U></FONT></FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>September
-13, 2008</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>Noviembre
+18, 2008</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -156,13 +156,14 @@ should perform a SVN checkout to get the latest version of the
 framework. </FONT>
 </P>
 <H2 CLASS="western">Installation</H2>
-<P ALIGN=JUSTIFY STYLE="font-style: normal; text-decoration: none"><FONT SIZE=3>The
-framework should work on all platforms supported by Python,
-particularly, w3af has been tested on Linux, Windows XP, Windows
-Vista and OpenBSD. This user guide will guide you through the
-installation on a Linux platform, installing w3af in a Windows box is
-straight forward if you use the available installer which can be
-downloaded from the official w3af site.</FONT></P>
+<P ALIGN=JUSTIFY STYLE="background: #ffffff; font-style: normal; text-decoration: none">
+<FONT SIZE=3>The framework should work on all platforms supported <SPAN STYLE="background: #ffffff">by
+Python, parti</SPAN>cularly, w3af has been teste<SPAN STYLE="background: #ffffff">d
+on Linux, Window</SPAN>s XP, Windows Vista and OpenBSD. This user
+guide will guide you through the installation on a Linux platform,
+installing w3af in a Windows box is straight forward if you use the
+available installer which can be downloaded from the official w3af
+site.</FONT></P>
 <H3 CLASS="western" ALIGN=JUSTIFY STYLE="page-break-after: avoid">Installation
 Requirements</H3>
 <P>The required packages to run w3af can be divided in two groups:</P>
@@ -209,6 +210,8 @@ process, the installation steps for these libraries are (as root):</P>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">cd
 w3af</FONT></P>
+<P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">cd
+extlib</SPAN></FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">cd
 fpconst-0.7.2</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">python
@@ -581,6 +584,10 @@ want and need to change internal configuration parameters to fulfill
 their tasks.</FONT></P>
 <P STYLE="font-style: normal; font-weight: medium"><BR><BR>
 </P>
+<P STYLE="font-style: normal; font-weight: medium"><BR><BR>
+</P>
+<P STYLE="font-style: normal; font-weight: medium"><BR><BR>
+</P>
 <H2 CLASS="western" STYLE="font-style: normal">Running w3af with GTK
 user interface</H2>
 <P STYLE="font-style: normal"><BR><BR>
@@ -648,6 +655,8 @@ actually part of the discovery phase.
 </P>
 <P ALIGN=JUSTIFY>Finally, evasion plugins try to evade simple
 intrusion detection rules.</P>
+<H3 CLASS="western"></H3>
+<H3 CLASS="western"></H3>
 <H3 CLASS="western">Plugin configuration</H3>
 <P ALIGN=JUSTIFY>The plugins are configured using the “plugins”
 configuration menu. Lets see how to do that:</P>
@@ -935,35 +944,37 @@ we know what this plugin does, but let's check their internals:</FONT></P>
 audit config xss</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins/audit/config:xss&gt;&gt;&gt;
 </B>view</FONT></P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|------------------------------------------------------------|
-</FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|------------------------------------------------------------|
+</SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-Setting         | Value | Description                      | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+Setting         | Value | Description                      | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|------------------------------------------------------------|
-</FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|------------------------------------------------------------|
+</SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-checkPersistent | True  | Search persistent XSS            | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+numberOfChecks  | 3     | Set the amount of checks to      | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-numberOfChecks  | 2     | Set the amount of checks to      | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+                |       | perform for each fuzzable        | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-                |       | perform for each fuzzable        | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+                |       | parameter. Valid numbers: 1 to   | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-                |       | parameter. Valid numbers: 1 to   | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+                |       | 13                               | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|
-                |       | 10                               | </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|
+checkStored     | True  | Search persistent XSS            | </SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|------------------------------------------------------------|
-</FONT>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff">|------------------------------------------------------------|
+</SPAN></FONT>
 </P>
-<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/xss&gt;&gt;&gt;
-</B>set checkPersistent False</FONT></P>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><BR><BR>
+</P>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="background: #ffffff"><B>w3af/plugin/xss&gt;&gt;&gt;</B><B>
+</B>set checkStored False</SPAN></FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/xss&gt;&gt;&gt;</B>
 back</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
@@ -986,6 +997,8 @@ Setting          | Value       | Description               | </FONT>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins/audit/config:sqli&gt;&gt;&gt;
 </B></FONT>
 </P>
+<P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B><SPAN STYLE="background: #ffffff">w3af/plugins/audit/config:sqli&gt;&gt;&gt;
+</SPAN></B><SPAN STYLE="font-weight: medium"><SPAN STYLE="background: #ffffff">back</SPAN></SPAN></FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B></FONT></P>
 <P STYLE="font-weight: medium"> 
 </P>
@@ -1156,8 +1169,6 @@ Method: GET | Parameters: (header)</FONT></P>
 </UL>
 <P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">Finally
 the user exits the application, returning to the shell.</FONT></P>
-<P STYLE="font-weight: medium"><BR><BR>
-</P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 exit</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">w3af,
