@@ -60,8 +60,8 @@ class mxInjection(baseAuditPlugin):
         om.out.debug( 'mxInjection plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        mxInjectionStrings = self._getmxInjectionStrings()
-        mutants = createMutants( freq , mxInjectionStrings, oResponse=oResponse )
+        mx_injection_strings = self._get_MX_injection_strings()
+        mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
             
         for mutant in mutants:
             if self._hasNoBug( 'mxInjection' , 'mxInjection' , mutant.getURL() , mutant.getVar() ):
@@ -75,9 +75,9 @@ class mxInjection(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        mxErrorList = self._findmxError( response )
-        for mxError in mxErrorList:
-            if not re.search( mxError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        mx_error_list = self._find_MX_error( response )
+        for mx_error in mx_error_list:
+            if not re.search( mx_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setName( 'MX injection vulnerability' )
                 v.setSeverity(severity.MEDIUM)
@@ -92,19 +92,19 @@ class mxInjection(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'mxInjection', 'mxInjection' ), 'VAR' )
     
-    def _getmxInjectionStrings( self ):
+    def _get_MX_injection_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         
         @return: A list with all mxInjection strings to test. Example: [ '\"','f00000']
         '''
-        mxInjectionStrings = []
-        mxInjectionStrings.append('"')
-        mxInjectionStrings.append('iDontExist')
-        mxInjectionStrings.append('')
-        return mxInjectionStrings
+        mx_injection_strings = []
+        mx_injection_strings.append('"')
+        mx_injection_strings.append('iDontExist')
+        mx_injection_strings.append('')
+        return mx_injection_strings
 
-    def _findmxError( self, response ):
+    def _find_MX_error( self, response ):
         '''
         This method searches for mx errors in html's.
         
@@ -112,13 +112,13 @@ class mxInjection(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for mxError in self._get_mx_errors():
-            match = re.search( mxError, response.getBody() )
+        for mx_error in self._get_MX_errors():
+            match = re.search( mx_error, response.getBody() )
             if  match:
-                res.append(mxError)
+                res.append(mx_error)
         return res
 
-    def _get_mx_errors(self):
+    def _get_MX_errors(self):
         '''
         @return: A list of MX errors.
         '''
