@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
 
 # options
@@ -28,13 +27,16 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
+import core.data.constants.dbms as dbms
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+import core.data.constants.severity as severity
+
 import re
 
-import core.data.constants.severity as severity
-import core.data.constants.dbms as dbms
 
 class sqli(baseAuditPlugin):
     '''
@@ -54,8 +56,8 @@ class sqli(baseAuditPlugin):
         om.out.debug( 'SQLi plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        sqliStrings = self._getSQLiStrings()
-        mutants = createMutants( freq , sqliStrings, oResponse=oResponse )
+        sqli_strings = self._get_sqli_strings()
+        mutants = createMutants( freq , sqli_strings, oResponse=oResponse )
         
         for mutant in mutants:
             if self._hasNoBug( 'sqli' , 'sqli' , mutant.getURL() , mutant.getVar() ):
@@ -69,16 +71,16 @@ class sqli(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        sqlErrorList = self._findSqlError( response )
-        for sqlError in sqlErrorList:
-            if not re.search( sqlError[0], mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        sql_error_list = self._findsql_error( response )
+        for sql_error in sql_error_list:
+            if not re.search( sql_error[0], mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 # Create the vuln,
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setName( 'SQL injection vulnerability' )
                 v.setSeverity(severity.HIGH)
-                v['error'] = sqlError[0]
-                v['db'] = sqlError[1]
+                v['error'] = sql_error[0]
+                v['db'] = sql_error[1]
                 v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'sqli', v )
                 break
@@ -90,17 +92,17 @@ class sqli(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'sqli', 'sqli' ), 'VAR' )
     
-    def _getSQLiStrings( self ):
+    def _get_sqli_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         
         @return: A list with all SQLi strings to test. Example: [ '\'','\'\'']
         '''
-        sqliStrings = []
-        sqliStrings.append("d'z\"0")
-        return sqliStrings
+        sqli_strings = []
+        sqli_strings.append("d'z\"0")
+        return sqli_strings
 
-    def _findSqlError( self, response ):
+    def _findsql_error( self, response ):
         '''
         This method searches for SQL errors in html's.
         
@@ -108,14 +110,18 @@ class sqli(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for sqlError in self._getSqlErrors():
-            match = re.search( sqlError[0] , response.getBody() , re.IGNORECASE )
+        for sql_error in self._get_SQL_errors():
+            match = re.search( sql_error[0] , response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('A SQL error was found in the response supplied by the web application, the error is (only a fragment is shown): "' + response.getBody()[match.start():match.end()]  + '". The error was found on response with id ' + str(response.id) + '.' )
-                res.append( sqlError )
+                msg = 'A SQL error was found in the response supplied by the web application,'
+                msg += ' the error is (only a fragment is shown): "' 
+                msg += response.getBody()[match.start():match.end()]  + '". The error was found '
+                msg += 'on response with id ' + str(response.id) + '.'
+                om.out.information( msg )
+                res.append( sql_error )
         return res
 
-    def _getSqlErrors(self):
+    def _get_SQL_errors(self):
         errors = []
         
         # ASP / MSSQL
