@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,12 +9,12 @@ back
 output config console
 set verbose False
 back
-output
+
 audit xss
 back
 
 target
-set target http://localhost/w3af/permanent-xss/test-permanentxss-reader.php?a=f00, http://localhost/w3af/permanent-xss/test-permanentxss-writer.php?a=g99&b=00
+set target http://localhost/w3af/audit/xss/stored/reader.php?a=f00, http://localhost/w3af/audit/xss/stored/writer.php?a=g99&b=00
 back
 
 start

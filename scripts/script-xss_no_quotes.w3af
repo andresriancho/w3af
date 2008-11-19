@@ -1,17 +1,11 @@
 # This is a simple xss detection demo:
 
-#http-settings
-#set proxyAddress 127.0.0.1
-#set proxyPort 8080
-#back
-
 misc-settings
 set fuzzCookie False
 back
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -22,7 +16,6 @@ back
 
 
 audit xss
-audit
 back
 
 target
