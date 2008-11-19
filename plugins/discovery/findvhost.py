@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -196,7 +197,10 @@ class findvhost(baseDiscoveryPlugin):
     def _getCommonVirtualHosts( self, domain ):
         res = []
         
-        for subdomain in ['intranet', 'intra', 'extranet', 'extra' , 'test' , 'old' , 'new' , 'admin' ]:
+        common_virtual_hosts = ['intranet', 'intra', 'extranet', 'extra' , 'test' , 
+        'old' , 'new' , 'admin', 'webmail', 'services', 'console', 'apps', 'mail', 'corporate' ]
+        
+        for subdomain in common_virtual_hosts:
             # intranet
             res.append( subdomain )
             # intranet.www.targetsite.com
