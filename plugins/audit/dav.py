@@ -30,6 +30,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.w3afException import w3afException
@@ -132,7 +133,7 @@ class dav(baseAuditPlugin):
         # upload
         url = urlParser.urlJoin( domain_path, createRandAlpha( 5 ) )
         rndContent = createRandAlNum(6)
-        self._urlOpener.PUT( url , data=rndContent )
+        put_response = self._urlOpener.PUT( url , data=rndContent )
         
         # check if uploaded
         res = self._urlOpener.GET( url , useCache=True )
@@ -147,7 +148,34 @@ class dav(baseAuditPlugin):
             msg += ' A test file was uploaded to: "' + res.getURL() + '".'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
-
+        
+        # Report some common errors
+        elif put_response.getCode() == 500:
+            i = info.info()
+            i.setURL( url )
+            i.setId( res.id )
+            i.setName( 'DAV incorrect configuration' )
+            i.setMethod( 'PUT' )
+            msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
+            msg += ' error code. In most cases, this means that the DAV extension failed in'
+            msg += ' some way. This error was found at: "' + put_response.getURL() + '".'
+            i.setDesc( msg )
+            kb.kb.append( self, 'dav', i )
+        
+        # Report some common errors
+        elif put_response.getCode() == 403:
+            i = info.info()
+            i.setURL( url )
+            i.setId( res.id )
+            i.setName( 'DAV insufficient privileges' )
+            i.setMethod( 'PUT' )
+            msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
+            msg +=' but the directory does not have the correct permissions that would allow'
+            msg += ' the web server to write to it. This error was found at: "'
+            msg += put_response.getURL() + '".'
+            i.setDesc( msg )
+            kb.kb.append( self, 'dav', i )
+            
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
