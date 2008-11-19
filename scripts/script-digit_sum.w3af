@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,13 +10,12 @@ output config console
 set verbose False
 back
 discovery digitSum
-discovery
-grep all
-grep
 back
+
 target
-set target http://localhost/w3af/digitSum/index1.php?id=22, http://localhost/w3af/digitSum/index-3-1.html
+set target http://localhost/w3af/discovery/digitSum/index1.php?id=22, http://localhost/w3af/discovery/digitSum/index-3-1.html
 back
+
 start
 
 assert len( kb.kb.getData('urls', 'urlList') ) == 3
