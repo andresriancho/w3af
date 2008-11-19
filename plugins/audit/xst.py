@@ -19,31 +19,35 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.mutant import mutant
 import core.data.parsers.urlParser as urlParser
+
 import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
-from core.data.fuzzer.mutant import mutant
-import re
 import core.data.constants.severity as severity
+
+import re
+
 
 class xst(baseAuditPlugin):
     '''
-    Verify Cross Site Tracing vulnerabilities. 
+    Find Cross Site Tracing vulnerabilities. 
 
     @author: Josh Summitt (ascetik@gmail.com)
     '''
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        
+        # Internal variables
         self._exec = True
-    
 
     def _fuzzRequests(self, freq ):
         '''
@@ -54,33 +58,34 @@ class xst(baseAuditPlugin):
             # Do nothing
             pass
         else:
-            # This will raise the exception the next time _fuzzRequests is run and remove the plugin from the list
+            # Only run once
             self._exec = False  
             
             # Create a mutant based on a fuzzable request
             # It is really important to use A COPY of the fuzzable request, and not the original.
             # The reason: I'm changing the method and the URL !
-            frCopy = freq.copy()
-            frCopy.setURL( urlParser.getDomainPath( frCopy.getURL() ) )
-            frCopy.setMethod('TRACE')
-            myMutant = mutant(frCopy)
-           
+            fr_copy = freq.copy()
+            fr_copy.setURL( urlParser.getDomainPath( fr_copy.getURL() ) )
+            fr_copy.setMethod('TRACE')
             # Add a header. I search for this value to determine if XST is valid
-            myheader = { 'FalseHeader': 'XST'}
-            myMutant.setHeaders(myheader)
+            original_headers = freq.getHeaders()
+            original_headers['FalseHeader'] = 'XST'
+            my_mutant = mutant(fr_copy)
             
             # send the request to the server and recode the response
-            response = self._sendMutant( myMutant, analyze=False )
+            response = self._sendMutant( my_mutant, analyze=False )
             
             # create a regex to test the response. 
             regex = re.compile("[FalseHeader: XST]")
-            if re.match(regex,response.getBody()):
-                # If vulnerable record it. This will now become visible on the html Report
+            if re.match(regex, response.getBody()):
+                # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln( freq )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'Cross site tracing vulnerability' )
-                v.setDesc( 'The web server at "'+ response.getURL() +'" is vulnerable to Cross Site Tracing.' )
+                msg = 'The web server at "'+ response.getURL() +'" is vulnerable to'
+                msg += ' Cross Site Tracing.'
+                v.setDesc( msg )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 kb.kb.append( self, 'xst', v )
             

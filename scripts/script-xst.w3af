@@ -3,7 +3,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -12,13 +11,11 @@ output config console
 set verbose False
 back
 
-
 audit xst
-audit
 back
 
 target
-set target http://localhost/w3af/xss/1.html?a=b
+set target http://localhost/w3af/audit/xss/index.html
 back
 start
 
