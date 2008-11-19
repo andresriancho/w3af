@@ -7,7 +7,6 @@ back
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -17,7 +16,6 @@ set verbose False
 back
 
 discovery afd
-discovery
 
 back
 
