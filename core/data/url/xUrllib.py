@@ -473,7 +473,9 @@ class xUrllib:
                         return self._retry( req, useCache )
             elif hasattr(e, 'code'):
                 # We usually get here when the response has codes 404, 403, 401, etc...
-                om.out.debug( req.get_method() + ' ' + originalUrl +' returned HTTP code "' + str(e.code) + '"' )
+                msg = req.get_method() + ' ' + originalUrl +' returned HTTP code "'
+                msg += str(e.code) + '" - id: ' + str(e.id)
+                om.out.debug( msg )
                 
                 # Return this info to the caller
                 code = int(e.code)
@@ -515,9 +517,14 @@ class xUrllib:
         else:
             # Everything ok !
             if not req.get_data():
-                om.out.debug( req.get_method() + ' ' + urllib.unquote_plus( originalUrl ) +' returned HTTP code "' + str(res.code) + '"' )
+                msg = req.get_method() + ' ' + urllib.unquote_plus( originalUrl ) +' returned HTTP code "'
+                msg += str(res.code) + '" - id: ' + str(res.id)
+                om.out.debug( msg )
             else:
-                om.out.debug( req.get_method() + ' ' + originalUrl +' with data: "'+ urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "' + str(res.code) + '"' )
+                msg = req.get_method() + ' ' + originalUrl +' with data: "'
+                msg += urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "'
+                msg += str(res.code) + '" - id: ' + str(res.id)
+                om.out.debug( msg )
             
             code = int(res.code)
             info = res.info()
