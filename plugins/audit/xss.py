@@ -92,7 +92,8 @@ class xss(baseAuditPlugin):
         # Verify what characters are allowed
         try:
             allowed_chars = self._get_allowed_chars(mutant)
-        except w3afException, w3:
+        except w3afException:
+            # If something fails, every char is allowed
             allowed_chars = self._special_characters[:]
         
         # Filter the tests based on the knowledge we got from the previous test
@@ -114,8 +115,10 @@ class xss(baseAuditPlugin):
                                                     fuzzableParamList=[mutant.getVar(), ])
         
         # In the mutant, we have to save which browsers are vulnerable to that specific string
-        for i in xrange(len(filtered_xss_tests)):
-            mutant_list[i].affected_browsers = filtered_xss_tests[i][1]
+        for mutant in mutant_list:
+            for xss_test in filtered_xss_tests:
+                if mutant.getModValue() == xss_test[0]:
+                    mutant.affected_browsers = xss_test[1]
 
         for mutant in mutant_list:
             # Only spawn a thread if the mutant has a modified variable
@@ -129,12 +132,14 @@ class xss(baseAuditPlugin):
         These are the special characters that are tested:
             ['<', '>', '"', "'", '(', ')']
         
+        I'm aware that this doesn't work if the filter also filters by length.
+        The idea of this method is to reduce the amount of tests to be performed, if I start
+        testing each char separately, I loose that performance enhancement that I want to
+        get.
+        
         @return: A list with the special characters that are allowed by the XSS filter
         '''
-        ### BUGBUG: This doesn't work if the filter also filters by length
-        
         # Create a random number and assign it to the mutant modified parameter
-        dc = mutant.getDc()
         rndNum = str( createRandAlNum( 4 ) )
         oldValue = mutant.getModValue() 
         
@@ -243,24 +248,27 @@ class xss(baseAuditPlugin):
                 [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE]))
         
         # I need to identify everything I send to the web app
-        self._rndValue = createRandAlNum()
+        rnd_value = createRandAlNum()
 
-        xss_tests = [ (x[0].replace( "RANDOMIZE", self._rndValue ), x[1]) for x in xss_tests ]
+        xss_tests = [ (x[0].replace( "RANDOMIZE", rnd_value ), x[1]) for x in xss_tests ]
 
         return xss_tests
     
     def _is_echoed( self, mutant ):
         '''
         Verify if the parameter we are fuzzing is really being echoed back in the
-        HTML response or not. If it aint echoed there is no chance we are going to
+        HTML response or not. If it isn't echoed there is no chance we are going to
         find a reflected XSS here.
+        
+        Also please note that I send a random alphanumeric value, and not a numeric
+        value, because even if the number is echoed back (and only numbers are echoed
+        back by the application) that won't be of any use in the XSS detection.
         
         @parameter mutant: The request to send.
         @return: True if variable is echoed
         '''
         # Create a random number and assign it to the mutant modified
         # parameter
-        dc = mutant.getDc()
         rndNum = str( createRandAlNum( 5 ) )
         oldValue = mutant.getModValue() 
         mutant.setModValue(rndNum)
@@ -281,7 +289,7 @@ class xss(baseAuditPlugin):
     
     def _analyzeResult( self, mutant, response ):
         '''
-        Do we have a XSS?
+        Do we have a reflected XSS?
         
         @return: None, record all the results in the kb.
         '''
