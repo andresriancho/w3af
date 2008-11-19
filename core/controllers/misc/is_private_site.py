@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 import re
 
-def is_private_site( self, domain_or_IP_address ):
+def is_private_site( domain_or_IP_address ):
     '''
     @parameter domain_or_IP_address: The domain or IP address that we want to check
     @return: Get the IP address of the domain, return True if its a private address.
