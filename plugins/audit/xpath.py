@@ -20,19 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.kb.vuln as vuln
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
 import re
+
 
 class xpath(baseAuditPlugin):
     '''
@@ -52,8 +55,8 @@ class xpath(baseAuditPlugin):
         om.out.debug( 'xpath plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        XpathStr = self._getXpathStrings()
-        mutants = createMutants( freq , XpathStr, oResponse=oResponse )
+        xpath_strings = self._get_xpath_strings()
+        mutants = createMutants( freq , xpath_strings, oResponse=oResponse )
             
         for mutant in mutants:
             if self._hasNoBug( 'xpath', 'xpath', mutant.getURL() , mutant.getVar() ):
@@ -62,25 +65,25 @@ class xpath(baseAuditPlugin):
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
-    def _getXpathStrings( self ):
+    def _get_xpath_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         
         @return: A list with all xpath strings to test.
         '''
-        XpathStr = []
-        XpathStr.append("d'z\"0")
-        XpathStr.append("<!--") # http://www.owasp.org/index.php/Testing_for_XML_Injection
+        xpath_strings = []
+        xpath_strings.append("d'z\"0")
+        xpath_strings.append("<!--") # http://www.owasp.org/index.php/Testing_for_XML_Injection
         # Possibly more should be added, but I don't see the need of doing so long
-        return XpathStr
+        return xpath_strings
     
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
         '''
-        XpathErrorList = self._findXpathError( response )
-        for xpathError in XpathErrorList:
-            if not re.search( xpathError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        xpath_error_list = self._find_xpath_error( response )
+        for xpath_error in xpath_error_list:
+            if not re.search( xpath_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setName( 'XPATH injection vulnerability' )
                 v.setSeverity(severity.MEDIUM)
@@ -95,7 +98,7 @@ class xpath(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
     
-    def _findXpathError( self, response ):
+    def _find_xpath_error( self, response ):
         '''
         This method searches for xpath errors in html's.
         
@@ -103,49 +106,55 @@ class xpath(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for xpathError in  self._getxpathErrors():
-            match = re.search( xpathError, response.getBody() , re.IGNORECASE )
+        for xpath_error in  self._get_xpath_errors():
+            match = re.search( xpath_error, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found xpath injection. The error showed by the web application is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
-                res.append( xpathError )
+                msg = 'Found XPATH injection. The error showed by the web application is (only'
+                msg +=' a fragment is shown): "' + response.getBody()[match.start():match.end()] 
+                msg += '". The error was found on response with id ' + str(response.id) + '.'
+                om.out.information( msg )
+                res.append( xpath_error )
         return res
         
-    def _getxpathErrors( self ):
-        errorStr = []
-        errorStr.append('Unknown error in XPath' )
-        errorStr.append('org.apache.xpath.XPath' )
-        errorStr.append('A closing bracket expected in' )
-        errorStr.append( 'An operand in Union Expression does not produce a node-set' )
-        errorStr.append( 'Cannot convert expression to a number' )
-        errorStr.append( 'Document Axis does not allow any context Location Steps' )
-        errorStr.append( 'Empty Path Expression' )
-        errorStr.append( 'Empty Relative Location Path' )
-        errorStr.append( 'Empty Union Expression' )
-        errorStr.append( "Expected '\\)' in" )
-        errorStr.append( 'Expected node test or name specification after axis operator' )
-        errorStr.append( 'Incompatible XPath key' )
-        errorStr.append( 'Incorrect Variable Binding' )
-        errorStr.append( 'libxml2 library function failed' )
-        errorStr.append( 'libxml2' )
-        errorStr.append( 'xmlsec library function' )
-        errorStr.append( 'xmlsec' )
-        errorStr.append( "error '80004005'" )
-        errorStr.append( "A document must contain exactly one root element." )
-        errorStr.append( '<font face="Arial" size=2>Expression must evaluate to a node-set.' )
-        errorStr.append( "Expected token '\\]'" )
-        errorStr.append( "<p>msxml4.dll</font>" )
-        errorStr.append( "<p>msxml3.dll</font>" )
+    def _get_xpath_errors( self ):
+        '''
+        @return: A list of errors generated by XPATH servers.
+        '''
+        error_strings = []
+        error_strings.append('Unknown error in XPath' )
+        error_strings.append('org.apache.xpath.XPath' )
+        error_strings.append('A closing bracket expected in' )
+        error_strings.append( 'An operand in Union Expression does not produce a node-set' )
+        error_strings.append( 'Cannot convert expression to a number' )
+        error_strings.append( 'Document Axis does not allow any context Location Steps' )
+        error_strings.append( 'Empty Path Expression' )
+        error_strings.append( 'Empty Relative Location Path' )
+        error_strings.append( 'Empty Union Expression' )
+        error_strings.append( "Expected '\\)' in" )
+        error_strings.append( 'Expected node test or name specification after axis operator' )
+        error_strings.append( 'Incompatible XPath key' )
+        error_strings.append( 'Incorrect Variable Binding' )
+        error_strings.append( 'libxml2 library function failed' )
+        error_strings.append( 'libxml2' )
+        error_strings.append( 'xmlsec library function' )
+        error_strings.append( 'xmlsec' )
+        error_strings.append( "error '80004005'" )
+        error_strings.append( "A document must contain exactly one root element." )
+        error_strings.append( '<font face="Arial" size=2>Expression must evaluate to a node-set.' )
+        error_strings.append( "Expected token '\\]'" )
+        error_strings.append( "<p>msxml4.dll</font>" )
+        error_strings.append( "<p>msxml3.dll</font>" )
         
         # Put this here cause i did not know if it was a sql injection
         # This error appears when you put wierd chars in a lotus notes document
         # search ( nsf files ).
-        errorStr.append( '4005 Notes error: Query is not understandable' )
+        error_strings.append( '4005 Notes error: Query is not understandable' )
         
         # This one will generate some false positives, but i'll leve it here for now
         # until i have a complete list of errors.
-        errorStr.append('xpath')
-        errorStr = [ e.lower() for e in errorStr ]
-        return errorStr
+        error_strings.append('xpath')
+        error_strings = [ e.lower() for e in error_strings ]
+        return error_strings
         
     def getOptions( self ):
         '''
@@ -178,6 +187,6 @@ class xpath(baseAuditPlugin):
         return '''
         This plugin finds XPATH injections.
         
-        To find this vulnerabilities the plugin sends the string "d'z'0" to every injection point, and searches the response
-        for XPATH errors.
+        To find this vulnerabilities the plugin sends the string "d'z'0" to every injection point,
+        and searches the response for XPATH errors.
         '''
