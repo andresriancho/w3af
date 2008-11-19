@@ -1,4 +1,5 @@
 # This script shows how w3af reads a crossdomain.xml file
+
 plugins
 discovery crossDomain
 back
