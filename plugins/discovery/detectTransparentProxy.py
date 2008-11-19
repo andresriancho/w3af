@@ -21,16 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afRunOnce
 from core.controllers.w3afException import w3afException
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import socket
-from core.controllers.w3afException import w3afRunOnce
+
 
 class detectTransparentProxy(baseDiscoveryPlugin):
     '''
@@ -50,14 +54,17 @@ class detectTransparentProxy(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
-            # I will only run this one time. All calls to detectTransparentProxy return the same url's
+            # I will only run this one time. All calls to detectTransparentProxy
+            # return the same url's
             self._run = False
             
-            if self._isProxyedConn( fuzzableRequest ):
+            if self._is_proxyed_conn( fuzzableRequest ):
                 i = info.info()
                 i.setName( 'Transparent proxy detected' )
                 i.setURL( fuzzableRequest.getURL() )
-                i.setDesc( 'Your ISP seems to have a transparent proxy installed, this can influence w3af results.' )
+                msg = 'Your ISP seems to have a transparent proxy installed, this can influence'
+                msg += ' w3af results.'
+                i.setDesc( msg )
                 kb.kb.append( self, 'detectTransparentProxy', i )
                 om.out.information( i.getDesc() )
             else:
@@ -65,19 +72,19 @@ class detectTransparentProxy(baseDiscoveryPlugin):
             
         return []
     
-    def _isProxyedConn( self, fuzzableRequest ):
+    def _is_proxyed_conn( self, fuzzableRequest ):
         '''
         Make a connection to a "random" IP to port 80 and make a request for the URL we are interested in.
         @return: True if proxy is present.
         '''
-        randIPs = [ '1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1', \
+        random_ips = [ '1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1', \
         '60.60.60.60', '44.44.44.44', '11.22.33.44', '11.22.33.11', '7.99.7.99',\
         '87.78.87.78']
         
-        for ip in randIPs:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        for ip_address in random_ips:
+            sock_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s.connect( ( ip , 80) )
+                sock_obj.connect( ( ip_address , 80) )
             except:
                 return False
             else:
@@ -116,6 +123,7 @@ class detectTransparentProxy(baseDiscoveryPlugin):
         return '''
         This plugin tries to detect transparent proxies.
         
-        The procedure for detecting transparent proxies is simple, I try to connect to a series of IP addresses,
-        to the port 80, if all of them return an opened socket, then it's the proxy server responding.
+        The procedure for detecting transparent proxies is simple, I try to connect to a series of IP
+        addresses, to the port 80, if all of them return an opened socket, then it's the proxy server
+        responding.
         '''
