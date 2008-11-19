@@ -9,8 +9,9 @@ set fileName output-w3af.txt
 set verbose True
 back
 back
+
 target
-set target http://localhost/w3af/xpath/xpath.php?i=a
+set target http://localhost/w3af/audit/xpath/xpath.php?i=a
 back
 start
 
