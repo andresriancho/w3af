@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-11-07, 07:24:48 -->
+<!-- Saved: 2008-11-18, 11:27:43 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -468,18 +468,6 @@
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Dir>bruteforce</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>sqlTools</Dir>
-      <Name>blindSqli.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>sqlTools</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
@@ -3879,6 +3867,29 @@
       <Dir>controllers</Dir>
       <Dir>misc</Dir>
       <Name>homeDir.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>sql_tools</Dir>
+      <Name>blind_sqli_time_delay.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>sql_tools</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>sql_tools</Dir>
+      <Name>blind_sqli_response_diff.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>dotNetErrors.py</Name>
     </Source>
   </Sources>
   <Forms>
