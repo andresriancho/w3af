@@ -78,33 +78,46 @@ class crossDomain(baseDiscoveryPlugin):
                 try:
                     dom = xml.dom.minidom.parseString( response.getBody() )
                 except Exception, e:
-                    raise w3afException('Error while parsing crossdomain.xml: "' + str(e) + '".')
-                
-                url_list = dom.getElementsByTagName("allow-access-from")
-                for url in url_list:
-                    url = url.getAttribute('domain')
-                    
-                    if url == '*':
-                        v = vuln.vuln()
-                        v.setURL( response.getURL() )
-                        v.setMethod( 'GET' )
-                        v.setName( 'Insecure crossdomain.xml settings' )
-                        v.setSeverity(severity.LOW)
-                        msg = 'The crossdomain.xml file at "' + cross_domain_url + '" allows'
-                        msg += ' flash access from any site.'
-                        v.setDesc( msg )
-                        v.setId( response.id )
-                        kb.kb.append( self, 'vuln', v )
-                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                    else:
+                    # Report this, it may be interesting for the final user
+                    # not a vulnerability per-se... but... it's information after all
+                    if 'allow-access-from' in response.getBody() or \
+                    'cross-domain-policy' in response.getBody():
                         i = info.info()
-                        i.setName('Crossdomain allow ACL')
+                        i.setName('Invalid crossdomain.xml')
                         i.setURL( response.getURL() )
                         i.setMethod( 'GET' )
-                        i.setDesc( 'Crossdomain.xml file allows access from domain: ' + url )
+                        msg = 'The crossdomain.xml file at: "' + url  + '" is not a valid XML.'
+                        i.setDesc( msg )
                         i.setId( response.id )
                         kb.kb.append( self, 'info', i )
                         om.out.information( i.getDesc() )
+                else:
+                    # parsed ok!
+                    url_list = dom.getElementsByTagName("allow-access-from")
+                    for url in url_list:
+                        url = url.getAttribute('domain')
+                        
+                        if url == '*':
+                            v = vuln.vuln()
+                            v.setURL( response.getURL() )
+                            v.setMethod( 'GET' )
+                            v.setName( 'Insecure crossdomain.xml settings' )
+                            v.setSeverity(severity.LOW)
+                            msg = 'The crossdomain.xml file at "' + cross_domain_url + '" allows'
+                            msg += ' flash access from any site.'
+                            v.setDesc( msg )
+                            v.setId( response.id )
+                            kb.kb.append( self, 'vuln', v )
+                            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                        else:
+                            i = info.info()
+                            i.setName('Crossdomain allow ACL')
+                            i.setURL( response.getURL() )
+                            i.setMethod( 'GET' )
+                            i.setDesc( 'Crossdomain.xml file allows access from: "' + url  + '".')
+                            i.setId( response.id )
+                            kb.kb.append( self, 'info', i )
+                            om.out.information( i.getDesc() )
         
         return dirs
         
