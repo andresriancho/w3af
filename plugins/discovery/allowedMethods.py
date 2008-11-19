@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -32,8 +33,9 @@ import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
-from core.data.constants.httpConstants import *
+import core.data.constants.httpConstants as httpConstants
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
+
 
 class allowedMethods(baseDiscoveryPlugin):
     '''
@@ -43,23 +45,36 @@ class allowedMethods(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        
+
+        # Internal variables
         self._exec = True
-        self._alreadyTested = []
-        self._badCodes = [ UNAUTHORIZED, NOT_IMPLEMENTED, METHOD_NOT_ALLOWED]
-        self._davMethods = [ 'DELETE','PROPFIND','PROPPATCH','COPY','MOVE','LOCK','UNLOCK', 'MKCOL']
-        self._commonMethods = [ 'OPTIONS','GET','HEAD','POST', 'TRACE', 'PUT']
-        self._uncommonMethods = ['*', 'SUBSCRIPTIONS', 'NOTIFY', 'DEBUG','TRACK', 'POLL', 'PIN', 'INVOKE', 'SUBSCRIBE', 'UNSUBSCRIBE']
+        self._already_tested = []
+        self._bad_codes = [ httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
+                                    httpConstants.METHOD_NOT_ALLOWED]
+        
+        # Methods
+        self._dav_methods = [ 'DELETE', 'PROPFIND', 'PROPPATCH', 'COPY', 'MOVE', 'LOCK', 
+                                        'UNLOCK', 'MKCOL']
+        self._common_methods = [ 'OPTIONS', 'GET', 'HEAD', 'POST', 'TRACE', 'PUT']
+        self._uncommon_methods = ['*', 'SUBSCRIPTIONS', 'NOTIFY', 'DEBUG', 'TRACK', 'POLL', 'PIN', 
+                                                    'INVOKE', 'SUBSCRIBE', 'UNSUBSCRIBE']
+        
         # Methods taken from http://www.w3.org/Protocols/HTTP/Methods.html 
-        self._proposedMethods = [ 'CHECKOUT', 'SHOWMETHOD', 'LINK', 'UNLINK', 'CHECKIN', 'TEXTSEARCH', 'SPACEJUMP', 'SEARCH', 'REPLY']
-        self._extraMethods= [ 'CONNECT', 'RMDIR', 'MKDIR', 'REPORT', 'ACL', 'DELETE', 'INDEX', 'LABEL', 'INVALID']
-        self._versionControl = [ 'VERSION_CONTROL', 'CHECKIN', 'UNCHECKOUT', 'PATCH', 'MERGE', 'MKWORKSPACE', 'MKACTIVITY', 'BASELINE_CONTROL']       
-        self._supportedMethods = self._davMethods  + self._commonMethods + self._uncommonMethods + self._proposedMethods + self._extraMethods + self._versionControl
+        self._proposed_methods = [ 'CHECKOUT', 'SHOWMETHOD', 'LINK', 'UNLINK', 'CHECKIN', 
+                                                'TEXTSEARCH', 'SPACEJUMP', 'SEARCH', 'REPLY']
+        self._extra_methods = [ 'CONNECT', 'RMDIR', 'MKDIR', 'REPORT', 'ACL', 'DELETE', 'INDEX', 
+                                        'LABEL', 'INVALID']
+        self._version_control = [ 'VERSION_CONTROL', 'CHECKIN', 'UNCHECKOUT', 'PATCH', 'MERGE', 
+                                            'MKWORKSPACE', 'MKACTIVITY', 'BASELINE_CONTROL']       
+        
+        self._supported_methods = self._dav_methods  + self._common_methods + self._uncommon_methods
+        self._supported_methods += self._proposed_methods + self._extra_methods
+        self._supported_methods += self._version_control
 
  
         # User configured variables
-        self._execOneTime = False
-        self._reportDavOnly = True
+        self._exec_one_time = False
+        self._report_dav_only = True
         
     def discover(self, fuzzableRequest ):
         '''
@@ -73,60 +88,66 @@ class allowedMethods(baseDiscoveryPlugin):
             
         else:
             # Run the plugin.
-            if self._execOneTime:
+            if self._exec_one_time:
                 self._exec = False
             
-            dp = urlParser.getDomainPath( fuzzableRequest.getURL() )
-            if dp not in self._alreadyTested:
-                self._alreadyTested.append( dp )
-                self._checkMethods( dp )
+            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            if domain_path not in self._already_tested:
+                self._already_tested.append( domain_path )
+                self._check_methods( domain_path )
         return []
     
-    def _checkMethods( self, url ):
-        allowedMethods = []
-        withOptions = False
+    def _check_methods( self, url ):
+        '''
+        Find out what methods are allowed.
+        @parameter url: Where to check.
+        '''
+        allowed_methods = []
+        with_options = False
         
-        # First, try to check available methods using OPTIONS, if OPTIONS aint enabled, do it manually
+        # First, try to check available methods using OPTIONS, if OPTIONS isn't 
+        # enabled, do it manually
         res = self._urlOpener.OPTIONS( url )
         headers = res.getLowerCaseHeaders()
-        allowedMethods = []
-        for headerName in ['allow','public']:
-            if headerName in headers:
-                allowedMethods.extend( headers[headerName].split(',') )
-                allowedMethods = [ x.strip() for x in allowedMethods ]
-                withOptions = True
-                allowedMethods = list(set(allowedMethods))
+        for header_name in ['allow', 'public']:
+            if header_name in headers:
+                allowed_methods.extend( headers[header_name].split(',') )
+                allowed_methods = [ x.strip() for x in allowed_methods ]
+                with_options = True
+                allowed_methods = list(set(allowed_methods))
 
-        if not withOptions:
+        if not with_options:
             # 'DELETE' is not tested! I don't want to remove anything...
             # 'PUT' is not tested! I don't want to overwrite anything...
-            methods_to_test = self._supportedMethods[:]
+            methods_to_test = self._supported_methods[:]
             methods_to_test.remove('DELETE')
             methods_to_test.remove('PUT')
 
             for method in methods_to_test:
-                methodFunctor = getattr( self._urlOpener, method )
+                method_functor = getattr( self._urlOpener, method )
                 try:
-                    response = apply( methodFunctor, (url,) , {} )
+                    response = apply( method_functor, (url,) , {} )
                     code = response.getCode()
                 except:
                     pass
                 else:
-                    if code not in self._badCodes:
-                        allowedMethods.append( method )
+                    if code not in self._bad_codes:
+                        allowed_methods.append( method )
         
         # Added this to make the output a little more readable.
-        allowedMethods.sort()
+        allowed_methods.sort()
         
         # Check for DAV
-        if len( set( allowedMethods ).intersection( self._davMethods ) ) != 0:
+        if len( set( allowed_methods ).intersection( self._dav_methods ) ) != 0:
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
             i = info.info()
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
-            i['methods'] = allowedMethods
-            i.setDesc( 'The URL "' + url + '" has the following allowed methods, which include DAV methods: ' + ', '.join(allowedMethods) )
+            i['methods'] = allowed_methods
+            msg = 'The URL "' + url + '" has the following allowed methods, which'
+            msg += ' include DAV methods: ' + ', '.join(allowed_methods)
+            i.setDesc( msg )
             kb.kb.append( self , 'dav-methods' , i )
         else:
             # Save the results in the KB so that other plugins can use this information
@@ -134,8 +155,10 @@ class allowedMethods(baseDiscoveryPlugin):
             i = info.info()
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
-            i['methods'] = allowedMethods
-            i.setDesc( 'The URL "' + url + '" has the following allowed methods: ' + ', '.join(allowedMethods) )
+            i['methods'] = allowed_methods
+            msg = 'The URL "' + url + '" has the following allowed methods:'
+            msg += ' ' + ', '.join(allowed_methods)
+            i.setDesc( msg )
             kb.kb.append( self , 'methods' , i )
             
         return []
@@ -159,29 +182,29 @@ class allowedMethods(baseDiscoveryPlugin):
             davMethods.append( (i.getURL() , i['methods']) )
 
         # Now I work the data...
-        toShow, type = davMethods, ' DAV'
-        if not self._reportDavOnly:
-            toShow, type = allMethods, ''
+        to_show, method_type = davMethods, ' DAV'
+        if not self._report_dav_only:
+            to_show, method_type = allMethods, ''
        
 
         # Make it hashable
         tmp = []
-        for url, methodList in toShow:
+        for url, methodList in to_show:
             tmp.append( (url, ', '.join( methodList ) ) )
         
-        resDict, itemIndex = groupbyMinKey( tmp )
+        result_dict, itemIndex = groupbyMinKey( tmp )
             
-        for k in resDict:
+        for k in result_dict:
             if itemIndex == 0:
                 # Grouped by URLs
-                msg = 'The URL: "%s" has the following' + type + ' methods enabled:'
+                msg = 'The URL: "%s" has the following' + method_type + ' methods enabled:'
                 om.out.information(msg % k)
             else:
                 # Grouped by Methods
                 msg = 'The methods: ' + k + ' are enabled on the following URLs:'
                 om.out.information(msg)
             
-            for i in resDict[k]:
+            for i in result_dict[k]:
                 om.out.information('- ' + i )
     
     def getOptions( self ):
@@ -192,10 +215,10 @@ class allowedMethods(baseDiscoveryPlugin):
         h1 = 'Generally the methods allowed for a URL are \
           configured system wide, so executing this plugin only one \
           time is the faster choice. The safest choice is to run it against every URL.'
-        o1 = option('execOneTime', self._execOneTime, d1, 'boolean', help=h1)
+        o1 = option('execOneTime', self._exec_one_time, d1, 'boolean', help=h1)
         
         d2 = 'Only report findings if uncommon methods are found'
-        o2 = option('reportDavOnly', self._reportDavOnly, d2, 'boolean')
+        o2 = option('reportDavOnly', self._report_dav_only, d2, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -210,8 +233,8 @@ class allowedMethods(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._execOneTime = optionsMap['execOneTime'].getValue()
-        self._reportDavOnly = optionsMap['reportDavOnly'].getValue()
+        self._exec_one_time = optionsMap['execOneTime'].getValue()
+        self._report_dav_only = optionsMap['reportDavOnly'].getValue()
 
     def getPluginDeps( self ):
         '''

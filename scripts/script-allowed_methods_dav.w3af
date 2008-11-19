@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,18 +10,15 @@ output config console
 set verbose False
 back
 discovery allowedMethods
-discovery
 back
 
 target
-set target http://localhost/w3af/ , http://localhost/w3af/dav/
+set target http://localhost/w3af/audit/dav/
 back
 
 start
 
-assert len( kb.kb.getData('allowedMethods', 'methods') ) == 2
-print kb.kb.getData('allowedMethods', 'methods')
+assert len( kb.kb.getData('allowedMethods', 'methods') ) == 0
 assert len( kb.kb.getData('allowedMethods', 'dav-methods') ) == 1
-print kb.kb.getData('allowedMethods', 'dav-methods')
 
 exit
