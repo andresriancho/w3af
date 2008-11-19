@@ -27,15 +27,13 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
-
-
+from core.controllers.w3afException import w3afException
 
 
 class dotNetErrors(baseDiscoveryPlugin):
@@ -47,6 +45,7 @@ class dotNetErrors(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
 
+        # Internal variables
         self._already_tested = []
 
     def discover(self, fuzzableRequest ):
@@ -78,7 +77,7 @@ class dotNetErrors(baseDiscoveryPlugin):
         @parameter original_url: The original url that has to be modified in order to trigger errors in the remote application.
         '''
         res = []
-        special_chars = ['|','~']
+        special_chars = ['|', '~']
 
         filename = urlParser.getFileName( original_url )
         if filename != '' and '.' in filename:
@@ -101,17 +100,19 @@ class dotNetErrors(baseDiscoveryPlugin):
         # Remember that httpResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response        
-        if '<b>Details:</b> To enable the details of this specific error message to be viewable on remote machines' not in response\
+        viewable_remote_machine = '<b>Details:</b> To enable the details of this'
+        viewable_remote_machine += ' specific error message to be viewable on remote machines'
+        if viewable_remote_machine not in response\
         and '<h2> <i>Runtime Error</i> </h2></span>' in response:
             v = vuln.vuln( response )
             v.setId( response.id )
             v.setSeverity(severity.LOW)
             v.setName( 'Information disclosure' )
-            msg = 'Detailed information about ASP.NET error messages can be viewed from remote sites.'
-            msg += ' The URL: "' + response.getURL() + '" discloses detailed error messages.'
+            msg = 'Detailed information about ASP.NET error messages can be viewed from remote'
+            msg += '  sites. The URL: "' + response.getURL() + '" discloses detailed error'
+            msg += ' messages.'
             v.setDesc( msg )
             kb.kb.append( self, 'dotNetErrors', v )
-       
                 
     def getOptions( self ):
         '''
@@ -142,8 +143,8 @@ class dotNetErrors(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Request specially crafted URLs that generate ASP.NET errors in order to gather information like the
-        ASP.NET version. Some examples of URLs that generate errors are:
+        Request specially crafted URLs that generate ASP.NET errors in order to gather information
+        like the ASP.NET version. Some examples of URLs that generate errors are:
             - default|.aspx
             - default~.aspx
         '''
