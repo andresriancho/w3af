@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,12 +10,12 @@ output config console
 set verbose False
 back
 discovery findBackdoor
-discovery
+back
 
-back
 target
-set target http://localhost/w3af/findBackdoor/
+set target http://localhost/w3af/discovery/find_backdoor/
 back
+
 start
 
 assert len(kb.kb.getData('findBackdoor','backdoors')) == 1
