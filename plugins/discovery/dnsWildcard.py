@@ -21,17 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException, w3afRunOnce
+
 import re
 import socket
+
 
 class dnsWildcard(baseDiscoveryPlugin):
     '''
@@ -57,74 +61,82 @@ class dnsWildcard(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             
-            if not re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?', urlParser.getDomain( fuzzableRequest.getURL() ) ):
+            if not re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?',
+                                    urlParser.getDomain( fuzzableRequest.getURL() ) ):
                 # Only do all this if this is a domain name!
-                originalResponse = self._urlOpener.GET( urlParser.baseUrl( fuzzableRequest.getURL() ), useCache=True )
+                base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+                original_response = self._urlOpener.GET( base_url, useCache=True )
                 
                 domain = urlParser.getDomain( fuzzableRequest.getURL() )
+                proto = urlParser.getProtocol( fuzzableRequest.getURL() )
                 if domain.startswith('www.'):
-                    dnsWildcardUrl = urlParser.getProtocol( fuzzableRequest.getURL() ) + '://' + domain.replace('www.', '') + '/'
+                    dns_wildcard_url = proto + '://' + domain.replace('www.', '') + '/'
                 else:
-                    dnsWildcardUrl = urlParser.getProtocol( fuzzableRequest.getURL() ) + '://www.' + domain + '/'
+                    dns_wildcard_url = proto + '://www.' + domain + '/'
                 
-                self._testDNS( originalResponse, dnsWildcardUrl )
-                self._testIP( originalResponse, domain )
+                self._test_DNS( original_response, dns_wildcard_url )
+                self._test_IP( original_response, domain )
                 
             return []
     
-    def _testIP( self, originalResponse, domain ):
+    def _test_IP( self, original_response, domain ):
         '''
         Check if http://ip(domain)/ == http://domain/
         '''
-        ipAddress = socket.gethostbyname( domain )
-        ipURL = urlParser.getProtocol( originalResponse.getURL() ) + '://'+ ipAddress + '/'
+        ip_address = socket.gethostbyname( domain )
+        ip_url = urlParser.getProtocol( original_response.getURL() ) + '://'+ ip_address + '/'
         try:
-            modifiedResponse = self._urlOpener.GET( ipURL, useCache=True )
-        except w3afException, w3:
+            modified_response = self._urlOpener.GET( ip_url, useCache=True )
+        except w3afException:
             om.out.debug('An error ocurred while fetching IP address URL in dnsWildcard plugin.')
         else:
-            if modifiedResponse.getBody() != originalResponse.getBody():
+            if modified_response.getBody() != original_response.getBody():
                 i = info.info()
                 i.setName('DNS Wildcard')
-                i.setURL( modifiedResponse.getURL() )
+                i.setURL( modified_response.getURL() )
                 i.setMethod( 'GET' )
-                i.setDesc('The contents of ' + modifiedResponse.getURI() + ' differ from the contents of ' + originalResponse.getURI() )
-                i.setId( modifiedResponse.id )
+                msg = 'The contents of ' + modified_response.getURI()
+                msg += ' differ from the contents of ' + original_response.getURI() 
+                i.setDesc( msg )
+                i.setId( modified_response.id )
                 kb.kb.append( self, 'dnsWildcard', i )
                 om.out.information( i.getDesc() )
         
-    def _testDNS( self, originalResponse, dnsWildcardUrl ):
+    def _test_DNS( self, original_response, dns_wildcard_url ):
         '''
-        Check if http://www.domain/ == http://domain/
+        Check if http://www.domain.tld/ == http://domain.tld/
         '''
         try:
-            modifiedResponse = self._urlOpener.GET( dnsWildcardUrl, useCache=True )
+            modified_response = self._urlOpener.GET( dns_wildcard_url, useCache=True )
         except w3afException, w3:
             if 'Failed to resolve' in str(w3):
                 i = info.info()
                 i.setName('No DNS wildcard')
-                i.setURL( originalResponse.getURL() )
+                i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The target site has no DNS wildcard.')
                 kb.kb.append( self, 'dnsWildcard', i )
                 om.out.information( i.getDesc() )
         else:
-            if modifiedResponse.getBody() != originalResponse.getBody():
+            if modified_response.getBody() != original_response.getBody():
                 i = info.info()
                 i.setName('No DNS wildcard')
-                i.setURL( modifiedResponse.getURL() )
+                i.setURL( modified_response.getURL() )
                 i.setMethod( 'GET' )
-                i.setDesc('The target site has no DNS wildcard, and the contents of ' + modifiedResponse.getURI() + ' differ from the contents of ' + originalResponse.getURI() )
-                i.setId( modifiedResponse.id )
+                msg = 'The target site has no DNS wildcard, and the contents of '
+                msg += modified_response.getURI() + ' differ from the contents of ' 
+                msg += original_response.getURI()
+                i.setDesc( msg )
+                i.setId( modified_response.id )
                 kb.kb.append( self, 'dnsWildcard', i )
                 om.out.information( i.getDesc() )
             else:
                 i = info.info()
                 i.setName('DNS wildcard')
-                i.setURL( originalResponse.getURL() )
+                i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('The target site *has* a DNS wildcard configuration.' )
-                i.setId( modifiedResponse.id )
+                i.setId( modified_response.id )
                 kb.kb.append( self, 'dnsWildcard', i )
                 om.out.information( i.getDesc() )
                 

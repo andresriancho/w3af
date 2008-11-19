@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,7 +10,6 @@ output config console
 set verbose False
 back
 discovery dnsWildcard
-discovery
 
 back
 target
