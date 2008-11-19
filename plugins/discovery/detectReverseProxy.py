@@ -46,7 +46,8 @@ class detectReverseProxy(baseDiscoveryPlugin):
         
         # Some internal variables
         self._run = True
-        self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For', 'Proxy-Connection']
+        self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For', 'Proxy-Connection', 
+                                                'Max-Forwards', 'X-Forwarded-Host', 'X-Forwarded-Server']
         
     def discover(self, fuzzableRequest ):
         '''
