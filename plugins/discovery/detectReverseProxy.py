@@ -21,16 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.w3afException import w3afException
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afException, w3afRunOnce
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import re
-from core.controllers.w3afException import w3afRunOnce
+
 
 class detectReverseProxy(baseDiscoveryPlugin):
     '''
@@ -40,14 +43,15 @@ class detectReverseProxy(baseDiscoveryPlugin):
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._run = True
         
         # Some internal variables
-        self._proxyHeaderList = ['Via','Reverse-Via','X-Forwarded-For','Proxy-Connection']
+        self._run = True
+        self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For', 'Proxy-Connection']
         
     def discover(self, fuzzableRequest ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                    (among other things) the URL to test.
         '''
         if not self._run:
             # This will remove the plugin from the discovery plugins to be runned.
@@ -59,15 +63,15 @@ class detectReverseProxy(baseDiscoveryPlugin):
             # detect using GET
             if not kb.kb.getData( 'detectTransparentProxy', 'detectTransparentProxy'):            
                 response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
-                if self._hasProxyHeaders( response ):
-                    self._reportFinding( response )
+                if self._has_proxy_headers( response ):
+                    self._report_finding( response )
            
             # detect using TRACE
             # only if I wasn't able to do it with GET
             if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
                 response = self._urlOpener.TRACE( fuzzableRequest.getURL(), useCache=True )
-                if self._hasProxyContent( response ):
-                    self._reportFinding( response )
+                if self._has_proxy_content( response ):
+                    self._report_finding( response )
            
             # detect using TRACK
             # This is a rather special case that works with ISA server; example follows:
@@ -84,8 +88,8 @@ class detectReverseProxy(baseDiscoveryPlugin):
             # ....
             if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
                 response = self._urlOpener.TRACK( fuzzableRequest.getURL(), useCache=True )
-                if self._hasProxyContent( response ):
-                    self._reportFinding( response )
+                if self._has_proxy_content( response ):
+                    self._report_finding( response )
                 
             # Report failure to detect reverse proxy
             if not kb.kb.getData( 'detectReverseProxy', 'detectReverseProxy' ):
@@ -93,7 +97,12 @@ class detectReverseProxy(baseDiscoveryPlugin):
 
         return []
         
-    def _reportFinding( self, response ):
+    def _report_finding( self, response ):
+        '''
+        Save the finding to the kb.
+        
+        @parameter response: The response that triggered the detection
+        '''
         i = info.info()
         i.setName('Reverse proxy')
         i.setId( response.getId() )
@@ -103,38 +112,36 @@ class detectReverseProxy(baseDiscoveryPlugin):
         kb.kb.append( self, 'detectReverseProxy', i )
         om.out.information( i.getDesc() )
     
-    def _hasProxyHeaders( self, response ):
+    def _has_proxy_headers( self, response ):
         '''
         Performs the analysis
         @return: True if the remote web server has a reverse proxy
         '''
-        for proxyHeader in self._proxyHeaderList:
-            for responseHeader in response.getHeaders():
-                if proxyHeader.upper() == responseHeader.upper():
+        for proxy_header in self._proxy_header_list:
+            for response_header in response.getHeaders():
+                if proxy_header.upper() == response_header.upper():
                     return True
-                else:
-                    return False
+        return False
                     
-    def _hasProxyContent( self, response ):
+    def _has_proxy_content( self, response ):
         '''
         Performs the analysis of the response of the TRACE and TRACK command.
         
         @parameter response: The HTTP response object to analyze
         @return: True if the remote web server has a reverse proxy
         '''
-        responseBody = response.getBody().upper()
+        response_body = response.getBody().upper()
         #remove duplicated spaces from body
         whitespace = re.compile('\s+')
-        responseBody = re.sub(whitespace, ' ', responseBody)
+        response_body = re.sub(whitespace, ' ', response_body)
         
-        for proxyHeader in self._proxyHeaderList:
+        for proxy_header in self._proxy_header_list:
             # Create possible header matches
-            possibleMatches = [proxyHeader.upper() + ':',  proxyHeader.upper() + ' :']
-            for possibleMatch in possibleMatches:
-                if possibleMatch in responseBody:
+            possible_matches = [proxy_header.upper() + ':',  proxy_header.upper() + ' :']
+            for possible_match in possible_matches:
+                if possible_match in response_body:
                     return True
-                else:
-                    return False
+        return False
 
     def getOptions( self ):
         '''
@@ -167,6 +174,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         return '''
         This plugin tries to determine if the remote end has a reverse proxy installed.
         
-        The procedure used to detect reverse proxies is to send a request to the remote server and analyze the response headers,
-        if a Via header is found, chances are that the remote site has a reverse proxy.
+        The procedure used to detect reverse proxies is to send a request to the remote server and
+        analyze the response headers, if a Via header is found, chances are that the remote site has
+        a reverse proxy.
         '''
