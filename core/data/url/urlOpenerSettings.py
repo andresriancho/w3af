@@ -30,6 +30,7 @@ import core.data.url.handlers.localCache as localCache
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
+from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 
@@ -250,7 +251,8 @@ class urlOpenerSettings( configurable ):
                                 self._cookieHandler, \
                                 MultipartPostHandler.MultipartPostHandler, \
                                 self._kAHTTP, self._kAHTTPS, logHandler.logHandler, \
-                                mangleHandler.mangleHandler( self._manglePlugins ) ]:
+                                mangleHandler.mangleHandler( self._manglePlugins ), \
+                                HTTPGzipProcessor ]:
             if handler:
                 handlers.append(handler)
         
