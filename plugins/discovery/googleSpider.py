@@ -29,6 +29,8 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.misc.is_private_site import is_private_site
+
 import core.data.parsers.urlParser as urlParser
 from urllib2 import URLError
 
@@ -72,7 +74,7 @@ class googleSpider(baseDiscoveryPlugin):
             self._google = google( self._urlOpener, self._key )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            if self._google.isPrivate( domain ):
+            if is_private_site( domain ):
                 raise w3afException('There is no point in searching google for "site:'+ domain + '" . Google doesnt index private pages.')
 
             try:

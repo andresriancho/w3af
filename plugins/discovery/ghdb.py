@@ -29,8 +29,11 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.misc.is_private_site import is_private_site
+
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
 
@@ -78,7 +81,7 @@ class ghdb(baseDiscoveryPlugin):
             
             # Get the domain and set some parameters
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            if self._google.isPrivate( domain ):
+            if is_private_site( domain ):
                 raise w3afException('There is no point in searching google for "site:'+ domain + '" . Google doesnt index private pages.')
             
             return self._doClasicGHDB( domain )

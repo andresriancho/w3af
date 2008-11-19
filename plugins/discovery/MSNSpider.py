@@ -25,11 +25,14 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.w3afException import w3afException
-from core.data.searchEngines.msn import msn as msn
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.is_private_site import is_private_site
+
+from core.data.searchEngines.msn import msn as msn
+import core.data.parsers.urlParser as urlParser
+
 from urllib2 import URLError
 
 class MSNSpider(baseDiscoveryPlugin):
@@ -62,7 +65,7 @@ class MSNSpider(baseDiscoveryPlugin):
             self._msn = msn( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            if self._msn.isPrivate( domain ):
+            if is_private_site( domain ):
                 raise w3afException('There is no point in searching MSN for "site:'+ domain + '" . MSN doesnt index private pages.')
 
             results = self._msn.getNResults('site:'+ domain, self._resultLimit )

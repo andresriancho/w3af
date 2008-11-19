@@ -129,26 +129,4 @@ class searchEngine:
         raise w3afException('searchEngine subclasses should implement the pagesearch method.')
         return
 
-    def isPrivate( self, domainOrIPAddress ):
-        '''
-        Get the IP address of the domain, return True if its a private address.
-        '''
-        if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domainOrIPAddress) or\
-        re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domainOrIPAddress) or\
-        re.match('(192\.168\.\d?\d?\d?\.\d?\d?\d?)', domainOrIPAddress) or\
-        re.match('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domainOrIPAddress):
-            return True
-        else:
-            addrinfo = None
-            try:
-                addrinfo = socket.getaddrinfo(domainOrIPAddress, 0)
-            except:
-                raise w3afException('Could not resolve hostname: ' + domainOrIPAddress )
-            ipAddressList = [info[4][0] for info in addrinfo]
-            for ipAddress in ipAddressList:
-                if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ipAddress) or\
-                re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ipAddress) or\
-                re.match('(192\.168\.\d?\d?\d?\.\d?\d?\d?)', ipAddress) or\
-                re.match('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ipAddress):
-                    return True
-        return False
+

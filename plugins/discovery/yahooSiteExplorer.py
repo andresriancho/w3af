@@ -29,6 +29,8 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.data.searchEngines.yahooSiteExplorer import yahooSiteExplorer as yse
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.misc.is_private_site import is_private_site
+
 import core.data.parsers.urlParser as urlParser
 
 # For URLError
@@ -60,7 +62,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
             self._yse = yse( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            if self._yse.isPrivate( domain ):
+            if is_private_site( domain ):
                 raise w3afException('There is no point in searching yahoo site explorer for site:'+ domain + '" . Yahoo doesnt index private pages.')
 
             results = self._yse.getNResults( domain, self._resultLimit )

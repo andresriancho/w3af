@@ -34,6 +34,8 @@ import core.data.parsers.urlParser as urlParser
 import socket
 from core.controllers.w3afException import w3afRunOnce
 import core.data.constants.severity as severity
+from core.controllers.misc.is_private_site import is_private_site
+
 
 class sharedHosting(baseDiscoveryPlugin):
     '''
@@ -63,8 +65,7 @@ class sharedHosting(baseDiscoveryPlugin):
             self._msn = msn( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            if self._msn.isPrivate( domain ):
-                
+            if is_private_site( domain ):
                 om.out.debug('sharedHosting plugin is not checking for subdomains for domain: ' + domain + ' because its a private address.' )
                 
             else:
