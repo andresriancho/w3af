@@ -423,10 +423,17 @@ class w3afCore:
                 if len( self._fuzzableRequestList ) == 0:
                     om.out.information('No URLs found by discovery.')
                 else:
+                    # del() all the discovery and bruteforce plugins
+                    # this is a performance enhancement that will free memory
+                    for plugin in self._plugins['discovery']:
+                        del(plugin)
+                    for plugin in self._plugins['bruteforce']:
+                        del(plugin)
                     
-                    # Filter out the fuzzable requests that aren't important (and will be ignored by audit plugins anyway...)
-                    #self._fuzzableRequestList = [ fr for fr in self._fuzzableRequestList if len(fr.getDc()) > 0 or cf.cf.getData('fuzzFileName') or (cf.cf.getData('fuzzableCookie') and fr.getCookie() ) ]
-                    msg = 'Found ' + str(len( kb.kb.getData( 'urls', 'urlList') )) + ' URLs and ' + str(len( self._fuzzableRequestList)) + ' different points of injection.'
+                    # Filter out the fuzzable requests that aren't important (and will be ignored
+                    # by audit plugins anyway...)
+                    msg = 'Found ' + str(len( kb.kb.getData( 'urls', 'urlList') )) + ' URLs and '
+                    msg += str(len( self._fuzzableRequestList)) + ' different points of injection.'
                     om.out.information( msg )
                     
                     om.out.information('The list of URLs is:')
@@ -563,7 +570,7 @@ class w3afCore:
             # This variable is for LOOP evasion
             self._count += 1
             
-            pluginsToRemoveList = []
+            plugins_to_remove_list = []
             fuzzableRequestList = []
             
             for plugin in self._plugins['discovery']:
@@ -583,7 +590,7 @@ class w3afCore:
                         except w3afRunOnce, rO:
                             # Some plugins are ment to be run only once
                             # that is implemented by raising a w3afRunOnce exception
-                            pluginsToRemoveList.append( plugin )
+                            plugins_to_remove_list.append( plugin )
                             tm.join( plugin )
                         else:
                             tm.join( plugin )
@@ -640,14 +647,21 @@ class w3afCore:
             toWalk = newFR
             
             # Remove plugins that don't want to be runned anymore
-            for pluginToRemove in pluginsToRemoveList:
-                if pluginToRemove in self._plugins['discovery']:
-                    self._plugins['discovery'].remove( pluginToRemove )
-                    om.out.debug('The discovery plugin: ' + pluginToRemove.getName() + ' wont be runned anymore.')      
+            for plugin_to_remove in plugins_to_remove_list:
+                if plugin_to_remove in self._plugins['discovery']:
+                    
+                    # Remove it from the plugin list, and run the end() method
+                    self._plugins['discovery'].remove( plugin_to_remove )
+                    om.out.debug('The discovery plugin: ' + plugin_to_remove.getName() + ' wont be runned anymore.')      
                     try:
-                        pluginToRemove.end()
+                        plugin_to_remove.end()
                     except Exception, e:
-                        om.out.error('The plugin "'+ pluginToRemove.getName() + '" raised an exception in the end() method: ' + str(e) )
+                        msg = 'The plugin "'+ plugin_to_remove.getName() + '" raised an exception'
+                        msg += ' in the end() method: ' + str(e)
+                        om.out.error( msg )
+                    
+                    # Don't waste memory on plugins that won't be run
+                    del(plugin_to_remove)
                 
         return self._alreadyWalked
     
@@ -739,6 +753,10 @@ class w3afCore:
                 plugin.end()
             except w3afException, e:
                 om.out.error( str(e) )
+            
+            # And now remove it to free some memory, the valuable information was
+            # saved to the kb, so this is clean and harmless
+            del(plugin)
                 
     def _bruteforce(self, fuzzableRequestList):
         '''
