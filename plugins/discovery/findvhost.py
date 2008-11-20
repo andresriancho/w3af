@@ -27,16 +27,19 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+import core.data.parsers.urlParser as urlParser
+import core.data.parsers.dpCache as dpCache
+from core.controllers.misc.levenshtein import relative_distance
+from core.data.fuzzer.fuzzer import createRandAlNum
+from core.controllers.w3afException import w3afException
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
-import core.data.parsers.dpCache as dpCache
-import socket
-from core.controllers.misc.levenshtein import relative_distance
-from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.constants.severity as severity
+
+import socket
+
 
 class findvhost(baseDiscoveryPlugin):
     '''
@@ -48,67 +51,77 @@ class findvhost(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._firstExec = True
-        self._alreadyQueried = []
-        self._canResolveDomainNames = False
+        self._first_exec = True
+        self._already_queried = []
+        self._can_resolve_domain_names = False
         
     def discover(self, fuzzableRequest ):
         '''
         Find virtual hosts.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                    (among other things) the URL to test.
         '''
-        vHostList = []
-        if self._firstExec:
+        vhost_list = []
+        if self._first_exec:
             # Only run once
-            self._firstExec = False
-            vHostList = self._genericVhosts( fuzzableRequest )
+            self._first_exec = False
+            vhost_list = self._generic_vhosts( fuzzableRequest )
             
             # Set this for later
-            self._canResolveDomainNames = self._canResolveDomains()
+            self._can_resolve_domain_names = self._can_resolve_domains()
             
         
         # I also test for ""dead links"" that the web programmer left in the page
         # For example, If w3af finds a link to "http://corporative.intranet.corp/" it will try to
         # resolve the dns name, if it fails, it will try to request that page from the server
-        vHostList.extend( self._deadLinks( fuzzableRequest ) )
+        vhost_list.extend( self._get_dead_links( fuzzableRequest ) )
         
         # Report our findings
-        for vhost, id in vHostList:
+        for vhost, request_id in vhost_list:
             v = vuln.vuln()
             v.setURL( fuzzableRequest.getURL() )
             v.setMethod( 'GET' )
             v.setName( 'Shared hosting' )
             v.setSeverity(severity.LOW)
-            v.setDesc('Found a new virtual host at the target web server, virtual host name is: "' + vhost + '"' )
-            v.setId( id )
+            
+            domain = urlParser.getDomain(fuzzableRequest.getURL())
+            
+            msg = 'Found a new virtual host at the target web server, the virtual host name is: "'
+            msg += vhost + '". To access this site you might need to change your DNS resolution'
+            msg += ' settings in order to point "' + vhost + '" to the IP address of "'
+            msg += domain + '".'
+            v.setDesc( msg )
+            v.setId( request_id )
             kb.kb.append( self, 'findvhost', v )
             om.out.information( v.getDesc() )       
         
         return []
         
-    def _deadLinks( self, fuzzableRequest ):
+    def _get_dead_links( self, fuzzableRequest ):
         '''
-        Find every link on a HTML document verify if the domain is reachable or not; after that, verify if the web
-        found a different name for the target site or if we found a new site that is linked. If the link points to a dead
-        site then report it (it could be pointing to some private address or something...)
+        Find every link on a HTML document verify if the domain is reachable or not; after that,
+        verify if the web found a different name for the target site or if we found a new site that
+        is linked. If the link points to a dead site then report it (it could be pointing to some 
+        private address or something...)
         '''
         res = []
         
         # Get some responses to compare later
-        baseURL = urlParser.baseUrl( fuzzableRequest.getURL() )
-        originalResponse = self._urlOpener.GET( fuzzableRequest.getURI() , useCache=True )
-        baseResponse = self._urlOpener.GET( baseURL , useCache=True )
+        base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+        original_response = self._urlOpener.GET( fuzzableRequest.getURI() , useCache=True )
+        base_response = self._urlOpener.GET( base_url , useCache=True )
         
         try:
-            dp = dpCache.dpc.getDocumentParserFor( originalResponse )
+            dp = dpCache.dpc.getDocumentParserFor( original_response )
         except w3afException:
             # Failed to find a suitable parser for the document
             return []
         
         # Set the non existant response
-        nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
-        self._nonExistantResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': nonExistant } )
+        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
+        self._non_existant_response = self._urlOpener.GET( base_url, \
+                                                    useCache=False, headers={'Host': non_existant } )
 
         for link in dp.getReferences():
             domain = urlParser.getDomain( link )
@@ -116,26 +129,28 @@ class findvhost(baseDiscoveryPlugin):
             #
             # First section, find internal hosts using the HTTP Host header:
             #
-            if domain not in self._alreadyQueried:
+            if domain not in self._already_queried:
                 # If the parsed page has an external link to www.google.com
                 # then I'll send a request to the target site, with Host: www.google.com
-                # This sucks, but it's cool if the document has a link to http://some.internal.site.target.com/
+                # This sucks, but it's cool if the document has a link to 
+                # http://some.internal.site.target.com/
                 try:
-                    vhostResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': domain } )
-                except w3afException, w:
+                    vhostResponse = self._urlOpener.GET( base_url, useCache=False, \
+                                                                                headers={'Host': domain } )
+                except w3afException:
                     pass
                 else:
-                    self._alreadyQueried.append( domain )
-                    if relative_distance( vhostResponse.getBody(), baseResponse.getBody() ) < 0.35 and \
-                    relative_distance( vhostResponse.getBody(), self._nonExistantResponse.getBody() ) < 0.35:
-                        # If they are *really* different (not just different by some chars) I may have found
-                        # something interesting!
+                    self._already_queried.append( domain )
+                    if relative_distance( vhostResponse.getBody(), base_response.getBody() ) < 0.35 and \
+                    relative_distance( vhostResponse.getBody(), self._non_existant_response.getBody() ) < 0.35:
+                        # If they are *really* different (not just different by some chars) I may 
+                        # have found something interesting!
                         res.append( (domain, vhostResponse.id) )
 
             #
             # Second section, find hosts using failed DNS resolutions
             #
-            if self._canResolveDomainNames:
+            if self._can_resolve_domain_names:
                 try:
                     socket.gethostbyname( domain )
                 except:
@@ -143,16 +158,17 @@ class findvhost(baseDiscoveryPlugin):
                     i.setName('Internal hostname in HTML link')
                     i.setURL( fuzzableRequest.getURL() )
                     i.setMethod( 'GET' )
-                    i.setId( originalResponse.id )
+                    i.setId( original_response.id )
                     msg = 'The content of "'+ fuzzableRequest.getURL() +'" references a non '
-                    msg += 'existant domain: "' + link + '"'
+                    msg += 'existant domain: "' + link + '". This may be a broken link, or an'
+                    msg += ' internal domain name.'
                     i.setDesc( msg )
                     kb.kb.append( self, 'findvhost', i )
                     om.out.information( i.getDesc() )
         
         return res 
     
-    def _canResolveDomains(self):
+    def _can_resolve_domains(self):
         '''
         This method was added to verify if w3af can resolve domain names
         using the OS configuration (/etc/resolv.conf in linux) or if we are in some
@@ -167,34 +183,41 @@ class findvhost(baseDiscoveryPlugin):
         else:
             return True
     
-    def _genericVhosts( self, fuzzableRequest ):
+    def _generic_vhosts( self, fuzzableRequest ):
         '''
         Test some generic virtual hosts, only do this once.
         '''
         res = []
-        baseURL = urlParser.baseUrl( fuzzableRequest.getURL() )
+        base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
         
-        commonVhostList = self._getCommonVirtualHosts( urlParser.getDomain( baseURL ) )
+        common_vhost_list = self._get_common_virtualhosts( urlParser.getDomain( base_url ) )
         
         # Get some responses to compare later
-        originalResponse = self._urlOpener.GET( baseURL, useCache=True )
-        nonExistant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
-        self._nonExistantResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': nonExistant } )
+        original_response = self._urlOpener.GET( base_url, useCache=True )
+        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
+        self._non_existant_response = self._urlOpener.GET( base_url, useCache=False, \
+                                                        headers={'Host': non_existant } )
         
-        for commonVhost in commonVhostList:
+        for common_vhost in common_vhost_list:
             try:
-                vhostResponse = self._urlOpener.GET( baseURL, useCache=False, headers={'Host': commonVhost } )
-            except w3afException, w3:
+                vhostResponse = self._urlOpener.GET( base_url, useCache=False, \
+                                                headers={'Host': common_vhost } )
+            except w3afException:
                 pass
             else:
                 # If they are *really* different (not just different by some chars) 
-                if relative_distance( vhostResponse.getBody(), originalResponse.getBody() ) < 0.35 and \
-                relative_distance( vhostResponse.getBody(), self._nonExistantResponse.getBody() ) < 0.35:
-                    res.append( (commonVhost, vhostResponse.id) )
+                if relative_distance( vhostResponse.getBody(), original_response.getBody() ) < 0.35 and \
+                relative_distance( vhostResponse.getBody(), self._non_existant_response.getBody() ) < 0.35:
+                    res.append( (common_vhost, vhostResponse.id) )
         
         return res
     
-    def _getCommonVirtualHosts( self, domain ):
+    def _get_common_virtualhosts( self, domain ):
+        '''
+        @parameter domain: The original domain name.
+        @return: A list of possible domain names that could be hosted in the same web
+        server that "domain".
+        '''
         res = []
         
         common_virtual_hosts = ['intranet', 'intra', 'extranet', 'extra' , 'test' , 
@@ -242,9 +265,9 @@ class findvhost(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin uses the HTTP Host header to find new virtual hosts. For example, if the intranet page is hosted
-        in the same server that the public page, and the web server is misconfigured, this plugin will discover that
-        virtual host.
+        This plugin uses the HTTP Host header to find new virtual hosts. For example, if the
+        intranet page is hosted in the same server that the public page, and the web server
+        is misconfigured, this plugin will discover that virtual host.
         
         Please note that this plugin doesn't use any DNS technique to find this virtual hosts.
         '''
