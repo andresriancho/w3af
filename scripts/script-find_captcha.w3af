@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,13 +10,10 @@ output config console
 set verbose False
 back
 discovery findCaptchas
-discovery
 
 back
 target
-#set target https://bubib136.uni-graz.at/control-kontakt/captcha.asp
-#set target http://localhost/w3af/findCaptchas/cap.php
-set target http://www.white-hat-web-design.co.uk/articles/php-captcha.php
+set target http://localhost/w3af/discovery/find_captcha/index.php
 back
 
 start

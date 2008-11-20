@@ -21,15 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
+
 import sha
 import mimetypes
 import core.data.parsers.documentParser as documentParser
@@ -50,70 +53,73 @@ class findCaptchas(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         # GET the document, and fetch the images
-        imageMap1 = self._getImages( fuzzableRequest )
+        image_map_1 = self._get_images( fuzzableRequest )
         
         # Re-GET the document, and fetch the images
-        imageMap2 = self._getImages( fuzzableRequest )
+        image_map_2 = self._get_images( fuzzableRequest )
         
         # Compare the images (different images may be captchas)
-        changedImagesList = []
-        if imageMap1.keys() != imageMap2.keys():
-            for imgSrc in imageMap1:
-                if imgSrc not in imageMap2 and self._notAnImage( imgSrc ):
-                    changedImagesList.append( imgSrc )
+        changed_images_list = []
+        if image_map_1.keys() != image_map_2.keys():
+            for img_src in image_map_1:
+                if img_src not in image_map_2 and self._has_image_extension( img_src ):
+                    changed_images_list.append( img_src )
         else:
             # Compare content
-            for imgSrc in imageMap1:
-                if imageMap1[ imgSrc ] != imageMap2[ imgSrc ]:
-                    changedImagesList.append( imgSrc )
+            for img_src in image_map_1:
+                if image_map_1[ img_src ] != image_map_2[ img_src ]:
+                    changed_images_list.append( img_src )
                 
-        for imgSrc in changedImagesList:
+        for img_src in changed_images_list:
             i = info.info()
             i.setName('Captcha image detected')
-            i.setURL( imgSrc )
+            i.setURL( img_src )
             i.setMethod( 'GET' )
-            i.setDesc( 'Found a CAPTCHA image on URL: ' + imgSrc )
+            i.setDesc( 'Found a CAPTCHA image at: "' + img_src + '".')
             kb.kb.append( self, 'findCaptchas', i )
-            om.out.information( i.getDesc() )       
+            om.out.information( i.getDesc() )
             
         return []
     
-    def _notAnImage( self, imgSrc ):
+    def _has_image_extension( self, img_src ):
         '''
         Verify it the image source is an image or "a php script".
         '''
-        if 'image' in mimetypes.guess_type( urlParser.getFileName(imgSrc) ):
+        if 'image' in mimetypes.guess_type( urlParser.getFileName(img_src) )[0]:
             return True
         else:
             return False
     
-    def _getImages( self, fr ):
+    def _get_images( self, fuzzable_request ):
         '''
         Get all img tags and retrieve the src.
+        
+        @parameter fuzzable_request: The request to modify
         @return: A map with the img src as a key, and a hash of the image contents as the value
         '''
         res = {}
         
         try:
-            response = self._urlOpener.GET( fr.getURI(), useCache=False )
+            response = self._urlOpener.GET( fuzzable_request.getURI(), useCache=False )
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
             # Do not use dpCache here, it's no good.
             #dp = dpCache.dpc.getDocumentParserFor( response )
             try:
-                dp = documentParser.documentParser( response )
+                document_parser = documentParser.documentParser( response )
             except w3afException:
                 pass
             else:
-                imageList = dp.getReferencesOfTag('img')
-                for imgSrc in imageList:
+                image_list = document_parser.getReferencesOfTag('img')
+                image_list = [ urlParser.uri2url(i) for i in image_list]
+                for img_src in image_list:
                     try:
-                        imageResponse = self._urlOpener.GET( imgSrc, useCache=False )
+                        image_response = self._urlOpener.GET( img_src, useCache=False )
                     except:
                         om.out.debug('Failed to retrieve the image for finding captchas.')
                     else:
-                        res[ imgSrc ] = sha.new(imageResponse.getBody()).hexdigest()
+                        res[ img_src ] = sha.new(image_response.getBody()).hexdigest()
         
         return res
 
