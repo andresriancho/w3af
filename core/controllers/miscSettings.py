@@ -34,7 +34,7 @@ class miscSettings(configurable):
     
     def __init__( self ):
         # User configured variables
-        if cf.cf.getData('showProgressBar') == None:
+        if cf.cf.getData('autoDependencies') == None:
             # It's the first time I'm runned
             cf.cf.save('fuzzableCookie', False )
             cf.cf.save('fuzzFileContent', True )
@@ -48,7 +48,6 @@ class miscSettings(configurable):
             cf.cf.save('interface', 'eth0' )
             cf.cf.save('localAddress', '127.0.0.1' )
             cf.cf.save('demo', False )
-            cf.cf.save('showProgressBar', True )
             cf.cf.save('nonTargets', [] )
     
     def getOptions( self ):
@@ -98,12 +97,9 @@ class miscSettings(configurable):
         d12 = 'Enable this when you are doing a demo in a conference'
         o12 = option('demo', cf.cf.getData('demo'), d12, 'boolean', tabid='Misc settings')
         
-        d13 = 'Enables or disables the progress bar that is shown by audit plugins'
-        o13 = option('showProgressBar', cf.cf.getData('showProgressBar'), d13, 'boolean', tabid='Misc settings')
-        
-        d14 = 'A comma separated list of URLs that w3af should completely ignore'
-        h14 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
-        o14 = option('nonTargets', cf.cf.getData('nonTargets'), d14, 'list', tabid='Misc settings')
+        d13 = 'A comma separated list of URLs that w3af should completely ignore'
+        h13 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
+        o13 = option('nonTargets', cf.cf.getData('nonTargets'), d13, 'list', tabid='Misc settings')
         
         ol = optionList()
         ol.add(o1)
@@ -119,7 +115,6 @@ class miscSettings(configurable):
         ol.add(o11)
         ol.add(o12)
         ol.add(o13)
-        ol.add(o14)
         return ol
     
     def getDesc( self ):
@@ -145,7 +140,6 @@ class miscSettings(configurable):
         cf.cf.save('interface', optionsMap['interface'].getValue() )
         cf.cf.save('localAddress', optionsMap['localAddress'].getValue() )
         cf.cf.save('demo', optionsMap['demo'].getValue()  )
-        cf.cf.save('showProgressBar', optionsMap['showProgressBar'].getValue()  )
         cf.cf.save('nonTargets', optionsMap['nonTargets'].getValue() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.

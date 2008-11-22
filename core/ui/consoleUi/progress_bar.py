@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import time
 
-class progressBar:
+class progress_bar:
     """
     This class defines methods to update and draw a progress bar.
     

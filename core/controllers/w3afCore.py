@@ -50,11 +50,11 @@ import core.data.kb.config as cf
 from core.data.request.frFactory import createFuzzableRequests
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
-# Provide a progress bar for all plugins.
-from core.controllers.coreHelpers.progressBar import progressBar
-
 # 404 detection
 from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
+
+# Progress tracking
+from core.controllers.coreHelpers.progress import progress
 
 # Profile objects
 from core.data.profile.profile import profile as profile
@@ -75,7 +75,9 @@ class w3afCore:
         self._home_directory()
         self._initializeInternalVariables()
         self._zeroSelectedPlugins()
+        
         self.uriOpener = xUrllib()
+        self.progress = progress()
 
     def _home_directory(self):
         '''
@@ -535,7 +537,7 @@ class w3afCore:
         self._alreadyWalked = toWalk
         self._urls = []
         self._firstDiscovery = True
-        self._setPhase('discovery')
+        self._set_phase('discovery')
         
         for fr in toWalk:
             fr.iterationNumber = 0
@@ -683,7 +685,7 @@ class w3afCore:
         '''
         return self._currentPhase
         
-    def _setPhase( self, phase ):
+    def _set_phase( self, phase ):
         '''
         This method saves the phase (discovery/audit/exploit), so in the future the UI can use the getPhase() method to show it.
         
@@ -722,7 +724,10 @@ class w3afCore:
     def _audit(self):
         om.out.debug('Called _audit()' )
         
-        self._setPhase('audit')
+        # For progress reporting
+        self._set_phase('audit')
+        amount_of_tests = len(self._plugins['audit']) * len(self._fuzzableRequestList)
+        self.progress.set_total_amount( amount_of_tests )
         
         # This two for loops do all the audit magic [KISS]
         for plugin in self._plugins['audit']:
@@ -733,8 +738,6 @@ class w3afCore:
             # For status
             self._setRunningPlugin( plugin.getName() )
 
-            #pbar = progressBar( maxValue=len(self._fuzzableRequestList) )
-            
             for fr in self._fuzzableRequestList:
                 # Sends each fuzzable request to the plugin
                 try:
@@ -745,8 +748,9 @@ class w3afCore:
                     tm.join( plugin )
                 else:
                     tm.join( plugin )
-                    # Update the progress bar
-                    # pbar.inc()
+                
+                # I performed one test
+                self.progress.inc()
                     
             # Let the plugin know that we are not going to use it anymore
             try:
@@ -766,7 +770,7 @@ class w3afCore:
         res = []
         
         om.out.debug('Called _bruteforce()' )
-        self._setPhase('bruteforce')
+        self._set_phase('bruteforce')
         
         for plugin in self._plugins['bruteforce']:
             # FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin

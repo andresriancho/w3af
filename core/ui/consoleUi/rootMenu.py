@@ -31,6 +31,13 @@ from core.ui.consoleUi.util import *
 
 from core.controllers.w3afException import *
 
+# Provide a progress bar for all plugins.
+from core.ui.consoleUi.progress_bar import progress_bar
+import threading
+import sys
+import time
+import select
+
 class rootMenu(menu):
     '''
     Main menu
@@ -49,14 +56,29 @@ class rootMenu(menu):
             'profiles' : profilesMenu,
             'exploit' : exploit,
             'kb': kbMenu
-       })
-    
-
-#    def _cmd_rungui(self, params):
-#        import core.ui.gtkUi.main
-#        core.ui.gtkUi.main.main(None, self._w3af)
-#
+        })
+       
     def _cmd_start(self, params):
+        '''
+        Start the core in a different thread, monitor keystrokes in the main thread.
+        @return: None
+        '''
+        threading.Thread(target=self._real_start).start()
+        try:
+            # let the core start
+            time.sleep(1)
+            if self._w3af.getCoreStatus() != 'Not running.':
+                self.show_progress_on_request()
+        except KeyboardInterrupt, k:
+            self._w3af.stop()
+            om.out.console('User hitted Ctrl+C, stopping scan.')
+            time.sleep(1)
+ 
+    def _real_start(self):
+        '''
+        Actually run core.start()
+        @return: None
+        '''
         try:
             self._w3af.initPlugins()
             self._w3af.verifyEnvironment()
@@ -65,11 +87,23 @@ class rootMenu(menu):
             om.out.error(str(w3))
         except w3afMustStopException, w3:
             om.out.error(str(w3))
-        except KeyboardInterrupt, k:
-            om.out.console('User hitted Ctrl+C, stopping scan.')
         except Exception, e:
             raise e
- 
+     
+    def show_progress_on_request(self):
+        '''
+        When the user hits enter, show the progress
+        '''
+        while self._w3af.isRunning():
+            # read from sys.stdin with a 0.5 second timeout
+            rfds, wfds, efds = select.select( [sys.stdin], [], [], 0.5)
+            
+            # If something was written to sys.stdin, read it
+            if rfds:
+                rfds[0].readline()
+                om.out.console('Status: ' + self._w3af.getCoreStatus(), newLine=False)
+                #print self._w3af.progress.get_progress()
+        
     def _cmd_version(self, params):
         '''
         Show the w3af version and exit
