@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0">
-	<META NAME="CHANGED" CONTENT="20081118;10033500">
+	<META NAME="CHANGED" CONTENT="20081121;22120400">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in; margin: 0.79in }
@@ -42,7 +42,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
-<FONT SIZE=2>Document version: <B>1.6.3</B></FONT></P>
+<FONT SIZE=2>Document version: <B>1.6.4</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
@@ -86,7 +86,7 @@ User Guide</B></U></FONT></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>Noviembre
-18, 2008</B></U></I></FONT></P>
+21, 2008</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -100,33 +100,33 @@ User Guide</B></U></FONT></FONT></P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Installation	3</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Installation
 	Requirements	3</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af phases	5</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af phases	4</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af	5</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af with
 	GTK user interface	9</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugins	10</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugin
-	configuration	10</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Starting a scan	14</P>
+	configuration	11</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Starting a scan	15</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">A complete
 	session	15</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">A warning about
-	discovery	17</P>
+	discovery	18</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">When everything
-	else fails...	18</P>
+	else fails...	19</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af scripts	19</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">The Output	20</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Complex sites	22</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Exploiting	24</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">The Output	22</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Complex sites	24</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Exploiting	26</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Advanced
-	exploiting techniques	26</P>
-	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Virtual daemon	27</P>
-	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">w3afAgent	31</P>
+	exploiting techniques	28</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Virtual daemon	28</P>
+	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">w3afAgent	33</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">More
-	information	35</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Bugs	35</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Contributors	35</P>
-	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Final words	36</P>
+	information	36</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Bugs	37</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Contributors	37</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Final words	37</P>
 </DIV>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
@@ -150,7 +150,7 @@ framework can be downloaded from the project main page: </FONT>
 <P STYLE="margin-left: 0.49in; margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://w3af.sf.net/#download">http://w3af.sf.net/#download</A></FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif">There
 are two ways to install w3af: from a release package (w3af setup for
-windows and tgz package for unix based systems) or from SVN. First
+windows and tgz package for Unix based systems) or from SVN. First
 time users should use the latest package, while more advanced users
 should perform a SVN checkout to get the latest version of the
 framework. </FONT>
@@ -1028,12 +1028,21 @@ back</FONT></P>
 <P><BR><BR>
 </P>
 <P STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">Finally,
-you execute “start” and the process will start all plugins.</FONT></P>
+you execute “start” in order to run all the configured plugins.</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 start</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
+</P>
+<P STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">At
+any time during the scan, you may hit “enter” in order to get a
+live status of the w3af core. Status lines look like this:</FONT></P>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">Status:
+Running discovery.webSpider on http://localhost/w3af/ | Method: GET.</FONT></P>
+<P STYLE="font-weight: medium"><BR><BR>
+</P>
+<P STYLE="margin-left: 0.49in; font-weight: medium"><BR><BR>
 </P>
 <H3 CLASS="western">A complete session</H3>
 <P STYLE="font-weight: medium"><BR><BR>
@@ -1975,7 +1984,7 @@ directory:</FONT></P>
 <P ALIGN=JUSTIFY>Where “<FONT FACE="Nimbus Mono L, monospace">/home/jdoe/tools/msf/</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">”
 is the directory where the user “jdoe” installed Metasploit. I</FONT>n
 case you are interested, this is just a fancy shortcut for “<FONT FACE="Nimbus Mono L, monospace">cp
-core/controllers/vdaemon/w3af_vdaemon.rb
+</FONT><FONT FACE="Nimbus Mono L, monospace">core/controllers/vdaemon/w3af_vdaemon.rb
 /home/user/tools/msf/modules/exploits/unix/misc/</FONT>”. Once this
 has been done, the user can start using the virtual daemon feature,
 before going through an example to see how to use the feature, we
