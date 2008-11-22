@@ -103,12 +103,16 @@ class rootMenu(menu):
                 # Get the information
                 rfds[0].readline()
                 progress = self._w3af.progress.get_progress()
+                eta = self._w3af.progress.get_eta()
                 
-                # Print
-                om.out.console('Status: ' + self._w3af.getCoreStatus(), newLine=True)
+                # Create the message to print
                 progress = str(progress * 100)
                 progress = progress[:5] + ' ' + '%'
-                om.out.console('Current phase status: ' + progress, newLine=True)
+                msg = 'Status: ' + self._w3af.getCoreStatus() + '\n'
+                msg += 'Current phase status: ' + progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
+                
+                # Print
+                om.out.console( msg , newLine=True)
         
     def _cmd_version(self, params):
         '''

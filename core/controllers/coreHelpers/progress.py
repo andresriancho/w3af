@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
+import time
 
 class progress:
     """
@@ -34,6 +34,8 @@ class progress:
     def __init__(self):
         self._max_value = 0.0
         self._current_value = 0.0
+        self._first_amount_change_time = None
+        self._eta = None
 
     def set_total_amount(self, value):
         '''
@@ -41,7 +43,8 @@ class progress:
         '''
         self._max_value = value
         self._current_value = 0.0
-
+        self._first_amount_change_time = None
+        
     def inc(self):
         '''
         Add 1 unit to the current value.
@@ -49,7 +52,17 @@ class progress:
         if self._current_value == self._max_value:
             om.out.error('Current value can never be greater than max value!')
         else:
+            # inc the counter
             self._current_value += 1
+            
+            # handle the time stuff
+            if not self._first_amount_change_time:
+                self._first_amount_change_time = time.time()
+            else:
+                time_already_elapsed = time.time() - self._first_amount_change_time
+                # regla de tres para estimar cuanto va a tardar en total
+                time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
+                self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
         '''
@@ -61,3 +74,18 @@ class progress:
         
         # This returns the %
         return self._current_value / self._max_value
+
+    def get_eta(self):
+        '''
+        @return: The ETA for this phase.
+        '''
+        temp = float()
+        temp = float(self._eta) / (60*60*24)
+        d    = int(temp)
+        temp = (temp - d) * 24
+        h = int(temp)
+        temp = (temp - h) * 60
+        m = int(temp)
+        temp = (temp - m) * 60
+        sec = temp
+        return d,h,m,sec
