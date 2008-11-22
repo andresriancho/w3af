@@ -100,9 +100,16 @@ class rootMenu(menu):
             
             # If something was written to sys.stdin, read it
             if rfds:
+                # Get the information
                 rfds[0].readline()
-                om.out.console('Status: ' + self._w3af.getCoreStatus(), newLine=False)
-                #print self._w3af.progress.get_progress()
+                progress = self._w3af.progress.get_progress()
+                
+                # Print
+                om.out.console('Status: ' + self._w3af.getCoreStatus(), newLine=True)
+                if progress:
+                    progress = str(progress * 100)
+                    progress = progress[:5] + ' ' + '%'
+                    om.out.console('Current phase status: ' + progress, newLine=True)
         
     def _cmd_version(self, params):
         '''
