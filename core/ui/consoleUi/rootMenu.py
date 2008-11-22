@@ -106,10 +106,9 @@ class rootMenu(menu):
                 
                 # Print
                 om.out.console('Status: ' + self._w3af.getCoreStatus(), newLine=True)
-                if progress:
-                    progress = str(progress * 100)
-                    progress = progress[:5] + ' ' + '%'
-                    om.out.console('Current phase status: ' + progress, newLine=True)
+                progress = str(progress * 100)
+                progress = progress[:5] + ' ' + '%'
+                om.out.console('Current phase status: ' + progress, newLine=True)
         
     def _cmd_version(self, params):
         '''

@@ -536,7 +536,6 @@ class w3afCore:
         # Init some internal variables
         self._alreadyWalked = toWalk
         self._urls = []
-        self._firstDiscovery = True
         self._set_phase('discovery')
         
         for fr in toWalk:
@@ -564,10 +563,15 @@ class w3afCore:
             except Exception, e:
                 om.out.error('The plugin "'+ p.getName() + '" raised an exception in the end() method: ' + str(e) )
     
-    def _discoverWorker(self, toWalk ):
+    def _discoverWorker(self, toWalk):
         om.out.debug('Called _discoverWorker()' )
         
         while len( toWalk ) and self._count < cf.cf.getData('maxDiscoveryLoops'):
+            
+            # Progress stuff, do this inside the while loop, because the toWalk variable changes
+            # in each loop
+            amount_of_tests = len(self._plugins['discovery']) * len(toWalk)
+            self.progress.set_total_amount( amount_of_tests )
         
             # This variable is for LOOP evasion
             self._count += 1
@@ -577,7 +581,7 @@ class w3afCore:
             
             for plugin in self._plugins['discovery']:
                 for fr in toWalk:
-                
+
                     if fr.iterationNumber > cf.cf.getData('maxDepth'):
                         om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
                     else:
@@ -596,16 +600,19 @@ class w3afCore:
                             tm.join( plugin )
                         else:
                             tm.join( plugin )
-                            
+                        
                             # We don't trust plugins, i'll only work if this is a list
                             # or something else that is iterable
                             if hasattr(pluginResult,'__iter__'):
                                 for i in pluginResult:
                                     fuzzableRequestList.append( (i, plugin.getName()) )
                                     
-                                    
                         om.out.debug('Ending plugin: ' + plugin.getName() )
                     #end-if fr.iterationNumber > cf.cf.getData('maxDepth'):
+                    
+                    # We finished one loop, inc!
+                    self.progress.inc()
+
                 #end-for
             #end-for
             
@@ -769,8 +776,11 @@ class w3afCore:
         '''
         res = []
         
+        # Progress
         om.out.debug('Called _bruteforce()' )
         self._set_phase('bruteforce')
+        amount_of_tests = len(self._plugins['bruteforce']) * len(fuzzableRequestList)
+        self.progress.set_total_amount( amount_of_tests )
         
         for plugin in self._plugins['bruteforce']:
             # FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin
@@ -787,6 +797,9 @@ class w3afCore:
                 except w3afException, e:
                     tm.join( plugin )
                     om.out.error( str(e) )
+                    
+                # I performed one test (no matter if it failed or not)
+                self.progress.inc()                    
                     
                 try:
                     plugin.end()

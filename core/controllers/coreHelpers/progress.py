@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import core.controllers.outputManager as om
+
+
 class progress:
     """
     This class keeps track of the progress of something. Mostly used to keeps
@@ -44,7 +47,7 @@ class progress:
         Add 1 unit to the current value.
         '''
         if self._current_value == self._max_value:
-            print 'Current value can never be greater than max value!'
+            om.out.error('Current value can never be greater than max value!')
         else:
             self._current_value += 1
 
@@ -52,4 +55,9 @@ class progress:
         '''
         @return: The % done.
         '''
+        # This if is to avoid division by zero
+        if self._max_value == 0:
+            return 0.0
+        
+        # This returns the %
         return self._current_value / self._max_value
