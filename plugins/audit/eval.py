@@ -226,9 +226,9 @@ class eval(baseAuditPlugin):
         '''
         @return: The string that results from the evaluation of what I sent.
         '''
-        errorStr = []
-        errorStr.append( self._rndn )
-        return errorStr
+        print_str = []
+        print_str.append( self._rndn )
+        return print_str
 
     def getOptions( self ):
         '''
