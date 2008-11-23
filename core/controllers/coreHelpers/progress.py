@@ -79,13 +79,16 @@ class progress:
         '''
         @return: The ETA for this phase.
         '''
-        temp = float()
-        temp = float(self._eta) / (60*60*24)
-        d    = int(temp)
-        temp = (temp - d) * 24
-        h = int(temp)
-        temp = (temp - h) * 60
-        m = int(temp)
-        temp = (temp - m) * 60
-        sec = temp
-        return d,h,m,sec
+        if not self._eta:
+            return 0, 0, 0, 0
+        else:
+            temp = float()
+            temp = float(self._eta) / (60*60*24)
+            d    = int(temp)
+            temp = (temp - d) * 24
+            h = int(temp)
+            temp = (temp - h) * 60
+            m = int(temp)
+            temp = (temp - m) * 60
+            sec = temp
+            return d,h,m,sec
