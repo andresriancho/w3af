@@ -47,18 +47,22 @@ class eval(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
 
         #Create some random strings, which the plugin will use.
+        # for the fuzz_with_echo
         self._rnd1 = createRandAlpha(5)
         self._rnd2 = createRandAlpha(5)
         self._rndn = self._rnd1 + self._rnd2
+        
+        # And now for the fuzz_with_time_delay
         # The wait time of the unfuzzed request
-        self._originalWaitTime = 0
+        self._original_wait_time = 0
         # The wait time of the first test I'm going to perform
-        self._waitTime = 4
+        self._wait_time = 4
         # The wait time of the second test I'm going to perform (this one is just to be sure!)
-        self._secondWaitTime = 9
+        self._second_wait_time = 9
+        
         # User configured parameters
-        self._useTimeDelay = True
-        self._useEcho = True
+        self._use_time_delay = True
+        self._use_echo = True
 
     def _fuzzRequests(self, freq ):
         '''
@@ -67,19 +71,19 @@ class eval(baseAuditPlugin):
         '''
         om.out.debug( 'eval plugin is testing: ' + freq.getURL() )
 
-        if self._useEcho:
-            self._fuzzWithEcho( freq )
+        if self._use_echo:
+            self._fuzz_with_echo( freq )
 
-        if self._useTimeDelay:
-            self._fuzzWithTimeDelay( freq )
+        if self._use_time_delay:
+            self._fuzz_with_time_delay( freq )
 
-    def _fuzzWithEcho( self, freq ):
+    def _fuzz_with_echo( self, freq ):
         '''
         Tests an URL for eval() usage vulnerabilities using echo strings.
         @param freq: A fuzzableRequest
         '''
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        evalStrings = self._getEvalStrings()
+        evalStrings = self._get_print_strings()
         mutants = createMutants( freq , evalStrings, oResponse=oResponse )
 
         for mutant in mutants:
@@ -91,16 +95,16 @@ class eval(baseAuditPlugin):
                 self._tm.startFunction( target=self._sendMutant, args=targs,\
                         kwds=kwds, ownerObj=self )
 
-    def _fuzzWithTimeDelay( self, freq):
+    def _fuzz_with_time_delay( self, freq):
         '''
         Tests an URL for eval() usage vulnerabilities using time delays.
         @param freq: A fuzzableRequest
         '''
         res = self._sendMutant( freq, analyze=False, grepResult=False )
-        self._originalWaitTime = res.getWaitTime()
+        self._original_wait_time = res.getWaitTime()
 
         # Prepare the strings to create the mutants
-        waitStrings = self._getWaitStrings()
+        waitStrings = self._get_wait_strings()
         mutants = createMutants( freq, waitStrings )
 
         for mutant in mutants:
@@ -115,11 +119,11 @@ class eval(baseAuditPlugin):
     def _analyzeEcho( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the
-        _fuzzWithEcho method.
+        _fuzz_with_echo method.
         '''
-        evalErrorList = self._findEvalError( response )
-        for evalError in evalErrorList:
-            if not re.search( evalError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        eval_error_list = self._find_eval_result( response )
+        for eval_error in eval_error_list:
+            if not re.search( eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.HIGH)
@@ -130,21 +134,21 @@ class eval(baseAuditPlugin):
     def _analyzeWait( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the
-        _fuzzWithTimeDelay method.
+        _fuzz_with_time_delay method.
         '''
-        if response.getWaitTime() > (self._originalWaitTime + self._waitTime - 2) and \
-        response.getWaitTime() < (self._originalWaitTime + self._waitTime + 2):
+        if response.getWaitTime() > (self._original_wait_time + self._wait_time - 2) and \
+        response.getWaitTime() < (self._original_wait_time + self._wait_time + 2):
             # generates a delay in the response; so I'll resend changing the time and see 
             # what happens
             originalWaitParam = mutant.getModValue()
             moreWaitParam = originalWaitParam.replace( \
-                                                        str(self._waitTime), \
-                                                        str(self._secondWaitTime) )
+                                                        str(self._wait_time), \
+                                                        str(self._second_wait_time) )
             mutant.setModValue( moreWaitParam )
             response = self._sendMutant( mutant, analyze=False )
 
-            if response.getWaitTime() > (self._originalWaitTime + self._secondWaitTime - 3) and \
-            response.getWaitTime() < (self._originalWaitTime + self._secondWaitTime + 3):
+            if response.getWaitTime() > (self._original_wait_time + self._second_wait_time - 3) and \
+            response.getWaitTime() < (self._original_wait_time + self._second_wait_time + 3):
                 # Now I can be sure that I found a vuln, I control the time of the response.
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
@@ -163,7 +167,7 @@ class eval(baseAuditPlugin):
                 i.setDesc( msg )
                 kb.kb.append( self, 'eval', i )
 
-    def _getEvalStrings( self ):
+    def _get_print_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         @return: A list with all the strings to test.
@@ -179,18 +183,17 @@ class eval(baseAuditPlugin):
         evalStrings.append("Response.Write\x28\x22"+self._rnd1+"+"+self._rnd2+"\x22\x29")
         return evalStrings
 
-    def _getWaitStrings( self ):
+    def _get_wait_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         @return: A list with all the strings to test.
         '''
         waitStrings = []
         # PHP http://php.net/sleep
-        waitStrings.append( "sleep(" + str( self._waitTime ) + ");" )
         # Perl http://perldoc.perl.org/functions/sleep.html
-        waitStrings.append( "sleep(" + str( self._waitTime ) + ");" )
+        waitStrings.append( "sleep(" + str( self._wait_time ) + ");" )
         # Python http://docs.python.org/library/time.html#time.sleep
-        waitStrings.append( "import time;time.sleep(" + str( self._waitTime ) + ");" )
+        waitStrings.append( "import time;time.sleep(" + str( self._wait_time ) + ");" )
         return waitStrings
 
     def end(self):
@@ -200,7 +203,7 @@ class eval(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'eval', 'eval' ), 'VAR' )
 
-    def _findEvalError( self, response ):
+    def _find_eval_result( self, response ):
         '''
         This method searches for the randomized self._rndn string in html's.
 
@@ -208,18 +211,18 @@ class eval(baseAuditPlugin):
         @return: A list of error found on the page
         '''
         res = []
-        for evalError in self._getEvalErrors():
-            match = re.search( evalError, response.getBody() , re.IGNORECASE )
+        for eval_error in self._get_eval_errors():
+            match = re.search( eval_error, response.getBody() , re.IGNORECASE )
             if match:
                 msg = 'Verified eval() input injection, found the concatenated random string: "'
                 msg += response.getBody()[match.start():match.end()] + '" '
                 msg += 'in the response body. '
                 msg += 'The vulnerability was found on response with id ' + str(response.id) + '.'
                 om.out.debug( msg )
-                res.append( evalError )
+                res.append( eval_error )
         return res
 
-    def _getEvalErrors( self ):
+    def _get_eval_errors( self ):
         '''
         @return: The string that results from the evaluation of what I sent.
         '''
@@ -234,12 +237,12 @@ class eval(baseAuditPlugin):
         d1 = 'Use time delay (sleep() implementations)'
         h1 = 'If set to True, w3af will checks insecure eval() usage by analyzing'
         h1 += ' of time delay result of script execution.'
-        o1 = option('useTimeDelay', self._useTimeDelay, d1, 'boolean', help=h1)
+        o1 = option('useTimeDelay', self._use_time_delay, d1, 'boolean', help=h1)
 
         d2 = 'Use echo implementations'
         h2 = 'If set to True, w3af will checks insecure eval() usage by grepping'
         h2 += ' result of script execution for test strings.'
-        o2 = option('useEcho', self._useEcho, d2, 'boolean', help=h2)
+        o2 = option('useEcho', self._use_echo, d2, 'boolean', help=h2)
 
         ol = optionList()
         ol.add(o1)
@@ -254,8 +257,8 @@ class eval(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._useTimeDelay = optionsMap['useTimeDelay'].getValue()
-        self._useEcho = optionsMap['useEcho'].getValue()
+        self._use_time_delay = optionsMap['useTimeDelay'].getValue()
+        self._use_echo = optionsMap['useEcho'].getValue()
 
     def getPluginDeps( self ):
         '''
@@ -269,8 +272,10 @@ class eval(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds eval() input injection vulnerabilities. These vulnerabilities are found in web applications, when the developer
-        passes user controled data to the eval() function. To check for vulnerabilities of this kind, the plugin sends an echo function
-        with two randomized strings as a parameters (echo 'abc' + 'xyz') and if the resulting HTML matches the string that corresponds
-        to the evaluation of the expression ('abcxyz') then a vulnerability has been found.
+        This plugin finds eval() input injection vulnerabilities. These vulnerabilities are found in
+        web applications, when the developer passes user controled data to the eval() function.
+        To check for vulnerabilities of this kind, the plugin sends an echo function with two
+        randomized strings as a parameters (echo 'abc' + 'xyz') and if the resulting HTML matches
+        the string that corresponds to the evaluation of the expression ('abcxyz') then a
+        vulnerability has been found.
         '''
