@@ -83,8 +83,8 @@ class eval(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        evalStrings = self._get_print_strings()
-        mutants = createMutants( freq , evalStrings, oResponse=oResponse )
+        print_strings = self._get_print_strings()
+        mutants = createMutants( freq , print_strings, oResponse=oResponse )
 
         for mutant in mutants:
             if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
@@ -104,8 +104,8 @@ class eval(baseAuditPlugin):
         self._original_wait_time = res.getWaitTime()
 
         # Prepare the strings to create the mutants
-        waitStrings = self._get_wait_strings()
-        mutants = createMutants( freq, waitStrings )
+        wait_strings = self._get_wait_strings()
+        mutants = createMutants( freq, wait_strings )
 
         for mutant in mutants:
             if self._hasNoBug( 'eval', 'eval', mutant.getURL() , mutant.getVar() ):
@@ -172,29 +172,29 @@ class eval(baseAuditPlugin):
         Gets a list of strings to test against the web app.
         @return: A list with all the strings to test.
         '''
-        evalStrings = []
+        print_strings = []
         # PHP http://php.net/eval
-        evalStrings.append("echo \x27"+ self._rnd1 +"\x27 . \x27"+ self._rnd2 +"\x27;")
+        print_strings.append("echo \x27"+ self._rnd1 +"\x27 . \x27"+ self._rnd2 +"\x27;")
         # Perl http://perldoc.perl.org/functions/eval.html
-        evalStrings.append("print \x27"+ self._rnd1 +"\x27.\x27"+ self._rnd2 +"\x27;")
+        print_strings.append("print \x27"+ self._rnd1 +"\x27.\x27"+ self._rnd2 +"\x27;")
         # Python http://docs.python.org/reference/simple_stmts.html#the-exec-statement
-        evalStrings.append("print \x27"+ self._rnd1 +"\x27 + \x27"+ self._rnd2 +"\x27")
+        print_strings.append("print \x27"+ self._rnd1 +"\x27 + \x27"+ self._rnd2 +"\x27")
         # ASP
-        evalStrings.append("Response.Write\x28\x22"+self._rnd1+"+"+self._rnd2+"\x22\x29")
-        return evalStrings
+        print_strings.append("Response.Write\x28\x22"+self._rnd1+"+"+self._rnd2+"\x22\x29")
+        return print_strings
 
     def _get_wait_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         @return: A list with all the strings to test.
         '''
-        waitStrings = []
+        wait_strings = []
         # PHP http://php.net/sleep
         # Perl http://perldoc.perl.org/functions/sleep.html
-        waitStrings.append( "sleep(" + str( self._wait_time ) + ");" )
+        wait_strings.append( "sleep(" + str( self._wait_time ) + ");" )
         # Python http://docs.python.org/library/time.html#time.sleep
-        waitStrings.append( "import time;time.sleep(" + str( self._wait_time ) + ");" )
-        return waitStrings
+        wait_strings.append( "import time;time.sleep(" + str( self._wait_time ) + ");" )
+        return wait_strings
 
     def end(self):
         '''
