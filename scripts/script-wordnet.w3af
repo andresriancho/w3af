@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -19,7 +18,7 @@ back
 back
 target
 #set target http://localhost/w3af/
-set target http://localhost/w3af/googleSets-wordnet/show.php?os=unix, http://localhost/w3af/googleSets-wordnet/show.php?os=linux, http://localhost/w3af/googleSets-wordnet/red.html, http://localhost/w3af/googleSets-wordnet/blue.html
+set target http://localhost/w3af/discovery/googleSets-wordnet/show.php?os=unix, http://localhost/w3af/discovery/googleSets-wordnet/show.php?os=linux, http://localhost/w3af/discovery/googleSets-wordnet/red.html, http://localhost/w3af/discovery/googleSets-wordnet/blue.html
 back
 start
 
