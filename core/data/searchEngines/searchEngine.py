@@ -25,6 +25,7 @@ import socket
 import re
 import core.controllers.outputManager as om
 
+
 class searchEngine:
     '''
     This class represents a searchEngine .
@@ -48,7 +49,7 @@ class searchEngine:
                 om.out.debug( str(w3) )
                 return result
             except Exception, e:
-                om.out.debug( 'Unhandled exception in searchEngines.google.search(): '+str(e) )
+                om.out.debug( 'Unhandled exception in searchEngines.searchEngine.search(): '+str(e) )
                 return result
             else:
                 result.extend( tmp )
@@ -80,7 +81,7 @@ class searchEngine:
                 om.out.debug( str(w3) )
                 return result
             except Exception, e:
-                om.out.debug( 'Unhandled exception in searchEngines.google.search(): '+str(e) )
+                om.out.debug( 'Unhandled exception in searchEngines.searchEngine.search(): '+str(e) )
                 return result
             else:
                 result.extend( resPage )

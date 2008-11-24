@@ -54,18 +54,28 @@ class yahooSiteExplorer(searchEngine):
 
         Search the web with yahoo Site Explorer.
         """
-        # http://search.yahooapis.com/SiteExplorerService/V1/pageData?appid=YahooDemo&query=http://search.yahoo.com&results=2
-        url = 'http://search.yahooapis.com/SiteExplorerService/V1/pageData?'
-        _query = urllib.urlencode({'appid':'YahooDemo', 'query':query, 'results':count , 'start': start+1})
+        # https://siteexplorer.search.yahoo.com/export?p=http%3A%2F%2Fwww.cybsec.com%2F
+        url = 'https://siteexplorer.search.yahoo.com/export?p=http://'
+        url += query
 
-        response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
+        response = self._urlOpener.GET(url, headers=self._headers, useCache=True, grepResult=False)
         
         results = []
 
-        for url in re.findall('<Url>(.*?)</Url>', response.getBody() ):
-            yserInstance = yahooSiteExplorerResult( url )
-            results.append( yserInstance )
+        # The export script returns a tab separated file, parse it.
+        response_body = response.getBody()
+        response_body_lines = response_body.split('\n')[1:]
+        for body_line in response_body_lines:
+            try:
+                text, url, length, content_type = body_line.split('\t')
+            except:
+                pass
 
+            yse_result = yahooSiteExplorerResult( url )
+            results.append( yse_result )
+        
+        # cut the required results
+        results = results[start:start+count]
         return results
 
 class yahooSiteExplorerResult:
