@@ -21,15 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
+from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
-import core.data.parsers.wsdlParser
-from core.controllers.w3afException import w3afRunOnce, w3afException
+
 
 class wsdlFinder(baseDiscoveryPlugin):
     '''
@@ -40,37 +40,39 @@ class wsdlFinder(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._tested = []
-    
+        self._fuzzableRequests = []
+        
     def discover(self, fuzzableRequest ):
         '''
         If url not in _tested, append a ?wsdl and check the response.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
-        self.is404 = kb.kb.getData( 'error404page', '404' )
         url = urlParser.uri2url( fuzzableRequest.getURL() )
         if url not in self._tested:
             self._tested.append( url )
-            for wsdl in self._getWsdl():
-                targs = (url , wsdl )
-                self._tm.startFunction( target=self._get_wsdl, args=targs, ownerObj=self )
+            
+            # perform the requests
+            for wsdl_parameter in self._get_WSDL():
+                url_to_request = url + wsdl_parameter
+                try:
+                    response = self._urlOpener.GET( url_to_request, useCache=True )
+                except w3afException:
+                    om.out.debug('Failed to request the WSDL file: ' + url_to_request)
+                else:
+                    # The response is analyzed by the wsdlGreper plugin
+                    pass
         self._tm.join( self )
+        
         return self._fuzzableRequests
 
-    def _get_wsdl( self, url, wsdl ):
-        url2test = url + wsdl
-        try:
-            response = self._urlOpener.GET( url2test, useCache=True )
-        except w3afException,  w3:
-            om.out.debug('Failed to request the WSDL file: ' + url2test)
-        else:
-            # The response is analyzed by the wsdlGreper plugin
-            pass
-        
-    
-    def _getWsdl( self ):
+    def _get_WSDL( self ):
+        '''
+        @return: A list of parameters that are used to request the WSDL
+        '''
         res = []
         
         res.append( '?wsdl' )
