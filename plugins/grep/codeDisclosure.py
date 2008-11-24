@@ -56,12 +56,28 @@ class codeDisclosure(baseGrepPlugin):
         asp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
         jsp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
         jsp2 = re.compile( '<jsp:.*>', re.IGNORECASE | re.DOTALL)
+
+        # I've also seen some devs think like this:
+        #
+        # 1- I have my code that says <? print 'something' ?>
+        # 2- I want to comment that code
+        # 3- I comment it like this!  <!--? print 'something' ?>
+        #
+        # Not a bad idea, huh?
+        commented_asp = re.compile( '<!--\s*%.*%>', re.IGNORECASE | re.DOTALL)
+        commented_php = re.compile( '<!--\s*\?.*\?>', re.IGNORECASE | re.DOTALL)
+        commented_jsp = re.compile( '<!--\s*%.*%>', re.IGNORECASE | re.DOTALL)
+        commented_jsp2 = re.compile( '<!--\s*jsp:.*>', re.IGNORECASE | re.DOTALL)
         
         self._regexs = []
         self._regexs.append( (php, 'PHP') )
         self._regexs.append( (asp, 'ASP') )
         self._regexs.append( (jsp, 'JSP') )
         self._regexs.append( (jsp2, 'JSP') )
+        self._regexs.append( (commented_php, 'PHP') )
+        self._regexs.append( (commented_asp, 'ASP') )
+        self._regexs.append( (commented_jsp, 'JSP') )
+        self._regexs.append( (commented_jsp2, 'JSP') )
         
         self._alreadyAdded = []
         self._first_404 = True
