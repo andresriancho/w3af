@@ -20,21 +20,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.dpCache as dpCache
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
-from core.data.getResponseType import isPDF, isTextOrHtml
-from core.data.parsers.urlParser import getDomain
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
+
+import core.data.parsers.dpCache as dpCache
+from core.data.parsers.urlParser import getDomain
 import core.data.parsers.urlParser as urlParser
+
+import core.data.kb.knowledgeBase as kb
 from core.data.fuzzer.formFiller import smartFill
 import core.data.request.httpPostDataRequest as httpPostDataRequest
-import re
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+import re
+
 
 class webSpider(baseDiscoveryPlugin):
     '''
@@ -119,7 +123,8 @@ class webSpider(baseDiscoveryPlugin):
                     
                     for ref in references:
                         targs = (ref, fuzzableRequest, originalURL)
-                        self._tm.startFunction( target=self._verifyReferences, args=targs, ownerObj=self )
+                        self._tm.startFunction( target=self._verifyReferences, args=targs, \
+                                                            ownerObj=self )
             
         self._tm.join( self )
             
@@ -138,16 +143,17 @@ class webSpider(baseDiscoveryPlugin):
                 headers = { 'Referer': originalURL }
                 
                 try:
-                    response = self._urlOpener.GET( reference, useCache=True, headers= headers, getSize=True )
+                    response = self._urlOpener.GET( reference, useCache=True, headers= headers, \
+                                                                    getSize=True)
                 except KeyboardInterrupt,e:
                     raise e
                 except w3afException,w3:
                     om.out.error( str(w3) )
                 else:
-                    # Note: I WANT to follow links that are in the 404 page, but if the page I fetched is a 404...
-                    # I should ignore it.
+                    # Note: I WANT to follow links that are in the 404 page, but if the page
+                    # I fetched is a 404... I should ignore it.
                     if self.is404( response ):
-                        fuzzableRequestList = self._createFuzzableRequests( response, addSelf=False )
+                        fuzzableRequestList = self._createFuzzableRequests( response, addSelf=False)
                         self._brokenLinks.append( (response.getURL(), originalRequest.getURI()) )
                     else:
                         fuzzableRequestList = self._createFuzzableRequests( response, addSelf=True )
@@ -163,7 +169,8 @@ class webSpider(baseDiscoveryPlugin):
         '''
         if len(self._brokenLinks):
             reported = []
-            om.out.information('The following is a list of broken links that were found by the webSpider plugin:')
+            msg = 'The following is a list of broken links that were found by the webSpider plugin:'
+            om.out.information(msg)
             for broken, where in self._brokenLinks:
                 if (broken, where) not in reported:
                     reported.append( (broken, where) )
@@ -191,10 +198,12 @@ class webSpider(baseDiscoveryPlugin):
         d1 = 'When spidering, only search directories inside the one that was given as a parameter'
         o1 = option('onlyForward', self._onlyForward, d1, 'boolean')
         
-        d2 = 'When spidering, only follow links that match this regular expression (ignoreRegex has precedence over followRegex)'
+        d2 = 'When spidering, only follow links that match this regular expression '
+        d2 +=  '(ignoreRegex has precedence over followRegex)'
         o2 = option('followRegex', self._followRegex, d2, 'string')
         
-        d3 = 'When spidering, DO NOT follow links that match this regular expression (has precedence over followRegex)'
+        d3 = 'When spidering, DO NOT follow links that match this regular expression '
+        d3 += '(has precedence over followRegex)'
         o3 = option('ignoreRegex', self._ignoreRegex, d3, 'string')
         
         ol = optionList()
@@ -225,12 +234,14 @@ class webSpider(baseDiscoveryPlugin):
         try:
             self._compiledIgnoreRe = re.compile( self._ignoreRegex )
         except:
-            raise w3afException('You specified an invalid regular expression: "' + self._ignoreRegex + '".')
+            msg = 'You specified an invalid regular expression: "' + self._ignoreRegex + '".'
+            raise w3afException(msg)
 
         try:
             self._compiledFollowRe = re.compile( self._followRegex )
         except:
-            raise w3afException('You specified an invalid regular expression: "' + self._followRegex + '".')
+            msg = 'You specified an invalid regular expression: "' + self._followRegex + '".'
+            raise w3afException(msg)
         
         
     def getPluginDeps( self ):
