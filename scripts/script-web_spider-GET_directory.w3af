@@ -7,9 +7,12 @@
                 # http://localhost/
                 # And analyze the response...
 
+misc-settings
+set maxDiscoveryLoops 2
+back
+
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -18,11 +21,12 @@ output config console
 set verbose False
 back
 discovery allowedMethods,webSpider
-discovery
 back
+
 target
-set target http://localhost/w3af/webSpider/a/b/c/d/
+set target http://localhost/w3af/discovery/web_spider/a/b/c/d/
 back
+
 start
 
 assert len( kb.kb.getData('urls', 'urlList') ) >= 14
