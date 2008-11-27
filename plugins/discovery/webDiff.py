@@ -20,20 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-import os
+
+import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
-from os.path import isfile
-from core.data.getResponseType import *
-import os.path
+
+import os
+
 
 class webDiff(baseDiscoveryPlugin):
     '''
@@ -44,20 +45,24 @@ class webDiff(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
         # Internal variables
         self._run = True
         self._first = True
+        self._start_path = None
+        self._head = None
+        
         self._fuzzableRequests = []
-        self._notEq = []
-        self._notEqContent = []
+        self._not_eq = []
+        self._not_eq_content = []
         self._eq = []
-        self._eqContent = []
+        self._eq_content = []
         
         # Configuration
-        self._banUrl = ['asp','jsp','php']
+        self._ban_url = ['asp', 'jsp', 'php']
         self._content = True
-        self._localDir = ''
-        self._remotePath = ''
+        self._local_dir = ''
+        self._remote_path = ''
         
     def discover(self, fuzzableRequest ):
         '''
@@ -73,47 +78,58 @@ class webDiff(baseDiscoveryPlugin):
             self._run = False
             self.is404 = kb.kb.getData( 'error404page', '404' )
                     
-            if self._localDir != '' and self._remotePath != '':
-                self._verifyHeadEnabled( fuzzableRequest.getURL() )
-                os.path.walk( self._localDir, self._compareDir, None )
-                self._generateReport()
+            if self._local_dir != '' and self._remote_path != '':
+                self._verify_head_enabled( fuzzableRequest.getURL() )
+                os.path.walk( self._local_dir, self._compare_dir, None )
+                self._generate_report()
                 return self._fuzzableRequests
             else:
-                raise w3afException('webDiff plugins: You have to configure the local and remote directory to compare.')
+                msg = 'webDiff plugin: You have to configure the local and remote directory'
+                msg += ' to compare.'
+                raise w3afException( msg )
         return []
     
-    def _generateReport( self ):
+    def _generate_report( self ):
         '''
         Generates a report based on:
-            - self._notEq
-            - self._notEqContent
+            - self._not_eq
+            - self._not_eq_content
             - self._eq
-            - self._eqContent
+            - self._eq_content
         '''
         if len( self._eq ):
-            om.out.information('The following files exist in the local directory and in the remote server:')
-            for file in self._eq:
-                om.out.information('- '+ file)
+            msg = 'The following files exist in the local directory and in the remote server:'
+            om.out.information( msg )
+            for file_name in self._eq:
+                om.out.information('- '+ file_name)
         
-        if len( self._eqContent ):
-            om.out.information('The following files exist in the local directory and in the remote server and their contents match:')
-            for file in self._eqContent:
-                om.out.information('- '+ file)
+        if len( self._eq_content ):
+            msg = 'The following files exist in the local directory and in the remote server'
+            msg += ' and their contents match:'
+            om.out.information(msg)
+            for file_name in self._eq_content:
+                om.out.information('- '+ file_name)
 
-        if len( self._notEq ):
-            om.out.information('The following files exist in the local directory and NOT in the remote server:')
-            for file in self._notEq:
-                om.out.information('- '+ file)
+        if len( self._not_eq ):
+            msg = 'The following files exist in the local directory and NOT in the remote server:'
+            om.out.information(msg)
+            for file_name in self._not_eq:
+                om.out.information('- '+ file_name)
         
-        if len( self._notEqContent ):
-            om.out.information('The following files exist in the local directory and in the remote server but their contents dont match:')
-            for file in self._notEqContent:
-                om.out.information('- '+ file)
+        if len( self._not_eq_content ):
+            msg = 'The following files exist in the local directory and in the remote server but'
+            msg += ' their contents dont match:'
+            om.out.information(msg)
+            for file_name in self._not_eq_content:
+                om.out.information('- '+ file_name)
                 
-        om.out.information('Match files: ' + str(len(self._eq)) + ' of ' + str( len(self._eq) + len(self._notEq) ) )
-        om.out.information('Match contents: ' + str(len(self._eqContent)) + ' of ' + str( len(self._eqContent) + len(self._notEqContent) ) )
+        file_stats = str(len(self._eq)) + ' of ' + str( len(self._eq) + len(self._not_eq) )
+        content_stats = str(len(self._eq_content)) + ' of '
+        content_stats += str( len(self._eq_content) + len(self._not_eq_content) )
+        om.out.information('Match files: ' + file_stats )
+        om.out.information('Match contents: ' + content_stats )
 
-    def _compareDir( self, arg, dir, flist ):
+    def _compare_dir( self, arg, directory, flist ):
         '''
         This function is the callback function called from os.path.walk, from the python
         help function:
@@ -135,57 +151,57 @@ class webDiff(baseDiscoveryPlugin):
 
         '''
         if self._first:
-            self._startPath = dir
+            self._start_path = directory
             self._first = False
         
-        dir2 = dir.replace( self._startPath,'' )
-        path = self._remotePath
-        if dir2 != '':
-            path += dir2 + os.path.sep
+        directory_2 = directory.replace( self._start_path,'' )
+        path = self._remote_path
+        if directory_2 != '':
+            path += directory_2 + os.path.sep
         else:
-            path += dir2
+            path += directory_2
         
         for fname in flist:
-            if isfile( dir + os.path.sep + fname ):
+            if os.path.isfile( directory + os.path.sep + fname ):
                 url = urlParser.urlJoin( path, fname )
-                response = self._easyGet( url )
+                response = self._easy_GET( url )
             
                 if not self.is404( response ):
                     if response.is_text_or_html():
                         self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-                    self._checkContent( response, dir + os.path.sep + fname )
+                    self._check_content( response, directory + os.path.sep + fname )
                     self._eq.append( url )
                 else:
-                    self._notEq.append( url )
+                    self._not_eq.append( url )
         
-    def _checkContent( self, response, file ):
+    def _check_content( self, response, file_name ):
         '''
         Check if the contents match.
         '''
         if self._content:
-            if file.count('.'):
-                extension = os.path.splitext( file )[1].replace('.', '')
+            if file_name.count('.'):
+                extension = os.path.splitext( file_name )[1].replace('.', '')
                 
-                if extension not in self._banUrl:
+                if extension not in self._ban_url:
                     try:
-                        fd = open( file, 'r' )
+                        fd = open( file_name, 'r' )
                     except:
-                        om.out.debug('Failed to open file: ' + file)
+                        om.out.debug('Failed to open file: ' + file_name)
                     else:
                         if fd.read() == response.getBody():
-                            self._eqContent.append( response.getURL() )
+                            self._eq_content.append( response.getURL() )
                         else:
-                            self._notEqContent.append( response.getURL() )
+                            self._not_eq_content.append( response.getURL() )
                             
                         fd.close()
         
-    def _easyGet( self, url ):
+    def _easy_GET( self, url ):
         '''
         An easy way to get a URL using HEAD or GET depending on available methods.
         '''
         response = None
         try:
-            if self._headEnabled() and not self._content:
+            if self._head_enabled() and not self._content:
                 response = self._urlOpener.HEAD( url, useCache=True )
             else:
                 response = self._urlOpener.GET( url, useCache=True )
@@ -202,13 +218,13 @@ class webDiff(baseDiscoveryPlugin):
         o1 = option('content', self._content, d1, 'boolean')
         
         d2 = 'The local directory used in the comparison.'
-        o2 = option('localDir', self._localDir, d2, 'string')
+        o2 = option('localDir', self._local_dir, d2, 'string')
 
         d3 = 'The remote directory used in the comparison.'
-        o3 = option('remotePath', self._remotePath, d3, 'string')
+        o3 = option('remotePath', self._remote_path, d3, 'string')
 
         d4 = 'When comparing content of two files, ignore files with this extensions.'
-        o4 = option('banUrl', self._banUrl, d4, 'list')
+        o4 = option('banUrl', self._ban_url, d4, 'list')
         
         ol = optionList()
         ol.add(o1)
@@ -226,9 +242,9 @@ class webDiff(baseDiscoveryPlugin):
         @return: No value is returned.
         ''' 
         self._content = optionsMap['content'].getValue()
-        self._banUrl = optionsMap['banUrl'].getValue()
-        self._remotePath = urlParser.getDomainPath( optionsMap['remotePath'].getValue() )
-        self._localDir = optionsMap['localDir'].getValue()
+        self._ban_url = optionsMap['banUrl'].getValue()
+        self._remote_path = urlParser.getDomainPath( optionsMap['remotePath'].getValue() )
+        self._local_dir = optionsMap['localDir'].getValue()
 
     def getPluginDeps( self ):
         '''
@@ -237,7 +253,7 @@ class webDiff(baseDiscoveryPlugin):
         '''
         return [ 'discovery.allowedMethods' ]
             
-    def _verifyHeadEnabled(self, url ):
+    def _verify_head_enabled(self, url ):
         '''
         Verifies if the requested URL permits a HEAD request.
         This was saved inside the KB by the plugin allowedMethods
@@ -249,7 +265,10 @@ class webDiff(baseDiscoveryPlugin):
         else:
             self._head = False
         
-    def _headEnabled(self):
+    def _head_enabled(self):
+        '''
+        @return: If HTTP HEAD is enabled or not.
+        '''
         return self._head
 
     def getLongDesc( self ):
@@ -267,9 +286,10 @@ class webDiff(baseDiscoveryPlugin):
             - banUrl
             - content
             
-        This plugin will read the file list inside "localDir", and for each file it will request the same filename
-        from the "remotePath", matches and failures are recorded and saved. The content of both files is
-        checked only if "content" is setted to True and the file extension aint in the "banUrl" list.
+        This plugin will read the file list inside "localDir", and for each file it will request the 
+        same filename from the "remotePath", matches and failures are recorded and saved.
+        The content of both files is checked only if "content" is setted to True and the file
+        extension aint in the "banUrl" list.
         
         The "banUrl" list should be used to ban script extensions like ASP, PHP, etc.
         '''
