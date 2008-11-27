@@ -207,7 +207,8 @@ class pathDisclosure(baseGrepPlugin):
         '''
         
         path_disclosure_strings = []
-        path_disclosure_strings.append(r"[A-Z]:\\") 
+        path_disclosure_strings.append(r"[A-Z]:\\")
+        path_disclosure_strings.append(r"file:///?[A-Z]\|")
         path_disclosure_strings.append("/root/")
         path_disclosure_strings.append("/var/")
         path_disclosure_strings.append("/htdocs/")
