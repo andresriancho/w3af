@@ -53,6 +53,7 @@ This is the central help file for the consoleUi
             <item name="Ctrl-A / Ctrl-E">Move cursor to the beginning/end of the line.</item>
             <item name="Ctrl-H">Erase the character before the cursor.</item>
             <item name="Ctrl-W">Erase the word before the cursor.</item>
+            <item name="Ctrl-L">Clear screen.</item>
             <item name="Ctrl-D, Ctrl-C">Return to the previous menu or exit w3af.</item>
         </category>
     </topic>

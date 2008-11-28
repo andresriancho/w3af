@@ -406,11 +406,10 @@ class consoleUi:
         self._moveDelta(self._position - len(strLine))
 
     def _moveForward(self, steps=1):
-	for i in range(steps):
+        for i in range(steps):
             if self._position == len(self._line): term.bell()
-	    term.write(self._line[self._position])
-	    self._position += 1
-
+        term.write(self._line[self._position])
+        self._position += 1
 
     def _moveDelta(self, steps):
         if steps:
