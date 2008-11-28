@@ -71,6 +71,9 @@ class errorPages(baseGrepPlugin):
         # VBScript
         mesg.append('<p>Microsoft VBScript runtime </font>')
         mesg.append("<font face=\"Arial\" size=2>error '800a000d'</font>")
+
+        # nwwcgi errors
+        mesg.append('<TITLE>nwwcgi Error')
         
         # ASP error I found during a pentest, the ASP used a foxpro db, not a SQL injection
         mesg.append('<font face="Arial" size=2>error \'800a0005\'</font>')
