@@ -21,16 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
-from core.data.getResponseType import *
+import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import *
+
+import core.data.kb.knowledgeBase as kb
+
+from core.data.fuzzer.fuzzer import createRandAlNum
+
 
 class urlFuzzer(baseDiscoveryPlugin):
     '''
@@ -56,41 +59,45 @@ class urlFuzzer(baseDiscoveryPlugin):
         self._headers = {'Referer':url }
         
         if self._firstTime:
-            self._verifyHeadEnabled( url )
+            self._verify_head_enabled( url )
             self._firstTime = False
             self.is404 = kb.kb.getData( 'error404page', '404' )
         
         # First we need to delete fragments and query strings from URL.
         url = urlParser.uri2url( url )
 
-        self._verifyHeadEnabled( url )
-        if self._headEnabled():
+        self._verify_head_enabled( url )
+        if self._head_enabled():
             response = self._urlOpener.HEAD( url, useCache=True, headers=self._headers )
         else:
-            response = self._urlOpener.GET( url, useCache=True, headers=self._headers, getSize=True )
+            response = self._urlOpener.GET(url, useCache=True, headers=self._headers, getSize=True)
 
         if response.is_text_or_html() or self._fuzzImages:
             mutants = self._mutate( url )
             om.out.debug('urlFuzzer is testing ' + url )
             for mutant in mutants :
                 targs = ( url, mutant )
-                self._tm.startFunction( target=self._doRequest, args=targs, ownerObj=self )
+                self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
             self._tm.join( self )
         
         return self._fuzzableRequests
 
-    def _doRequest( self, url, mutant ):
+    def _do_request( self, url, mutant ):
+        '''
+        Perform a simple GET to see if the result is an error or not, and then
+        run the actual fuzzing.
+        '''
         try:
             response = self._urlOpener.GET( mutant, useCache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         else:
             if not self.is404( response ) and response.getCode() not in [403, 401]:
-                if not self._returnWithoutEval( mutant ):
-                    frList = self._createFuzzableRequests( response )
-                    self._fuzzableRequests.extend( frList )
+                if not self._return_without_eval( mutant ):
+                    fr_list = self._createFuzzableRequests( response )
+                    self._fuzzableRequests.extend( fr_list )
     
-    def _returnWithoutEval( self, uri ):
+    def _return_without_eval( self, uri ):
         '''
         This method tries to lower the false positives. 
         '''     
@@ -107,7 +114,9 @@ class urlFuzzer(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         except w3afException,e:
-            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
+            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
+            msg += str(e)
+            om.out.error( msg )
         else:
             if not self.is404( response ):
                 return True
@@ -120,14 +129,14 @@ class urlFuzzer(baseDiscoveryPlugin):
         @return: A list of bad looking mutant URL's.
         '''
         mutants = []
-        mutants = self._mutateByAppending( url )
-        mutants.extend( self._mutatePath( url ) )
-        mutants.extend( self._mutateFileType( url ) )
-        mutants.extend( self._mutateDomainName( url ) )
+        mutants = self._mutate_by_appending( url )
+        mutants.extend( self._mutate_path( url ) )
+        mutants.extend( self._mutate_file_type( url ) )
+        mutants.extend( self._mutate_domain_name( url ) )
         mutants = list( set( mutants ) )
         return mutants
     
-    def _mutateDomainName( self, url ):
+    def _mutate_domain_name( self, url ):
         '''
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
             - http://www.foobar.com/foobar.zip
@@ -145,12 +154,12 @@ class urlFuzzer(baseDiscoveryPlugin):
         res = []
         for i in xrange( len ( splittedDomain ) ):
             filename = '.'.join(splittedDomain[0: i+1])
-            for extension in self._getBackupExtensions():
+            for extension in self._get_backup_extensions():
                 res.append( domainPath + filename + '.' + extension )
                 ### TODO: review this code !!
         return res
         
-    def _mutateByAppending( self, url ):
+    def _mutate_by_appending( self, url ):
         '''
         Adds something to the end of the url (mutate the file being requested)
         
@@ -158,12 +167,12 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         mutants = []
         if url[ len( url ) -1 ] != '/':
-            toAppendList = self._getToAppend()
+            toAppendList = self._get_to_append()
             for toAppend in toAppendList:
                 mutants.append ( url + toAppend )
         return mutants
     
-    def _mutateFileType( self, url ):
+    def _mutate_file_type( self, url ):
         '''
         Mutates a URL by changing its filetype, example :
         url = http://g.ar/foo.php
@@ -177,12 +186,12 @@ class urlFuzzer(baseDiscoveryPlugin):
             # http://a.com/foo.asp
             #                           ^  This
             url = url[ : url.rfind('.')+1 ]
-            filetypes = self._getFileTypes()
+            filetypes = self._get_file_types()
             for filetype in filetypes:
                 mutants.append ( url + filetype )
         return mutants
 
-    def _mutatePath( self, url ):
+    def _mutate_path( self, url ):
         '''
         Mutate the path instead of the file.
         
@@ -191,14 +200,14 @@ class urlFuzzer(baseDiscoveryPlugin):
         mutants = []
         if url.count('/') > 3:
             url = url[: url.rfind('/') ]
-            toAppendList = self._getToAppend()
+            toAppendList = self._get_to_append()
             for toAppend in toAppendList:
                 mutants.append ( url + toAppend )
             mutants.append( url )
             mutants.append( url + '/')
         return mutants
     
-    def _getBackupExtensions( self ):
+    def _get_backup_extensions( self ):
         fileTypes = []
         fileTypes.append ( 'tar.gz' )
         fileTypes.append ( 'gz' )
@@ -210,12 +219,12 @@ class urlFuzzer(baseDiscoveryPlugin):
         return fileTypes
 
     
-    def _getFileTypes( self ):
+    def _get_file_types( self ):
         '''
         @return: A list with filetypes commonly used in web apps.
         '''
         fileTypes = []
-        fileTypes.extend( self._getBackupExtensions() )
+        fileTypes.extend( self._get_backup_extensions() )
         fileTypes.append ( 'inc' )      
         fileTypes.append ( 'fla' )  # flash
         fileTypes.append ( 'jar' )
@@ -239,7 +248,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         fileTypes.append ( 'disco' )        
         return fileTypes
         
-    def _getToAppend( self ):
+    def _get_to_append( self ):
         '''
         
         @return: A list of strings to append to the URL.
@@ -268,7 +277,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         return appendables
         
     
-    def _verifyHeadEnabled(self, url ):
+    def _verify_head_enabled(self, url ):
         '''
         Verifies if the requested URL permits a HEAD request.
         This was saved inside the KB by the plugin allowedMethods
@@ -280,7 +289,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         else:
             self._head = False
         
-    def _headEnabled(self):
+    def _head_enabled(self):
         return self._head
     
     def getOptions( self ):
