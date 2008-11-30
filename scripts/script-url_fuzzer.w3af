@@ -1,8 +1,5 @@
-# webspider
-
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,15 +7,16 @@ back
 output config console
 set verbose False
 back
-discovery allowedMethods,webSpider,urlFuzzer
-discovery
-#grep all
-#grep
-#audit xss
-#audit
+
+discovery urlFuzzer
 back
+
 target
-set target http://localhost/w3af/
+set target http://localhost/w3af/discovery/url_fuzzer/index.html
 back
+
 start
+
+assert len(kb.kb.getData('urls','urlList')) == 8
+
 exit
