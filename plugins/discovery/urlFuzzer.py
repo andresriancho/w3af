@@ -335,8 +335,9 @@ class urlFuzzer(baseDiscoveryPlugin):
             - http://a/a.zip
             ... etc
         
-        If the response is not a 404 error, then we have found a new URL. This plugin searches for
-        backup files, source code, and other common extensions.
+        If the response is different from the 404 page (whatever it may be, automatic detection is 
+        performed), then we have found a new URL. This plugin searches for backup files, source code
+        , and other common extensions.
         
         One configurable parameter exist:
             - fuzzImages
