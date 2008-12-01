@@ -28,6 +28,10 @@ import os,time
 import os.path
 import urllib
 
+SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
+# 15825b40c6dace2a
+# 7cf5d4ab8ed434d5
+
 def getShell( extension, forceExtension=False ):
     '''
     This method returns a webshell content to be used in exploits, based on the extension, or based on the

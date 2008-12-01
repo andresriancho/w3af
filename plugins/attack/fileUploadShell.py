@@ -34,7 +34,7 @@ from core.data.kb.shell import shell as shell
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-from plugins.attack.webshells.getShell import getShell
+import plugins.attack.webshells.getShell as getShell
 import os
 import os.path
 import urllib
@@ -142,7 +142,7 @@ class fileUploadShell(baseAttackPlugin):
         except:
             raise w3afException('Could not create '+ dir + ' directory.')
         
-        fileContent, realExtension = getShell( extension, forceExtension=True )[0]
+        fileContent, realExtension = getShell.getShell( extension, forceExtension=True )[0]
         if extension == '':
             extension = realExtension
             

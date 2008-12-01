@@ -35,7 +35,7 @@ from core.controllers.w3afException import w3afException
 import os
 import urllib
 
-from plugins.attack.webshells.getShell import getShell
+import plugins.attack.webshells.getShell as getShell
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 # TODO: It should be possible to perform these tasks with the time delay also!
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
@@ -178,7 +178,7 @@ class mysqlWebShell(baseAttackPlugin):
         file in the remote web server webroot.
         '''
         extension = vuln.getURL()[ vuln.getURL().rfind('.') +1 :]
-        shellList = getShell( extension )
+        shellList = getShell.getShell( extension )
         filename = createRandAlpha( 7 )
         fakeContent = createRandAlpha( 7 )
         

@@ -35,7 +35,7 @@ from core.data.kb.shell import shell as shell
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
-from plugins.attack.webshells.getShell import getShell
+import plugins.attack.webshells.getShell as getShell
 import urllib
 
 class davShell(baseAttackPlugin):
@@ -93,7 +93,7 @@ class davShell(baseAttackPlugin):
         extension = urlParser.getExtension( vuln.getURL() )
         
         # I get a list of tuples with fileContent and extension to use
-        shellList = getShell( extension )
+        shellList = getShell.getShell( extension )
         
         for fileContent, realExtension in shellList:
             if extension == '':

@@ -9,7 +9,7 @@
 	Process p = null;
 	
 	if(cmd == null) {
-        out.println( "w3" + "af" );
+        out.println( "15825b40c6dace2a" + "7cf5d4ab8ed434d5" );
     }
     else{
 		String s = null;

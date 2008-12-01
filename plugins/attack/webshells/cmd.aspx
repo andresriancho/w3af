@@ -8,7 +8,7 @@ void Page_Load(object sender, EventArgs e)
 {
     if ( String.Compare( Request.QueryString["cmd"],"") )
     {
-        Response.Write("w3" + "af");
+        Response.Write("15825b40c6dace2a" + "7cf5d4ab8ed434d5");
     }
     else
     {

