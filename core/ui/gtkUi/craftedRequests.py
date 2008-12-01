@@ -26,6 +26,9 @@ from . import reqResViewer, helpers, entries, fuzzygen
 # Alternative ways of seeing the data
 from .clusterGraph import distance_function_selector
 
+# Generators
+from .payload_generators import create_generator_menu
+
 from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException, w3afMustStopException 
 import os
@@ -268,6 +271,10 @@ class FuzzyRequests(entries.RememberingWindow):
         else:
             (initialUp, initialDn) = initialRequest
             self.originalReq.rawShow(initialUp, initialDn)
+        
+        # Add the right button popup menu to the text widgets
+        self.originalReq._upTv.textView.connect("populate-popup", self._populate_popup)
+        self.originalReq._downTv.textView.connect("populate-popup", self._populate_popup)
 
         # help
         helplabel = gtk.Label()
@@ -356,6 +363,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.vbox.show()
         mainhbox.show()
         self.show()
+        
+    def _populate_popup(self, textview, menu):
+        '''
+        Populates the menu with the fuzzing items.
+        '''
+        menu.append(gtk.SeparatorMenuItem())
+        main_generator_menu = gtk.MenuItem(_("Generators"))
+        main_generator_menu.set_submenu( create_generator_menu(self) )
+        menu.append(main_generator_menu)
+        menu.show_all()
 
     def _clearResponses( self, widg ):
         '''
