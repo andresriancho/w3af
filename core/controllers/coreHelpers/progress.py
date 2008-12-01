@@ -54,15 +54,17 @@ class progress:
         else:
             # inc the counter
             self._current_value += 1
+            self._update_eta()
             
-            # handle the time stuff
-            if not self._first_amount_change_time:
-                self._first_amount_change_time = time.time()
-            else:
-                time_already_elapsed = time.time() - self._first_amount_change_time
-                # regla de tres para estimar cuanto va a tardar en total
-                time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
-                self._eta = time_for_all_requests - time_already_elapsed
+    def _update_eta(self):
+        # handle the time stuff
+        if not self._first_amount_change_time:
+            self._first_amount_change_time = time.time()
+        else:
+            time_already_elapsed = time.time() - self._first_amount_change_time
+            # regla de tres para estimar cuanto va a tardar en total
+            time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
+            self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
         '''
@@ -82,6 +84,9 @@ class progress:
         if not self._eta:
             return 0, 0, 0, 0
         else:
+            # recalculate the value
+            self._update_eta()
+            
             temp = float()
             temp = float(self._eta) / (60*60*24)
             d    = int(temp)

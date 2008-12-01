@@ -254,8 +254,8 @@ class LogBody(entries.RememberingVPaned):
         self._progress_bar.show()
         
         # Refresh the content
-        gobject.timeout_add(500, self._set_what_is_running )
-        gobject.timeout_add(500, self._update_progress )        
+        gobject.timeout_add(1500, self._set_what_is_running )
+        gobject.timeout_add(1500, self._update_progress )        
         self._what_is_being_run.show()
         
         messag = messages.Messages()
