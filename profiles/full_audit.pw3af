@@ -147,8 +147,6 @@ useSvnUsers = True
 listenPort = 44449
 usew3afSite = True
 listenAddress = 
-rfiUrl = 
-rfiResult = 
 
 [audit.xss]
 checkStored = True

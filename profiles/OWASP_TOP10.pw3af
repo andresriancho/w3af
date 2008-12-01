@@ -1,124 +1,225 @@
-[grep.strangeHeaders]
-
-[discovery.findBackdoor]
-
-[discovery.sitemapReader]
-
-[grep.errorPages]
-
-[audit.localFileInclude]
-
-[grep.strangeHTTPCode]
-
-[output.console]
-verbose = False
+[discovery.phpinfo]
 
 [discovery.yahooSiteExplorer]
 resultLimit = 300
 
-[grep.httpInBody]
+[audit.frontpage]
 
-[audit.unSSL]
+[discovery.googleSafeBrowsing]
 
-[grep.strangeParameters]
+[grep.motw]
 
-[discovery.robotsReader]
-
-[grep.fileUpload]
+[grep.creditCards]
 
 [audit.blindSqli]
 equAlgorithm = setIntersection
 equalLimit = 0.8
 
-[discovery.webSpider]
-followRegex = .*
-ignoreRegex = None
-onlyForward = False
+[grep.newline]
 
-[grep.error500]
+[grep.feeds]
 
-[grep.hashFind]
+[discovery.halberd]
 
-[profile]
-description = The Open Web Application Security Project (OWASP) is a worldwide free and open community focused on improving the security of application software. OWASP searched for and published the ten most common security flaws. This profile search for this top 10 security flaws. For more information about the security flaws: http://www.owasp.org/index.php/OWASP_Top_Ten_Project
-name = OWASP_TOP10
+[audit.phishingVector]
+
+[discovery.allowedMethods]
+
+[grep.pathDisclosure]
+
+[audit.xsrf]
+
+[audit.sslCertificate]
+
+[discovery.dnsWildcard]
+
+[discovery.userDir]
+
+[discovery.detectTransparentProxy]
+
+[audit.mxInjection]
+
+[audit.preg_replace]
+
+[grep.strangeHeaders]
 
 [misc-settings]
 maxThreads = 0
-maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
 fuzzableHeaders = 
 showProgressBar = True
 fuzzCookie = False
-fuzzFileContent = True
 fuzzFileName = False
+fuzzFileContent = True
+maxDiscoveryLoops = 500
 maxDepth = 10
 interface = eth0
 localAddress = 127.0.0.1
 nonTargets = 
+
+[discovery.fingerprint_os]
+
+[audit.localFileInclude]
+
+[discovery.afd]
+
+[audit.LDAPi]
+
+[discovery.dotNetErrors]
+
+[audit.unSSL]
+
+[discovery.sharedHosting]
+
+[discovery.webSpider]
+followRegex = .*
+ignoreRegex = None
+onlyForward = False
+
+[grep.hashFind]
+
+[audit.eval]
+
+[audit.osCommanding]
+
+[audit.ssi]
+
+[discovery.serverHeader]
+
+[audit.sqli]
+
+[grep.dotNetEventValidation]
+
+[audit.buffOverflow]
+
+[grep.directoryIndexing]
+
+[grep.collectCookies]
+
+[grep.getMails]
+
+[grep.oracle]
+
+[grep.strangeHTTPCode]
+
+[audit.xpath]
+
+[audit.generic]
+
+[grep.fileUpload]
+
+[grep.passwordProfiling]
+
+[grep.httpInBody]
+
+[grep.ajax]
+
+[discovery.fingerprint_WAF]
+
+[grep.error500]
+
+[discovery.detectReverseProxy]
+
+[grep.lang]
+
+[discovery.serverStatus]
+
+[grep.objects]
+
+[discovery.hmap]
+
+[grep.metaTags]
+
+[audit.htaccessMethods]
+
+[discovery.oracleDiscovery]
+
+[grep.domXss]
+
+[target]
+target = http://www.bancoamazonas.com/portal/index.jsp
+
+[audit.remoteFileInclude]
+listenPort = 44449
+usew3afSite = True
+listenAddress = 
+
+[grep.wsdlGreper]
+
+[discovery.findvhost]
+
+[grep.httpAuthDetect]
+
+[audit.responseSplitting]
+
+[grep.svnUsers]
+
+[discovery.sitemapReader]
+
+[grep.blankBody]
+
+[grep.errorPages]
+
+[audit.dav]
+
+[audit.formatString]
+
+[discovery.phpEggs]
+
+[grep.strangeParameters]
+
+[discovery.robotsReader]
+
+[audit.globalRedirect]
+
+[audit.xst]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[discovery.crossDomain]
+
+[profile]
+description = 
+name = OWASP_TOP10
 
 [grep.findComments]
 search404 = True
 
 [output.gtkOutput]
 
-[discovery.serverStatus]
+[grep.ssn]
 
-[audit.sqli]
-
-[grep.dotNetEventValidation]
-
-[grep.directoryIndexing]
-
-[audit.remoteFileInclude]
-listenPort = 44449
-usew3afSite = True
-listenAddress = 
-rfiUrl = 
-rfiResult = 
-
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
+[grep.codeDisclosure]
 
 [grep.privateIP]
 
-[audit.xsrf]
-
-[discovery.pykto]
-dbFile = plugins/discovery/pykto/scan_database.db
-updateScandb = False
-adminDirs = /admin/,/adm/
-nukeDirs = /,/postnuke/,/postnuke/html/,/modules/,/phpBB/,/forum/
-mutateTests = False
-genericScan = False
-cgiDirs = /cgi-bin/
+[discovery.phishtank]
 
 [http-settings]
 proxyPort = 8080
-headersFile = 
-maxFileSize = 400000
-proxyAddress = 
 basicAuthDomain = 
+maxFileSize = 400000
 always404 = 
+headersFile = 
+proxyAddress = 
 maxRetrys = 2
 404exceptions = 
 ignoreSessCookies = False
-cookieJarFile = 
+byDirectory404 = False
 timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
 byDirectoryAndExtension404 = False
 autodetect404 = True
-byDirectory404 = False
+cookieJarFile = 
 
-[grep.codeDisclosure]
+[discovery.MSNSpider]
 
 [audit.fileUpload]
 extensions = gif,html
-
-[grep.httpAuthDetect]
 
