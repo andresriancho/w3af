@@ -212,6 +212,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
     def _clear_web_server( self, url_to_include ):
         '''
         Remove the file in the webroot and stop the webserver.
+        
+        PLEASE NOTE: This is duplicated code!! see the same note above.
         '''
         if not self._use_XSS_vuln and self._web_server:
             self._web_server.stop()
@@ -369,7 +371,9 @@ class rfi_shell(shell):
 
     def _clear_web_server( self, url_to_include ):
         '''
-        TODO: This is duplicated code!! see above.
+        Remove the file in the webroot and stop the webserver.
+        
+        PLEASE NOTE: This is duplicated code!! see the same note above.
         '''
         if self._web_server:
             self._web_server.stop()
