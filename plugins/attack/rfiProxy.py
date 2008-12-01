@@ -290,6 +290,24 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         global URLOPENER
         URLOPENER = urlOpener
         
+    def getLongDesc( self ):
+        '''
+        @return: A DETAILED description of the plugin functions and features.
+        '''
+        return '''
+        This plugin exploits remote file inclusion vulnerabilities and returns a proxy object, proxy
+        objects listen on a local port, and create a tunnel from the local machine to the remote
+        end, where the connections are actually created.
+        
+        Five configurable parameters exist:
+            - listenAddress
+            - proxyPort
+            - httpdPort
+            - proxyPublicIP
+            - rfiConnGenerator
+        '''
+        
+        
 class w3afProxyHandler(BaseHTTPRequestHandler):
 
     def _work( self, host, port, send, proxyClientConnection ):

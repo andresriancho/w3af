@@ -324,7 +324,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         return a shell, but the one that uses XSS will work even when a restrictive firewall is 
         configured at the remote site.
         
-        Three configurable parameters exist:
+        Four configurable parameters exist:
             - listenAddress
             - listenPort
             - useXssBug
