@@ -162,6 +162,7 @@ class strangeHeaders(baseGrepPlugin):
         headers.append("X-POWERED-BY")
         headers.append("X-ASPNET-VERSION")
         headers.append("X-CACHE")
+        headers.append("X-PAD")
         return headers
 
     def getPluginDeps( self ):
