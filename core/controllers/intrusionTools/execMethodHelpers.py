@@ -36,7 +36,7 @@ def osDetectionExec( execMethod ):
         pass
     else:
         if 'w3af' == linux1 and ':' in linux2:
-            om.out.debug('Identified remote OS as Linux, returning lnxVd object.')
+            om.out.debug('Identified remote OS as Linux, returning "linux".')
             return 'linux'
         
     try:
@@ -47,10 +47,10 @@ def osDetectionExec( execMethod ):
         pass
     else:
         if '[fonts]' in win1 and 'ECHO' in win2:
-            om.out.debug('Identified remote OS as Windows, returning winVd object.')
+            om.out.debug('Identified remote OS as Windows, returning "windows".')
             return 'windows'
     
-    raise w3afException('Failed to get identify the remote OS.')
+    raise w3afException('Failed to get/identify the remote OS.')
 
 def getRemoteTempFile( execMethod ):
     '''
