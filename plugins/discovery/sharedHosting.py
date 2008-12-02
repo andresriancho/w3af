@@ -21,20 +21,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.w3afException import w3afException
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
-from core.data.searchEngines.msn import msn as msn
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
-import socket
+from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
+
+import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
+import core.data.kb.vuln as vuln
+
+from core.data.searchEngines.msn import msn as msn
 from core.controllers.misc.is_private_site import is_private_site
+
+import socket
 
 
 class sharedHosting(baseDiscoveryPlugin):
@@ -48,8 +52,7 @@ class sharedHosting(baseDiscoveryPlugin):
         self._run = True
         
         # User variables
-        self._resultLimit = 300
-
+        self._result_limit = 300
         
     def discover(self, fuzzableRequest ):
         '''
@@ -62,11 +65,13 @@ class sharedHosting(baseDiscoveryPlugin):
             # I will only run this one time. All calls to sharedHosting return the same url's
             self._run = False
             
-            self._msn = msn( self._urlOpener )
+            msn_wrapper = msn( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
             if is_private_site( domain ):
-                om.out.debug('sharedHosting plugin is not checking for subdomains for domain: ' + domain + ' because its a private address.' )
+                msg = 'sharedHosting plugin is not checking for subdomains for domain: '
+                msg += domain + ' because its a private address.' 
+                om.out.debug(msg)
                 
             else:
                 # Get the ip and do the search
@@ -75,49 +80,53 @@ class sharedHosting(baseDiscoveryPlugin):
                     addrinfo = socket.getaddrinfo(domain, 0)
                 except:
                     raise w3afException('Could not resolve hostname: ' + domain )
-                ips = [info[4][0] for info in addrinfo]
+                ip_address_list = [info[4][0] for info in addrinfo]
+                ip_address_list = list( set(ip_address_list) )
                 
-                # Selecting the first IP address of the dns response
-                ip = ips[0]
-                results = self._msn.getNResults('ip:'+ ip, self._resultLimit )
-                
-                results = [ urlParser.baseUrl( r.URL ) for r in results ]
-                results = list( set( results ) )
-                
-                # not vuln by default
-                isVulnerable = False
-                
-                if len(results) > 1:
-                    # We may have something...
-                    isVulnerable = True
+                # This is the best way to search, one by one!
+                for ip_address in ip_address_list:
+                    results = msn_wrapper.getNResults('ip:'+ ip_address, self._result_limit )
                     
-                    if len(results) == 2:
-                        # Maybe we have this case:
-                        # [Mon 09 Jun 2008 01:08:26 PM ART] - http://216.244.147.14/
-                        # [Mon 09 Jun 2008 01:08:26 PM ART] - http://www.business.com/
-                        # Where www.business.com resolves to 216.244.147.14; so we don't really
-                        # have more than one domain in the same server.
-                        res0 = socket.gethostbyname( urlParser.getDomain( results[0] ) )
-                        res1 = socket.gethostbyname( urlParser.getDomain( results[1] ) )
-                        if res0 == res1:
-                            isVulnerable = False
-                
-                if isVulnerable:
-                    v = vuln.vuln()
-                    v.setURL( fuzzableRequest.getURL() )
-                    v.setId( 0 )
-                    v['alsoInHosting'] = results
-                    v.setDesc( 'The web application under test seems to be in a shared hosting.' )
-                    v.setName( 'Shared hosting' )
-                    v.setSeverity(severity.MEDIUM)
+                    results = [ urlParser.baseUrl( r.URL ) for r in results ]
+                    results = list( set( results ) )
                     
-                    kb.kb.append( self, 'sharedHosting', v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    # not vuln by default
+                    is_vulnerable = False
                     
-                    om.out.vulnerability('This list of domains, and the domain of the web application under test, all point to the same IP address (%s):' % ip, severity=severity.MEDIUM )
-                    for url in results:
-                        om.out.vulnerability('- ' + url , severity=severity.MEDIUM)
-                        kb.kb.append( self, 'domains', urlParser.getDomain(url) )
+                    if len(results) > 1:
+                        # We may have something...
+                        is_vulnerable = True
+                        
+                        if len(results) == 2:
+                            # Maybe we have this case:
+                            # [Mon 09 Jun 2008 01:08:26 PM ART] - http://216.244.147.14/
+                            # [Mon 09 Jun 2008 01:08:26 PM ART] - http://www.business.com/
+                            # Where www.business.com resolves to 216.244.147.14; so we don't really
+                            # have more than one domain in the same server.
+                            res0 = socket.gethostbyname( urlParser.getDomain( results[0] ) )
+                            res1 = socket.gethostbyname( urlParser.getDomain( results[1] ) )
+                            if res0 == res1:
+                                is_vulnerable = False
+                    
+                    if is_vulnerable:
+                        v = vuln.vuln()
+                        v.setURL( fuzzableRequest.getURL() )
+                        v.setId( 0 )
+                        v['alsoInHosting'] = results
+                        msg = 'The web application under test seems to be in a shared hosting.'
+                        v.setDesc( msg )
+                        v.setName( 'Shared hosting' )
+                        v.setSeverity(severity.MEDIUM)
+                        
+                        kb.kb.append( self, 'sharedHosting', v )
+                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                        
+                        msg = 'This list of domains, and the domain of the web application under'
+                        msg += ' test, all point to the same IP address (%s):' % ip_address
+                        om.out.vulnerability( msg, severity=severity.MEDIUM )
+                        for url in results:
+                            om.out.vulnerability('- ' + url , severity=severity.MEDIUM)
+                            kb.kb.append( self, 'domains', urlParser.getDomain(url) )
                 
         return []
     
@@ -126,7 +135,7 @@ class sharedHosting(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d2 = 'Fetch the first "resultLimit" results from the MSN search'
-        o2 = option('resultLimit', self._resultLimit, d2, 'integer')
+        o2 = option('resultLimit', self._result_limit, d2, 'integer')
 
         ol = optionList()
         ol.add(o2)
@@ -140,7 +149,7 @@ class sharedHosting(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._resultLimit = optionsMap['resultLimit'].getValue()
+        self._result_limit = optionsMap['resultLimit'].getValue()
     
     def getPluginDeps( self ):
         '''

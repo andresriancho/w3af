@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,10 +10,14 @@ output config console
 set verbose False
 back
 discovery sharedHosting
-discovery
 back
+
 target
-#set target http://127.0.0.1/
-set target http://www.securearg.net/
+set target http://www.ipaddress.com.ar/
 back
+
 start
+
+assert len(kb.kb.getData('sharedHosting','sharedHosting')) == 1
+
+exit
