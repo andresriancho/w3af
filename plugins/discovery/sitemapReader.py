@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -28,16 +29,20 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException, w3afRunOnce
+
 
 class sitemapReader(baseDiscoveryPlugin):
     '''
     Analyze the sitemap.xml file and find new URLs
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._exec = True
 
     def discover(self, fuzzableRequest ):
@@ -53,16 +58,16 @@ class sitemapReader(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             self._fuzzableRequests = []
-            self.is404 = kb.kb.getData( 'error404page', '404' )
+            is_404 = kb.kb.getData( 'error404page', '404' )
             
-            baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
-            sitemapUrl = urlParser.urlJoin(  baseUrl , 'sitemap.xml' )
-            response = self._urlOpener.GET( sitemapUrl, useCache=True )
+            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+            sitemap_url = urlParser.urlJoin(  base_url , 'sitemap.xml' )
+            response = self._urlOpener.GET( sitemap_url, useCache=True )
             
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
-            if '</urlset>' in response and not self.is404( response ):
+            if '</urlset>' in response and not is_404( response ):
                 om.out.debug('Analyzing sitemap.xml file.')
                 
                 self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
@@ -113,6 +118,7 @@ class sitemapReader(baseDiscoveryPlugin):
         return '''
         This plugin searches for the sitemap.xml file, and parses it.
         
-        The sitemap.xml file is used by the site administrator to give the google search engine more information
-        about the site. By parsing this file, the plugin will find new URL's and other usefull information.
+        The sitemap.xml file is used by the site administrator to give the Google crawler more
+        information about the site. By parsing this file, the plugin finds new URLs and other
+        usefull information.
         '''

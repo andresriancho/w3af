@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -12,7 +11,6 @@ set verbose False
 back
 
 discovery sitemapReader
-discovery
 back
 
 target
@@ -20,5 +18,7 @@ set target http://localhost/
 back
 
 start
+
+assert len( kb.kb.getData('urls','urlList') ) == 3
 
 exit
