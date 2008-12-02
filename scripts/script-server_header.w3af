@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,11 +10,10 @@ output config console
 set verbose False
 back
 discovery serverHeader
-discovery
 back
 
 target
-set target http://localhost/w3af/xss/shortcut.php
+set target http://localhost/w3af/audit/xss/index.php
 back
 
 start
