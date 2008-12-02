@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -19,3 +18,7 @@ set target http://127.0.0.1/
 back
 
 start
+
+assert len( kb.kb.getData('serverStatus','server') ) == 1
+
+exit
