@@ -21,14 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afRunOnce
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afRunOnce
+import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -42,13 +42,16 @@ class robotsReader(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._exec = True
 
     def discover(self, fuzzableRequest ):
         '''
         Get the robots.txt file and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                      (among other things) the URL to test.
         '''
         if not self._exec:
             # This will remove the plugin from the discovery plugins to be runned.
@@ -61,34 +64,35 @@ class robotsReader(baseDiscoveryPlugin):
             dirs = []
             self._fuzzableRequests = []         
             
-            baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
-            robotsUrl = urlParser.urlJoin(  baseUrl , 'robots.txt' )
-            response = self._urlOpener.GET( robotsUrl, useCache=True )
+            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+            robots_url = urlParser.urlJoin(  base_url , 'robots.txt' )
+            http_response = self._urlOpener.GET( robots_url, useCache=True )
             
-            if not self.is404( response ):
+            if not self.is404( http_response ):
                 # Save it to the kb!
                 i = info.info()
                 i.setName('robots.txt file')
-                i.setURL( robotsUrl )
-                i.setId( response.id )
-                i.setDesc( 'A robots.txt file was found at: "'+ robotsUrl +'".' )
+                i.setURL( robots_url )
+                i.setId( http_response.id )
+                i.setDesc( 'A robots.txt file was found at: "'+ robots_url +'".' )
                 kb.kb.append( self, 'robots.txt', i )
                 om.out.information( i.getDesc() )
 
 
                 # Work with it...
-                dirs.append( robotsUrl )
-                for line in response.getBody().split('\n'):
-                    if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or line.upper().find('DISALLOW') == 0 ):
-                        url = line[ line.find(':') + 2 : ]
-                        url = urlParser.urlJoin(  baseUrl , url )
+                dirs.append( robots_url )
+                for line in http_response.getBody().split('\n'):
+                    if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or\
+                    line.upper().find('DISALLOW') == 0 ):
+                        url = line[ line.find(':') + 1 : ]
+                        url = url.strip()
+                        url = urlParser.urlJoin(  base_url , url )
                         dirs.append( url )
-                        om.out.information( 'robotsReader found a new URL: ' + url )
 
             for url in dirs:
-                response = self._urlOpener.GET( url, useCache=True )
-                fuzzReqs = self._createFuzzableRequests( response )
-                self._fuzzableRequests.extend( fuzzReqs )
+                http_response = self._urlOpener.GET( url, useCache=True )
+                fuzz_reqs = self._createFuzzableRequests( http_response )
+                self._fuzzableRequests.extend( fuzz_reqs )
         
         return self._fuzzableRequests
         
@@ -123,6 +127,6 @@ class robotsReader(baseDiscoveryPlugin):
         return '''
         This plugin searches for the robots.txt file, and parses it.
         
-        This file is used to as an ACL that defines what URL's a search engine can access. By parsing this file, 
-        you can get more information about the site.
+        This file is used to as an ACL that defines what URL's a search engine can access.
+        By parsing this file, you can get more information about the site.
         '''
