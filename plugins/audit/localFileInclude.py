@@ -260,6 +260,7 @@ class localFileInclude(baseAuditPlugin):
             read_errors.append("fread\\(\\):")
             read_errors.append("for inclusion '\\(include_path=")
             read_errors.append("Failed opening required")
+            read_errors.append("<b>Warning</b>:  file\\(")
             
             self._error_compiled_regex = [re.compile(i, re.IGNORECASE) for i in read_errors]
             return self._error_compiled_regex
