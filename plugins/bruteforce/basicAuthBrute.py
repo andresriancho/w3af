@@ -44,7 +44,7 @@ class basicAuthBrute(baseBruteforcePlugin):
     def __init__(self):
         baseBruteforcePlugin.__init__(self)
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tries to bruteforce a basic HTTP auth. This aint fast!
         

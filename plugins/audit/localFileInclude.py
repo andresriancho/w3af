@@ -53,7 +53,7 @@ class localFileInclude(baseAuditPlugin):
         self._file_compiled_regex = []
         self._error_compiled_regex = []
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for local file inclusion vulnerabilities.
         

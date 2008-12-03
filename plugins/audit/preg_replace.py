@@ -46,7 +46,7 @@ class preg_replace(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for unsafe usage of PHP's preg_replace.
         

@@ -46,7 +46,7 @@ class ssi(baseAuditPlugin):
         
         self._fuzzableRequests = []
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for server side inclusion vulnerabilities.
         

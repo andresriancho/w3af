@@ -49,7 +49,7 @@ class xst(baseAuditPlugin):
         # Internal variables
         self._exec = True
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Verify xst vulns by sending a TRACE request and analyzing the response.
         '''

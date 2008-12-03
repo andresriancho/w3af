@@ -41,7 +41,7 @@ class unSSL(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Check if the protocol specified in freq is https and fetch the same URL using http. 
         ie:

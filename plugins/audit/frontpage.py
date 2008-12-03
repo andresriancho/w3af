@@ -53,7 +53,7 @@ class frontpage(baseAuditPlugin):
         self._stop_on_first = True
         
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Searches for file upload vulns using a POST to author.dll.
         

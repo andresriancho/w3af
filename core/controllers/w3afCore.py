@@ -589,7 +589,7 @@ class w3afCore:
                         self._setCurrentFuzzableRequest( fr )
                         try:
                             # Perform the actual work
-                            pluginResult = plugin.discover( fr )
+                            pluginResult = plugin.discover_wrapper( fr )
                         except w3afException,e:
                             om.out.error( str(e) )
                             tm.join( plugin )
@@ -749,7 +749,7 @@ class w3afCore:
                 # Sends each fuzzable request to the plugin
                 try:
                     self._setCurrentFuzzableRequest( fr )
-                    plugin.audit( fr )
+                    plugin.audit_wrapper( fr )
                 except w3afException, e:
                     om.out.error( str(e) )
                     tm.join( plugin )
@@ -792,7 +792,7 @@ class w3afCore:
                 try:
                     self._setCurrentFuzzableRequest( fr )
                     
-                    frList = plugin.bruteforce( fr )
+                    frList = plugin.bruteforce_wrapper( fr )
                     tm.join( plugin )
                 except w3afException, e:
                     tm.join( plugin )

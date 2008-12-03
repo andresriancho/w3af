@@ -54,7 +54,7 @@ class xsrf(baseAuditPlugin):
         self._vulnComplex = []
         self._alreadyReported = False
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for xsrf vulnerabilities.
         

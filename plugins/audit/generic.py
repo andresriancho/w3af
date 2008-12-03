@@ -50,7 +50,7 @@ class generic(baseAuditPlugin):
         # User configured variables
         self._diff_ratio = 0.35
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Find all kind of bugs without using a fixed database of errors.
         

@@ -42,7 +42,7 @@ class sslCertificate(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Get the cert and do some checks against it.
         

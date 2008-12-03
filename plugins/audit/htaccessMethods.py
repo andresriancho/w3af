@@ -50,7 +50,7 @@ class htaccessMethods(baseAuditPlugin):
         self._bad_methods = [ http_constants.UNAUTHORIZED, 
                     http_constants.NOT_IMPLEMENTED, http_constants.METHOD_NOT_ALLOWED]
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for htaccess misconfigurations.
         

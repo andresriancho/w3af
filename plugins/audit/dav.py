@@ -52,7 +52,7 @@ class dav(baseAuditPlugin):
         self.is_404 = None
         self._already_tested_dirs = []
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Searches for file upload vulns using PUT method.
         

@@ -64,7 +64,7 @@ class eval(baseAuditPlugin):
         self._use_time_delay = True
         self._use_echo = True
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for eval() user input injection vulnerabilities.
         @param freq: A fuzzableRequest

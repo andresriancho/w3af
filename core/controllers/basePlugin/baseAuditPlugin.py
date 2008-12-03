@@ -30,7 +30,7 @@ class baseAuditPlugin(basePlugin):
     '''
     This is the base class for audit plugins, all audit plugins should inherit from it 
     and implement the following methods :
-        1. _fuzzRequests(...)
+        1. audit(...)
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -39,10 +39,10 @@ class baseAuditPlugin(basePlugin):
         basePlugin.__init__( self )
         self._urlOpener = None
 
-    def audit( self, fuzzable_request ):
+    def audit_wrapper( self, fuzzable_request ):
         '''
         Receives a fuzzable_request and forwards it to the internal method
-        _fuzzRequests()
+        audit()
         
         @parameter fuzzable_request: A fuzzable_request instance
         '''
@@ -50,9 +50,9 @@ class baseAuditPlugin(basePlugin):
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = fuzzable_request.copy()
-        self._fuzzRequests( fuzzable_request_copy )
+        self.audit( fuzzable_request_copy )
         
-    def _fuzzRequests( self, freq ):
+    def audit( self, freq ):
         '''
         The freq is a fuzzable_request that is going to be modified and sent.
         
@@ -60,7 +60,7 @@ class baseAuditPlugin(basePlugin):
         
         @param freq: A fuzzable_request
         '''
-        raise w3afException('Plugin is not implementing required method _fuzzRequests' )
+        raise w3afException('Plugin is not implementing required method audit' )
     
     def _analyzeResult( self, mutant, res ):
         '''

@@ -25,7 +25,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.bruteforce.bruteforcer import bruteforcer
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
-from core.data.request.frFactory import createFuzzableRequests
+from core.data.request.frFactory import createfuzzable_requests
 import core.data.kb.knowledgeBase as kb
 # options
 from core.data.options.option import option
@@ -76,18 +76,18 @@ class baseBruteforcePlugin(baseAuditPlugin):
         
         THIS METHOD MUST BE IMPLEMENTED BY EVERY BRUTEFORCE PLUGIN!
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         raise w3afException('Bruteforce plugins MUST override method _fuzzRequests.')
     
-    def bruteforce( self, fuzzableRequest ):
-        self.audit( fuzzableRequest )
+    def bruteforce_wrapper( self, fuzzable_request ):
+        self.audit_wrapper( fuzzable_request.copy() )
         
         res = []
         for v in kb.kb.getData( self.getName(), 'auth' ):
             if v.getURL() not in self._alreadyReported:
                 self._alreadyReported.append( v.getURL() )
-                res.extend( createFuzzableRequests(v['response']) )
+                res.extend( createfuzzable_requests(v['response']) )
         return res
     
     def _bruteforce( self, url, combinations ):

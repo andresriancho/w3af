@@ -58,7 +58,7 @@ class osCommanding(baseAuditPlugin):
         self._second_wait_time = 9
         
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for OS Commanding vulnerabilities.
         

@@ -36,7 +36,17 @@ class baseDiscoveryPlugin(basePlugin):
         basePlugin.__init__( self )
         self._urlOpener = None
 
-    def discover(self, url ):
+    def discover_wrapper(self, fuzzable_request):
+        '''
+        Wrapper around the discover method in order to perform some generic tasks.
+        '''
+        # I copy the fuzzable request, to avoid cross plugin contamination
+        # in other words, if one plugin modified the fuzzable request object
+        # INSIDE that plugin, I don't want the next plugin to suffer from that
+        fuzzable_request_copy = fuzzable_request.copy()
+        self.discover( fuzzable_request_copy )
+
+    def discover(self, fuzzable_request):
         '''
         The url is a string containing the Url to test ( http://somehost.com/foo.php )
         

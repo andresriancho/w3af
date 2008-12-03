@@ -51,7 +51,7 @@ class globalRedirect(baseAuditPlugin):
         self._test_site = 'http://w3af.sourceforge.net/'
         self._scriptre = re.compile('< *script.*?>(.*)< */ *script *>', re.IGNORECASE | re.DOTALL )
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for global redirect vulnerabilities.
         

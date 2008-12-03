@@ -58,7 +58,7 @@ class xss(baseAuditPlugin):
         # Used in the message
         self._xss_tests_length = len( self._get_xss_tests() )
         
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for XSS vulnerabilities.
         

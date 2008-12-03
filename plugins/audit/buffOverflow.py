@@ -72,7 +72,7 @@ class buffOverflow(baseAuditPlugin):
         '''
         baseAuditPlugin.__init__(self)
         
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for buffer overflow vulnerabilities.
         

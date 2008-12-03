@@ -60,7 +60,7 @@ class fileUpload(baseAuditPlugin):
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Searches for file upload vulns.
         

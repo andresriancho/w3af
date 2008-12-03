@@ -63,7 +63,7 @@ class remoteFileInclude(baseAuditPlugin):
         self._listen_address = ''
         self._use_w3af_site = True
         
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tests an URL for remote file inclusion vulnerabilities.
         

@@ -48,7 +48,7 @@ class formAuthBrute(baseBruteforcePlugin):
         # To store failed responses for later comparison
         self._loginFailedResultList = []
         
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Tries to bruteforce a form auth. This aint fast!
         

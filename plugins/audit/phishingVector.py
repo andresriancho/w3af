@@ -55,7 +55,7 @@ class phishingVector(baseAuditPlugin):
         # filters
         self._test_urls = ['hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/', 'fTp://w3af.sf.net/']
 
-    def _fuzzRequests(self, freq ):
+    def audit(self, freq ):
         '''
         Find those phishing vectors!
         
