@@ -33,7 +33,7 @@ class progress:
 
     def __init__(self):
         self._max_value = 0.0
-        self._current_value = 0.0
+        self._current_value = 0.1
         self._first_amount_change_time = None
         self._eta = None
 
