@@ -82,6 +82,7 @@ class xUrllib:
         self._evasionPlugins = []
         self._paused = False
         self._mustStop = False
+        self._ignore_errors_conf = False
     
     def pause(self,  pauseYesNo):
         '''
@@ -167,7 +168,7 @@ class xUrllib:
         '''
         om.out.debug('Enabling _dnsCache()')
         import socket
-        if not hasattr( socket, 'alreadyConfigured' ):
+        if not hasattr( socket, 'already_configured' ):
             socket._getaddrinfo = socket.getaddrinfo
         
         _dns_cache = LRU(200)
@@ -176,7 +177,7 @@ class xUrllib:
                 query = (args)
                 res = _dns_cache[query]
                 #This was too noisy and not so usefull
-                #om.out.debug('Cached DNS response for domain: ' + query[0] )
+                om.out.debug('Cached DNS response for domain: ' + query[0] )
                 return res
             except KeyError:
                 res = socket._getaddrinfo(*args, **kwargs)
@@ -184,9 +185,9 @@ class xUrllib:
                 om.out.debug('DNS response from DNS server for domain: ' + query[0] )
                 return res
         
-        if not hasattr( socket, 'alreadyConfigured' ):      
+        if not hasattr( socket, 'already_configured' ):      
             socket.getaddrinfo = _caching_getaddrinfo
-            socket.alreadyConfigured = True
+            socket.already_configured = True
     
     def _init( self ):
         if self.settings.needUpdate or \
@@ -261,6 +262,7 @@ class xUrllib:
         @return: An httpResponse object.
         '''
         self._init()
+
         if self._isBlacklisted( uri ):
             return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
         
@@ -441,7 +443,7 @@ class xUrllib:
         self._checkURI( req )
         
         # Evasion
-        originalUrl = req._Request__original
+        original_url = req._Request__original
         req = self._evasion( req )
         
         startTime = time.time()
@@ -462,18 +464,34 @@ class xUrllib:
                 except:
                     raise w3afException('Unexpected error in urllib2 / httplib: ' + repr(e.reason) )                    
                 else:
-                    if e.reason[0] == -2:
-                        raise w3afException('Failed to resolve domain name for URL: ' + req.get_full_url() )
-                    if e.reason[0] == 111:
-                        raise w3afException('Connection refused while requesting: ' + req.get_full_url() )
+                    if isinstance(e.reason, type(())):
+                        # It's a tuple
+                        if e.reason[0] in (-2, 111):
+                            msg = 'w3af failed to reach the server while requesting: "' + original_url
+                            msg += '".\nReason: "' + str(e.reason[1]) + '" , error code: "'
+                            msg += str(e.reason[0]) + '".'
+                            raise w3afException( msg )
+                        else:
+                            msg = 'w3af failed to reach the server while requesting: "' + original_url
+                            msg += '".\nReason: "' + str(e.reason[1]) + '" , error code: "' + str(e.reason[0])
+                            msg += '"; going to retry.'
+                            om.out.debug( msg )
+                            om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                            req._Request__original = original_url
+                            return self._retry( req, useCache )
                     else:
-                        om.out.debug( 'w3af failed to reach the server while requesting: "'+originalUrl+'".\nReason: "' + str(e.reason) + '" , Exception: "'+ str(e)+'"; going to retry.')
+                        # Not a tuple, something "strange"!
+                        msg = 'w3af failed to reach the server while requesting: "' + original_url
+                        msg += '".\nReason: "' + str(e.reason)
+                        msg += '"; going to retry.'
+                        om.out.debug( msg )
                         om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
-                        req._Request__original = originalUrl
+                        req._Request__original = original_url
                         return self._retry( req, useCache )
+
             elif hasattr(e, 'code'):
                 # We usually get here when the response has codes 404, 403, 401, etc...
-                msg = req.get_method() + ' ' + originalUrl +' returned HTTP code "'
+                msg = req.get_method() + ' ' + original_url +' returned HTTP code "'
                 msg += str(e.code) + '" - id: ' + str(e.id)
                 om.out.debug( msg )
                 
@@ -482,7 +500,7 @@ class xUrllib:
                 info = e.info()
                 geturl = e.geturl()
                 read = self._readRespose( e )
-                httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=e.id, time=time.time() - startTime, msg=e.msg )
+                httpResObj = httpResponse(code, read, info, geturl, original_url, id=e.id, time=time.time() - startTime, msg=e.msg )
                 
                 # Clear the log of failed requests; this request is done!
                 if id(req) in self._errorCount:
@@ -504,7 +522,7 @@ class xUrllib:
             # The handling of this errors is complex... if I get a lot of errors in a row, I'll raise a
             # w3afMustStopException because the remote webserver might be unreachable.
             # For the first N errors, I just return an empty response...
-            om.out.debug( req.get_method() + ' ' + originalUrl +' returned HTTP code "' + str(NO_CONTENT) + '"' )
+            om.out.debug( req.get_method() + ' ' + original_url +' returned HTTP code "' + str(NO_CONTENT) + '"' )
             om.out.debug( 'Unhandled exception in xUrllib._send(): ' + str ( e ) )
             om.out.debug( str( traceback.format_exc() ) )
             
@@ -513,15 +531,15 @@ class xUrllib:
                 del self._errorCount[ id(req) ]
             self._incrementGlobalErrorCount()
             
-            return httpResponse( NO_CONTENT, '', {}, originalUrl, originalUrl, msg='No Content' )
+            return httpResponse( NO_CONTENT, '', {}, original_url, original_url, msg='No Content' )
         else:
             # Everything ok !
             if not req.get_data():
-                msg = req.get_method() + ' ' + urllib.unquote_plus( originalUrl ) +' returned HTTP code "'
+                msg = req.get_method() + ' ' + urllib.unquote_plus( original_url ) +' returned HTTP code "'
                 msg += str(res.code) + '" - id: ' + str(res.id)
                 om.out.debug( msg )
             else:
-                msg = req.get_method() + ' ' + originalUrl +' with data: "'
+                msg = req.get_method() + ' ' + original_url +' with data: "'
                 msg += urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "'
                 msg += str(res.code) + '" - id: ' + str(res.id)
                 om.out.debug( msg )
@@ -530,7 +548,7 @@ class xUrllib:
             info = res.info()
             geturl = res.geturl()
             read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl, originalUrl, id=res.id, time=time.time() - startTime, msg=res.msg )
+            httpResObj = httpResponse(code, read, info, geturl, original_url, id=res.id, time=time.time() - startTime, msg=res.msg )
             # Let the upper layers know that this response came from the local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
@@ -578,6 +596,13 @@ class xUrllib:
             raise w3afException('Too many retries when trying to get: ' + req.get_full_url() )
     
     def _incrementGlobalErrorCount( self ):
+        '''
+        Increment the error count, and if we got a lot of failures... raise a "afMustStopException"
+        '''
+        if self._ignore_errors_conf:
+            return
+
+        # All the logic follows:
         if self._lastRequestFailed:
             self._consecutiveErrorCount += 1
         else:
@@ -586,7 +611,19 @@ class xUrllib:
         om.out.debug('Incrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
         
         if self._consecutiveErrorCount >= 10:
-            raise w3afMustStopException('The xUrllib found too much consecutive errors. The remote webserver doesn\'t seem to be reachable anymore; please verify manually.')
+            msg = 'The xUrllib found too much consecutive errors. The remote webserver doesn\'t'
+            msg += ' seem to be reachable anymore; please verify manually.'
+            raise w3afMustStopException( msg )
+
+    def ignore_errors( self, yes_no ):
+        '''
+        Let the library know if errors should be ignored or not. Basically,
+        ignore all calls to "_incrementGlobalErrorCount" and don't raise the
+        w3afMustStopException.
+
+        @parameter yes_no: True to ignore errors.
+        '''
+        self._ignore_errors_conf = yes_no
             
     def _zeroGlobalErrorCount( self ):
         if self._lastRequestFailed or self._consecutiveErrorCount:

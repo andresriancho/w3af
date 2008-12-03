@@ -52,6 +52,11 @@ class unSSL(baseAuditPlugin):
         '''
 
         if 'HTTPS' == getProtocol( freq.getURL() ).upper():
+
+            # We are going to perform requests that (in normal cases)
+            # are going to fail, so we set the ignore errors flag to True
+            self._urlOpener.ignore_errors( True )
+
             secure = freq.getURL()
             unsecure = 'http://' + allButScheme(freq.getURL())
             
@@ -64,10 +69,15 @@ class unSSL(baseAuditPlugin):
                     v = vuln.vuln( freq )
                     v.setName( 'Secure content over insecure channel' )
                     v.setSeverity(severity.MEDIUM)
-                    v.setDesc( 'Secure content can be accesed using insecure protocol http. The URLs are: ' + secure + ' - ' + unsecure + ' .' )
+                    msg = 'Secure content can be accesed using insecure protocol http. The URLs'
+                    msg += ' are: ' + secure + ' - ' + unsecure + ' .'
+                    v.setDesc( msg )
                     v.setId( httpResponse.id )
                     kb.kb.append( self, 'unSSL', v )
                     om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+
+            # Disable error ignoring
+            self._urlOpener.ignore_errors( False )
     
     def _analyzeResult( self, fuzzableRequest, res ):
         pass
