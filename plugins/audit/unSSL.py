@@ -45,8 +45,8 @@ class unSSL(baseAuditPlugin):
         '''
         Check if the protocol specified in freq is https and fetch the same URL using http. 
         ie:
-            input: https://a/
-            check: http://a/
+            - input: https://a/
+            - check: http://a/
         
         @param freq: A fuzzableRequest
         '''
