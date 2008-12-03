@@ -39,22 +39,26 @@ class baseAuditPlugin(basePlugin):
         basePlugin.__init__( self )
         self._urlOpener = None
 
-    def audit( self, fuzzableRequest ):
+    def audit( self, fuzzable_request ):
         '''
-        Receives a fuzzableRequest and forwards it to the internal method
+        Receives a fuzzable_request and forwards it to the internal method
         _fuzzRequests()
         
-        @parameter fuzzableRequest: A fuzzableRequest instance
+        @parameter fuzzable_request: A fuzzable_request instance
         '''
-        self._fuzzRequests( fuzzableRequest )
+        # I copy the fuzzable request, to avoid cross plugin contamination
+        # in other words, if one plugin modified the fuzzable request object
+        # INSIDE that plugin, I don't want the next plugin to suffer from that
+        fuzzable_request_copy = fuzzable_request.copy()
+        self._fuzzRequests( fuzzable_request_copy )
         
     def _fuzzRequests( self, freq ):
         '''
-        The freq is a fuzzableRequest that is going to be modified and sent.
+        The freq is a fuzzable_request that is going to be modified and sent.
         
         This method MUST be implemented on every plugin.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         raise w3afException('Plugin is not implementing required method _fuzzRequests' )
     
