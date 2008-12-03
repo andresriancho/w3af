@@ -225,6 +225,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         '''
         i = info.info()
         i.setURL( response.getURL() )
+        i.setId( response.id )
         i.setDesc( 'The remote web server seems to have a '+name+'.' )
         i.setName('Found '+name)
         kb.kb.append( self, name, i )
