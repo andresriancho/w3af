@@ -25,7 +25,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.bruteforce.bruteforcer import bruteforcer
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
-from core.data.request.frFactory import createfuzzable_requests
+from core.data.request.frFactory import createFuzzableRequests
 import core.data.kb.knowledgeBase as kb
 # options
 from core.data.options.option import option
@@ -87,7 +87,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         for v in kb.kb.getData( self.getName(), 'auth' ):
             if v.getURL() not in self._alreadyReported:
                 self._alreadyReported.append( v.getURL() )
-                res.extend( createfuzzable_requests(v['response']) )
+                res.extend( createFuzzableRequests(v['response']) )
         return res
     
     def _bruteforce( self, url, combinations ):
