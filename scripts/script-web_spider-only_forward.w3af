@@ -18,7 +18,7 @@ back
 back
 
 target
-set target http://localhost/w3af/discovery/webSpider/
+set target http://localhost/w3af/discovery/web_spider/
 back
 
 start

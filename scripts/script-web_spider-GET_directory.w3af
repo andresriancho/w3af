@@ -24,7 +24,7 @@ discovery allowedMethods,webSpider
 back
 
 target
-set target http://localhost/w3af/discovery/webSpider/a/b/c/d/
+set target http://localhost/w3af/discovery/web_spider/a/b/c/d/
 back
 
 start

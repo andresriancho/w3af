@@ -12,8 +12,8 @@ back
 
 discovery allowedMethods,webDiff
 discovery config webDiff
-set localDir /var/www/w3af/discovery/webSpider/follow_links/
-set remotePath http://127.0.0.1/w3af/discovery/webSpider/follow_links/
+set localDir /var/www/w3af/discovery/web_spider/follow_links/
+set remotePath http://127.0.0.1/w3af/discovery/web_spider/follow_links/
 back
 back
 
