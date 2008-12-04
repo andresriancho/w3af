@@ -28,6 +28,8 @@ from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.misc.lru import LRU
+import urllib
+import cgi
 
 class fingerprint404Page:
     '''
@@ -55,6 +57,36 @@ class fingerprint404Page:
         self._LRU_append_id += 1
         self._404_page_LRU[ self._LRU_append_id ] = obj
 
+    def _get_clean_body(self, response):
+        '''
+        Definition of clean in this method:
+            - input:
+                - response.getURL() == http://host.tld/aaaaaaa/
+                - response.getBody() == 'spam aaaaaaa eggs'
+                
+            - output:
+                - self._clean_body( response ) == 'spam  eggs'
+        
+        The same works with filenames.
+        All of them, are removed encoded and "as is".
+        
+        @parameter response: The httpResponse object to clean
+        @return: A string that represents the "cleaned" response body of the response.
+        '''
+        original_body = response.getBody()
+        domain_path = urlParser.getDomainPath( response.getURL() )
+        to_replace = domain_path.split('/')
+        to_replace.append( domain_path )
+        
+        for i in to_replace:
+            if len(i) > 6:
+                original_body = original_body.replace(i, '')
+                original_body = original_body.replace(urllib.unquote_plus(i), '')
+                original_body = original_body.replace(cgi.escape(i), '')
+                original_body = original_body.replace(cgi.escape(urllib.unquote_plus(i)), '')
+
+        return original_body
+        
     def  _add404Knowledge( self, httpResponse ):
         '''
         Creates a (response, extension) tuple and saves it in the self._404_page_LRU.
@@ -96,8 +128,9 @@ class fingerprint404Page:
         
         if len( tmp ):
             # All items in this directory should be the same...
-            responseBody = tmp[0]
-            ratio = relative_distance( responseBody, httpResponse.getBody() )
+            response_body = tmp[0]
+            html_body = self._get_clean_body( httpResponse )
+            ratio = relative_distance( response_body, html_body )
             if ratio > 0.90:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + '0.90' )
                 return True
@@ -124,9 +157,9 @@ class fingerprint404Page:
         
         if len( tmp ):
             # All items in this directory/extension combination should be the same...
-            responseBody = tmp[0]
-            html_body = httpResponse.getBody().replace(urlParser.getFileName(httpResponse.getURL()), '')
-            ratio = relative_distance( responseBody, html_body )
+            response_body = tmp[0]
+            html_body = self._get_clean_body( httpResponse )
+            ratio = relative_distance( response_body, html_body )
             if ratio > 0.90:
                 om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.90' )
                 return True
@@ -189,7 +222,7 @@ class fingerprint404Page:
                 else:
                     return False
             elif kb.kb.getData('error404page', 'trustBody'):
-                html_body = httpResponse.getBody().replace(urlParser.getFileName(httpResponse.getURL()), '')
+                html_body = self._get_clean_body( httpResponse )
                 ratio = relative_distance( html_body, kb.kb.getData('error404page', 'trustBody') )
                 if ratio > 0.90:
                     om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.90' )
@@ -255,12 +288,12 @@ class fingerprint404Page:
         domainPath = urlParser.getDomainPath( url )
         
         if not extension:
-            randAlNumFile = createRandAlNum( 8 )
+            rand_alnum_file = createRandAlNum( 8 )
             extension = ''
         else:
-            randAlNumFile = createRandAlNum( 8 ) + '.' + extension
+            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
             
-        url404 = urlParser.urlJoin(  domainPath , randAlNumFile )
+        url404 = urlParser.urlJoin(  domainPath , rand_alnum_file )
         
         try:
             # I don't use the cache, because the URLs are random and the only thing that
@@ -275,8 +308,9 @@ class fingerprint404Page:
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
         
-        responseBody = response.getBody()
-        responseBody = responseBody.replace(randAlNumFile, '')
-        response.setBody(responseBody)
+        # I don't want the random file to affect the 404, so I replace it with a blank space
+        response_body = response.getBody()
+        response_body = response_body.replace(rand_alnum_file, '')
+        response.setBody(response_body)
         
         return response, extension

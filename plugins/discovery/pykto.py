@@ -21,20 +21,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.parsers.urlParser as urlParser
+import core.data.constants.severity as severity
+
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.data.fuzzer.fuzzer import createRandAlNum
+import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
+
 import os.path
 import re
-import core.data.constants.severity as severity
-from core.data.fuzzer.fuzzer import createRandAlNum
+
 
 class pykto(baseDiscoveryPlugin):
     '''
@@ -44,29 +48,37 @@ class pykto(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # int_ernal variables
         self._exec = True
-        self._cgiDirs = ['/cgi-bin/']
-        self._adminDirs = ['/admin/', '/adm/'] 
+        self._already_visited = []
+        self._first_time = True
+        
+        # User configured parameters
+        self._db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto'
+        self._db_file += os.path.sep + 'scan_database.db'
+        
+        self._extra_db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep
+        self._extra_db_file += 'pykto' + os.path.sep + 'w3af_scan_database.db'
+        
+        self._cgi_dirs = ['/cgi-bin/']
+        self._admin_dirs = ['/admin/', '/adm/'] 
         self._users = ['adm', 'bin', 'daemon', 'ftp', 'guest', 'listen', 'lp',
         'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp', 'operator',
         'root', 'smmsp', 'smtp', 'sshd', 'sys', 'test', 'unknown']                  
         self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/', '/phpBB/', '/forum/']
 
-        self._dbFile = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'scan_database.db'
-        self._extra_db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'w3af_scan_database.db'
-        self._mutateTests = False
-        self._genericScan = False
-        self._updateScandb = False
-        self._alreadyVisited = []
-        self._lastCodes = []
-        self._firstTime = True
+        self._mutate_tests = False
+        self._generic_scan = False
+        self._update_scandb = False
         self._source = ''
         
     def discover(self, fuzzableRequest ):
         '''
         Runs pykto to the site.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                      (among other things) the URL to test.
         '''
         self._fuzzableRequests = []
         
@@ -76,13 +88,13 @@ class pykto(baseDiscoveryPlugin):
             
         else:
             # run!
-            if self._updateScandb:
-                self._updateDb()
+            if self._update_scandb:
+                self._update_db()
             
             self.is404 = kb.kb.getData( 'error404page', '404' )
             
             # Give me the base URL
-            if not self._mutateTests:
+            if not self._mutate_tests:
                 url = urlParser.baseUrl( fuzzableRequest.getURL() )
                 # This plugin returns always the same value if called without mutateTests , so 
                 # running it more times is useless
@@ -91,9 +103,9 @@ class pykto(baseDiscoveryPlugin):
             else:
                 # Tests are to be mutated
                 url = urlParser.getDomainPath( fuzzableRequest.getURL() )
-                if url not in self._alreadyVisited:
+                if url not in self._already_visited:
                     # Save the directories I already have tested
-                    self._alreadyVisited.append( url )
+                    self._already_visited.append( url )
                     self.__run( url )
 
         return self._fuzzableRequests
@@ -101,10 +113,12 @@ class pykto(baseDiscoveryPlugin):
     def __run( self, url ):
         '''
         Really run the plugin.
+        
+        @parameter url: The URL I have to test.
         '''
         try:
             # read the nikto database.
-            db_file_1 = open(self._dbFile, "r")
+            db_file_1 = open(self._db_file, "r")
             # read the w3af scan database.
             db_file_2 = open(self._extra_db_file, "r")
         except Exception, e:
@@ -121,102 +135,113 @@ class pykto(baseDiscoveryPlugin):
             # pykto that site !
             self._pykto( url , test_list )
         
-    def _updateDb( self ):
+    def _update_db( self ):
         '''
         This method updates the scan_database from cirt.net .
         '''
         # Only update once
-        self._updateScandb = False
+        self._update_scandb = False
 
         # Here we have the versions
-        _version_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto' + os.path.sep + 'versions.txt'
+        _version_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto'
+        _version_file += os.path.sep + 'versions.txt'
         
         try:
             version_file = file( _version_file )
-        except:
-            raise w3afException('Could not open: ' + _version_file + ' while updating pykto scan_database.' )
+        except Exception, e:
+            msg = 'Could not open: "' + _version_file + '" while updating pykto scan_database.'
+            msg += ' Exception message: "' + str(e) + '".'
+            raise w3afException( msg )
         
         try:
             for line in version_file:
                 if line.count('scan_database.db'):
-                    _, localVersion = line.strip().split(',')
+                    _, local_version = line.strip().split(',')
                     break
         except:
-            raise w3afException('Format error in file: ' + _version_file + ' while updating pykto scan_database.' )
+            msg = 'Format error in file: ' + _version_file + ' while updating pykto scan_database.'
+            raise w3afException( msg )
         
         version_file.close()
-        om.out.debug('Local version of pykto scan_database.db is: ' + localVersion)
+        om.out.debug('Local version of pykto scan_database.db is: ' + local_version)
         
         # fetching remote version
-        resVersion = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
+        res_version = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
         
-        fetchedVersion = False
-        for line in resVersion.getBody().split():
+        fetched_version = False
+        for line in res_version.getBody().split():
             if line.count('scan_database.db'):
-                _, remoteVersion = line.strip().split(',')
-                fetchedVersion = True
+                _, remote_version = line.strip().split(',')
+                fetched_version = True
         
-        if not fetchedVersion:
-            om.out.error('pykto can\'t update the scan database, an error ocurred while fetching the versions.txt file from cirt.net .')
+        if not fetched_version:
+            msg = 'pykto can\'t update the scan database, an error ocurred while fetching the'
+            msg += ' versions.txt file from cirt.net .'
+            om.out.error( msg )
         else:
-            om.out.debug('Remote version of nikto scan_database.db is: "' + remoteVersion + '".')
+            om.out.debug('Remote version of nikto scan_database.db is: "' + remote_version + '".')
             
-            localVersion = float( localVersion )
-            remoteVersion = float( remoteVersion )
+            local_version = float( local_version )
+            remote_version = float( remote_version )
             
-            if localVersion == remoteVersion:
-                om.out.information('Local and Remote version of nikto scan_database.db match, no update needed.')
-            elif localVersion > remoteVersion:
-                om.out.information('Local version of scan_database.db is grater than remote version... this is odd... check this.')
+            if local_version == remote_version:
+                msg = 'Local and Remote version of nikto scan_database.db match, no update needed.'
+                om.out.information( msg )
+            elif local_version > remote_version:
+                msg = 'Local version of scan_database.db is grater than remote version... this is'
+                msg += ' odd... check this.'
+                om.out.information()
             else:
-                om.out.information('Updating to scan_database version: "' + str(remoteVersion) + '".' )
+                msg = 'Updating to scan_database version: "' + str(remote_version) + '".'
+                om.out.information( msg )
                 res = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
                 try:
                     # Write new scan_database
-                    os.unlink( self._dbFile )
-                    fdNewDb = file( self._dbFile , 'w')
-                    fdNewDb.write( res.getBody() )
-                    fdNewDb.close()
+                    os.unlink( self._db_file )
+                    fd_new_db = file( self._db_file , 'w')
+                    fd_new_db.write( res.getBody() )
+                    fd_new_db.close()
                     
                     # Write new version file
                     os.unlink( _version_file )
-                    fdNewVersion = file( _version_file , 'w')
-                    fdNewVersion.write( resVersion.getBody() )
-                    fdNewVersion.close()
+                    fd_new_version = file( _version_file , 'w')
+                    fd_new_version.write( res_version.getBody() )
+                    fd_new_version.close()
                     
-                    om.out.information('Successfully updated scan_database.db to version: ' + str(remoteVersion) )
+                    msg = 'Successfully updated scan_database.db to version: ' + str(remote_version)
+                    om.out.information( msg )
                     
-                except:
-                    raise w3afException('There was an error while writing the new scan_database.db file to disk.')
+                except Exception, e:
+                    msg = 'There was an error while writing the new scan_database.db file to disk.'
+                    msg += ' Exception message: "' + str(e) + '".'
+                    raise w3afException( msg )
                 
     
     def _pykto(self, url , test_list ):
         '''
-        This method does all the real work. Writes vulns to the KB.
-
+        This method does all the real work and writes vulns to the KB.
 
         @parameter url: The base URL
         @parameter test_list: The list of all the tests that have to be performed        
         @return: A list with new url's found.
         '''
-        toReturn = []
         lines = 0
-        linesSent = 0
+        lines_sent = 0
         for line in test_list:
             #om.out.debug( 'Read scan_database: '+ line[:len(line)-1] )
-            if not self._isComment( line ):
+            if not self._is_comment( line ):
                 # This is a sample scan_database.db line :
                 # "apache","/docs/","200","GET","May give list of installed software"
-                toSend = self._parse( line )
+                to_send = self._parse( line )
                 
                 lines += 1
                 
                 # A line could generate more than one request... 
                 # (think about @CGIDIRS)
-                for parameters in toSend:
-                    (server, query , expectedResponse, method , desc) = parameters
+                for parameters in to_send:
+                    (server, query , expected_response, method , desc) = parameters
                     
-                    if self._genericScan or self._serverMatch( server ):
+                    if self._generic_scan or self._server_match( server ):
                         om.out.debug('Testing pykto signature: "' + query + '".')
 
                         # I don't use urlJoin here because in some cases pykto needs to
@@ -229,15 +254,19 @@ class pykto(baseDiscoveryPlugin):
                         if query[0] == '/' == url[-1]:
                             query = query[1:]
                             
-                        finalUrl = url + query
+                        final_url = url + query
                         
-                        response = False
-                        linesSent += len( toSend )
+                        lines_sent += len( to_send )
                         
                         # Send the request to the remote server and check the response.
-                        targs = (finalUrl, parameters)
+                        targs = (final_url, parameters)
                         try:
-                            self._tm.startFunction( target=self._sendAndCheck, args=targs, ownerObj=self )
+                            # Performing this with different threads adds overhead
+                            # Without threads:
+                            #           Performed 3630 requests in 12 seconds (302.500000 req/sec)
+                            # With threads:
+                            #           Performed 3630 requests in 13 seconds (279.230769 req/sec)
+                            self._send_and_check(final_url, parameters)
                         except w3afException, e:
                             om.out.information( str(e) )
                             return
@@ -247,39 +276,41 @@ class pykto(baseDiscoveryPlugin):
                 self._tm.join( self )
         
         om.out.debug('Read ' + str(lines) + ' from file.' )
-        om.out.debug('Sent ' + str(linesSent) + ' requests to remote webserver.' )
+        om.out.debug('Sent ' + str(lines_sent) + ' requests to remote webserver.' )
         
-    def _serverMatch( self, server ):
+    def _server_match( self, server ):
         '''
         Reads the kb and compares the server parameter with the kb value.
         If they match true is returned.
         
+        @parameter server: A server name like "apache"
         '''
         # Try to get the server type from hmap
         # it is the most accurate way to do it but hmap plugin
         if kb.kb.getData( 'hmap' , 'serverString' ) != []:
-            kbServer = kb.kb.getData( 'hmap' , 'serverString' )
+            kb_server = kb.kb.getData( 'hmap' , 'serverString' )
             self._source = 'hmap'
         elif kb.kb.getData( 'serverHeader' , 'serverString' ) != []:
             # Get the server type from the serverHeader plugin. It gets this info
             # by reading the "server" header of request responses.
-            kbServer = kb.kb.getData( 'serverHeader' , 'serverString' )
+            kb_server = kb.kb.getData( 'serverHeader' , 'serverString' )
             self._source = 'serverHeader'
         else:
             self._source = 'not available'
-            kbServer = 'not available'
+            kb_server = 'not available'
         
-        if self._firstTime:
-            om.out.information('pykto plugin is using "' + kbServer + '" as the remote server type.'\
-            ' This information was obtained by ' + self._source + ' plugin.')
-            self._firstTime = False
+        if self._first_time:
+            msg = 'pykto plugin is using "' + kb_server + '" as the remote server type.'
+            msg += ' This information was obtained by ' + self._source + ' plugin.'
+            om.out.information( msg )
+            self._first_time = False
             
-        if kbServer.upper().count( server.upper() ) or server.upper() == 'GENERIC':
+        if kb_server.upper().count( server.upper() ) or server.upper() == 'GENERIC':
             return True
         else:
             return False
         
-    def _isComment( self, line ):
+    def _is_comment( self, line ):
         '''
         The simplest method ever.
         
@@ -296,100 +327,102 @@ class pykto(baseDiscoveryPlugin):
         @ return: A a list of tuples where each tuple has the following data
             1. server
             2. query
-            3. expectedResponse
+            3. expected_response
             4. method
             5. desc
         '''
-        splittedLine = line.split('","')
+        splitted_line = line.split('","')
         
-        server = splittedLine[0].replace('"','')
-        originalQuery = splittedLine[1].replace('"','')
-        expectedResponse = splittedLine[2].replace('"','')
-        method = splittedLine[3].replace('"','').upper()
-        desc = splittedLine[4].replace('"','')
+        server = splitted_line[0].replace('"','')
+        original_query = splitted_line[1].replace('"','')
+        expected_response = splitted_line[2].replace('"','')
+        method = splitted_line[3].replace('"','').upper()
+        desc = splitted_line[4].replace('"','')
         desc = desc.replace('\\n', '')
         desc = desc.replace('\\r', '')
         
-        if originalQuery.count(' '):
+        if original_query.count(' '):
             return []
         else:
             # Now i should replace the @CGIDIRS variable with the user settings
             # The same goes for every @* variable.
-            toSend = []
-            toSend.append ( (server, originalQuery, expectedResponse, method , desc) )
+            to_send = []
+            to_send.append ( (server, original_query, expected_response, method , desc) )
             
-            toMutate = []
-            toMutate.append( originalQuery )
-            if originalQuery.count( '@CGIDIRS' ):
-                for cgiDir in self._cgiDirs:
-                    query2 = originalQuery.replace('@CGIDIRS' , cgiDir )
-                    toSend.append ( (server, query2, expectedResponse, method , desc) )
-                    toMutate.append( query2 )
-                toMutate.remove( originalQuery )
-                toSend.remove ( (server, originalQuery, expectedResponse, method , desc) )
+            to_mutate = []
+            to_mutate.append( original_query )
+            if original_query.count( '@CGIDIRS' ):
+                for cgiDir in self._cgi_dirs:
+                    query2 = original_query.replace('@CGIDIRS' , cgiDir )
+                    to_send.append ( (server, query2, expected_response, method , desc) )
+                    to_mutate.append( query2 )
+                to_mutate.remove( original_query )
+                to_send.remove ( (server, original_query, expected_response, method , desc) )
                 
             
-            toMutate2 = []
-            for query in toMutate:
+            to_mutate2 = []
+            for query in to_mutate:
                 res = re.findall( 'JUNK\((.*?)\)', query )
                 if res:
                     query2 = re.sub( 'JUNK\((.*?)\)', createRandAlNum( int(res[0]) ), query )
-                    toSend.append ( (server, query2, expectedResponse, method , desc) )
-                    toMutate2.append( query2 )
-                    toSend.remove ( (server, query, expectedResponse, method , desc) )
-                    toMutate.remove( query )
-            toMutate.extend( toMutate2 )
+                    to_send.append ( (server, query2, expected_response, method , desc) )
+                    to_mutate2.append( query2 )
+                    to_send.remove ( (server, query, expected_response, method , desc) )
+                    to_mutate.remove( query )
+            to_mutate.extend( to_mutate2 )
             
-            toMutate2 = []
-            for query in toMutate:
+            to_mutate2 = []
+            for query in to_mutate:
                 if query.count( '@ADMINDIRS' ):
-                    for adminDir in self._adminDirs:
+                    for adminDir in self._admin_dirs:
                         query2 = query.replace('@ADMINDIRS' , adminDir )
-                        toSend.append ( (server, query2, expectedResponse, method , desc) )
-                        toMutate2.append( query2 )
-                    toMutate.remove( query )
-                    toSend.remove ( (server, query, expectedResponse, method , desc) )
-            toMutate.extend( toMutate2 )
+                        to_send.append ( (server, query2, expected_response, method , desc) )
+                        to_mutate2.append( query2 )
+                    to_mutate.remove( query )
+                    to_send.remove ( (server, query, expected_response, method , desc) )
+            to_mutate.extend( to_mutate2 )
             
-            toMutate2 = []
-            for query in toMutate:
+            to_mutate2 = []
+            for query in to_mutate:
                 if query.count( '@NUKE' ):
                     for nuke in self._nuke:
                         query2 = query.replace('@NUKE' , nuke )
-                        toSend.append ( (server, query2, expectedResponse, method , desc) )
-                        toMutate2.append( query2 )
-                    toMutate.remove( query )
-                    toSend.remove ( (server, query, expectedResponse, method , desc) )
-            toMutate.extend( toMutate2 )
+                        to_send.append ( (server, query2, expected_response, method , desc) )
+                        to_mutate2.append( query2 )
+                    to_mutate.remove( query )
+                    to_send.remove ( (server, query, expected_response, method , desc) )
+            to_mutate.extend( to_mutate2 )
             
-            for query in toMutate:
+            for query in to_mutate:
                 if query.count( '@USERS' ):         
                     for user in self._users:
                         query2 = query.replace('@USERS' , user )
-                        toSend.append ( (server, query2, expectedResponse, method , desc) )
-                    toMutate.remove( query )
-                    toSend.remove ( (server, query, expectedResponse, method , desc) )
+                        to_send.append ( (server, query2, expected_response, method , desc) )
+                    to_mutate.remove( query )
+                    to_send.remove ( (server, query, expected_response, method , desc) )
 
-            return toSend
+            return to_send
         
-    def _sendAndCheck( self , url , parameters ):
+    def _send_and_check( self , url , parameters ):
         '''
         This method sends the request to the server.
         
         @return: True if the requested uri responded as expected.
         '''
-        (server, query , expectedResponse, method , desc) = parameters
+        (server, query , expected_response, method , desc) = parameters
 
-        functionReference = getattr( self._urlOpener , method )
+        function_reference = getattr( self._urlOpener , method )
         try:
-            response = functionReference( url, getSize=False )
+            response = function_reference( url, getSize=False )
         except KeyboardInterrupt,e:
             raise e
         except w3afException, e:
-            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
+            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
+            msg += str(e)
+            om.out.error( msg )
             return False
         
-        if self._analyzeResult( response, expectedResponse, parameters, url ):
+        if self._analyzeResult( response, expected_response, parameters, url ):
             kb.kb.append( self, 'url', response.getURL() )
             
             v = vuln.vuln()
@@ -414,39 +447,30 @@ class pykto(baseDiscoveryPlugin):
             
             self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
         
-    def _analyzeResult( self , response , expectedResponse, parameters, uri ):
+    def _analyzeResult( self , response , expected_response, parameters, uri ):
         '''
         Analyzes the result of a _send()
         
         @return: True if vuln is found
         '''
-        if expectedResponse.isdigit():
-            intER = int( expectedResponse )
-            # This is used when expectedResponse is 200 , 401, 403, etc.
-            if response.getCode() == intER and not self.is404( response ):
-                # v1: If the file exists, then we have a vuln.
-                
-                # v2: Not so fast there cowboy! ;)
-                # sometimes the response is always a "200", and the final part of the url doesnt even is evaluated
-                # by the server... so I'm adding this test.
-                if not self._returnWithoutEval( parameters, uri ):
-                    return True
+        if expected_response.isdigit():
+            int_er = int( expected_response )
+            # This is used when expected_response is 200 , 401, 403, etc.
+            if response.getCode() == int_er and not self.is404( response ):
+                return True
         
-        # Remember that httpResponse objects have a faster "__in__" than
-        # the one in strings; so string in response.getBody() is slower than
-        # string in response
-        elif expectedResponse in response and not self.is404( response ):
+        elif expected_response in response and not self.is404( response ):
             # If the content is found, and it's not in a 404 page, then we have a vuln.
             return True
         
         return False
     
-    def _returnWithoutEval( self, parameters, uri ):
+    def _return_without_eval( self, parameters, uri ):
         if urlParser.getDomainPath( uri ) == uri:
             return False
         
-        (server, query , expectedResponse, method , desc) = parameters
-        functionReference = getattr( self._urlOpener , method )
+        (server, query , expected_response, method , desc) = parameters
+        function_reference = getattr( self._urlOpener , method )
         
         url = urlParser.uri2url( uri )
         url += createRandAlNum( 7 )
@@ -454,11 +478,13 @@ class pykto(baseDiscoveryPlugin):
             url = url + '?' + str( urlParser.getQueryString( query ) )
             
         try:
-            response = functionReference( url )
+            response = function_reference( url )
         except KeyboardInterrupt,e:
             raise e
         except w3afException,e:
-            om.out.error( 'An exception was raised while requesting "'+url+'" , the error message is: ' + str(e) )
+            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
+            msg += str(e)
+            om.out.error( msg )
         else:
             if not self.is404( response ):
                 return True
@@ -469,43 +495,47 @@ class pykto(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'CGI-BIN dirs where to search for vulnerable scripts.'
-        h1 = 'Pykto will search for vulnerable scripts in many places, one of them is inside cgi-bin directory.\
-    The cgi-bin directory can be anything and change from install to install, so its a good idea to make this a\
-    user setting. The directories should be supplied comma separated and with a / at the \
-    beggining and one at the end. Example: "/cgi/,/cgibin/,/bin/"'
-        o1 = option('cgiDirs',self._cgiDirs , d1, 'list', help=h1)
+        h1 = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
+        h1 += ' cgi-bin directory. The cgi-bin directory can be anything and change from install'
+        h1 += ' to install, so its a good idea to make this a user setting. The directories should'
+        h1 += ' be supplied comma separated and with a / at the beggining and one at the end.'
+        h1 += ' Example: "/cgi/,/cgibin/,/bin/"'
+        o1 = option('cgiDirs', self._cgi_dirs , d1, 'list', help=h1)
         
         d2 = 'Admin directories where to search for vulnerable scripts.'
-        h2 = 'Pykto will search for vulnerable scripts in many places, one of them is inside administration directories.\
-    The admin directory can be anything and change from install to install, so its a good idea to make this a\
-    user setting. The directories should be supplied comma separated and with a / at the \
-    beggining and one at the end. Example: "/admin/,/adm/"'
-        o2 = option('adminDirs', self._adminDirs, d2, 'list', help=h2)
+        h2 = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
+        h2 += ' administration directories. The admin directory can be anything and change'
+        h2 += ' from install to install, so its a good idea to make this a user setting. The'
+        h2 += ' directories should be supplied comma separated and with a / at the beggining and'
+        h2 += ' one at the end. Example: "/admin/,/adm/"'
+        o2 = option('adminDirs', self._admin_dirs, d2, 'list', help=h2)
         
         d3 = 'PostNuke directories where to search for vulnerable scripts.'
-        h3 = 'The directories should be supplied comma separated and with a / at the \
-    beggining and one at the end. Example: "/forum/,/nuke/"'
+        h3 = 'The directories should be supplied comma separated and with a / at the'
+        h3 += ' beggining and one at the end. Example: "/forum/,/nuke/"'
         o3 = option('nukeDirs', self._nuke, d3, 'list', help=h3)
 
         d4 = 'The path to the nikto scan_databse.db file.'
         h4 = 'The default scan database file is ok in most cases.'
-        o4 = option('dbFile', self._dbFile, d4, 'string', help=h4)
+        o4 = option('dbFile', self._db_file, d4, 'string', help=h4)
 
         d5 = 'Test all files with all root directories'
         h5 = 'Define if we will test all files with all root directories.'
-        o5 = option('mutateTests', self._mutateTests, d5, 'boolean', help=h5)        
+        o5 = option('mutateTests', self._mutate_tests, d5, 'boolean', help=h5)        
 
         d6 = 'Verify that pykto is using the latest scan_database from cirt.net.'
-        o6 = option('updateScandb', self._updateScandb, d6, 'boolean')
+        o6 = option('updateScandb', self._update_scandb, d6, 'boolean')
 
-        d7 = 'If generic scan is enabled all tests are sent to the remote server without checking the server type.'
-        h7 = 'Pykto will send all tests to the server if generic Scan is enabled.\
-    For example, if a test in the database is marked as "apache" and the remote \
-    server reported "iis" then the test is sent anyway.'
-        o7 = option('genericScan', self._genericScan, d7, 'boolean', help=h7)        
+        d7 = 'If generic scan is enabled all tests are sent to the remote server without'
+        d7 += ' checking the server type.'
+        h7 = 'Pykto will send all tests to the server if generic Scan is enabled. For example,'
+        h7 += ' if a test in the database is marked as "apache" and the remote server reported'
+        h7 += ' "iis" then the test is sent anyway.'
+        o7 = option('genericScan', self._generic_scan, d7, 'boolean', help=h7)        
 
         d8 = 'The path to the w3af_scan_databse.db file.'
-        h8 = 'This is a file which has some extra checks for files that are not present in the nikto database.'
+        h8 = 'This is a file which has some extra checks for files that are not present in the'
+        h8 += ' nikto database.'
         o8 = option('extra_db_file', self._extra_db_file, d8, 'string', help=h8)
 
         ol = optionList()
@@ -521,21 +551,20 @@ class pykto(baseDiscoveryPlugin):
         
     def setOptions( self, optionsMap ):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user int_erface 
         generated by the framework using the result of getOptions().
         
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._updateScandb = optionsMap['updateScandb'].getValue()
-        self._cgiDirs = optionsMap['cgiDirs'].getValue()
-        self._adminDirs = optionsMap['adminDirs'].getValue()
+        self._update_scandb = optionsMap['updateScandb'].getValue()
+        self._cgi_dirs = optionsMap['cgiDirs'].getValue()
+        self._admin_dirs = optionsMap['adminDirs'].getValue()
         self._nuke = optionsMap['nukeDirs'].getValue()
-        self._dbFile = optionsMap['extra_db_file'].getValue()
-        self._dbFile = optionsMap['dbFile'].getValue()
-        self._mutateTests = optionsMap['mutateTests'].getValue()
-        self._genericScan = optionsMap['genericScan'].getValue()
-
+        self._db_file = optionsMap['extra_db_file'].getValue()
+        self._db_file = optionsMap['dbFile'].getValue()
+        self._mutate_tests = optionsMap['mutateTests'].getValue()
+        self._generic_scan = optionsMap['genericScan'].getValue()
         
     def getPluginDeps( self ):
         '''
