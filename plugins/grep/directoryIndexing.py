@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -65,7 +66,8 @@ class directoryIndexing(baseGrepPlugin):
                     v.setDesc( msg )
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
-                    v.setName( 'Directory indexing' )
+                    path = urlParser.getPath( response.getURL() )
+                    v.setName( 'Directory indexing - ' + path )
                     
                     kb.kb.append( self , 'directory' , v )
                     break
