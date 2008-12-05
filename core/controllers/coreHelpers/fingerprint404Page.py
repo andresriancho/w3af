@@ -115,7 +115,7 @@ class fingerprint404Page:
             # sends requests to http://host// which is != from http://host/
             # This fixes bug #2020211
             response.setURL( httpResponse.getURL() )
-            
+
             self._append_to_LRU( (response, extension) )
     
     def _byDirectory( self, httpResponse ):
@@ -154,7 +154,7 @@ class fingerprint404Page:
         tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() if \
         urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL()) and \
         (urlParser.getExtension(httpResponse.getURL()) == '' or urlParser.getExtension(httpResponse.getURL()) == extension)]
-        
+
         if len( tmp ):
             # All items in this directory/extension combination should be the same...
             response_body = tmp[0]
@@ -309,8 +309,7 @@ class fingerprint404Page:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
         
         # I don't want the random file to affect the 404, so I replace it with a blank space
-        response_body = response.getBody()
-        response_body = response_body.replace(rand_alnum_file, '')
+        response_body = self._get_clean_body( response )
         response.setBody(response_body)
         
         return response, extension
