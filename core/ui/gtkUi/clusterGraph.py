@@ -29,6 +29,7 @@ from core.controllers.misc.levenshtein import relative_distance
 
 # To show request and responses
 from core.ui.gtkUi.reqResViewer import reqResWindow
+from core.controllers.w3afException import w3afException
 
 import gobject
 from . import helpers, entries
@@ -46,7 +47,27 @@ The framework provides different clustering methods. Each method defines a way i
 the distance between two different HTTP responses is going to be calculated. The distance 
 between the HTTP responses is then used to group the responses and create the clusters.
 
+The customized clustering method allows you to write a function in python that will perform
+the task. Any python code can be entered in that window, so please be sure you don't copy+paste
+any untrusted code there.
+
 Please select the clustering method:
+"""
+
+EXAMPLE_FUNCTION = """def customized_distance(a, b):
+    '''
+    Calculates the distance between two responses "a" and "b".
+
+    @parameter a: An HTTP response object.
+    @parameter b: An HTTP response object.
+    @return: The the distance between "a" and "b", where 0 means equal and 1 means totally different.
+    '''
+    if 'error' in b.getBody().lower() and 'error' in a.getBody().lower():
+        # They are both error pages
+        return 0.1
+
+    # Error page and normal page OR two normal pages
+    return 1
 """
 
 class distance_function_selector(entries.RememberingWindow):
@@ -93,6 +114,18 @@ class distance_function_selector(entries.RememberingWindow):
         box2.pack_start(self._http_res_button, True, True, 0)
         self._http_res_button.show()
 
+        self._custom_button = gtk.RadioButton(self._cl_button, "Customized distance function")
+        box2.pack_start(self._custom_button, True, True, 0)
+        self._custom_button.show()
+
+        # The textview for writing the function
+        self._function_tv = gtk.TextView()
+        text_buffer = gtk.TextBuffer()
+        text_buffer.set_text( EXAMPLE_FUNCTION )
+        self._function_tv.set_buffer( text_buffer )
+        box2.pack_start(self._function_tv, True, True, 0)
+        self._function_tv.show()
+
         separator = gtk.HSeparator()
         self.vbox.pack_start(separator, False, True, 0)
         separator.show()
@@ -129,17 +162,33 @@ class distance_function_selector(entries.RememberingWindow):
             selected_function = LEVENSHTEIN
         elif self._http_res_button.get_active():
             selected_function = HTTP_RESPONSE
-        
-        # Don't show the window anymore
-        self.hide()
+        elif self._custom_button.get_active():
+            # Send the function itself in the selected_function variable
+            text_buffer = self._function_tv.get_buffer()
+            start_iter = text_buffer.get_start_iter()
+            end_iter = text_buffer.get_end_iter()
+
+            selected_function = text_buffer.get_text(start_iter, end_iter, \
+                                include_hidden_chars=True)
         
         # Create the new window, with the graph
-        window = clusterGraphWidget(self.w3af, self.data, distance_function=selected_function)
-        window.connect('destroy', gtk.main_quit)
-        gtk.main()
+        try:
+            window = clusterGraphWidget(self.w3af, self.data, distance_function=selected_function)
+        except w3afException, w3:
+            msg = str(w3)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()
+        else:
+            # Don't show me anymore
+            self.hide()
+            
+            # Start
+            window.connect('destroy', gtk.main_quit)
+            gtk.main()
         
-        # Quit myself, my job is done.
-        self.quit(None, None)
+            # Quit myself, my job is done.
+            self.quit(None, None)
         
 class w3afDotWindow(xdot.DotWindow):
 
@@ -227,6 +276,21 @@ class clusterGraphWidget(w3afDotWindow):
             dotcode = self._generateDotCode(response_list, distance_function=self._http_code_distance)
         elif distance_function == CONTENT_LENGTH:
             dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
+        elif distance_function.startswith('def customized_distance'):
+            try:
+                callable_object = self._create_callable_object( distance_function )
+            except Exception, e:
+                msg = 'Please review your customized code. An error was raised while compiling: "'
+                msg += str(e) + '"'
+                raise w3afException( msg )
+
+            try:
+                dotcode = self._generateDotCode(response_list, distance_function=callable_object)
+            except Exception, e:
+                msg = 'Please review your customized code. An error was raised on run time: "'
+                msg += str(e) + '"'
+                raise w3afException( msg )
+
         else:
             raise Exception('Please review your buggy code ;)')
         
@@ -236,6 +300,22 @@ class clusterGraphWidget(w3afDotWindow):
         # The real problem is inside "tokens = graphparser.parseString(data)" (dot_parser.py)
         # which is called inside set_dotcode
         self.set_dotcode(dotcode)
+
+    def _create_callable_object( self, code):
+        '''
+        Convert the code (which is a string) into a callable object.
+        '''
+        class code_wrapper:
+            def __init__( self, code):
+                code += '\n\nres = customized_distance(a,b)\n'
+                self._compiled_code = compile(code, '<string>', 'exec')
+
+            def __call__( self, a, b ):
+                globals_eval = {'a':a, 'b':b, 'res': None }
+                eval( self._compiled_code, globals_eval )
+                return globals_eval['res']
+
+        return code_wrapper( code )
 
     def _relative_distance(self, a, b):
         '''
