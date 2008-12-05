@@ -280,6 +280,8 @@ class clusterGraphWidget(w3afDotWindow):
             try:
                 callable_object = self._create_callable_object( distance_function )
             except Exception, e:
+                # TODO: instead of hiding..., which may consume memory... why don't killing?
+                self.hide()
                 msg = 'Please review your customized code. An error was raised while compiling: "'
                 msg += str(e) + '"'
                 raise w3afException( msg )
@@ -287,6 +289,8 @@ class clusterGraphWidget(w3afDotWindow):
             try:
                 dotcode = self._generateDotCode(response_list, distance_function=callable_object)
             except Exception, e:
+                # TODO: instead of hiding..., which may consume memory... why don't killing?
+                self.hide()
                 msg = 'Please review your customized code. An error was raised on run time: "'
                 msg += str(e) + '"'
                 raise w3afException( msg )
