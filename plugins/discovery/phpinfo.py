@@ -21,18 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.w3afException import w3afException
 import re
+
 
 class phpinfo(baseDiscoveryPlugin):
     '''
@@ -44,7 +47,7 @@ class phpinfo(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzedDirs = []
+        self._analyzed_dirs = []
 
     def discover(self, fuzzableRequest ):
         '''
@@ -55,50 +58,56 @@ class phpinfo(baseDiscoveryPlugin):
         
         fuzzableRequestsToReturn = []
 
-        self.is404 = kb.kb.getData( 'error404page', '404' )
+        is_404 = kb.kb.getData( 'error404page', '404' )
         for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
 
-            if domain_path not in self._analyzedDirs:
+            if domain_path not in self._analyzed_dirs:
 
                 # Save the domain_path so I know I'm not working in vane
-                self._analyzedDirs.append( domain_path )
+                self._analyzed_dirs.append( domain_path )
 
                 # Work!
-                for phpInfoFilename in self._getPhpInfoFile():
+                for php_info_filename in self._get_PHP_infofile():
 
                     # Request the file
-                    phpInfoUrl = urlParser.urlJoin(  domain_path , phpInfoFilename )
+                    php_info_url = urlParser.urlJoin(  domain_path , php_info_filename )
                     try:
-                        response = self._urlOpener.GET( phpInfoUrl, useCache=True )
-                        om.out.debug( '[phpinfo] Testing "' + phpInfoUrl + '".' )
+                        response = self._urlOpener.GET( php_info_url, useCache=True )
+                        om.out.debug( '[phpinfo] Testing "' + php_info_url + '".' )
                     except w3afException,  w3:
-                        om.out.debug('Failed to GET phpinfo file: "' + phpInfoUrl + '".')
+                        msg = 'Failed to GET phpinfo file: "' + php_info_url + '".'
+                        msg += 'Exception: "' + str(w3) + '".'
+                        om.out.debug( msg )
                     else:
                         # Check if it's a phpinfo file
-                        if not self.is404( response ):
-                            phpversion = re.search('alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>',response.getBody(), re.IGNORECASE)
-                            if phpversion:
+                        if not is_404( response ):
+                            regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
+                            php_version = re.search(regex_str, response.getBody(), re.IGNORECASE)
+                            if php_version:
                                 v = vuln.vuln()
                                 v.setId( response.id )
                                 v.setName( 'PHP Info file' )
                                 v.setSeverity(severity.MEDIUM)
                                 v.setURL( response.getURL() )
                                 desc = 'The PHP Info file was found at: ' + v.getURL()
-                                desc += ' and the version of PHP is: "' + phpversion.group(1) + '".'
+                                desc += ' and the version of PHP is: "' + php_version.group(1)
+                                desc += '".'
                                 v.setDesc( desc )
                                 kb.kb.append( self, 'phpinfo', v )
                                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                                  
         return fuzzableRequestsToReturn
 
-    def _getPhpInfoFile( self ):
+    def _get_PHP_infofile( self ):
         '''
         @return: Filename of the php info file.
         '''
         res = []
-        res.extend( ['phpinfo.php' , 'test.php?mode=phpinfo' , 'PHPversion.php' , 'phpVersion.php' , 'phpversion.php'] )
+        # TODO: If i'm scanning a windows system, do I really need to request case sensitive
+        # filenames like phpversion and PHPversion ?
+        res.extend( ['phpinfo.php' , 'test.php?mode=phpinfo' , 'PHPversion.php'] )
         res.extend( ['index.php?mode=phpinfo' , '?mode=phpinfo' , 'install.php?mode=phpinfo' ] )
-        res.extend( ['admin.php?mode=phpinfo', 'info.php'] )
+        res.extend( ['admin.php?mode=phpinfo', 'info.php', 'phpversion.php', 'phpVersion.php'] )
         return res
 
     def getOptions( self ):
