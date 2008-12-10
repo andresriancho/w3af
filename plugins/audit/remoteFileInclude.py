@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 
 import core.data.kb.knowledgeBase as kb
@@ -196,7 +197,7 @@ class remoteFileInclude(baseAuditPlugin):
         if self._webserver != None:
             self._webserver.stop()
             # Remove the file
-            filename = self._rfi_url[self._rfi_url.rfind(os.path.sep)+1:]
+            filename = urlParser.getFileName(self._rfi_url)
             os.remove( os.path.join('webroot' + os.path.sep, filename ) )
             self._webserver = None
 
