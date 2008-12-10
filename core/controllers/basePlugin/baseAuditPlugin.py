@@ -50,7 +50,7 @@ class baseAuditPlugin(basePlugin):
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = fuzzable_request.copy()
-        self.audit( fuzzable_request_copy )
+        return self.audit( fuzzable_request_copy )
         
     def audit( self, freq ):
         '''
