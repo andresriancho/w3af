@@ -334,6 +334,7 @@ class userDir(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
+        return []
         if self._doFastSearch:
             # This was left here for fast testing of the plugin.
             return []
