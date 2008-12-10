@@ -78,7 +78,30 @@ class fuzzableRequest:
         for header in self._headers:
             result_string += header + ': ' + self._headers[ header ] + '\n'
         return result_string
-        
+
+    def export( self ):
+      '''
+      @return: a csv str representation of the request
+      '''
+      strRes = ''
+      strRes += self._method + ',' 
+      strRes += self._url
+ 
+      if self._method == 'GET': 
+        if self._dc:
+          strRes += '?'
+          for i in self._dc:
+            strRes += i + '=' + str(self._dc[i]) + '&'          
+          strRes = strRes[: -1]
+        strRes += ','
+      else:
+        strRes += ','
+        if self._dc:
+          for i in self._dc:
+            strRes += i + '=' + str(self._dc[i]) + '&'          
+          strRes = strRes[: -1]
+      return strRes
+                
     def __str__( self ):
         '''
         Return a str representation of this fuzzable request.

@@ -421,6 +421,11 @@ class w3afCore:
                         om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
                 
                 self._fuzzableRequestList = self._discoverAndBF()
+                
+                # Export all fuzzableRequests as CSV
+                # if this option is set in the miscSettings
+                if cf.cf.getData('exportFuzzableRequests') != '':
+                  self._exportFuzzableRequests()
                     
                 if len( self._fuzzableRequestList ) == 0:
                     om.out.information('No URLs found by discovery.')
@@ -1160,6 +1165,17 @@ class w3afCore:
             res += '\nRevision: ' + str(revision)
         res += '\nAuthor: Andres Riancho and the w3af team.'
         return res
+
+    def _exportFuzzableRequests( self ):
+      filename = cf.cf.getData('exportFuzzableRequests')
+      try:
+        file = open(filename, 'w')
+        file.write('HTTP-METHOD,URI,POSTDATA\n')
+        for fuzzRequest in self._fuzzableRequestList:
+          file.write(fuzzRequest.export() + '\n')
+        file.close()
+      except Exception, e:
+        print 'An exception was raised while trying to write to the output file:', e         
     
 # """"Singleton""""
 wCore = w3afCore()

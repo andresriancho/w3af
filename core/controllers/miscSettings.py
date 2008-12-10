@@ -49,6 +49,7 @@ class miscSettings(configurable):
             cf.cf.save('localAddress', '127.0.0.1' )
             cf.cf.save('demo', False )
             cf.cf.save('nonTargets', [] )
+            cf.cf.save('exportFuzzableRequests', '')
     
     def getOptions( self ):
         '''
@@ -101,6 +102,9 @@ class miscSettings(configurable):
         h13 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
         o13 = option('nonTargets', cf.cf.getData('nonTargets'), d13, 'list', tabid='Misc settings')
         
+        d14 = 'Export all discovered fuzzable requests to the given file (CSV)'
+        o14 = option('exportFuzzableRequests', cf.cf.getData('exportFuzzableRequests'), d14, 'string', tabid='Export fuzzable Requests')
+        
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
@@ -115,6 +119,7 @@ class miscSettings(configurable):
         ol.add(o11)
         ol.add(o12)
         ol.add(o13)
+        ol.add(o14)
         return ol
     
     def getDesc( self ):
@@ -141,6 +146,7 @@ class miscSettings(configurable):
         cf.cf.save('localAddress', optionsMap['localAddress'].getValue() )
         cf.cf.save('demo', optionsMap['demo'].getValue()  )
         cf.cf.save('nonTargets', optionsMap['nonTargets'].getValue() )
+        cf.cf.save('exportFuzzableRequests', optionsMap['exportFuzzableRequests'].getValue() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 miscSettings()
