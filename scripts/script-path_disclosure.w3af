@@ -1,9 +1,7 @@
 # This is the pathDisclosure detection demo
 
 plugins
-audit localFileInclude
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -13,10 +11,10 @@ grep pathDisclosure
 
 back
 target
-set target http://localhost/w3af/grepPlugins/pathDisclosure.html
+set target http://localhost/w3af/audit/sql_injection/select/sql_injection_table.php?table=users%27
 back
 start
 
-assert len(kb.kb.getData('pathDisclosure','pathDisclosure')) == 1
+assert len(kb.kb.getData('pathDisclosure','pathDisclosure')) == 4
 
 exit
