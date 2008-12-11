@@ -21,17 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
+import core.data.parsers.urlParser as urlParser
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 from core.controllers.misc.levenshtein import relative_distance
+
 
 class userDir(baseDiscoveryPlugin):
     '''
@@ -44,21 +48,22 @@ class userDir(baseDiscoveryPlugin):
             
         # Internal variables
         self._run = True
-        self._runOsIdent = True
-        self._runAppIdent = True
+        self._run_OS_ident = True
+        self._run_app_ident = True
         
         # User configured variables
-        self._identifyOS = True
-        self._identifyApplications = True
+        self._identify_OS = True
+        self._identify_applications = True
         
         # For testing
-        self._doFastSearch = False
+        self._do_fast_search = False
     
     def discover(self, fuzzableRequest ):
         '''
         Searches for user directories.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                    (among other things) the URL to test.
         '''
         if not self._run:
             raise w3afRunOnce()
@@ -67,53 +72,61 @@ class userDir(baseDiscoveryPlugin):
             self._run = False
             self._fuzzableRequests = []
                 
-            url = urlParser.baseUrl( fuzzableRequest.getURL() )
-            self._headers = {'Referer':url }
+            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+            self._headers = {'Referer': base_url }
             self.is404 = kb.kb.getData( 'error404page', '404' )
             
             # Create a response body to compare with the others
-            nonExistantUser = '~_w_3_a_f_/'
-            testURL = urlParser.urlJoin( urlParser.baseUrl( fuzzableRequest.getURL() ),  nonExistantUser )
+            non_existant_user = '~_w_3_a_f_/'
+            test_URL = urlParser.urlJoin( base_url, non_existant_user )
             try:
-                responseBody = self._urlOpener.GET( testURL, useCache=True, headers=self._headers ).getBody()
+                response = self._urlOpener.GET( test_URL, useCache=True, \
+                                                                    headers=self._headers )
+                response_body = response.getBody()                
             except:
                 raise w3afException('userDir failed to create a non existant signature.')
-            self._nonExistant = responseBody.replace( nonExistantUser, '')
+                
+            self._non_existant = response_body.replace( non_existant_user, '')
             
             # Check the users to see if they exist
-            url_user_list = self._createDirs( url )
+            url_user_list = self._create_dirs( base_url )
             for url, user in url_user_list :
                 om.out.debug('userDir is testing ' + url )
                 targs = ( url, user )
-                self._tm.startFunction( target=self._doRequest, args=targs, ownerObj=self )
+                self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
             self._tm.join( self )
             
             # Only do this if I already know that users can be identified.
             if kb.kb.getData( 'userDir', 'users' ) != []:
                 # AND only run once
-                if self._runOsIdent:
-                    self._runOsIdent = False
-                    self._advancedIdentification( url, 'os' )
+                if self._run_OS_ident:
+                    self._run_OS_ident = False
+                    self._advanced_identification( base_url, 'os' )
                 
-                if self._runAppIdent:
-                    self._runAppIdent = False
-                    self._advancedIdentification( url, 'apps' )
+                if self._run_app_ident:
+                    self._run_app_ident = False
+                    self._advanced_identification( base_url, 'apps' )
                     
                 # Report findings of remote OS, applications, users, etc.
-                self._reportFindings()
+                self._report_findings()
             
             return self._fuzzableRequests
 
-    def _doRequest( self, mutant, user ):
+    def _do_request( self, mutant, user ):
+        '''
+        Perform the request and compare.
+        
+        @return: True when the user was found.
+        '''
         try:
             response = self._urlOpener.GET( mutant, useCache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         else:
             path = mutant.replace( urlParser.baseUrl( mutant ) , '' )
-            responseBody = response.getBody().replace( path, '')
+            response_body = response.getBody().replace( path, '')
             
-            ratio = relative_distance( responseBody, self._nonExistant )
+            ratio = relative_distance( response_body, self._non_existant )
             if ratio < 0.7:
                 
                 # Avoid duplicates
@@ -133,11 +146,12 @@ class userDir(baseDiscoveryPlugin):
             else:
                 return False
 
-    def _advancedIdentification( self, url, ident ):
+    def _advanced_identification( self, url, ident ):
         '''
-        @return: None, This method will save the results to the kb and print and informational message to the user.
+        @return: None, This method will save the results to the kb and print and
+        informational message to the user.
         '''
-        def getUsersByOS():
+        def get_users_by_OS():
             '''
             @return: A list of tuples with ('OS', 'username-that-only-exists-in-OS')
             '''
@@ -147,7 +161,7 @@ class userDir(baseDiscoveryPlugin):
             res.append( ('FreeBSD','kmem') )
             return res
         
-        def getUsersByApp():
+        def get_users_by_app():
             '''
             @return: A list of tuples with ('app-name', 'username-that-only-exists-if-app-is-installed')
             '''
@@ -163,7 +177,7 @@ class userDir(baseDiscoveryPlugin):
             res.append( ('TOR (The Onion Router)','debian-tor') )
             res.append( ('Privoxy (generally installed with TOR)','privoxy') )
             res.append( ('logwatch','logwatch') )
-            res.append( ('Email filtering application using sendmail\'s milter interface','defang') )
+            res.append( ('Email filtering application using sendmail\'s milter interface','defang'))
             res.append( ('OpenVPN Daemon','openvpn') )
             res.append( ('Nagios','nagios') )
             res.append( ('ntop','ntop') )
@@ -207,8 +221,6 @@ class userDir(baseDiscoveryPlugin):
             res.append( ('A simple personal server for the WorldForge project','cyphesis') )
             res.append( ('LDAP Update Monitor','lum') )
 
-
-
             # Web apps
             res.append( ('OpenCM','opencm') )
             res.append( ('The Open Ticket Request System','otrs') )
@@ -220,27 +232,31 @@ class userDir(baseDiscoveryPlugin):
             return res
         
         if ident == 'os':
-            toTest = getUsersByOS()
+            toTest = get_users_by_OS()
         else:
-            toTest = getUsersByApp()
+            toTest = get_users_by_app()
         
-        for dataRelatedToUser, user in toTest:
-            url_user_list = self._createDirs( url, userList=[ user, ] )
+        for data_related_to_user, user in toTest:
+            url_user_list = self._create_dirs( url, userList=[ user, ] )
             for uDir, user in url_user_list:
-                if self._doRequest( uDir, user ):
+                if self._do_request( uDir, user ):
                     i = info.info()
                     if ident == 'os':
-                        i.setDesc( 'The remote OS can be identified as "' + dataRelatedToUser + '" based on the remote user "'+ user +'".' )
-                        i['rOS'] = dataRelatedToUser
-                        i.setName('Identified Operating System: ' + dataRelatedToUser )
+                        msg = 'The remote OS can be identified as "' + data_related_to_user
+                        msg += '" based on the remote user "'+ user +'".'
+                        i.setDesc( msg )
+                        i['rOS'] = data_related_to_user
+                        i.setName('Identified Operating System: ' + data_related_to_user )
                         kb.kb.append( self, 'os', i )
                     else:
-                        i.setDesc( 'The remote server has "' + dataRelatedToUser + '" installed, w3af found this information based on the remote user "'+ user +'".' )
-                        i['application'] = dataRelatedToUser
-                        i.setName('Identified application: ' + dataRelatedToUser )
+                        msg = 'The remote server has "' + data_related_to_user + '" installed, w3af'
+                        msg += ' found this information based on the remote user "'+ user +'".'
+                        i.setDesc( msg )
+                        i['application'] = data_related_to_user
+                        i.setName('Identified application: ' + data_related_to_user )
                         kb.kb.append( self, 'applications', i )
     
-    def _reportFindings( self ):
+    def _report_findings( self ):
         '''
         Print all the findings to the output manager.
         @return : None
@@ -251,26 +267,30 @@ class userDir(baseDiscoveryPlugin):
             for u in userList:
                 om.out.information('- ' + u )
         
-        osList = [ u['rOS'] for u in kb.kb.getData( 'userDir', 'os') ]
-        if osList:
+        OS_list = [ u['rOS'] for u in kb.kb.getData( 'userDir', 'os') ]
+        if OS_list:
             om.out.information('The remote operating system was identifyed as:')
-            osList = list( set( osList ) )
-            for u in osList:
+            OS_list = list( set( OS_list ) )
+            for u in OS_list:
                 om.out.information('- ' + u )
-        elif self._identifyOS:
-            om.out.information('Failed to identify the remote OS based on the users available in the userDir plugin database.')
-        osList = [ u['rOS'] for u in kb.kb.getData( 'userDir', 'os') ]
+        elif self._identify_OS:
+            msg = 'Failed to identify the remote OS based on the users available in'
+            msg += ' the userDir plugin database.'
+            om.out.information(msg)
+        OS_list = [ u['rOS'] for u in kb.kb.getData( 'userDir', 'os') ]
         
-        appList = [ u['application'] for u in kb.kb.getData( 'userDir', 'applications') ]
-        if appList:
+        app_list = [ u['application'] for u in kb.kb.getData( 'userDir', 'applications') ]
+        if app_list:
             om.out.information('The remote server has the following applications installed:')
-            appList = list( set( appList ) )
-            for u in appList:
+            app_list = list( set( app_list ) )
+            for u in app_list:
                 om.out.information('- ' + u )
-        elif self._identifyOS:
-            om.out.information('Failed to identify any installed applications based on the users available in the userDir plugin database.')
+        elif self._identify_OS:
+            msg = 'Failed to identify any installed applications based on the users'
+            msg += ' available in the userDir plugin database.'
+            om.out.information(msg)
     
-    def _createDirs(self, url , userList = None ):
+    def _create_dirs(self, url , userList = None ):
         '''
         Append the users to the URL.
         
@@ -280,14 +300,14 @@ class userDir(baseDiscoveryPlugin):
         res = []
         
         if userList == None:
-            userList = self._getUsers()
+            userList = self._get_users()
             
         for user in userList:
             res.append( (urlParser.urlJoin( url , '/'+user+'/' ) , user ) )
             res.append( (urlParser.urlJoin( url , '/~'+user+'/' ) , user ) )
         return res
     
-    def _getUsers( self ):
+    def _get_users( self ):
         '''
         @return: All usernames collected by other plugins.
         '''
@@ -308,10 +328,10 @@ class userDir(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Try to identify the remote operating system based on the remote users'
-        o1 = option('identifyOS', self._identifyOS, d1, 'boolean')
+        o1 = option('identifyOS', self._identify_OS, d1, 'boolean')
         
         d2 = 'Try to identify applications installed remotely using the available users'
-        o2 = option('identifyApplications', self._identifyApplications, d2, 'boolean')
+        o2 = option('identifyApplications', self._identify_applications, d2, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -326,16 +346,20 @@ class userDir(baseDiscoveryPlugin):
         @parameter optionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._identifyOS = optionsMap['identifyOS'].getValue()
-        self._identifyApplications = optionsMap['identifyApplications'].getValue()
+        self._identify_OS = optionsMap['identifyOS'].getValue()
+        self._identify_applications = optionsMap['identifyApplications'].getValue()
     
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
+<<<<<<< .mine
+        if self._do_fast_search:
+=======
         return []
         if self._doFastSearch:
+>>>>>>> .r2167
             # This was left here for fast testing of the plugin.
             return []
         else:
@@ -347,8 +371,8 @@ class userDir(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will try to find user home directories based on the knowledge gained by other plugins.
-        For example, if the target URL is:
+        This plugin will try to find user home directories based on the knowledge gained by other
+        plugins, and an internal knowledge base. For example, if the target URL is:
             - http://test/
             
         And other plugins found this valid email accounts:
@@ -361,6 +385,7 @@ class userDir(baseDiscoveryPlugin):
             - http://test/~f00b4r/
             - http://test/f00b4r/
         
-        If the response is not a 404 error, then we have found a new URL. And confirmed the existance of a user
-        in the remote system.
+        If the response is not a 404 error, then we have found a new URL. And confirmed the
+        existance of a user in the remote system. This plugin will also identify the remote operating
+        system and installed applications based on the user names that are available.
         '''
