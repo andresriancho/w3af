@@ -27,6 +27,7 @@ from core.data.dc.cookie import cookie as cookie
 import core.data.kb.config as cf
 from core.data.parsers.urlParser import *
 import copy
+import urllib
 
 class fuzzableRequest:
     '''
@@ -91,14 +92,14 @@ class fuzzableRequest:
         if self._dc:
           strRes += '?'
           for i in self._dc:
-            strRes += i + '=' + str(self._dc[i]) + '&'          
+            strRes += i + '=' + urllib.quote(str(self._dc[i])) + '&'          
           strRes = strRes[: -1]
         strRes += ','
       else:
         strRes += ','
         if self._dc:
           for i in self._dc:
-            strRes += i + '=' + str(self._dc[i]) + '&'          
+            strRes += i + '=' + urllib.quote(str(self._dc[i])) + '&'          
           strRes = strRes[: -1]
       return strRes
                 

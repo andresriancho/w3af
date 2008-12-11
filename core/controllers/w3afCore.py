@@ -56,6 +56,9 @@ from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
 # Progress tracking
 from core.controllers.coreHelpers.progress import progress
 
+# Export fuzzable requests helper
+from core.controllers.coreHelpers.export import export
+
 # Profile objects
 from core.data.profile.profile import profile as profile
 
@@ -78,6 +81,7 @@ class w3afCore:
         
         self.uriOpener = xUrllib()
         self.progress = progress()
+        self.export = export()
 
     def _home_directory(self):
         '''
@@ -425,7 +429,7 @@ class w3afCore:
                 # Export all fuzzableRequests as CSV
                 # if this option is set in the miscSettings
                 if cf.cf.getData('exportFuzzableRequests') != '':
-                  self._exportFuzzableRequests()
+                  self.export.exportFuzzableRequestList(self._fuzzableRequestList)
                     
                 if len( self._fuzzableRequestList ) == 0:
                     om.out.information('No URLs found by discovery.')
@@ -1165,17 +1169,6 @@ class w3afCore:
             res += '\nRevision: ' + str(revision)
         res += '\nAuthor: Andres Riancho and the w3af team.'
         return res
-
-    def _exportFuzzableRequests( self ):
-      filename = cf.cf.getData('exportFuzzableRequests')
-      try:
-        file = open(filename, 'w')
-        file.write('HTTP-METHOD,URI,POSTDATA\n')
-        for fuzzRequest in self._fuzzableRequestList:
-          file.write(fuzzRequest.export() + '\n')
-        file.close()
-      except Exception, e:
-        print 'An exception was raised while trying to write to the output file:', e         
     
 # """"Singleton""""
 wCore = w3afCore()
