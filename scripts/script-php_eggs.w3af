@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -12,16 +11,10 @@ set verbose False
 back
 
 discovery phpEggs
-discovery
-
-#grep all
-#grep
-#audit xss
-#audit
 back
 
 target
-set target http://localhost/w3af/xss/test-xss.php
+set target http://localhost/w3af/audit/xss/no_tag_xss.php
 back
 
 start
