@@ -30,7 +30,7 @@ from .clusterGraph import distance_function_selector
 from .payload_generators import create_generator_menu
 
 from core.data.db.reqResDBHandler import reqResDBHandler
-from core.controllers.w3afException import w3afException, w3afMustStopException 
+from core.controllers.w3afException import w3afException, w3afMustStopException
 import os
 
 request_example = """\
@@ -61,7 +61,7 @@ class ThreadedURLImpact(threading.Thread):
             self.exception = e
         finally:
             self.event.set()
-            
+
 
 class ManualRequests(entries.RememberingWindow):
     '''Infrastructure to generate manual HTTP requests.
@@ -77,7 +77,7 @@ class ManualRequests(entries.RememberingWindow):
         # The table to store the checkbox and the button
         table = gtk.Table(1, 20)
         table.set_col_spacings(10)
-        
+
         # Fix content length checkbox
         self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
         self._fixContentLengthCB.set_active(True)
@@ -86,7 +86,7 @@ class ManualRequests(entries.RememberingWindow):
         # send button
         b = gtk.Button("   Send   ")
         b.connect("clicked", self._send)
-        
+
         # Store all inside the table
         table.attach(self._fixContentLengthCB, 9, 10, 0, 1, xoptions=gtk.SHRINK)
         table.attach(b, 19, 20, 0, 1, xoptions=gtk.SHRINK)
@@ -97,14 +97,14 @@ class ManualRequests(entries.RememberingWindow):
         self.vbox.pack_start(self.reqresp, True, True)
 
         self.vbox.pack_start(table, False, False)
-        
+
         # Add a default request
         if initialRequest is None:
             self.reqresp.request.rawShow(request_example, '')
         else:
             (initialUp, initialDn) = initialRequest
             self.reqresp.request.rawShow(initialUp, initialDn)
-        
+
         # Show all!
         table.show_all()
         self.show()
@@ -166,24 +166,24 @@ class PreviewWindow(entries.RememberingWindow):
         self.pages = []
         self.generator = fg.generate()
         self.set_modal(True)
-        self.set_transient_for(parent) 
+        self.set_transient_for(parent)
 
         # content
         self.panes = reqResViewer.requestPaned(w3af, editable=False, widgname="fuzzypreview")
         self.vbox.pack_start(self.panes.notebook)
         self.panes.show()
-        
+
 
         # the ok button
         centerbox = gtk.HBox()
         quant = fg.calculateQuantity()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
-        centerbox.pack_start(self.pagesControl, True, False) 
+        centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
         self.vbox.pack_start(centerbox, False, False, padding=5)
 
         self._pageChange(0)
-        
+
         self.vbox.show()
         self.show()
 
@@ -197,24 +197,24 @@ class PreviewWindow(entries.RememberingWindow):
 
 
 FUZZYHELP = """\
-<b>This is the syntax you can follow to generate 
+<b>This is the syntax you can follow to generate
 multiple crafted requests.</b>
 
-Every text inside two dollar signs (<i>$</i>) is a text 
-generator (if you want to actually write a dollar sign, 
-use $$). The system will generate and send as many requests
-as the generator produces. 
+Every text inside two dollar signs (<i>$</i>) is a text
+generator (if you want to actually write a dollar sign,
+use \$). The system will generate and send as many requests
+as the generator produces.
 
 If in a text you put more than one generator, the results
 are combined. For example, if you put a generator of 5
 digits and a generator of 10 letters, a total of 50 pages
 will be generated. You can actually check how many
-pages will be generated using the <i>Analyze</i> button 
-(to actually see those requests, still without sending them, 
+pages will be generated using the <i>Analyze</i> button
+(to actually see those requests, still without sending them,
 select the <i>preview</i> option).
 
-Each generator between the dollar signs will be evaluated 
-by Python, using <tt>eval()</tt>, with an almost clean 
+Each generator between the dollar signs will be evaluated
+by Python, using <tt>eval()</tt>, with an almost clean
 namespace (there's already imported the module <tt>string</tt>).
 
 For example, you can do:
@@ -222,7 +222,7 @@ For example, you can do:
   Numbers from 0 to 4: $range(5)$
   First ten letters: $string.lowercase[:10]$
   The words "spam" and "eggs": $['spam', 'eggs']$
-  The content of a file: 
+  The content of a file:
       $[l.strip() for l in file('input.txt').readlines()]$
 </tt>
 """
@@ -240,10 +240,10 @@ class FuzzyRequests(entries.RememberingWindow):
         self.w3af = w3af
         self.dbh = reqResDBHandler()
         mainhbox = gtk.HBox()
-        
+
         # To store the responses
         self.responses = []
-        
+
         # ---- left pane ----
         vbox = gtk.VBox()
         mainhbox.pack_start(vbox, False, False)
@@ -254,16 +254,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.sendStopBut = entries.SemiStockButton("", gtk.STOCK_MEDIA_STOP, "Stops the request being sent")
         self.sSB_state = helpers.PropagateBuffer(self.sendStopBut.set_sensitive)
         self.sSB_state.change(self, False)
-        
+
         # Fix content length checkbox
         self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
         self._fixContentLengthCB.set_active(True)
         self._fixContentLengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPaned(w3af, 
-                                        [analyzBut.set_sensitive, 
-                                         self.sendPlayBut.set_sensitive, 
+        self.originalReq = reqResViewer.requestPaned(w3af,
+                                        [analyzBut.set_sensitive,
+                                         self.sendPlayBut.set_sensitive,
                                          functools.partial(self.sSB_state.change, "rRV")],
                                         editable=True, widgname="fuzzyrequest")
         if initialRequest is None:
@@ -271,7 +271,7 @@ class FuzzyRequests(entries.RememberingWindow):
         else:
             (initialUp, initialDn) = initialRequest
             self.originalReq.rawShow(initialUp, initialDn)
-        
+
         # Add the right button popup menu to the text widgets
         self.originalReq._upTv.textView.connect("populate-popup", self._populate_popup)
         self.originalReq._downTv.textView.connect("populate-popup", self._populate_popup)
@@ -285,7 +285,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.originalReq.notebook.show()
         vbox.pack_start(self.originalReq.notebook, True, True, padding=5)
         vbox.show()
-        
+
         # the commands
         t = gtk.Table(2, 4)
         analyzBut.connect("clicked", self._analyze)
@@ -304,9 +304,9 @@ class FuzzyRequests(entries.RememberingWindow):
         t.attach(self.sendfb, 2, 3, 1, 2)
         t.attach(self._fixContentLengthCB, 3, 4, 1, 2)
         t.show_all()
-        
+
         vbox.pack_start(t, False, False, padding=5)
-        
+
         # ---- throbber pane ----
         vbox = gtk.VBox()
         self.throbber = helpers.Throbber()
@@ -329,13 +329,13 @@ class FuzzyRequests(entries.RememberingWindow):
         self.resultReqResp.set_sensitive(False)
         vbox.pack_start(self.resultReqResp, True, True, padding=5)
         vbox.show()
-        
+
         # result control
         centerbox = gtk.HBox()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
-        
+
         # cluster responses button
         image = gtk.Image()
         image.set_from_file( os.path.join( os.path.split(__file__)[0] ,'data','cluster_data.png'))
@@ -346,7 +346,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.clusterButton.set_image(image)
         self.clusterButton.show()
         centerbox.pack_start(self.clusterButton, True, False)
-        
+
         # clear responses button
         self.clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
                                                                     tooltip='Clear all HTTP responses from fuzzer window')
@@ -354,7 +354,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.clearButton.set_sensitive( False )
         self.clearButton.show()
         centerbox.pack_start(self.clearButton, True, False)
-        
+
         vbox.pack_start(centerbox, False, False, padding=5)
 
         # Show all!
@@ -363,7 +363,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.vbox.show()
         mainhbox.show()
         self.show()
-        
+
     def _populate_popup(self, textview, menu):
         '''
         Populates the menu with the fuzzing items.
@@ -385,7 +385,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.clusterButton.set_sensitive(False)
         self.clearButton.set_sensitive(False)
         self.pagesControl.deactivate()
-        
+
     def _clusterData( self, widg):
         '''
         Analyze if we can cluster the responses and do it.
@@ -396,7 +396,7 @@ class FuzzyRequests(entries.RememberingWindow):
                 reqid = resp[1]
                 request, response = self.dbh.searchById( reqid )[0]
                 data.append( response )
-        
+
         if data:
             distance_function_selector(self.w3af, data)
         else:
@@ -413,7 +413,7 @@ class FuzzyRequests(entries.RememberingWindow):
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
             return
-            
+
         self.analyzefb.set_text("%d requests" % fg.calculateQuantity())
         self.analyzefb.set_sensitive(True)
 
@@ -465,7 +465,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # Get the fix content length value
         fixContentLength = self._fixContentLengthCB.get_active()
-        
+
         # initial state
         self.result_ok = 0
         self.result_err = 0
@@ -486,7 +486,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
     def _real_send(self, fixContentLength, requestGenerator):
         '''This is the one that actually sends the requests, if corresponds.
-        
+
         @param fixContentLength: if the lenght should be fixed by the core.
         @param requestGenerator: where to ask for the requests
         '''
@@ -526,7 +526,7 @@ class FuzzyRequests(entries.RememberingWindow):
             self.responses.append((True, httpResp.getId()))
         else:
             self.responses.append((False, realreq, realbody, errorMsg))
-            
+
         # always update the gtk stuff
         self.sendfb.set_sensitive(True)
         self.sendfb.set_text("%d ok, %d errors" % (self.result_ok, self.result_err))
@@ -544,7 +544,7 @@ class FuzzyRequests(entries.RememberingWindow):
         info = self.responses[page]
         if info[0]:
             reqid = info[1]
-            # no need to verify if it was ok: the request was succesful and 
+            # no need to verify if it was ok: the request was succesful and
             # surely existant
             request, response = self.dbh.searchById( reqid )[0]
             self.resultReqResp.request.showObject( request )

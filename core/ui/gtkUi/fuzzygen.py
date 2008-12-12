@@ -31,13 +31,13 @@ REPP = re.compile("\$.*?\$")
 class FuzzyError(w3afException): pass
 
 # Syntax rules:
-# 
-# - the "$" is the delimiter
-# 
-# - to actually include a "$", use "$$"
 #
-# - if you write "$something$", the "something" will be evaluated with 
-#   eval, having the "string" module already imported (eg: 
+# - the "$" is the delimiter
+#
+# - to actually include a "$", use "\$"
+#
+# - if you write "$something$", the "something" will be evaluated with
+#   eval, having the "string" module already imported (eg:
 #   "$range(1,5,2)$", "$string.lowercase$").
 
 class FuzzyGenerator(object):
@@ -72,35 +72,37 @@ class FuzzyGenerator(object):
         if not genr2:
             genr2 = [[]]
         return genr1, genr2
-        
+
     def _genIterator(self, text):
         '''Generates the iterator from the text.'''
         namespace = {"string":__import__("string")}
         try:
             it = eval(text, namespace)
         except Exception, e:
-            msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e, text)
+            msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e,
+                                                                        text)
             raise FuzzyError(msg)
 
         try:
             iter(it)
         except TypeError:
-            raise FuzzyError(_("%r is not iterable! (generated from %r)") % (it,text))
+            msg = _("%r is not iterable! (generated from %r)") % (it,text)
+            raise FuzzyError(msg)
         return it
-        
+
     def _dissect(self, txt):
         '''Separates the fixed and dynamic part from the text.
 
         @param txt: the text to process.
         '''
-        # remove the double $$
-        txt = txt.replace("$$", "\x00")
+        # remove the \$
+        txt = txt.replace("\$", "\x00")
 
-        # separate sane texts from what is to be replaced 
+        # separate sane texts from what is to be replaced
         toreplace = REPP.findall(txt)
         saneparts = REPP.split(txt)
-        
-        # transform $$ for $
+
+        # transform \$ for $
         for i,part in enumerate(toreplace):
             if "\x00" in part:
                 toreplace[i] = part.replace("\x00", "$")
@@ -110,7 +112,7 @@ class FuzzyGenerator(object):
 
         # extract border $
         toreplace = [x[1:-1] for x in toreplace]
-    
+
         return toreplace, saneparts
 
     def generate(self):
@@ -147,56 +149,67 @@ class FuzzyGenerator(object):
                 for val in self._possib(generat, constr+[elem]):
                     yield val
 
-        
+
 if __name__ == "__main__":
     import unittest
     globals()["_"] = lambda x: x
 
     class TestAll(unittest.TestCase):
         def test_simple_doubledollar(self):
-            fg = FuzzyGenerator("Hola $$mundo\ncruel", "")
+            fg = FuzzyGenerator("Hola \$mundo\ncruel", "")
             self.assertEqual(fg.sane1, ["Hola $mundo\ncruel"])
-            
-            fg = FuzzyGenerator("Hola $$mundo\ncruel$$", "")
+
+            fg = FuzzyGenerator("Hola \$mundo\ncruel\$", "")
             self.assertEqual(fg.sane1, ["Hola $mundo\ncruel$"])
-            
-            fg = FuzzyGenerator("Hola $$mundo\ncruel$$asdfg$$$$gh", "")
+
+            fg = FuzzyGenerator("Hola \$mundo\ncruel\$asdfg\$\$gh", "")
             self.assertEqual(fg.sane1, ["Hola $mundo\ncruel$asdfg$$gh"])
 
         def test_quantities(self):
             fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
             self.assertEqual(fg.calculateQuantity(), 4)
-        
-            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp$string.lowercase[:2]$")
+
+            fg = FuzzyGenerator("$range(2)$ n$'as'$", "p$string.lowercase[:2]$")
             self.assertEqual(fg.calculateQuantity(), 8)
-        
+
         def test_generations(self):
             fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
             self.assertEqual(list(fg.generate()), [
-                ('0 dnda', 'pp'), ('0 dnds', 'pp'), ('1 dnda', 'pp'), ('1 dnds', 'pp')])
-        
-            fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp$string.lowercase[:2]$")
+                ('0 dnda', 'pp'), ('0 dnds', 'pp'),
+                ('1 dnda', 'pp'), ('1 dnds', 'pp')])
+
+            fg = FuzzyGenerator("$range(2)$ d$'as'$", "p$string.lowercase[:2]$")
             self.assertEqual(list(fg.generate()), [
-                ('0 dnda', 'ppa'), ('0 dnda', 'ppb'), ('0 dnds', 'ppa'), ('0 dnds', 'ppb'),
-                ('1 dnda', 'ppa'), ('1 dnda', 'ppb'), ('1 dnds', 'ppa'), ('1 dnds', 'ppb'),
+                ('0 da', 'pa'), ('0 da', 'pb'), ('0 ds', 'pa'), ('0 ds', 'pb'),
+                ('1 da', 'pa'), ('1 da', 'pb'), ('1 ds', 'pa'), ('1 ds', 'pb'),
             ])
-        
+
         def test_quant_gen_gen(self):
             fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
             self.assertEqual(fg.calculateQuantity(), 4)
 
             self.assertEqual(list(fg.generate()), [
-                ('0 dnda', 'pp'), ('0 dnds', 'pp'), ('1 dnda', 'pp'), ('1 dnds', 'pp')])
-        
+                ('0 dnda', 'pp'), ('0 dnds', 'pp'),
+                ('1 dnda', 'pp'), ('1 dnds', 'pp')])
+
         def test_noniterable(self):
             self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $3$ bb")
-            self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $[].extend([1,2])$ bb")
+            self.assertRaises(FuzzyError, FuzzyGenerator, "",
+                                                "aa $[].extend([1,2])$ bb")
 
         def test_inside_doubledollar(self):
-            fg = FuzzyGenerator("GET http://localhost/$['aaa$$b', 'b$$ccc']$ HTTP/1.0", "")
+            fg = FuzzyGenerator(
+                    "GET http://localhost/$['aaa\$b', 'b\$ccc']$ HTTP/1.0", "")
             self.assertEqual(list(fg.generate()), [
                 ("GET http://localhost/aaa$b HTTP/1.0", ""),
                 ("GET http://localhost/b$ccc HTTP/1.0", ""),
                                 ])
+
+        def test_double_token_together(self):
+            # from bug 2393362, the idea is to generate 00 to 99
+            # using to generators (I'm doing less iterations here)
+            fg = FuzzyGenerator("-$xrange(2)$$xrange(2)$-", "")
+            self.assertEqual(list(fg.generate()), [
+                ("-00-", ""), ("-01-", ""), ("-10-", ""), ("-11-", "") ])
 
     unittest.main()
