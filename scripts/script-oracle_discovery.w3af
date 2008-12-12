@@ -1,0 +1,24 @@
+# This script shows how oracleDiscovery works
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery oracleDiscovery
+back
+
+target
+set target http://localhost/w3af/
+back
+
+start
+
+assert len(kb.kb.getData('oracleDiscovery','info')) == 1
+
+exit

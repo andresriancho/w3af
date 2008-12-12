@@ -21,16 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afRunOnce
+import core.data.parsers.urlParser as urlParser
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import *
+
 import re
+
 
 class oracleDiscovery(baseDiscoveryPlugin):
     '''
@@ -46,7 +50,8 @@ class oracleDiscovery(baseDiscoveryPlugin):
         '''
         GET some files and parse them.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         dirs = []
         if not self._exec :
@@ -57,33 +62,37 @@ class oracleDiscovery(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             
-            self.is404 = kb.kb.getData( 'error404page', '404' )
+            is_404 = kb.kb.getData( 'error404page', '404' )
             baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
             
-            for url, regexString in self.getOracleData():
+            for url, regex_string in self.getOracleData():
 
-                oracleDiscoveryUrl = urlParser.urlJoin(  baseUrl , url )
-                response = self._urlOpener.GET( oracleDiscoveryUrl, useCache=True )
+                oracle_discovery_URL = urlParser.urlJoin(  baseUrl , url )
+                response = self._urlOpener.GET( oracle_discovery_URL, useCache=True )
                 
-                if not self.is404( response ):
+                if not is_404( response ):
                     dirs.extend( self._createFuzzableRequests( response ) )
-                    if re.match( regexString , response.getBody(), re.DOTALL):
+                    if re.match( regex_string , response.getBody(), re.DOTALL):
                         i = info.info()
                         i.setName('Oracle application')
                         i.setURL( response.getURL() )
-                        i.setDesc( self._parseFunction( url, response ) )
+                        i.setDesc( self._parse( url, response ) )
                         i.setId( response.id )
                         kb.kb.append( self, 'info', i )
                         om.out.information( i.getDesc() )
                     else:
-                        om.out.debug('oracleDiscovery found the URL: ' + response.getURL() + ' but failed to parse it.')
-                        om.out.debug('The content of the URL is: ' + response.getBody() )
+                        msg = 'oracleDiscovery found the URL: ' + response.getURL()
+                        msg += ' but failed to parse it. The content of the URL is: "'
+                        msg += response.getBody() + '".'
+                        om.out.debug( msg )
         
         return dirs
     
-    def _parseFunction( self, url, response ):
+    def _parse( self, url, response ):
         '''
-        This function parses responses and returns the message to be setted in the information object.
+        This function parses responses and returns the message to be setted in the
+        information object.
+
         @parameter url: The requested url
         @parameter response: The response object
         @return: A string with the message
@@ -91,11 +100,15 @@ class oracleDiscovery(baseDiscoveryPlugin):
         res = ''
         if url == '/portal/page':
             # Check if I can get the oracle version
-            # <html><head><title>PPE is working</title></head><body>PPE version 1.3.4 is working.</body></html>
-            if re.match( '<html><head><title>PPE is working</title></head><body>PPE version (.*?) is working\.</body></html>', response.getBody() ):
+            # <html><head><title>PPE is working</title></head><body>
+            # PPE version 1.3.4 is working.</body></html>
+            regex_str = '<html><head><title>PPE is working</title></head><body>PPE version'
+            regex_str += ' (.*?) is working\.</body></html>'
+            if re.match( regex_str, response.getBody() ):
             
-                version = re.findall( '<html><head><title>PPE is working</title></head><body>PPE version (.*?) is working\.</body></html>' , response.getBody() )[0]
-                res = 'Oracle Parallel Page Engine version "'+ version +'" was detected at: ' + response.getURL()
+                version = re.findall( regex_str, response.getBody() )[0]
+                res = 'Oracle Parallel Page Engine version "'+ version
+                res += '" was detected at: "' + response.getURL() + '".'
             
             else:
                 # I dont have the version!
@@ -107,18 +120,24 @@ class oracleDiscovery(baseDiscoveryPlugin):
                 version = re.findall( 'Reports Servlet .*? (.*)' , response.getBody() )[0][:-1]
                 res = 'Oracle reports version "'+version+'" was detected at: ' + response.getURL()
             except:
-                om.out.error('Failed to parse the Oracle reports version from HTML: ' + response.getBody() )
+                msg = 'Failed to parse the Oracle reports version from HTML: ' + response.getBody()
+                om.out.error( msg )
                 res = 'Oracle reports was detected at: ' + response.getURL()
                 
         return res
     
     def getOracleData( self ):
         '''
-        @return: A list of tuples with ( url, regexString, message )
+        @return: A list of tuples with ( url, regex_string )
         '''
         res = []
-        res.append( ('/portal/page','<html><head><title>PPE is working</title></head><body>PPE .*?is working\.</body></html>') )
-        res.append( ('/reports/rwservlet/showenv','.*<title>Oracle Application Server Reports Services - Servlet</title>.*') )
+
+        regex_string = '<html><head><title>PPE is working</title></head><body>'
+        regex_string += 'PPE .*?is working\.</body></html>'
+        res.append( ('/portal/page', regex_string) )
+
+        regex_string = '.*<title>Oracle Application Server Reports Services - Servlet</title>.*'
+        res.append( ('/reports/rwservlet/showenv', regex_string) )
         return res
     
     def getOptions( self ):
@@ -150,5 +169,6 @@ class oracleDiscovery(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin fetches some Oracle Application Server URLs and parses the information available on them.
+        This plugin fetches some Oracle Application Server URLs and parses the information
+        available on them.
         '''
