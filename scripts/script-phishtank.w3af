@@ -1,8 +1,7 @@
 # detect phishing using the phishtank API
 
 plugins
-output console,textFile
-output
+output console, textFile
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,12 +9,8 @@ back
 output config console
 set verbose False
 back
-discovery phishtank
 
-# This is for testing the update
-#discovery config phishtank
-#set updateDB True
-#back
+discovery phishtank
 
 back
 target
@@ -23,11 +18,11 @@ target
 #set target http://localhost/w3af/detectPhishing/
 
 # in phishtank
-set target http://lnked.bankofamerica.com.bofa-security-update.trust-update.it.ugtech.net/
+set target http://www.smithvilleacademy.com/www.halifax.co.uk/FormsLogin.aspsource=halifaxcouk/Index.PHP/
 back
 
 start
 
-assert len( kb.kb.getData('phishtank', 'phishtank') ) == 6
+assert len( kb.kb.getData('phishtank', 'phishtank') ) == 1
 
 exit
