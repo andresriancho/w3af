@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -35,6 +36,7 @@ import core.data.parsers.urlParser as urlParser
 
 from urllib2 import URLError
 
+
 class MSNSpider(baseDiscoveryPlugin):
     '''
     Search MSN to get a list of new URLs
@@ -48,13 +50,14 @@ class MSNSpider(baseDiscoveryPlugin):
         # User variables
         self._resultLimit = 300
 
+        # Internal variables
+        self._fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
-        newUrls = []
-        self._fuzzableRequests = []
         if not self._run:
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
@@ -62,31 +65,40 @@ class MSNSpider(baseDiscoveryPlugin):
             # I will only run this one time. All calls to MSNSpider return the same url's
             self._run = False
             
-            self._msn = msn( self._urlOpener )
+            msn_obj = msn( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
             if is_private_site( domain ):
-                raise w3afException('There is no point in searching MSN for "site:'+ domain + '" . MSN doesnt index private pages.')
+                msg = 'There is no point in searching MSN for "site:'+ domain + '".'
+                msg += ' MSN doesnt index private pages.'
+                raise w3afException( msg )
 
-            results = self._msn.getNResults('site:'+ domain, self._resultLimit )
+            results = msn_obj.getNResults('site:'+ domain, self._resultLimit )
         
             for res in results:
                 targs = (res.URL,)
-                self._tm.startFunction( target=self._generateFuzzableRequests, args=targs, ownerObj=self )          
+                self._tm.startFunction( target=self._gen_fuzzable_requests, 
+                                        args=targs, ownerObj=self )          
             self._tm.join( self )
-        return self._fuzzableRequests
+
+        return self._fuzzable_requests
     
-    def _generateFuzzableRequests( self, url ):
+    def _gen_fuzzable_requests( self, url ):
+        '''
+        GET the URL and then call createFuzzableRequests with the response.
+
+        @parameter url: The URL to GET.
+        '''
         try:
             response = self._urlOpener.GET( url, useCache=True, getSize=True )
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:
-            pass
-        except URLError, ue:
-            om.out.debug('URL Error while fetching page in MSNSpider, error: ' + str(ue) )
+            om.out.error('Exception while requesting ' + url + ' ' + str(w3) )
+        except URLError, url_err:
+            om.out.debug('URL Error while fetching page in MSNSpider, error: ' + str(url_err) )
         fuzzReqs = self._createFuzzableRequests( response )
-        self._fuzzableRequests.extend( fuzzReqs )
+        self._fuzzable_requests.extend( fuzzReqs )
     
     def getOptions( self ):
         '''
