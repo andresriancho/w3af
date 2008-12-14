@@ -34,6 +34,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.daemons.webserver import webserver
+from core.controllers.misc.homeDir import get_home_dir
 
 import os
 import time
@@ -214,7 +215,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             # Write the php to the webroot
             filename = createRandAlNum()
             try:
-                f = open( os.path.join('webroot' + os.path.sep, filename ) , 'w')
+                f = open( os.path.join(get_home_dir(), 'webroot', filename ) , 'w')
                 f.write( file_content )
                 f.close()
             except:
@@ -234,7 +235,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             self._web_server.stop()
             # Remove the file
             filename = url_to_include.split('/')[-1:][0]
-            os.remove( os.path.join('webroot' + os.path.sep, filename ) )
+            os.remove( os.path.join(get_home_dir(), 'webroot', filename ) )
             self._web_server = None 
     
     def _start_web_server( self ):
@@ -244,7 +245,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         if self._use_XSS_vuln:
             return
         if not self._web_server:
-            webroot_path = 'webroot' + os.path.sep
+            webroot_path = os.path.join( get_home_dir(), 'webroot')
             self._web_server = webserver( self._listen_address, self._listen_port, webroot_path)
             self._web_server.start2()
             time.sleep(0.2) # wait for webserver thread to start
@@ -411,6 +412,6 @@ class rfi_shell(shell):
             self._web_server.stop()
             # Remove the file
             filename = url_to_include.split('/')[-1:][0]
-            os.remove( os.path.join('webroot' + os.path.sep, filename ) )
+            os.remove( os.path.join( get_home_dir(), 'webroot', filename ) )
             self._web_server = None
             

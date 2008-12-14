@@ -35,6 +35,14 @@ def create_home_dir():
             os.makedirs(home_path)
         except OSError:
             return False
+    
+    webroot = home_path + os.path.sep + 'webroot'
+    if not os.path.exists(webroot):
+        try:
+            os.makedirs(webroot)
+        except OSError:
+            return False
+            
     return True
     
 def get_home_dir():

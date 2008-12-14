@@ -34,11 +34,12 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.daemons.webserver import webserver
 import core.data.parsers.urlParser as urlParser
-
+ 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from core.controllers.threads.w3afThread import w3afThread
 import time
 import socket, urlparse, urllib
+import os
 from core.controllers.threads.threadManager import threadManagerObj as tm
 import core.data.constants.w3afPorts as w3afPorts
 
@@ -173,7 +174,8 @@ class rfiProxy(baseAttackPlugin, w3afThread):
             # and configure the _rfiConnGenerator attr for him
             if self._wS == None:
                 om.out.information( 'Running a local httpd to serve the RFI connection generator to remote web app.' )
-                self._wS = webserver( self._proxyPublicIP, self._httpdPort , 'webroot/')
+                webroot = os.path.join('plugins', 'attack', 'rfiProxy')
+                self._wS = webserver( self._proxyPublicIP, self._httpdPort , webroot )
                 self._wS.start2()
                 self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
             

@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
+from core.controllers.misc.homeDir import get_home_dir
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -176,7 +177,7 @@ class remoteFileInclude(baseAuditPlugin):
         php_code += ' ?>'
         
         # Write the php to the webroot
-        file_handler = open( os.path.join('webroot' + os.path.sep, filename ) , 'w')
+        file_handler = open( os.path.join( get_home_dir(), 'webroot', filename ) , 'w')
         file_handler.write( php_code )
         file_handler.close()
         
@@ -185,7 +186,7 @@ class remoteFileInclude(baseAuditPlugin):
         self._rfi_url += '/' + filename
         self._rfi_result = rand1 + rand2
         
-        webroot = 'webroot' + os.path.sep
+        webroot = os.path.join(get_home_dir(), 'webroot')
         self._webserver = webserver( self._listen_address, self._listen_port , webroot )
         self._webserver.start2()
         time.sleep( 0.2 )
@@ -198,7 +199,7 @@ class remoteFileInclude(baseAuditPlugin):
             self._webserver.stop()
             # Remove the file
             filename = urlParser.getFileName(self._rfi_url)
-            os.remove( os.path.join('webroot' + os.path.sep, filename ) )
+            os.remove( os.path.join(get_home_dir(), 'webroot', filename ) )
             self._webserver = None
 
     def getOptions( self ):
