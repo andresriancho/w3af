@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -28,7 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
+
 
 class importResults(baseDiscoveryPlugin):
     '''
@@ -37,45 +38,53 @@ class importResults(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+
+        # Internal variables
         self._exec = True
         
         # User configured parameters
-        self._inputFile = ''
+        self._input_file = ''
 
     def discover(self, fuzzableRequest ):
         '''
         Read the input file, and create the fuzzableRequests based on that information.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test. It ain't used.
         '''
         if not self._exec:
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
+
         else:
             self._exec = False
             res = []
-            
-            if self._inputFile != '':
+
+            if self._input_file != '':
                 try:
-                    iFileHandler = file( self._inputFile )
+                    file_handler = file( self._input_file )
                 except Exception, e:
-                    om.out.error('An error was found while trying to read the input file: ', str(e))
+                    msg = 'An error was found while trying to read the input file: "'
+                    msg += str(e) + '".'
+                    om.out.error( msg )
                 else:
-                    for line in iFileHandler:
-                        obj = self._objFromFile( line.strip() )
+                    for line in file_handler:
+                        obj = self._obj_from_file( line.strip() )
                         if obj:
                             res.append( obj )
                         
         return res
     
-    def _objFromFile( self, csvLine ):
+    def _obj_from_file( self, csv_line ):
         '''
-        @return: A fuzzableRequest based on the csvLine.
+        @return: A fuzzableRequest based on the csv_line.
         '''
         try:
-            method, uri, postdata = csvLine.split(',')
-        except:
-            om.out.error('The file format is incorrect, an error was found while parsing:' + csvLine)
+            method, uri, postdata = csv_line.split(',',2)
+        except ValueError, value_error:
+            msg = 'The file format is incorrect, an error was found while parsing: "'
+            msg += csv_line + '". Exception: "' + str(value_error) + '".'
+            om.out.error( msg )
         else:
             # Create the obj based on the information
             return createFuzzableRequestRaw( method, uri, postdata, {} )
@@ -85,8 +94,9 @@ class importResults(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Define the input file from which to create the fuzzable requests'
-        h1 = 'The input file is comma separated and holds the following data: HTTP-METHOD,URI,POSTDATA'
-        o1 = option('inputFile', self._inputFile, d1, 'string', help=h1)
+        h1 = 'The input file is comma separated and holds the following data:'
+        h1 += ' HTTP-METHOD,URI,POSTDATA'
+        o1 = option('input_file', self._input_file, d1, 'string', help=h1)
         
         ol = optionList()
         ol.add(o1)
@@ -100,7 +110,7 @@ class importResults(baseDiscoveryPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._inputFile = optionsMap['inputFile'].getValue()
+        self._input_file = optionsMap['input_file'].getValue()
         
     def getPluginDeps( self ):
         '''
@@ -114,9 +124,10 @@ class importResults(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin serves as an entry point for the results of other tools that search for URLs. The plugin reads
-        an input file that is comma separated and holds the following data: HTTP-METHOD,URI,POSTDATA.
+        This plugin serves as an entry point for the results of other tools that search for URLs.
+        The plugin reads an input file that is comma separated and holds the following data:
+        HTTP-METHOD,URI,POSTDATA.
         
         One configurable parameter exists:
-            - inputFile
+            - input_file
         '''
