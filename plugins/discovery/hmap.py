@@ -43,11 +43,8 @@ class hmap(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Control flow
-        self._runnedHmap = False
+        self._runned_hmap = False
         self._exec = True
-        
-        # Constant
-        self._matchCount = 1
         
         # User configured parameters
         self._genFpF = False
@@ -63,14 +60,15 @@ class hmap(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             
-            if self._runnedHmap:
+            if self._runned_hmap:
                 # Nothing else to do here.
                 self._exec = False
                             
-            if not self._runnedHmap:
-                self._runnedHmap = True
+            if not self._runned_hmap:
+                self._runned_hmap = True
                 
-                om.out.information('Hmap web server fingerprint is starting, this may take a while.')
+                msg = 'Hmap web server fingerprint is starting, this may take a while.'
+                om.out.information( msg )
                 
                 url = fuzzableRequest.getURL()
                 protocol = urlParser.getProtocol( url )
@@ -91,17 +89,21 @@ class hmap(baseDiscoveryPlugin):
 
                 
                 try:
-                    results = originalHmap.testServer( ssl, server, port, self._matchCount, self._genFpF )
+                    results = originalHmap.testServer( ssl, server, port, 1, self._genFpF )
                 except w3afException, w3:
-                    om.out.error('A w3afException ocurred while running hmap: "' + str(w3) + '"' )
+                    msg = 'A w3afException ocurred while running hmap: "' + str(w3) + '"'
+                    om.out.error( msg )
                 except Exception,  e:
-                    om.out.error('An unhandled exception ocurred while running hmap: "' + str(e) + '"' )
+                    msg = 'An unhandled exception ocurred while running hmap: "' + str(e) + '"'
+                    om.out.error( msg )
                 else:
                     server = results[0]
                     
                     i = info.info()
                     i.setName('Webserver Fingerprint')
-                    i.setDesc('The most accurate fingerprint for this HTTP server is: "' + str(server) + '".')
+                    desc = 'The most accurate fingerprint for this HTTP server is: "'
+                    desc += str(server) + '".'
+                    i.setDesc( desc )
                     i['server'] = server
                     om.out.information( i.getDesc() )
                     
@@ -111,9 +113,11 @@ class hmap(baseDiscoveryPlugin):
                     
                     # Fingerprint file generated
                     if self._genFpF:
-                        om.out.information('Fingerprint file generated, please send a mail to w3af-develop@lists.sourceforge.net including'+
-                        ' the fingerprint file, your name and what server you fingerprinted. New fingerprints make hmap plugin'+
-                        ' more powerfull and accurate.')
+                        msg = 'Hmap fingerprint file generated, please send a mail to w3af-develop'
+                        msg += '@lists.sourceforge.net including the fingerprint file, your name'
+                        msg += ' and what server you fingerprinted. New fingerprints make the hmap'
+                        msg += ' plugin more powerfull and accurate.'
+                        om.out.information( msg )
             
         return []
     
@@ -122,7 +126,8 @@ class hmap(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''    
         d1 = 'Generate a fingerprint file.'
-        h1 = 'Define if we will generate a fingerprint file based on the findings made during this execution.'
+        h1 = 'Define if we will generate a fingerprint file based on the findings made during this'
+        h1 += ' execution.'
         o1 = option('genFpF', self._genFpF, d1, 'boolean', help=h1)
         
         ol = optionList()
@@ -161,9 +166,10 @@ class hmap(baseDiscoveryPlugin):
             - genFpF
             
         If genFpF is set to True, a fingerprint file is generated. Fingerprint files are 
-        used to identify unknown web servers, if you generate new files please send them 
+        used to identify web servers, if you generate new files please send them 
         to w3af.project@gmail.com so we can add them to the framework.
         
         One important thing to notice is that hmap connects directly to the remote web
         server, without using the framework HTTP configurations (like proxy or authentication).
         '''
+
