@@ -32,6 +32,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+import core.data.kb.info as info
 import core.data.constants.severity as severity
 from core.controllers.w3afException import w3afException
 import re
@@ -160,7 +161,6 @@ class eval(baseAuditPlugin):
                 # The first delay existed... I must report something...
                 i = info.info()
                 i.setId( response.id )
-                i.setSeverity(severity.HIGH)
                 i.setName( 'eval() input injection vulnerability' )
                 msg = 'eval() input injection was found at: ' + mutant.foundAt()
                 msg += ' . Please review manually.'
