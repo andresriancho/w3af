@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,12 +9,17 @@ back
 output config console
 set verbose False
 back
+
 discovery halberd
-discovery
 back
+
 target
-#set target http://www.quilmes.com.ar/
-set target http://www.sherdog.com/
-#set target http://www.google.com/
+set target http://localhost/
 back
+
 start
+
+assert 1 == 1
+
+exit
+

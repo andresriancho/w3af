@@ -21,32 +21,36 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afRunOnce
+import core.data.parsers.urlParser as urlParser
+
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as infokb
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afRunOnce
+
 
 # halberd imports!
 # done this way so the user can run this plugin without having to install halberd !
 # Also, the halberd version i'm using, has some minimal changes.
 import sys, os.path
-halberdDir = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'oHalberd'
+halberd_dir = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'oHalberd'
 
 # This insert in the first position of the path is to "step over" an installation of halberd.
-sys.path.insert( 0, halberdDir )
+sys.path.insert( 0, halberd_dir )
 
 # I do it this way and not with a "from plugins.discovery.oHalberd.Halberd import logger" because
 # inside the original hablerd they are crossed imports and stuff that I don't want to modify.
-import Halberd.shell as HalberdShell
-import Halberd.logger as HalberdLogger
-import Halberd.ScanTask as HalberdScanTask
-import Halberd.version as HalberdshellVersion
-import Halberd.clues.analysis as HalberdAnalysis
+import Halberd.shell as halberd_shell
+import Halberd.logger as halberd_logger
+import Halberd.ScanTask as halberd_scan_task
+import Halberd.version as halberd_shell_version
+import Halberd.clues.analysis as halberd_analysis
 
 class halberd(baseDiscoveryPlugin):
     '''
@@ -61,20 +65,24 @@ class halberd(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
+        # Internal variables
         self._exec = True
 
     def discover(self, fuzzableRequest ):
         '''
         It calls the "main" from halberd and writes the results to the kb.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         if not self._exec:
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
         else:
             self._exec = False
-            om.out.information('halberd plugin is starting. Original halberd author: Juan M. Bello Rivas ; http://halberd.superadditive.com/')
+            msg = 'halberd plugin is starting. Original halberd author: Juan M. Bello Rivas ;'
+            msg += ' http://halberd.superadditive.com/'
+            om.out.information( msg )
             
             self._main( urlParser.baseUrl( fuzzableRequest.getURL() ) )
             
@@ -109,31 +117,31 @@ class halberd(baseDiscoveryPlugin):
         '''
         This was taken from the original halberd, 'script/halberd' .
         '''
-        scantask = HalberdScanTask.ScanTask()
+        scantask = halberd_scan_task.ScanTask()
 
-        scantask.scantime = HalberdScanTask.default_scantime
-        scantask.parallelism = HalberdScanTask.default_parallelism
+        scantask.scantime = halberd_scan_task.default_scantime
+        scantask.parallelism = halberd_scan_task.default_parallelism
         scantask.verbose = False
         scantask.debug = False
-        scantask.conf_file = HalberdScanTask.default_conf_file
+        scantask.conf_file = halberd_scan_task.default_conf_file
         scantask.cluefile = ''
         scantask.save = ''
         scantask.output = ''
         
-        HalberdLogger.setError()
+        halberd_logger.setError()
         scantask.readConf()
         
         # UniScan
         scantask.url = url
         scantask.addr = ''
-        scanner = HalberdShell.UniScanStrategy
+        scanner = halberd_shell.UniScanStrategy
         
         s = scanner(scantask)
         
         try:
             # result should be: <Halberd.ScanTask.ScanTask instance at 0x85df8ec>
             result = s.execute()
-        except HalberdShell.ScanError, msg:
+        except halberd_shell.ScanError, msg:
             om.out.debug('*** %s ***' % msg )
         except KeyboardInterrupt:
             raise
@@ -148,11 +156,11 @@ class halberd(baseDiscoveryPlugin):
             om.out.information('The site: ' + scantask.url + " doesn't seem to have a HTTP load balancer configuration.")
         else:
             clues = scantask.analyzed
-            hits = HalberdAnalysis.hits(clues)
+            hits = halberd_analysis.hits(clues)
         
             # xxx This could be passed by the caller in order to avoid recomputation in
             # case the clues needed a re-analysis.
-            diff_fields = HalberdAnalysis.diff_fields(clues)
+            diff_fields = halberd_analysis.diff_fields(clues)
         
             om.out.information('=' * 70 )
             om.out.information('%s' % scantask.url, newLine=False)
