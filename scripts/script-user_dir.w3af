@@ -1,9 +1,7 @@
 # This script is a test for userDir
 
-
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -14,9 +12,11 @@ back
 
 discovery userDir
 back
+
 target
 set target http://localhost/w3af/
 back
+
 start
 
 assert len(kb.kb.getData('userDir','users')) >= 5
