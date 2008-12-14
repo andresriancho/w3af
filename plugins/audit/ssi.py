@@ -20,20 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+
+import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
 import re
+
 
 class ssi(baseAuditPlugin):
     '''
@@ -44,7 +46,8 @@ class ssi(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-        self._fuzzableRequests = []
+        # Internal variables
+        self._fuzzable_requests = []
 
     def audit(self, freq ):
         '''
@@ -55,11 +58,11 @@ class ssi(baseAuditPlugin):
         om.out.debug( 'ssi plugin is testing: ' + freq.getURL() )
         
         # Used in end()
-        self._fuzzableRequests.append( freq )
+        self._fuzzable_requests.append( freq )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        ssiStrings = self._getSsiStrings()
-        mutants = createMutants( freq , ssiStrings, oResponse=oResponse )
+        ssi_strings = self._get_ssi_strings()
+        mutants = createMutants( freq , ssi_strings, oResponse=oResponse )
             
         for mutant in mutants:
             if self._hasNoBug( 'ssi', 'ssi', mutant.getURL() , mutant.getVar() ):
@@ -69,25 +72,29 @@ class ssi(baseAuditPlugin):
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
         
-    def _getSsiStrings( self ):
+    def _get_ssi_strings( self ):
         '''
         This method returns a list of server sides to try to include.
         
         @return: A string, see above.
         '''
-        localFiles = []
-        localFiles.append("<!--#include file=\"/etc/passwd\"-->")   
-        localFiles.append("<!--#include file=\"C:\\boot.ini\"-->")
+        local_files = []
+        local_files.append("<!--#include file=\"/etc/passwd\"-->")   
+        local_files.append("<!--#include file=\"C:\\boot.ini\"-->")
         
         ### TODO: Add mod_perl ssi injection support
-        #localFiles.append("<!--#perl ")
+        #local_files.append("<!--#perl ")
         
-        return localFiles
+        return local_files
     
     def _analyzeResult( self, mutant, response ):
-        ssiErrorList = self._findFile( response )
-        for ssiError in ssiErrorList:
-            if not re.search( ssiError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        '''
+        Analyze the result of the previously sent request.
+        @return: None, save the vuln to the kb.
+        '''
+        ssi_error_list = self._find_file( response )
+        for ssi_error in ssi_error_list:
+            if not re.search( ssi_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setName( 'Server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
@@ -101,20 +108,21 @@ class ssi(baseAuditPlugin):
         '''
         self._tm.join( self )
         
-        for fr in self._fuzzableRequests:
+        for fr in self._fuzzable_requests:
             self._sendMutant( fr )
             # The _analyzeResult is called and "permanent" SSI's are saved there to the kb
             # Example where this works:
             '''
-            Say you have a "guestbook" (a CGI application that allows visitors to leave messages for everyone to see)
-            on a server that has SSI enabled. Most such guestbooks around the Net actually allow visitors to enter HTML 
-            code as part of their comments. Now, what happens if a malicious visitor decides to do some damage by 
-            entering the following:
+            Say you have a "guestbook" (a CGI application that allows visitors to leave messages
+            for everyone to see) on a server that has SSI enabled. Most such guestbooks around
+            the Net actually allow visitors to enter HTML code as part of their comments. Now, 
+            what happens if a malicious visitor decides to do some damage by entering the following:
 
             <--#exec cmd="/bin/rm -fr /"--> 
 
-            If the guestbook CGI program was designed carefully, to strip SSI commands from the input, then there is no problem. 
-            But, if it was not, there exists the potential for a major headache!
+            If the guestbook CGI program was designed carefully, to strip SSI commands from the
+            input, then there is no problem. But, if it was not, there exists the potential for a
+            major headache!
             '''
             
         self.printUniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )
@@ -136,7 +144,7 @@ class ssi(baseAuditPlugin):
         ''' 
         pass
         
-    def _findFile( self, response ):
+    def _find_file( self, response ):
         '''
         This method finds out if the server side has been successfully included in 
         the resulting HTML.
@@ -145,26 +153,29 @@ class ssi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for filePattern in self._getFilePatterns():
-            match = re.search( filePattern, response.getBody() , re.IGNORECASE )
+        for file_pattern in self._get_file_patterns():
+            match = re.search( file_pattern, response.getBody() , re.IGNORECASE )
             if  match:
-                om.out.information('Found server side include. The section where the file is included is (only a fragment is shown): "' + response.getBody()[match.start():match.end()] + '". The error was found on response with id ' + str(response.id) + '.')
-                res.append(filePattern)
+                msg = 'Found server side include. The section where the file is included is (only'
+                msg += ' a fragment is shown): "' + response.getBody()[match.start():match.end()]
+                msg += '". The error was found on response with id ' + str(response.id) + '.'
+                om.out.information(msg)
+                res.append(file_pattern)
         return res
     
-    def _getFilePatterns(self):
+    def _get_file_patterns(self):
         '''
         @return: A list of strings to find in the resulting HTML in order to check for server side includes.
         '''
-        filePatterns = []
-        filePatterns.append("root:x:0:0:")  
-        filePatterns.append("daemon:x:1:1:")
-        filePatterns.append(":/bin/bash")
-        filePatterns.append(":/bin/sh")
-        filePatterns.append("\\[boot loader\\]")
-        filePatterns.append("default=multi\\(")
-        filePatterns.append("\\[operating systems\\]")
-        return filePatterns
+        file_patterns = []
+        file_patterns.append("root:x:0:0:")  
+        file_patterns.append("daemon:x:1:1:")
+        file_patterns.append(":/bin/bash")
+        file_patterns.append(":/bin/sh")
+        file_patterns.append("\\[boot loader\\]")
+        file_patterns.append("default=multi\\(")
+        file_patterns.append("\\[operating systems\\]")
+        return file_patterns
         
     def getPluginDeps( self ):
         '''
