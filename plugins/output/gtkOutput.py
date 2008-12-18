@@ -153,6 +153,14 @@ class gtkOutput(baseOutputPlugin):
             om.out.error( 'Exception while inserting request/response to the database: ' + str(e) )
             om.out.error( 'The request/response that generated the error is: '+ str(response.getId()) + ' ' + request.getURI() + ' ' + response.getCode() )
             raise e
+    
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method is called from the output managerobject. 
+        This method should take an action for the enabled plugins 
+        and their configuration.
+        '''
+        pass
         
     def getLongDesc( self ):
         '''

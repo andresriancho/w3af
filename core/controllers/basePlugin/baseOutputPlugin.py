@@ -45,6 +45,23 @@ class baseOutputPlugin(basePlugin):
         basePlugin.__init__( self )
         self.verbosity = 0
         
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method is called from the output managerobject. 
+        This method should take an action for the enabled plugins 
+        and their configuration.
+        
+        @parameter enabledPluginsDict: As defined in the w3afCore,
+            # A dict with plugin types as keys and a list of plugin names as values
+            self._strPlugins = {'audit':[],'grep':[],'bruteforce':[],'discovery':[],\
+            'evasion':[], 'mangle':[], 'output':[]}
+        
+        @parameter pluginOptionsDict: As defined in the w3afCore,
+            self._pluginsOptions = {'audit':{},'grep':{},'bruteforce':{},'discovery':{},\
+            'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
+        '''
+        raise w3afException('Plugin is not implementing required method logEnabledPlugins' )
+        
     def debug(self, message ):
         '''
         This method is called from the output managerobject. The OM object was called from a plugin

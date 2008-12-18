@@ -398,6 +398,11 @@ class w3afCore:
         @return: No value is returned.
         ''' 
         om.out.debug('Called w3afCore.start()')
+        
+        # Let the output plugins know what kind of plugins we're
+        # using during the scan
+        om.out.logEnabledPlugins(self._strPlugins, self._pluginsOptions)
+        
         try:
             # Just in case the gtkUi / consoleUi forgot to do this...
             self.verifyEnvironment()
@@ -887,7 +892,7 @@ class w3afCore:
         func = setMap[ pluginType ]
         func( pluginNames )
         
-        om.out.logEnabledPlugins( self._strPlugins,  self._pluginsOptions )
+        #om.out.logEnabledPlugins( self._strPlugins,  self._pluginsOptions )
     
     def reloadModifiedPlugin(self,  pluginType,  pluginName):
         '''

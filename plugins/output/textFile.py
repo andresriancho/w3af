@@ -211,6 +211,14 @@ class textFile(baseOutputPlugin):
         self._writeToFile( timestamp + toPrint )
         self._flush()
         
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method is called from the output managerobject. 
+        This method should take an action for the enabled plugins 
+        and their configuration.
+        '''
+        pass
+        
     def _flush(self):
         '''
         textfile.flush is called every time a message is sent to this plugin.

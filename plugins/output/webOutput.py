@@ -94,6 +94,14 @@ class webOutput(baseOutputPlugin):
 
     def logHttp( self, request, response):
         pass
+        
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method is called from the output managerobject. 
+        This method should take an action for the enabled plugins 
+        and their configuration.
+        '''
+        pass
     
     def getMessageCache(self, debug=False ):
         '''

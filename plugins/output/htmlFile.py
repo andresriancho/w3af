@@ -139,6 +139,14 @@ class htmlFile(baseOutputPlugin):
         toPrint = unicode ( self._cleanString(message) )
         self._aditional_info += '<tr>\n<td class=content>console: ' + cgi.escape ( toPrint )
         self._aditional_info += ' \n</td></tr>\n'
+    
+    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+        '''
+        This method is called from the output managerobject. 
+        This method should take an action for the enabled plugins 
+        and their configuration.
+        '''
+        pass
         
     def setOptions( self, OptionList ):
         '''

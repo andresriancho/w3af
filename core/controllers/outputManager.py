@@ -85,7 +85,8 @@ class outputManager:
             self._pluginsOptions = {'audit':{},'grep':{},'bruteforce':{},'discovery':{},\
             'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
         '''
-        pass
+        for oPlugin in self._outputPluginList:
+          oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
     
     def debug(self, message, newLine = True ):
         '''
