@@ -24,7 +24,6 @@ from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
-import sys, os 
 
 # options
 from core.data.options.option import option
@@ -56,7 +55,10 @@ class xmlFile(baseOutputPlugin):
         
         # User configured parameters
         self._fileName = 'report.xml'
-        
+        self._timeFormat = '%a %b %d %H:%M:%S %Y'
+        self._longTimestampString = str(time.strftime(self._timeFormat, time.localtime()))
+        self._timestampString = str(int(time.time())) 
+
         # List with additional xml elements
         self._errorXML = []
         self._printUniq = {}
@@ -64,8 +66,8 @@ class xmlFile(baseOutputPlugin):
         # xml
         self._xmldoc = xml.dom.minidom.Document()
         self._topElement = self._xmldoc.createElement("w3afrun")
-        self._topElement.setAttribute("start", str(int(time.time())))
-        self._topElement.setAttribute("startstr", str(time.strftime('%a %b %d %H:%M:%S %Y',time.localtime())))
+        self._topElement.setAttribute("start", self._timestampString)
+        self._topElement.setAttribute("startstr", self._longTimestampString)
         self._topElement.setAttribute("xmloutputversion", "1.00")
         
         self._scanInfo = self._xmldoc.createElement("scaninfo")
@@ -73,14 +75,22 @@ class xmlFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True 
         try:
-          self._file = open( self._fileName, "w" )
+            self._file = open( self._fileName, "w" )
         except Exception, e:
-          raise w3afException('Cant open report file ' + self._fileName + ' for output. Exception: ' + str(e) )
+            raise w3afException('Cant open report file ' + self._fileName + ' for output. Exception: ' + str(e) )
 
     def debug(self, message, newLine = True ):
+        '''
+        This method is called from the output object. The output object was called from a plugin
+        or from the framework. This method should take an action for debug messages.
+        '''
         pass
         
     def information(self, message , newLine = True ):
+        '''
+        This method is called from the output object. The output object was called from a plugin
+        or from the framework. This method should take an action for informational messages.
+        '''
         pass 
     
     def error(self, message , newLine = True ):
@@ -140,21 +150,25 @@ class xmlFile(baseOutputPlugin):
         pass
     
     def _buildPluginScanInfo(self, groupName, pluginList, optionsDict):
+        '''
+        This method builds the xml structure for the plugins
+        and their configuration
+        '''
         node = self._xmldoc.createElement(str(groupName))
         for pluginName in pluginList:
-          pluginNode = self._xmldoc.createElement("plugin")
-          pluginNode.setAttribute("name", str(pluginName))
+            pluginNode = self._xmldoc.createElement("plugin")
+            pluginNode.setAttribute("name", str(pluginName))
 
-          if optionsDict.has_key(pluginName):
-            for option in optionsDict[pluginName]:
-              configNode = self._xmldoc.createElement("config")
-              configNode.setAttribute("parameter", str(option.getName()))
-              configNode.setAttribute("value", str(option.getValue()))
-              pluginNode.appendChild(configNode)
-          node.appendChild(pluginNode)  
+            if optionsDict.has_key(pluginName):
+                for option in optionsDict[pluginName]:
+                    configNode = self._xmldoc.createElement("config")
+                    configNode.setAttribute("parameter", str(option.getName()))
+                    configNode.setAttribute("value", str(option.getValue()))
+                    pluginNode.appendChild(configNode)
+            node.appendChild(pluginNode)  
         self._scanInfo.appendChild(node)
         
-    def logEnabledPlugins(self, enabledPluginsDict, pluginOptionsDict):
+    def logEnabledPlugins(self, pluginsDict, optionsDict):
         '''
         This method is called from the output managerobject. 
         This method should take an action for the enabled plugins 
@@ -163,17 +177,17 @@ class xmlFile(baseOutputPlugin):
         # Add the user configured targets to scaninfo
         strTargets = ''
         for url in cf.cf.getData('targets'):
-          strTargets += str(url) + ","
+            strTargets += str(url) + ","
         self._scanInfo.setAttribute("target", strTargets[:-1])
         
         # Add enabled plugins and their configuration to scaninfo
-        self._buildPluginScanInfo("audit", enabledPluginsDict['audit'], pluginOptionsDict['audit'])
-        self._buildPluginScanInfo("bruteforce", enabledPluginsDict['bruteforce'], pluginOptionsDict['bruteforce'])
-        self._buildPluginScanInfo("discovery", enabledPluginsDict['discovery'], pluginOptionsDict['discovery'])
-        self._buildPluginScanInfo("evasion", enabledPluginsDict['evasion'], pluginOptionsDict['evasion'])
-        self._buildPluginScanInfo("grep", enabledPluginsDict['grep'], pluginOptionsDict['grep'])
-        self._buildPluginScanInfo("mangle", enabledPluginsDict['mangle'], pluginOptionsDict['mangle'])
-        self._buildPluginScanInfo("output", enabledPluginsDict['output'], pluginOptionsDict['output'])
+        self._buildPluginScanInfo("audit", pluginsDict['audit'], optionsDict['audit'])
+        self._buildPluginScanInfo("bruteforce", pluginsDict['bruteforce'], optionsDict['bruteforce'])
+        self._buildPluginScanInfo("discovery", pluginsDict['discovery'], optionsDict['discovery'])
+        self._buildPluginScanInfo("evasion", pluginsDict['evasion'], optionsDict['evasion'])
+        self._buildPluginScanInfo("grep", pluginsDict['grep'], optionsDict['grep'])
+        self._buildPluginScanInfo("mangle", pluginsDict['mangle'], optionsDict['mangle'])
+        self._buildPluginScanInfo("output", pluginsDict['output'], optionsDict['output'])
         
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
@@ -184,36 +198,36 @@ class xmlFile(baseOutputPlugin):
         '''
         
         if not self._initialized:
-          self._init()
+            self._init()
         
         # Add the vulnerability results
         Vulns = kb.kb.getAllVulns()
         for i in Vulns:
-          if not self._printUniq.has_key(hash(i.getDesc())):
-            self._printUniq[hash(i.getDesc())] = ''
-            messageNode = self._xmldoc.createElement("vulnerability")
-            messageNode.setAttribute("severity", str(i.getSeverity()))
-            messageNode.setAttribute("method", str(i.getMethod()))
-            messageNode.setAttribute("url", str(i.getURL()))
-            messageNode.setAttribute("var", str(i.getVar()))
-            description = self._xmldoc.createTextNode(i.getDesc())
-            messageNode.appendChild(description)
-            self._topElement.appendChild(messageNode)
+            if not self._printUniq.has_key(hash(i.getDesc())):
+                self._printUniq[hash(i.getDesc())] = ''
+                messageNode = self._xmldoc.createElement("vulnerability")
+                messageNode.setAttribute("severity", str(i.getSeverity()))
+                messageNode.setAttribute("method", str(i.getMethod()))
+                messageNode.setAttribute("url", str(i.getURL()))
+                messageNode.setAttribute("var", str(i.getVar()))
+                description = self._xmldoc.createTextNode(i.getDesc())
+                messageNode.appendChild(description)
+                self._topElement.appendChild(messageNode)
         
         # Add the information results
         Infos = kb.kb.getAllInfos()     
         for i in Infos:
-          if not self._printUniq.has_key(hash(i.getDesc())):
-            self._printUniq[hash(i.getDesc())] = ''
-            messageNode = self._xmldoc.createElement("information")
-            messageNode.setAttribute("url", str(i.getURL()))
-            description = self._xmldoc.createTextNode(i.getDesc())
-            messageNode.appendChild(description)
-            self._topElement.appendChild(messageNode)
+            if not self._printUniq.has_key(hash(i.getDesc())):
+                self._printUniq[hash(i.getDesc())] = ''
+                messageNode = self._xmldoc.createElement("information")
+                messageNode.setAttribute("url", str(i.getURL()))
+                description = self._xmldoc.createTextNode(i.getDesc())
+                messageNode.appendChild(description)
+                self._topElement.appendChild(messageNode)
         
         # Add additional information results
         for node in self._errorXML:
-          self._topElement.appendChild(node)
+            self._topElement.appendChild(node)
         
         # Write xml report
         self._xmldoc.appendChild(self._topElement)
