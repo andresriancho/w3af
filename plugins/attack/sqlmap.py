@@ -107,18 +107,18 @@ class sqlmap(baseAttackPlugin):
             bsql.setEqualLimit( self._equalLimit )
             bsql.setEquAlgorithm( self._equAlgorithm )
             
-            res = bsql.is_injectable( freq, self._injvar )
-            if res == []:
+            vuln_obj = bsql.is_injectable( freq, self._injvar )
+            if not vuln_obj:
                 raise w3afException('Could not verify SQL injection.')
             else:
                 om.out.console('SQL injection could be verified, trying to create the DB driver.')
-                for vuln in res:
-                    # Try to get a shell using all vuln
-                    om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) + '. Please wait...' )
-                    s = self._generateShell(vuln)
-                    if s != None:
-                        kb.kb.append( self, 'shell', s )
-                        return [s,]
+                
+                # Try to get a shell using all vuln
+                om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() ) + '. Please wait...' )
+                shell_obj = self._generateShell( vuln_obj )
+                if shell_obj != None:
+                    kb.kb.append( self, 'shell', shell_obj )
+                    return [shell_obj,]
                     
                 raise w3afException('No exploitable vulnerabilities found.')
         
@@ -166,7 +166,7 @@ class sqlmap(baseAttackPlugin):
             bsql.setEqualLimit( self._equalLimit )
             bsql.setEquAlgorithm( self._equAlgorithm )
             
-            vulns2 = []
+            tmp_vuln_list = []
             for v in vulns:
             
                 # Filter the vuln that was selected by the user
@@ -180,12 +180,12 @@ class sqlmap(baseAttackPlugin):
             
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
-                injectable_points = bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() )
-                if injectable_points:
-                    vulns2.extend( injectable_points )
+                vuln_obj = bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() )
+                if vuln_obj:
+                    tmp_vuln_list.extend( vuln_obj )
             
             # Ok, go to the next stage with the filtered vulnerabilities
-            vulns = vulns2
+            vulns = tmp_vuln_list
             if len(vulns) == 0:
                 om.out.debug('is_injectable failed for all vulnerabilities.')
                 return []
@@ -194,11 +194,11 @@ class sqlmap(baseAttackPlugin):
                 for vuln in vulns:
                     # Try to get a shell using all vuln
                     om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) + '. Please wait...' )
-                    s = self._generateShell(vuln)
-                    if s != None:
+                    shell_obj = self._generateShell( vuln )
+                    if shell_obj:
                         if self._generateOnlyOne:
                             # A shell was generated, I only need one point of exec.
-                            return [s,]
+                            return [shell_obj,]
                         else:
                             # Keep adding all shells to the kb
                             pass
