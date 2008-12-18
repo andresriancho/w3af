@@ -29,13 +29,13 @@ def gtkui_dependency_check():
     This function verifies that the dependencies that are needed by the GTK user interface are met.
     '''
     om.out.debug('Checking GTK UI dependencies')
-    
+
     try:
         import sqlite3
     except:
         print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-pysqlite2'
         sys.exit( 1 )
-    
+
     try:
         proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except:
@@ -50,9 +50,10 @@ def gtkui_dependency_check():
         import pygtk
         pygtk.require('2.0')
         import gtk, gobject
-        assert gtk.pygtk_version >= (2, 12) 
+        assert gtk.gtk_version >= (2, 12)
+        assert gtk.pygtk_version >= (2, 12)
     except:
-        print 'You have to install pygtk version >=2.12 to be able to run the GTK user interface.'
+        print 'You have to install GTK and PyGTK versions >=2.12 to be able to run the GTK user interface.'
         print 'On Debian based distributions: apt-get install python-gtk2'
         sys.exit( 1 )
 
