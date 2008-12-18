@@ -54,7 +54,7 @@ class xmlFile(baseOutputPlugin):
         self._file = None
         
         # User configured parameters
-        self._fileName = 'report.xml'
+        self._file_name = 'report.xml'
         self._timeFormat = '%a %b %d %H:%M:%S %Y'
         self._longTimestampString = str(time.strftime(self._timeFormat, time.localtime()))
         self._timestampString = str(int(time.time())) 
@@ -75,9 +75,11 @@ class xmlFile(baseOutputPlugin):
     def _init( self ):
         self._initialized = True 
         try:
-            self._file = open( self._fileName, "w" )
+            self._file = open( self._file_name, "w" )
         except Exception, e:
-            raise w3afException('Cant open report file ' + self._fileName + ' for output. Exception: ' + str(e) )
+            msg = 'Cant open report file ' + self._file_name + ' for output.'
+            msg += ' Exception: "' + str(e) + '".'
+            raise w3afException( msg )
 
     def debug(self, message, newLine = True ):
         '''
@@ -128,14 +130,14 @@ class xmlFile(baseOutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self._fileName = OptionList['fileName'].getValue()
+        self._file_name = OptionList['fileName'].getValue()
         
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
         d1 = 'File name where this plugin will write to'
-        o1 = option('fileName', self._fileName, d1, 'string')
+        o1 = option('fileName', self._file_name, d1, 'string')
         
         ol = optionList()
         ol.add(o1)
@@ -160,10 +162,10 @@ class xmlFile(baseOutputPlugin):
             pluginNode.setAttribute("name", str(pluginName))
 
             if optionsDict.has_key(pluginName):
-                for option in optionsDict[pluginName]:
+                for plugin_option in optionsDict[pluginName]:
                     configNode = self._xmldoc.createElement("config")
-                    configNode.setAttribute("parameter", str(option.getName()))
-                    configNode.setAttribute("value", str(option.getValue()))
+                    configNode.setAttribute("parameter", str(plugin_option.getName()))
+                    configNode.setAttribute("value", str(plugin_option.getValue()))
                     pluginNode.appendChild(configNode)
             node.appendChild(pluginNode)  
         self._scanInfo.appendChild(node)
@@ -201,8 +203,8 @@ class xmlFile(baseOutputPlugin):
             self._init()
         
         # Add the vulnerability results
-        Vulns = kb.kb.getAllVulns()
-        for i in Vulns:
+        vulns = kb.kb.getAllVulns()
+        for i in vulns:
             if not self._printUniq.has_key(hash(i.getDesc())):
                 self._printUniq[hash(i.getDesc())] = ''
                 messageNode = self._xmldoc.createElement("vulnerability")
@@ -215,8 +217,8 @@ class xmlFile(baseOutputPlugin):
                 self._topElement.appendChild(messageNode)
         
         # Add the information results
-        Infos = kb.kb.getAllInfos()     
-        for i in Infos:
+        infos = kb.kb.getAllInfos()
+        for i in infos:
             if not self._printUniq.has_key(hash(i.getDesc())):
                 self._printUniq[hash(i.getDesc())] = ''
                 messageNode = self._xmldoc.createElement("information")
