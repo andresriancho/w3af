@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-11-18, 11:27:43 -->
+<!-- Saved: 2008-12-18, 20:08:18 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2058,35 +2058,11 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-bsqlDetection.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-bsqlExploit-int.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
       <Name>script-bsqlExploit-string.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-bufferOverflow.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-crossDomain.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-detectTransparentProxy.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-digitSum.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-domXss.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2102,10 +2078,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-fileUpload.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-fingerGoogle.w3af</Name>
     </Source>
     <Source>
@@ -2118,10 +2090,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-formatString.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-formLoginBrute.w3af</Name>
     </Source>
     <Source>
@@ -2131,10 +2099,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-ghdb.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-globalRedirect.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2154,19 +2118,11 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-htaccessMethods.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-httpsSimpleXss.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
       <Name>script-localFileInclude+pathDisc.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-localFileInclude.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2190,19 +2146,11 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-osCommanding.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-phishtank.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
       <Name>script-pluginEnabling.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-remoteFileInclude.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2214,19 +2162,11 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-responseSplitting.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-rfiProxy.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
       <Name>script-rfiW3afSite.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-sharedHosting.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2246,23 +2186,7 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-urlFuzzer.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-webdiff.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-webServices.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-webSpider-IIS5.0.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-webSpider.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2401,10 +2325,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-pyktoMutate.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-bsqlDetection-setIntersection.w3af</Name>
     </Source>
     <Source>
@@ -2420,10 +2340,6 @@
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
       <Name>davShell.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-webSpider-OnlyForward.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2443,10 +2359,6 @@
       <Dir>plugins</Dir>
       <Dir>grep</Dir>
       <Name>svnUsers.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-grepAll.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -2532,17 +2444,9 @@
       <Name>serverStatus.py</Name>
     </Source>
     <Source>
-      <Dir>scripts</Dir>
-      <Name>script-serverStatus.w3af</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>oracleDiscovery.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-oracleDiscovery.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -2591,10 +2495,6 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>archiveDotOrg.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-webSpider-ignoreRegex.w3af</Name>
     </Source>
     <Source>
       <Dir>extlib</Dir>
@@ -2659,10 +2559,6 @@
       <Dir>controllers</Dir>
       <Dir>vdaemon</Dir>
       <Name>lnxVd.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-archiveDotOrg.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3485,12 +3381,6 @@
       <Name>__init__.py</Name>
     </Source>
     <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>coreHelpers</Dir>
-      <Name>progressBar.py</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>audit</Dir>
       <Name>frontpage.py</Name>
@@ -3556,10 +3446,6 @@
       <Dir>plugins</Dir>
       <Dir>grep</Dir>
       <Name>ssn.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-grep-ssn.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3890,6 +3776,64 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>dotNetErrors.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>constants</Dir>
+      <Name>dbms.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>constants</Dir>
+      <Name>browsers.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>is_private_site.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>url</Dir>
+      <Dir>handlers</Dir>
+      <Name>gzip_handler.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>phpinfo.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>progress_bar.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>coreHelpers</Dir>
+      <Name>progress.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>frontpage_version.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>output</Dir>
+      <Name>xmlFile.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>dependencyCheck.py</Name>
     </Source>
   </Sources>
   <Forms>

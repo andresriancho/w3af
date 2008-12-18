@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2008-11-18, 11:27:44 -->
+<!-- Saved: 2008-12-11, 00:29:34 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -57,20 +57,6 @@
         <Name>mysqlmap.py</Name>
       </Filename>
       <Linenumber>501</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: autocomplete for raw menu</Summary>
-    <Description></Description>
-    <Created>2008-05-04, 00:24:59</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>consoleUi.py</Name>
-      </Filename>
-      <Linenumber>278</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -138,32 +124,6 @@
         <Name>option.py</Name>
       </Filename>
       <Linenumber>130</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: In the future, xUrllib should only raise w3afException</Summary>
-    <Description></Description>
-    <Created>2008-05-27, 10:06:54</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>yahooSiteExplorer.py</Name>
-      </Filename>
-      <Linenumber>35</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Review this logic... I think its flawed</Summary>
-    <Description></Description>
-    <Created>2008-05-30, 01:37:02</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>findvhost.py</Name>
-      </Filename>
-      <Linenumber>100</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -275,19 +235,6 @@
         <Name>urlFuzzer.py</Name>
       </Filename>
       <Linenumber>150</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add mod_perl ssi injection support</Summary>
-    <Description></Description>
-    <Created>2008-08-06, 21:28:53</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>ssi.py</Name>
-      </Filename>
-      <Linenumber>82</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -666,20 +613,6 @@
       <Linenumber>1214</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
-    <Description></Description>
-    <Created>2008-10-18, 17:39:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>urlParser.py</Name>
-      </Filename>
-      <Linenumber>213</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Maybe I should perform some more detailed error handling...</Summary>
     <Description></Description>
@@ -706,21 +639,6 @@
         <Name>proxy.py</Name>
       </Filename>
       <Linenumber>278</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work?</Summary>
-    <Description></Description>
-    <Created>2008-10-27, 23:15:13</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Dir>handlers</Dir>
-        <Name>mangleHandler.py</Name>
-      </Filename>
-      <Linenumber>110</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -857,45 +775,6 @@
       <Linenumber>249</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 14:46:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>716</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 14:46:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>754</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 14:46:15</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1095</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add Oracle support</Summary>
     <Description></Description>
@@ -922,20 +801,6 @@
         <Name>blind_sqli_time_delay.py</Name>
       </Filename>
       <Linenumber>146</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 17:49:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Name>xUrllib.py</Name>
-      </Filename>
-      <Linenumber>409</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -978,16 +843,192 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: check the other way around also!!</Summary>
+    <Summary>TODO: Add mod_perl ssi injection support</Summary>
     <Description></Description>
-    <Created>2008-11-18, 00:07:45</Created>
+    <Created>2008-11-18, 17:17:42</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
         <Dir>audit</Dir>
-        <Name>responseSplitting.py</Name>
+        <Name>ssi.py</Name>
       </Filename>
-      <Linenumber>159</Linenumber>
+      <Linenumber>85</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: In the future, xUrllib should only raise w3afException</Summary>
+    <Description></Description>
+    <Created>2008-11-19, 12:56:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>yahooSiteExplorer.py</Name>
+      </Filename>
+      <Linenumber>37</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work?</Summary>
+    <Description></Description>
+    <Created>2008-11-19, 14:51:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>mangleHandler.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
+    <Description></Description>
+    <Created>2008-11-19, 14:51:50</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Name>xUrllib.py</Name>
+      </Filename>
+      <Linenumber>409</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: autocomplete for raw menu</Summary>
+    <Description></Description>
+    <Created>2008-11-21, 21:04:33</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>consoleUi.py</Name>
+      </Filename>
+      <Linenumber>298</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-11-23, 19:54:34</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>742</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2008-11-23, 19:54:34</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>786</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2008-11-23, 19:54:34</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1130</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
+    <Description></Description>
+    <Created>2008-12-05, 21:30:53</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterGraph.py</Name>
+      </Filename>
+      <Linenumber>283</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
+    <Description></Description>
+    <Created>2008-12-05, 21:30:53</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterGraph.py</Name>
+      </Filename>
+      <Linenumber>292</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The frontpage version should be obtained from the information saved in the kb</Summary>
+    <Description></Description>
+    <Created>2008-12-05, 21:55:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>frontpage.py</Name>
+      </Filename>
+      <Linenumber>109</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file</Summary>
+    <Description></Description>
+    <Created>2008-12-05, 21:55:20</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>frontpage.py</Name>
+      </Filename>
+      <Linenumber>118</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: If i'm scanning a windows system, do I really need to request case sensitive</Summary>
+    <Description></Description>
+    <Created>2008-12-10, 00:30:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>phpinfo.py</Name>
+      </Filename>
+      <Linenumber>106</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
+    <Description></Description>
+    <Created>2008-12-10, 00:34:19</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>213</Linenumber>
     </Resource>
   </Task>
 </Tasks>
