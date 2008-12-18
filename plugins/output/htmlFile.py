@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -34,9 +33,9 @@ from core.data.options.optionList import optionList
 
 import sys, os
 import cgi 
-import codecs
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
+
 
 class htmlFile(baseOutputPlugin):
     '''
@@ -61,6 +60,9 @@ class htmlFile(baseOutputPlugin):
         self._file_name = 'report.html'
     
     def _init( self ):
+        '''
+        Write messages to HTML file.
+        '''
         self._initialized = True
         try:
             #self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )            
@@ -84,6 +86,11 @@ class htmlFile(baseOutputPlugin):
             styleFile.close()
 
     def _write_to_file( self, msg ):
+        '''
+        Write msg to the file.
+        
+        @parameter msg: The message string.
+        '''
         try:
             self._file.write( msg )
         except Exception, e:
@@ -123,7 +130,7 @@ class htmlFile(baseOutputPlugin):
         self._aditional_info += '<tr>\n<td class=content>error: ' + cgi.escape ( toPrint )
         self._aditional_info += ' \n</td></tr>\n'
 
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
+    def vulnerability(self, message , newLine=True, msg_severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
@@ -228,8 +235,8 @@ class htmlFile(baseOutputPlugin):
                 </tr>''')       
 
         # Writes the vulnerability results Table
-        Vulns = kb.kb.getAllVulns()
-        for i in Vulns:
+        vulns = kb.kb.getAllVulns()
+        for i in vulns:
             self._write_to_file(
                 '''<tr>
                 <td valign=top class=default width="10%"><font color=red>Vulnerability</td>
@@ -246,8 +253,8 @@ class htmlFile(baseOutputPlugin):
             self._write_to_file('</td></tr>')
 
         # Writes the Information results Table
-        Infos = kb.kb.getAllInfos()     
-        for i in Infos:
+        infos = kb.kb.getAllInfos()     
+        for i in infos:
             self._write_to_file(
                 '''<tr>
                     <td valign=top class=default width="10%">Information</td>
