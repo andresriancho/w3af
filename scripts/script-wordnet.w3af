@@ -18,10 +18,10 @@ back
 back
 target
 #set target http://localhost/w3af/
-set target http://localhost/w3af/discovery/googleSets-wordnet/show.php?os=unix, http://localhost/w3af/discovery/googleSets-wordnet/show.php?os=linux, http://localhost/w3af/discovery/googleSets-wordnet/red.html, http://localhost/w3af/discovery/googleSets-wordnet/blue.html
+set target http://localhost/w3af/discovery/wordnet/show.php?os=unix, http://localhost/w3af/discovery/wordnet/show.php?os=linux, http://localhost/w3af/discovery/wordnet/red.html, http://localhost/w3af/discovery/wordnet/blue.html
 back
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 8
+assert len( kb.kb.getData('urls', 'urlList') ) == 15
 
 exit
