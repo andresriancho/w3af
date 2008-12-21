@@ -49,30 +49,36 @@ class webSpider(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        
+
         # Internal variables
         self._compiledIgnoreRe = None
         self._compiledFollowRe = None
         self._brokenLinks = []
         self._fuzzableRequests = []
-        
+
         # User configured variables
         self._ignoreRegex = 'None'
         self._followRegex = '.*'
         self._onlyForward = False
         self._compileRE()
-        
+        self._urlParameter = None
+
     def discover(self, fuzzableRequest ):
         '''
         Searches for links on the html.
-        
+
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         om.out.debug( 'webSpider plugin is testing: ' + fuzzableRequest.getURL() )
-        
+
         # Init some internal variables
         self.is404 = kb.kb.getData( 'error404page', '404' )
-        
+
+        # Set the URL parameter if necessary
+        if self._urlParameter != None:
+          fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._urlParameter))
+          fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._urlParameter))
+
         # If its a form, then smartFill the Dc.
         originalDc = fuzzableRequest.getDc()
         if isinstance( fuzzableRequest, httpPostDataRequest.httpPostDataRequest ):
@@ -80,16 +86,16 @@ class webSpider(baseDiscoveryPlugin):
             for parameter in toSend:
                 toSend[ parameter ] = smartFill( parameter )
             fuzzableRequest.setDc( toSend )
-        
+
         self._fuzzableRequests = []
         response = None
-        
+
         try:
             response = self._sendMutant( fuzzableRequest, analyze=False )
         except KeyboardInterrupt,e:
             raise e
         else:
-            
+
             references = []
             # Note: I WANT to follow links that are in the 404 page.
             
@@ -98,6 +104,8 @@ class webSpider(baseDiscoveryPlugin):
             # a image file, its useless and consumes cpu power.
             if response.is_text_or_html() or response.is_pdf():
                 originalURL = response.getRedirURI()
+                if self._urlParameter != None:
+                    originalURL = urlParser.setParam(originalURL, self._urlParameter)
                 try:
                     documentParser = dpCache.dpc.getDocumentParserFor( response )
                 except w3afException:
@@ -105,7 +113,6 @@ class webSpider(baseDiscoveryPlugin):
                     pass
                 else:
                     references = documentParser.getReferences()
-                    
                     # I also want to analyze all directories, if the URL I just fetched is:
                     # http://localhost/a/b/c/f00.php I want to GET:
                     # http://localhost/a/b/c/
@@ -122,6 +129,8 @@ class webSpider(baseDiscoveryPlugin):
                     references = [ r for r in references if not self._compiledIgnoreRe.match( r )]
                     
                     for ref in references:
+                        if self._urlParameter != None:
+                            ref = urlParser.setParam(ref, self._urlParameter)
                         targs = (ref, fuzzableRequest, originalURL)
                         self._tm.startFunction( target=self._verifyReferences, args=targs, \
                                                             ownerObj=self )
@@ -160,6 +169,9 @@ class webSpider(baseDiscoveryPlugin):
                     
                     # Process the list.
                     for fuzzableRequest in fuzzableRequestList:
+                        if self._urlParameter != None:
+                            fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._urlParameter))
+                            fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._urlParameter))
                         fuzzableRequest.setReferer( originalURL )
                         self._fuzzableRequests.append( fuzzableRequest )
     
@@ -205,11 +217,14 @@ class webSpider(baseDiscoveryPlugin):
         d3 = 'When spidering, DO NOT follow links that match this regular expression '
         d3 += '(has precedence over followRegex)'
         o3 = option('ignoreRegex', self._ignoreRegex, d3, 'string')
-        
+        d4 = 'Append the given parameter to new URLs found by the spider. ex http://www.foobar.com/index.jsp;<parameter>?id=2'
+        o4 = option('urlParameter', self._urlParameter, d4, 'string')    
+
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
+        ol.add(o4)
         return ol
         
     def setOptions( self, optionsMap ):
@@ -223,7 +238,7 @@ class webSpider(baseDiscoveryPlugin):
         self._onlyForward = optionsMap['onlyForward'].getValue()
         self._ignoreRegex = optionsMap['ignoreRegex'].getValue()
         self._followRegex = optionsMap['followRegex'].getValue()
-        
+        self._urlParameter = optionsMap['urlParameter'].getValue()
         self._compileRE()
     
     def _compileRE( self ):
@@ -263,7 +278,8 @@ class webSpider(baseDiscoveryPlugin):
             - onlyForward
             - ignoreRegex
             - followRegex
-            
+            - urlParameter
+
         IgnoreRegex and followRegex are commonly used to configure the webSpider to spider
         all URLs except the "logout" or some other more exciting link like "Reboot Appliance"
         that would make the w3af run finish without the expected result.
