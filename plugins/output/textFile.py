@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
+import core.data.kb.config as cf
 
 # options
 from core.data.options.option import option
@@ -218,14 +219,67 @@ class textFile(baseOutputPlugin):
         self._write_to_file( timestamp + to_print )
         self._flush()
         
-    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+    def logEnabledPlugins(self,  plugins_dict,  options_dict):
         '''
-        This method is called from the output managerobject. 
-        This method should take an action for the enabled plugins 
-        and their configuration.
-        '''
-        pass
+        This method is called from the output manager object. This method should take an action
+        for the enabled plugins and their configuration. Usually, write the info to a file or print
+        it somewhere.
         
+        @parameter pluginsDict: A dict with all the plugin types and the enabled plugins for that
+                                               type of plugin.
+        @parameter optionsDict: A dict with the options for every plugin.
+        '''
+        now = time.localtime(time.time())
+        the_time = time.strftime("%c", now)
+        timestamp = '[ ' + the_time + ' - Enabled plugins ] '
+        
+        to_print = ''
+        
+        for plugin_type in plugins_dict:
+            to_print += self._create_plugin_info( plugin_type, plugins_dict[plugin_type], 
+                                                                  options_dict[plugin_type])
+        
+        # And now the target information
+        str_targets = ', '.join( cf.cf.getData('targets') )
+        to_print += 'target\n'
+        to_print += '    set target ' + str_targets + '\n'
+        to_print += '    back'
+        
+        to_print = to_print.replace('\n', '\n' + timestamp ) + '\n'
+        
+        self._write_to_file( timestamp + to_print )
+    
+    def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
+        '''
+        @return: A string with the information about enabled plugins and their options.
+        
+        @parameter plugin_type: audit, discovery, etc.
+        @parameter plugins_list: A list of the names of the plugins of plugin_type that are enabled.
+        @parameter plugins_options: The options for the plugins
+        '''
+        response = ''
+        
+        # Only work if something is enabled
+        if plugins_list:
+            response = 'plugins\n'
+            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
+            
+            for plugin_name in plugins_list:
+                if plugins_options.has_key(plugin_name):
+                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
+                    
+                    for plugin_option in plugins_options[plugin_name]:
+                        name = str(plugin_option.getName())
+                        value = str(plugin_option.getValue())
+                        response += '        set ' + name + ' ' + value + '\n'
+                    
+                    response += '        back\n'
+            
+            response += '    back\n'
+            
+        # The response
+        return response
+    
     def _flush(self):
         '''
         textfile.flush is called every time a message is sent to this plugin.

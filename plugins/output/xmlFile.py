@@ -172,9 +172,13 @@ class xmlFile(baseOutputPlugin):
         
     def logEnabledPlugins(self, pluginsDict, optionsDict):
         '''
-        This method is called from the output managerobject. 
-        This method should take an action for the enabled plugins 
-        and their configuration.
+        This method is called from the output manager object. This method should take an action
+        for the enabled plugins and their configuration. Usually, write the info to a file or print
+        it somewhere.
+        
+        @parameter pluginsDict: A dict with all the plugin types and the enabled plugins for that
+                                               type of plugin.
+        @parameter optionsDict: A dict with the options for every plugin.
         '''
         # Add the user configured targets to scaninfo
         strTargets = ''
