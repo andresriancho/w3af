@@ -183,13 +183,9 @@ class xmlFile(baseOutputPlugin):
         self._scanInfo.setAttribute("target", strTargets[:-1])
         
         # Add enabled plugins and their configuration to scaninfo
-        self._buildPluginScanInfo("audit", pluginsDict['audit'], optionsDict['audit'])
-        self._buildPluginScanInfo("bruteforce", pluginsDict['bruteforce'], optionsDict['bruteforce'])
-        self._buildPluginScanInfo("discovery", pluginsDict['discovery'], optionsDict['discovery'])
-        self._buildPluginScanInfo("evasion", pluginsDict['evasion'], optionsDict['evasion'])
-        self._buildPluginScanInfo("grep", pluginsDict['grep'], optionsDict['grep'])
-        self._buildPluginScanInfo("mangle", pluginsDict['mangle'], optionsDict['mangle'])
-        self._buildPluginScanInfo("output", pluginsDict['output'], optionsDict['output'])
+        for plugin_type in pluginsDict:
+            self._buildPluginScanInfo(pluginsDict[plugin_type], pluginsDict[plugin_type], 
+                                                    optionsDict[plugin_type])
         
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
