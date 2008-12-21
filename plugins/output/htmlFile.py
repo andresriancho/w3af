@@ -32,7 +32,8 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 import sys, os
-import cgi 
+import cgi
+import time
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -56,7 +57,7 @@ class htmlFile(baseOutputPlugin):
         self._file = None
         
         # User configured parameters
-        self._report_debug = False
+        self._verbose = False
         self._file_name = 'report.html'
     
     def _init( self ):
@@ -105,10 +106,10 @@ class htmlFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
             
-        if self._report_debug:
-            toPrint = unicode ( self._cleanString(message) )
-            self._aditional_info += '<tr>\n<td class=content>debug: ' + cgi.escape ( toPrint )
-            self._aditional_info += ' \n</td></tr>\n'
+        if self._verbose:
+            message = message.replace('\n', '<br/>')
+            to_print = unicode ( self._cleanString(message) )
+            self._add_to_debug_table( cgi.escape(to_print), 'debug' )
     
     def information(self, message , newLine = True ):
         '''
@@ -116,7 +117,6 @@ class htmlFile(baseOutputPlugin):
         or from the framework. This method should take an action for informational messages.
         '''
         pass
-
 
     def error(self, message , newLine = True ):
         '''
@@ -126,9 +126,8 @@ class htmlFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        toPrint = unicode ( self._cleanString(message) )
-        self._aditional_info += '<tr>\n<td class=content>error: ' + cgi.escape ( toPrint )
-        self._aditional_info += ' \n</td></tr>\n'
+        to_print = unicode ( self._cleanString(message) )
+        self._add_to_debug_table( cgi.escape(to_print), 'error' )
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
@@ -143,17 +142,83 @@ class htmlFile(baseOutputPlugin):
         '''
         if not self._initialized:
             self._init()
-        toPrint = unicode ( self._cleanString(message) )
-        self._aditional_info += '<tr>\n<td class=content>console: ' + cgi.escape ( toPrint )
-        self._aditional_info += ' \n</td></tr>\n'
+        to_print = unicode ( self._cleanString(message) )
+        self._add_to_debug_table( cgi.escape(to_print), 'console' )
     
-    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+    def logEnabledPlugins(self,  plugins_dict,  options_dict):
         '''
-        This method is called from the output managerobject. 
-        This method should take an action for the enabled plugins 
-        and their configuration.
+        This method is called from the output manager object. This method should take an action
+        for the enabled plugins and their configuration. Usually, write the info to a file or print
+        it somewhere.
+        
+        @parameter pluginsDict: A dict with all the plugin types and the enabled plugins for that
+                                               type of plugin.
+        @parameter optionsDict: A dict with the options for every plugin.
         '''
-        pass
+        to_print = ''
+        
+        for plugin_type in plugins_dict:
+            to_print += self._create_plugin_info( plugin_type, plugins_dict[plugin_type], 
+                                                                    options_dict[plugin_type])
+        
+        # And now the target information
+        str_targets = ', '.join( cf.cf.getData('targets') )
+        to_print += 'target\n'
+        to_print += '    set target ' + str_targets + '\n'
+        to_print += '    back'
+        
+        to_print += '\n'
+        to_print = to_print.replace('\n', '<br/>')
+        to_print = to_print.replace(' ', '&nbsp;')
+        
+        self._add_to_debug_table('<i>Enabled plugins</i>:\n <br/><br/>' + to_print + '\n', 'debug' )
+    
+    def _add_to_debug_table(self, message, msg_type ):
+        '''
+        Add a message to the debug table.
+        
+        @parameter message: The message to add to the table. It's in HTML.
+        @parameter msg_type: The type of message
+        '''
+        now = time.localtime(time.time())
+        the_time = time.strftime("%c", now)
+        
+        self._aditional_info += '<tr>'
+        self._aditional_info += '<td class=content>' + the_time + '</td>'
+        self._aditional_info += '<td class=content>' + msg_type + '</td>'
+        self._aditional_info += '<td class=content>' + message + '</td>'
+        self._aditional_info += '</tr>\n'
+    
+    def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
+        '''
+        @return: A string with the information about enabled plugins and their options.
+        
+        @parameter plugin_type: audit, discovery, etc.
+        @parameter plugins_list: A list of the names of the plugins of plugin_type that are enabled.
+        @parameter plugins_options: The options for the plugins
+        '''
+        response = ''
+        
+        # Only work if something is enabled
+        if plugins_list:
+            response = 'plugins\n'
+            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
+            
+            for plugin_name in plugins_list:
+                if plugins_options.has_key(plugin_name):
+                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
+                    
+                    for plugin_option in plugins_options[plugin_name]:
+                        name = str(plugin_option.getName())
+                        value = str(plugin_option.getValue())
+                        response += '        set ' + name + ' ' + value + '\n'
+                    
+                    response += '        back\n'
+            
+            response += '    back\n'
+            
+        # The response
+        return response
         
     def setOptions( self, OptionList ):
         '''
@@ -166,7 +231,7 @@ class htmlFile(baseOutputPlugin):
         @return: No value is returned.
         ''' 
         self._file_name = OptionList['fileName'].getValue()
-        self._report_debug = OptionList['reportDebug'].getValue()
+        self._verbose = OptionList['verbose'].getValue()
         
     def getOptions( self ):
         '''
@@ -176,7 +241,7 @@ class htmlFile(baseOutputPlugin):
         o1 = option('fileName', self._file_name, d1, 'string')
         
         d3 = 'True if debug information will be appended to the report.'
-        o3 = option('reportDebug', self._report_debug, d3, 'boolean')
+        o3 = option('verbose', self._verbose, d3, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -226,7 +291,7 @@ class htmlFile(baseOutputPlugin):
             '''<table bgcolor="#a1a1a1" cellpadding=0 cellspacing=0 border=0 width="75%">
                 <tbody> <tr><td>
                 <table cellpadding=2 cellspacing=1 border=0 width="100%">
-                <td class=title colspan=3>Security Issues and Fixes</td>
+                <td class=title colspan=3>Security Issues</td>
                 </tr>
                 <tr>
                     <td class=sub width="10%">Type</td>
@@ -239,7 +304,7 @@ class htmlFile(baseOutputPlugin):
         for i in vulns:
             self._write_to_file(
                 '''<tr>
-                <td valign=top class=default width="10%"><font color=red>Vulnerability</td>
+                <td valign=top class=default width="10%"><font color=red>Vulnerability</font></td>
                 <td valign=top class=default width="10%">tcp/80</td>
                 <td class=default width="80%">'''
                 )
@@ -257,7 +322,7 @@ class htmlFile(baseOutputPlugin):
         for i in infos:
             self._write_to_file(
                 '''<tr>
-                    <td valign=top class=default width="10%">Information</td>
+                    <td valign=top class=default width="10%"><font color=blue>Information</font></td>
                     <td valign=top class=default width="10%">tcp/80</td>
                     <td class=default width="80%">'''
                 )
@@ -266,17 +331,26 @@ class htmlFile(baseOutputPlugin):
             desc += cgi.escape (i.getURL()) + '<br> \n </td></tr>'
             self._write_to_file( desc )
 
-        self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br>')
+        # Close the upper table
+        self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br/>')
+        self._write_to_file('\n\n')
+        
+        # Write debug information
         self._write_to_file(
-            '''<table bgcolor="#a1a1a1" border=0 cellpadding=0 cellspacing=0 width="95%">
-                <tbody>
-                <tr><td><table border=0 cellpadding=2 cellspacing=1 width="100%">
-                <tbody>
+            '''<table bgcolor="#a1a1a1" cellpadding=0 cellspacing=0 border=0 width="75%">
+                <tbody> <tr><td>
+                <table cellpadding=2 cellspacing=1 border=0 width="100%">
+                <td class=title colspan=3>Security Issues</td>
+                </tr>
                 <tr>
-                <td class=title>w3af  Debug Information </td></tr>'''
-            )
+                    <td class=sub width="20%">Time</td>
+                    <td class=sub width="10%">Message type</td>
+                    <td class=sub width="70%">Message</td>
+                </tr>''')
         self._write_to_file( self._aditional_info )
-        self._write_to_file('</tbody></table></td></tr></tbody></table><br>')
+        # Close the debug table
+        self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br/>')
+        self._write_to_file('\n\n')
 
         # Finish the report 
         self._write_to_file('</BODY>'+ '\n' + '</HTML>'+ '\n')
@@ -294,7 +368,7 @@ class htmlFile(baseOutputPlugin):
         
         Four configurable parameters exist:
             - fileName
-            - reportDebug
+            - verbose
 
         If you want to write every HTTP request/response to a text file, you should use the
         textFile plugin.
