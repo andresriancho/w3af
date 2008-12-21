@@ -184,7 +184,7 @@ class xmlFile(baseOutputPlugin):
         
         # Add enabled plugins and their configuration to scaninfo
         for plugin_type in pluginsDict:
-            self._buildPluginScanInfo(pluginsDict[plugin_type], pluginsDict[plugin_type], 
+            self._buildPluginScanInfo(plugin_type, pluginsDict[plugin_type], 
                                                     optionsDict[plugin_type])
         
         # Add scaninfo to the report
