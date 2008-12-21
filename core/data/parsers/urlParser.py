@@ -40,11 +40,11 @@ This module parses Url's.
 def hasQueryString( uri ):
     '''
     Analizes the uri to check for a query string.
-    
+
     @parameter uri: The uri to analize.
     @return: True if the URI has a query string.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( uri )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( uri )
     if qs != '':
         return True
     return False
@@ -52,7 +52,7 @@ def hasQueryString( uri ):
 def getQueryString( url, ignoreExceptions=True ):
     '''
     Parses the query string and returns a dict.
-    
+
     @parameter url: The url with the query string to parse.
     @return: A QueryString Object, example :
         - input url : http://localhost/foo.asp?xx=yy&bb=dd
@@ -61,7 +61,7 @@ def getQueryString( url, ignoreExceptions=True ):
     parsedQs = None
     result = queryString()
     if hasQueryString( url ):
-        scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+        scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
         try:
             parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=True)
         except Exception, e:
@@ -80,8 +80,11 @@ def uri2url( url):
         - input url : http://localhost/foo.asp?xx=yy&bb=dd#fragment
         - output url string : http://localhost/foo.asp
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
-    return scheme+'://'+domain+path
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    res = scheme + '://' + domain + path
+    if params != '':
+        res += ";" + params
+    return res
 
 def removeFragment(  url ):
     '''
@@ -90,13 +93,14 @@ def removeFragment(  url ):
         - input url : http://localhost/foo.asp?xx=yy&bb=dd#fragment
         - output url string : http://localhost/foo.asp?xx=yy&bb=dd
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    res = scheme + '://' + domain + path
+    if params != '':
+        res += ';' + params
     if qs != '':
-        res = scheme+'://'+domain+path+'?'+qs
-    else:
-        res = scheme+'://'+domain+path
+        res += '?' + qs
     return res
-    
+
 def baseUrl(  url ):
     '''
     @parameter url: The url with the query string.
@@ -105,7 +109,7 @@ def baseUrl(  url ):
         - input url : http://localhost/dir1/foo.asp?xx=yy&bb=dd
         - output url string : http://localhost/
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return scheme+'://'+domain + '/'
 
 
@@ -153,20 +157,21 @@ def urlJoin( baseurl , relative ):
     '''        
     if relative.find('//') == 0:
         # This special case had to be generated cause of some pykto tests
-        scheme, domain, path, x1, qs, x3 = _uparse.urlparse( baseurl )
+        scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
         lastSlash = path.rfind( '/' )
         if lastSlash != 0:
             # I have more than one /
             path = path[: lastSlash]
         
         relative = relative[1:]
+# TODO add params?!
         response =  scheme + '://' + domain + path + relative
     else:
         response = _uparse.urljoin( baseurl, relative )
     
     response = normalizeURL(response)
     return response
-    
+
 def getDomain( url ):
     '''
     Input: http://localhost:4444/f00_bar.html
@@ -175,19 +180,19 @@ def getDomain( url ):
     @parameter url: The url to parse.
     @return: Returns the domain name for the url.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     domain = domain.split(':')[0]
     return domain
-    
+
 def getNetLocation( url ):
     '''
     Input: http://localhost:4444/f00_bar.html
     Output: localhost:4444
-    
+
     @parameter url: The url to parse.
     @return: Returns the net location for the url.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return domain
 
 def getProtocol( url ):
@@ -195,7 +200,7 @@ def getProtocol( url ):
     @parameter url: The url to parse.
     @return: Returns the domain name for the url.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return scheme
 
 def getRootDomain( input ):
@@ -319,7 +324,7 @@ def getDomainPath( url ):
     'http://localhost/abc/'
     >>> 
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     if path:
         res = scheme + '://' +domain+ path[:path.rfind('/')+1]
     else:
@@ -340,7 +345,7 @@ def getFileName( url ):
     >>> getFileName('http://localhost/def/abc.html')
     'abc.html'
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return path[path.rfind('/')+1:]
 
 def getExtension( url ):
@@ -354,15 +359,15 @@ def getExtension( url ):
         return ''
     else:
         return extension
-    
+
 def allButScheme( url):
     '''
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return domain+ path[:path.rfind('/')+1]
-    
+
 def getPath( url):
     '''
     @parameter url: The url to parse.
@@ -372,9 +377,9 @@ def getPath( url):
         Output:
             /pepe/0a0a
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return path
-    
+
 def getPathQs( url ):
     '''
     >>> urlParser.getPathQs( 'http://localhost/a/b/c/hh.html' )
@@ -383,13 +388,14 @@ def getPathQs( url ):
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
     '''
-    scheme, domain, path, x1, qs, x3 = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    res = path
     if qs != '':
-        res = path + '?' + qs
-    else:
-        res = path
+        res += '?' + qs
+    if params != '':
+        res += ';' + params
     return res
-    
+
 def urlDecode( url ):
     '''
     UrlDecode the url.
@@ -419,4 +425,79 @@ def getDirectories( url ):
         res.append( url )
     
     return res
-    
+
+def hasParams( url ):
+    '''
+    Analizes the url to check for a params
+
+    @parameter url: The url to analize.
+    @return: True if the URL has params.
+    '''
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    if params != '':
+        return True
+    return False
+
+def getParamsString( url ):
+    '''
+    Input: http://localhost:4444/f00_bar.html;foo=bar
+    Output: foo=bar
+
+    @parameter url: The url to parse.
+    @return: Returns the params inside the url.
+    '''
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    return params
+
+def removeParams( url ):
+    '''
+    @parameter url: The url with parameter
+    @return: Returns a string contaning the URL without the parameter. Example :
+        - input url : http://localhost/foo.asp;jsessionid=ABDR1234?xx=yy&bb=dd#fragment
+        - output url string : http://localhost/foo.asp?xx=yy&bb=dd
+    '''
+    scheme, domain, path, params, qs, x3 = _uparse.urlparse( url )
+    res = scheme + '://' + domain + path
+    if qs != '':
+        res += '?' + qs
+    return res
+
+def setParam( url, param_string ):
+    '''
+    @parameter url: The url to parse.
+    @parameter param_string: The param to set (e.g. "foo=aaa").
+    @return: Returns the url containing param.
+    '''
+    param, value = param_string.split("=")
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    res = scheme + '://' + domain + path
+    params = getParams(url)
+    params[param] = value
+    params_string = ";".join([k+"="+params[k] for k in params.keys() ])
+    res = res + ';' + params_string
+    if qs != '':
+        res += '?' + qs
+    return res
+
+def getParams( url, ignoreExceptions=True ):
+    '''
+    Parses the params string and returns a dict.
+
+    @parameter url: The url with the params string to parse.
+    @return: A QueryString Object, example :
+        - input url : http://localhost/foo.jsp;xx=yy;bb=dd
+        - output dict : { xx:yy , bb:dd }
+    '''
+    parsedData = None
+    result = {}
+    if hasParams( url ):
+        scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+        try:
+            parsedData = cgi.parse_qs( params, keep_blank_values=True, strict_parsing=True)
+        except Exception, e:
+            if not ignoreExceptions:
+                raise w3afException('Strange things found when parsing params string: ' + params)
+        else:
+            for i in parsedData.keys():
+                result[ i ] = parsedData[ i ][0]
+    return result
