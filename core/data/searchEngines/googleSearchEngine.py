@@ -150,7 +150,10 @@ class googleSearchEngine(searchEngine):
         # Save the result page
         resPages.append( response )
         
-        for url in re.findall('<h2 class=r><a href="(.*?)" class=l', response.getBody() ):
+        # TODO: Update this, it changes
+        regex_string = '<h\d class=r><a href="(.*?)" class=l'
+        
+        for url in re.findall( regex_string, response.getBody() ):
             # Parse the URL
             url = urllib.unquote_plus( url )
             if not url.startswith('https://') and not url.startswith('ftp://') and not url.startswith('http://'):
