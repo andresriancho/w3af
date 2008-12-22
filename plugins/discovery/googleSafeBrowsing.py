@@ -21,22 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afRunOnce
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.parsers.urlParser import *
-import urllib
+import core.data.constants.severity as severity
+import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afRunOnce
+
 import socket
-
-from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
-
-import os.path
+import re
 
 
 class googleSafeBrowsing(baseDiscoveryPlugin):
@@ -48,12 +47,20 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+
+        # Internal variables
         self._run = True
-        
-        self._googleSafeBrowsingDB = 'http://sb.google.com/safebrowsing/update?version=goog-black-url:1:-1'
+        self._gsb_url = 'http://sb.google.com/safebrowsing/update?version=goog-black-url:1:-1'
+        self._fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):
-        self._fuzzableRequests = []
+        '''
+        Runs pykto to the site.
+        
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
+        '''
+        self._fuzzable_requests = []
         
         if not self._run:
             # This will remove the plugin from the discovery plugins to be runned.
@@ -61,34 +68,43 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
         else:
             # Run one time
             self._run = False
-            self._getDB()
+
+            # Get the database
+            bad_domain_db = self._get_db()
             
-            domain = getDomain( fuzzableRequest.getURL() )
-            toCheckList = self._getToCheck( domain )
+            # Get the list of domains / IP addresses to check
+            domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            to_check_list = self._get_to_check( domain )
             
-            googleSafeBrowsingMatches = self._isIngoogleSafeBrowsing( toCheckList )
-            for url in googleSafeBrowsingMatches:
+            # Check if any of the domains is in the db
+            gsb_matches = self._is_in_gsb( to_check_list, bad_domain_db )
+
+            for url in gsb_matches:
                 response = self._urlOpener.GET( url )
-                self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+                self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
                 
                 v = vuln.vuln()
                 v.setURL( url )
                 v.setId( response.id )
-                v.setDesc( 'According to google safe browsing, the URL: ' + url + ' is involved in a phishing scam. ')
+                v.setSeverity( severity.MEDIUM )
+                msg = 'According to google safe browsing, the URL: "' + url + '" is involved'
+                msg += ' in a phishing scam.'
+                v.setDesc( msg )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                kb.kb.append(self, 'gsb', v)
                 
-        return self._fuzzableRequests
+        return self._fuzzable_requests
         
-    def _getToCheck( self, domain ):
+    def _get_to_check( self, domain ):
         '''
-        @return: From the domain, get a list of fqdn, rootDomain and IP address.
+        @return: From the domain, get a list of fqdn, root_domain and IP address.
         '''
         res = []
         
         addrinfo = None
         try:
             addrinfo = socket.getaddrinfo( domain, 0)
-        except:
+        except socket.gaierror:
             pass
         else:
             res.extend( [info[4][0] for info in addrinfo] )
@@ -101,32 +117,37 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
         else:
             res.append( fqdn )
             
-        rootDomain = ''
-        try:
-            rootDomain = getRootDomain( domain )
-        except Exception, e:
-            om.out.debug( str(e) )
-        else:
-            res.append( rootDomain )
-        
+        root_domain = urlParser.getRootDomain( domain )
+        res.append( root_domain )
+
+        # uniq        
         res = list( set( res ) )
         return res
             
         
-    def _isIngoogleSafeBrowsing( self, toCheckList ):
+    def _is_in_gsb( self, to_check_list, bad_domain_db ):
         '''
-        Reads the googleSafeBrowsing db and tries to match the entries on that db with the toCheckList
+        Reads the googleSafeBrowsing db and tries to match the entries on that db with the to_check_list
+
         @return: A list with the sites to match against the googleSafeBrowsing db
         '''
         res = []
-        for tc in toCheckList:
-            for url in self._badURLList:
-                if url.startswith('http://' + tc) or url.startswith('https://' + tc):
+        for to_check in to_check_list:
+            for url in bad_domain_db:
+                if url.startswith('http://' + to_check) or \
+                url.startswith('https://' + to_check):
                     res.append( url )
         return res
         
     def setOptions( self, optionsMap ):
-        self._googleSafeBrowsingDB = optionsMap['dbURL'].getValue()
+        '''
+        This method sets all the options that are configured using the user int_erface 
+        generated by the framework using the result of getOptions().
+        
+        @parameter OptionList: A dictionary with the options for the plugin.
+        @return: No value is returned.
+        ''' 
+        self._gsb_url = optionsMap['dbURL'].getValue()
         
     def getOptions( self ):
         '''
@@ -134,21 +155,21 @@ class googleSafeBrowsing(baseDiscoveryPlugin):
         '''
         d1 = 'The URL to the google Safe Browsing database.'
         h1 = 'The default is ok in most cases.'
-        o1 = option('dbURL', self._googleSafeBrowsingDB, d1, 'string', help=h1)
+        o1 = option('dbURL', self._gsb_url, d1, 'string', help=h1)
         
         ol = optionList()
         ol.add(o1)
         return ol
 
-    def _getDB(self):
+    def _get_db(self):
         '''
         This method is called to update the database.
         '''
         om.out.information('Trying to download the google safe browsing database, please wait...')
-        response = self._urlOpener.GET( self._googleSafeBrowsingDB )
+        response = self._urlOpener.GET( self._gsb_url )
         om.out.information('Done downloading DB from google!')
         # Parsing list
-        self._badURLList = re.findall( '\+(.*?)\t.*?\n', response.getBody() )
+        return re.findall( '\+(.*?)\t.*?\n', response.getBody() )
         
         
     def getPluginDeps( self ):
