@@ -21,18 +21,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afRunOnce
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 from core.data.searchEngines.msn import msn as msn
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache
-from core.controllers.w3afException import w3afRunOnce
+
 
 class fingerMSN(baseDiscoveryPlugin):
     '''
@@ -48,7 +52,7 @@ class fingerMSN(baseDiscoveryPlugin):
         self._accounts = []
         
         # User configured 
-        self._resultLimit = 300
+        self._result_limit = 300
         
     def discover(self, fuzzableRequest ):
         '''
@@ -60,62 +64,60 @@ class fingerMSN(baseDiscoveryPlugin):
         else:
             # This plugin will only run one time. 
             self._run = False
-            newUsers = []
-            self._msn = msn( self._urlOpener )
+            
+            msn_se = msn( self._urlOpener )
             
             self._domain = domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            self._domain_root = urlParser.getRootDomain( domain )
             
-            try:
-                self._domainRoot = urlParser.getRootDomain( domain )
-            except Exception, e:
-                om.out.debug( str(e) )
-            else:
-                results = self._msn.getNResults('@'+ self._domainRoot, self._resultLimit)
-                    
-                for result in results:
-                    targs = (result,)
-                    self._tm.startFunction( target=self._findAccounts, args=targs , ownerObj=self )
+            results = msn_se.getNResults('@'+ self._domain_root, self._result_limit)
+                
+            for result in results:
+                targs = (result,)
+                self._tm.startFunction( target=self._find_accounts, args=targs , ownerObj=self )
 
-                self._tm.join( self )
-                self.printUniq( kb.kb.getData( 'fingerMSN', 'mails' ), None )
+            self._tm.join( self )
+            self.printUniq( kb.kb.getData( 'fingerMSN', 'mails' ), None )
                 
         return []
     
-    def _findAccounts(self, msnPage ):
+    def _find_accounts(self, msn_page ):
         '''
         Finds mails in msn result.
         
         @return: A list of valid accounts
         '''
         try:
-            om.out.debug('Searching for mails in: ' + msnPage.URL )
-            if self._domain == urlParser.getDomain( msnPage.URL ):
-                response = self._urlOpener.GET( msnPage.URL, useCache=True, grepResult=True )
+            om.out.debug('Searching for mails in: ' + msn_page.URL )
+            if self._domain == urlParser.getDomain( msn_page.URL ):
+                response = self._urlOpener.GET( msn_page.URL, useCache=True, grepResult=True )
             else:
-                response = self._urlOpener.GET( msnPage.URL, useCache=True, grepResult=False )
+                response = self._urlOpener.GET( msn_page.URL, useCache=True, grepResult=False )
         except KeyboardInterrupt, e:
             raise e
         except w3afException, w3:
-            om.out.debug('xUrllib exception raised while fetching page in fingerMSN, error description: ' + str(w3) )
-            self._newAccounts = []
+            msg = 'xUrllib exception raised while fetching page in fingerMSN,'
+            msg += ' error description: ' + str(w3)
+            om.out.debug( msg )
         else:
             
             # I have the response object!
             try:
-                dp = dpCache.dpc.getDocumentParserFor( response )
+                document_parser = dpCache.dpc.getDocumentParserFor( response )
             except w3afException:
                 # Failed to find a suitable parser for the document
                 pass
             else:
                 # Search for email addresses
-                for mail in dp.getEmails( self._domainRoot ):
+                for mail in document_parser.getEmails( self._domain_root ):
                     if mail not in self._accounts:
                         self._accounts.append( mail )
 
                         i = info.info()
-                        i.setURL( msnPage.URL )
+                        i.setURL( msn_page.URL )
                         i.setName( mail )
-                        i.setDesc( 'The mail account: "'+ mail + '" was found in: "' + msnPage.URL + '"' )
+                        msg = 'The mail account: "'+ mail + '" was found in: "' + msn_page.URL + '"'
+                        i.setDesc( msg )
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
                         kb.kb.append( 'mails', 'mails', i )
@@ -126,7 +128,7 @@ class fingerMSN(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Fetch the first "resultLimit" results from the MSN search'
-        o1 = option('resultLimit', self._resultLimit, d1, 'integer')
+        o1 = option('resultLimit', self._result_limit, d1, 'integer')
         
         ol = optionList()
         ol.add(o1)
@@ -140,7 +142,7 @@ class fingerMSN(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._resultLimit = optionsMap['resultLimit'].getValue()
+        self._result_limit = optionsMap['resultLimit'].getValue()
             
     def getPluginDeps( self ):
         '''
