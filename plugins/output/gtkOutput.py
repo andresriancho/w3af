@@ -22,18 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException
+from core.controllers.misc.homeDir import get_home_dir
+from core.data.db.persist import persist
 
 # The output plugin must know the session name that is saved in the config object,
 # the session name is assigned in the target settings
 import core.data.kb.config as cf
-
-from core.data.db.persist import persist
-
-import Queue
-
-from core.controllers.misc.homeDir import get_home_dir
+import core.data.kb.knowledgeBase as kb
+import core.data.constants.severity as severity
 
 # Only to be used with care.
 import core.controllers.outputManager as om
@@ -46,8 +43,8 @@ import time
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-# severity constants
-import core.data.constants.severity as severity
+import Queue
+
 
 class gtkOutput(baseOutputPlugin):
     '''
@@ -77,7 +74,8 @@ class gtkOutput(baseOutputPlugin):
             except OSError, oe:
                 # [Errno 17] File exists
                 if oe.errno != 17:
-                    raise w3afException('Unable to write to the user home directory: ' + get_home_dir() )
+                    msg = 'Unable to write to the user home directory: ' + get_home_dir()
+                    raise w3afException( msg )
             
             self._db = persist()
             
@@ -92,9 +90,11 @@ class gtkOutput(baseOutputPlugin):
             
             # Create one!
             try:
-                self._db.create( db_name , ['id','url', 'code'] )
+                self._db.create( db_name , ['id', 'url', 'code'] )
             except Exception, e:
-                raise w3afException('An exception was raised while creating the gtkOutput database object: ' + str(e) )
+                msg = 'An exception was raised while creating the gtkOutput database object: '
+                msg += str(e)
+                raise w3afException( msg )
             else:
                 kb.kb.save('gtkOutput', 'db', self._db )
     
@@ -146,12 +146,15 @@ class gtkOutput(baseOutputPlugin):
     
     def logHttp( self, request, response):
         try:
-            self._db.persist( (response.getId(),request.getURI(), response.getCode()), (request, response) )
+            self._db.persist( (response.getId(), request.getURI(), response.getCode()), 
+                              (request, response) )
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:
-            om.out.error( 'Exception while inserting request/response to the database: ' + str(e) )
-            om.out.error( 'The request/response that generated the error is: '+ str(response.getId()) + ' ' + request.getURI() + ' ' + response.getCode() )
+            msg = 'Exception while inserting request/response to the database: ' + str(e) + '\n'
+            msg += 'The request/response that generated the error is: '+ str(response.getId())
+            msg += ' ' + request.getURI() + ' ' + response.getCode()
+            om.out.error( msg )
             raise e
     
     def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
@@ -167,8 +170,9 @@ class gtkOutput(baseOutputPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Saves messages to kb.kb.getData('gtkOutput', 'queue'), messages are saved in the form of objects. This plugin
-        was created to be able to communicate with the gtkUi and should be enabled if you are using it.
+        Saves messages to kb.kb.getData('gtkOutput', 'queue'), messages are saved in the form of
+         objects. This plugin was created to be able to communicate with the gtkUi and should be
+         enabled if you are using it.
         '''
         
     def getOptions( self ):
@@ -182,24 +186,24 @@ class gtkOutput(baseOutputPlugin):
         pass
         
 class message:
-    def __init__( self, type, msg , time, newLine=True ):
+    def __init__( self, msg_type, msg , msg_time, newLine=True ):
         '''
-        @parameter type: console, information, vulnerability, etc
+        @parameter msg_type: console, information, vulnerability, etc
         @parameter msg: The message itself
-        @parameter time: The time when the message was produced
+        @parameter msg_time: The time when the message was produced
         @parameter newLine: Should I print a newline ? True/False
         '''
-        self._type = type
+        self._type = msg_type
         self._msg = msg
         self._newLine = newLine
-        self._time = time
+        self._time = msg_time
         self._severity = None
     
     def getSeverity( self ):
         return self._severity
         
-    def setSeverity( self, s ):
-        self._severity = s
+    def setSeverity( self, the_severity ):
+        self._severity = the_severity
     
     def getMsg( self ):
         return self._msg
