@@ -65,7 +65,7 @@ class frontpage_version(baseDiscoveryPlugin):
             if self._exec_one_time:
                 self._exec = False
 
-        self.is404 = kb.kb.getData( 'error404page', '404' )
+        is_404 = kb.kb.getData( 'error404page', '404' )
 
         # Request the file
         frontpage_info_url = urlParser.urlJoin(  fuzzableRequest.getURL() , '/_vti_inf.html' )
@@ -78,7 +78,7 @@ class frontpage_version(baseDiscoveryPlugin):
             om.out.debug(msg)
         else:
             # Check if it's a FrontPage Server Info file
-            if not self.is404( response ):
+            if not is_404( response ):
                 
                 regex = 'FPVersion="(.*?)"'
                 version_match = re.search(regex, response.getBody(), re.IGNORECASE)
