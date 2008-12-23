@@ -21,13 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
+
 
 class strangeHTTPCode(baseGrepPlugin):
     '''
@@ -47,7 +50,10 @@ class strangeHTTPCode(baseGrepPlugin):
             i.setName('Strange HTTP Response code - ' + str(response.getCode()))
             i.setURL( response.getURL() )
             i.setId( response.id )
-            i.setDesc( 'The URL: "' +  i.getURL() + '" sent a strange HTTP response code: "' + str(response.getCode()) + '" with the message: "'+response.getMsg()+'", manual inspection is adviced.' )
+            desc = 'The URL: "' +  i.getURL() + '" sent a strange HTTP response code: "'
+            desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
+            desc += '", manual inspection is adviced.'
+            i.setDesc( desc )
             kb.kb.append( self , 'strangeHTTPCode' , i )
     
     def setOptions( self, OptionList ):
@@ -68,10 +74,10 @@ class strangeHTTPCode(baseGrepPlugin):
         
     def _getCommonHTTPCodes(self):
         codes = []
-        codes.extend([200,])
-        codes.extend([301,302,303])
-        codes.extend([401,403,404])
-        codes.extend([500,501])
+        codes.extend([200, ])
+        codes.extend([301, 302, 303])
+        codes.extend([401, 403, 404])
+        codes.extend([500, 501])
         return codes
 
     def getPluginDeps( self ):

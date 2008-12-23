@@ -72,7 +72,8 @@ class collectCookies(baseGrepPlugin):
                     C.load( headers[ key ].strip() )
                 except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
-                    msg = 'The cookie that was sent by the remote web application doesn\'t respect the RFC.'
+                    msg = 'The cookie that was sent by the remote web application'
+                    msg += ' doesn\'t respect the RFC.'
                     om.out.information(msg)
                     i.setDesc(msg)
                     i.setName('Invalid cookie')
@@ -233,7 +234,8 @@ class collectCookies(baseGrepPlugin):
         # ASP
         cookie_db.append( ('ASPSESSIONID','ASP') )
         cookie_db.append( ('ASP.NET_SessionId=','ASP.NET') )
-        cookie_db.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT','Outlook Web Access') )
+        cookie_db.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT',
+                                        'Outlook Web Access') )
         
         # PHP
         cookie_db.append( ('PHPSESSID=','PHP') )

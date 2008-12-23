@@ -79,7 +79,8 @@ class httpAuthDetect(baseGrepPlugin):
             v = vuln.vuln()
             v.setURL( response.getURL() )
             v.setId( response.id )
-            v.setDesc( 'The resource: "'+ response.getURI() + '" has a user and password in the URI.')
+            desc = 'The resource: "'+ response.getURI() + '" has a user and password in the URI.'
+            v.setDesc( desc )
             v.setSeverity(severity.HIGH)
             v.setName( 'Basic HTTP credentials' )
             
@@ -94,8 +95,8 @@ class httpAuthDetect(baseGrepPlugin):
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
                 v.setId( response.id )
-                msg = 'The resource: "'+ response.getURL() + '" has a user and password in the body.'
-                msg += ' The offending URL is: "' + authURI + '".'
+                msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
+                msg += ' body. The offending URL is: "' + authURI + '".'
                 v.setDesc( msg )
                 
                 v.setSeverity(severity.HIGH)

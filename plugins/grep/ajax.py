@@ -21,14 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.getResponseType import *
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
 import re
-from core.data.getResponseType import *
+
 
 class ajax(baseGrepPlugin):
     '''
@@ -42,14 +46,15 @@ class ajax(baseGrepPlugin):
         
         # Create the regular expression to search for AJAX
         regex_string = '< *?script.*?>.*?'
-        regex_string +='(XMLHttpRequest|eval\(\)|ActiveXObject\("Msxml2.XMLHTTP"\)|ActiveXObject\("Microsoft.XMLHTTP"\))'
+        regex_string += '(XMLHttpRequest|eval\(\)|ActiveXObject\("Msxml2.XMLHTTP"\)|'
+        regex_string += 'ActiveXObject\("Microsoft.XMLHTTP"\))'
         regex_string += '.*?</ *?script *?>'
-        self._scriptre = re.compile( regex_string,re.IGNORECASE | re.DOTALL )
+        self._script_re = re.compile( regex_string, re.IGNORECASE | re.DOTALL )
 
     def _testResponse(self, request, response):
         
         if response.is_text_or_html():
-            res = self._scriptre.search( response.getBody() )
+            res = self._script_re.search( response.getBody() )
             if res:
                 i = info.info()
                 i.setName('Ajax code')

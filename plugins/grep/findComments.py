@@ -28,11 +28,10 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-
-from core.controllers.w3afException import w3afException
 
 import re
 
@@ -52,7 +51,7 @@ class findComments(baseGrepPlugin):
         self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit','stupid', 'tonto', 'porqueria',
         'ciudado', 'usuario', 'contrase', 'puta']
-        self._alreadyReportedInteresting = []
+        self._already_reported_interesting = []
         self.is404 = None
 
         # User configurations
@@ -91,30 +90,33 @@ class findComments(baseGrepPlugin):
                     
                     comment = comment.lower()
                     for word in self._interestingWords:
-                        if word in comment and ( word, response.getURL() ) not in self._alreadyReportedInteresting:
+                        if word in comment and ( word, response.getURL() ) not in self._already_reported_interesting:
                             i = info.info()
                             i.setName('HTML comment with "' + word + '" inside')
-                            msg = 'A comment with the string "' + word + '" was found in: "' + response.getURL() + '".'
-                            msg += 'This could be interesting.'
+                            msg = 'A comment with the string "' + word + '" was found in: "'
+                            msg += response.getURL() + '". This could be interesting.'
                             i.setDesc( msg )
                             i.setId( response.id )
                             i.setDc( request.getDc )
                             i.setURI( response.getURI() )
                             kb.kb.append( self, 'interestingComments', i )
                             om.out.information( i.getDesc() )
-                            self._alreadyReportedInteresting.append( ( word, response.getURL() ) )
+                            self._already_reported_interesting.append( ( word, response.getURL() ) )
                     
-                    if re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment) and ( comment, response.getURL() ) not in self._alreadyReportedInteresting:
+                    if re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment) and \
+                    ( comment, response.getURL() ) not in self._already_reported_interesting:
                         # There is HTML code in the comment.
                         i = info.info()
                         i.setName('HTML comment contains HTML code')
-                        i.setDesc( 'A comment with the string "' +comment + '" was found in: ' + response.getURL() + ' . This could be interesting.' )
+                        desc = 'A comment with the string "' +comment + '" was found in: "'
+                        desc += response.getURL() + '" . This could be interesting.'
+                        i.setDesc( desc )
                         i.setId( response.id )
                         i.setDc( request.getDc )
                         i.setURI( response.getURI() )
                         kb.kb.append( self, 'htmlCommentsHideHtml', i )
                         om.out.information( i.getDesc() )
-                        self._alreadyReportedInteresting.append( ( comment, response.getURL() ) )
+                        self._already_reported_interesting.append( ( comment, response.getURL() ) )
                             
     def setOptions( self, optionsMap ):
         self._search404 = optionsMap['search404'].getValue()
@@ -136,9 +138,9 @@ class findComments(baseGrepPlugin):
         '''
         inform = []
         for comment in self._comments.keys():
-            urlsWithThisComment = self._comments[comment]
+            urls_with_this_comment = self._comments[comment]
             om.out.information('The comment : "' + comment + '" was found on this URL(s):')
-            for url , request_id in urlsWithThisComment:
+            for url , request_id in urls_with_this_comment:
                 inform.append('- ' + url + ' (request with id:'+str(request_id)+')' )
         
             inform.sort()

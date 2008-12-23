@@ -57,19 +57,22 @@ class getMails(baseGrepPlugin):
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
-            om.out.debug('If I can\'t parse the document, I won\'t be able to find any emails. Doing nothing.')
+            msg = 'If I can\'t parse the document, I won\'t be able to find any emails.'
+            msg += ' Ignoring the desponse for "' + response.getURL() + '".'
+            om.out.debug( msg )
         else:
             mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
             
             for m in mails:
                 wasSent = self._wasSent( request, m )
-                alreadyReported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
-                if not wasSent and not alreadyReported:
+                already_reported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
+                if not wasSent and not already_reported:
                     i = info.info()
                     i.setURL( response.getURL() )
                     i.setId( response.id )
-                    i.setName(m)
-                    i.setDesc( 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"' )
+                    i.setName( m )
+                    desc = 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"'
+                    i.setDesc( desc )
                     i['mail'] = m
                     i['user'] = m.split('@')[0]
                 

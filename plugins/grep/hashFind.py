@@ -66,9 +66,9 @@ class hashFind(baseGrepPlugin):
                         i.setName( hash_type + 'hash in HTML content')
                         i.setURL( response.getURL() )
                         i.setId( response.id )
-                        msg = 'The URL: "'+ response.getURL()  + '" returned a response that may contain a "'
-                        msg += hash_type+'" hash. The hash is: "'+ possible_hash +'". '
-                        msg += 'This is uncommon and requires human verification.'
+                        msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
+                        msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
+                        msg += '". This is uncommon and requires human verification.'
                         i.setDesc( msg )
                         kb.kb.append( self, 'hashFind', i )
     
@@ -86,7 +86,8 @@ class hashFind(baseGrepPlugin):
                 letters += 1
         
         if numbers in range( letters - len(possible_hash) / 2 , letters + len(possible_hash) / 2 ):
-            # Seems to be a hash, let's make a final test to avoid false positives with strings like:
+            # Seems to be a hash, let's make a final test to avoid false positives with
+            # strings like:
             # 2222222222222222222aaaaaaaaaaaaa
             is_hash = True
             for char in possible_hash:
