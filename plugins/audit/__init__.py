@@ -21,6 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 def getLongDescription():
-    return '''Audit plugins use the knowledge created by discovery plugins to find vulnerabilities on the remote
-web application and web server.    
+    return '''Audit plugins use the knowledge created by discovery plugins to 
+    find vulnerabilities on the remote web application and web server.    
     '''
