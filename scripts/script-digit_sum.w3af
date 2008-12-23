@@ -18,6 +18,6 @@ back
 
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 3
+assert len( kb.kb.getData('urls', 'urlList') ) == 10
 
 exit
