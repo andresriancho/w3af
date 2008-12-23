@@ -21,17 +21,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
-import socket
-import re
 from core.data.parsers.urlParser import getProtocol, getNetLocation
-import core.data.constants.severity as severity
+
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+
+from OpenSSL import SSL, crypto
+import socket
+import select
+
 
 class sslCertificate(baseAuditPlugin):
     '''
@@ -50,7 +55,7 @@ class sslCertificate(baseAuditPlugin):
         '''
         url = freq.getURL()
         if 'HTTPS' == getProtocol( url ).upper():
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # Parse the domain:port
             splited = getNetLocation(url).split(':')
             if len( splited ) == 1:
                 port = 443
@@ -59,32 +64,110 @@ class sslCertificate(baseAuditPlugin):
                 port = int(splited[1])
                 host = splited[0]
 
+            # Create the connection
+            socket_obj = socket.socket()            
             try:
-                s.connect( ( host , port ) )
-                s = socket.ssl( s )
-            except IOError, (errno, strerror):
-                om.out.error("In sslCertificate: I/O error(%s): %s" % (errno, strerror) )
-            else:
-                # work!
+                socket_obj.connect( ( host , port ) )
+                ctx = SSL.Context(SSL.SSLv23_METHOD)
+                ssl_conn = SSL.Connection(ctx, socket_obj)
 
-                def printCert( certStr ):
-                    # All of this could be replaced with a smarter re, but i had no time
-                    pparsecertstringre = re.compile(    r"""(?:/)(\w(?:\w|))(?:=)""")
-                    varNames = pparsecertstringre.findall( certStr )
-                    pos = 0
-                    for i in xrange( len(varNames) ):
-                        start = certStr.find( varNames[ i ], pos )
-                        if ( i +1 ) != len(varNames):
-                            end = certStr.find( varNames[ i + 1], start )
-                        else:
-                            end = len( certStr ) +1
-                        value = certStr[ start+ len(varNames[ i ]) +1 : end -1 ]
-                        om.out.information('- '+ varNames[ i ] + '=' + value)
+                # Go to client mode
+                ssl_conn.set_connect_state()
                 
-                om.out.information('Issuer of SSL Certificate:')
-                printCert( s.issuer() )
-                om.out.information('Server SSL Certificate:')
-                printCert( s.server() )
+                # If I don't send something here, the "get_peer_certificate"
+                # method returns None. Don't ask me why!
+                #ssl_conn.send('GET / HTTP/1.1\r\n\r\n')
+                self.ssl_wrapper( ssl_conn, ssl_conn.send, ('GET / HTTP/1.1\r\n\r\n', ), {})
+            except Exception, e:
+                om.out.error('Error in audit.sslCertificate: "' + repr(e)  +'".')
+            else:
+                # Get the cert
+                cert = ssl_conn.get_peer_certificate()
+                
+                # Perform the analysis
+                self._analyze_cert( cert, ssl_conn )
+                
+                # Print the SSL information to the log
+                desc = 'This is the information about the SSL certificate used in the target site:'
+                desc += '\n'
+                desc += self._dump_X509(cert)
+                om.out.information( desc )
+                i = info.info()
+                i.setName('SSL Certificate' )
+                i.setDesc( desc )
+                kb.kb.append( self, 'certificate', i )
+
+    def ssl_wrapper(self, ssl_obj, method, args, kwargs):
+        '''
+        This is a method that calls SSL functions, wrapping them around
+        try/except and handling WantRead and WantWrite errors.
+        '''
+        while True:
+            try:
+                return apply( method, args, kwargs )
+                break
+            except SSL.WantReadError:
+                select.select([ssl_obj],[],[],10.0)
+            except SSL.WantWriteError:
+                select.select([],[ssl_obj],[],10.0)
+
+    def _analyze_cert(self, cert, ssl_conn):
+        '''
+        Analyze the cert.
+        
+        @parameter cert: The cert object from pyopenssl.
+        @parameter ssl_conn: The SSL connection.
+        '''
+        server_digest_SHA1 = cert.digest('sha1')
+        server_digest_MD5 = cert.digest('md5')
+
+        # Check for expired
+        if cert.has_expired():
+            i = info.info()
+            i.setName('Expired SSL certificate' )
+            i.setDesc( 'The certificate with MD5 digest: "' + server_digest_MD5 + '" has expired.' )
+            kb.kb.append( self, 'expired', i )
+            
+        if cert.get_version() < 2: 
+            i = info.info()
+            i.setName('Insecure SSL version' )
+            desc = 'The certificate is using an old version of SSL (' + str(cert.get_version())
+            desc += '), which is insecure.'
+            i.setDesc( desc )
+            kb.kb.append( self, 'version', i )
+
+        peer = cert.get_subject()
+        issuer = cert.get_issuer()
+        ciphers = ssl_conn.get_cipher_list()
+
+    def _dump_X509(self, cert):
+        '''
+        Dump X509
+        '''
+        res = ''
+        res += "- Digest (SHA-1): " + cert.digest("sha1") +'\n'
+        res += "- Digest (MD5): " + cert.digest("md5") +'\n'
+        res += "- Serial#: " + str(cert.get_serial_number()) +'\n'
+        res += "- Version: " + str(cert.get_version()) +'\n'
+
+        expired = cert.has_expired() and "Yes" or "No"
+        res += "- Expired: " + expired + '\n'
+        res += "- Subject: " + str(cert.get_subject()) + '\n'
+        res += "- Issuer: " + str(cert.get_issuer()) + '\n'
+        
+        # Dump public key
+        pkey = cert.get_pubkey()
+        typedict = {crypto.TYPE_RSA: "RSA", crypto.TYPE_DSA: "DSA"}
+        res += "- PKey bits: " + str(pkey.bits()) +'\n'
+        res += "- PKey type: %s (%d)" % (typedict.get(pkey.type(), "Unknown"), pkey.type()) +'\n'
+        
+        res += '- Certificate dump: \n' + crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+        
+        # Indent
+        res = res.replace('\n', '\n    ')
+        res = '    ' + res
+        
+        return res
 
     def getOptions( self ):
         '''
