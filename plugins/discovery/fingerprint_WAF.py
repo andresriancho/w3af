@@ -20,37 +20,46 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createRandAlpha
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afRunOnce
+from core.data.fuzzer.fuzzer import createRandAlpha
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afRunOnce
+
 import re
+
 
 class fingerprint_WAF(baseDiscoveryPlugin):
     '''
     Identify if a Web Application Firewall is present and if possible identify the vendor and version.
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._run = True
         
     def discover(self, fuzzableRequest ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                                     (among other things) the URL to test.
         '''
         if not self._run:
             # This will remove the plugin from the discovery plugins 
             # to be runned.
             raise w3afRunOnce()
+        
         else:
             # I will only run this one time. All calls to fingerprint_WAF return 
             # the same url's ( none! )
@@ -74,12 +83,13 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         headers = fuzzableRequest.getHeaders()
         headers['Transfer-Encoding'] = createRandAlpha(1024 + 1)
         try:
-            lockResponse2 = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
+            lock_response2 = self._urlOpener.GET( fuzzableRequest.getURL(), 
+                                                                    headers=headers, useCache=True )
         except w3afException, w3:
             om.out.debug('Failed to identify secure IIS, exception: ' + str(w3) )
         else:
-            if lockResponse2.getCode() == 404:
-                self._reportFinding('SecureIIS', lockResponse2)
+            if lock_response2.getCode() == 404:
+                self._report_finding('SecureIIS', lock_response2)
         
     def _fingerprint_ModSecurity(self,  fuzzableRequest):
         '''
@@ -97,12 +107,12 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            for h in response.getHeaders().keys():
-                if h.lower() == 'set-cookie':
-                    protectedBy = response.getHeaders()[h]
-                    if re.match('^AL[_-]?(SESS|LB)=', protectedBy):
-                        om.out.information( 'URL protected: ' + protectedBy )
-                        self._reportFinding('Airlock', response)
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^AL[_-]?(SESS|LB)=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('Airlock', response)
                         return
                 # else 
                     # more checks, like path /error_path or encrypted URL in response
@@ -117,13 +127,13 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            for h in response.getHeaders().keys():
-                if h.lower() == 'set-cookie':
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
                     # ToDo: not sure if this is always there (08jul08 Achim)
-                    protectedBy = response.getHeaders()[h]
-                    if re.match('^barra_counter_session=', protectedBy):
-                        om.out.information( 'URL protected: ' + protectedBy )
-                        self._reportFinding('Barracuda', response)
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^barra_counter_session=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('Barracuda', response)
                         return
                 # else 
                     # don't know ...
@@ -138,12 +148,12 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            for h in response.getHeaders().keys():
-                if h.lower() == 'set-cookie':
-                    protectedBy = response.getHeaders()[h]
-                    if re.match('^sessioncookie=', protectedBy):
-                        om.out.information( 'URL protected: ' + protectedBy )
-                        self._reportFinding('Deny All rWeb', response)
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^sessioncookie=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('Deny All rWeb', response)
                         return
                 # else
                     # more checks like detection=detected cookie
@@ -158,12 +168,12 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            for h in response.getHeaders().keys():
-                if h.lower() == 'set-cookie':
-                    protectedBy = response.getHeaders()[h]
-                    if re.match('^TS[a-zA-Z0-9]{3,6}=', protectedBy):
-                        om.out.information( 'URL protected: ' + protectedBy )
-                        self._reportFinding('F5 ASM', response)
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^TS[a-zA-Z0-9]{3,6}=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('F5 ASM', response)
                         return
                 # else
                     # more checks like special string in response
@@ -178,12 +188,12 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            for h in response.getHeaders().keys():
-                if h.lower() == 'set-cookie':
-                    protectedBy = response.getHeaders()[h]
-                    if re.match('^WODSESSION=', protectedBy):
-                        om.out.information( 'URL protected: ' + protectedBy )
-                        self._reportFinding('HyperGuard', response)
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^WODSESSION=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('HyperGuard', response)
                         return
                 # else
                     # more checks like special string in response
@@ -199,26 +209,30 @@ class fingerprint_WAF(baseDiscoveryPlugin):
             # Now add the if header and try again
             headers = fuzzableRequest.getHeaders()
             headers['If'] = createRandAlpha(8)
-            ifResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
-            
+            if_response = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers,
+                                                                useCache=True )
             headers = fuzzableRequest.getHeaders()
             headers['Translate'] = createRandAlpha(8)
-            translateResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
+            translate_response = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, 
+                                                                            useCache=True )
             
             headers = fuzzableRequest.getHeaders()
             headers['Lock-Token'] = createRandAlpha(8)
-            lockResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
+            lock_response = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, 
+                                                                    useCache=True )
             
             headers = fuzzableRequest.getHeaders()
             headers['Transfer-Encoding'] = createRandAlpha(8)
-            transferEncodingResponse = self._urlOpener.GET( fuzzableRequest.getURL(), headers=headers, useCache=True )
+            transfer_enc_response = self._urlOpener.GET( fuzzableRequest.getURL(), 
+                                                                                    headers=headers,
+                                                                                    useCache=True )
         
-            if ifResponse.getCode() == 404 or translateResponse.getCode() == 404 or\
-            lockResponse.getCode() == 404 or transferEncodingResponse.getCode() == 404:
-                self._reportFinding('URLScan', lockResponse)
+            if if_response.getCode() == 404 or translate_response.getCode() == 404 or\
+            lock_response.getCode() == 404 or transfer_enc_response.getCode() == 404:
+                self._report_finding('URLScan', lock_response)
 
     
-    def _reportFinding( self, name, response ):
+    def _report_finding( self, name, response ):
         '''
         Creates a information object based on the name and the response parameter and
         saves the data in the kb.
