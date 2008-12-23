@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,12 +9,14 @@ back
 output config console
 set verbose False
 back
+
 discovery fingerPKS
-discovery
 back
+
 target
 set target http://www.cybsec.com/
 back
+
 start
 
 assert len(kb.kb.getData('mails','mails')) >= 20

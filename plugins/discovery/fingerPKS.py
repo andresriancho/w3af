@@ -21,21 +21,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.searchEngines.pks import pks as pks
-        
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 
-import core.data.kb.knowledgeBase as kb
 
 class fingerPKS(baseDiscoveryPlugin):
     '''
@@ -45,6 +45,8 @@ class fingerPKS(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._run = True
         
     def discover(self, fuzzableRequest ):
@@ -58,31 +60,24 @@ class fingerPKS(baseDiscoveryPlugin):
             # This plugin will only run one time. 
             self._run = False
             
-            self._pks = pks( self._urlOpener)
+            pks_se = pks( self._urlOpener)
             
-            self._url = fuzzableRequest.getURL()
-            try:
-                self._domainRoot = urlParser.getRootDomain( self._url )
-            except Exception, e:
-                om.out.debug( str(e) )
-            else:
+            url = fuzzableRequest.getURL()
+            domain_root = urlParser.getRootDomain( url )
             
-                newUsers = []
-                domain = urlParser.getDomain( self._url )
-                
-                results = self._pks.search( self._domainRoot )
-                for result in results:
-                    i = info.info()
-                    i.setURL( 'http://pgp.mit.edu:11371/' )
-                    mail = result.username +'@' + self._domainRoot
-                    i.setName( mail )
-                    i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
-                    i['mail'] = mail
-                    i['user'] = result.username
-                    i['name'] = result.name
-                    kb.kb.append( 'mails', 'mails', i )
-                    kb.kb.append( self, 'mails', i )
-                    om.out.information( i.getDesc() )
+            results = pks_se.search( domain_root )
+            for result in results:
+                i = info.info()
+                i.setURL( 'http://pgp.mit.edu:11371/' )
+                mail = result.username +'@' + domain_root
+                i.setName( mail )
+                i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
+                i['mail'] = mail
+                i['user'] = result.username
+                i['name'] = result.name
+                kb.kb.append( 'mails', 'mails', i )
+                kb.kb.append( self, 'mails', i )
+                om.out.information( i.getDesc() )
 
         return []
     
