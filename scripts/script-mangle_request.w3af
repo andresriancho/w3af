@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -10,15 +9,21 @@ back
 output config console
 set verbose False
 back
+
 mangle sed
 mangle config sed
 set expressions qh/User-agent/luser-agent/
 back
-mangle
+
 audit sqli
-audit
 back
+
 target
 set target http://localhost/w3af/
 back
+
 start
+
+assert 1 == 1
+
+exit
