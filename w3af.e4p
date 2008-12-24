@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2008-12-18, 20:08:18 -->
+<!-- Saved: 2008-12-24, 12:11:46 -->
 <!-- Copyright (C) 2008 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2058,14 +2058,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-bsqlExploit-int.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-bsqlExploit-string.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-error500.w3af</Name>
     </Source>
     <Source>
@@ -2131,10 +2123,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-mangleTest-response.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-msnSpider.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2217,10 +2205,6 @@
       <Name>README</Name>
     </Source>
     <Source>
-      <Dir>webroot</Dir>
-      <Name>rfip.txt</Name>
-    </Source>
-    <Source>
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Name>configurable.py</Name>
@@ -2270,12 +2254,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-maxFileSize.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Dir>localProxy</Dir>
-      <Name>default.css</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -2346,11 +2324,6 @@
       <Name>script-updateGHDB.w3af</Name>
     </Source>
     <Source>
-      <Dir>plugins</Dir>
-      <Dir>output</Dir>
-      <Name>webOutput.py</Name>
-    </Source>
-    <Source>
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Name>targetSettings.py</Name>
@@ -2368,11 +2341,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-blankBody.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>googleSafeBrowsing.py</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -2400,10 +2368,6 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>userDir.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-userDir.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3834,6 +3798,21 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>dependencyCheck.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>grep</Dir>
+      <Name>strangeHTTPCode.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>evasion</Dir>
+      <Name>backSpaceBetweenDots.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>evasion</Dir>
+      <Name>shiftOutShiftInBetweenDots.py</Name>
     </Source>
   </Sources>
   <Forms>
