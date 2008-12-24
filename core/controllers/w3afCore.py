@@ -980,7 +980,8 @@ class w3afCore:
         '''
         @parameter evasionPlugins: A list with the names of Evasion Plugins that will be used.
         @return: No value is returned.
-        '''     
+        '''
+        self._strPlugins['evasion'] = evasionPlugins
         self._plugins['evasion'] = self._rPlugFactory( evasionPlugins , 'evasion')
         self.uriOpener.setEvasionPlugins( self._plugins['evasion'] )
 
