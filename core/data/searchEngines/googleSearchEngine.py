@@ -98,7 +98,8 @@ class googleSearchEngine(searchEngine):
             inputStringList = list(inputStringList)[:5]
         
             # This is a search for a set with input blue and white
-            #http://labs.google.com/sets?hl=en&q1=blue&q2=white&q3=&q4=&q5=&btn=Small+Set+%2815+items+or+fewer%29
+            #http://labs.google.com/sets?hl=en&q1=blue&q2=white&q3=&q4=
+            #&q5=&btn=Small+Set+%2815+items+or+fewer%29
             url = 'http://labs.google.com/sets?hl=en'
             qParameter = 1
             
@@ -108,12 +109,13 @@ class googleSearchEngine(searchEngine):
             url += '&btn=Small+Set+%2815+items+or+fewer%29'
             
             # Now I get the results
-            response = self._urlOpener.GET( url , headers=self._headers, useCache=True, grepResult=False )
+            response = self._urlOpener.GET( url , headers=self._headers, useCache=True,
+                                                            grepResult=False )
             
             regex = '<font face="Arial, sans-serif" size=-1>'
-            regex += '<a href="http://www.google.com/search\?hl=en&q=(.*?)">'
-            for resultStr in re.findall( regex, response.getBody() ):
-                results.append( urllib.unquote_plus( resultStr.lower() ) )
+            regex += '<a href="http://www.google.com/search\?hl=en&amp;q=(.*?)">'
+            for result_str in re.findall( regex, response.getBody() ):
+                results.append( urllib.unquote_plus( result_str.lower() ) )
         
         results = [ x for x in results if x not in inputStringList ] 
         om.out.debug('Google set search returned:')
