@@ -87,6 +87,11 @@ class textFile(baseOutputPlugin):
             self._file.close()
     
     def _write_to_file( self, msg ):
+        '''
+        Write to the log file.
+        
+        @parameter msg: The text to write.
+        '''
         try:
             self._file.write( self._cleanString(msg) )
         except Exception, e:
@@ -94,6 +99,11 @@ class textFile(baseOutputPlugin):
             sys.exit(1)
         
     def _write_to_HTTP_log( self, msg ):
+        '''
+        Write to the HTTP log file.
+        
+        @parameter msg: The text to write (a string representation of the HTTP req and res)
+        '''
         try:
             self._http.write( msg )
         except Exception, e:
