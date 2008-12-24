@@ -54,6 +54,7 @@ class findvhost(baseDiscoveryPlugin):
         self._first_exec = True
         self._already_queried = []
         self._can_resolve_domain_names = False
+        self._non_existant_response = None
         
     def discover(self, fuzzableRequest ):
         '''
@@ -120,8 +121,8 @@ class findvhost(baseDiscoveryPlugin):
         
         # Set the non existant response
         non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
-        self._non_existant_response = self._urlOpener.GET( base_url, \
-                                                    useCache=False, headers={'Host': non_existant } )
+        self._non_existant_response = self._urlOpener.GET( base_url, 
+                                                useCache=False, headers={'Host': non_existant } )
 
         for link in dp.getReferences():
             domain = urlParser.getDomain( link )
@@ -135,17 +136,20 @@ class findvhost(baseDiscoveryPlugin):
                 # This sucks, but it's cool if the document has a link to 
                 # http://some.internal.site.target.com/
                 try:
-                    vhostResponse = self._urlOpener.GET( base_url, useCache=False, \
-                                                                                headers={'Host': domain } )
+                    vhost_response = self._urlOpener.GET( base_url, useCache=False, 
+                                                                        headers={'Host': domain } )
                 except w3afException:
                     pass
                 else:
                     self._already_queried.append( domain )
-                    if relative_distance( vhostResponse.getBody(), base_response.getBody() ) < 0.35 and \
-                    relative_distance( vhostResponse.getBody(), self._non_existant_response.getBody() ) < 0.35:
+                    
+                    dist_a = relative_distance( vhost_response.getBody(), base_response.getBody() )
+                    dist_b = relative_distance( vhost_response.getBody(), 
+                                                            self._non_existant_response.getBody() )
+                    if  dist_a  < 0.35 and dist_b < 0.35:
                         # If they are *really* different (not just different by some chars) I may 
                         # have found something interesting!
-                        res.append( (domain, vhostResponse.id) )
+                        res.append( (domain, vhost_response.id) )
 
             #
             # Second section, find hosts using failed DNS resolutions
@@ -200,15 +204,17 @@ class findvhost(baseDiscoveryPlugin):
         
         for common_vhost in common_vhost_list:
             try:
-                vhostResponse = self._urlOpener.GET( base_url, useCache=False, \
+                vhost_response = self._urlOpener.GET( base_url, useCache=False, \
                                                 headers={'Host': common_vhost } )
             except w3afException:
                 pass
             else:
                 # If they are *really* different (not just different by some chars) 
-                if relative_distance( vhostResponse.getBody(), original_response.getBody() ) < 0.35 and \
-                relative_distance( vhostResponse.getBody(), self._non_existant_response.getBody() ) < 0.35:
-                    res.append( (common_vhost, vhostResponse.id) )
+                dist_a = relative_distance( vhost_response.getBody(), original_response.getBody() )
+                dist_b = relative_distance( vhost_response.getBody(), 
+                                                        self._non_existant_response.getBody() )
+                if dist_a < 0.35 and dist_b < 0.35:
+                    res.append( (common_vhost, vhost_response.id) )
         
         return res
     
