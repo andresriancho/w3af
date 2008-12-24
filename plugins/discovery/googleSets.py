@@ -21,71 +21,92 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.w3afException import w3afException
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+
 import core.data.parsers.urlParser as urlParser
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createMutants
 import core.data.kb.knowledgeBase as kb
+
 
 class googleSets(baseDiscoveryPlugin):
     '''
     Use Google sets to get related words from an URI and test them to find new URLs.
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
         # Internal variables
         self._analyzed = []     
+        self._fuzzable_requests = []
+        self._original_response = None
         
         # User variables
-        self._minInput = 2
-        self._setResults = 2
+        self._min_input = 2
+        self._set_results = 2
         
     def discover(self, fuzzableRequest ):
         '''
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
-        self.is404 = kb.kb.getData( 'error404page', '404' )
-        self._google = google( self._urlOpener )    # No key is used here
+        self._fuzzable_requests = []
         
-        self._originalResponse = self._sendMutant( fuzzableRequest, analyze=False )
+        self._original_response = self._sendMutant( fuzzableRequest, analyze=False )
         
-        for analyzedVariable, inputSet in self._generateInputSet( fuzzableRequest ):
-            if ( fuzzableRequest.getURL(), analyzedVariable, inputSet ) not in self._analyzed:
-                self._analyzed.append( ( fuzzableRequest.getURL(), analyzedVariable, inputSet ) )
-                targs = ( fuzzableRequest, analyzedVariable, inputSet)
-                self._tm.startFunction( target=self._verify, args=targs, ownerObj=self )        
+        for analyzed_variable, input_set in self._generate_input_set( fuzzableRequest ):
+            
+            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            if ( domain_path, analyzed_variable, input_set ) not in self._analyzed:
+                self._analyzed.append( ( domain_path, analyzed_variable, input_set ) )
+                
+                # Call verify
+                targs = ( fuzzableRequest, analyzed_variable, input_set)
+                self._tm.startFunction( target=self._verify, args=targs, ownerObj=self )
+                
         self._tm.join( self )
-        return self._fuzzableRequests
+        return self._fuzzable_requests
     
-    def _verify( self, fuzzableRequest, analyzedVariable, inputSet):
+    def _verify( self, fuzzableRequest, analyzed_variable, input_set):
+        '''
+        Check if the set returned something meaningful, and add it to the self._fuzzable_requests
+        list, that is going to be the return value of this plugin.
+        '''
+        # No key is used here because I fetch the results from the
+        # google html page result.
+        google_se = google( self._urlOpener )
+        result_set = google_se.set( input_set )
         
-        resultSet = self._google.set( inputSet )
         # Now i will cut the list using the user setting
-        resultSet = resultSet[:self._setResults]
-        mutantList = self._generateURLsFromSet( analyzedVariable, resultSet, fuzzableRequest )
+        result_set = result_set[:self._set_results]
+        mutant_list = self._generateURLsFromSet( analyzed_variable, result_set, fuzzableRequest )
         
-        for m in mutantList:
-            response = self._sendMutant( m, analyze=False )
-            if not self.is404( response ) and self._originalResponse.getBody() != response.getBody() :
-                fuzzReqs = self._createFuzzableRequests( response )
-                self._fuzzableRequests.extend( fuzzReqs )
+        # Get the 404
+        is_404 = kb.kb.getData( 'error404page', '404' )
+        
+        for mutant in mutant_list:
+            response = self._sendMutant( mutant, analyze=False )
+            
+            if not is_404( response ) and \
+            self._original_response.getBody() != response.getBody():
+                fuzz_reqs = self._createFuzzableRequests( response )
+                self._fuzzable_requests.extend( fuzz_reqs )
     
-    def _generateInputSet( self, fuzzableRequest ):
+    def _generate_input_set( self, fuzzableRequest ):
         '''
         Based on the fuzzable request, i'll search the kb , try to find other URLs in
         the same path and create a set with the filenames of those URLs.
         
         Also analyze the parameters that are passed in the query string.
         
-        @return: A list of tuples with ( analyzedVariable, resultSet ). When analyzing the URL, the analyzedVariable is
+        @return: A list of tuples with ( analyzed_variable, result_set ). When analyzing the URL, the analyzed_variable is
         setted to None.
         '''
         result = []
@@ -96,99 +117,82 @@ class googleSets(baseDiscoveryPlugin):
     def _generateISQs( self, fuzzableRequest ):
         '''
         Check the URL query string.
-        @return: A list of tuples with ( analyzedVariable, resultSet ).
+        @return: A list of tuples with ( analyzed_variable, result_set ).
         '''     
         # The result
         result = []
 
-        qs = urlParser.getQueryString( fuzzableRequest.getURI() )
-        inputSetMap = {}
-        for key in qs.keys():
-            inputSetMap[ key ] = []
+        query_string = urlParser.getQueryString( fuzzableRequest.getURI() )
+        input_set_map = {}
+        for key in query_string.keys():
+            input_set_map[ key ] = []
         
         uriList = kb.kb.getData( 'urls', 'uriList' )
         for uri in uriList:
             if fuzzableRequest.getURL() == urlParser.uri2url( uri ) and \
-            urlParser.getQueryString( uri ).keys() == qs.keys():
+            urlParser.getQueryString( uri ).keys() == query_string.keys():
                 # Both URL's have the same query string parameters
-                for key in qs.keys():
-                    inputSetMap[ key ].append( urlParser.getQueryString( uri )[ key ] )
+                for key in query_string.keys():
+                    input_set_map[ key ].append( urlParser.getQueryString( uri )[ key ] )
         
-        # Now I create the result, based on inputSetMap
-        for key in inputSetMap:
-            result.append( ( key, list(set(inputSetMap[ key ] ) ) ) )
+        # Now I create the result, based on input_set_map
+        for key in input_set_map:
+            result.append( ( key, list(set(input_set_map[ key ] ) ) ) )
             
         return result
 
-    
     def _generateISFname( self, fuzzableRequest ):
         '''
         Check the URL filenames
-        @return: A list of tuples with ( analyzedVariable, resultSet ). When analyzing the URL, the analyzedVariable is
+        @return: A list of tuples with ( analyzed_variable, result_set ). When analyzing the URL, the analyzed_variable is
         setted to None.
         '''
         url = fuzzableRequest.getURL()
-        fname = self._getFilename( url )
-        dp = urlParser.getDomainPath( url )
+        domain_path = urlParser.getDomainPath( url )
         
         # The result
         result = []
-        otherNamesInPath = []
+        other_names_in_path = []
         
-        urlList = kb.kb.getData( 'urls', 'urlList' )
-        for url in urlList:
-            if urlParser.getDomainPath( url ) == dp:
-                # Both files are in the same path
-                otherNamesInPath.append( self._getFilename( url ) )
+        for url in kb.kb.getData( 'urls', 'urlList' ):
+            if urlParser.getDomainPath( url ) == domain_path:
+                # Both files are in the same path, they are related
+                fname = urlParser.getFileName( url ).split('.')[0]
+                other_names_in_path.append( fname )
         
-        if len(otherNamesInPath) >= self._minInput:
-            result.append( ( None, otherNamesInPath ) )
+        other_names_in_path = list( set(other_names_in_path) )
+        
+        if len(other_names_in_path) >= self._min_input:
+            result.append( ( None, other_names_in_path ) )
                 
         return result
     
-    def _getFilename( self, url ):
-        '''
-        @return: The filename, without the extension
-        '''
-        fname = urlParser.getFileName( url )
-        splittedFname = fname.split('.')
-        name = ''
-        if len(splittedFname) != 0:
-            name = splittedFname[0]
-        return name
-            
-    def _generateURLsFromSet( self, analyzedVariable, resultSet, fuzzableRequest ):
+    def _generateURLsFromSet( self, analyzed_variable, result_set, fuzzableRequest ):
         '''
         Based on the result, create the new URLs to test.
         @return: An URL list.
         '''
-        if analyzedVariable == None:
-            # The URL was analyzed
+        if analyzed_variable == None:
+            # The filename was analyzed
             url = fuzzableRequest.getURL()
-            fname = urlParser.getFileName( url )
+            fname = urlParser.getFileName( url ).split('.')[0]
             dp = urlParser.getDomainPath( url )
             
             # The result
             result = []
             
-            splittedFname = fname.split('.')
-            if len(splittedFname) == 2:
-                name = splittedFname[0]
-                extension = splittedFname[1]
-            else:
-                name = splittedFname[0]
-                extension = 'html'
-            
-            for setItem in resultSet:
-                newFname = url.replace( name, setItem )
-                frCopy = fuzzableRequest.copy()
-                frCopy.setURL( urlParser.urlJoin( dp, newFname ) )
-                result.append( frCopy )
+            for set_item in result_set:
+                new_fname = urlParser.getFileName( url.replace( fname, set_item ) )
+                fr_copy = fuzzableRequest.copy()
+                fr_copy.setURL( urlParser.urlJoin( dp, new_fname ) )
+                result.append( fr_copy )
                 
             return result
             
         else:
-            mutants = createMutants( fuzzableRequest , resultSet, fuzzableParamList=[analyzedVariable,] )
+            # We are fuzzing a query string parameter.
+            mutants = createMutants( fuzzableRequest , result_set,
+                                                    fuzzableParamList=[analyzed_variable,] )
             return mutants
         
     def getOptions( self ):
@@ -196,10 +200,10 @@ class googleSets(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Only try to create a set if the plugin can provide minInput inputs to the query.'
-        o1 = option('minInput', self._minInput, d1, 'integer')
+        o1 = option('minInput', self._min_input, d1, 'integer')
         
         d2 = 'Only use the first setResults results of the query.'
-        o2 = option('setResults', self._setResults, d2, 'integer')
+        o2 = option('setResults', self._set_results, d2, 'integer')
         
         ol = optionList()
         ol.add(o1)
@@ -215,8 +219,8 @@ class googleSets(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._minInput = optionsMap['minInput'].getValue()
-        self._setResults = optionsMap['setResults'].getValue()
+        self._min_input = optionsMap['minInput'].getValue()
+        self._set_results = optionsMap['setResults'].getValue()
                 
     def getPluginDeps( self ):
         '''
