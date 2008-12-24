@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 def getLongDescription():
+    '''
+    @return: The description for the plugin type.
+    '''    
     return '''Bruteforce plugins automatically discovery logins and bruteforce 
     them using the knowledge about the remote web application (users, password 
     profiling, etc).    

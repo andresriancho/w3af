@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 def getLongDescription():
+    '''
+    @return: The description for the plugin type.
+    '''    
     return '''Discovery plugins find new URLs, users, server version and much 
     more information about the target site.
     '''

@@ -21,5 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 def getLongDescription():
+    '''
+    @return: The description for the plugin type.
+    '''    
     return '''Evasion plugins modify requests in order to bypass IPS detection.
     '''
