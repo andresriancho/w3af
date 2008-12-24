@@ -71,7 +71,7 @@ class googleSearchEngine(searchEngine):
             return data.results
         else:
             # Perform requests manually
-            res, resPages = self.met_search( query, start, count )
+            res, res_pages = self.met_search( query, start, count )
             om.out.debug('Google search for : '+ query + ' returned ' + str( len( res ) ) + ' results.' )
             return res
     
@@ -83,8 +83,8 @@ class googleSearchEngine(searchEngine):
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''        
-        res, resPages = self.met_search( query, start, count )
-        return resPages
+        res, res_pages = self.met_search( query, start, count )
+        return res_pages
     
     def set( self, inputStringList ):
         '''
@@ -128,7 +128,7 @@ class googleSearchEngine(searchEngine):
         @return: A tuple with two lists, one of google result objects, the second one is a list of httpResponses
         """
         results = []
-        resPages = []
+        res_pages = []
         
         url = 'http://www.google.com/search?'
         
@@ -141,14 +141,15 @@ class googleSearchEngine(searchEngine):
             _query = urllib.urlencode({'hl':'es', 'q':query, 'start':str(start), 'sa':'N'})
             
         response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
+        
         # Remember that httpResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
-        # string in response            
-        if 'href="http://www.google.com/support/bin/answer.py?answer=86640">' in response:
+        # string in response
+        if 'http://www.google.com/support/bin/answer.py?answer=86640' in response:
             raise w3afException('Google is telling us to stop doing automated tests.')
             
         # Save the result page
-        resPages.append( response )
+        res_pages.append( response )
         
         # TODO: Update this, it changes
         regex_string = '<h\d class=r><a href="(.*?)" class=l'
@@ -163,7 +164,7 @@ class googleSearchEngine(searchEngine):
             grInstance = googleResult( url )
             results.append( grInstance )
 
-        return results, resPages
+        return results, res_pages
 
 class googleResult:
     '''

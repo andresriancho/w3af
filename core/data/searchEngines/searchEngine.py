@@ -47,10 +47,10 @@ class searchEngine:
                 tmp = self.search( query, start, 10 )
             except w3afException, w3:
                 om.out.debug( str(w3) )
-                return result
+                raise w3
             except Exception, e:
                 om.out.debug( 'Unhandled exception in searchEngines.searchEngine.search(): '+str(e) )
-                return result
+                raise e
             else:
                 result.extend( tmp )
                 start += len( tmp )
@@ -76,15 +76,15 @@ class searchEngine:
         result = []
         while True:
             try:
-                resPage = self.pagesearch( query, start, 10 )
+                res_page = self.pagesearch( query, start, 10 )
             except w3afException, w3:
                 om.out.debug( str(w3) )
-                return result
+                raise w3
             except Exception, e:
                 om.out.debug( 'Unhandled exception in searchEngines.searchEngine.search(): '+str(e) )
-                return result
+                raise e
             else:
-                result.extend( resPage )
+                result.extend( res_page )
                 start += 10
                 if start >= limit:
                     break
@@ -95,10 +95,10 @@ class searchEngine:
         '''
         Return the number of results for a given search.
         '''
-        numberOfResults = 0
+        number_of_results = 0
         while True:
             res = self.search( query, numberOfResults, 10 )
-            numberOfResults += len( res )
+            number_of_results += len( res )
             if len( res ) != 10:
                 break
             
