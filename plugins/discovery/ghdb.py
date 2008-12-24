@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -38,8 +39,8 @@ import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
 
 import os.path
-import re
 import xml.dom.minidom
+
 
 class ghdb(baseDiscoveryPlugin):
     '''
@@ -49,14 +50,18 @@ class ghdb(baseDiscoveryPlugin):
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._run = True
-        self._ghdbFile = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'ghdb' + os.path.sep + 'GHDB.xml'
-        self._updateURL = 'http://johnny.ihackstuff.com/xml/schema.xml'
+        self._ghdb_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep
+        self._ghdb_file += 'ghdb' + os.path.sep + 'GHDB.xml'
+        self._update_URL = 'http://johnny.ihackstuff.com/xml/schema.xml'
+        self._fuzzableRequests = []
         
         # User configured variables
         self._key = ''
-        self._resultLimit = 300
-        self._updateGHDB = False
+        self._result_limit = 300
+        self._update_ghdb = False
         
     def discover(self, fuzzableRequest ):
         '''
@@ -69,167 +74,107 @@ class ghdb(baseDiscoveryPlugin):
         else:
             
             # update !
-            if self._updateGHDB:
-                self._updateDb()
+            if self._update_ghdb:
+                self._update_db()
                 
             # I will only run this one time. All calls to ghdb return the same url's
             self._run = False
             
-            # Init some internal variables
-            self.is404 = kb.kb.getData( 'error404page', '404' )
-            self._google = google( self._urlOpener, self._key )
-            
             # Get the domain and set some parameters
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
             if is_private_site( domain ):
-                raise w3afException('There is no point in searching google for "site:'+ domain + '" . Google doesnt index private pages.')
+                msg = 'There is no point in searching google for "site:'+ domain
+                msg += '" . Google doesnt index private pages.'
+                raise w3afException( msg )
             
-            return self._doClasicGHDB( domain )
+            return self._do_clasic_GHDB( domain )
         
         return []
     
-    def _updateDb( self ):
+    def _update_db( self ):
         '''
         New versions of the ghdb can be downloaded from: 
             - http://johnny.ihackstuff.com/xml/schema.xml
         '''
         # Only update once
-        self._updateGHDB = False
-        om.out.information('Downloading the new google hack database from '+ self._updateURL+' . This may take a while...')
-        res = self._urlOpener.GET( self._updateURL )
+        self._update_ghdb = False
+        msg = 'Downloading the new google hack database from '+ self._update_URL
+        msg += ' . This may take a while...'
+        om.out.information( msg )
+        res = self._urlOpener.GET( self._update_URL )
         try:
             # Write new ghdb
-            fdNewDb = file( self._ghdbFile , 'w')
-            fdNewDb.write( res.getBody() )
-            fdNewDb.close()
+            fd_new_db = file( self._ghdb_file , 'w')
+            fd_new_db.write( res.getBody() )
+            fd_new_db.close()
         except:
             raise w3afException('There was an error while writing the new GHDB file to disk.')
         else:
             om.out.information('Successfully updated GHDB.xml.' )
             
-    def _doReverseGHDB( self, domain ):
-        '''
-        In reverse ghdb, i search for site:domain , fetch every page one by one
-        and try MYSELF to match the query thats on the ghdb with the result.
-        '''
-        googleList = self._google.getNResults('site:'+ domain, self._resultLimit )
-        for googleResult in googleList:
-            response = self._urlOpener.GET( googleResult.URL, useCache=True )
-            if not self.is404( response ):
-                for gh in self._readGhdb():
-                    if self._reverseMatch( gh, response ):
-                        v = vuln.vuln()
-                        v.setURL( response.getURL() )
-                        v.setMethod( 'GET' )
-                        v.setName( 'Google hack database vulnerability' )
-                        v.setSeverity(severity.MEDIUM)                        
-                        v.setDesc( 'ghdb plugin found a vulnerability at URL: ' + v.getURL() + ' . Vulnerability description: ' + gh.desc )
-                        v.setId( response.id )
-                        kb.kb.append( self, 'vuln', v )
-                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                        
-                        # Create the fuzzable requests
-                        self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-        
-        return self._fuzzableRequests
-        
-    def _reverseMatch( self, gh, response ):
-        '''
-        Do a reverse search !
-        '''
-        urlRegex, bodyRegex = self._createRegexs( gh )
-        if urlRegex.match( response.getURI() ) and bodyRegex.match( response.getBody ):
-            return True
-        else:
-            return False
-            
-    def _createRegexs( self, gh ):
-        '''
-        Create a regular expression based on a google search
-        @return: A tuple with ( urlRegex, bodyRegex )
-        '''
-        reservedWords = ['allintitle','allinurl','ext','filetype','intext','intitle','inurl']
-        searchMap = {}
-        for rword in reservedWords:
-            res = re.findall( rword + ':(".*"|[^ ]+)', gh)
-            '''
-            >>> re.findall( 'inurl:(".*"|[^ ]+)', 'inurl:pepe inurl:"add me"')
-            ['pepe', '"add me"']
-            '''
-            # Now i'll kill the double quotes
-            tmp = []
-            for i in res:
-                if i[0] == '"':
-                    i = i[1:]
-                if i[-1:] == '"':
-                    i = i[:-1]
-                tmp.append( i )
-            res = tmp
-            searchMap[ rword ] = tmp
-            
-        # Done, all restricted words and their values have been added to the list
-        # Now, based on the map, I'll create the regexes !
-        urlSearches = ['allinurl','ext','filetype','inurl']
-        if len( set( searchMap.keys() ).intersection( set(urlSearches) ) ) == 0:
-            urlRegex = '.*'
-        else:
-            # Damn i have to work :(
-            pass
-        
-        bodyRegex = '.*'
-            
-    def _doClasicGHDB( self, domain ):
+    def _do_clasic_GHDB( self, domain ):
         '''
         In classic GHDB, i search google for every term in the ghdb.
         '''
         import random
-        googleHackList = self._readGhdb() 
+        google_hack_list = self._read_ghdb() 
         # dont get discovered by google [at least try...]
-        random.shuffle( googleHackList )
+        random.shuffle( google_hack_list )
         
-        for gh in googleHackList:
-            targs = ( gh, 'site:'+ domain + ' ' + gh.search )
-            self._tm.startFunction( target=self._classicWorker, args=targs, ownerObj=self )
+        for gh in google_hack_list:
+            try:
+                self._classic_worker(gh, 'site:'+ domain + ' ' + gh.search)
+            except w3afException, w3:
+                # Google is saying: "no more automated tests".
+                om.out.error('GHDB exception: "' + str(w3) + '".')
+                break
         
         self._tm.join( self )
         
         return self._fuzzableRequests
     
-    def _classicWorker( self, gh, search ):
-            googleList = self._google.getNResults( search, 9 )
-            
-            for result in googleList:
-                # I found a vuln in the site!
-                response = self._urlOpener.GET(result.URL, useCache=True )
-                if not self.is404( response ):
-                    v = vuln.vuln()
-                    v.setURL( response.getURL() )
-                    v.setMethod( 'GET' )
-                    v.setName( 'Google hack database vulnerability' )
-                    v.setSeverity(severity.MEDIUM)
-                    v.setDesc( 'ghdb plugin found a vulnerability at URL: ' + result.URL + ' . Vulnerability description: ' + gh.desc )
-                    v.setId( response.id )
-                    kb.kb.append( self, 'vuln', v )
-                    om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
-                            
-                    # Create the fuzzable requests
-                    self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+    def _classic_worker( self, gh, search ):
+        
+        # Init some variables
+        is_404 = kb.kb.getData( 'error404page', '404' )
+        google_se = google( self._urlOpener, self._key )
+        
+        google_list = google_se.getNResults( search, 9 )
+        
+        for result in google_list:
+            # I found a vuln in the site!
+            response = self._urlOpener.GET(result.URL, useCache=True )
+            if not is_404( response ):
+                v = vuln.vuln()
+                v.setURL( response.getURL() )
+                v.setMethod( 'GET' )
+                v.setName( 'Google hack database vulnerability' )
+                v.setSeverity(severity.MEDIUM)
+                msg = 'ghdb plugin found a vulnerability at URL: ' + result.URL
+                msg += ' . Vulnerability description: ' + gh.desc
+                v.setDesc( msg  )
+                v.setId( response.id )
+                kb.kb.append( self, 'vuln', v )
+                om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
+                        
+                # Create the fuzzable requests
+                self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
     
-    def _readGhdb( self ):
+    def _read_ghdb( self ):
         '''
-        Reads the ghdb.xml file and returns a list of googleHack objects.
+        Reads the ghdb.xml file and returns a list of google_hack objects.
         
         '''
-        class googleHack:
+        class google_hack:
             def __init__( self, search, desc ):
                 self.search = search
                 self.desc = desc
         
         fd = None
         try:
-            fd = file( self._ghdbFile )
+            fd = file( self._ghdb_file )
         except:
-            raise w3afException('Failed to open ghdb file: ' + self._ghdbFile )
+            raise w3afException('Failed to open ghdb file: ' + self._ghdb_file )
         
         dom = None
         try:
@@ -245,9 +190,11 @@ class ghdb(baseDiscoveryPlugin):
                 raise w3afException( msg )
             else:
                 try:
-                    queryString = signature.childNodes[9].childNodes[0].data
+                    query_string = signature.childNodes[9].childNodes[0].data
                 except Exception, e:
-                    msg = 'GHDB has a corrupt signature, ( it doesn\'t have a queryString ). Error while parsing: ' + signature.toxml()
+                    msg = 'GHDB has a corrupt signature, ( it doesn\'t have a query string ).'
+                    msg += ' Error while parsing: "' + signature.toxml() + '". Exception: "'
+                    msg += str(e) + '".'
                     om.out.debug( msg )
                 else:
                     try:
@@ -255,7 +202,7 @@ class ghdb(baseDiscoveryPlugin):
                     except:
                         desc = 'Blank description.'
                     else:
-                        gh = googleHack( queryString, desc )
+                        gh = google_hack( query_string, desc )
                         res.append( gh )
             
         return res
@@ -265,14 +212,17 @@ class ghdb(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Google API License key'
-        h1 = 'To use this plugin you have to own your own google API license key OR you can directly use the search engine using clasic HTTP. If this parameter is left blank, the search engine will be used, otherwise the google webservice will be used.Go to http://www.google.com/apis/ to get more information.'
+        h1 = 'To use this plugin you have to own your own google API license key OR you can'
+        h1 += ' directly use the search engine using clasic HTTP. If this parameter is left'
+        h1 += ' blank, the search engine will be used, otherwise the google webservice will'
+        h1 += ' be used.Go to http://www.google.com/apis/ to get more information.'
         o1 = option('key', self._key, d1, 'string', help=h1)
         
         d2 = 'Fetch the first "resultLimit" results from the Google search'
-        o2 = option('resultLimit', self._resultLimit, d2, 'integer')
+        o2 = option('resultLimit', self._result_limit, d2, 'integer')
         
         d3 = 'Update the google hack database.'
-        o3 = option('updateGHDB', self._updateGHDB, d3, 'boolean')
+        o3 = option('updateGHDB', self._update_ghdb, d3, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -289,8 +239,8 @@ class ghdb(baseDiscoveryPlugin):
         @return: No value is returned.
         ''' 
         self._key = optionsMap['key'].getValue()           
-        self._updateGHDB = optionsMap['updateGHDB'].getValue()
-        self._resultLimit = optionsMap['resultLimit'].getValue()
+        self._update_ghdb = optionsMap['updateGHDB'].getValue()
+        self._result_limit = optionsMap['resultLimit'].getValue()
             
     def getPluginDeps( self ):
         '''

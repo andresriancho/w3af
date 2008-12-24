@@ -2,7 +2,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -11,14 +10,14 @@ output config console
 set verbose False
 back
 discovery ghdb
-discovery
 back
-target
-#set target http://localhost/w3af/
-#ok!
-#There is no point in searching google for "site:localhost" . Google doesnt index private pages.
 
+target
 set target http://www.isibang.ac.in/
 back
 
 start
+
+assert 1 == 1
+
+exit
