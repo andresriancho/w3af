@@ -288,18 +288,18 @@ class w3afCore:
         Creates an URL list in the kb
         '''
         # Create the queue that will be used in gtkUi
-        oldList = kb.kb.getData( 'urls', 'urlList')
-        newList = [ fr.getURL() for fr in fuzzableRequestList if fr.getURL() not in oldList ]
+        old_list = kb.kb.getData( 'urls', 'urlList')
+        new_list = [ fr.getURL() for fr in fuzzableRequestList if fr.getURL() not in old_list ]
         
         # Update the Queue
         urlQueue = kb.kb.getData( 'urls', 'urlQueue' )
-        for u in newList:
+        for u in new_list:
             urlQueue.put( u )
             
         # Update the list of URLs that is used world wide
-        oldList = kb.kb.getData( 'urls', 'urlList')
-        newList.extend( oldList )
-        kb.kb.save( 'urls', 'urlList' ,  newList )
+        old_list = kb.kb.getData( 'urls', 'urlList')
+        new_list.extend( old_list )
+        kb.kb.save( 'urls', 'urlList' ,  new_list )
 
         # Update the list of URIs that is used world wide
         uriList = kb.kb.getData( 'urls', 'uriList')
@@ -407,7 +407,10 @@ class w3afCore:
             # Just in case the gtkUi / consoleUi forgot to do this...
             self.verifyEnvironment()
         except Exception,e:
-            om.out.error('verifyEnvironment() raised an exception: "' + str(e) + '". This should never happend, are *you* user interface coder sure that you called verifyEnvironment() *before* start() ?')
+            error = 'verifyEnvironment() raised an exception: "' + str(e) + '". This should never'
+            error += ' happend, are *you* user interface coder sure that you called'
+            error += ' verifyEnvironment() *before* start() ?'
+            om.out.error( error )
             raise e
         else:
             self._isRunning = True
@@ -428,6 +431,9 @@ class w3afCore:
                         om.out.information( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
                         om.out.information( 'Error description: "' + str(e) + '". See debug output for more information.')
                         om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                
+                # Load the target URLs to the KB
+                self._updateURLsInKb( self._fuzzableRequestList )
                 
                 self._fuzzableRequestList = self._discoverAndBF()
                 
