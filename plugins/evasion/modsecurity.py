@@ -22,13 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from random import choice, randint
-import urllib, urllib2
 import core.data.parsers.urlParser as urlParser
-import copy
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+import urllib2
+import copy
+
 
 class modsecurity(baseEvasionPlugin):
     '''
@@ -56,10 +58,11 @@ class modsecurity(baseEvasionPlugin):
                 pass
             else:
                 data = '\x00' + data 
-                headersCopy = copy.deepcopy(request.headers)
-                headersCopy['content-length'] = str(len(data))
+                headers_copy = copy.deepcopy(request.headers)
+                headers_copy['content-length'] = str(len(data))
                 
-                request = urllib2.Request( request.get_full_url() , data, headersCopy, request.get_origin_req_host() )
+                request = urllib2.Request( request.get_full_url() , data, 
+                                                    headers_copy, request.get_origin_req_host() )
                 
         return request
 
@@ -81,6 +84,10 @@ class modsecurity(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''        
         return []
 
     def getPriority( self ):

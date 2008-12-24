@@ -23,14 +23,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
-import urllib2
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+import urllib2
+
+
 class backSpaceBetweenDots(baseEvasionPlugin):
     '''
     Insert between dots an 'A' and an BS control character which are cancelled each other when they are below 
+    
     @author: Jose Ramon Palanco( jose.palanco@hazent.com )
     '''
 
@@ -50,9 +54,10 @@ class backSpaceBetweenDots(baseEvasionPlugin):
         # Finally, we set all the mutants to the request in order to return it
         url = urlParser.getProtocol( request.get_full_url() )
         url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path        
-        new_req = urllib2.Request( url , request.get_data(), request.headers, request.get_origin_req_host() )
+        new_req = urllib2.Request( url , request.get_data(), 
+                                                request.headers, request.get_origin_req_host() )
         
-        return request
+        return new_req
 
     def getOptions( self ):
         '''
@@ -72,6 +77,10 @@ class backSpaceBetweenDots(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''
         return []
 
     def getPriority( self ):
@@ -88,9 +97,9 @@ class backSpaceBetweenDots(baseEvasionPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return r'''
-	This evasion plugin insert between dots an 'A' and a backspace control 
-	character which are cancelled each other when they are below so some 
-	".." filters are bypassed        
+        This evasion plugin insert between dots an 'A' and a backspace control 
+        character which are cancelled each other when they are below so some 
+        ".." filters are bypassed        
  
         Example:
             Input:      '../../../../../../../../etc/passwd'

@@ -22,12 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from random import choice, randint
-import urllib2
 import core.data.parsers.urlParser as urlParser
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+from random import randint
+import urllib2
+
 
 class rndHexEncode(baseEvasionPlugin):
     '''
@@ -68,10 +71,15 @@ class rndHexEncode(baseEvasionPlugin):
         return new_req
     
     def _mutate( self, data ):
+        '''
+        Replace some strings by it's hex encoded value.
+        
+        @return: a string.
+        '''        
         new_data = ''
         for char in data:
             if char not in ['?', '/', '&', '\\', '=', '%', '+']:
-                if randint(1,2) == 2:
+                if randint(1, 2) == 2:
                     char = "%%%02x" % ord(char)
             new_data += char
         return new_data
@@ -94,6 +102,10 @@ class rndHexEncode(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''        
         return []
 
     def getPriority( self ):

@@ -22,13 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import *
-import re
-import urllib2
+from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.parsers.urlParser as urlParser
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+import re
+import urllib2
+
 
 class rndPath(baseEvasionPlugin):
     '''
@@ -47,16 +50,17 @@ class rndPath(baseEvasionPlugin):
         '''
         # We mangle the URL
         path = urlParser.getPathQs( request.get_full_url() )
-        if re.match('^/',path):
-            foo = createRandAlNum()
-            path = '/' + foo + '/..' + path
+        if re.match('^/', path):
+            random_alnum = createRandAlNum()
+            path = '/' + random_alnum + '/..' + path
         
         # Finally, we set all the mutants to the request in order to return it
         url = urlParser.getProtocol( request.get_full_url() )
         url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path        
-        new_req = urllib2.Request( url , request.get_data(), request.headers, request.get_origin_req_host() )
+        new_req = urllib2.Request( url , request.get_data(), request.headers,
+                                                request.get_origin_req_host() )
         
-        return request
+        return new_req
     
     def getOptions( self ):
         '''
@@ -76,6 +80,10 @@ class rndPath(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''        
         return []
 
     def getPriority( self ):

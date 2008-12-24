@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from random import choice, randint
-import urllib, urllib2
 import core.data.parsers.urlParser as urlParser
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+import urllib, urllib2
 
 
 class fullWidthEncode(baseEvasionPlugin):
@@ -75,10 +75,10 @@ class fullWidthEncode(baseEvasionPlugin):
         
         return new_req
     
-    def _mutate( self, toMutate ):
-        toMutate = urllib.unquote( toMutate )
+    def _mutate( self, to_mutate ):
+        to_mutate = urllib.unquote( to_mutate )
         mutant = ''
-        for char in toMutate:
+        for char in to_mutate:
             if char not in ['?', '/', '&', '\\', '=', '%', '+']:
                 # The "- 0x20" was taken from UFF00.pdf
                 char = "%%uFF%02x" % ( ord(char) - 0x20 )
@@ -103,6 +103,10 @@ class fullWidthEncode(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''        
         return []
 
     def getPriority( self ):

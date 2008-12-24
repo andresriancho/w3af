@@ -22,12 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import *
-import urllib2
+from core.data.fuzzer.fuzzer import createRandAlNum
 import core.data.parsers.urlParser as urlParser
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+import urllib2
+
 
 class rndParam(baseEvasionPlugin):
     '''
@@ -67,13 +70,18 @@ class rndParam(baseEvasionPlugin):
         return new_req
     
     def _mutate( self, data ):
+        '''
+        Add a random parameter.
+        
+        @return: a string.
+        '''
         var = createRandAlNum()
         value = createRandAlNum()
-        toAppendStr = var + "=" + value
+        to_append_str = var + "=" + value
         if data.count('?'):
-            data += '&' + toAppendStr
+            data += '&' + to_append_str
         else:
-            data += '?' + toAppendStr
+            data += '?' + to_append_str
         return data
         
     def getOptions( self ):
@@ -94,6 +102,10 @@ class rndParam(baseEvasionPlugin):
         pass
         
     def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be runned before the
+        current one.
+        '''        
         return []
 
     def getPriority( self ):
