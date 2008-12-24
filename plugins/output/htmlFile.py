@@ -322,7 +322,9 @@ class htmlFile(baseOutputPlugin):
         for i in infos:
             self._write_to_file(
                 '''<tr>
-                    <td valign=top class=default width="10%"><font color=blue>Information</font></td>
+                    <td valign=top class=default width="10%">
+                        <font color=blue>Information</font>
+                    </td>
                     <td valign=top class=default width="10%">tcp/80</td>
                     <td class=default width="80%">'''
                 )
