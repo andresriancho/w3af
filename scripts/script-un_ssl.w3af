@@ -1,0 +1,27 @@
+# BlindSql exploit after sqli finds vuln
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit unSSL
+back
+
+target
+set target https://localhost/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres
+back
+
+start
+
+assert len(kb.kb.getData('unSSL','unSSL')) == 1
+
+back
+exit
+
+
