@@ -53,18 +53,22 @@ class KBTree(gtk.TreeView):
 
         # simple empty Tree Store
         # columns: string to show; key for the plugin instance, icon, colorLevel, color
-        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
+        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str, str)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
 
-        # the text & icon column
+        # the text, icon column and the child_count
         tvcolumn = gtk.TreeViewColumn(title)
         cell = gtk.CellRendererPixbuf()
         tvcolumn.pack_start(cell, expand=False)
         tvcolumn.add_attribute(cell, "pixbuf", 2)
         cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, expand=True)
+        tvcolumn.pack_start(cell, expand=False)
         tvcolumn.add_attribute(cell, "text", 0)
+        tvcolumn.add_attribute(cell, "foreground", 4)
+        cell = gtk.CellRendererText()
+        tvcolumn.pack_start(cell, expand=True)
+        tvcolumn.add_attribute(cell, "text", 5)
         tvcolumn.add_attribute(cell, "foreground", 4)
         self.append_column(tvcolumn)
 
@@ -158,7 +162,7 @@ class KBTree(gtk.TreeView):
         @param active: which types should be shown.
         '''
         self.filter = active
-        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
+        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str, str)
         new_treeholder = {}
         self._updateTree(new_treestore, new_treeholder)
         self.set_model(new_treestore)
@@ -218,7 +222,8 @@ class KBTree(gtk.TreeView):
                 # the color can change later!
                 self.treestore[treeplugin][4] = plugincolor
             else:
-                treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor])
+                child_count = '( ' + str(len(plugvalues)) + ' )'
+                treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor, child_count])
                 holdplugin = {}
                 pathplugin = treestore.get_path(treeplugin)
                 treeholder[pluginname] = (pathplugin, holdplugin)
@@ -231,7 +236,8 @@ class KBTree(gtk.TreeView):
                     # the color can change later!
                     self.treestore[treevariab][4] = variabcolor
                 else:
-                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor])
+                    child_count = '( ' + str(len(variabobjects)) + ' )'
+                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor, child_count])
                     holdvariab = set()
                     pathvariab = treestore.get_path(treevariab)
                     holdplugin[variabname] = (pathvariab, holdvariab)
@@ -244,8 +250,11 @@ class KBTree(gtk.TreeView):
                         icon = helpers.KB_ICONS.get((obtype, severity))
                         if icon is not None:
                             icon = icon.get_pixbuf()
-                        treestore.append(treevariab, [name, idinstance, icon, 0, color])
+                        treestore.append(treevariab, [name, idinstance, icon, 0, color, ''])
                         self.instances[idinstance] = instance
+
+        # And finally sort it
+        #treestore.set_sort_column_id(0, gtk.SORT_ASCENDING)
 
         return True
 
