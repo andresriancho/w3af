@@ -471,16 +471,38 @@ class PluginTree(gtk.TreeView):
 
         # path can be "?" if it's a father or "?:?" if it's a child
         if ":" not in path:
-            # father: let's change the value of all children
-            for childtreerow in self._getChildren(path):
-                if childtreerow[0] == "gtkOutput":
-                    childtreerow[1] = True
-                    if newvalue is False:
-                        # we're putting everything in false, except this plugin
-                        # so the father is inconsistant
-                        treerow[2] = True
-                else:
-                    childtreerow[1] = newvalue
+            # father, lets check if it's the discovery plugin type
+            # if yes, ask for confirmation
+            user_response = gtk.RESPONSE_YES
+            
+            if treerow[0] == 'discovery':
+                # The discovery family is enabled, and the user is disabling it
+                # we shouldn't ask this when disabling all the family
+                if treerow[1] == True:
+                    msg = _("Enabling all discovery plugins will result in a scan process of several")
+                    msg += _(" hours, and sometimes days. Are you sure that you want to do enable ALL")
+                    msg += _(" discovery plugins?")
+                    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+                    user_response = dlg.run()
+                    dlg.destroy()
+                    
+                    # If the user says NO, then remove the checkbox that was added when the
+                    # user clicked over the "enable all discovery plugins".
+                    if user_response != gtk.RESPONSE_YES:
+                        treerow[1] = False
+                
+
+            if user_response == gtk.RESPONSE_YES or treerow[0] != 'discovery':
+                # father: let's change the value of all children
+                for childtreerow in self._getChildren(path):
+                    if childtreerow[0] == "gtkOutput":
+                        childtreerow[1] = True
+                        if newvalue is False:
+                            # we're putting everything in false, except this plugin
+                            # so the father is inconsistant
+                            treerow[2] = True
+                    else:
+                        childtreerow[1] = newvalue
         else:
             # child: let's change the father status
             vals = []
