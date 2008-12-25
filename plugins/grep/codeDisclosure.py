@@ -61,13 +61,14 @@ class codeDisclosure(baseGrepPlugin):
         #
         # 1- I have my code that says <? print 'something' ?>
         # 2- I want to comment that code
-        # 3- I comment it like this!  <!--? print 'something' ?>
+        # 3- I comment it like this!  <!--? print 'something' ?-->
+        # or like this:  <!--? print 'something' ?>
         #
         # Not a bad idea, huh?
-        commented_asp = re.compile( '<!--\s*%.*%>', re.IGNORECASE | re.DOTALL)
-        commented_php = re.compile( '<!--\s*\?.*\?>', re.IGNORECASE | re.DOTALL)
-        commented_jsp = re.compile( '<!--\s*%.*%>', re.IGNORECASE | re.DOTALL)
-        commented_jsp2 = re.compile( '<!--\s*jsp:.*>', re.IGNORECASE | re.DOTALL)
+        commented_asp = re.compile( '<!--\s*%.*%(--)?>', re.IGNORECASE | re.DOTALL)
+        commented_php = re.compile( '<!--\s*\?.*\?(--)?>', re.IGNORECASE | re.DOTALL)
+        commented_jsp = re.compile( '<!--\s*%.*%(--)?>', re.IGNORECASE | re.DOTALL)
+        commented_jsp2 = re.compile( '<!--\s*jsp:.*(--)?>', re.IGNORECASE | re.DOTALL)
         
         self._regexs = []
         self._regexs.append( (php, 'PHP') )
