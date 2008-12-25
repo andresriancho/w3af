@@ -84,10 +84,10 @@ class dav(baseAuditPlugin):
         content += "</g:searchrequest>\r\n"
 
         res = self._urlOpener.SEARCH( domain_path , data=content )
-        # Remember that httpResponse objects have a faster "__in__" than
-        # the one in strings; so string in response.getBody() is slower than
-        # string in response        
-        if "DAV:" in res and res.getCode() in xrange(200, 300):
+        
+        content_matches =  '<a:response>' in res or '<a:status>' in res or 'xmlns:a="DAV:"' in res
+        
+        if content_matches and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
             v.setURL( res.getURL() )
             v.setId( res.id )
