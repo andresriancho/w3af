@@ -3,7 +3,7 @@
 plugins
 discovery serverHeader,hmap
 discovery config hmap
-#set genFpF True
+set genFpF True
 back
 
 output console, textFile
