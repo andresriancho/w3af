@@ -34,6 +34,7 @@ from core.data.options.optionList import optionList
 import sys, os
 import cgi
 import time
+import tempfile
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -49,7 +50,8 @@ class htmlFile(baseOutputPlugin):
         
         # Internal variables
         self._initialized = False
-        self._aditional_info = ''
+        low_level_fd, self._aditional_info_fname = tempfile.mkstemp(prefix='w3af')
+        self._aditional_info_fh = os.fdopen(low_level_fd, "w+b")
         self._style_filename = 'plugins' + os.path.sep + 'output' + os.path.sep
         self._style_filename += 'htmlFile' + os.path.sep +'style.css'        
         
@@ -180,14 +182,15 @@ class htmlFile(baseOutputPlugin):
         @parameter message: The message to add to the table. It's in HTML.
         @parameter msg_type: The type of message
         '''
-        now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
+        if self._aditional_info_fh:
+            now = time.localtime(time.time())
+            the_time = time.strftime("%c", now)
         
-        self._aditional_info += '<tr>'
-        self._aditional_info += '<td class=content>' + the_time + '</td>'
-        self._aditional_info += '<td class=content>' + msg_type + '</td>'
-        self._aditional_info += '<td class=content>' + message + '</td>'
-        self._aditional_info += '</tr>\n'
+            self._aditional_info_fh.write('<tr>')
+            self._aditional_info_fh.write('<td class=content>' + the_time + '</td>')
+            self._aditional_info_fh.write('<td class=content>' + msg_type + '</td>')
+            self._aditional_info_fh.write('<td class=content>' + message + '</td>')
+            self._aditional_info_fh.write('</tr>\n')
     
     def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
         '''
@@ -349,7 +352,13 @@ class htmlFile(baseOutputPlugin):
                     <td class=sub width="10%">Message type</td>
                     <td class=sub width="70%">Message</td>
                 </tr>''')
-        self._write_to_file( self._aditional_info )
+        
+        self._aditional_info_fh.close()
+        self._aditional_info_fh = None
+        additional_info = file( self._aditional_info_fname ).read()
+        os.unlink( self._aditional_info_fname )
+        self._write_to_file( additional_info )
+        
         # Close the debug table
         self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br/>')
         self._write_to_file('\n\n')
