@@ -216,6 +216,9 @@ select the <i>preview</i> option).
 Each generator between the dollar signs will be evaluated
 by Python, using <tt>eval()</tt>, with an almost clean
 namespace (there's already imported the module <tt>string</tt>).
+Keep in mind that copying some random text into the request window
+is almost as dangerous as pasting some random text into a console
+window: you could be executing OS commands in your box.
 
 For example, you can do:
 <tt>
