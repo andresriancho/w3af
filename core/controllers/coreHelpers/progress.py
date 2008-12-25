@@ -77,6 +77,16 @@ class progress:
         # This returns the %
         return self._current_value / self._max_value
 
+    def stop(self):
+        '''
+        This method is called from the core to indicate that the scan process has been stopped
+        by the user, or an error has been found.
+        '''
+        self._max_value = 0.0
+        self._current_value = 0.1
+        self._first_amount_change_time = None
+        self._eta = None
+
     def get_eta(self):
         '''
         @return: The ETA for this phase.

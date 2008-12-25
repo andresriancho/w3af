@@ -515,7 +515,6 @@ class w3afCore:
         @return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core.')
-        self.uriOpener.stop()
     
     def quit( self ):
         '''
@@ -527,6 +526,14 @@ class w3afCore:
         '''
         This method is called when the process ends normally or by an error.
         '''
+        # End the xUrllib
+        self.uriOpener.stop()
+        self.uriOpener.end()
+        self.uriOpener = xUrllib()
+        
+        # Let the progress module know our status.
+        self.progress.stop()
+        
         if exceptionInstance:
             om.out.error( str(exceptionInstance) )
 
@@ -536,15 +543,13 @@ class w3afCore:
         for plugin in self._plugins['grep']:
             plugin.end()
         
-        om.out.endOutputPlugins()
         cf.cf.save('targets', [] )
         # Now I'm definitly not running:
         self._isRunning = False
         
-        # End the xUrllib
-        self.uriOpener.end()
-        self.uriOpener = xUrllib()
-    
+        # Finally, close the output manager.
+        om.out.endOutputPlugins()
+        
     def isRunning( self ):
         '''
         @return: If the user has called start, and then wants to know if the core is still working, it should call
