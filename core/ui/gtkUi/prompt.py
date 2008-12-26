@@ -170,6 +170,10 @@ class PromptView(gtk.TextView):
 
     def _key_up(self):
         '''The key UP was pressed.'''
+        # Do we have previous lines?
+        if not self.all_lines:
+            return True
+
         self.historyCount -= 1
         if self.historyCount < 0:
             self.historyCount = 0
@@ -179,6 +183,11 @@ class PromptView(gtk.TextView):
 
     def _key_down(self):
         '''The key DOWN was pressed.'''
+
+        # Do we have previous lines?
+        if not self.all_lines:
+            return True
+
         self.historyCount += 1
         if self.historyCount >= len(self.all_lines):
             self.historyCount = len(self.all_lines) - 1
