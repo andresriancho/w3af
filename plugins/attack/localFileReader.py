@@ -291,6 +291,7 @@ class fileReaderShell(shell):
         non_existant = non_existant.replace( rand, '')
 
         # Please wait...
+        # TODO: Add here some code that warns the user that the process takes some time.
 
         for path_file in self._get_common_files( self._rOS ):
             read_result = self._cat( path_file )
