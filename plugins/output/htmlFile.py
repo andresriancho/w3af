@@ -50,8 +50,7 @@ class htmlFile(baseOutputPlugin):
         
         # Internal variables
         self._initialized = False
-        low_level_fd, self._aditional_info_fname = tempfile.mkstemp(prefix='w3af')
-        self._aditional_info_fh = os.fdopen(low_level_fd, "w+b")
+        self._aditional_info_fh = None
         self._style_filename = 'plugins' + os.path.sep + 'output' + os.path.sep
         self._style_filename += 'htmlFile' + os.path.sep +'style.css'        
         
@@ -76,7 +75,7 @@ class htmlFile(baseOutputPlugin):
             raise w3afException( msg )
         
         try:
-            styleFile = open( self._style_filename, "r" )
+            style_file = open( self._style_filename, "r" )
         except:
             raise w3afException('Cant open style file ' + self._style_filename + '.')
         else:
@@ -84,9 +83,12 @@ class htmlFile(baseOutputPlugin):
             html += ' http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n'
             html += '<STYLE TYPE="text/css">\n<!--\n'
             self._write_to_file( html )
-            self._write_to_file( styleFile.read() )
+            self._write_to_file( style_file.read() )
             self._write_to_file('//-->\n</STYLE>\n</HEAD>\n<BODY BGCOLOR=white>\n')
-            styleFile.close()
+            style_file.close()
+
+        low_level_fd, self._aditional_info_fname = tempfile.mkstemp(prefix='w3af')
+        self._aditional_info_fh = os.fdopen(low_level_fd, "w+b")
 
     def _write_to_file( self, msg ):
         '''
