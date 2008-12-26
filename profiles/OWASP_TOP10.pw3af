@@ -5,8 +5,6 @@ resultLimit = 300
 
 [audit.frontpage]
 
-[discovery.googleSafeBrowsing]
-
 [grep.motw]
 
 [grep.creditCards]
