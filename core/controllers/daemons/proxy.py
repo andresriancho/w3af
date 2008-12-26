@@ -354,35 +354,38 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         
         try:
             try:
-                    self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
-                    
-                    # Now, transform the socket that connects the browser and the proxy to a SSL socket!
-                    ctx = SSL.Context(SSL.SSLv23_METHOD)
-                    ctx.set_timeout(5)
-                    ctx.set_verify(SSL.VERIFY_NONE, self._verify_cb) # Don't demand a certificate
-                    
-                    try:
-                        ctx.use_privatekey_file ( self._urlOpener._proxyCert )
-                    except:
-                        om.out.error( "[proxy error] Couldn't find certificate file %s"% self._urlOpener._proxyCert )
-
-                    browSoc = self.connection
-                    self.wfile.write("HTTP/1.0 200 OK\r\n\r\n")
-                    ctx.use_certificate_file( self._urlOpener._proxyCert )
-                    ctx.load_verify_locations( self._urlOpener._proxyCert )
-                    
-                    browCon = SSL.Connection(ctx, self.connection )
-                    browCon.set_accept_state()
-
-                    # see HTTPServerWrapper class below
-                    httpsServer = HTTPServerWrapper(self.__class__, self)
-                    httpsServer.w3afLayer = self.server.w3afLayer
+                self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
                 
-                    #self._do_handshake(self.connection, sslCon)
-                    om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
-                    
-                    conWrap = SSLConnectionWrapper(browCon, browSoc)
-                    httpsServer.process_request(conWrap, self.client_address)
+                # Now, transform the socket that connects the browser and the proxy to a SSL socket!
+                ctx = SSL.Context(SSL.SSLv23_METHOD)
+                ctx.set_timeout(5)
+                
+                try:
+                    ctx.use_privatekey_file ( self._urlOpener._proxyCert )
+                except:
+                    om.out.error( "[proxy error] Couldn't find certificate file %s"% self._urlOpener._proxyCert )
+                
+                ctx.use_certificate_file( self._urlOpener._proxyCert )
+                ctx.load_verify_locations( self._urlOpener._proxyCert )
+                
+                # Save for later
+                browSoc = self.connection
+                
+                # Don't demand a certificate
+                ctx.set_verify(SSL.VERIFY_NONE, self._verify_cb)
+                
+                browCon = SSL.Connection(ctx, self.connection )
+                browCon.set_accept_state()
+
+                # see HTTPServerWrapper class below
+                httpsServer = HTTPServerWrapper(self.__class__, self)
+                httpsServer.w3afLayer = self.server.w3afLayer
+            
+                #self._do_handshake(self.connection, sslCon)
+                om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
+                
+                conWrap = SSLConnectionWrapper(browCon, browSoc)
+                httpsServer.process_request(conWrap, self.client_address)
             
             except Exception, e:
                 om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
