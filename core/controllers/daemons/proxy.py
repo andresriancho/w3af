@@ -372,6 +372,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 browSoc = self.connection
                 
                 # Don't demand a certificate
+                #
+                #   IMPORTANT: This line HAS to be just before the SSL.Connection, it seems that 
+                #                         any other ctx method modifies the SSL.VERIFY_NONE setting!
+                #
                 ctx.set_verify(SSL.VERIFY_NONE, self._verify_cb)
                 
                 browCon = SSL.Connection(ctx, self.connection )
