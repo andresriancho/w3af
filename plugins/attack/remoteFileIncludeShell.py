@@ -62,7 +62,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         
         # User configured variables
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
-        self._listen_address = ''
+        self._listen_address = '0.0.0.0'
         self._use_XSS_vuln = False
         self._generateOnlyOne = True
 
@@ -86,8 +86,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return: True if plugin knows how to exploit a found vuln.
         '''
         if self._listen_address == '' and not self._use_XSS_vuln:
-            om.out.error('remoteFileIncludeShell plugin has to be correctly configured to use.')
-            return False
+            msg = 'remoteFileIncludeShell plugin has to be correctly configured to use.'
+            raise w3afException(msg)
         
         rfi_vulns = kb.kb.getData( 'remoteFileInclude' , 'remoteFileInclude' )
         if vuln_to_exploit != None:
@@ -96,6 +96,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
         if len( rfi_vulns ) == 0:
             return False
         else:
+            # Ok, I have the vulnerability to exploit, but... is the plugin configured
+            # in such a way that exploitation is possible?
             if self._use_XSS_vuln:
                 if len( kb.kb.getData( 'xss' , 'xss' ) ):
                     for xss_vuln in kb.kb.getData( 'xss' , 'xss' ):
@@ -122,15 +124,13 @@ class remoteFileIncludeShell(baseAttackPlugin):
                         msg = 'remoteFileIncludeShell plugin is configured to use a XSS'
                         msg += ' bug to exploit the RFI bug, but no XSS with the required'
                         msg += ' parameters was found.'
-                        om.out.error( msg )
-                        return False
+                        raise w3afException( msg )
                         
                 # No XSS was found
                 else:
                     msg = 'remoteFileIncludeShell plugin is configured to use a XSS bug to'
                     msg += ' exploit the RFI bug, but no XSS was found.'
-                    om.out.error( msg )
-                    return False
+                    raise w3afException( msg )
             else:
                 # Using the good old webserver
                 return True
