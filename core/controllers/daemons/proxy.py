@@ -193,7 +193,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         except Exception,  e:
             ### FIXME: Maybe I should perform some more detailed error handling...
             om.out.debug('An exception ocurred in w3afProxyHandler.handle_one_request() :' + str(e) )
-    
+
     def doAll( self ):
         '''
         This method handles EVERY request that were send by the browser.
@@ -210,6 +210,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 self._sendToBrowser( res )
             except Exception, e:
                 om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )
+
 
     def _sendToServer( self,  grep=False ):
         '''
@@ -366,6 +367,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                         om.out.error( "[proxy error] Couldn't find certificate file %s"% self._urlOpener._proxyCert )
 
                     browSoc = self.connection
+                    self.wfile.write("HTTP/1.0 200 OK\r\n\r\n")
                     ctx.use_certificate_file( self._urlOpener._proxyCert )
                     ctx.load_verify_locations( self._urlOpener._proxyCert )
                     
