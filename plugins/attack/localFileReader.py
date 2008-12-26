@@ -291,14 +291,12 @@ class fileReaderShell(shell):
         non_existant = non_existant.replace( rand, '')
 
         # Please wait...
-        om.out.console('Please wait, this process may take a while')
 
         for path_file in self._get_common_files( self._rOS ):
             read_result = self._cat( path_file )
             read_result = read_result.replace( path_file, '')
             if read_result != non_existant:
                 res += path_file +'\n'
-            om.out.console('.', newLine = False)
 
         res = res[:-1]
 
