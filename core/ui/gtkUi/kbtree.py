@@ -53,29 +53,20 @@ class KBTree(gtk.TreeView):
 
         # simple empty Tree Store
         # columns: string to show; key for the plugin instance, icon, colorLevel, color
-        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str, str)
+        self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
 
-        # the text, icon column and the child_count
+        # the text & icon column
         tvcolumn = gtk.TreeViewColumn(title)
         cell = gtk.CellRendererPixbuf()
         tvcolumn.pack_start(cell, expand=False)
         tvcolumn.add_attribute(cell, "pixbuf", 2)
         cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, expand=False)
+        tvcolumn.pack_start(cell, expand=True)
         tvcolumn.add_attribute(cell, "text", 0)
         tvcolumn.add_attribute(cell, "foreground", 4)
-        cell = gtk.CellRendererText()
-        tvcolumn.pack_start(cell, expand=True)
-        tvcolumn.add_attribute(cell, "text", 5)
-        tvcolumn.add_attribute(cell, "foreground", 4)
         self.append_column(tvcolumn)
-
-        # Sort function
-        # remember that the 3 is just a number that is then used in
-        # set_sort_column_id
-        self.treestore.set_sort_func(3, self._treestore_sort)
 
         # this tree structure will keep the parents where to insert nodes
         self.treeholder = {}
@@ -97,19 +88,6 @@ class KBTree(gtk.TreeView):
         self.postcheck = False
         self.show()
 
-    def _treestore_sort(self, model, iter1, iter2):
-        '''
-        This is a custom sort function to sort the treestore.
-        
-        Sort method:
-            - First all red
-            - Then all infos
-            - Then the rest
-            - Each alphabetically
-        '''
-        # TODO: Code this
-        return 0
-        
     def _doubleClick(self, widg, event):
         '''If double click, expand/collapse the row.'''
         if event.type == gtk.gdk._2BUTTON_PRESS:
@@ -180,12 +158,7 @@ class KBTree(gtk.TreeView):
         @param active: which types should be shown.
         '''
         self.filter = active
-        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str, str)
-        # Sort
-        # remember that the 3 is just a number that is then used in
-        # set_sort_column_id
-        new_treestore.set_sort_func(3, self._treestore_sort, user_data=None)
-        
+        new_treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str)
         new_treeholder = {}
         self._updateTree(new_treestore, new_treeholder)
         self.set_model(new_treestore)
@@ -219,7 +192,7 @@ class KBTree(gtk.TreeView):
         @param treeholder: a helping structure to calculate the diff.
 
         @return: True to keep being called by gobject.
-        '''        
+        '''
         # if the core is not running, don't have anything to update
         if not self.w3af.isRunning():
             if self.lastcheck:
@@ -245,8 +218,7 @@ class KBTree(gtk.TreeView):
                 # the color can change later!
                 self.treestore[treeplugin][4] = plugincolor
             else:
-                child_count = '( ' + str(len(plugvalues)) + ' )'
-                treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor, child_count])
+                treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor])
                 holdplugin = {}
                 pathplugin = treestore.get_path(treeplugin)
                 treeholder[pluginname] = (pathplugin, holdplugin)
@@ -259,8 +231,7 @@ class KBTree(gtk.TreeView):
                     # the color can change later!
                     self.treestore[treevariab][4] = variabcolor
                 else:
-                    child_count = '( ' + str(len(variabobjects)) + ' )'
-                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor, child_count])
+                    treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor])
                     holdvariab = set()
                     pathvariab = treestore.get_path(treevariab)
                     holdplugin[variabname] = (pathvariab, holdvariab)
@@ -273,14 +244,8 @@ class KBTree(gtk.TreeView):
                         icon = helpers.KB_ICONS.get((obtype, severity))
                         if icon is not None:
                             icon = icon.get_pixbuf()
-                        treestore.append(treevariab, [name, idinstance, icon, 0, color, ''])
+                        treestore.append(treevariab, [name, idinstance, icon, 0, color])
                         self.instances[idinstance] = instance
-        
-        # TODO: Right now I only get ValueError: invalid tree path
-        # when enabling this line, and I don't know why :S
-        
-        # And finally sort it
-        #treestore.set_sort_column_id(3, gtk.SORT_ASCENDING)
 
         return True
 
