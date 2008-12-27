@@ -132,6 +132,7 @@ class xUrllib:
             self._paused = False
             # This raises a keyboard interrupt in the middle of the discovery process.
             # It has almost the same effect that a ctrl+c by the user if in consoleUi
+            # TODO: THIS SUCKS
             raise KeyboardInterrupt
     
     def end( self ):
