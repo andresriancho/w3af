@@ -305,7 +305,7 @@ class fileReaderShell(shell):
             filtered_result = self._filter_errors( read_result )
             
             if filtered_result == PERMISSION_DENIED:
-                spaces = 30 - len(path_file)
+                spaces = 40 - len(path_file)
                 res += path_file + ' ' * spaces + PERMISSION_DENIED + '\n'
             elif filtered_result not in [NO_SUCH_FILE, READ_DIRECTORY, FAILED_STREAM] and \
             read_result != non_existant:
