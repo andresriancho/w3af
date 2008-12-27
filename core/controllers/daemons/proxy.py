@@ -457,25 +457,24 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
 
         
 #### And now some helper functions ####        
-def wrap(socket, fun, attempts, *params):
+def wrap(socket, fun, *params):
     '''
     A utility function that calls SSL read/write operation and handles errors.
     '''
-    count = 0
     while True:
         try:
             result = fun(*params)
             break
         except SSL.WantReadError:
-            count += 1
-            if count == attempts:
-                break
             select.select([socket], [], [], 3)
         except SSL.WantWriteError:
-            count += 1
-            if count == attempts:
-                break
             select.select([], [socket], [], 3)
+        except SSL.ZeroReturnError:
+            # The remote side has closed the SSL socket,
+            # we should do the same and return
+            # TODO: Maybe this should be done with shutdown()
+            socket.close()
+            return ''
 
     return result
     
@@ -501,10 +500,10 @@ class SSLConnectionWrapper(object):
         return object.__repr__(self)
         
     def recv( self, amount):
-        return wrap(self._socket, self._connection.recv, 10, amount)
+        return wrap(self._socket, self._connection.recv, amount)
 
     def send( self, data ):
-        return wrap(self._socket, self._connection.send, 10, data)
+        return wrap(self._socket, self._connection.send, data)
            
 
     def makefile(self, perm, buf):
