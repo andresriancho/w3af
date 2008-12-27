@@ -205,7 +205,12 @@ class localFileReader(baseAttackPlugin):
         One configurable parameters exist:
             - changeToPost
         '''
-        
+
+PERMISSION_DENIED = 'Permission denied.'
+NO_SUCH_FILE =  'No such file or directory.'
+READ_DIRECTORY = 'Cannot cat a directory.'
+FAILED_STREAM = 'Failed to open stream.'
+
 class fileReaderShell(shell):
     '''
     A shell object to exploit local file include and local file read vulns.
@@ -296,7 +301,14 @@ class fileReaderShell(shell):
         for path_file in self._get_common_files( self._rOS ):
             read_result = self._cat( path_file )
             read_result = read_result.replace( path_file, '')
-            if read_result != non_existant:
+            
+            filtered_result = self._filter_errors( read_result )
+            
+            if filtered_result == PERMISSION_DENIED:
+                spaces = 30 - len(path_file)
+                res += path_file + ' ' * spaces + PERMISSION_DENIED + '\n'
+            elif filtered_result not in [NO_SUCH_FILE, READ_DIRECTORY, FAILED_STREAM] and \
+            read_result != non_existant:
                 res += path_file +'\n'
 
         res = res[:-1]
@@ -353,13 +365,13 @@ class fileReaderShell(shell):
         '''
         if result.count('<b>Warning</b>'):
             if result.count( 'Permission denied' ):
-                result = 'Permission denied.'
+                result = PERMISSION_DENIED
             elif result.count( 'No such file or directory in' ):
-                result = 'No such file or directory.'
+                result = NO_SUCH_FILE
             elif result.count( 'Not a directory in' ):
-                result = 'Cannot cat a directory.'
+                result = READ_DIRECTORY
             elif result.count('</a>]: failed to open stream:'):
-                result = 'Failed to open stream.'
+                result = FAILED_STREAM
         return result
     
     def end( self ):
