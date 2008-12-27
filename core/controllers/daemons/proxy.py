@@ -299,7 +299,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         try:
             self.send_response( res.getCode() )
 
-            what_to_send = res.getBody()            
+            what_to_send = res.getBody()
             
             for header in res.getHeaders():
                 if header == 'transfer-encoding' and res.getHeaders()[header] == 'chunked':
@@ -315,31 +315,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.wfile.close()
         except Exception, e:
             om.out.debug('Failed to send the data to the browser: ' + str(e) )
-        
-    def _do_handshake(self, soc, con):
-        attempt = 0
-        while True:
-            try:
-                con.do_handshake()
-                break
-            except SSL.WantReadError:
-                select.select([soc], [], [], 10.0)
-                if attempt == 1:
-                    break
-                attempt+=1
-            except SSL.WantWriteError:
-                select.select([], [soc], [], 10.0)
-                if attempt == 1:
-                    break
-                attempt+=1
-       
+
     def _verify_cb(self, conn, cert, errnum, depth, ok):
         '''
         Used by set_verify to check that the SSL certificate if valid.
         In our case, we always return True.
         '''
-        # This obviously has to be updated
         om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
+        # I don't check for certificates, for me, they are always ok.
         return True
 
     def do_CONNECT(self):
@@ -385,7 +368,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 httpsServer = HTTPServerWrapper(self.__class__, self)
                 httpsServer.w3afLayer = self.server.w3afLayer
             
-                #self._do_handshake(self.connection, sslCon)
                 om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
                 
                 conWrap = SSLConnectionWrapper(browCon, browSoc)
@@ -470,11 +452,8 @@ def wrap(socket, fun, *params):
         except SSL.WantWriteError:
             select.select([], [socket], [], 3)
         except SSL.ZeroReturnError:
-            # The remote side has closed the SSL socket,
-            # we should do the same and return
-            # TODO: Maybe this should be done with shutdown()
-            socket.close()
-            return ''
+            # The remote end closed the connection
+            socket.shutdown()
 
     return result
     
@@ -503,9 +482,16 @@ class SSLConnectionWrapper(object):
         return wrap(self._socket, self._connection.recv, amount)
 
     def send( self, data ):
-        return wrap(self._socket, self._connection.send, data)
+        # Remember that SSL can only send a string of at most 16384 bytes
+        # in one call to "send", so I have to perform this ugly hack:
+        amount_sent = 0
+        start = 0
+        while start < len(data):
+            to_send = data[start: start + 16384]
+            start += 16384
+            amount_sent += wrap(self._socket, self._connection.send, to_send)
+        return amount_sent
            
-
     def makefile(self, perm, buf):
         return SSLConnectionFile( self, socket )
 
