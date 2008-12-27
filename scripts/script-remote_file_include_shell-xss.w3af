@@ -32,6 +32,6 @@ interact 0
 ls
 endInteraction
 
-assert len( kb.kb.getData('remoteFileInclude', 'shell') ) == 1
+assert len( kb.kb.getData('remoteFileIncludeShell', 'shell') ) == 1
 
 exit
