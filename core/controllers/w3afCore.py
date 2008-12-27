@@ -520,15 +520,16 @@ class w3afCore:
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
+        self.uriOpener.stop()
         self._end()
         
     def _end( self, exceptionInstance=None ):
         '''
         This method is called when the process ends normally or by an error.
         '''
-        # End the xUrllib
-        self.uriOpener.stop()
+        # End the xUrllib (clear the cache)
         self.uriOpener.end()
+        # Create a new one, so it can be used by exploit plugins.
         self.uriOpener = xUrllib()
         
         # Let the progress module know our status.
