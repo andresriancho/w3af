@@ -33,17 +33,26 @@ def gtkui_dependency_check():
     try:
         import sqlite3
     except:
-        print 'You have to install python sqlite3 library. On Debian based distributions: apt-get install python-pysqlite2'
+        msg = 'You have to install python sqlite3 library. \n'
+        msg += '    - On Debian based distributions: apt-get install python-pysqlite2\n'
+        msg += '    - On Mac: sudo port install py25-sqlite3'        
+        print msg
         sys.exit( 1 )
 
     try:
         proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except:
-        print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
+        msg = 'You have to install graphviz library. \n'
+        msg += '    - On Debian based distributions: apt-get install graphviz\n'
+        msg += '    - On Mac: sudo port install graphviz'        
+        print msg        
         sys.exit( 1 )
     else:
         if 'graphviz' not in proc.stderr.read().lower():
-            print 'You have to install graphviz. On Debian based distributions: apt-get install graphviz'
+            msg = 'You have to install graphviz library. \n'
+            msg += '    - On Debian based distributions: apt-get install graphviz\n'
+            msg += '    - On Mac: sudo port install graphviz'        
+            print msg
             sys.exit( 1 )
 
     try:
@@ -53,7 +62,9 @@ def gtkui_dependency_check():
         assert gtk.gtk_version >= (2, 12)
         assert gtk.pygtk_version >= (2, 12)
     except:
-        print 'You have to install GTK and PyGTK versions >=2.12 to be able to run the GTK user interface.'
-        print 'On Debian based distributions: apt-get install python-gtk2'
+        msg = 'You have to install GTK and PyGTK versions >=2.12 to be able to run the GTK user interface.\n'
+        msg += '    - On Debian based distributions: apt-get install python-gtk2\n'
+        msg += '    - On Mac: sudo port install py25-gtk'        
+        print msg
         sys.exit( 1 )
 
