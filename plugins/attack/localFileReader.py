@@ -232,6 +232,7 @@ class fileReaderShell(shell):
             om.out.console('    help                            Display this information')
             om.out.console('    cat                             Show the contents of a file')
             om.out.console('    list                            List files that may be interesting.')
+            om.out.console('                                    Type "help list" for detailed information.')
             om.out.console('    endInteraction                  Exit the shell session')
             om.out.console('')
         elif command == 'list':
