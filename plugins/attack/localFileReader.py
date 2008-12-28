@@ -327,10 +327,12 @@ class fileReaderShell(shell):
         non_existant = self._cat( rand )
         non_existant = non_existant.replace( rand, '')
         
+        # Define this internal variable that's going to be used in the self._list_recursive_method()
+        self._already_tested = []
+        
         can_read, permission_denied = self._list_recursive_method( non_existant, files_to_test, recursion_level )
         tmp = can_read
         tmp.extend( permission_denied )
-        print len(tmp)
         return '\n'.join(tmp)
 
     def _list_recursive_method(self, non_existant, files_to_test, recursion_level):
@@ -350,6 +352,8 @@ class fileReaderShell(shell):
         permission_denied = []
 
         for path_file in files_to_test:
+            self._already_tested.append(path_file)
+            
             read_result = self._cat( path_file )
             read_result = read_result.replace( path_file, '')
             
@@ -365,6 +369,7 @@ class fileReaderShell(shell):
                 
                 # Get the files referenced by this file
                 referenced_files = self._get_referenced_files( path_file, filtered_result )
+                referenced_files = list( set(referenced_files) - set(self._already_tested) )
                 
                 # Recursive stuff =)
                 if recursion_level and referenced_files:
