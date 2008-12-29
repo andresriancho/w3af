@@ -102,11 +102,7 @@ class option:
                         if ( u.startswith('"') and u.endswith('"') ) or ( u.startswith("'") and u.endswith("'") ):
                             res.append( u[1:-1] )
                         else:
-                            # Maybe its a list of integers
-                            try:
-                                res.append( int(u) )
-                            except:
-                                res.append( u )
+                            res.append( u )
 
                 else:
                     raise ValueError
