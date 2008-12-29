@@ -371,7 +371,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
                 
                 conWrap = SSLConnectionWrapper(browCon, browSoc)
-                httpsServer.process_request(conWrap, self.client_address)
+                try:
+                    httpsServer.process_request(conWrap, self.client_address)
+                except SSL.Error, ssl_error:
+                    om.out.debug('Catched SSL.Error in do_CONNECT(): ' + str(ssl_error) )
+                except SSL.ZeroReturn, ssl_error:
+                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' + str(ssl_error) )
             
             except Exception, e:
                 om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
@@ -439,7 +444,7 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
 
         
 #### And now some helper functions ####        
-def wrap(socket, fun, *params):
+def wrap(socket_obj, ssl_connection, fun, *params):
     '''
     A utility function that calls SSL read/write operation and handles errors.
     '''
@@ -448,12 +453,31 @@ def wrap(socket, fun, *params):
             result = fun(*params)
             break
         except SSL.WantReadError:
-            select.select([socket], [], [], 3)
+            select.select([socket_obj], [], [], 3)
         except SSL.WantWriteError:
-            select.select([], [socket], [], 3)
+            select.select([], [socket_obj], [], 3)
         except SSL.ZeroReturnError:
             # The remote end closed the connection
-            socket.shutdown()
+            ssl_connection.shutdown()
+            raise SSL.ZeroReturnError
+        except SSL.Error, ssl_error:
+            # This is raised when the browser abruptly closes the
+            # connection, in order to show the user the "false" w3af MITM certificate
+            # and ask if he/she trusts it.
+            # Error: [('SSL routines', 'SSL3_READ_BYTES', 'ssl handshake failure')]
+            try:
+                msg = ssl_error[0][0][2]
+            except Exception, e:
+                # Not an error of the type that I was expecting!
+                raise ssl_error
+            else:
+                if msg == 'ssl handshake failure':
+                    om.out.debug('Asking the user about the invalid w3af MITM certificate. He must accept it.')
+                    ssl_connection.shutdown()
+                    raise ssl_error
+                else:
+                    raise ssl_error
+
 
     return result
     
@@ -479,7 +503,7 @@ class SSLConnectionWrapper(object):
         return object.__repr__(self)
         
     def recv( self, amount):
-        return wrap(self._socket, self._connection.recv, amount)
+        return wrap(self._socket, self._connection, self._connection.recv, amount)
 
     def send( self, data ):
         # Remember that SSL can only send a string of at most 16384 bytes
@@ -489,7 +513,7 @@ class SSLConnectionWrapper(object):
         while start < len(data):
             to_send = data[start: start + 16384]
             start += 16384
-            amount_sent += wrap(self._socket, self._connection.send, to_send)
+            amount_sent += wrap(self._socket, self._connection, self._connection.send, to_send)
         return amount_sent
            
     def makefile(self, perm, buf):
