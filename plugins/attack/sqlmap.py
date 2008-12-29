@@ -109,7 +109,7 @@ class sqlmap(baseAttackPlugin):
             
             vuln_obj = bsql.is_injectable( freq, self._injvar )
             if not vuln_obj:
-                raise w3afException('Could not verify SQL injection.')
+                raise w3afException('Could not verify SQL injection ' + str(vuln) )
             else:
                 om.out.console('SQL injection could be verified, trying to create the DB driver.')
                 
