@@ -74,7 +74,10 @@ import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
+
 from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.get_w3af_version import get_w3af_version
+
 import webbrowser, time
 
 MAINTITLE = "w3af - Web Application Attack and Audit Framework"
@@ -155,7 +158,7 @@ class AboutDialog(gtk.Dialog):
         # content
         img = gtk.image_new_from_file('core/ui/gtkUi/data/splash.png')
         self.vbox.pack_start(img)
-        version = w3af.getVersion()
+        version = get_w3af_version()
         self.label = gtk.Label(version)
         self.label.set_justify(gtk.JUSTIFY_CENTER)
         self.vbox.pack_start(self.label)
@@ -267,7 +270,7 @@ class MainApp(object):
 
         # Using print so the user can read this in the console, together with 
         # the GTK, python and pygtk versions.
-        print '\n  '.join(self.w3af.getVersion().split('\n'))
+        print '\n  '.join(get_w3af_version().split('\n'))
 
         self.w3af.mainwin = self
         self.isRunning = False

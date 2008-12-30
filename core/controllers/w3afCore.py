@@ -1169,25 +1169,6 @@ class w3afCore:
             misc_settings.setOptions( profileInstance.getMiscSettings() )
             self.uriOpener.settings.setOptions( profileInstance.getHttpSettings() )
     
-    def getVersion( self ):
-        # Let's check if the user is using a version from SVN
-        revision = -1
-        try:
-            for line in file('.svn' + os.path.sep +'entries').readlines()[:4]:
-                line = line.strip()
-                if re.match('^\d+$', line ):
-                    if int(line) > int(revision):
-                        revision = int(line)
-        except (IOError, ValueError):
-            revision = 0
-    
-        res = 'w3af - Web Application Attack and Audit Framework'
-        res += '\nVersion: beta7'
-        if revision != -1:
-            res += '\nRevision: ' + str(revision)
-        res += '\nAuthor: Andres Riancho and the w3af team.'
-        return res
-    
 # """"Singleton""""
 wCore = w3afCore()
 
