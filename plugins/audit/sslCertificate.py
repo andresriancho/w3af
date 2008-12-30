@@ -154,6 +154,16 @@ class sslCertificate(baseAuditPlugin):
             om.out.information( desc )
             kb.kb.append( self, 'cn', i )
 
+        #  Check that the certificate is self signed
+        if peer == issuer:
+            i = info.info()
+            i.setName('Self signed SSL certificate')
+            desc = 'The certificate is self signed'
+            i.setDesc( desc )
+            om.out.information( desc )
+            kb.kb.append( self, 'ss_cert', i )
+
+
     def _dump_X509(self, cert):
         '''
         Dump X509
