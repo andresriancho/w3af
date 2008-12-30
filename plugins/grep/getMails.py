@@ -64,23 +64,45 @@ class getMails(baseGrepPlugin):
             mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
             
             for m in mails:
+                # Define some variables to be used later
                 was_sent = self._wasSent( request, m )
                 
-                email_url = [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
-                already_reported = (m, response.getURL()) in email_url
+                email_map = {}
+                for i in kb.kb.getData( 'mails', 'mails'):
+                    mail_string = i['mail']
+                    email_map[ mail_string ] = i
+                    
                 
-                if not was_sent and not already_reported:
-                    i = info.info()
-                    i.setURL( response.getURL() )
-                    i.setId( response.id )
-                    i.setName( m )
-                    desc = 'The mail account: "'+ m + '" was found in: "' + response.getURL() + '"'
-                    i.setDesc( desc )
-                    i['mail'] = m
-                    i['user'] = m.split('@')[0]
-                
-                    kb.kb.append( 'mails', 'mails', i )
-                    kb.kb.append( self, 'mails', i )
+                if not was_sent:
+                    if m not in email_map:
+                        # Create a new info object, and report it
+                        i = info.info()
+                        i.setURL( response.getURL() )
+                        i.setId( None )
+                        i.setName( m )
+                        desc = 'The mail account: "'+ m + '" was found in: '
+                        desc += '\n- ' + response.getURL() 
+                        desc += ' - In request with id: '+ str(response.id)
+                        i.setDesc( desc )
+                        i['mail'] = m
+                        i['url_list'] = [ response.getURL(), ]
+                        i['user'] = m.split('@')[0]
+                    
+                        kb.kb.append( 'mails', 'mails', i )
+                        kb.kb.append( self, 'mails', i )
+                    
+                    elif response.getURL() not in i['url_list']:
+                        # This email was already found in some other URL
+                        # I'm just going to modify the url_list and the description message
+                        # of the information object.
+                        i = email_map[ m ]
+                        i.setId(None)
+                        i.setURL('')
+                        desc = i.getDesc()
+                        desc += '\n- ' + response.getURL() 
+                        desc += ' - In request with id: '+ str(response.id)
+                        i.setDesc( desc )
+                        i['url_list'].append( response.getURL() )
     
     def setOptions( self, OptionList ):
         pass
