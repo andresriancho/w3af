@@ -458,13 +458,25 @@ class w3afCore:
                     msg += str(len( self._fuzzableRequestList)) + ' different points of injection.'
                     om.out.information( msg )
                     
-                    om.out.information('The list of URLs is:')
+                    # Sort URLs and print them
+                    tmp_list = []
                     for u in kb.kb.getData( 'urls', 'urlList'):
-                        om.out.information( '- ' + u )
-                        
-                    om.out.information('The list of fuzzable requests is:')
+                        tmp_list.append( '- ' + u )
+                    tmp_list.sort()
+                    
+                    om.out.information('The list of URLs is:')
+                    for i in tmp_list:
+                        om.out.information( i )
+                    
+                    # Sort fuzzable requests and print them
+                    tmp_list = []
                     for fuzzRequest in self._fuzzableRequestList:
-                        om.out.information( '- ' + str( fuzzRequest) )
+                        tmp_list.append( '- ' + str(fuzzRequest) )
+                    tmp_list.sort()
+
+                    om.out.information('The list of fuzzable requests is:')
+                    for i in tmp_list:
+                        om.out.information( i )
                 
                     self._audit()
                     
