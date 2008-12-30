@@ -64,9 +64,12 @@ class getMails(baseGrepPlugin):
             mails = dp.getEmails( urlParser.getRootDomain(response.getURL()) )
             
             for m in mails:
-                wasSent = self._wasSent( request, m )
-                already_reported = (m, response.getURL()) in [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
-                if not wasSent and not already_reported:
+                was_sent = self._wasSent( request, m )
+                
+                email_url = [ (i['mail'], i.getURL()) for i in  kb.kb.getData( 'mails', 'mails')]
+                already_reported = (m, response.getURL()) in email_url
+                
+                if not was_sent and not already_reported:
                     i = info.info()
                     i.setURL( response.getURL() )
                     i.setId( response.id )
