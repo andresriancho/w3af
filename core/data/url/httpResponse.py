@@ -48,8 +48,10 @@ class httpResponse:
         self._content_type = ''
         
         # Set the URL variables
+        # The URL that we really GET'ed
         self._realurl = uri2url( originalUrl )
         self._uri = originalUrl
+        # The URL where we were redirected (may be the same as originalUrl when no redirect)
         self._redirectedURL = geturl
         self._redirectedURI = uri2url( geturl )
         
