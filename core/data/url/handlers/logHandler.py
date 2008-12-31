@@ -64,9 +64,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         '''
         This was added for some special cases where the redirect handler cries a lot...
-        '''
-        
-        """
+
         Return a Request or None in response to a redirect.
 
         This is called by the http_error_30x methods when a
@@ -75,7 +73,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         perform the redirect.  Otherwise, raise HTTPError if no-one
         else should try to handle this url.  Return None if you can't
         but another Handler might.
-        """
+        '''
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
         or code in (301, 302, 303) and m == "POST"):
