@@ -56,9 +56,15 @@ class strangeParameters(baseGrepPlugin):
         except w3afException:
             pass
         else:
-            references = dp.getReferences()
+            # Note:
+            # - With parsed_references I'm 100% that it's really something in the HTML
+            # that the developer intended to add.
+            #
+            # - The re_references are the result of regular expressions, which in some cases
+            # are just false positives.
+            parsed_references, re_references = dp.getReferences()
             
-            for ref in references:
+            for ref in parsed_references:
                 qs = urlParser.getQueryString( ref )
                 for param in qs:
                     if self._is_strange( request, param, qs[param] ):

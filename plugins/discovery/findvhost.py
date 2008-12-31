@@ -123,8 +123,16 @@ class findvhost(baseDiscoveryPlugin):
         non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
         self._non_existant_response = self._urlOpener.GET( base_url, 
                                                 useCache=False, headers={'Host': non_existant } )
-
-        for link in dp.getReferences():
+        
+        # Note:
+        # - With parsed_references I'm 100% that it's really something in the HTML
+        # that the developer intended to add.
+        #
+        # - The re_references are the result of regular expressions, which in some cases
+        # are just false positives.
+        parsed_references, re_references = dp.getReferences()
+        
+        for link in parsed_references:
             domain = urlParser.getDomain( link )
             
             #

@@ -39,22 +39,23 @@ class pdfParser(abstractParser):
     '''
     def __init__(self, httpResponse):
         abstractParser.__init__(self , httpResponse)
-        self._urlsInDocument = []
+        self._parsed_URLs = []
+        self._re_URLs = []
         
         # work !
         self._preParse( httpResponse.getBody() )
         
     def _preParse( self, document ):
-        contentText = self.getPDFContent( document )
-        self._parse( contentText )
+        content_text = self.getPDFContent( document )
+        self._parse( content_text )
     
-    def _parse( self, contentText ):
+    def _parse( self, content_text ):
         # Get the URLs using a regex
-        urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        self._urlsInDocument = [ x[0] for x in re.findall(urlRegex, contentText ) ]
+        url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
+        self._re_URLs = [ x[0] for x in re.findall(url_regex, content_text ) ]
         
         # Get the mail addys
-        self.findEmails( contentText )
+        self.findEmails( content_text )
         
     def getPDFContent( self, documentString ):
         content = ""
@@ -88,7 +89,19 @@ class pdfParser(abstractParser):
         return res
     
     def getReferences( self ):
-        return self._urlsInDocument
+        '''
+        Searches for references on a page. w3af searches references in every html tag, including:
+            - a
+            - forms
+            - images
+            - frames
+            - etc.
+        
+        @return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
+        regular expression. The second list if less trustworthy.
+        '''        
+        tmp_re_URLs = set(self._re_URLs) - set( self._parsed_URLs )
+        return list(set( self._parsed_URLs )), list(tmp_re_URLs)
         
     def _returnEmptyList( self ):
         '''

@@ -156,11 +156,17 @@ class archiveDotOrg(baseDiscoveryPlugin):
                         # Failed to find a suitable document parser
                         pass
                     else:
-                        references = document_parser.getReferences()
+                        # Note:
+                        # - With parsed_references I'm 100% that it's really something in the HTML
+                        # that the developer intended to add.
+                        #
+                        # - The re_references are the result of regular expressions, which in some cases
+                        # are just false positives.
+                        parsed_references, re_references = dp.getReferences()
                         
                         # Filter the ones I want
                         url_regex = 'http://web\.archive\.org/web/.*/http[s]?://' + domain + '/.*'
-                        new_urls = [ u for u in references if re.match(url_regex, u ) ]
+                        new_urls = [ u for u in parsed_references if re.match(url_regex, u ) ]
                         
                         # Go recursive
                         if max_depth -1 > 0:

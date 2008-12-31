@@ -115,7 +115,7 @@ class documentParser:
         '''
         @return: A list of URL strings.
         '''
-        return list( self._parser.getReferences() )
+        return self._parser.getReferences()
     
     def getReferencesOfTag( self, tag ):
         '''

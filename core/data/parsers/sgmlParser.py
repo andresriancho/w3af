@@ -48,17 +48,18 @@ class sgmlParser(abstractParser, SGMLParser):
                 'div', 'layer', 'ilayer', 'bgsound', 'form')
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
-        self._urlsInDocumentWithTags = []
-        self._urlsInDocument = []
+        self._tag_and_url = []
+        self._parsed_URLs = []
+        self._re_URLs = []
         
         self._encoding = httpResponse.getCharset()
 
         #########
         # Regex URL detection ( normal detection is also done, see below )
         #########
-        #urlRegex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        urlRegex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
-        for url in re.findall(urlRegex, httpResponse.getBody() ):
+        #url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
+        url_regex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
+        for url in re.findall(url_regex, httpResponse.getBody() ):
             # This try is here because the _decodeString method raises an exception
             # whenever it fails to decode a url.
             try:
@@ -66,10 +67,36 @@ class sgmlParser(abstractParser, SGMLParser):
             except w3afException:
                 pass
             else:
-                self._urlsInDocument.append(decoded_url)
-                
-        self._urlsInDocument = [ urlParser.normalizeURL(i) for i in self._urlsInDocument ]
-        self._urlsInDocument = list(set(self._urlsInDocument))
+                self._re_URLs.append(decoded_url)
+        
+        # Now detect some relative URL's ( also using regexs )
+        def find_relative( doc ):
+            res = []
+            relative_regex = re.compile('[^\/\/](\.\.)([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,4}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
+            
+            while True:
+                regex_match = relative_regex.search( doc )
+                if not regex_match:
+                    break
+                else:
+                    s, e = regex_match.span()
+                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                    url = urlParser.urlJoin( domainPath , doc[s+1:e] )
+                    url = self._decodeString(url)
+                    res.append( url )
+                    doc = doc[e:]
+
+            '''
+            om.out.debug('Relative URLs found using regex:')
+            for u in res:
+                om.out.information('! ' + u )
+            '''
+            return res
+        
+        relative_URLs = find_relative( httpResponse.getBody() )
+        self._re_URLs.extend( relative_URLs )
+        self._re_URLs = [ urlParser.normalizeURL(i) for i in self._re_URLs ]
+        self._re_URLs = list(set(self._re_URLs))
                 
         ########
         # End
@@ -145,6 +172,19 @@ class sgmlParser(abstractParser, SGMLParser):
         All non-HTML code must be enclosed in HTML comment tags (<!-- code -->)
         to ensure that it will pass through this parser unaltered (in handle_comment).
         '''
+        # TODO: For some reason this method failed to work:
+        #def _handle_base_starttag(self, tag, attrs):        
+        # so I added this here... it's not good code... but... it works!
+        if tag.lower() == 'base':
+            # Get the href value and then join
+            new_base_url = ''
+            for attr in attrs:
+                if attr[0].lower() == 'href':
+                    new_base_url = attr[1]
+                    break
+            # set the new base URL
+            self._baseUrl = urlParser.urlJoin( self._baseUrl , new_base_url )
+        
         if tag.lower() == 'script':
             self._insideScript = True
             
@@ -204,8 +244,8 @@ class sgmlParser(abstractParser, SGMLParser):
                     url = urlParser.urlJoin( self._baseUrl , url )
                     url = self._decodeString(url, self._encoding)
                     
-                    self._urlsInDocument.append( url )
-                    self._urlsInDocumentWithTags.append( ('meta', url ) )
+                    self._parsed_URLs.append( url )
+                    self._tag_and_url.append( ('meta', url ) )
     
     def _findReferences(self, tag, attrs):
         '''
@@ -219,9 +259,9 @@ class sgmlParser(abstractParser, SGMLParser):
                                 url = urlParser.urlJoin( self._baseUrl ,attr[1] )
                                 url = self._decodeString(url, self._encoding)
                                 url = urlParser.normalizeURL( url )
-                                if url not in self._urlsInDocument:
-                                    self._urlsInDocument.append( url )
-                                    self._urlsInDocumentWithTags.append( (tag.lower(), url) )
+                                if url not in self._parsed_URLs:
+                                    self._parsed_URLs.append( url )
+                                    self._tag_and_url.append( (tag.lower(), url) )
                                     break
     
     def _parse(self, s):
@@ -261,15 +301,17 @@ class sgmlParser(abstractParser, SGMLParser):
             - frames
             - etc.
         
-        @return: Returns list of links.
+        @return: Two sets, one with the parsed URLs, and one with the URLs that came out of a
+        regular expression. The second list if less trustworthy.
         '''
-        return set( self._urlsInDocument )
+        tmp_re_URLs = set(self._re_URLs) - set( self._parsed_URLs )
+        return list(set( self._parsed_URLs )), list(tmp_re_URLs)
         
     def getReferencesOfTag( self, tagType ):
         '''
         @return: A list of the URLs that the parser found in a tag of tagType = "tagType" (i.e img, a)
         '''
-        return [ x[1] for x in self._urlsInDocumentWithTags if x[0] == tagType ]
+        return [ x[1] for x in self._tag_and_url if x[0] == tagType ]
         
     def getComments( self ):
         '''

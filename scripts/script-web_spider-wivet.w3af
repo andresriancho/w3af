@@ -1,0 +1,29 @@
+# webspider
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery allowedMethods,webSpider
+discovery config webSpider
+set onlyForward True
+set ignoreRegex (.*offscanpages.*|.*100.php.*)
+back
+
+back
+
+target
+set target http://localhost/wivet/
+back
+
+start
+
+assert len( kb.kb.getData('urls', 'urlList') ) == 2
+
+exit

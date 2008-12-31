@@ -80,8 +80,16 @@ class abstractParser:
         
     def getReferences( self ):
         '''
-        @return: A list of URL strings.
-        '''        
+        Searches for references on a page. w3af searches references in every html tag, including:
+            - a
+            - forms
+            - images
+            - frames
+            - etc.
+        
+        @return: Two sets, one with the parsed URLs, and one with the URLs that came out of a
+        regular expression. The second list if less trustworthy.
+        '''
         raise Exception('You should create your own parser class and implement the getReferences() method.')
         
     def getComments( self ):
