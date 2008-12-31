@@ -44,6 +44,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
+
 def createFuzzableRequests( httpResponse, addSelf=True ):
     '''
     Generates the fuzzable requests based on an http response instance.
