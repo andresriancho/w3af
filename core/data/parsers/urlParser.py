@@ -440,7 +440,7 @@ def hasParams( url ):
 
 def getParamsString( url ):
     '''
-    Input: http://localhost:4444/f00_bar.html;foo=bar
+    Input: http://localhost:4444/f00_bar.html;foo=bar?abc=def
     Output: foo=bar
 
     @parameter url: The url to parse.
@@ -468,7 +468,12 @@ def setParam( url, param_string ):
     @parameter param_string: The param to set (e.g. "foo=aaa").
     @return: Returns the url containing param.
     '''
-    param, value = param_string.split("=")
+    try:
+        param, value = param_string.split("=")
+    except ValueError, ve:
+        param = param_string
+        value = ''
+        
     scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     res = scheme + '://' + domain + path
     params = getParams(url)
