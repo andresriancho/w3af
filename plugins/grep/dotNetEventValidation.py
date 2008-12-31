@@ -54,7 +54,7 @@ class dotNetEventValidation(baseGrepPlugin):
 
         self._alreadyReported = []
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
         '''
