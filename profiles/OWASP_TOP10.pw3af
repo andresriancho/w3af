@@ -137,7 +137,7 @@ onlyForward = False
 [grep.domXss]
 
 [target]
-target = http://www.bancoamazonas.com/portal/index.jsp
+target = 
 
 [audit.remoteFileInclude]
 listenPort = 44449
