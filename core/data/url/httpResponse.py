@@ -210,13 +210,22 @@ class httpResponse:
 
     def is_pdf( self ):
         '''
-        @return: True if this response is pdf
+        @return: True if this response is a PDF file
         '''
         if self._content_type.lower().count('pdf'):
             return True
         else:
             return False
-
+    
+    def is_swf( self ):
+        '''
+        @return: True if this response is a SWF file
+        '''
+        if self._content_type.lower().count('x-shockwave-flash'):
+            return True
+        else:
+            return False
+            
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri
     def setWaitTime( self, t ): self._time = t
