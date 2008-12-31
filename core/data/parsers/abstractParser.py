@@ -24,9 +24,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import core.data.parsers.urlParser as urlParser
 from core.data.parsers.encode_decode import htmldecode
+from core.controllers.w3afException import w3afException
+
 import re
 import urllib
-from core.controllers.w3afException import w3afException
+
 
 class abstractParser:
     '''
@@ -39,7 +41,13 @@ class abstractParser:
         self._baseUrl = urlParser.getDomainPath(httpResponse.getURL())
         self._baseDomain = urlParser.getDomain(httpResponse.getURL())
         self._rootDomain = urlParser.getRootDomain(httpResponse.getURL())
+        
+        # A nice default
+        self._encoding = 'utf-8'
+        
+        # To store results
         self._emails = []
+        self._re_URLs = []
     
     def findEmails( self , documentString ):
         '''
@@ -64,6 +72,61 @@ class abstractParser:
                     self._emails.append( email )
                     
         return self._emails
+
+    def _regex_url_parse(self, httpResponse):
+        '''
+        Use regular expressions to find new URLs.
+        
+        @parameter httpResponse: The http response object that stores the response body and the URL.
+        @return: None. The findings are stored in self._re_URLs.
+        '''
+        #url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
+        url_regex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
+        for url in re.findall(url_regex, httpResponse.getBody() ):
+            # This try is here because the _decodeString method raises an exception
+            # whenever it fails to decode a url.
+            try:
+                decoded_url = self._decodeString(url[0], self._encoding)
+            except w3afException:
+                pass
+            else:
+                self._re_URLs.append(decoded_url)
+        
+        # Now detect some relative URL's ( also using regexs )
+        def find_relative( doc ):
+            res = []
+            # TODO: Also matches //foo/bar.txt , which is bad
+            # I'm removing those matches manually below
+            relative_regex = re.compile('[A-Z0-9a-z%_~\./]+([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
+            
+            while True:
+                regex_match = relative_regex.search( doc )
+                if not regex_match:
+                    break
+                else:
+                    s, e = regex_match.span()
+                    match_string = doc[s:e]
+                    if not match_string.startswith('//'):
+                        domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                        url = urlParser.urlJoin( domainPath , match_string )
+                        url = self._decodeString(url)
+                        res.append( url )
+                    
+                    # continue
+                    doc = doc[e:]
+            return res
+        
+        relative_URLs = find_relative( httpResponse.getBody() )
+        self._re_URLs.extend( relative_URLs )
+        self._re_URLs = [ urlParser.normalizeURL(i) for i in self._re_URLs ]
+        self._re_URLs = list(set(self._re_URLs))
+        
+        '''
+        om.out.debug('Relative URLs found using regex:')
+        for u in self._re_URLs:
+            if '8_' in u:
+                om.out.information('! ' + u )
+        '''    
 
     def getEmails( self, domain ):
         '''

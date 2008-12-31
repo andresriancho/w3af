@@ -23,6 +23,7 @@ from core.controllers.w3afException import w3afException
 
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdfParser as pdfParser
+import core.data.parsers.swfParser as swfParser
 import core.data.parsers.wmlParser as wmlParser
 
 try:
@@ -44,6 +45,8 @@ class documentParser:
             self._parser = wmlParser.wmlParser( httpResponse )
         elif self._isPDF( httpResponse ):
             self._parser = pdfParser.pdfParser( httpResponse )
+        elif self._isSWF( httpResponse ):
+            self._parser = swfParser.swfParser( httpResponse )
         elif self._isHTMLorText( httpResponse ):
             self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
         else:
@@ -68,7 +71,22 @@ class documentParser:
                 return True
         else:
             return False
+    
+    def _isSWF(self, httpResponse):
+        '''
+        @return: True if the httpResponse contains a SWF file.
+        '''
+        body = httpResponse.getBody()
+        
+        if len(body) > 5:
+            magic = body[:3]
             
+            # TODO: Add more checks here?
+            if magic in ['FWS', 'CWS']:
+                return True
+        
+        return False
+    
     def _isWML( self, httpResponse ):
         '''
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.

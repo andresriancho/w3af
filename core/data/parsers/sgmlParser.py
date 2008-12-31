@@ -43,72 +43,17 @@ class sgmlParser(abstractParser, SGMLParser):
         abstractParser.__init__( self, httpResponse )
         SGMLParser.__init__(self, verbose)
 
+        # Set some constants
         self._tagsContainingURLs =  ('go', 'a','img', 'link', 'script', 'iframe', 'object',
                 'embed', 'area', 'frame', 'applet', 'input', 'base',
                 'div', 'layer', 'ilayer', 'bgsound', 'form')
         self._urlAttrs = ('href', 'src', 'data', 'action' )
         
+        # And some internal variables
         self._tag_and_url = []
         self._parsed_URLs = []
         self._re_URLs = []
-        
         self._encoding = httpResponse.getCharset()
-
-        #########
-        # Regex URL detection ( normal detection is also done, see below )
-        #########
-        #url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        url_regex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
-        for url in re.findall(url_regex, httpResponse.getBody() ):
-            # This try is here because the _decodeString method raises an exception
-            # whenever it fails to decode a url.
-            try:
-                decoded_url = self._decodeString(url[0], self._encoding)
-            except w3afException:
-                pass
-            else:
-                self._re_URLs.append(decoded_url)
-        
-        # Now detect some relative URL's ( also using regexs )
-        def find_relative( doc ):
-            res = []
-            # TODO: Also matches //foo/bar.txt , which is bad
-            # I'm removing those matches manually below
-            relative_regex = re.compile('[A-Z0-9a-z%_~\./]+([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
-            
-            while True:
-                regex_match = relative_regex.search( doc )
-                if not regex_match:
-                    break
-                else:
-                    s, e = regex_match.span()
-                    match_string = doc[s:e]
-                    if not match_string.startswith('//'):
-                        domainPath = urlParser.getDomainPath(httpResponse.getURL())
-                        url = urlParser.urlJoin( domainPath , match_string )
-                        url = self._decodeString(url)
-                        res.append( url )
-                    
-                    # continue
-                    doc = doc[e:]
-            return res
-        
-        relative_URLs = find_relative( httpResponse.getBody() )
-        self._re_URLs.extend( relative_URLs )
-        self._re_URLs = [ urlParser.normalizeURL(i) for i in self._re_URLs ]
-        self._re_URLs = list(set(self._re_URLs))
-        
-        '''
-        om.out.debug('Relative URLs found using regex:')
-        for u in self._re_URLs:
-            if '8_' in u:
-                om.out.information('! ' + u )
-        '''
-        
-        ########
-        # End
-        ########
-        
         self._forms = []
         self._insideForm = False
         self._insideSelect = False
@@ -122,6 +67,9 @@ class sgmlParser(abstractParser, SGMLParser):
         self._metaTags = []
         
         self._normalizeMarkup = normalizeMarkup
+        
+        # Fill self._re_URLs
+        self._regex_url_parse( httpResponse )
         
         # Now we are ready to work
         self._preParse( httpResponse.getBody() )
