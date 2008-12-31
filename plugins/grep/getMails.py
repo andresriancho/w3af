@@ -68,10 +68,9 @@ class getMails(baseGrepPlugin):
                 was_sent = self._wasSent( request, m )
                 
                 email_map = {}
-                for i in kb.kb.getData( 'mails', 'mails'):
+                for i in kb.kb.getData( 'getMails', 'mails'):
                     mail_string = i['mail']
                     email_map[ mail_string ] = i
-                    
                 
                 if not was_sent:
                     if m not in email_map:
@@ -90,12 +89,15 @@ class getMails(baseGrepPlugin):
                     
                         kb.kb.append( 'mails', 'mails', i )
                         kb.kb.append( self, 'mails', i )
+                        continue
                     
-                    elif response.getURL() not in i['url_list']:
+                    # Get the corresponding info object.
+                    i = email_map[ m ]
+                    # And work
+                    if response.getURL() not in i['url_list']:
                         # This email was already found in some other URL
                         # I'm just going to modify the url_list and the description message
                         # of the information object.
-                        i = email_map[ m ]
                         i.setId(None)
                         i.setURL('')
                         desc = i.getDesc()
