@@ -236,7 +236,7 @@ class webSpider(baseDiscoveryPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'When spidering, only search directories inside the one that was given as a parameter'
+        d1 = 'When spidering, only search directories inside the one that was given as target'
         o1 = option('onlyForward', self._only_forward, d1, 'boolean')
         
         d2 = 'When spidering, only follow links that match this regular expression '
