@@ -53,7 +53,7 @@ class fileUpload(baseGrepPlugin):
         self._input = re.compile('< *input(.*?)>', re.IGNORECASE)
         self._file = re.compile('type= *"file"?', re.IGNORECASE)
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
         @return: None

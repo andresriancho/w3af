@@ -80,7 +80,7 @@ class creditCards(baseGrepPlugin):
         self._regex = re.compile(regex)
         self._markupRegex = re.compile(markupRegex)
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for the credit cards.
         @return: None

@@ -50,7 +50,7 @@ class directoryIndexing(baseGrepPlugin):
         # but the execution time is lowered *a lot*.
         self._compiled_regex_list = [ re.compile(regex, re.IGNORECASE | re.DOTALL) for regex in self._get_indexing_regex() ]
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
         @return: None

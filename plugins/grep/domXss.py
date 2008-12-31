@@ -87,7 +87,7 @@ class domXss(baseGrepPlugin):
         res.append('window.location')
         return res
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for the DOM XSS vulns.
         @return: None

@@ -49,7 +49,7 @@ class httpAuthDetect(baseGrepPlugin):
         
         self._auth_uri_regex = re.compile('.*://[\w%]*?:[\w%]*?@[\w\.]{3,40}')
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Verify if I find 401 or authentication URIs like http://user:pass@domain.com/
         '''

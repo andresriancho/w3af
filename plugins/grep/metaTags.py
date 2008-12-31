@@ -63,7 +63,7 @@ class metaTags(baseGrepPlugin):
         haven't found it already. 
         '''
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for meta tags.
 

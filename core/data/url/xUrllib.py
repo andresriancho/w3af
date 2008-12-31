@@ -680,7 +680,7 @@ class xUrllib:
         
         for grepPlugin in self._grepPlugins:
             try:
-                grepPlugin.testResponse( request, response)
+                grepPlugin.grep_wrapper( request, response)
             except KeyboardInterrupt:
                 # Correct control+c handling...
                 raise

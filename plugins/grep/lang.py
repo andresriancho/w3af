@@ -67,7 +67,7 @@ class lang(baseGrepPlugin):
         
         self._lang_lock = thread.allocate_lock()
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Get the page indicated by the fuzzableRequest and determine the language using the preposition list.
         

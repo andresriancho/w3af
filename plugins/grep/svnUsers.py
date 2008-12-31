@@ -50,7 +50,7 @@ class svnUsers(baseGrepPlugin):
         regex += ' \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$'
         self._regex_list = [ re.compile(regex) ]
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point.
         

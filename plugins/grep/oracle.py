@@ -42,7 +42,7 @@ class oracle(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point. Grep for oracle applications.
         @return: None

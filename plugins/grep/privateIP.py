@@ -57,7 +57,7 @@ class privateIP(baseGrepPlugin):
         self._classC = re.compile('[^\.](192\.168\.\d\d?\d?\.\d\d?\d?)[^\.]')
         self._regex_list = [self._classA, self._classB1, self._classB2, self._classC ]
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point. Search for private IPs in the header and the body.
         @return: None, results are saved to the kb.

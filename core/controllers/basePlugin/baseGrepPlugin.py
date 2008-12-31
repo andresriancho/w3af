@@ -43,7 +43,7 @@ class baseGrepPlugin(basePlugin):
         basePlugin.__init__( self )
         self._urlOpener = None
 
-    def testResponse(self, fuzzableRequest, response):
+    def grep_wrapper(self, fuzzableRequest, response):
         '''
         This method tries to find patterns on responses.
         
@@ -57,7 +57,7 @@ class baseGrepPlugin(basePlugin):
             #om.out.debug('Grep plugins not testing: ' + repr(fuzzableRequest) + ' cause it was already tested.' )
             pass
         elif urlParser.getDomain( fuzzableRequest.getURL() ) in cf.cf.getData('targetDomains'):
-            self._testResponse( fuzzableRequest, response )
+            self.grep( fuzzableRequest, response )
         else:
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )
             pass

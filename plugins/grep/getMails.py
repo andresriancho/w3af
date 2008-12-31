@@ -46,7 +46,7 @@ class getMails(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, get the emails and save them to the kb.
         @return: None

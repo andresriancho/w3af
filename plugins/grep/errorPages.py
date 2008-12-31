@@ -129,7 +129,7 @@ class errorPages(baseGrepPlugin):
        
         return mesg
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, find the error pages and report them.
         @return: None

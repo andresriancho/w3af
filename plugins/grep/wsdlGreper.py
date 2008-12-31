@@ -47,8 +47,12 @@ class wsdlGreper(baseGrepPlugin):
         self._wsdl_strings = self._get_WSDL_strings()
         self._disco_strings = ['disco:discovery ']
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
+        '''
+        Plugin entry point.
         
+        @return: None, all results are saved in the kb.
+        '''
         if response.is_text_or_html():
 
             if response.getCode() == 200:

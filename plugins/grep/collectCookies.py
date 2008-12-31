@@ -51,7 +51,7 @@ class collectCookies(baseGrepPlugin):
         self._alreadyReportedServer = []
         self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
     
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for cookies.
         @return: None

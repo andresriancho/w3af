@@ -47,7 +47,7 @@ class hashFind(baseGrepPlugin):
         # regex to split between words
         self._split_re = re.compile('[^\w]')
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, identify hashes in the HTTP response.
         @return: None

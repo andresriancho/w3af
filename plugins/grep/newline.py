@@ -49,7 +49,7 @@ class newline(baseGrepPlugin):
         self._windows = re.compile( '\r\n' )
         self._mac = re.compile( '\r[^\n]' )
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point. Analyze the new line convention of the site.
         @return: None

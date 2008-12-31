@@ -51,7 +51,12 @@ class httpInBody (baseGrepPlugin):
         # re that remove tags
         self._re_removeTags = re.compile('(<.*?>|</.*?>)')
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
+        '''
+        Plugin entry point.
+        
+        @return: None, all results are saved in the kb.
+        '''
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.

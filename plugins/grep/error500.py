@@ -44,7 +44,7 @@ class error500(baseGrepPlugin):
         
         self._error_500_responses = []
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, identify which requests generated a 500 error.
         @return: None

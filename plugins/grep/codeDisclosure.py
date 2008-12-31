@@ -83,7 +83,7 @@ class codeDisclosure(baseGrepPlugin):
         self._alreadyAdded = []
         self._first_404 = True
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for the code disclosures.
         @return: None

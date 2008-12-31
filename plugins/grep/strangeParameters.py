@@ -49,8 +49,12 @@ class strangeParameters(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
+        '''
+        Plugin entry point.
         
+        @return: None, all results are saved in the kb.
+        '''
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:

@@ -56,7 +56,7 @@ class feeds(baseGrepPlugin):
             
         return self._compiledRegex
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, find feeds.
         @return: None

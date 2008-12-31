@@ -54,7 +54,7 @@ class ssn(baseGrepPlugin):
         # re that removes tags
         self._re_removeTags = re.compile('(<.*?>|</.*?>)')
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, find the SSN numbers.
         

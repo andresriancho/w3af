@@ -51,8 +51,12 @@ class ajax(baseGrepPlugin):
         regex_string += '.*?</ *?script *?>'
         self._script_re = re.compile( regex_string, re.IGNORECASE | re.DOTALL )
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
+        '''
+        Plugin entry point.
         
+        @return: None, all results are saved in the kb.
+        '''
         if response.is_text_or_html():
             res = self._script_re.search( response.getBody() )
             if res:

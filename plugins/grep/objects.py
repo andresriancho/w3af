@@ -48,7 +48,7 @@ class objects(baseGrepPlugin):
         self._already_added_object = []
         self._already_added_applet = []
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point. Parse the object tags.
         @return: None

@@ -39,7 +39,7 @@ class blankBody(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, find the blank bodies and report them.
         @return: None

@@ -71,7 +71,7 @@ class passwordProfiling(baseGrepPlugin):
         # Some words that are banned
         self._banned_words = [ 'Forbidden', 'browsing', 'Index' ]
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point. Get responses, analyze words, create dictionary.
         @return: None.

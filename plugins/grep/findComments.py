@@ -57,7 +57,7 @@ class findComments(baseGrepPlugin):
         # User configurations
         self._search404 = False
         
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, parse those comments!
         @return: None

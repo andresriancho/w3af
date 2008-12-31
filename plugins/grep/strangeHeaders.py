@@ -45,7 +45,7 @@ class strangeHeaders(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._common_headers = self._getCommonHeaders()
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point.
         

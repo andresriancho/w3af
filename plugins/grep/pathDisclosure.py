@@ -61,7 +61,7 @@ class pathDisclosure(baseGrepPlugin):
             regex = re.compile( regex_string,  re.IGNORECASE)
             self._path_disc_regex_list.append(regex)
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Identify the path disclosure vulnerabilities.
         

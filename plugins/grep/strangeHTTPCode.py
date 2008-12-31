@@ -43,8 +43,12 @@ class strangeHTTPCode(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._commonCodes = self._getCommonHTTPCodes()
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
+        '''
+        Plugin entry point.
         
+        @return: None, all results are saved in the kb.
+        '''
         if response.getCode() not in self._commonCodes:
             i = info.info()
             i.setName('Strange HTTP Response code - ' + str(response.getCode()))

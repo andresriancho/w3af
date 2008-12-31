@@ -51,7 +51,7 @@ class motw (baseGrepPlugin):
         # User configured parameter
         self._withoutMOTW = False
 
-    def _testResponse(self, request, response):
+    def grep(self, request, response):
         '''
         Plugin entry point, search for motw.
         @return: None
