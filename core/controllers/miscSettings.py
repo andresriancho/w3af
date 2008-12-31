@@ -41,7 +41,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFileName', False )
             cf.cf.save('fuzzFCExt', 'txt' )
             cf.cf.save('autoDependencies', True )
-            cf.cf.save('maxDepth', 10 )
+            cf.cf.save('maxDepth', 25 )
             cf.cf.save('maxThreads', 0 )
             cf.cf.save('fuzzableHeaders', [] )
             cf.cf.save('maxDiscoveryLoops', 500 )
