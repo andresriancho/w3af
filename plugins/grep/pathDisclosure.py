@@ -31,6 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+from core.data.constants.common_directories import get_common_directories
 
 import core.data.parsers.urlParser as urlParser
 import re
@@ -221,19 +222,7 @@ class pathDisclosure(baseGrepPlugin):
         path_disclosure_strings = []
         path_disclosure_strings.append(r"[A-Z]:\\")
         path_disclosure_strings.append(r"file:///?[A-Z]\|")
-        path_disclosure_strings.append("/root/")
-        path_disclosure_strings.append("/var/")
-        path_disclosure_strings.append("/htdocs/")
-        path_disclosure_strings.append("/usr/")
-        path_disclosure_strings.append("/home/")
-        path_disclosure_strings.append("/etc/")
-        path_disclosure_strings.append("/bin/")
-        path_disclosure_strings.append("/lib/")
-        path_disclosure_strings.append("/opt/")
-        path_disclosure_strings.append("/sbin/")
-        path_disclosure_strings.append("/sys/")
-        path_disclosure_strings.append("/mnt/")
-        path_disclosure_strings.append("/tmp/")
+        path_disclosure_strings.extend( get_common_directories() )
         return path_disclosure_strings
 
     def getPluginDeps( self ):
