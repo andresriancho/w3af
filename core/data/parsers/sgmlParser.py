@@ -72,7 +72,9 @@ class sgmlParser(abstractParser, SGMLParser):
         # Now detect some relative URL's ( also using regexs )
         def find_relative( doc ):
             res = []
-            relative_regex = re.compile('[^\/\/](\.\.)([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,4}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
+            # TODO: Also matches //foo/bar.txt , which is bad
+            # I'm removing those matches manually below
+            relative_regex = re.compile('[A-Z0-9a-z%_~\./]+([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
             
             while True:
                 regex_match = relative_regex.search( doc )
@@ -80,24 +82,29 @@ class sgmlParser(abstractParser, SGMLParser):
                     break
                 else:
                     s, e = regex_match.span()
-                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
-                    url = urlParser.urlJoin( domainPath , doc[s+1:e] )
-                    url = self._decodeString(url)
-                    res.append( url )
+                    match_string = doc[s:e]
+                    if not match_string.startswith('//'):
+                        domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                        url = urlParser.urlJoin( domainPath , match_string )
+                        url = self._decodeString(url)
+                        res.append( url )
+                    
+                    # continue
                     doc = doc[e:]
-
-            '''
-            om.out.debug('Relative URLs found using regex:')
-            for u in res:
-                om.out.information('! ' + u )
-            '''
             return res
         
         relative_URLs = find_relative( httpResponse.getBody() )
         self._re_URLs.extend( relative_URLs )
         self._re_URLs = [ urlParser.normalizeURL(i) for i in self._re_URLs ]
         self._re_URLs = list(set(self._re_URLs))
-                
+        
+        '''
+        om.out.debug('Relative URLs found using regex:')
+        for u in self._re_URLs:
+            if '8_' in u:
+                om.out.information('! ' + u )
+        '''
+        
         ########
         # End
         ########
