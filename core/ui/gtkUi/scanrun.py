@@ -111,18 +111,18 @@ class KBBrowser(entries.RememberingHPaned):
 
         # the kb tree 
         self.kbtree = FullKBTree(w3af, self, self.filters)
+        
+        # all in the first pane
+        scrollwin21 = gtk.ScrolledWindow()
+        scrollwin21.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        scrollwin21.add(self.kbtree)
+        scrollwin21.show()
 
         # the filter and tree box
         treebox = gtk.VBox()
         treebox.pack_start(filterbox, expand=False, fill=False)
-        treebox.pack_start(self.kbtree)
+        treebox.pack_start(scrollwin21)
         treebox.show()
-
-        # all in the first pane
-        scrollwin21 = gtk.ScrolledWindow()
-        scrollwin21.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        scrollwin21.add_with_viewport(treebox)
-        scrollwin21.show()
 
         # the explanation
         explan_tv = gtk.TextView()
@@ -145,7 +145,7 @@ class KBBrowser(entries.RememberingHPaned):
         vpanedExplainAndView.show()
         
         # pack & show
-        self.pack1(scrollwin21)
+        self.pack1(treebox)
         self.pack2(vpanedExplainAndView)
         self.show()
 
