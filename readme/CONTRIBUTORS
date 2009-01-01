@@ -36,7 +36,8 @@ Documentation:
 
 General:
     Achim Hoffmann (ah|at|securenet.de) - Great ideas and OWASP SoC Reviewer
-    Taras P. Ivashchenko <naplanetu!gmail.com> - Bug reports and console UI patch.
+    Taras P. Ivashchenko <naplanetu!gmail.com> - A lot of BIG contributions.
+    Kevin Denver - xmlFile plugin, urlParser extension, bug fixing, testing and more!
 
 w3af also has one big sponsor, Cybsec, www.cybsec.com
 
