@@ -30,6 +30,7 @@ import core.controllers.miscSettings as ms
 from core.ui.consoleUi.util import *
 
 from core.controllers.w3afException import *
+from core.controllers.misc.get_w3af_version import get_w3af_version
 
 # Provide a progress bar for all plugins.
 from core.ui.consoleUi.progress_bar import progress_bar
@@ -37,6 +38,7 @@ import threading
 import sys
 import time
 import select
+
 
 class rootMenu(menu):
     '''
@@ -118,4 +120,4 @@ class rootMenu(menu):
         '''
         Show the w3af version and exit
         '''
-        om.out.console( self._w3af.getVersion() )
+        om.out.console( get_w3af_version() )
