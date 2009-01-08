@@ -37,7 +37,6 @@ from OpenSSL import SSL, crypto
 import socket
 import select
 
-
 class sslCertificate(baseAuditPlugin):
     '''
     Check the SSL certificate validity( if https is being used ).
@@ -154,15 +153,17 @@ class sslCertificate(baseAuditPlugin):
             om.out.information( desc )
             kb.kb.append( self, 'cn', i )
 
-        #  Check that the certificate is self signed
+        # Check that the certificate is self issued
         if peer == issuer:
             i = info.info()
             i.setName('Self signed SSL certificate')
-            desc = 'The certificate is self signed'
+            desc = 'The certificate is self issued'
             i.setDesc( desc )
             om.out.information( desc )
-            kb.kb.append( self, 'ss_cert', i )
-
+            kb.kb.append( self, 'si_cert', i )
+        # TODO
+        # 1. Self-signed
+        # 2. MD5 check like in Metasploit
 
     def _dump_X509(self, cert):
         '''
@@ -190,7 +191,6 @@ class sslCertificate(baseAuditPlugin):
         # Indent
         res = res.replace('\n', '\n    ')
         res = '    ' + res
-
         return res
 
     def getOptions( self ):
