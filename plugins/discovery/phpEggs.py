@@ -52,153 +52,152 @@ class phpEggs(baseDiscoveryPlugin):
         # This is a list of hashes and description of the egg for every PHP version.
         self._egg_DB = {}
         self._egg_DB["4.1.2"] = [ 
-		        ("744aecef04f9ed1bc39ae773c40017d1", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("744aecef04f9ed1bc39ae773c40017d1", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.2.2"] = [ 
-		        ("758ccaa9094cdeedcfc60017e768137e", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("758ccaa9094cdeedcfc60017e768137e", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("85be3b4be7bfe839cbb3b4f2d30ff983", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.3.10"] = [ 
-		        ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.3.10-18"] = [ 
-		        ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.3.11"] = [ 
-		        ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("a8ad323e837fa00771eda6b709f40e37", "PHP Logo 2"), 
-		        ("a8ad323e837fa00771eda6b709f40e37", "Zend Logo") ]
+                ("1e8fe4ae1bf06be222c1643d32015f0c", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("a8ad323e837fa00771eda6b709f40e37", "PHP Logo 2"), 
+                ("a8ad323e837fa00771eda6b709f40e37", "Zend Logo") ]
         self._egg_DB["4.3.2"] = [ 
-		        ("8a8b4a419103078d82707cf68226a482", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("8a8b4a419103078d82707cf68226a482", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.3.8"] = [ 
-		        ("96714a0fbe23b5c07c8be343adb1ba90", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("96714a0fbe23b5c07c8be343adb1ba90", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("a57bd73e27be03a62dd6b3e1b537a72c", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.3.9"] = [ 
-		        ("f9b56b361fafd28b668cc3498425a23b", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("f9b56b361fafd28b668cc3498425a23b", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.0"] = [ 
-		        ("ddf16ec67e070ec6247ec1908c52377e", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("ddf16ec67e070ec6247ec1908c52377e", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.0 for Windows"] = [ 
-		        ("6d974373683ecfcf30a7f6873f2d234a", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("6d974373683ecfcf30a7f6873f2d234a", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.4"] = [ 
-		        ("bed7ceff09e9666d96fdf3518af78e0e", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("bed7ceff09e9666d96fdf3518af78e0e", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.4-8+etch6"] = [ 
-		        ("31a2553efc348a21b85e606e5e6c2424", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("31a2553efc348a21b85e606e5e6c2424", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.7"] = [ 
-		        ("72b7ad604fe1362f1e8bf4f6d80d4edc", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("72b7ad604fe1362f1e8bf4f6d80d4edc", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["4.4.8"] = [ 
-		        ("4cdfec8ca11691a46f4f63839e559fc5", "PHP Credits"), 
-		        ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
-		        ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
-		        ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+                ("4cdfec8ca11691a46f4f63839e559fc5", "PHP Credits"), 
+                ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
+                ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
+                ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
         self._egg_DB["5.0.3"] = [ 
-		        ("def61a12c3b0a533146810403d325451", "PHP Credits"), 
-		        ("8ac5a686135b923664f64fe718ea55cd", "PHP Logo"), 
-		        ("37e194b799d4aaff10e39c4e3b2679a2", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("def61a12c3b0a533146810403d325451", "PHP Credits"), 
+                ("8ac5a686135b923664f64fe718ea55cd", "PHP Logo"), 
+                ("37e194b799d4aaff10e39c4e3b2679a2", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.1.1"] = [ 
-		        ("5518a02af41478cfc492c930ace45ae5", "PHP Credits"), 
-		        ("8ac5a686135b923664f64fe718ea55cd", "PHP Logo"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("5518a02af41478cfc492c930ace45ae5", "PHP Credits"), 
+                ("8ac5a686135b923664f64fe718ea55cd", "PHP Logo"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.1.6"] = [ 
-		        ("4b689316409eb09b155852e00657a0ae", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("4b689316409eb09b155852e00657a0ae", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.0"] = [ 
-		        ("e566715bcb0fd2cb1dc43ed076c091f1", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("e566715bcb0fd2cb1dc43ed076c091f1", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.0-8+etch10"] = [ 
-		        ("e566715bcb0fd2cb1dc43ed076c091f1", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("e566715bcb0fd2cb1dc43ed076c091f1", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.0-8+etch7"] = [ 
-		        ("307f5a1c02155ca38744647eb94b3543", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("307f5a1c02155ca38744647eb94b3543", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.1"] = [ 
-		        ("d3894e19233d979db07d623f608b6ece", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("d3894e19233d979db07d623f608b6ece", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.2"] = [ 
-		        ("56f9383587ebcc94558e11ec08584f05", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
-        self._egg_DB["5.2.3"] = [ 
-		        ("4e79e2cade96e41931f3f681cc49b60a", "PHP Credits"), 
-		        ("4e79e2cade96e41931f3f681cc49b60a", "PHP Logo"), 
-		        ("4e79e2cade96e41931f3f681cc49b60a", "PHP Logo 2"), 
-		        ("4e79e2cade96e41931f3f681cc49b60a", "Zend Logo") ]
+                ("56f9383587ebcc94558e11ec08584f05", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.3-1+b1"] = [ 
-		        ("c37c96e8728dc959c55219d47f2d543f", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("c37c96e8728dc959c55219d47f2d543f", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.4"] = [ 
-		        ("74c33ab9745d022ba61bc43a5db717eb", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("74c33ab9745d022ba61bc43a5db717eb", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.5"] = [ 
-		        ("f26285281120a2296072f21e21e7b4b0", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("f26285281120a2296072f21e21e7b4b0", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.4-2ubuntu5.3"] = [ 
-		        ("f26285281120a2296072f21e21e7b4b0", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("f26285281120a2296072f21e21e7b4b0", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.5-3"] = [ 
-		        ("b7e4385bd7f07e378d92485b4722c169", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("0152ed695f4291488741d98ba066d280", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("b7e4385bd7f07e378d92485b4722c169", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("0152ed695f4291488741d98ba066d280", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.6"] = [ 
-		        ("bbd44c20d561a0fc5a4aa76093d5400f", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+                ("bbd44c20d561a0fc5a4aa76093d5400f", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
         self._egg_DB["5.2.6RC4-pl0-gentoo"] = [ 
-		        ("d03b2481f60d9e64cb5c0f4bd0c87ec1", "PHP Credits"), 
-		        ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
-		        ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
-		        ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
-
+                ("d03b2481f60d9e64cb5c0f4bd0c87ec1", "PHP Credits"), 
+                ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
+                ("50caaf268b4f3d260d720a1a29c5fe21", "PHP Logo 2"), 
+                ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+        self._egg_DB['5.2.8-pl1-gentoo'] = [
+                ('c48b07899917dfb5d591032007041ae3', 'PHP Logo'), 
+                ('40410284d460552a6c9e10c1f5ae7223', 'PHP Credits'), 
+                ('50caaf268b4f3d260d720a1a29c5fe21', 'PHP Logo 2'), 
+                ('7675f1d01c927f9e6a4752cf182345a2', 'Zend Logo')]
         
     def discover(self, fuzzableRequest ):
         '''
