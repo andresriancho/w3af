@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -34,9 +35,8 @@ from core.data.request.frFactory import createFuzzableRequestRaw
 
 import core.data.parsers.urlParser as urlParser
 
-from core.data.getResponseType import *
-from core.controllers.daemons.proxy import *
-from core.controllers.w3afException import *
+from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.w3afException import w3afException, w3afRunOnce
 import core.data.constants.w3afPorts as w3afPorts
 
 # Cohny changed the original http://w3af/spiderMan?terminate
@@ -52,6 +52,7 @@ class spiderMan(baseDiscoveryPlugin):
     @author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
     '''
     def __init__(self):
+        # Internal variables
         self._run = True
         self._fuzzableRequests = []
         self.createFuzzableRequests = self._createFuzzableRequests
@@ -61,11 +62,11 @@ class spiderMan(baseDiscoveryPlugin):
         self._listenAddress = '127.0.0.1'
         self._listenPort = w3afPorts.SPIDERMAN
 
-    def appendFuzzableRequest(self, command, path, postData, headers):
+    def append_fuzzable_request(self, command, path, postData, headers):
         freq = createFuzzableRequestRaw( command, path, postData, headers )
         self._fuzzableRequests.append(freq)
 
-    def extFuzzableRequests(self, response):                 
+    def ext_fuzzable_requests(self, response):                 
         self._fuzzableRequests.extend(self._createFuzzableRequests(response))
 
     def stopProxy(self):
@@ -92,13 +93,16 @@ class spiderMan(baseDiscoveryPlugin):
             self._run = False
             
             # Create the proxy server
-            self._proxy = proxy(self._listenAddress, self._listenPort, self._urlOpener, self.createPH())
+            self._proxy = proxy( self._listenAddress, self._listenPort, self._urlOpener, \
+                                            self.createPH())
             self._proxy.targetDomain = urlParser.getDomain( freq.getURL() )
             
             # Inform the user
-            om.out.information('spiderMan proxy is running on ' + self._listenAddress + ':' + str(self._listenPort) + ' .' )
-            om.out.information('Please configure your browser to use these proxy settings and navigate the target site.')
-            om.out.information('To exit spiderMan plugin please navigate to ' + TERMINATE_URL + ' .')
+            msg = 'spiderMan proxy is running on ' + self._listenAddress + ':'
+            msg += str(self._listenPort) + '.\nPlease configure your browser to use these proxy'
+            msg += ' settings and navigate the target site.\nTo exit spiderMan plugin please'
+            msg += ' navigate to ' + TERMINATE_URL + ' .'
+            om.out.information( msg )
             
             # Run the server
             self._proxy.run()
@@ -191,7 +195,7 @@ class proxyHandler(w3afProxyHandler):
             postData = self._getPostData()
             headers = self._getHeadersDict()
             om.out.debug("[spiderMan] Handling request: " + self.command + ' ' + self.path)
-            self._spiderMan.appendFuzzableRequest( self.command, self.path, postData, headers )
+            self._spiderMan.append_fuzzable_request( self.command, self.path, postData, headers )
             
             if urlParser.getDomain( self.path ) == self.server.w3afLayer.targetDomain:
                 grep = True
@@ -204,11 +208,14 @@ class proxyHandler(w3afProxyHandler):
                 self._sendError( e )
             else:
                 if response.is_text_or_html():
-                    self._spiderMan.extFuzzableRequests( response )
+                    self._spiderMan.ext_fuzzable_requests( response )
                 
                 for h in response.getHeaders():
                     if 'cookie' in h.lower():
-                        om.out.information('The remote web application sent the following cookie: "' + str(response.getHeaders()[h]) + '".\nw3af will use it during the rest of the process in order to maintain the session.')
+                        msg = 'The remote web application sent the following cookie: "'
+                        msg += str(response.getHeaders()[h]) + '".\nw3af will use it during the'
+                        msg += ' rest of the process in order to maintain the session.'
+                        om.out.information( msg )
                         
                 self._sendToBrowser(response)
                 
