@@ -376,10 +376,16 @@ class consoleUi:
         parser = shlex(line)
         parser.whitespace_split = True
         while True:
-            token = parser.get_token()
-            if token == parser.eof:
+            try:
+                token = parser.get_token()
+            except ValueError, ve:
+                term.write( str(ve) + '\n')
+                result = []
                 break
-            result.append(token)
+            else:
+                if token == parser.eof:
+                    break
+                result.append(token)
 
         return result
 
