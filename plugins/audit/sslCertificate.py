@@ -28,7 +28,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import getProtocol, getNetLocation
+from core.data.parsers.urlParser import getProtocol, getNetLocation, getDomain
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -45,6 +45,8 @@ class sslCertificate(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        # Internal variables
+        self._already_tested_domains = []
 
     def audit(self, freq ):
         '''
@@ -53,47 +55,55 @@ class sslCertificate(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         url = freq.getURL()
-        if 'HTTPS' == getProtocol( url ).upper():
-            # Parse the domain:port
-            splited = getNetLocation(url).split(':')
-            port = 443
-            host = splited[0]
+        
+        if 'HTTPS' != getProtocol( url ).upper():
+            return
 
-            if len( splited ) > 1:
-                port = int(splited[1])
+        domain = getDomain(url)
+        # We need to check certificate only once per host
+        if domain in self._already_tested_domains:
+            return
 
-            # Create the connection
-            socket_obj = socket.socket()
-            try:
-                socket_obj.connect( ( host , port ) )
-                ctx = SSL.Context(SSL.SSLv23_METHOD)
-                ssl_conn = SSL.Connection(ctx, socket_obj)
+        # Parse the domain:port
+        splited = getNetLocation(url).split(':')
+        port = 443
+        host = splited[0]
 
-                # Go to client mode
-                ssl_conn.set_connect_state()
+        if len( splited ) > 1:
+            port = int(splited[1])
 
-                # If I don't send something here, the "get_peer_certificate"
-                # method returns None. Don't ask me why!
-                #ssl_conn.send('GET / HTTP/1.1\r\n\r\n')
-                self.ssl_wrapper( ssl_conn, ssl_conn.send, ('GET / HTTP/1.1\r\n\r\n', ), {})
-            except Exception, e:
-                om.out.error('Error in audit.sslCertificate: "' + repr(e)  +'".')
-            else:
-                # Get the cert
-                cert = ssl_conn.get_peer_certificate()
+        # Create the connection
+        socket_obj = socket.socket()
+        try:
+            socket_obj.connect( ( host , port ) )
+            ctx = SSL.Context(SSL.SSLv23_METHOD)
+            ssl_conn = SSL.Connection(ctx, socket_obj)
 
-                # Perform the analysis
-                self._analyze_cert( cert, ssl_conn, host )
+            # Go to client mode
+            ssl_conn.set_connect_state()
 
-                # Print the SSL information to the log
-                desc = 'This is the information about the SSL certificate used in the target site:'
-                desc += '\n'
-                desc += self._dump_X509(cert)
-                om.out.information( desc )
-                i = info.info()
-                i.setName('SSL Certificate' )
-                i.setDesc( desc )
-                kb.kb.append( self, 'certificate', i )
+            # If I don't send something here, the "get_peer_certificate"
+            # method returns None. Don't ask me why!
+            #ssl_conn.send('GET / HTTP/1.1\r\n\r\n')
+            self.ssl_wrapper( ssl_conn, ssl_conn.send, ('GET / HTTP/1.1\r\n\r\n', ), {})
+        except Exception, e:
+            om.out.error('Error in audit.sslCertificate: "' + repr(e)  +'".')
+        else:
+            # Get the cert
+            cert = ssl_conn.get_peer_certificate()
+
+            # Perform the analysis
+            self._analyze_cert( cert, ssl_conn, host )
+            self._already_tested_domains.append(domain)
+            # Print the SSL information to the log
+            desc = 'This is the information about the SSL certificate used in the target site:'
+            desc += '\n'
+            desc += self._dump_X509(cert)
+            om.out.information( desc )
+            i = info.info()
+            i.setName('SSL Certificate' )
+            i.setDesc( desc )
+            kb.kb.append( self, 'certificate', i )
 
     def ssl_wrapper(self, ssl_obj, method, args, kwargs):
         '''
@@ -156,7 +166,7 @@ class sslCertificate(baseAuditPlugin):
         # Check that the certificate is self issued
         if peer == issuer:
             i = info.info()
-            i.setName('Self signed SSL certificate')
+            i.setName('Self issued SSL certificate')
             desc = 'The certificate is self issued'
             i.setDesc( desc )
             om.out.information( desc )
