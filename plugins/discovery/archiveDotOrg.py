@@ -162,7 +162,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
                         #
                         # - The re_references are the result of regular expressions, which in some cases
                         # are just false positives.
-                        parsed_references, re_references = dp.getReferences()
+                        parsed_references, re_references = document_parser.getReferences()
                         
                         # Filter the ones I want
                         url_regex = 'http://web\.archive\.org/web/.*/http[s]?://' + domain + '/.*'
