@@ -101,10 +101,22 @@ class digitSum(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            if not self.is404( response ) and \
-            relative_distance(response.getBody(), original_response.getBody()) < 0.70:
-                self._fuzzableRequests.append( fuzzableRequest )
-                om.out.debug('digitSum plugin found new URI: ' + fuzzableRequest.getURI() )
+            if not self.is404( response ):
+                # We have two different cases:
+                # - If the URL's are different, then there is nothing to think about, we simply found
+                # something new!
+                #
+                # - If we changed the query string parameters, we have to check the content
+                is_new = False
+                if response.getURL() != original_response.getURL():
+                    is_new = True
+                elif relative_distance(response.getBody(), original_response.getBody()) < 0.70:
+                    is_new = True
+                
+                # Add it to the result.
+                if is_new:
+                    self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+                    om.out.debug('digitSum plugin found new URI: ' + fuzzableRequest.getURI() )
     
     def _mangle_digits(self, fuzzableRequest):
         '''
@@ -154,6 +166,7 @@ class digitSum(baseDiscoveryPlugin):
                     splitted[ i ] = str( int(splitted[ i ]) - 2 )
                     res.append( ''.join(splitted) )
                     splitted[ i ] = str( int(splitted[ i ]) + 1 )
+                    
         return res
                 
     def _find_digits( self, a_string ):
