@@ -108,17 +108,17 @@ class webSpider(baseDiscoveryPlugin):
             # Modified when I added the pdfParser
             # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze
             # a image file, its useless and consumes cpu power.
-            if response.is_text_or_html() or response.is_pdf():
+            if response.is_text_or_html() or response.is_pdf() or response.is_swf():
                 originalURL = response.getRedirURI()
                 if self._url_parameter != None:
                     originalURL = urlParser.setParam(originalURL, self._url_parameter)
                 try:
                     documentParser = dpCache.dpc.getDocumentParserFor( response )
-                except w3afException:
-                    # Failed to find a suitable document parser.
-                    pass
+                except w3afException, w3:
+                    msg = 'Failed to find a suitable document parser.'
+                    msg += ' Exception: "' + str(w3) +'".'
+                    om.out.error( msg )
                 else:
-                    
                     # Note:
                     # - With parsed_references I'm 100% that it's really something in the HTML
                     # that the developer intended to add.
@@ -174,6 +174,7 @@ class webSpider(baseDiscoveryPlugin):
         '''
         if getDomain( reference ) == getDomain( originalURL ):
             if self._isForward( reference ):
+                
                 response = None
                 headers = { 'Referer': originalURL }
                 
