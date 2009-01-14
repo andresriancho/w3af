@@ -31,6 +31,7 @@ from core.controllers.misc.lru import LRU
 import urllib
 import cgi
 
+
 class fingerprint404Page:
     '''
     Read the 404 page returned by the server.
@@ -74,9 +75,9 @@ class fingerprint404Page:
         @return: A string that represents the "cleaned" response body of the response.
         '''
         original_body = response.getBody()
-        domain_path = urlParser.getDomainPath( response.getURL() )
-        to_replace = domain_path.split('/')
-        to_replace.append( domain_path )
+        url = response.getURL()
+        to_replace = url.split('/')
+        to_replace.append( url )
         
         for i in to_replace:
             if len(i) > 6:
@@ -131,8 +132,8 @@ class fingerprint404Page:
             response_body = tmp[0]
             html_body = self._get_clean_body( httpResponse )
             ratio = relative_distance( response_body, html_body )
-            if ratio > 0.90:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + '0.90' )
+            if ratio > 0.72:
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + '0.72' )
                 return True
             else:
                 return False
@@ -160,8 +161,8 @@ class fingerprint404Page:
             response_body = tmp[0]
             html_body = self._get_clean_body( httpResponse )
             ratio = relative_distance( response_body, html_body )
-            if ratio > 0.90:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.90' )
+            if ratio > 0.72:
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.72' )
                 return True
             else:
                 return False
@@ -224,8 +225,8 @@ class fingerprint404Page:
             elif kb.kb.getData('error404page', 'trustBody'):
                 html_body = self._get_clean_body( httpResponse )
                 ratio = relative_distance( html_body, kb.kb.getData('error404page', 'trustBody') )
-                if ratio > 0.90:
-                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.90' )
+                if ratio > 0.72:
+                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.72' )
                     return True
                 else:
                     return False
@@ -253,7 +254,7 @@ class fingerprint404Page:
                     
                     # The second method
                     if exactComparison == False:
-                        if relative_distance( a, b ) < 0.90:
+                        if relative_distance( a, b ) < 0.72:
                             # If one is different, then we return false.
                             return False
                         

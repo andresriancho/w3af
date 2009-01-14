@@ -61,7 +61,6 @@ class findBackdoor(baseDiscoveryPlugin):
             # Init some variables
             is_404 = kb.kb.getData( 'error404page', '404' )
 
-        
             # Search for the web shells
             for web_shell_filename in self._get_web_shells():
                 web_shell_url = urlParser.urlJoin(  domain_path , web_shell_filename )
@@ -152,11 +151,11 @@ class findBackdoor(baseDiscoveryPlugin):
         return '''
         This plugin searches for web shells in the directories that are sent as input.
         For example, if the input is:
-            - http://localhost/w3af/webshells/f00b4r.php
+            - http://host.tld/w3af/f00b4r.php
             
         The plugin will perform these requests:
-            - http://localhost/w3af/webshells/c99.php
-            - http://localhost/w3af/webshells/cmd.php
-            - http://localhost/w3af/webshells/webshell.php
+            - http://host.tld/w3af/c99.php
+            - http://host.tld/w3af/cmd.php
+            - http://host.tld/w3af/webshell.php
             ...
         '''

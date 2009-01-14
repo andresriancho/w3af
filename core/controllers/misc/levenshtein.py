@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import difflib
 
 def relative_distance(a_str, b_str):
     '''
@@ -29,7 +30,33 @@ def relative_distance(a_str, b_str):
     @param a_str: A string object
     @param b_str: A string object
     @return: A float with the distance
-    '''        
+    '''
+    # This is a quick hack, because....
+    return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+    
+    # the algorithm below is faster but... has "less common sense than a chiken":
+    '''
+    >>> def do_both(a,b):
+    ...     print relative_distance(a,b)
+    ...     print difflib.SequenceMatcher(None,a,b).ratio()
+    ... 
+    >>> do_both(string.letters,string.letters)
+    1.0
+    1.0
+    >>> do_both(string.letters,string.letters + 'a')
+    0.962620149519
+    0.990476190476
+    >>> do_both(string.letters,string.letters + 'abc')
+    0.893884297521
+    0.971962616822
+    >>> do_both(string.letters * 2,string.letters + 'abc' + string.letters)
+    0.499606952572
+    0.985781990521
+    >>> do_both(string.letters * 2,string.letters + 'abc def' + string.letters)
+    0.464248031816
+    0.967441860465
+    >>> 
+    '''
     m, n = (len(a_str),a_str), (len(b_str),b_str)
     
     #ensure that the 'm' tuple holds the longest string
@@ -57,5 +84,5 @@ def relative_distance(a_str, b_str):
     
     r = r / 100
     r = 1 - r
-    
+
     return r
