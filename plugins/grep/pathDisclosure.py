@@ -109,7 +109,7 @@ class pathDisclosure(baseGrepPlugin):
             response_body = '...<b>Error while processing /home/image.png</b>...'
             return: False
         '''
-        regex_res = re.findall('<.+?(["|\']'+path_disclosure_string+'["|\']).*?>', response_body)
+        regex_res = re.findall('<.+?(["|\']'+ re.escape(path_disclosure_string) +'["|\']).*?>', response_body)
         in_attr = path_disclosure_string in regex_res
         return in_attr
     
