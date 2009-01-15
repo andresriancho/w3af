@@ -52,7 +52,7 @@ class KBTree(gtk.TreeView):
         self.w3af = w3af
 
         # simple empty Tree Store
-        # columns: string to show; key for the plugin instance, icon, colorLevel, color
+        # columns: string to show; key for the plugin instance, icon, colorLevel, color, child_count
         self.treestore = gtk.TreeStore(str, str, gtk.gdk.Pixbuf, int, str, str)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
@@ -244,6 +244,8 @@ class KBTree(gtk.TreeView):
                 treeplugin = treestore.get_iter(pathplugin)
                 # the color can change later!
                 self.treestore[treeplugin][4] = plugincolor
+                # Update the child_count
+                self.treestore[treeplugin][5] = child_count = '( ' + str(len(plugvalues)) + ' )'
             else:
                 child_count = '( ' + str(len(plugvalues)) + ' )'
                 treeplugin = treestore.append(None, [pluginname, 0, None, 0, plugincolor, child_count])
@@ -258,6 +260,8 @@ class KBTree(gtk.TreeView):
                     treevariab = treestore.get_iter(pathvariab)
                     # the color can change later!
                     self.treestore[treevariab][4] = variabcolor
+                    # Update the child_count
+                    self.treestore[treevariab][5] = child_count = '( ' + str(len(variabobjects)) + ' )'
                 else:
                     child_count = '( ' + str(len(variabobjects)) + ' )'
                     treevariab = treestore.append(treeplugin, [variabname, 0, None, 0, variabcolor, child_count])
