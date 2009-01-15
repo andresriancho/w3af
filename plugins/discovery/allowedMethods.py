@@ -50,7 +50,7 @@ class allowedMethods(baseDiscoveryPlugin):
         self._exec = True
         self._already_tested = []
         self._bad_codes = [ httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
-                                    httpConstants.METHOD_NOT_ALLOWED]
+                                    httpConstants.METHOD_NOT_ALLOWED, httpConstants.FORBIDDEN]
         
         # Methods
         self._dav_methods = [ 'DELETE', 'PROPFIND', 'PROPPATCH', 'COPY', 'MOVE', 'LOCK', 
