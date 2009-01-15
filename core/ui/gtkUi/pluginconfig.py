@@ -600,14 +600,14 @@ class PluginConfigBody(gtk.VBox):
         scrollwin1u = gtk.ScrolledWindow()
         scrollwin1u.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.std_plugin_tree = PluginTree(self.w3af, "standard", self.config_panel)
-        scrollwin1u.add_with_viewport(self.std_plugin_tree)
+        scrollwin1u.add(self.std_plugin_tree)
         scrollwin1u.show()
 
         # lower left
         scrollwin1l = gtk.ScrolledWindow()
         scrollwin1l.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.out_plugin_tree = PluginTree(self.w3af, "output", self.config_panel)
-        scrollwin1l.add_with_viewport(self.out_plugin_tree)
+        scrollwin1l.add(self.out_plugin_tree)
         scrollwin1l.show()
 
         # pack the left part
