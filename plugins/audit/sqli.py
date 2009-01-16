@@ -126,7 +126,6 @@ class sqli(baseAuditPlugin):
         
         # ASP / MSSQL
         errors.append( ('System\.Data\.OleDb\.OleDbException', dbms.MSSQL ) )
-        errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2', dbms.DB2 ) )
         errors.append( ('\\[SQL Server\\]', dbms.MSSQL ) )
         errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', dbms.MSSQL ) )
         errors.append( ('\\[SQLServer JDBC Driver\\]', dbms.MSSQL ) )
@@ -142,6 +141,14 @@ class sqli(baseAuditPlugin):
         errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
         errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
+        
+        # DB2
+        errors.append( ('SQLCODE', dbms.DB2 ) )
+        errors.append( ('DB2 SQL error:', dbms.DB2 ) )
+        errors.append( ('SQLSTATE', dbms.DB2 ) )
+        
+        # Sybase
+        errors.append( ("Sybase message:", dbms.SYBASE ) )
         
         # Access
         errors.append( ('Syntax error in query expression', dbms.ACCESS ))
@@ -175,7 +182,9 @@ class sqli(baseAuditPlugin):
         # Informix
         errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
         errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
+        
         errors.append( ('<b>Warning</b>:  ibase_', dbms.INTERBASE ))
+        errors.append( ('Dynamic SQL Error', dbms.INTERBASE ))
         
         # DML
         errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', dbms.DMLDATABASE ))
