@@ -39,6 +39,7 @@ General:
     Achim Hoffmann (ah|at|securenet.de) - Great ideas and OWASP SoC Reviewer
     Taras P. Ivashchenko <naplanetu!gmail.com> - A lot of BIG contributions.
     Kevin Denver - xmlFile plugin, urlParser extension, bug fixing, testing and more!
+    Martin Tartarelli - Hacked around the cmd.aspx file in order to evade AV detection, documentation, and more.
 
 w3af also has one big sponsor, Cybsec, www.cybsec.com
 
