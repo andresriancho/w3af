@@ -20,15 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createRandAlpha
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
+
 from core.data.kb.shell import shell as shell
+from core.controllers.w3afException import w3afException
+
 
 class osCommandingShell(baseAttackPlugin):
     '''
@@ -41,11 +44,11 @@ class osCommandingShell(baseAttackPlugin):
         baseAttackPlugin.__init__(self)
         
         # User configured parameter
-        self._changeToPost = True
+        self._change_to_post = True
         self._url = ''
         self._separator = ';'
         self._data = ''
-        self._injvar = ''
+        self._inj_var = ''
         self._method = 'GET'
         self._generateOnlyOne = True
 
@@ -81,17 +84,22 @@ class osCommandingShell(baseAttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verifyVuln( vuln ):
             
-            if vuln.getMethod() != 'POST' and self._changeToPost and self._verifyVuln( self.GET2POST( vuln ) ):
-                om.out.information('The vulnerability was found using method GET, but POST is being used during this exploit.')
+            if vuln.getMethod() != 'POST' and self._change_to_post and \
+            self._verifyVuln( self.GET2POST( vuln ) ):
+                msg = 'The vulnerability was found using method GET, but POST is being used'
+                msg += ' during this exploit.'
+                om.out.information( msg )
                 vuln = self.GET2POST( vuln )
             else:
-                om.out.information('The vulnerability was found using method GET, tried to change the method to POST for exploiting but failed.')
+                msg = 'The vulnerability was found using method GET, tried to change the method to'
+                msg += ' POST for exploiting but failed.'
+                om.out.information( msg )
             
             # Create the shell object
-            s = osShell( vuln )
-            s.setUrlOpener( self._urlOpener )
-            s.setCut( self._header, self._footer )
-            return s
+            shell_obj = osShell( vuln )
+            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setCut( self._header, self._footer )
+            return shell_obj
             
         else:
             return None
@@ -108,7 +116,9 @@ class osCommandingShell(baseAttackPlugin):
         
         if exploitDc == None:
             om.out.error('You hitted bug #1948260. Please report how to reproduce it here:')
-            om.out.error('https://sourceforge.net/tracker/index.php?func=detail&aid=1948260&group_id=170274&atid=853652')
+            bug_URL = 'https://sourceforge.net/tracker/index.php?func=detail&aid=1948260'
+            bug_URL += '&group_id=170274&atid=853652'
+            om.out.error( bug_URL )
             
         # Define a test command:
         rand = createRandAlpha( 8 )
@@ -129,59 +139,41 @@ class osCommandingShell(baseAttackPlugin):
             return self._defineCut( response.getBody(), rand , exact=True )
     
     def getOptions(self):
-        # FIXME!
-        return optionList()
-
-    def getOptionsXML(self):
         '''
-        This method returns a XML containing the Options that the plugin has.
-        Using this XML the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user. The XML has to validate against the xml schema file located at :
-        w3af/core/ui/userInterface.dtd
+        @return: A list of option objects for this plugin.
+        '''        
+        d1 = 'URL to exploit with fastExploit()'
+        o1 = option('url', self._url, d1, 'string')
         
-        @return: XML with the plugin options.
-        ''' 
-        return  '<?xml version="1.0" encoding="ISO-8859-1"?>\
-        <OptionList>\
-            <Option name="changeToPost">\
-                <default>'+str(self._changeToPost)+'</default>\
-                <desc>If the vulnerability was found in a GET request, try to change the method to POST during exploitation.</desc>\
-                <help>If the vulnerability was found in a GET request, try to change the method to POST during exploitation; this is usefull for not being logged in the webserver logs ;)</help>\
-                <type>boolean</type>\
-            </Option>\
-            <Option name="url">\
-                <default>'+self._url+'</default>\
-                <desc>URL to exploit with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="method">\
-                <default>'+self._method+'</default>\
-                <desc>HTTP method to use with fastExploit()</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="injvar">\
-                <default>'+self._injvar+'</default>\
-                <desc>The variable name where to inject os commands.</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="data">\
-                <default>'+self._data+'</default>\
-                <desc>The data, like: f00=bar&amp;spam=eggs</desc>\
-                <type>string</type>\
-            </Option>\
-            <Option name="separator">\
-                <default>'+self._separator+'</default>\
-                <desc>The separator to use between commands.</desc>\
-                <help>The values for this option are usually \' ; " , ` or some other special character.</help>\
-                <type>string</type>\
-            </Option>\
-            <Option name="generateOnlyOne">\
-                <default>'+str(self._generateOnlyOne)+'</default>\
-                <desc>If true, this plugin will try to generate only one shell object.</desc>\
-                <type>boolean</type>\
-            </Option>\
-        </OptionList>\
-        '
+        d2 = 'HTTP method to use with fastExploit()'
+        o2 = option('method', self._method, d2, 'string')
+
+        d3 = 'Data to send with fastExploit()'
+        o3 = option('data', self._data, d3, 'string')
+
+        d4 = 'Variable where to inject with fastExploit()'
+        o4 = option('injvar', self._inj_var, d4, 'string')
+
+        d5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
+        d5 += ' during exploitation.'
+        h5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
+        h5 += 'during exploitation; this is usefull for not being logged in the webserver logs.'
+        o5 = option('changeToPost', self._change_to_post, d5, 'boolean', help=h5)
+        
+        d6 = 'The command separator to be used.'
+        h6 = 'In an OS commanding vulnerability, a command separator is used to separate the'
+        h6 += ' original command from the customized command that the attacker want\'s to execute.'
+        h6 += ' Common command separators are ;, & and |.'
+        o6 = option('separator', self._separator, d6, 'string', help=h6)
+        
+        ol = optionList()
+        ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
+        ol.add(o4)
+        ol.add(o5)
+        ol.add(o6)
+        return ol
 
     def setOptions( self, optionsMap ):
         '''
@@ -191,16 +183,16 @@ class osCommandingShell(baseAttackPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        if optionsMap['method'].getValue() not in ['GET','POST']:
+        if optionsMap['method'].getValue() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')
         else:
             self._method = optionsMap['method'].getValue()
 
         self._data = optionsMap['data'].getValue()
-        self._injvar = optionsMap['injvar'].getValue()
+        self._inj_var = optionsMap['injvar'].getValue()
         self._separator = optionsMap['separator'].getValue()
         self._url = optionsMap['url'].getValue()
-        self._changeToPost = optionsMap['changeToPost'].getValue()
+        self._change_to_post = optionsMap['changeToPost'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
             
     def getPluginDeps( self ):
