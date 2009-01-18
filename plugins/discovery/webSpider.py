@@ -84,8 +84,8 @@ class webSpider(baseDiscoveryPlugin):
 
         # Set the URL parameter if necessary
         if self._url_parameter != None:
-          fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._url_parameter))
-          fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._url_parameter))
+            fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._url_parameter))
+            fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._url_parameter))
 
         # If its a form, then smartFill the Dc.
         original_dc = fuzzableRequest.getDc()
