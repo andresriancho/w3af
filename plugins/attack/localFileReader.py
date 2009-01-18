@@ -72,14 +72,20 @@ class localFileReader(baseAttackPlugin):
     
     def getAttackType(self):
         '''
-        @return: The type of attack: shell/proxy/etc.
+        @return: The type of exploit, SHELL, PROXY, etc.
         '''
         return 'shell'
     
     def getVulnName2Exploit( self ):
         '''
-        @return: Key to search in the kb.
-        '''
+        This method should return the vulnerability name (as saved in the kb) to exploit.
+        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        
+        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        
+        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
+        return 'osCommanding' in this method.
+        '''        
         return 'localFileInclude'
         
     def _generateShell( self, vuln_obj ):

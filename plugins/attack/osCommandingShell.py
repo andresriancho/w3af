@@ -56,9 +56,21 @@ class osCommandingShell(baseAttackPlugin):
         raise w3afException('Not implemented.')
     
     def getAttackType(self):
+        '''
+        @return: The type of exploit, SHELL, PROXY, etc.
+        '''        
         return 'shell'
     
     def getVulnName2Exploit( self ):
+        '''
+        This method should return the vulnerability name (as saved in the kb) to exploit.
+        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        
+        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        
+        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
+        return 'osCommanding' in this method.
+        '''        
         return 'osCommanding'
 
     def _generateShell( self, vuln ):

@@ -81,6 +81,9 @@ class mysqlWebShell(baseAttackPlugin):
         return 'good'
         
     def getAttackType(self):
+        '''
+        @return: The type of exploit, SHELL, PROXY, etc.
+        '''        
         return 'shell'
     
     def getExploitableVulns(self):

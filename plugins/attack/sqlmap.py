@@ -123,6 +123,9 @@ class sqlmap(baseAttackPlugin):
                 raise w3afException('No exploitable vulnerabilities found.')
         
     def getAttackType(self):
+        '''
+        @return: The type of exploit, SHELL, PROXY, etc.
+        '''        
         return 'shell'
     
     def getExploitableVulns(self):

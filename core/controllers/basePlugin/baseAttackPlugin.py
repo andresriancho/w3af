@@ -86,7 +86,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
 
     def getAttackType(self):
         '''
-        Returns the type of exploit, SHELL, PROXY, etc.
+        @return: The type of exploit, SHELL, PROXY, etc.
         '''
         raise w3afException('Plugin is not implementing required method getAttackType' )
 
@@ -160,6 +160,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
                     return [s,]
                 else:
                     # Keep adding all shells to the kb
+                    # this is done 5 lines before this comment
                     pass
         
         return kb.kb.getData( self.getName(), 'shell' )
