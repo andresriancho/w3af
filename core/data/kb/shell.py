@@ -119,6 +119,18 @@ class shell(vuln, exploitResult, commonAttackMethods):
         else:
             raise w3afException('Plugins inhereting from baseShellAttackPlugin should implement the _rexec method.')
 
+    def end_interaction(self):
+        '''
+        When the user executes endInteraction in the console, this method is called.
+        Basically, here we handle WHAT TO DO in that case. In most cases (and this is
+        why we implemented it this way here) the response is "yes, do it end me" that
+        equals to "return True".
+        
+        In some other cases, the shell prints something to the console and then exists,
+        or maybe some other, more complex, thing.
+        '''
+        return True
+
     def _rexec( self, command ):
         '''
         This method should be implemented by all of the classes that inherit from this one.
