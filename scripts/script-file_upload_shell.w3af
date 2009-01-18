@@ -1,0 +1,35 @@
+# This is a test for file uploads
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit fileUpload
+back
+
+target
+set target http://localhost/w3af/audit/file_upload/
+back
+
+start
+
+assert len( kb.kb.getData('fileUpload', 'fileUpload') ) == 1
+
+exploit
+exploit fileUploadShell
+interact 0
+w
+ls
+endInteraction
+
+back
+
+assert len( kb.kb.getData('fileUploadShell', 'shell') ) == 1
+
+exit

