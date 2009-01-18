@@ -48,6 +48,9 @@ class localFileReader(baseAttackPlugin):
     def __init__(self):
         baseAttackPlugin.__init__(self)
         
+        # Internal variables
+        self._already_tested = []
+        
         # User configured variables
         self._changeToPost = True
         self._url = ''
@@ -359,34 +362,37 @@ class fileReaderShell(shell):
         permission_denied = []
 
         for path_file in files_to_test:
-            self._already_tested.append(path_file)
             
-            read_result = self._cat( path_file )
-            read_result = read_result.replace( path_file, '')
-            
-            filtered_result = self._filter_errors( read_result )
-            
-            if filtered_result == PERMISSION_DENIED:
-                spaces = 40 - len(path_file)
-                permission_denied.append(path_file + ' ' * spaces + PERMISSION_DENIED)
-            elif filtered_result not in [NO_SUCH_FILE, READ_DIRECTORY, FAILED_STREAM] and \
-            read_result != non_existant:
-                # The file exists, add it to the response
-                can_read.append(path_file)
+            # Make this check to avoid double GET's
+            if path_file not in self._already_tested:
+                self._already_tested.append(path_file)
                 
-                # Get the files referenced by this file
-                referenced_files = self._get_referenced_files( path_file, filtered_result )
-                referenced_files = list( set(referenced_files) - set(self._already_tested) )
+                read_result = self._cat( path_file )
+                read_result = read_result.replace( path_file, '')
                 
-                # Recursive stuff =)
-                if recursion_level and referenced_files:
-                    tmp_read, tmp_denied = self._list_recursive_method( non_existant, referenced_files, recursion_level - 1 )
-                    can_read.extend( tmp_read )
-                    permission_denied.extend( tmp_denied )
+                filtered_result = self._filter_errors( read_result )
+                
+                if filtered_result == PERMISSION_DENIED:
+                    spaces = 40 - len(path_file)
+                    permission_denied.append(path_file + ' ' * spaces + PERMISSION_DENIED)
+                elif filtered_result not in [NO_SUCH_FILE, READ_DIRECTORY, FAILED_STREAM] and \
+                read_result != non_existant:
+                    # The file exists, add it to the response
+                    can_read.append(path_file)
                     
-                    # uniq
-                    can_read = list(set(can_read))
-                    permission_denied = list(set(permission_denied))
+                    # Get the files referenced by this file
+                    referenced_files = self._get_referenced_files( path_file, filtered_result )
+                    referenced_files = list( set(referenced_files) - set(self._already_tested) )
+                    
+                    # Recursive stuff =)
+                    if recursion_level and referenced_files:
+                        tmp_read, tmp_denied = self._list_recursive_method( non_existant, referenced_files, recursion_level - 1 )
+                        can_read.extend( tmp_read )
+                        permission_denied.extend( tmp_denied )
+                        
+                        # uniq
+                        can_read = list(set(can_read))
+                        permission_denied = list(set(permission_denied))
                     
         can_read.sort()
         permission_denied.sort()

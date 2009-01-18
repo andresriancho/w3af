@@ -3,7 +3,6 @@
 plugins
 audit localFileInclude
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -28,8 +27,7 @@ exploit
 exploit localFileReader
 interact 0
 list
-list -r 1
-list -r 5
+list -r 2
 endInteraction
 
 exit
