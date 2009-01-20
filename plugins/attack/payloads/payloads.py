@@ -32,7 +32,7 @@ SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
 # 15825b40c6dace2a
 # 7cf5d4ab8ed434d5
 
-def getShell( extension, forceExtension=False ):
+def get_webshells( extension, forceExtension=False ):
     '''
     This method returns a webshell content to be used in exploits, based on the extension, or based on the
     x-powered-by header.
@@ -92,14 +92,14 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
     path += type_of_list + os.path.sep
     
     if forceExtension:
-        filename =  path + 'cmd.' + extension
+        filename =  path + type_of_list + '.' + extension
         real_extension = extension
         known_framework.append( (filename, real_extension) )
     else:
         poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredByString' )
         filename = ''
         
-        file_list = [ x for x in os.listdir( path ) if x.startswith('cmd') ]
+        file_list = [ x for x in os.listdir( path ) if x.startswith(type_of_list) ]
         for shell_filename in file_list:
                 
             filename = path + shell_filename

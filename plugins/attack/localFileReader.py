@@ -215,8 +215,12 @@ class localFileReader(baseAttackPlugin):
         script interpretation. You can also use the "list" command to list all files inside 
         the known paths.
         
-        One configurable parameters exist:
+        Six configurable parameters exist:
             - changeToPost
+            - url
+            - method
+            - data
+            - generateOnlyOne
         '''
 
 PERMISSION_DENIED = 'Permission denied.'

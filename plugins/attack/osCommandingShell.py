@@ -218,13 +218,14 @@ class osCommandingShell(baseAttackPlugin):
         return '''
         This plugin exploits os commanding vulnerabilities and returns a remote shell.
         
-        Six configurable parameters exist:
+        Seven configurable parameters exist:
             - changeToPost
             - url
             - method
             - injvar
             - data
             - separator
+            - generateOnlyOne
         '''
 
 class osShell(shell):
@@ -236,7 +237,7 @@ class osShell(shell):
         try:
             response = functionReference( self.getURL() , str(exploitDc) )
         except w3afException, e:
-            return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
+            return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:
             return self._cut( response.getBody() )
     
