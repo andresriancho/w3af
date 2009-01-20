@@ -64,25 +64,38 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     result = []
     
     _fuzzable = _createFuzzable( freq )
+    # GET parameters
     if isinstance( freq, httpQsRequest ):
         result.extend( _createMutantsWorker( freq, mutantQs, mutant_str_list, fuzzableParamList , append ) )
+    
+    # POST parameters
     if isinstance( freq, httpPostDataRequest ):
+        # If this is a POST request, it could be a JSON request, and I want to fuzz it !
         if isJSON( freq ):
-            # If this is a POST request, it could be a JSON request, and I want to fuzz it !
             result.extend( _createJSONMutants( freq, mutantJSON, mutant_str_list, fuzzableParamList , append ) )
         else:
             result.extend( _createMutantsWorker( freq, mutantPostData, mutant_str_list, fuzzableParamList , append ) )
-        
+    
+    # File name
     if 'fuzzedFname' in _fuzzable and isinstance( freq, httpQsRequest ):
         result.extend( _createFileNameMutants( freq, mutantFileName, mutant_str_list, fuzzableParamList , append ) )
+    
+    # Headers
     if 'headers' in _fuzzable:
         result.extend( _createMutantsWorker( freq, mutantHeaders, mutant_str_list, fuzzableParamList , append, dataContainer=_fuzzable['headers'] ) )
+        
+    # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
         result.extend( _createMutantsWorker( freq, mutantCookie, mutant_str_list, fuzzableParamList , append, dataContainer=freq.getCookie() ) )
+        
+    # File content of multipart forms
     if 'fuzzFileContent' in _fuzzable and isinstance( freq, httpPostDataRequest ):
         result.extend( _createFileContentMutants( freq, mutantFileContent, mutant_str_list, fuzzableParamList , append ) )
     
+    
+    #
     # Get the original response, and apply it to all mutants
+    #
     if oResponse:
         for m in result:
             m.setOriginalResponseBody( oResponse )
@@ -257,24 +270,23 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
         dataContainer = freq.getDc()
         
     for var_to_mod in dataContainer.keys():
-        
-        # Exclude the file parameters, those are fuzzed in _createFileContentMutants()
-        # (if the framework if configured to do so)
-        #
-        # But if we have a form with files, then we have a multipart form, and we have to keep it
-        # that way. If we don't send the multipart form as multipart, the remote programming
-        # language may ignore all the request, and the parameter that we are
-        # fuzzing (that's not the file content one) will be ignored too
-        #
-        # The "keeping the multipart form alive" thing is done some lines below, search for
-        # the "__HERE__" string!
-        #
-        # The exclusion is done here:
-        if var_to_mod in freq.getFileVariables():
-            continue
-        
         for mutant_str in mutant_str_list:
             
+            # Exclude the file parameters, those are fuzzed in _createFileContentMutants()
+            # (if the framework if configured to do so)
+            #
+            # But if we have a form with files, then we have a multipart form, and we have to keep it
+            # that way. If we don't send the multipart form as multipart, the remote programming
+            # language may ignore all the request, and the parameter that we are
+            # fuzzing (that's not the file content one) will be ignored too
+            #
+            # The "keeping the multipart form alive" thing is done some lines below, search for
+            # the "__HERE__" string!
+            #
+            # The exclusion is done here:
+            if var_to_mod in freq.getFileVariables() and not hasattr(mutant_str, 'name'):
+                continue
+                
             # Only fuzz the specified parameters (if any)
             # or fuzz all of them (the fuzzableParamList == [] case)
             if var_to_mod in fuzzableParamList or fuzzableParamList == []:
