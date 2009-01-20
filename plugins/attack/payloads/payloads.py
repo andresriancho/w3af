@@ -39,22 +39,7 @@ def get_webshells( extension, forceExtension=False ):
     
     Plugins calling this function, should depend on "discovery.serverHeader" if they want to use the complete power if this function.
     '''
-    res = []
-    
-    webshell_list = _get_file_list( 'webshell', extension, forceExtension )
-    
-    for filename, real_extension in webshell_list:
-        try:
-            cmd_file = open( filename )
-        except:
-            raise w3afException('Failed to open filename: ' + filename )
-        else:
-            file_content = cmd_file.read()
-            cmd_file.close()
-            res.append( (file_content, real_extension) )
-    
-    return res
-
+    return _get_file_list( 'webshell', extension, forceExtension )
 
 def get_shell_code( extension, forceExtension=False ):
     '''
@@ -71,11 +56,7 @@ def get_shell_code( extension, forceExtension=False ):
 
     @return: The CODE of the web shell, suitable to use in an eval() exploit.
     '''
-    res = []
-    
-    code_list = _get_file_list( 'code', extension, forceExtension )
-    
-    return res
+    return _get_file_list( 'code', extension, forceExtension )
     
 def _get_file_list( type_of_list, extension, forceExtension=False ):
     '''
@@ -100,6 +81,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
         filename = ''
         
         file_list = [ x for x in os.listdir( path ) if x.startswith(type_of_list) ]
+
         for shell_filename in file_list:
                 
             filename = path + shell_filename
@@ -114,6 +96,17 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
             # extension here is the parameter passed by the user, that can be '' , this happends in davShell
             uncertain_framework.append( (filename, extension or real_extension) )
     
-    res = []
     known_framework.extend( uncertain_framework ) 
-    return known_framework
+    
+    res = []
+    for filename, real_extension in known_framework:
+        try:
+            cmd_file = open( filename )
+        except:
+            raise w3afException('Failed to open filename: ' + filename )
+        else:
+            file_content = cmd_file.read()
+            cmd_file.close()
+            res.append( (file_content, real_extension) )
+            
+    return res
