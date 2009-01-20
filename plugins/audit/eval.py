@@ -192,8 +192,22 @@ class eval(baseAuditPlugin):
         # PHP http://php.net/sleep
         # Perl http://perldoc.perl.org/functions/sleep.html
         wait_strings.append( "sleep(" + str( self._wait_time ) + ");" )
+        
         # Python http://docs.python.org/library/time.html#time.sleep
         wait_strings.append( "import time;time.sleep(" + str( self._wait_time ) + ");" )
+        
+        # It seems that ASP doesn't support sleep! A language without sleep... is not a language!
+        # http://classicasp.aspfaq.com/general/how-do-i-make-my-asp-page-pause-or-sleep.html
+        
+        # JSP takes the amount in miliseconds
+        # http://java.sun.com/j2se/1.4.2/docs/api/java/lang/Thread.html#sleep(long)
+        wait_strings.append( "Thread.sleep(" + str( self._wait_time * 1000) + ");" )
+        
+        # ASP.NET also uses miliseconds
+        # http://msdn.microsoft.com/en-us/library/d00bd51t.aspx
+        # Note: The Sleep in ASP.NET is uppercase
+        wait_strings.append( "Thread.Sleep(" + str( self._wait_time * 1000) + ");" )
+        
         return wait_strings
 
     def end(self):
