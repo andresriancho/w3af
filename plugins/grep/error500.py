@@ -50,7 +50,7 @@ class error500(baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() in range(400, 600)\
-        and response.getCode() not in (404 , 403, 401, 405, 400)\
+        and response.getCode() not in (404 , 403, 401, 405, 400, 501)\
         and not self._falsePositive( response ):
             self._error_500_responses.append( (request, response) )
     
