@@ -1,18 +1,19 @@
-# Demo how I evade a false positive =)
+# Demo how I evade a false positive ;)
 
 plugins
 audit localFileInclude
 grep pathDisclosure
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
 back
 back
+
 target
-set target http://localhost/w3af/localFileInclusion/falsepositive.php?file=f0as9
+set target http://localhost/w3af/audit/local_file_inclusion/false_positive.php?file=index
 back
+
 start
 
 assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 0
