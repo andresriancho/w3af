@@ -23,7 +23,7 @@ start
 exploit
 exploit config xssBeef
 set beefURL http://localhost/beef/
-set beefPasswd beEFconfigPass
+set beefPasswd BeEFConfigPass
 view
 back
 exploit xssBeef
