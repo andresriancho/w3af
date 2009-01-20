@@ -202,7 +202,7 @@ class localFileInclude(baseAuditPlugin):
             for i in res:
                 msg += '- "' + i + '" \n'
             #msg = msg[:-1]
-            msg += '". This is just an informational message, which might be related to a'
+            msg += 'This is just an informational message, which might be related to a'
             msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
             om.out.information( msg )
         return res
