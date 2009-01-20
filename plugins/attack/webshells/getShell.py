@@ -39,43 +39,81 @@ def getShell( extension, forceExtension=False ):
     
     Plugins calling this function, should depend on "discovery.serverHeader" if they want to use the complete power if this function.
     '''
-    knownFramework = []
-    uncertainFramework = []
-    cmdPath = 'plugins' + os.path.sep + 'attack' + os.path.sep + 'webshells' + os.path.sep
+    res = []
+    
+    webshell_list = _get_file_list( 'webshell', extension, forceExtension )
+    
+    for filename, real_extension in webshell_list:
+        try:
+            cmd_file = open( filename )
+        except:
+            raise w3afException('Failed to open filename: ' + filename )
+        else:
+            file_content = cmd_file.read()
+            cmd_file.close()
+            res.append( (file_content, real_extension) )
+    
+    return res
+
+
+def get_shell_code( extension, forceExtension=False ):
+    '''
+    Like getShell, but instead of returning a list of the contents of a web shell,
+    that you can upload to a server and execute, this method returns the CODE
+    used to exploit an eval() vulnerability.
+    
+    Example:
+        getShell() returns: 
+            "<?  system( $_GET['cmd'] )    ?>"
+        
+        get_shell_code() returns:
+            "system( $_GET['cmd'] )"
+
+    @return: The CODE of the web shell, suitable to use in an eval() exploit.
+    '''
+    res = []
+    
+    code_list = _get_file_list( 'code', extension, forceExtension )
+    
+    return res
+    
+def _get_file_list( type_of_list, extension, forceExtension=False ):
+    '''
+    @parameter type_of_list: Indicates what type of list to return, options:
+        - code
+        - webshell
+    
+    @return: A list with tuples of filename and extension for the webshells available in the 
+    webshells directory.
+    '''
+    known_framework = []
+    uncertain_framework = []
+    path = 'plugins' + os.path.sep + 'attack' + os.path.sep + 'payloads' + os.path.sep
+    path += type_of_list + os.path.sep
     
     if forceExtension:
-        filename =  cmdPath + 'cmd.' + extension
-        realExtension = extension
-        knownFramework.append( (filename, realExtension) )
+        filename =  path + 'cmd.' + extension
+        real_extension = extension
+        known_framework.append( (filename, real_extension) )
     else:
         poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredByString' )
         filename = ''
         
-        shellList = [ x for x in os.listdir( cmdPath ) if x.startswith('cmd') ]
-        for shellFilename in shellList:
+        file_list = [ x for x in os.listdir( path ) if x.startswith('cmd') ]
+        for shell_filename in file_list:
                 
-            filename = cmdPath + shellFilename
-            realExtension = shellFilename.split('.')[1]
+            filename = path + shell_filename
+            real_extension = shell_filename.split('.')[1]
                 
             # Using the powered By headers
             # More than one header can have been sent by the server
             for h in poweredByHeaders:
-                if h.lower().count( realExtension ):
-                    knownFramework.append( (filename, realExtension) )
+                if h.lower().count( real_extension ):
+                    known_framework.append( (filename, real_extension) )
             
             # extension here is the parameter passed by the user, that can be '' , this happends in davShell
-            uncertainFramework.append( (filename, extension or realExtension) )
+            uncertain_framework.append( (filename, extension or real_extension) )
     
     res = []
-    knownFramework.extend( uncertainFramework )
-    for filename, realExtension in knownFramework:
-        try:
-            cmdFile = open( filename )
-        except:
-            raise w3afException('Failed to open filename: ' + filename )
-        else:
-            fileContent = cmdFile.read()
-            cmdFile.close()
-            res.append( (fileContent, realExtension) )
-    
-    return res
+    known_framework.extend( uncertain_framework ) 
+    return known_framework
