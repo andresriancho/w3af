@@ -208,6 +208,7 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
     @parameter mutant_str_list: a list with mutant strings to use
+    
     @return: Mutants that have the filename URL changed with the strings at mutant_str_list
     '''
     res = []
@@ -247,6 +248,8 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
 def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,append, dataContainer=None):
     '''
     An auxiliary function to createMutants.
+    
+    @return: A list of mutants.
     '''
     result = []
     
@@ -254,6 +257,22 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
         dataContainer = freq.getDc()
         
     for var_to_mod in dataContainer.keys():
+        
+        # Exclude the file parameters, those are fuzzed in _createFileContentMutants()
+        # (if the framework if configured to do so)
+        #
+        # But if we have a form with files, then we have a multipart form, and we have to keep it
+        # that way. If we don't send the multipart form as multipart, the remote programming
+        # language may ignore all the request, and the parameter that we are
+        # fuzzing (that's not the file content one) will be ignored too
+        #
+        # The "keeping the multipart form alive" thing is done some lines below, search for
+        # the "__HERE__" string!
+        #
+        # The exclusion is done here:
+        if var_to_mod in freq.getFileVariables():
+            continue
+        
         for mutant_str in mutant_str_list:
             
             # Only fuzz the specified parameters (if any)
@@ -267,6 +286,16 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     dataContainerCopy[var_to_mod] = dataContainerCopy[var_to_mod] + mutant_str
                 else:
                     dataContainerCopy[var_to_mod] = mutant_str
+                
+                # __HERE__
+                # Please see the comment above for an explanation of what we are doing here:
+                for var_name in freq.getFileVariables():
+                    # I have to create the string_file with a "name" attr.
+                    # This is needed for MultipartPostHandler
+                    str_file_instance = string_file( '' )
+                    extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
+                    str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
+                    dataContainerCopy[var_name] = str_file_instance
                 
                 # Create the mutant
                 freqCopy = freq.copy()

@@ -30,7 +30,7 @@ class mutantFileContent(mutant):
         mutant.__init__(self, freq)
 
     def getMutantType( self ):
-        return 'filename'
+        return 'file content'
 
     def getData( self ):
         '''
