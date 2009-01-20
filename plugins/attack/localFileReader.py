@@ -142,7 +142,7 @@ class localFileReader(baseAttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d0 = 'f the vulnerability was found in a GET request, try to change the method to POST'
+        d0 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         d0 += ' during exploitation.'
         h0 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         h0 += ' during exploitation; this is usefull for not being logged in the webserver logs.'
