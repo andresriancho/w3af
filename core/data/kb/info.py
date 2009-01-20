@@ -198,9 +198,16 @@ class info(dict):
             
         And we save this to the attribute:
             [ 3, 4]
+            
+        Also, the list is sorted!
+            setId( [4, 3] )
+        
+        Will save:
+            [3, 4]
         '''
         if isinstance(id, type([])):
             # A list with more than one ID:
+            id.sort()
             self._id = id
         else:
             self._id = [ id, ]
