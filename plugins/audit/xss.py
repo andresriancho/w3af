@@ -388,7 +388,7 @@ class xss(baseAuditPlugin):
                         v.setMethod( fr.getMethod() )
                         
                         v['permanent'] = True
-                        v['oldMutant'] = mutant
+                        v['write_payload'] = mutant
                         v.setName( 'Permanent cross site scripting vulnerability' )
                         v.setSeverity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()

