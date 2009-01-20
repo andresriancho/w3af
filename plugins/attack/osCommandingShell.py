@@ -88,12 +88,12 @@ class osCommandingShell(baseAttackPlugin):
             self._verifyVuln( self.GET2POST( vuln ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used'
                 msg += ' during this exploit.'
-                om.out.information( msg )
+                om.out.console( msg )
                 vuln = self.GET2POST( vuln )
             else:
                 msg = 'The vulnerability was found using method GET, tried to change the method to'
                 msg += ' POST for exploiting but failed.'
-                om.out.information( msg )
+                om.out.console( msg )
             
             # Create the shell object
             shell_obj = osShell( vuln )

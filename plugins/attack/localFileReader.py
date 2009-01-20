@@ -103,12 +103,12 @@ class localFileReader(baseAttackPlugin):
             self._verifyVuln( self.GET2POST( vuln_obj ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used during'
                 msg += ' this exploit.'
-                om.out.information( msg )
+                om.out.console( msg )
                 vuln_obj = self.GET2POST( vuln_obj )
             else:
                 msg = 'The vulnerability was found using method GET, tried to change the method to'
                 msg += ' POST for exploiting but failed.'
-                om.out.information( msg )
+                om.out.console( msg )
             
             # Create the shell object
             shell_obj = fileReaderShell( vuln_obj )

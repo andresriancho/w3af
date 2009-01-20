@@ -69,7 +69,7 @@ class mysqlWebShell(baseAttackPlugin):
         Exploits a web app with [blind] sql injections vulns.
         The options are configured using the plugin options and setOptions() method.
         '''
-        om.out.information( 'Starting mysqlWebShell fastExploit.' )
+        om.out.console( 'Starting mysqlWebShell fastExploit.' )
         v = vuln.vuln()
         v.setURL( self._url )
         v.setMethod( self._method )
@@ -113,12 +113,12 @@ class mysqlWebShell(baseAttackPlugin):
 
         @return: True if the shell is working and the user can start calling rexec
         '''
-        om.out.information( 'mysqlWebShell exploit plugin is starting.' )
+        om.out.console( 'mysqlWebShell exploit plugin is starting.' )
     
         if not self.canExploit():
-            om.out.information( 'No [blind] sql injection vulnerabilities have been found.' )
-            om.out.information( 'Hint #1: Try to find vulnerabilities using the audit plugins.' )
-            om.out.information( 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.' )
+            om.out.console( 'No [blind] sql injection vulnerabilities have been found.' )
+            om.out.console( 'Hint #1: Try to find vulnerabilities using the audit plugins.' )
+            om.out.console( 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.' )
         else:
             vulns = self.getExploitableVulns()
             
@@ -139,17 +139,17 @@ class mysqlWebShell(baseAttackPlugin):
                     
                     # Try to get a shell using all vuln
                     msg = 'Trying to exploit using vulnerability with id: ' + str( vuln.getId() )
-                    om.out.information( msg )
+                    om.out.console( msg )
                     if self._generateShell( vuln ):
                         # A shell was generated, I only need one point of exec.
                         msg = '[Blind] SQL vulnerability successfully exploited. You may start'
                         msg += ' entering commands.'
-                        om.out.information( msg )
+                        om.out.console( msg )
                         kb.kb.append( self, 'shell', vuln )
                         return True
                     else:
                         msg = 'Failed to exploit using vulnerability with id: ' + str(vuln.getId())
-                        om.out.information( msg )
+                        om.out.console( msg )
         return False
                 
     def _generateShell( self, vuln ):
@@ -157,26 +157,26 @@ class mysqlWebShell(baseAttackPlugin):
         @parameter vuln: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
         @return: True if mysqlWebShell could fingerprint the database.
         '''
-        om.out.information('Creating database driver.')
+        om.out.console('Creating database driver.')
         dbBuilder = dbDriverBuilder( self._urlOpener, self._bsql.equal )
         self._driver = dbBuilder.getDriverForVuln( vuln )
         
         if self._driver == None:
-            om.out.information('Failed to create database driver.')
+            om.out.console('Failed to create database driver.')
             return False
         else:
             # Successfully exploited [blind]sql, 
             # Lets check that the webApp connects to a database thats in "localhost"
-            om.out.information('Checking if the web application and the database are in the same host.')
+            om.out.console('Checking if the web application and the database are in the same host.')
             currentUser = self._driver.getCurrentUser()
             if not currentUser.upper().endswith( 'LOCALHOST' ):
-                om.out.information('The web application and the database seem to be in different hosts. If you want to continue this exploit anyway, set the forceNotLocal setting to True and run again.')
+                om.out.console('The web application and the database seem to be in different hosts. If you want to continue this exploit anyway, set the forceNotLocal setting to True and run again.')
                 if not self._force_not_local:
                     return False
                 else:
-                    om.out.information('The web application and the database seem to be in different hosts. Continuing by user request.')
+                    om.out.console('The web application and the database seem to be in different hosts. Continuing by user request.')
             else:
-                om.out.information('The database and the web application run on the same host. Continuing with the exploit.')
+                om.out.console('The database and the web application run on the same host. Continuing with the exploit.')
                 
             # lets check if I can write a file to the webroot
             if not self._generateMysqlWebShell( vuln ):
@@ -252,7 +252,7 @@ class mysqlWebShell(baseAttackPlugin):
         res = []
         pathDiscList = kb.kb.getData( 'pathDisclosure' , 'listFiles' )
         if len( pathDiscList ) == 0:
-            om.out.information( 'No path disclosure vulnerabilities found. w3af will try to guess the Web Root path.' )
+            om.out.console( 'No path disclosure vulnerabilities found. w3af will try to guess the Web Root path.' )
             res = []
             for webroot in self._getDefaultDocumentRoot( vuln ):
                 res.extend(  self._generatePaths( webroot ) )
