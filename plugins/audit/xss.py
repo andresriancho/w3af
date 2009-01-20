@@ -375,8 +375,8 @@ class xss(baseAuditPlugin):
         '''
         self._tm.join( self )
         if self._check_stored_xss:
-            for fr in self._fuzzableRequests:
-                response = self._sendMutant( fr, analyze=False )
+            for fuzzable_request in self._fuzzableRequests:
+                response = self._sendMutant( fuzzable_request, analyze=False )
                 
                 for mutant, mutant_response_id in self._xssMutants:
                     # Remember that httpResponse objects have a faster "__in__" than
@@ -385,12 +385,13 @@ class xss(baseAuditPlugin):
                     if mutant.getModValue() in response:
                         
                         v = vuln.vuln( mutant )
-                        v.setURL( fr.getURL() )
-                        v.setDc( fr.getDc() )
-                        v.setMethod( fr.getMethod() )
+                        v.setURL( fuzzable_request.getURL() )
+                        v.setDc( fuzzable_request.getDc() )
+                        v.setMethod( fuzzable_request.getMethod() )
                         
                         v['permanent'] = True
                         v['write_payload'] = mutant
+                        v['read_payload'] = fuzzable_request
                         v.setName( 'Permanent cross site scripting vulnerability' )
                         v.setSeverity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()
