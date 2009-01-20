@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-01-15, 16:05:50 -->
+<!-- Saved: 2009-01-20, 15:09:48 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -183,34 +183,6 @@
         <Name>reqResDBHandler.py</Name>
       </Filename>
       <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: check_same_thread=False</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 16:24:05</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>persist.py</Name>
-      </Filename>
-      <Linenumber>82</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: check_same_thread=False</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 16:24:05</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>persist.py</Name>
-      </Filename>
-      <Linenumber>176</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -466,34 +438,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
-    <Description></Description>
-    <Created>2008-10-11, 20:28:02</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>226</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Show images</Summary>
-    <Description></Description>
-    <Created>2008-10-11, 20:28:02</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>351</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: scale from points to pixels</Summary>
     <Description></Description>
     <Created>2008-10-11, 20:54:51</Created>
@@ -544,34 +488,6 @@
         <Name>encode_decode.py</Name>
       </Filename>
       <Linenumber>36</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add Oracle support</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 16:17:30</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>sql_tools</Dir>
-        <Name>blind_sqli_time_delay.py</Name>
-      </Filename>
-      <Linenumber>145</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add XXXXX support</Summary>
-    <Description></Description>
-    <Created>2008-11-15, 16:17:30</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>sql_tools</Dir>
-        <Name>blind_sqli_time_delay.py</Name>
-      </Filename>
-      <Linenumber>146</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -709,59 +625,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I dont like globals, please see TODO below.</Summary>
-    <Description></Description>
-    <Created>2008-12-14, 12:19:48</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>46</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I really dislike this, if someone knows how to send variables to</Summary>
-    <Description></Description>
-    <Created>2008-12-14, 12:19:48</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>rfiProxy.py</Name>
-      </Filename>
-      <Linenumber>182</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
-    <Description></Description>
-    <Created>2008-12-18, 22:09:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>exploit.py</Name>
-      </Filename>
-      <Linenumber>229</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I still have to CREATE the form</Summary>
-    <Description></Description>
-    <Created>2008-12-22, 22:28:44</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>pykto.py</Name>
-      </Filename>
-      <Linenumber>48</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Update this, it changes</Summary>
     <Description></Description>
     <Created>2008-12-24, 21:32:55</Created>
@@ -817,45 +680,6 @@
       <Linenumber>279</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2008-12-28, 01:28:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>290</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2008-12-28, 01:28:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>417</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2008-12-28, 01:28:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>454</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Not 100% sure about this...</Summary>
     <Description></Description>
@@ -868,32 +692,6 @@
         <Name>option.py</Name>
       </Filename>
       <Linenumber>126</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
-    <Description></Description>
-    <Created>2008-12-29, 00:07:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>sqlmap.py</Name>
-      </Filename>
-      <Linenumber>206</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: It should be possible to perform these tasks with the time delay also!</Summary>
-    <Description></Description>
-    <Created>2008-12-29, 00:20:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>mysqlWebShell.py</Name>
-      </Filename>
-      <Linenumber>40</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1150,6 +948,208 @@
         <Name>kbtree.py</Name>
       </Filename>
       <Linenumber>283</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I dont like globals, please see TODO below.</Summary>
+    <Description></Description>
+    <Created>2009-01-18, 11:58:29</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>46</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I really dislike this, if someone knows how to send variables to</Summary>
+    <Description></Description>
+    <Created>2009-01-18, 11:58:29</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>rfiProxy.py</Name>
+      </Filename>
+      <Linenumber>194</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-01-18, 16:48:18</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>299</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-01-18, 16:48:18</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>429</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-01-18, 16:48:18</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>466</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: It should be possible to perform these tasks with the time delay also!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 11:51:53</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>mysqlWebShell.py</Name>
+      </Filename>
+      <Linenumber>40</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 11:52:36</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>sqlmap.py</Name>
+      </Filename>
+      <Linenumber>211</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 13:00:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>exploit.py</Name>
+      </Filename>
+      <Linenumber>229</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Code some commands here. For now, just execute endInteraction'</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 13:25:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>xssBeef.py</Name>
+      </Filename>
+      <Linenumber>272</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:00:07</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>226</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Show images</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:00:07</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>351</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:30:14</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>62</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:30:14</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>153</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add Oracle support</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:58:18</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>sql_tools</Dir>
+        <Name>blind_sqli_time_delay.py</Name>
+      </Filename>
+      <Linenumber>145</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add XXXXX support</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 14:58:18</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>sql_tools</Dir>
+        <Name>blind_sqli_time_delay.py</Name>
+      </Filename>
+      <Linenumber>146</Linenumber>
     </Resource>
   </Task>
 </Tasks>
