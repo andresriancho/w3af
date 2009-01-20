@@ -104,6 +104,7 @@ class allowedMethods(baseDiscoveryPlugin):
         '''
         allowed_methods = []
         with_options = False
+        id_list = []
         
         # First, try to check available methods using OPTIONS, if OPTIONS isn't 
         # enabled, do it manually
@@ -115,6 +116,10 @@ class allowedMethods(baseDiscoveryPlugin):
                 allowed_methods = [ x.strip() for x in allowed_methods ]
                 with_options = True
                 allowed_methods = list(set(allowed_methods))
+
+        # Save the ID for later
+        if with_options:
+            id_list.append( res.id )
 
         if not with_options:
             # 'DELETE' is not tested! I don't want to remove anything...
@@ -131,6 +136,7 @@ class allowedMethods(baseDiscoveryPlugin):
                 except:
                     pass
                 else:
+                    id_list.append( response.id )
                     if code not in self._bad_codes:
                         allowed_methods.append( method )
         
@@ -144,6 +150,7 @@ class allowedMethods(baseDiscoveryPlugin):
             i = info.info()
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
+            i.setId( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods, which'
             msg += ' include DAV methods: ' + ', '.join(allowed_methods)
@@ -155,6 +162,7 @@ class allowedMethods(baseDiscoveryPlugin):
             i = info.info()
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
+            i.setId( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods:'
             msg += ' ' + ', '.join(allowed_methods)

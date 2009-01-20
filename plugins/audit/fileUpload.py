@@ -140,26 +140,31 @@ class fileUpload(baseAuditPlugin):
         
         return result
         
-    def _analyzeResult( self, mutant, response ):
+    def _analyzeResult( self, mutant, mutant_response ):
         '''
         Analyze results of the _sendMutant method. 
         
         In this case, check if the file was uploaded to any of the known directories,
         or one of the "default" ones like "upload" or "files".
         '''
-        for url in kb.kb.getData( 'urls' , 'urlList' ):
+        # Generate a list of directories where I can search for the uploaded file
+        domain_path_list = [ urlParser.getDomainPath(i) for i in kb.kb.getData( 'urls' , 'urlList' )]
+        domain_path_list = list(set(domain_path_list))
+        
+        # Try to find the file!
+        for url in domain_path_list:
             for path in self._generate_paths( url, mutant.uploaded_file_name ):
 
-                response = self._urlOpener.GET( path, useCache=False )
-                if not self._is_404( response ):
+                get_response = self._urlOpener.GET( path, useCache=False )
+                if not self._is_404( get_response ):
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
                     mutant.setModValue( '<file_object>' )
                     v = vuln.vuln( mutant )
-                    v.setId( response.id )
+                    v.setId( [mutant_response.id, get_response.id] )
                     v.setSeverity(severity.HIGH)
                     v.setName( 'Insecure file upload' )
-                    v['fileDest'] = response.getURL()
+                    v['fileDest'] = get_response.getURL()
                     v['fileVars'] = mutant.getFileVariables()
                     msg = 'A file upload to a directory inside the webroot was found at: '
                     msg += mutant.foundAt()

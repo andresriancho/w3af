@@ -68,15 +68,43 @@ class FullKBTree(kbtree.KBTree):
         success = False
         if hasattr(instance, "getId" ):
             if instance.getId() != None:
-                # The request and response that generated the vulnerability
-                search_result = self._dbHandler.searchById( instance.getId() )
-                if len(search_result) == 1:
-                    request, response = search_result[0]
-                    self.kbbrowser.rrV.request.showObject( request )
-                    self.kbbrowser.rrV.response.showObject( response )
-                    success = True
+                #
+                # We have two different cases:
+                #
+                # 1) The object is related to ONLY ONE request / response
+                # 2) The object is related to MORE THAN ONE request / response
+                #
+                # For 1), we show the classic view, and for 2) we show the classic
+                # view with a "page control"
+                #
+                # Work:
+                #
+                if len( instance.getId() ) == 1:
+                    # There is ONLY ONE id related to the object
+                    # This is 1)
+                    self.kbbrowser.pagesControl.deactivate()
+                    self.kbbrowser._pageChange(0)
+                    self.kbbrowser.pagesControl.hide()
+                    self.kbbrowser.title0.hide()
+                    
+                    search_result = self._dbHandler.searchById( instance.getId()[0] )
+                    if len(search_result) == 1:
+                        request, response = search_result[0]
+                        self.kbbrowser.rrV.request.showObject( request )
+                        self.kbbrowser.rrV.response.showObject( response )
+                        success = True
+                    else:
+                        om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
                 else:
-                    om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
+                    # There are MORE THAN ONE ids related to the object
+                    # This is 2)
+                    self.kbbrowser.pagesControl.show()
+                    self.kbbrowser.title0.show()
+                    
+                    self.kbbrowser.req_res_ids = instance.getId()
+                    self.kbbrowser.pagesControl.activate(len(instance.getId()))
+                    self.kbbrowser._pageChange(0)
+                    success = True
         
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
@@ -93,6 +121,14 @@ class KBBrowser(entries.RememberingHPaned):
     '''
     def __init__(self, w3af):
         super(KBBrowser,self).__init__(w3af, "pane-kbbrowser", 250)
+
+        # Internal variables:
+        # 
+        # Here I save the request and response ids to be used in the page control
+        self.req_res_ids = []
+        # This is to search the DB and print the different request and responses as they are
+        # requested from the page control, "_pageChange" method.
+        self._dbHandler = reqResDBHandler()
 
         # the filter to the tree
         filterbox = gtk.HBox()
@@ -139,9 +175,34 @@ class KBBrowser(entries.RememberingHPaned):
         # The request/response viewer
         self.rrV = reqResViewer.reqResViewer(w3af)
         self.rrV.set_sensitive(False)
+        
+        # Create the title label to show the request id
+        self.title0 = gtk.Label()
+        self.title0.show()
+        
+        # Create page changer to handle info/vuln objects that have MORE THAN ONE
+        # related request/response
+        self.pagesControl = entries.PagesControl(w3af, self._pageChange, 0)
+        self.pagesControl.deactivate()
+        self._pageChange(0)
+        centerbox = gtk.HBox()
+        centerbox.pack_start(self.pagesControl, True, False)
+        
+        # Add everything to a vbox
+        vbox_rrv_centerbox = gtk.VBox()
+        vbox_rrv_centerbox.pack_start(self.title0, False, True)
+        vbox_rrv_centerbox.pack_start(self.rrV,  True,  True)
+        vbox_rrv_centerbox.pack_start(centerbox,  False,  False)
+        
+        # and show
+        vbox_rrv_centerbox.show()
+        self.pagesControl.show()
+        centerbox.show()
+        
+        # And now put everything inside the vpaned
         vpanedExplainAndView = entries.RememberingVPaned(w3af, "pane-kbbexplainview", 100)
         vpanedExplainAndView.pack1( scrollwin22 )
-        vpanedExplainAndView.pack2( self.rrV )
+        vpanedExplainAndView.pack2( vbox_rrv_centerbox )
         vpanedExplainAndView.show()
         
         # pack & show
@@ -153,7 +214,27 @@ class KBBrowser(entries.RememberingHPaned):
         '''Changes the filter of the KB in the tree.'''
         self.filters[ptype] = button.get_active()
         self.kbtree.setFilter(self.filters)
-
+    
+    def _pageChange(self, page):
+        '''
+        Handle the page change in the page control.
+        '''
+        # Only do something if I have a list of request and responses
+        if self.req_res_ids:
+            request_id = self.req_res_ids[page]
+            try:
+                request, response = self._dbHandler.searchById( request_id )[0]
+            except:
+                # the request brought problems
+                self.rrV.request.clearPanes()
+                self.rrV.response.clearPanes()
+                self.rrV.set_sensitive(False)
+                self.title0.set_markup( "<b>Error</b>")
+            else:
+                self.title0.set_markup( "<b>Id: %d</b>" % request_id )
+                self.rrV.request.showObject( request )
+                self.rrV.response.showObject( response )
+        
 
 class URLsGraph(gtk.VBox):
     '''Graph the URLs that the system discovers.

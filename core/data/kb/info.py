@@ -91,10 +91,85 @@ class info(dict):
         if self._id != None and self._id != 0:
             if not self._desc.strip().endswith('.'):
                 self._desc += '.'
-            return self._desc + ' This information was found in the request with id ' + str(self._id) + '.'
+            
+            # One request OR more than one request
+            desc_to_return = self._desc
+            if len(self._id) > 1:
+                desc_to_return += ' This information was found in the requests with'
+                desc_to_return += ' ids ' + self._convert_to_range_wrapper( self._id ) + '.'
+            else:
+                desc_to_return += ' This information was found in the request with'
+                desc_to_return += ' id ' + str(self._id[0]) + '.'
+                
+            return desc_to_return
         else:
             return self._desc
+    
+    def _convert_to_range_wrapper(self,  list_of_integers):
+        '''
+        Just a wrapper for _convert_to_range; please see documentation below!
+        
+        @return: The result of self._convert_to_range( list_of_integers ) but without the trailing comma.
+        '''
+        res = self._convert_to_range( list_of_integers )
+        if res.endswith(','):
+            res = res [:-1]
+        return res
+    
+    def _convert_to_range(self, list_of_integers):
+        '''
+        Convert a list of integers to a nicer "range like" string.
+        For example:
+            input: [1, 2, 3, 4, 5, 6]
+            output: '1 to 6'
+        
+        For example:
+            input: [1, 2]
+            output: '1 and 2'
             
+        For example:
+            input: [1, 2, 3, 6]
+            output: '1 to 3 and 6'
+            
+        For example:
+            input: [1, 2, 3, 6, 7, 8]
+            output: '1 to 3 and 6 to 8'
+            
+        For example:
+            input: [1, 2, 3, 6, 7, 8, 10]
+            output: '1 to 3, 6 to 8 and 10'
+        '''
+        if len(list_of_integers) == 1:
+            return str(list_of_integers[0])
+        
+        elif len(list_of_integers) == 2:
+            return str(list_of_integers[0]) + ' and ' + str(list_of_integers[1])
+        
+        elif len(list_of_integers) > 2:
+            # Find the largest sequence like 1, 2, 3, 4...
+            start = list_of_integers[0]
+            for int_position, int_value in enumerate(list_of_integers[1:]):
+                if int_value == start + 1:
+                    start = int_value
+                else:
+                    # This item is the first one from a new sequence
+                    break
+            
+            # Do we have a sequence?
+            if int_position != 0:
+                # We have a sequence.
+                # let's write the string for the current sequence
+                response_string = str(list_of_integers[0]) + ' to ' + str(start) + ','
+            if int_position == 0:
+                response_string = str(list_of_integers[0]) + ','
+            
+            if int_position + 2 != len(list_of_integers):
+                # Now work with the rest of the list:
+                response_string += ' ' + self._convert_to_range(list_of_integers[int_position+1:])
+            
+            # and return...
+            return response_string
+    
     def __str__( self ):
         return self._desc
         
@@ -103,15 +178,37 @@ class info(dict):
         
     def setId( self, id ):
         '''
-        This is is the one from the response object that uniquely identifies all 
-        requests and responses.
+        The id is a unique number that identifies every request and response performed
+        by the framework.
+        
+        The id parameter is usually an integer, that points to that request / response pair.
+        
+        In some cases, one information object is related to more than one request / response,
+        in those cases, the id parameter is a list of integers.
+        
+        For example, in the cases where the info object is related to one request / response, we get
+        this call:
+            setId( 3 )
+            
+        And we save this to the attribute:
+            [ 3, ]
+            
+        When the info object is related to more than one request / response, we get this call:
+            setId( [3, 4] )
+            
+        And we save this to the attribute:
+            [ 3, 4]
         '''
-        self._id = id
+        if isinstance(id, type([])):
+            # A list with more than one ID:
+            self._id = id
+        else:
+            self._id = [ id, ]
     
     def getId( self ):
         '''
-        This is is the one from the response object that uniquely identifies all 
-        requests and responses.
+        @return: The list of ids related to this information object. Please read the
+        documentation of setId().
         '''
         return self._id
         

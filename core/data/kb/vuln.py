@@ -92,8 +92,18 @@ class vuln(info):
     def getDesc( self ):
         if self._id != None and self._id != 0:
             if not self._desc.endswith('.'):
-                self._desc += '.'        
-            return self._desc + ' The vulnerability was found in the request with id ' + str(self._id) + '.'
+                self._desc += '.'
+            
+            # One request OR more than one request
+            desc_to_return = self._desc
+            if len(self._id) > 1:
+                desc_to_return += ' This vulnerability was found in the requests with'
+                desc_to_return += ' ids ' + self._convert_to_range_wrapper( self._id ) + '.'
+            else:
+                desc_to_return += ' This vulnerability was found in the request with'
+                desc_to_return += ' id ' + str(self._id[0]) + '.'
+                
+            return desc_to_return
         else:
             return self._desc
             

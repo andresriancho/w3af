@@ -140,7 +140,7 @@ class dav(baseAuditPlugin):
         if res.getBody() == rndContent:
             v = vuln.vuln()
             v.setURL( url )
-            v.setId( res.id )
+            v.setId( [put_response.id, res.id] )
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
