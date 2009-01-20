@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-01-20, 15:09:48 -->
+<!-- Saved: 2009-01-20, 18:58:20 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -491,32 +491,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
-    <Description></Description>
-    <Created>2008-11-16, 09:46:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
-      </Filename>
-      <Linenumber>129</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!</Summary>
-    <Description></Description>
-    <Created>2008-11-16, 09:46:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
-      </Filename>
-      <Linenumber>143</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add mod_perl ssi injection support</Summary>
     <Description></Description>
     <Created>2008-11-18, 17:17:42</Created>
@@ -976,58 +950,6 @@
       <Linenumber>194</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-01-18, 16:48:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>299</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-01-18, 16:48:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>429</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-01-18, 16:48:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>466</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: It should be possible to perform these tasks with the time delay also!</Summary>
-    <Description></Description>
-    <Created>2009-01-20, 11:51:53</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>mysqlWebShell.py</Name>
-      </Filename>
-      <Linenumber>40</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
     <Description></Description>
@@ -1053,19 +975,6 @@
         <Name>exploit.py</Name>
       </Filename>
       <Linenumber>229</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Code some commands here. For now, just execute endInteraction'</Summary>
-    <Description></Description>
-    <Created>2009-01-20, 13:25:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>xssBeef.py</Name>
-      </Filename>
-      <Linenumber>272</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -1150,6 +1059,110 @@
         <Name>blind_sqli_time_delay.py</Name>
       </Filename>
       <Linenumber>146</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 15:43:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>localFileInclude.py</Name>
+      </Filename>
+      <Linenumber>129</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 15:43:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>localFileInclude.py</Name>
+      </Filename>
+      <Linenumber>143</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Create a proxy instead of a shell</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 16:21:58</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>xssBeef.py</Name>
+      </Filename>
+      <Linenumber>123</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Code some commands here. For now, just execute endInteraction'</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 16:21:58</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>xssBeef.py</Name>
+      </Filename>
+      <Linenumber>271</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 17:19:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>303</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 17:19:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>433</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 17:19:25</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>470</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: It should be possible to perform these tasks with the time delay also!</Summary>
+    <Description></Description>
+    <Created>2009-01-20, 18:39:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>mysqlWebShell.py</Name>
+      </Filename>
+      <Linenumber>40</Linenumber>
     </Resource>
   </Task>
 </Tasks>
