@@ -205,7 +205,6 @@ class xss(baseAuditPlugin):
         '''
         xss_tests = []
         
-        # no quotes
         # The number 2 is to inject in stored xss and not "letting the user know we are testing 
         # the site". And also please note that I don't have this: alert2('abc'); this "failure" will
         # let me find XSS in web applications that have magic_quotes enabled and will also 
@@ -220,7 +219,7 @@ class xss(baseAuditPlugin):
         
         # No quotes, with tag
         xss_tests.append(("<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>", [browsers.ALL, ]))
-        xss_tests.append(("<ScRIpT>alert(String.fromCharCode(88,83,83))</SCriPT>",
+        xss_tests.append(("<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>",
                 [browsers.ALL, ]))
         xss_tests.append(("'';!--\"<RANDOMIZE>=&{()}", [browsers.ALL, ]))
         xss_tests.append(("<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]))
@@ -296,7 +295,7 @@ class xss(baseAuditPlugin):
         @return: None, record all the results in the kb.
         '''
         # Add to the stored XSS checking
-        self._addToPermanentXssChecking( mutant )
+        self._addToPermanentXssChecking( mutant, response.id )
         
         # Init some variables
         vulnerable = False
@@ -355,13 +354,16 @@ class xss(baseAuditPlugin):
                     return True
             return False
         
-    def _addToPermanentXssChecking( self, mutant ):
+    def _addToPermanentXssChecking( self, mutant, response_id ):
         '''
         This is used to check for permanent xss.
         
+        @parameter mutant: The mutant objects
+        @parameter response_id: The response id generated from sending the mutant
+        
         @return: No value is returned.
         '''
-        self._xssMutants.append( mutant )
+        self._xssMutants.append( (mutant, response_id) )
         
     def end( self ):
         '''
@@ -376,13 +378,13 @@ class xss(baseAuditPlugin):
             for fr in self._fuzzableRequests:
                 response = self._sendMutant( fr, analyze=False )
                 
-                for mutant in self._xssMutants:
+                for mutant, mutant_response_id in self._xssMutants:
                     # Remember that httpResponse objects have a faster "__in__" than
                     # the one in strings; so string in response.getBody() is slower than
                     # string in response                    
                     if mutant.getModValue() in response:
                         
-                        v = vuln.vuln()
+                        v = vuln.vuln( mutant )
                         v.setURL( fr.getURL() )
                         v.setDc( fr.getDc() )
                         v.setMethod( fr.getMethod() )
@@ -395,7 +397,7 @@ class xss(baseAuditPlugin):
                         msg += ' . Using method: ' + v.getMethod() + '. The XSS was sent to the'
                         msg += ' URL: ' + mutant.getURL()+ '. ' + mutant.printModValue()
                         v.setDesc( msg )
-                        v.setId( response.id )
+                        v.setId( [response.id, mutant_response_id] )
                         kb.kb.append( self, 'xss', v )
                         break
         
