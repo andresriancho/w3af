@@ -118,7 +118,7 @@ class fileUploadShell(baseAttackPlugin):
         # The vuln was saved to the kb as a vuln object
         url = vuln_obj.getURL()
         method = vuln_obj.getMethod()
-        exploit_qs = vuln_obj.getDc()
+        exploit_dc = vuln_obj.getDc()
 
         # Create a file that will be uploaded
         extension = urlParser.getExtension( url )
@@ -127,9 +127,9 @@ class fileUploadShell(baseAttackPlugin):
         
         # Upload the file
         for file_var_name in vuln_obj['fileVars']:
-            exploit_qs[file_var_name] = file_handler
+            exploit_dc[file_var_name] = file_handler
         http_method = getattr( self._urlOpener,  method)
-        response = http_method( vuln_obj.getURL() ,  exploit_qs )
+        response = http_method( vuln_obj.getURL() ,  exploit_dc )
         
         # Call the uploaded script with an empty value in cmd parameter
         # this will return the getShell.SHELL_IDENTIFIER if success
