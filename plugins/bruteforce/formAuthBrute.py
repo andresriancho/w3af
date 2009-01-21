@@ -21,20 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
-import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
-import core.data.kb.vuln as vuln
-from core.data.url.xUrllib import xUrllib
-from core.controllers.bruteforce.bruteforcer import bruteforcer
 from core.data.dc.form import form as form
 from core.controllers.misc.levenshtein import relative_distance
 from core.data.fuzzer.fuzzer import createRandAlNum
+
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
 
 class formAuthBrute(baseBruteforcePlugin):
     '''
@@ -46,7 +43,10 @@ class formAuthBrute(baseBruteforcePlugin):
         baseBruteforcePlugin.__init__(self)
         
         # To store failed responses for later comparison
-        self._loginFailedResultList = []
+        self._login_failed_result_list = []
+        
+        self._user_field_name = None
+        self._passwd_field_name = None
         
     def audit(self, freq ):
         '''
@@ -56,17 +56,22 @@ class formAuthBrute(baseBruteforcePlugin):
         '''
         if self._isLoginForm( freq ):
             if freq.getURL() not in self._alreadyTested:
-                om.out.information('Starting form authentication bruteforce on URL: ' + freq.getURL() )
+                
+                # Save it (we don't want dups!)
+                self._alreadyTested.append( freq.getURL() )
+                
+                # Init
                 self._initBruteforcer( freq.getURL() )
-                
                 self._idFailedLoginPage( freq )
+                self._user_field_name, self._passwd_field_name = self._getLoginFieldNames( freq )
                 
-                self._userFieldName, self._passwdFieldName = self._getLoginFieldNames( freq )
-                om.out.information('Found a form login. The action of the form is: ' + freq.getURL() )
-                om.out.information('The username field to be used is: ' + self._userFieldName )
-                om.out.information('The password field to be used is: ' + self._passwdFieldName )
+                # Let the user know what we are doing
+                om.out.information('Found a form login. The action of the form is: "' + freq.getURL() +'".')
+                om.out.information('The username field to be used is: "' + self._user_field_name + '".')
+                om.out.information('The password field to be used is: "' + self._passwd_field_name + '".')
+                om.out.information('Starting form authentication bruteforce on URL: "' + freq.getURL() + '".')
                 
-
+                # Work
                 while not self._found or not self._stopOnFirst:
                     combinations = []
                     
@@ -75,7 +80,6 @@ class formAuthBrute(baseBruteforcePlugin):
                             combinations.append( self._bruteforcer.getNext() )
                         except w3afException:
                             om.out.information('No more user/password combinations available.')
-                            self._alreadyTested.append( freq.getURL() )
                             return
                     
                     self._bruteforce( freq, combinations )
@@ -88,8 +92,8 @@ class formAuthBrute(baseBruteforcePlugin):
         The first result is for logins with filled user and password fields; the second
         one is for a filled user and a blank passwd.
         '''
-        dc = freq.getDc()
-        userField, passwdField = self._getLoginFieldNames( freq )
+        data_container = freq.getDc()
+        user_field, passwd_field = self._getLoginFieldNames( freq )
         
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
@@ -97,13 +101,13 @@ class formAuthBrute(baseBruteforcePlugin):
                     (createRandAlNum( 8 ), '' )]
         
         # The result is going to be stored here
-        self._loginFailedResultList = []
+        self._login_failed_result_list = []
         
         for user, passwd in tests:
-            # setup the dc
-            dc[ userField ] = user
-            dc[ passwdField ] = passwd
-            freq.setDc( dc )
+            # setup the data_container
+            data_container[ user_field ] = user
+            data_container[ passwd_field ] = passwd
+            freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
             body = response.getBody()
@@ -111,7 +115,7 @@ class formAuthBrute(baseBruteforcePlugin):
             body = body.replace(passwd, '')
             
             # Save it
-            self._loginFailedResultList.append( body )
+            self._login_failed_result_list.append( body )
         
         # Now I perform a self test, before starting with the actual bruteforcing
         # The first tuple is an invalid username and a password
@@ -120,33 +124,34 @@ class formAuthBrute(baseBruteforcePlugin):
                     (createRandAlNum( 8 ), '' )]
         
         for user, passwd in tests:
-            # Now I do a self test of the regex I just created.
-            dc[ userField ] = user
-            dc[ passwdField ] = passwd
-            freq.setDc( dc )
+            # Now I do a self test of the result I just created.
+            data_container[ user_field ] = user
+            data_container[ passwd_field ] = passwd
+            freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
             body = response.getBody()
             body = body.replace(user, '')
-            body = body.replace(passwd, '')            
+            body = body.replace(passwd, '')
             
             if not self._matchesFailedLogin( body ):
                 raise w3afException('Failed to generate a response that matches the failed login page.')
-                
-        
-    def _matchesFailedLogin(self, responseBody):
+    
+    
+    def _matchesFailedLogin(self, response_body):
         '''
-        @return: True if the responseBody matches the previously created responses that
-        are stored in self._loginFailedResultList.
+        @return: True if the response_body matches the previously created responses that
+        are stored in self._login_failed_result_list.
         '''
         # In the ratio, 1 is completely equal.
-        ratio0 = relative_distance( responseBody, self._loginFailedResultList[0])
-        ratio1 = relative_distance( responseBody, self._loginFailedResultList[1])
+        ratio0 = relative_distance( response_body, self._login_failed_result_list[0])
+        ratio1 = relative_distance( response_body, self._login_failed_result_list[1])
 
-        if ratio0 > 0.5 or ratio1 > 0.5:
+
+        if ratio0 > 0.65 or ratio1 > 0.65:
             return True
         else:
-            # I'm happy! The responseBody IS NOT a failed login page.
+            # I'm happy! The response_body IS NOT a failed login page.
             return False
         
     def _isLoginForm( self, freq ):
@@ -157,16 +162,16 @@ class formAuthBrute(baseBruteforcePlugin):
         text = 0
         other = 0
         
-        dc = freq.getDc()
+        data_container = freq.getDc()
         
-        if isinstance( dc , form ):
+        if isinstance( data_container , form ):
             
-            for key in dc.keys():
+            for key in data_container.keys():
                 
-                if dc.getType( key ).lower() == 'password':
+                if data_container.getType( key ).lower() == 'password':
                     passwd += 1
                 
-                elif dc.getType( key ).lower() == 'text':
+                elif data_container.getType( key ).lower() == 'text':
                     text += 1
                 
                 else:
@@ -186,15 +191,15 @@ class formAuthBrute(baseBruteforcePlugin):
         '''
         @return: The names of the form fields where to input the user and the password.
         '''
-        dc = freq.getDc()
+        data_container = freq.getDc()
         user = passwd = ''
         
-        for key in dc.keys():
+        for key in data_container.keys():
                 
-            if dc.getType( key ).lower() == 'password':
+            if data_container.getType( key ).lower() == 'password':
                 passwd = key
             
-            elif dc.getType( key ).lower() == 'text':
+            elif data_container.getType( key ).lower() == 'text':
                 user = key
             
         return user, passwd
@@ -205,11 +210,11 @@ class formAuthBrute(baseBruteforcePlugin):
         @parameter freq: A fuzzableRequest
         @parameter combinations: A list of tuples with (user,pass)
         '''
-        dc = freq.getDc()
+        data_container = freq.getDc()
         for combination in combinations:
-            dc[ self._userFieldName ] = combination[0]
-            dc[ self._passwdFieldName ] = combination[1]
-            freq.setDc( dc )
+            data_container[ self._user_field_name ] = combination[0]
+            data_container[ self._passwd_field_name ] = combination[1]
+            freq.setDc( data_container )
             
             # This "if" is for multithreading
             if not self._found or not self._stopOnFirst:
@@ -223,8 +228,9 @@ class formAuthBrute(baseBruteforcePlugin):
                     self._found = True
                     v = vuln.vuln()
                     v.setURL( freq.getURL() )
-                    v.setDesc( 'Found authentication credentials to: '+ freq.getURL() +
-                    ' . A correct user and password combination is: ' + combination[0] + '/' + combination[1])
+                    v.setId(response.id)
+                    v.setDesc( 'Found authentication credentials to: "'+ freq.getURL() +
+                    '". A correct user and password combination is: ' + combination[0] + '/' + combination[1])
                     v['user'] = combination[0]
                     v['pass'] = combination[1]
                     v['response'] = response
@@ -234,9 +240,9 @@ class formAuthBrute(baseBruteforcePlugin):
                     # Save this for the bruteforce - discovery loop
                     headers = response.getHeaders()
                     additionalHeaders = []
-                    for h in headers:
-                        if 'cookie' in h:
-                            additionalHeaders.append( (h , headers[h]) )
+                    for header_name in headers:
+                        if 'cookie' in header_name.lower():
+                            additionalHeaders.append( (header_name , headers[header_name]) )
                     v['additionalHeaders'] = additionalHeaders
                     
                     kb.kb.append( self , 'auth' , v )

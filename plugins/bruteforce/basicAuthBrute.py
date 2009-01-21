@@ -53,6 +53,11 @@ class basicAuthBrute(baseBruteforcePlugin):
         
         if domain_path in auth_url_list:
             if domain_path not in self._alreadyTested:
+                
+                # Save it (we don't want dups!)
+                self._alreadyTested.append( domain_path )
+                
+                # Let the user know what we are doing
                 msg = 'Starting basic authentication bruteforce on URL: "' + domain_path + '".'
                 om.out.information( msg )
                 self._initBruteforcer( domain_path )
@@ -65,7 +70,6 @@ class basicAuthBrute(baseBruteforcePlugin):
                             combinations.append( self._bruteforcer.getNext() )
                         except:
                             om.out.information('No more user/password combinations available.')
-                            self._alreadyTested.append( domain_path )
                             return
                     
                     self._bruteforce( domain_path, combinations )
@@ -110,8 +114,9 @@ class basicAuthBrute(baseBruteforcePlugin):
                         self._found = True
                         v = vuln.vuln()
                         v.setURL( url )
+                        v.setId(response.id)
                         v.setDesc( 'Found authentication credentials to: "'+ url +
-                        '" . A correct user and password combination is: ' + user + '/' + passwd)
+                        '". A correct user and password combination is: ' + user + '/' + passwd)
                         v['user'] = user
                         v['pass'] = passwd
                         v['response'] = response
