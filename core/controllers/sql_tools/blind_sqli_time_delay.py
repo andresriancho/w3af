@@ -72,9 +72,11 @@ class blind_sqli_time_delay(basePlugin):
         mutants = createMutants( freq , sql_commands_only, fuzzableParamList=parameter_to_test )
         
         # And now I assign the statement to the mutant
-        for i, mutant in enumerate(mutants):
-            mutant.statement = statement_list[i].sql_command
-            mutant.dbms = statement_list[i].dbms
+        for mutant in mutants:
+            for statement in statement_list:
+                if i.sql_command in mutant.getModValue():
+                    mutant.statement = statement.sql_command
+                    mutant.dbms = statement.dbms
         
         # Perform the test
         for mutant in mutants:
