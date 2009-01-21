@@ -184,7 +184,7 @@ class KBTree(gtk.TreeView):
         # Sort
         # remember that the 3 is just a number that is then used in
         # set_sort_column_id
-        new_treestore.set_sort_func(3, self._treestore_sort, user_data=None)
+        new_treestore.set_sort_func(3, self._treestore_sort)
         
         new_treeholder = {}
         self._updateTree(new_treestore, new_treeholder)
