@@ -46,10 +46,24 @@ class getMails(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         # User configured variables
         self._only_target_domain = True
-    
-    def _grep(self, request, response, kb_key, domain=None):
+
+    def grep(self, request, response):
+        '''
+        Plugin entry point, get the emails and save them to the kb.
+        @parameter request: The HTTP request
+        @parameter request: The HTTP response
+        @return: None
+        '''
+        self._grep_worker(request, response, 'mails', \
+                urlParser.getRootDomain(response.getURL()))
+
+        if not self._only_target_domain:
+            self._grep_worker(request, response, 'external_mails')
+            
+    def _grep_worker(self, request, response, kb_key, domain=None):
         '''
         Helper method for using in self.grep()
+        
         @parameter request: The HTTP request
         @parameter request: The HTTP response
         @parameter kb_key: Knowledge base dict key
@@ -110,19 +124,6 @@ class getMails(baseGrepPlugin):
                 desc += ' - In request with id: '+ str(response.id)
                 i.setDesc( desc )
                 i['url_list'].append( response.getURL() )
-
-    def grep(self, request, response):
-        '''
-        Plugin entry point, get the emails and save them to the kb.
-        @parameter request: The HTTP request
-        @parameter request: The HTTP response
-        @return: None
-        '''
-        self._grep(request, response, 'mails', \
-                urlParser.getRootDomain(response.getURL()))
-
-        if not self._only_target_domain:
-            self._grep(request, response, 'external_mails')
         
     def setOptions( self, optionsMap ):
         self._only_target_domain = optionsMap['onlyTargetDomain'].getValue()
