@@ -69,7 +69,12 @@ def run_script( scriptName ):
             return output
 
     end_time = time.time()
-    om.out.information(' Run took ' + str(end_time-start_time) + ' seconds.')
+    took = end_time - start_time
+    
+    if took > 9:
+        om.out.information(' Run took ' + str(took) + ' seconds!')
+    else:
+        om.out.information('')
             
     return output
     
