@@ -234,6 +234,7 @@ class KBBrowser(entries.RememberingHPaned):
                 self.title0.set_markup( "<b>Id: %d</b>" % request_id )
                 self.rrV.request.showObject( request )
                 self.rrV.response.showObject( response )
+                self.rrV.set_sensitive(True)
         
 
 class URLsGraph(gtk.VBox):
