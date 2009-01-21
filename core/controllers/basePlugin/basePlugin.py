@@ -147,8 +147,21 @@ class basePlugin(configurable):
         '''
         url = mutant.getURI()
         data = mutant.getDc()
+
+        # TODO: Is this really ok?
+        # Dirty hack for mutantCookie:
+        if hasattr(mutant, 'getMutantType'):
+            if mutant.getMutantType() == 'cookie':
+                # Originally, the getDc() from a mutantCookie returns a cookie object
+                # but we don't want to use THAT info in the query string or in the postdata!
+                #
+                # So I simply to this:
+                data = ''
+                # TODO: Is this really ok?
+                
+
+        # Also add the cookie header; this is needed by the mutantCookie
         headers = mutant.getHeaders()
-        # Also add the cookie header.
         cookie = mutant.getCookie()
         if cookie:
             headers['Cookie'] = str(cookie)

@@ -116,9 +116,9 @@ class xss(baseAuditPlugin):
         
         # In the mutant, we have to save which browsers are vulnerable to that specific string
         for mutant in mutant_list:
-            for xss_test in filtered_xss_tests:
-                if mutant.getModValue() == xss_test[0]:
-                    mutant.affected_browsers = xss_test[1]
+            for xss_string, affected_browsers in filtered_xss_tests:
+                if xss_string in mutant.getModValue():
+                    mutant.affected_browsers = affected_browsers
 
         for mutant in mutant_list:
             # Only spawn a thread if the mutant has a modified variable
@@ -186,8 +186,10 @@ class xss(baseAuditPlugin):
                                                     fuzzableParamList=[mutant.getVar(), ])
         
         # In the mutant, we have to save which browsers are vulnerable to that specific string
-        for i in xrange(len(xss_tests)):
-            mutant_list[i].affected_browsers = xss_tests[i][1]
+        for mutant in mutant_list:
+            for xss_string, affected_browsers in xss_tests:
+                if xss_string in mutant.getModValue():
+                    mutant.affected_browsers = affected_browsers
 
         for mutant in mutant_list:
             # Only spawn a thread if the mutant has a modified variable

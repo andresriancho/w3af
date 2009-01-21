@@ -5,10 +5,15 @@ set fuzzCookie True
 back
 
 plugins
+
 discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+
 audit xss
+
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -16,7 +21,7 @@ back
 back
 
 target
-set target http://localhost/w3af/cookieFuzzing/cf.php
+set target http://localhost/w3af/core/cookieFuzzing/cf.php
 back
 
 start
