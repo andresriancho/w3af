@@ -69,6 +69,7 @@ class collectCookies(baseGrepPlugin):
                 
                 C = Cookie.SimpleCookie()
                 try:
+                    # Note to self: This line may print some chars to the console
                     C.load( headers[ key ].strip() )
                 except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
@@ -80,7 +81,7 @@ class collectCookies(baseGrepPlugin):
                     kb.kb.append( self, 'invalid-cookies', i )
                 else:
                     i['cookie-object'] = C
-                    
+
                     '''
                     The expiration date tells the browser when to delete the cookie. If no 
                     expiration date is provided, the cookie is deleted at the end of the user
