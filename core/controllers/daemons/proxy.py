@@ -20,24 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer 
-
-import os
-import time
-import socket, signal, select
-import httplib
-
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import uri2url, getQueryString
 
 from OpenSSL import SSL
 
 import traceback
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import SocketServer 
+
+import time
+import socket, select
+import httplib
+
 
 class proxy(w3afThread):
     '''
@@ -108,9 +107,15 @@ class proxy(w3afThread):
                 raise w3afException(str(se))
     
     def getBindIP( self ):
+        '''
+        @return: The IP address where the proxy will listen.
+        '''
         return self._ip
     
     def getBindPort( self ):
+        '''
+        @return: The TCP port where the proxy will listen.
+        '''
         return self._port
         
     def stop(self):
@@ -126,7 +131,7 @@ class proxy(w3afThread):
                 conn.request("QUIT", "/")
                 conn.getresponse()
                 om.out.debug('Sent QUIT request.')
-            except Exception, e:
+            except Exception:
                 om.out.debug('Sent QUIT request and got timeout. Proxy server closed.')
                 self._running = False
             else:
@@ -160,6 +165,11 @@ class proxy(w3afThread):
         self._server.w3afLayer = self
         self._running = True
         self._server.serve_forever()
+        
+        # We aren't running anymore
+        self._running = False
+        # I have to do this to actually KILL the HTTPServer, and free the TCP port
+        del self._server
 
 class w3afProxyHandler(BaseHTTPRequestHandler):    
     def handle_one_request(self):
@@ -373,10 +383,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 conWrap = SSLConnectionWrapper(browCon, browSoc)
                 try:
                     httpsServer.process_request(conWrap, self.client_address)
+                except SSL.ZeroReturnError, ssl_error:
+                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' + str(ssl_error) )
                 except SSL.Error, ssl_error:
                     om.out.debug('Catched SSL.Error in do_CONNECT(): ' + str(ssl_error) )
-                except SSL.ZeroReturn, ssl_error:
-                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' + str(ssl_error) )
             
             except Exception, e:
                 om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
@@ -393,7 +403,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         I dont want messages written to stderr, please write them to the om.
         '''
-        message = "Local proxy daemon handling request: %s - %s" % (self.address_string(),format%args) 
+        message = "Local proxy daemon handling request: %s - %s" % (self.address_string(), format%args) 
         om.out.debug( message )
 
 # I want to use threads to handle all requests.
@@ -406,7 +416,7 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
                 self.handle_request()
             except KeyboardInterrupt:
                 self.stop = True
-        om.out.debug('Exiting proxy server serve_forever().')
+        om.out.debug('Exiting proxy server serve_forever(); stop() was successful.')
                 
     def server_bind(self):
         om.out.debug('Changing socket options of ProxyServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
@@ -467,7 +477,7 @@ def wrap(socket_obj, ssl_connection, fun, *params):
             # Error: [('SSL routines', 'SSL3_READ_BYTES', 'ssl handshake failure')]
             try:
                 msg = ssl_error[0][0][2]
-            except Exception, e:
+            except Exception:
                 # Not an error of the type that I was expecting!
                 raise ssl_error
             else:
