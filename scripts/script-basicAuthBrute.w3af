@@ -3,10 +3,9 @@
 plugins
 audit htaccessMethods
 bruteforce basicAuthBrute
-discovery allowedMethods,webSpider
+discovery allowedMethods
 grep httpAuthDetect,passwordProfiling
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -15,9 +14,11 @@ output config console
 set verbose False
 back
 back
+
 target
-set target http://localhost/w3af/bruteforce/basic_auth/
+set target http://localhost/w3af/bruteforce/basicAuthBrute/
 back
+
 start
 
 assert len(kb.kb.getData('basicAuthBrute','auth')) == 1
