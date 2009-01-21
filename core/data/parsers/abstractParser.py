@@ -128,13 +128,15 @@ class abstractParser:
                 om.out.information('! ' + u )
         '''    
 
-    def getEmails( self, domain ):
+    def getEmails( self, domain=None ):
         '''
         @parameter domain: Indicates what email addresses I want to retrieve:   "*@domain".
         @return: A list of email accounts that are inside the document.
         '''
-        return [ i for i in self._emails if domain in i.split('@')[1] ]
-    
+        if domain:
+            return [ i for i in self._emails if domain in i.split('@')[1] ]
+        else:
+            return self._emails
     def getForms( self ):
         '''
         @return: A list of forms.
