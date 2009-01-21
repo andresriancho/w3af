@@ -161,8 +161,10 @@ class EncodeDecode(entries.RememberingWindow):
             if proc.ok:
                 out.setText(proc.result)
             else:
-                out.setText(_("ERROR: Invalid input for that operation:  ")
-                             + str(proc.exception), use_repr=False)
+                msg = _("An error was generated during the execution:\n\t\t- Invalid input for that operation.\n\n")
+                msg += _("The string that you are trying to encode/decode can\'t be encoded/decoded using this algorithm.")
+                msg += _(" A detailed error follows:\n\t\t- ")
+                out.setText( msg + str(proc.exception), use_repr=False)
                 self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
 
