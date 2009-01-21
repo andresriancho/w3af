@@ -187,7 +187,23 @@ class requestResponsePaned(entries.RememberingVPaned):
         lowBuf = self._downTv.get_buffer()
         lowText = lowBuf.get_text(lowBuf.get_start_iter(), lowBuf.get_end_iter())
         return (uppText, lowText)
-
+        
+    def _to_utf8(self, text):
+        '''
+        This method was added to fix:
+        
+        GtkWarning: gtk_text_buffer_emit_insert: assertion `g_utf8_validate (text, len, NULL)'
+        
+        @parameter text: A text that may or may not be in UTF-8.
+        @return: A text, that's in UTF-8, and can be printed in a text view
+        '''
+        text = repr(text)
+        text = text[1:-1]
+        
+        for special_char in ['\n', '\r', '\t']:
+            text = text.replace( repr(special_char)[1:-1], special_char )
+        
+        return text
 
 class requestPaned(requestResponsePaned):
     def __init__(self, w3af, enableWidget=None, editable=False, widgname="default"):
@@ -211,13 +227,13 @@ class requestPaned(requestResponsePaned):
         self._clear(self._upTv)
         buff = self._upTv.get_buffer()
         iterl = buff.get_end_iter()
-        buff.insert(iterl, head)
+        buff.insert(iterl, self._to_utf8(head))
         
         self._downTv.set_sensitive(True)
         self._clear(self._downTv)
         buff = self._downTv.get_buffer()
         iterl = buff.get_end_iter()
-        buff.insert(iterl, postdata)
+        buff.insert(iterl, self._to_utf8(postdata))
         
     def showParsed( self, method, uri, version, headers, postData ):
         '''
@@ -317,13 +333,13 @@ class responsePaned(requestResponsePaned):
         self._clear(self._upTv)
         buff = self._upTv.get_buffer()
         iterl = buff.get_end_iter()
-        buff.insert(iterl, resp)
+        buff.insert(iterl, self._to_utf8(resp))
         
         self._downTv.set_sensitive(True)
         self._clear(self._downTv)
         buff = self._downTv.get_buffer()
         iterl = buff.get_end_iter()
-        buff.insert(iterl, body)
+        buff.insert(iterl, self._to_utf8(body))
 
     def showParsed( self, version, code, msg, headers, body, baseURI ):
         '''
