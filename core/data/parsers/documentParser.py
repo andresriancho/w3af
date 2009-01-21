@@ -142,7 +142,7 @@ class documentParser:
         '''
         return self._parser.getReferencesOfTag( tag )
         
-    def getEmails( self, domain ):
+    def getEmails( self, domain=None ):
         '''
         @parameter domain: Indicates what email addresses I want to retrieve:   "*@domain".
         @return: A list of email accounts that are inside the document.
