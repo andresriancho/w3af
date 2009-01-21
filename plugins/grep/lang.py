@@ -65,6 +65,12 @@ class lang(baseGrepPlugin):
         'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por' , 'segun', 'si', 'so', 
         'sobre', 'tras']
         
+        # Turkish
+        # Sertan Kolat <sertan@gmail.com>
+        self._prepositions[ 'tr' ] = ['ancak', 'burada', 'duyuru', 'evet', 'fakat', 
+        'gibi', 'haber', 'kadar', 'karar', 'kaynak', 'olarak', 'sayfa', 'siteye', 
+        'sorumlu', 'tamam', 'yasak', 'zorunlu']
+        
         self._lang_lock = thread.allocate_lock()
         
     def grep(self, request, response):
