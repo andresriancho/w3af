@@ -75,16 +75,16 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
         res.append( qsr )
     
     # Try to find forms in the document
-    formList = []
+    form_list = []
     try:
         dp = dpCache.dpc.getDocumentParserFor( httpResponse )
     except w3afException:
         # Failed to find a suitable parser for the document
         pass
     else:
-        formList = dp.getForms()
+        form_list = dp.getForms()
     
-    if len( formList ) == 0:
+    if len( form_list ) == 0:
         
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
@@ -107,7 +107,7 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
         
     else:
         # create one httpPostDataRequest for each form
-        for form in formList:
+        for form in form_list:
             if form.getMethod().upper() == 'GET':
                 qsr = httpQsRequest.httpQsRequest()
                 qsr.setURL( form.getAction() )

@@ -116,7 +116,7 @@ class digitSum(baseDiscoveryPlugin):
                 # Add it to the result.
                 if is_new:
                     self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-                    om.out.debug('digitSum plugin found new URI: ' + fuzzableRequest.getURI() )
+                    om.out.debug('digitSum plugin found new URI: "' + fuzzableRequest.getURI() + '".')
     
     def _mangle_digits(self, fuzzableRequest):
         '''
@@ -142,7 +142,7 @@ class digitSum(baseDiscoveryPlugin):
                     new_dc[ parameter ] = modified_value
                     fr_copy.setDc( new_dc )
                     res.append( fr_copy )
-                    
+        
         return res
         
     def _do_combinations( self, a_string ):
