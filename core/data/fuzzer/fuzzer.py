@@ -64,11 +64,11 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     result = []
     
     _fuzzable = _createFuzzable( freq )
-    # GET parameters
+    # Query string parameters
     if isinstance( freq, httpQsRequest ):
         result.extend( _createMutantsWorker( freq, mutantQs, mutant_str_list, fuzzableParamList , append ) )
     
-    # POST parameters
+    # POST-data parameters
     if isinstance( freq, httpPostDataRequest ):
         # If this is a POST request, it could be a JSON request, and I want to fuzz it !
         if isJSON( freq ):
@@ -118,8 +118,8 @@ def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , 
         for fuzzed in _fuzzJSON( mutant_str_list, jsonPostData, append ):
         
             # Create the mutants
-            freqCopy = freq.copy()
-            m = mutantClass( freqCopy ) 
+            freq_copy = freq.copy()
+            m = mutantClass( freq_copy ) 
             m.setOriginalValue( jsonPostData )
             m.setVar( 'JSON data' )
             m.setDc( fuzzed )
@@ -230,22 +230,22 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
     for i in xrange( len( splittedFileName ) ):
         for mutant_str in mutant_str_list:
             if re.match('[a-zA-Z0-9]', splittedFileName[i] ):
-                dividedFileName = dc()
-                dividedFileName['start'] = ''.join( splittedFileName[: i] )
+                divided_file_name = dc()
+                divided_file_name['start'] = ''.join( splittedFileName[: i] )
                 if append:
-                    dividedFileName['fuzzedFname'] = splittedFileName[i] + urllib.quote_plus( mutant_str )
+                    divided_file_name['fuzzedFname'] = splittedFileName[i] + urllib.quote_plus( mutant_str )
                 else:
-                    dividedFileName['fuzzedFname'] = urllib.quote_plus( mutant_str )
-                dividedFileName['end'] = ''.join( splittedFileName[i+1:] )
+                    divided_file_name['fuzzedFname'] = urllib.quote_plus( mutant_str )
+                divided_file_name['end'] = ''.join( splittedFileName[i+1:] )
                 
-                freqCopy = freq.copy()
-                freqCopy.setURL( urlParser.getDomainPath( freq.getURL() ) )
+                freq_copy = freq.copy()
+                freq_copy.setURL( freq.getURL() )
                 
                 # Create the mutant
-                m = mutantClass( freqCopy ) 
+                m = mutantClass( freq_copy ) 
                 m.setOriginalValue( splittedFileName[i] )
                 m.setVar( 'fuzzedFname' )
-                m.setDc( dividedFileName )
+                m._mutant_dc = divided_file_name
                 m.setModValue( mutant_str )
                 # Special for filename fuzzing and some configurations of mod_rewrite
                 m.setDoubleEncoding( False )
@@ -310,8 +310,8 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     dataContainerCopy[var_name] = str_file_instance
                 
                 # Create the mutant
-                freqCopy = freq.copy()
-                m = mutantClass( freqCopy )
+                freq_copy = freq.copy()
+                m = mutantClass( freq_copy )
                 m.setVar( var_to_mod )
                 m.setDc( dataContainerCopy )
                 m.setOriginalValue( originalValue )

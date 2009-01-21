@@ -167,6 +167,9 @@ class xss(baseAuditPlugin):
         else:
             raise w3afException('The delimiter was not echoed back!')
         
+        if allowed == self._special_characters:
+            om.out.debug('All special characters are allowed.')
+        
         return allowed
                 
     def _search_stored_xss(self, mutant):

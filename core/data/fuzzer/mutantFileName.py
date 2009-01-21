@@ -35,6 +35,7 @@ class mutantFileName(mutant):
         
         self._doubleEncoding = False
         self._safeEncodeChars = ''
+        self._mutant_dc = {}
 
     def getMutantType( self ):
         return 'filename'
@@ -51,12 +52,12 @@ class mutantFileName(mutant):
         self._safeEncodeChars = safeChars
     
     def getURL( self ):
-        url = self._freq.getURL()
+        domain_path = urlParser.getDomainPath(self._freq.getURL())
         # Please note that this double encoding is needed if we want to work with mod_rewrite
-        encoded = urllib.quote_plus( self._dc['fuzzedFname'], self._safeEncodeChars )
+        encoded = urllib.quote_plus( self._mutant_dc['fuzzedFname'], self._safeEncodeChars )
         if self._doubleEncoding:
             encoded = urllib.quote_plus( encoded, safe=self._safeEncodeChars )
-        return  url + self._dc['start'] + encoded + self._dc['end']
+        return  domain_path + self._mutant_dc['start'] + encoded + self._mutant_dc['end']
         
     getURI = getURL
     
@@ -64,10 +65,15 @@ class mutantFileName(mutant):
         return ''
     
     def printModValue( self ):
-        return 'The sent '+ self.getMutantType() +' is: "' + self._dc['start'] + self._dc['fuzzedFname'] + self._dc['end'] + '" .'
+        res = 'The sent '+ self.getMutantType() +' is: "' + self._mutant_dc['start']
+        res += self._mutant_dc['fuzzedFname'] + self._mutant_dc['end'] + '" .'
+        return res
         
     def setModValue( self, val ):
-        self._dc['fuzzedFname'] = val
+        self._mutant_dc['fuzzedFname'] = val
+        
+    def getModValue(self):
+        return self._mutant_dc['fuzzedFname']
     
     def setURL( self, u ):
         raise w3afException('You can\'t change the value of the URL in a mutantFileName instance.')

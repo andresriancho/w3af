@@ -39,6 +39,17 @@ class httpPostDataRequest(fuzzableRequest):
         self._files = []
 
     def getData( self ):
+        '''
+        @return: A string representation of the dataContainer. There is a special case, in which
+        the dataContainer has a file inside, in which we return the data container as it is. This is
+        needed by the multipart post handler.
+        '''
+        for value in self._dc.values():
+            if not isinstance(value, type('')):
+                # We have a file here, return the dc as it is.
+                return self._dc
+        
+        # return the string representation
         return str( self._dc )
         
     def setFileVariables( self, file_variables ):

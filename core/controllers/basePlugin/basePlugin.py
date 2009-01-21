@@ -145,20 +145,13 @@ class basePlugin(configurable):
         '''
         Sends a mutant to the remote web server.
         '''
+        #
+        #
+        #   IMPORTANT NOTE: If you touch something here, the whole framework may stop working!
+        #
+        #
         url = mutant.getURI()
-        data = mutant.getDc()
-
-        # TODO: Is this really ok?
-        # Dirty hack for mutantCookie:
-        if hasattr(mutant, 'getMutantType'):
-            if mutant.getMutantType() == 'cookie':
-                # Originally, the getDc() from a mutantCookie returns a cookie object
-                # but we don't want to use THAT info in the query string or in the postdata!
-                #
-                # So I simply to this:
-                data = ''
-                # TODO: Is this really ok?
-                
+        data = mutant.getData()
 
         # Also add the cookie header; this is needed by the mutantCookie
         headers = mutant.getHeaders()

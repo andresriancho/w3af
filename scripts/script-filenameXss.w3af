@@ -6,7 +6,6 @@ back
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -16,13 +15,14 @@ set verbose False
 back
 
 audit xss
-audit
+back
 
-back
 target
-set target http://localhost/w3af/fuzzFileName/test/1.html
+set target http://localhost/w3af/core/fuzzFileName/test/1.html
 back
+
 start
 
 assert len(kb.kb.getData('xss','xss')) >= 1
+
 exit

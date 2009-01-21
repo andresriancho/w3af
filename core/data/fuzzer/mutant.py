@@ -61,7 +61,7 @@ class mutant:
         try:
             self._freq._dc[ self.getVar() ] = val
         except:
-            raise w3afException('The mutant object was\'nt correctly initialized.')
+            raise w3afException('The mutant object wasn\'t correctly initialized.')
         
     def getModValue( self ): 
         try:
