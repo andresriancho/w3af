@@ -50,7 +50,6 @@ class webDiff(baseDiscoveryPlugin):
         self._run = True
         self._first = True
         self._start_path = None
-        self._head = None
         
         self._fuzzableRequests = []
         self._not_eq = []
@@ -79,7 +78,6 @@ class webDiff(baseDiscoveryPlugin):
             self.is404 = kb.kb.getData( 'error404page', '404' )
                     
             if self._local_dir != '' and self._remote_path != '':
-                self._verify_head_enabled( fuzzableRequest.getURL() )
                 os.path.walk( self._local_dir, self._compare_dir, None )
                 self._generate_report()
                 return self._fuzzableRequests
@@ -197,14 +195,13 @@ class webDiff(baseDiscoveryPlugin):
         
     def _easy_GET( self, url ):
         '''
-        An easy way to get a URL using HEAD or GET depending on available methods.
+        A GET wrapper.
+        
+        @return: The httpResponse object.
         '''
         response = None
         try:
-            if self._head_enabled() and not self._content:
-                response = self._urlOpener.HEAD( url, useCache=True )
-            else:
-                response = self._urlOpener.GET( url, useCache=True )
+            response = self._urlOpener.GET( url, useCache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -251,25 +248,7 @@ class webDiff(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
-        return [ 'discovery.allowedMethods' ]
-            
-    def _verify_head_enabled(self, url ):
-        '''
-        Verifies if the requested URL permits a HEAD request.
-        This was saved inside the KB by the plugin allowedMethods
-        
-        @return : Sets self._head to the correct value, nothing is returned.
-        '''
-        if 'HEAD' in kb.kb.getData( 'allowedMethods' , 'methods' ):
-            self._head = True
-        else:
-            self._head = False
-        
-    def _head_enabled(self):
-        '''
-        @return: If HTTP HEAD is enabled or not.
-        '''
-        return self._head
+        return [ ]
 
     def getLongDesc( self ):
         '''
