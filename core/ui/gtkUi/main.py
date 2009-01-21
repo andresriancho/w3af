@@ -641,6 +641,9 @@ class MainApp(object):
         self.startstopbtns.changeInternals(_("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         self.scanShould = "start"
         self.window.set_title(MAINTITLE)
+        
+        # This is inited before all, to have a full logging facility.
+        om.out.setOutputPlugins( ['gtkOutput'] )
 
     def _scan_superviseStatus(self):
         '''Handles the waiting until core actually stopped.
