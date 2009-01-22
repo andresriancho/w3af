@@ -287,4 +287,23 @@ class xssShell(shell):
     def __repr__( self ):
         return '<'+self.getName()+' object (Browse to: "'+self._beefURL+'")>'
         
+    def getRemoteSystem( self ):
+        '''
+        @return: dz0@sock3t:~/w3af$ uname -o -r -n -m -s 
+        Linux sock3t 2.6.15-27-686 i686 GNU/Linux
+        
+        Or in this case... the user is using a browser!
+        '''
+        return 'browser'
+
+    def getRemoteUser( self ):
+        return 'user'
+        
+    def getRemoteSystemName( self ):
+        '''
+        @return: dz0@sock3t:~/w3af$ uname -n
+        sock3t
+        '''
+        return 'browser'
+        
     __str__ = __repr__
