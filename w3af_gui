@@ -31,7 +31,7 @@ def usage():
     om.out.information('Options:')
     om.out.information('    -h              Print this help message.')
     om.out.information('    -i <dir>        Directory where MSF is installed (only used to install the virtual daemon).')
-    om.out.information('    -p <profile>    Run with the selected profile')
+    om.out.information('    -p <filename>   Run with the selected profile')
     om.out.information('')
     om.out.information('http://w3af.sourceforge.net/')
 

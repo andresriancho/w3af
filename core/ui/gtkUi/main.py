@@ -414,7 +414,16 @@ class MainApp(object):
         # scan config tab
         pan = entries.RememberingHPaned(self.w3af, "pane-scanconfig", 150)
         self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
-        self.profiles = profiles.ProfileList(self.w3af, initial=profile)
+        try:
+            self.profiles = profiles.ProfileList(self.w3af, initial=profile)
+        except ValueError, ve:
+            # This is raised when the profile doesn't exist
+            #
+            # I handle this by creating the profiles without an initial profile selected
+            # and by reporting it to the user in a toolbar
+            self.profiles = profiles.ProfileList(self.w3af, initial=None)
+            self.sb( str(ve) )
+            
         pan.pack1(self.profiles)
         pan.pack2(self.pcbody)
         pan.show_all()

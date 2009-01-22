@@ -1078,7 +1078,7 @@ class w3afCore:
         @parameter profileName: The profile to cloneProfile
         @parameter profileDesc: The description of the new profile
         
-        @return: True if the profile was successfully saved. Else, raise a w3afException.
+        @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
         '''
         # Create the new profile.
         profileInstance = profile()
@@ -1093,7 +1093,7 @@ class w3afCore:
         '''
         Save the current configuration of the core to the profile called profileName.
         
-        @return: True if the profile was successfully saved. Else, raise a w3afException.
+        @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
         '''
         # Open the already existing profile
         newProfile = profile(profileName)
@@ -1128,7 +1128,7 @@ class w3afCore:
         # Save the profile to the file
         newProfile.save( profileName )
         
-        return True
+        return newProfile
         
     def removeProfile( self, profileName ):
         '''

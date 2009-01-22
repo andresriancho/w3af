@@ -72,6 +72,12 @@ class profile:
                 # Save the profile_file_name variable
                 self._profile_file_name = profile_file_name            
     
+    def get_profile_file(self):
+        '''
+        @return: The path and name of the file that contains the profile definition.
+        '''
+        return self._profile_file_name
+    
     def remove( self ):
         '''
         Removes the profile file which was used to create this instance.

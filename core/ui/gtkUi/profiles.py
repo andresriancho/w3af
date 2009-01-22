@@ -22,7 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 from . import helpers, entries
 from core.controllers.w3afException import w3afException
+
+# Profile objects
+from core.data.profile.profile import profile as profile
+
 import cgi
+
 
 class ProfileList(gtk.TreeView):
     '''A list showing all the profiles.
@@ -36,7 +41,11 @@ class ProfileList(gtk.TreeView):
         self.w3af = w3af
 
         super(ProfileList,self).__init__()
-        self.loadProfiles(initial)
+        
+        # A list to store the several "initial" profiles
+        self._parameter_profile = initial
+        
+        self.loadProfiles(selected=initial)
 
         # callbacks for right button and select
         self.connect('button-press-event', self._changeAtempt)
@@ -73,15 +82,38 @@ class ProfileList(gtk.TreeView):
         # we will keep the profile instances here
         self.profile_instances = {None:None}
 
-        # build the list with the profiles name, description, id, changed, permanentname
+        # build the list with the profiles name, description, profile_instance
         tmpprofiles = []
-        for profile in self.w3af.getProfileList():
-            nom = profile.getName()
-            desc = profile.getDesc()
-            tmpprofiles.append((nom, desc, profile))
-        for nom,desc,profile in sorted(tmpprofiles):
-            prfid = str(id(profile))
-            self.profile_instances[prfid] = profile
+        for profile_obj in self.w3af.getProfileList():
+            nom = profile_obj.getName()
+            desc = profile_obj.getDesc()
+            tmpprofiles.append((nom, desc, profile_obj))
+        
+        # Also add to that list the "selected" profile, that was specified by the user with the
+        # "-p" parameter when executing w3af
+        if self._parameter_profile:
+            try:
+                profile_obj = profile(self._parameter_profile)
+            except w3afException:
+                raise ValueError(_("The profile %r does not exists!") % self._parameter_profile)
+            else:
+                nom = profile_obj.getName()
+                desc = profile_obj.getDesc()
+                
+                # I don't want to add duplicates, so I perform this test:
+                add_to_list = True
+                for nom_tmp, desc_tmp, profile_tmp in tmpprofiles:
+                    if nom_tmp == nom and desc_tmp == desc:
+                        add_to_list = False
+                        break
+                
+                if add_to_list:
+                    tmpprofiles.append((nom, desc, profile_obj))
+        
+        # And now create the liststore and the internal dict
+        for nom, desc, profile_obj in sorted(tmpprofiles):
+            prfid = str(id(profile_obj))
+            self.profile_instances[prfid] = profile_obj
             liststore.append([nom, desc, prfid, 0, nom])
         
         # set this liststore
@@ -94,7 +126,7 @@ class ProfileList(gtk.TreeView):
             self.set_cursor(0)
         else:
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
-                if selected == nom:
+                if selected == self.profile_instances[ prfid ].get_profile_file():
                     self.set_cursor(i)
                     self._useProfile()
                     break
@@ -284,37 +316,37 @@ class ProfileList(gtk.TreeView):
         if path is None:
             return None
         prfid = self.liststore[path][2]
-        profile = self.profile_instances[prfid]
-        return profile
+        profile_obj = self.profile_instances[prfid]
+        return profile_obj
 
     def _getProfileName(self):
         '''Gets the actual profile name.
 
         @return: The profile name for the actual cursor position.
         '''
-        profile = self._getProfile()
-        if profile is None:
+        profile_obj = self._getProfile()
+        if profile_obj is None:
             return None
-        return profile.getName()
+        return profile_obj.getName()
 
     def _useProfile(self, widget=None):
         '''Uses the selected profile.'''
-        profile = self._getProfile()
+        profile_obj = self._getProfile()
         profileName = self._getProfileName()
         if profileName == self.selectedProfile:
             return
         self.selectedProfile = profileName
 
         try:
-            self.w3af.useProfile(profileName)
+            self.w3af.useProfile(profile_obj.get_profile_file())
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
             dlg.run()
             dlg.destroy()
             return
 
-        if profile is not None:
-            profdesc = profile.getDesc()
+        if profile_obj is not None:
+            profdesc = profile_obj.getDesc()
         else:
             profdesc = None
         self.w3af.mainwin.pcbody.reload(profdesc)
@@ -351,13 +383,13 @@ class ProfileList(gtk.TreeView):
         filename,description = dlgResponse
         filename = cgi.escape(filename)
         try:
-            helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+            profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
         except w3afException:
             #FIXME: This message should be more descriptive
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
         self.w3af.mainwin.sb(_("New profile created"))
-        self.loadProfiles(filename)
+        self.loadProfiles(selected=profile_obj.get_profile_file())
 
         # get the activated plugins
         self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
@@ -367,13 +399,12 @@ class ProfileList(gtk.TreeView):
         newstatus = self._getActionsSensitivity(path)
         self.w3af.mainwin.activateProfileActions(newstatus)
 
-
     def saveProfile(self, widget=None):
         '''Saves the selected profile.'''
-        profileName = self._getProfileName()
+        profile_obj = self._getProfile()
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
-        self.w3af.saveCurrentToProfile( profileName )
+        self.w3af.saveCurrentToProfile( profile_obj.get_profile_file() )
         self.w3af.mainwin.sb(_("Profile saved"))
         path = self.get_cursor()[0]
         row = self.liststore[path]
@@ -382,7 +413,6 @@ class ProfileList(gtk.TreeView):
 
     def saveAsProfile(self, widget=None):
         '''Copies the selected profile.'''
-        profile = self._getProfileName()
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
 
@@ -394,12 +424,12 @@ class ProfileList(gtk.TreeView):
             filename,description = dlgResponse
             filename = cgi.escape(filename)
             try:
-                helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+                profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
             except w3afException:
                 self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
                 return
             self.w3af.mainwin.sb(_("New profile created"))
-            self.loadProfiles(filename)
+            self.loadProfiles(selected=profile_obj.get_profile_file())
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
@@ -419,14 +449,18 @@ class ProfileList(gtk.TreeView):
 
     def deleteProfile(self, widget=None):
         '''Deletes the selected profile.'''
-        profile = self._getProfileName()
+        profile_obj = self._getProfile()
 
-        msg = _("Do you really want to DELETE the profile '%s'?") % profile
+        msg = _("Do you really want to DELETE the profile '%s'?") % profile_obj.getName()
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
 
         if opt == gtk.RESPONSE_YES:
-            self.w3af.removeProfile( profile )
+            # Special case to handle the parameter profile
+            if profile_obj.get_profile_file() == self._parameter_profile:
+                self._parameter_profile = None
+
+            self.w3af.removeProfile( profile_obj.get_profile_file() )
             self.w3af.mainwin.sb(_("The profile was deleted"))
             self.loadProfiles()
