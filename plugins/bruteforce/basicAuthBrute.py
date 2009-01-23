@@ -72,6 +72,8 @@ class basicAuthBrute(baseBruteforcePlugin):
                             om.out.information('No more user/password combinations available.')
                             return
                     
+                    # wraps around bruteWorker
+                    # the wrapper starts a new thread
                     self._bruteforce( domain_path, combinations )
     
     def _bruteWorker( self, url, combinations ):

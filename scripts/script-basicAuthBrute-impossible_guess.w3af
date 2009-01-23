@@ -16,11 +16,11 @@ back
 back
 
 target
-set target http://localhost/w3af/bruteforce/basicAuthBrute/easy_guess/
+set target http://localhost/w3af/bruteforce/basicAuthBrute/impossible_guess/
 back
 
 start
 
-assert len(kb.kb.getData('basicAuthBrute','auth')) == 1
+assert len(kb.kb.getData('basicAuthBrute','auth')) == 0
 
 exit
