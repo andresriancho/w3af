@@ -171,7 +171,7 @@ class ThreadPool:
             try:
                 # still results pending?
                 if not joinAll:
-                    ownedWordRequests = [ wr for wr in self.workRequests.values() if wr.ownerObj == ownerObj ]
+                    ownedWordRequests = [ wr for wr in self.workRequests.values() if id(wr.ownerObj) == id(ownerObj) ]
                 else:
                     ownedWordRequests = self.workRequests.values()
                 if not ownedWordRequests:
@@ -184,7 +184,7 @@ class ThreadPool:
                 # get back next results
                 request, result = self.resultsQueue.get(block=block)
                 
-                if request.ownerObj == ownerObj or joinAll:
+                if id(request.ownerObj) == id(ownerObj) or joinAll:
                     # and hand them to the callback, if any
                     if request.callback:
                         request.callback(request, result)

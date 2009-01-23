@@ -24,7 +24,7 @@ import urlOpenerSettings
 import core.controllers.outputManager as om
 import core.data.url.timeAnalysis as timeAnalysis
 from core.controllers.w3afException import *
-from core.controllers.threads.threadManager import threadManager as tm
+from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 from core.data.parsers.urlParser import *
 from core.data.constants.httpConstants import *
 
@@ -74,7 +74,7 @@ class xUrllib:
         self._errorCount = {}
         
         self._dnsCache()
-        self._tm = tm()
+        self._tm = thread_manager
         self._sizeLRU = LRU(200)
         
         # User configured options (in an indirect way)

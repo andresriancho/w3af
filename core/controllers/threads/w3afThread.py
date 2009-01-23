@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
-from core.controllers.threads.threadManager import threadManager as tm
+from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 from core.controllers.w3afException import w3afException
 import threading
 
@@ -33,7 +33,7 @@ class w3afThread(threading.Thread):
     
     def __init__(self):
         threading.Thread.__init__( self )
-        self._tm = tm()
+        self._tm = thread_manager
         
     def stop(self):
         '''

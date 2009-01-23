@@ -28,7 +28,6 @@ import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
-from core.controllers.threads.threadManager import threadManager as tm
 from core.controllers.w3afException import w3afException
 
 import re
@@ -51,7 +50,6 @@ class blind_sqli_response_diff(basePlugin):
         # User configured variables
         self._equalLimit = 0.8
         self._equAlgorithm = 'setIntersection'
-        self._tm = tm()
         
     def setEqualLimit( self, _equalLimit ):
         '''

@@ -30,7 +30,6 @@ import core.data.constants.severity as severity
 
 import core.data.constants.dbms as dbms
 
-from core.controllers.threads.threadManager import threadManager as tm
 from core.controllers.w3afException import w3afException
 
 # importing this to have sendMutant and setUrlOpener
