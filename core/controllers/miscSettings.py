@@ -27,6 +27,10 @@ import core.data.kb.config as cf
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+# Raise errors
+from core.controllers.w3afException import w3afException
+
+
 class miscSettings(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can configure w3af settings using getOptions and SetOptions.
@@ -82,7 +86,8 @@ class miscSettings(configurable):
         o7 = option('maxDepth', cf.cf.getData('maxDepth'), d7, 'integer', help=h7, tabid='Core settings')
         
         d8 = 'Maximum number of threads that the w3af process will spawn'
-        o8 = option('maxThreads', cf.cf.getData('maxThreads'), d8, 'integer', tabid='Core settings')
+        h8 = 'The maximum valid number of threads is 100.'
+        o8 = option('maxThreads', cf.cf.getData('maxThreads'), d8, 'integer', tabid='Core settings', help=h8)
         
         d9 = 'Maximum number of times the discovery function is called'
         o9 = option('maxDiscoveryLoops', cf.cf.getData('maxDiscoveryLoops'), d9, 'integer', tabid='Core settings')
@@ -139,7 +144,11 @@ class miscSettings(configurable):
         cf.cf.save('fuzzFCExt', optionsMap['fuzzFCExt'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )
         cf.cf.save('maxDepth', optionsMap['maxDepth'].getValue() )
+        
+        if optionsMap['maxThreads'].getValue()  > 100:
+            raise w3afException('The maximum valid number of threads is 100.')
         cf.cf.save('maxThreads', optionsMap['maxThreads'].getValue() )
+        
         cf.cf.save('fuzzableHeaders', optionsMap['fuzzableHeaders'].getValue() )
         cf.cf.save('maxDiscoveryLoops', optionsMap['maxDiscoveryLoops'].getValue() )
         cf.cf.save('interface', optionsMap['interface'].getValue() )
