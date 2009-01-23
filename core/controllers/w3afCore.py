@@ -1040,11 +1040,25 @@ class w3afCore:
         
     def getProfileList( self ):
         '''
-        @return: A string list of the names of all available profiles.
+        @return: Two different lists:
+        
+            - One that contains the instances of the valid profiles that were loaded
+            - One with the file names of the profiles that are invalid
         '''
-        strProfileList = self._getListOfFiles( 'profiles' + os.path.sep, extension='.pw3af' )
-        instanceList = [ profile('profiles' + os.path.sep + p + '.pw3af' ) for p in strProfileList ]
-        return instanceList
+        str_profile_list = self._getListOfFiles( 'profiles' + os.path.sep, extension='.pw3af' )
+        
+        instance_list = []
+        invalid_profiles = []
+        
+        for profile_name in str_profile_list:
+            profile_filename = 'profiles' + os.path.sep + profile_name + '.pw3af'
+            try:
+                profile_instance = profile( profile_filename )
+            except:
+                invalid_profiles.append( profile_filename )
+            else:
+                instance_list.append( profile_instance )
+        return instance_list, invalid_profiles
         
     def _getListOfFiles( self, directory, extension='.py' ):
         '''

@@ -37,7 +37,8 @@ class profilesMenu(menu):
     def __init__(self, name, console, w3af, parent=None):
         menu.__init__(self, name, console, w3af, parent)
         self._profiles = {}
-        for profile in w3af.getProfileList():
+        instance_list, invalid_profiles = w3af.getProfileList()
+        for profile in instance_list:
             self._profiles[profile.getName()] = profile
         self._loadHelp('profiles')
 

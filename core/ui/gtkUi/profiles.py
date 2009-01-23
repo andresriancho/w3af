@@ -83,8 +83,9 @@ class ProfileList(gtk.TreeView):
         self.profile_instances = {None:None}
 
         # build the list with the profiles name, description, profile_instance
+        instance_list, invalid_profiles = self.w3af.getProfileList()
         tmpprofiles = []
-        for profile_obj in self.w3af.getProfileList():
+        for profile_obj in instance_list:
             nom = profile_obj.getName()
             desc = profile_obj.getDesc()
             tmpprofiles.append((nom, desc, profile_obj))
@@ -132,6 +133,16 @@ class ProfileList(gtk.TreeView):
                     break
             else:
                 raise ValueError(_("The profile %r does not exists!") % selected)
+                
+        # Now that we've finished loading everything, show the invalid profiles in a nice pop-up window
+        if invalid_profiles:
+            message = 'The following profiles are invalid and failed to load:\n'
+            for i in invalid_profiles:
+                message += '\n\t- ' + i
+            message += '\n\nPlease click OK to continue without these profiles.'
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+            dlg.run()
+            dlg.destroy()
         
     def _controlDifferences(self):
         '''Returns if something is different against initial state.'''
