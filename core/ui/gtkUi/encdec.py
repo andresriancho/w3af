@@ -39,7 +39,7 @@ class SimpleTextView(gtk.TextView):
         start, end = self.buffer.get_bounds()
         self.buffer.delete(start, end)
 
-    def setText(self, newtext, use_repr=True):
+    def setText(self, newtext, use_repr=False):
         '''Sets a new text in the pane, repr'ing it.
         
         @param newtext: the new text of the pane.
