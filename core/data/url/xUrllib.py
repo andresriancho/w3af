@@ -422,16 +422,19 @@ class xUrllib:
         if self.settings.getMaxFileSize() == 0:
             pass
         else:
-            # This will speed up the most frequent request, no HEAD is done to the last recently used URL's
-            if req.get_full_url() not in self._sizeLRU:
+            # This will speed up the most frequent request, no HEAD is done to the last
+            # recently used URLs
+            try:
+                size = self._sizeLRU[ req.get_full_url() ]
+            except KeyError:
                 size = self.getRemoteFileSize( req.get_full_url() )
                 self._sizeLRU[ req.get_full_url() ] = size
-            else:
-                size = self._sizeLRU[ req.get_full_url() ]
                 #om.out.debug('Size of response got from self._sizeLRU.')
             
             if self.settings.getMaxFileSize() < size :
-                msg = 'File size of URL: ' +  req.get_full_url()  + ' exceeds the configured file size limit. Max size limit is: ' + str(greek(self.settings.getMaxFileSize())) + ' and file size is: ' + str(greek(size)) + ' .'
+                msg = 'File size of URL: "' +  req.get_full_url()  + '" exceeds the configured file'
+                msg += ' size limit. Max size limit is: ' + str(greek(self.settings.getMaxFileSize()))
+                msg += ' and file size is: ' + str(greek(size)) + ' .'
                 om.out.debug( msg )
                 raise sizeExceeded( msg )
             
