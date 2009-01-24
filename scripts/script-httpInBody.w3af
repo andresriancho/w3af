@@ -24,6 +24,7 @@ back
 
 start
 
-assert len( kb.kb.getData( 'httpInBody', 'httpInBody' ) ) == 1
+assert len( kb.kb.getData( 'httpInBody', 'response' ) ) == 3
+assert len( kb.kb.getData( 'httpInBody', 'request' ) ) == 3
 
 exit
