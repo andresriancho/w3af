@@ -18,6 +18,6 @@ back
 
 start
 
-assert len(kb.kb.getData('frontpage_version','frontpage_version')) == 1
+assert len(kb.kb.getData('frontpage_version','frontpage_version')) == 3
 
 exit
