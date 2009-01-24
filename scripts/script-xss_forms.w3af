@@ -1,17 +1,8 @@
 # This is a simple xss detection demo:
 
-#http-settings
-#set proxyAddress 127.0.0.1
-#set proxyPort 8080
-#back
-
-misc-settings
-set fuzzCookie False
-back
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -22,13 +13,18 @@ back
 
 
 audit xss
-audit
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 
 target
-set target http://localhost/w3af/xss-forms/test-forms.html
+set target http://localhost/w3af/audit/xss/
 back
+
 start
 
-assert len( kb.kb.getData('xss', 'xss') ) == 1
+assert len( kb.kb.getData('xss', 'xss') ) == 9
 
+exit
