@@ -130,7 +130,11 @@ class findvhost(baseDiscoveryPlugin):
         #
         # - The re_references are the result of regular expressions, which in some cases
         # are just false positives.
+        #
+        # In this case, and because I'm only going to use the domain name of the URL
+        # I'm going to trust the re_references also.
         parsed_references, re_references = dp.getReferences()
+        parsed_references.extend(re_references)
         
         for link in parsed_references:
             domain = urlParser.getDomain( link )
