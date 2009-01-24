@@ -173,8 +173,7 @@ class webSpider(baseDiscoveryPlugin):
         This method GET's every new link and parses it in order to get new links and forms.
         '''
         if getDomain( reference ) == getDomain( originalURL ):
-            if self._isForward( reference ):
-                
+            if not self._only_forward or self._isForward( reference ):
                 response = None
                 headers = { 'Referer': originalURL }
                 
@@ -202,6 +201,7 @@ class webSpider(baseDiscoveryPlugin):
                             fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._url_parameter))
                         fuzzableRequest.setReferer( originalURL )
                         self._fuzzableRequests.append( fuzzableRequest )
+                        
     
     def end( self ):
         '''
@@ -222,17 +222,17 @@ class webSpider(baseDiscoveryPlugin):
         
         @return: True if inside.
         '''
-        if not self._only_forward:
-            return True
-        else:
+#        if not self._only_forward:
+#            return True
+#        else:
             # I have to work :S
-            is_forward = False
-            for domain_path in self._target_urls:
-                if reference.startswith(domain_path):
-                    is_forward = True
-                    break
-            return is_forward
-                
+        is_forward = False
+        for domain_path in self._target_urls:
+            if reference.startswith(domain_path):
+                is_forward = True
+                break
+        return is_forward
+            
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
