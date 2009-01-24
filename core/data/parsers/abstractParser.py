@@ -38,9 +38,13 @@ class abstractParser:
     '''
     def __init__( self, httpResponse ):
         # "setBaseUrl"
-        self._baseUrl = urlParser.getDomainPath(httpResponse.getURL())
-        self._baseDomain = urlParser.getDomain(httpResponse.getURL())
-        self._rootDomain = urlParser.getRootDomain(httpResponse.getURL())
+        url = httpResponse.getURL()
+        redirURL = httpResponse.getRedirURL()
+        if redirURL:
+            url = redirURL
+        self._baseUrl = urlParser.getDomainPath(url)
+        self._baseDomain = urlParser.getDomain(url)
+        self._rootDomain = urlParser.getRootDomain(url)
         
         # A nice default
         self._encoding = 'utf-8'

@@ -137,29 +137,23 @@ class webSpider(baseDiscoveryPlugin):
                     directories = urlParser.getDirectories( response.getURL() )
                     parsed_references.extend( directories )
                     parsed_references = list( set( parsed_references ) )
-                    
+
+                    references = parsed_references + re_references
+
                     # Filter the URL's according to the configured regular expressions
-                    parsed_references = [ r for r in parsed_references if self._compiled_follow_re.match( r ) ]
-                    parsed_references = [ r for r in parsed_references if not self._compiled_ignore_re.match( r )]
-                    
-                    re_references = [ r for r in re_references if self._compiled_follow_re.match( r ) ]
-                    re_references = [ r for r in re_references if not self._compiled_ignore_re.match( r )]
-          
+                    references = [ r for r in references if self._compiled_follow_re.match( r ) ]
+                    references = [ r for r in references if not self._compiled_ignore_re.match( r )]
+                                          
                     # work with the parsed references and report broken links
-                    for ref in parsed_references:
+                    # then work with the parsed references and DO NOT report broken links
+                    count = 0
+                    for ref in references:
                         if self._url_parameter != None:
                             ref = urlParser.setParam(ref, self._url_parameter)
-                        targs = (ref, fuzzableRequest, originalURL, True)
+                        targs = (ref, fuzzableRequest, originalURL, count<len(parsed_references))
                         self._tm.startFunction( target=self._verifyReferences, args=targs, \
                                                             ownerObj=self )
-                                                            
-                    # work with the parsed references and DO NOT report broken links
-                    for ref in re_references:
-                        if self._url_parameter != None:
-                            ref = urlParser.setParam(ref, self._url_parameter)
-                        targs = (ref, fuzzableRequest, originalURL, False)
-                        self._tm.startFunction( target=self._verifyReferences, args=targs, \
-                                                            ownerObj=self )
+                        count += 1
             
         self._tm.join( self )
             
@@ -173,7 +167,8 @@ class webSpider(baseDiscoveryPlugin):
         This method GET's every new link and parses it in order to get new links and forms.
         '''
         if getDomain( reference ) == getDomain( originalURL ):
-            if not self._only_forward or self._isForward( reference ):
+            isForward = self._isForward(reference)
+            if not self._only_forward or isForward:
                 response = None
                 headers = { 'Referer': originalURL }
                 
