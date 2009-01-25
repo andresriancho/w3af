@@ -105,7 +105,8 @@ class dbDriverFunctions:
             return False
 
 
-    def bisectionAlgorithm(self, baseUrl, exactBaseUrl, expr, logMsg=True):
+    def bisectionAlgorithm(self, evilStm, exactEvilStm, expr, logMsg=True):
+        baseUrl = self.urlReplace(newValue=evilStm)
 
         count = 0
         index = 0
@@ -119,24 +120,28 @@ class dbDriverFunctions:
             min = 0
 
             if self._goodSamaritan:
-                for toTest in self._goodSamaritan:
+                for to_test in self._goodSamaritan:
                     # A good samaritan typed something in the console to help me!
                     if rmFirstChar:
-                        tt2 = toTest[1:]
+                        to_test_parsed = to_test[1:]
                     else:
-                        tt2 = toTest
+                        to_test_parsed = to_test
                         rmFirstChar = True
-                        
-                    evilUrl = exactBaseUrl % (expr, index, len(tt2) , tt2)
+                    
+                    to_test_escaped = self.unescape("'"+to_test_parsed+"'")
+                    exactEvilStm = exactEvilStm % (expr, index, len(to_test_parsed) , 'repla00ce_me_please')
+                    exactEvilStm = exactEvilStm.replace("'repla00ce_me_please'", to_test_escaped)
+                    evilUrl = self.urlReplace(newValue=exactEvilStm)
                     evilResult = self.queryPage(evilUrl)
+                    
                     if self._cmpFunction( evilResult, self.args.trueResult ):
-                        value += tt2
-                        if len(tt2) != 1:
-                            index += len(tt2) - 1
+                        value += to_test_parsed
+                        if len(to_test_parsed) != 1:
+                            index += len(to_test_parsed) - 1
                         om.out.console('\r\nGOOD guess: "%s", current blind string is: "%s"' % (value, value))
                         om.out.console('\rgoodSamaritan('+value+')>>>', newLine=False)
                     else:
-                        om.out.console( '\r\nBad guess: "%s"' % toTest )
+                        om.out.console( '\r\nBad guess: "%s"' % to_test )
                         index -= 1
                 
                 # Continue with next character 
@@ -200,11 +205,7 @@ class dbDriverFunctions:
         expr = self.unescape(expression)
         
         evilStm = self.createStm()
-        baseUrl = self.urlReplace(newValue=evilStm)
-        
         exactEvilStm = self.createExactStm()
-        exactBaseUrl = self.urlReplace(newValue=exactEvilStm)
-        
         
         # This is kept here just for reference. This is from the original sqlmap code.
         '''
@@ -223,7 +224,7 @@ class dbDriverFunctions:
             self.args.writeFile.flush()
         '''
         
-        count, value = self.bisectionAlgorithm(baseUrl, exactBaseUrl, expr)
+        count, value = self.bisectionAlgorithm(evilStm, exactEvilStm, expr)
         duration = int(time.time() - start)
 
         logMsg = "performed %d queries in %d seconds" % (count, duration)
