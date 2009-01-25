@@ -209,6 +209,12 @@ class HTTPResponse(httplib.HTTPResponse):
         # and I also need to do multiple reads to this response...
         # BUGBUG: Is this OK? What if a HEAD method actually returns something?!
         if self._method == 'HEAD':
+            # This indicates that we have read all that we needed from the socket
+            # and that the socket can be reused!
+            #
+            # This like fixes the bug with title "GET is much faster than HEAD".
+            #https://sourceforge.net/tracker2/?func=detail&aid=2202532&group_id=170274&atid=853652
+            self.close()
             return ''
             
         if self._multiread == None:
