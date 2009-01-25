@@ -213,7 +213,7 @@ class persist:
                 obj = Unpickler(f).load()
                 return obj
     
-    def retrieve_all( self, search_string ):
+    def retrieve_all( self, search_string, result_limit=-1 ):
         '''
         This method returns a list of objects (if any is found).
         
@@ -234,6 +234,9 @@ class persist:
         select_stm = "select * from data_table"
         # This is a SQL injection! =)
         select_stm += " where " + search_string
+        
+        # Add the result limit, remember that a result_limit of -1 is "no limit"
+        select_stm += ' LIMIT '  + str(result_limit)
         
         with self._db_lock:
             try:

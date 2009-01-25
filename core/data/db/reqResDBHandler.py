@@ -70,7 +70,7 @@ class reqResDBHandler:
         else:
             return False
             
-    def searchByString( self, search_string ):
+    def searchByString( self, search_string, result_limit=-1 ):
         '''
         @return: A request object that matches the search string.
         '''
@@ -78,7 +78,7 @@ class reqResDBHandler:
             raise w3afException('The database is not initialized yet.')
         else:
             try:
-                result = self._db.retrieve_all( search_string )
+                result = self._db.retrieve_all( search_string, result_limit=result_limit )
                 return result
             except w3afException:
                 raise w3afException('You performed an invalid search. Please verify your syntax.')

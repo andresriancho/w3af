@@ -169,7 +169,8 @@ class httpLogTab(entries.RememberingHPaned):
     
     def _findRequestResponse( self, widget):
         try:
-            searchResultObjects = self._dbHandler.searchByString( self._searchText.get_text() )
+            # Please see the 5000 below
+            searchResultObjects = self._dbHandler.searchByString( self._searchText.get_text(), result_limit=5001 )
         except w3afException, w3:
             self._reqResViewer.request.clearPanes()
             self._reqResViewer.response.clearPanes()
@@ -187,7 +188,8 @@ class httpLogTab(entries.RememberingHPaned):
                 self._lstore.clear()
                 self._showDialog(_('No results'), _('The search you performed returned no results.') )
                 return
-            elif len( searchResultObjects ) > 10000:
+            # Please see the 5001 above
+            elif len( searchResultObjects ) > 5000:
                 self._reqResViewer.request.clearPanes()
                 self._reqResViewer.response.clearPanes()
                 self._reqResViewer.set_sensitive(False)
