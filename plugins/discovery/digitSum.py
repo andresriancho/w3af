@@ -52,7 +52,7 @@ class digitSum(baseDiscoveryPlugin):
         
         # User options
         self._fuzz_images = False
-        self._max_digit_sections = 3
+        self._max_digit_sections = 4
         
     def discover(self, fuzzableRequest ):
         '''
@@ -74,7 +74,6 @@ class digitSum(baseDiscoveryPlugin):
                                                             useCache=True, headers=self._headers )
         
         if original_response.is_text_or_html() or self._fuzz_images:
-            
             for fr in self._mangle_digits( fuzzableRequest ):
                 if fr.getURL() not in self._already_visited:
                     self._already_visited.append( fr.getURI() )
@@ -158,7 +157,7 @@ class digitSum(baseDiscoveryPlugin):
         '''
         res = []
         splitted = self._find_digits( a_string )
-        if len( splitted ) < 2 * self._max_digit_sections:
+        if len( splitted ) <= 2 * self._max_digit_sections:
             for i in xrange( len( splitted ) ):
                 if splitted[ i ].isdigit():
                     splitted[ i ] = str( int(splitted[ i ]) + 1 )
