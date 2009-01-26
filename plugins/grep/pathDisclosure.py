@@ -57,7 +57,7 @@ class pathDisclosure(baseGrepPlugin):
         @return: None, the result is saved in self._path_disc_regex_list
         '''
         for path_disclosure_string in self._get_path_disclosure_strings():
-            regex_string = '('+path_disclosure_string + '.*?)[^A-Za-z0-9\._\-\\/]'
+            regex_string = '('+path_disclosure_string + '.*?)[^A-Za-z0-9\._\-\\/\+~]'
             regex = re.compile( regex_string,  re.IGNORECASE)
             self._path_disc_regex_list.append(regex)
 
