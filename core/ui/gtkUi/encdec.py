@@ -52,6 +52,8 @@ class SimpleTextView(gtk.TextView):
             newtext = repr(newtext)[1:-1]
         else:
             newtext = newtext
+        
+        newtext = newtext.replace("\0", "\\x00")
         self.buffer.insert(iterl, unicode(newtext))
 
     def getText(self):
