@@ -46,7 +46,9 @@ class pathDisclosure(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._url_list = []
+        
+        # Internal variables
+        self._already_added = []
         
         # Compile all regular expressions now
         self._path_disc_regex_list = []
@@ -76,23 +78,30 @@ class pathDisclosure(baseGrepPlugin):
                 match_list = path_disc_regex.findall( html_string  )
                 
                 for match in match_list:
-                   
+                    
                     # This if is to avoid false positives
                     if not self._wasSent( request, match ) and not \
                     self._attr_value( match, html_string ):
                         
-                        v = vuln.vuln()
-                        v.setURL( realurl )
-                        v.setId( response.id )
-                        msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
-                        msg += 'vulnerability which discloses: "' + match  + '".'
-                        v.setDesc( msg )
-                        v.setSeverity(severity.LOW)
-                        v.setName( 'Path disclosure vulnerability' )
-                        v['path'] = match
-                        kb.kb.append( self, 'pathDisclosure', v )
+                        # Check for dups
+                        if (realurl, match) in self._already_added:
+                            continue
+                        else:
+                            # It's a new one, report!
+                            self._already_added.append( (realurl, match) )
+                            
+                            v = vuln.vuln()
+                            v.setURL( realurl )
+                            v.setId( response.id )
+                            msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
+                            msg += 'vulnerability which discloses: "' + match  + '".'
+                            v.setDesc( msg )
+                            v.setSeverity(severity.LOW)
+                            v.setName( 'Path disclosure vulnerability' )
+                            v['path'] = match
+                            kb.kb.append( self, 'pathDisclosure', v )
         
-        self._update_KB_path_list( response.getURL() )
+        self._update_KB_path_list()
     
     def _attr_value(self, path_disclosure_string, response_body ):
         '''
@@ -113,15 +122,11 @@ class pathDisclosure(baseGrepPlugin):
         in_attr = path_disclosure_string in regex_res
         return in_attr
     
-    def _update_KB_path_list( self, url ):
+    def _update_KB_path_list( self ):
         '''
         If a path disclosure was found, I can create a list of full paths to all URLs ever visited.
         This method updates that list.
-        
-        @parameter url: The URL where the path disclosure was found.
         '''
-        self._url_list.append( url )
-        
         path_disc_vulns = kb.kb.getData( 'pathDisclosure', 'pathDisclosure' ) 
         if len( path_disc_vulns ) == 0:
             # I can't calculate the list !
