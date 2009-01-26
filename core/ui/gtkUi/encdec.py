@@ -26,6 +26,7 @@ import gtk, threading, gobject
 from . import entries
 import urllib, base64, sha, md5, random, cgi
 import core.data.parsers.encode_decode as encode_decode
+import traceback
 from core.controllers.w3afException import w3afException
 
 class SimpleTextView(gtk.TextView):
@@ -33,6 +34,7 @@ class SimpleTextView(gtk.TextView):
     def __init__(self):
         gtk.TextView.__init__(self)
         self.buffer = self.get_buffer()
+        self.buffer.set_text(u"")
 
     def clear(self):
         '''Clears the pane.'''
@@ -50,7 +52,7 @@ class SimpleTextView(gtk.TextView):
             newtext = repr(newtext)[1:-1]
         else:
             newtext = newtext
-        self.buffer.insert(iterl, newtext)
+        self.buffer.insert(iterl, unicode(newtext))
 
     def getText(self):
         '''Gets the text of the pane, un-repr'ing it.
@@ -58,17 +60,20 @@ class SimpleTextView(gtk.TextView):
         @returns: The text of the pane.
         '''
         start, end = self.buffer.get_bounds()
-        text = self.buffer.get_text(start, end)
-
-        parts = text.split("\\x")
-        for i, part in enumerate(parts[1:]):
-            try:
-                carac = int(part[:2], 16)
-            except ValueError:
-                print "BAD String: %r" % text
-                return ""
-            parts[i+1] = chr(carac) + part[2:]
-        return "".join(parts)
+        return self.buffer.get_text(start, end)
+#        text = self.buffer.get_text(start, end)
+#        print self.buffer
+#        print type(text)
+#
+#        parts = text.split("\\x")
+#        for i, part in enumerate(parts[1:]):
+#            try:
+#                carac = int(part[:2], 16)
+#            except ValueError:
+#                print "BAD String: %r" % text
+#                return ""
+#            parts[i+1] = chr(carac) + part[2:]
+#        return "".join(parts)
 
 
 class EncodeDecode(entries.RememberingWindow):
@@ -139,7 +144,7 @@ class EncodeDecode(entries.RememberingWindow):
         @param func: the processing function.
         '''
         # clear the output text, this will introduce a small blink
-        out.setText("")
+        out.setText(u"")
 
         # go busy
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)

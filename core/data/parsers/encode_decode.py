@@ -40,7 +40,8 @@ def htmldecode(text):
     >>> htmldecode('&aacute;')
     '\xe1'
     '''
-    uchr = lambda value: value > 255 and unichr(value).encode('utf-8') or chr(value)
+    #uchr = lambda value: value > 255 and unichr(value).encode('utf-8') or chr(value)
+    uchr = lambda value: unichr(value).encode('utf-8')
     
     # Internal function to do the work
     def entitydecode(match, uchr=uchr):
