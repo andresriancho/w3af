@@ -124,7 +124,7 @@ class pathDisclosure(baseGrepPlugin):
         
         path_disc_vulns = kb.kb.getData( 'pathDisclosure', 'pathDisclosure' ) 
         if len( path_disc_vulns ) == 0:
-            # I cant calculate the list !
+            # I can't calculate the list !
             pass
         else:
             # Init the kb variables
@@ -157,7 +157,7 @@ class pathDisclosure(baseGrepPlugin):
                 # Get the webroot
                 webroot = longest_path_disc_vuln['path'].replace( path_and_file, '' )
                 
-                # Check what path separator we should use
+                # Check what path separator we should use (linux / windows)
                 if webroot[0] == '/':
                     path_sep = '/'
                 else:
@@ -186,9 +186,7 @@ class pathDisclosure(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        inform = []
-        for v in kb.kb.getData( 'pathDisclosure', 'pathDisclosure' ):
-            inform.append( v )
+        inform = kb.kb.getData( 'pathDisclosure', 'pathDisclosure' )
         
         tmp = {}
         ids = {}
@@ -210,9 +208,14 @@ class pathDisclosure(baseGrepPlugin):
         for url in tmp.keys():
             om.out.information( 'The URL: ' + url + ' has the following path disclosure problems:' )
             for path in tmp[ url ]:
-                toPrint = '- ' + path + ' . Found in request id\'s: '
-                toPrint += str( list( set( ids[ path ] ) ) )
-                om.out.information( toPrint )
+                to_print = '- ' + path + ' . Found in request id\'s: '
+                
+                list_of_id_list = ids[ path ]
+                complete_list = []
+                for list_of_id in list_of_id_list:
+                    complete_list.extend(list_of_id)
+                to_print += str( list( set( complete_list ) ) )
+                om.out.information( to_print )
 
     def _get_path_disclosure_strings(self):
         '''
