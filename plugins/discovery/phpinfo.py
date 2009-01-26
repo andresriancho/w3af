@@ -56,7 +56,7 @@ class phpinfo(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         
-        fuzzableRequestsToReturn = []
+        new_fuzzable_requests = []
 
         is_404 = kb.kb.getData( 'error404page', '404' )
         for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
@@ -81,6 +81,10 @@ class phpinfo(baseDiscoveryPlugin):
                     else:
                         # Check if it's a phpinfo file
                         if not is_404( response ):
+                            
+                            # Create the fuzzable request
+                            new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+                            
                             regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
                             php_version = re.search(regex_str, response.getBody(), re.IGNORECASE)
                             if php_version:
@@ -96,7 +100,7 @@ class phpinfo(baseDiscoveryPlugin):
                                 kb.kb.append( self, 'phpinfo', v )
                                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                                  
-        return fuzzableRequestsToReturn
+        return new_fuzzable_requests
 
     def _get_PHP_infofile( self ):
         '''
