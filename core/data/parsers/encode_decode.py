@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 from htmlentitydefs import name2codepoint
 
-def htmldecode(text):
+def htmldecode(text, use_repr=False):
     """
     Decode HTML entities in the given text.
     """

@@ -53,7 +53,6 @@ class SimpleTextView(gtk.TextView):
         else:
             newtext = newtext
         
-        newtext = newtext.replace("\0", "\\x00")
         self.buffer.insert(iterl, unicode(newtext))
 
     def getText(self):
@@ -138,7 +137,7 @@ class EncodeDecode(entries.RememberingWindow):
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
 
-    def _proc(self, inp, out, func):
+    def _proc(self, inp, out, func, use_repr=False):
         '''Process the text.
 
         @param inp: the text input.
@@ -166,7 +165,7 @@ class EncodeDecode(entries.RememberingWindow):
             busy.destroy()
 
             if proc.ok:
-                out.setText(proc.result)
+                out.setText(proc.result, use_repr)
             else:
                 msg = _("An error was generated during the execution:\n\t\t- Invalid input for that operation.\n\n")
                 msg += _("The string that you are trying to encode/decode can\'t be encoded/decoded using this algorithm.")
@@ -190,7 +189,7 @@ class EncodeDecode(entries.RememberingWindow):
         '''Decodes the lower text.'''
         opc = combo.get_active()
         func = _butNameFunc_dec[opc][1]
-        self._proc(self.panedn, self.paneup, func)
+        self._proc(self.panedn, self.paneup, func, use_repr=True)
         
 
 class ThreadedProc(threading.Thread):
