@@ -70,7 +70,7 @@ class userDir(baseDiscoveryPlugin):
             
         else:
             self._run = False
-            self._fuzzableRequests = []
+            self._fuzzable_requests = []
                 
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             self._headers = {'Referer': base_url }
@@ -110,7 +110,7 @@ class userDir(baseDiscoveryPlugin):
                 # Report findings of remote OS, applications, users, etc.
                 self._report_findings()
             
-            return self._fuzzableRequests
+            return self._fuzzable_requests
 
     def _do_request( self, mutant, user ):
         '''
@@ -139,8 +139,8 @@ class userDir(baseDiscoveryPlugin):
                     
                     kb.kb.append( self, 'users', i )
                     
-                    frList = self._createFuzzableRequests( response )
-                    self._fuzzableRequests.extend( frList )
+                    fuzzable_request_list = self._createFuzzableRequests( response )
+                    self._fuzzable_requests.extend( fuzzable_request_list )
                     
                 return True
             else:
