@@ -1,0 +1,24 @@
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery domain_dot
+
+back
+
+target
+# Test it with that little bank... ;)
+set target http://localhost/
+back
+
+start
+
+assert len(kb.kb.getData('domain_dot','domain_dot')) == 0
+
+exit
