@@ -160,7 +160,7 @@ class pathDisclosure(baseGrepPlugin):
             if longest_match:
                 
                 # Get the webroot
-                webroot = longest_path_disc_vuln['path'].replace( path_and_file, '' )
+                webroot = longest_path_disc_vuln['path'].replace( longest_match, '' )
                 kb.kb.save( self, 'webroot', webroot )
                 
                 # Check what path separator we should use (linux / windows)
