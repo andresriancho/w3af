@@ -161,6 +161,7 @@ class pathDisclosure(baseGrepPlugin):
                 
                 # Get the webroot
                 webroot = longest_path_disc_vuln['path'].replace( path_and_file, '' )
+                kb.kb.save( self, 'webroot', webroot )
                 
                 # Check what path separator we should use (linux / windows)
                 if webroot[0] == '/':
@@ -175,6 +176,7 @@ class pathDisclosure(baseGrepPlugin):
                     remote_path = urlParser.getPath( url ).replace('/', path_sep)
                     remote_locations.append( webroot + remote_path )
                 remote_locations = list( set( remote_locations ) )
+                
                 kb.kb.save( self, 'listFiles', remote_locations )
         
     def setOptions( self, OptionList ):
