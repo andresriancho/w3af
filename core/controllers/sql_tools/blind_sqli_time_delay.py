@@ -59,6 +59,7 @@ class blind_sqli_time_delay(basePlugin):
         
         @freq: The fuzzableRequest object that I have to modify
         @parameter: A string with the parameter name to test
+        
         @return: A vulnerability object or None if nothing is found
         '''
         # First save the original wait time

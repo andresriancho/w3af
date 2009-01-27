@@ -185,8 +185,9 @@ class sqlmap(baseAttackPlugin):
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
                 vuln_obj = bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() )
+                
                 if vuln_obj:
-                    tmp_vuln_list.extend( vuln_obj )
+                    tmp_vuln_list.append( vuln_obj )
             
             # Ok, go to the next stage with the filtered vulnerabilities
             vulns = tmp_vuln_list

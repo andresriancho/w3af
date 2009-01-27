@@ -72,6 +72,7 @@ class blind_sqli_response_diff(basePlugin):
         
         @freq: The fuzzableRequest object that I have to modify
         @parameter: A string with the parameter name to test
+        
         @return: A vulnerability object or None if nothing is found
         '''
         dummy = ['', ]
