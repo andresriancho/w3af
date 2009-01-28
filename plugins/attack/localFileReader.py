@@ -443,7 +443,19 @@ class fileReaderShell(shell):
 
             # Different apache configs and scripts
             res.append('/etc/init.d/apache2')
+            res.append('/etc/init.d/apache')
             res.append('/etc/apache2/httpd.conf')
+            res.append('/etc/httpd/httpd.conf')
+            res.append('/etc/apache/apache.conf')
+            res.append('/etc/apache/httpd.conf')
+            res.append('/etc/apache2/apache2.conf')
+            res.append('/usr/local/apache2/conf/httpd.conf')
+            res.append('/usr/local/apache/conf/httpd.conf')
+            res.append('/opt/apache/conf/httpd.conf')
+            res.append('/home/apache/httpd.conf')
+            res.append('/home/apache/conf/httpd.conf')
+            res.append('/etc/apache2/sites-available/default')
+            res.append('/etc/apache2/vhosts.d/default_vhost.include')
             res.append('/etc/httpd/conf/httpd.conf')
             res.append('/opt/jboss4/server/default/conf/users.properties')
 
