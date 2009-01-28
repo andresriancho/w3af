@@ -413,9 +413,9 @@ class xss(baseAuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Search persistent XSS'
+        d1 = 'Identify stored cross site scripting vulnerabilities'
         h1 = 'If set to True, w3af will navigate all pages of the target one more time,'
-        h1 += ' searching for persistent cross site scripting vulnerabilities.'
+        h1 += ' searching for stored cross site scripting vulnerabilities.'
         o1 = option('checkStored', self._check_stored_xss, d1, 'boolean', help=h1)
         
         d2 = 'Set the amount of checks to perform for each fuzzable parameter.'
