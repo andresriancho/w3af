@@ -37,6 +37,7 @@ cf.cf.save('targets', [] )
 cf.cf.save('targetDomains', [] )
 cf.cf.save('baseURLs', [] )
 
+
 class targetSettings(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can configure the target

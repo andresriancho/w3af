@@ -38,6 +38,7 @@ except ImportError:
 if __name__ != '__main__':
     from core.controllers.w3afException import w3afException
 
+
 class persist:
     '''
     A class that persists objects to a file using sqlite3 and pickle.
@@ -168,13 +169,9 @@ class persist:
             # Finally the PK
             database_creation += 'PRIMARY KEY ('+','.join(primary_key_columns)+'))'
             
-            try:
-                self._db.execute(database_creation)
-            except Exception, e:
-                raise e
-            else:
-                self._filename = filename
-                self._primary_key_columns = primary_key_columns
+            self._db.execute(database_creation)
+            self._filename = filename
+            self._primary_key_columns = primary_key_columns
     
     def retrieve( self, primary_key ):
         '''

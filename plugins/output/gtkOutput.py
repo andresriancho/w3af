@@ -89,14 +89,8 @@ class gtkOutput(baseOutputPlugin):
                         break
             
             # Create one!
-            try:
-                self._db.create( db_name , ['id', 'url', 'code'] )
-            except Exception, e:
-                msg = 'An exception was raised while creating the gtkOutput database object: '
-                msg += str(e)
-                raise w3afException( msg )
-            else:
-                kb.kb.save('gtkOutput', 'db', self._db )
+            self._db.create( db_name , ['id', 'url', 'code'] )
+            kb.kb.save('gtkOutput', 'db', self._db )
     
     def debug(self, msgString, newLine = True ):
         '''
