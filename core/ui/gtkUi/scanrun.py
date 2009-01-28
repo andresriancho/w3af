@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 
 import urllib2
+import sys
 import re, Queue, threading
 from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 import core.data.kb.knowledgeBase as kb
@@ -32,9 +33,12 @@ from extlib.xdot import xdot
 # To show request and responses
 from core.data.db.reqResDBHandler import reqResDBHandler
 
+RECURSION_LIMIT = sys.getrecursionlimit() - 5
+RECURSION_MSG = "Recursion limit: can't go deeper"
+
 class FullKBTree(kbtree.KBTree):
     '''A tree showing all the info.
-    
+
     This also gives a long description of the element when clicked.
 
     @param kbbrowser: The KB Browser
@@ -64,7 +68,7 @@ class FullKBTree(kbtree.KBTree):
         else:
             longdesc = ""
         self.kbbrowser.explanation.set_text(longdesc)
-        
+
         success = False
         if hasattr(instance, "getId" ):
             if instance.getId() != None:
@@ -86,7 +90,7 @@ class FullKBTree(kbtree.KBTree):
                     self.kbbrowser._pageChange(0)
                     self.kbbrowser.pagesControl.hide()
                     self.kbbrowser.title0.hide()
-                    
+
                     search_result = self._dbHandler.searchById( instance.getId()[0] )
                     if len(search_result) == 1:
                         request, response = search_result[0]
@@ -100,30 +104,30 @@ class FullKBTree(kbtree.KBTree):
                     # This is 2)
                     self.kbbrowser.pagesControl.show()
                     self.kbbrowser.title0.show()
-                    
+
                     self.kbbrowser.req_res_ids = instance.getId()
                     self.kbbrowser.pagesControl.activate(len(instance.getId()))
                     self.kbbrowser._pageChange(0)
                     success = True
-        
+
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
         else:
             self.kbbrowser.rrV.request.clearPanes()
             self.kbbrowser.rrV.response.clearPanes()
             self.kbbrowser.rrV.set_sensitive(False)
-            
-            
+
+
 class KBBrowser(entries.RememberingHPaned):
     '''Show the Knowledge Base, with the filter and the tree.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(KBBrowser,self).__init__(w3af, "pane-kbbrowser", 250)
 
         # Internal variables:
-        # 
+        #
         # Here I save the request and response ids to be used in the page control
         self.req_res_ids = []
         # This is to search the DB and print the different request and responses as they are
@@ -145,9 +149,9 @@ class KBBrowser(entries.RememberingHPaned):
         makeBut("Misc", "misc", False)
         filterbox.show()
 
-        # the kb tree 
+        # the kb tree
         self.kbtree = FullKBTree(w3af, self, self.filters)
-        
+
         # all in the first pane
         scrollwin21 = gtk.ScrolledWindow()
         scrollwin21.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -170,16 +174,16 @@ class KBBrowser(entries.RememberingHPaned):
         scrollwin22 = gtk.ScrolledWindow()
         scrollwin22.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scrollwin22.add_with_viewport(explan_tv)
-        scrollwin22.show()        
-        
+        scrollwin22.show()
+
         # The request/response viewer
         self.rrV = reqResViewer.reqResViewer(w3af)
         self.rrV.set_sensitive(False)
-        
+
         # Create the title label to show the request id
         self.title0 = gtk.Label()
         self.title0.show()
-        
+
         # Create page changer to handle info/vuln objects that have MORE THAN ONE
         # related request/response
         self.pagesControl = entries.PagesControl(w3af, self._pageChange, 0)
@@ -187,24 +191,24 @@ class KBBrowser(entries.RememberingHPaned):
         self._pageChange(0)
         centerbox = gtk.HBox()
         centerbox.pack_start(self.pagesControl, True, False)
-        
+
         # Add everything to a vbox
         vbox_rrv_centerbox = gtk.VBox()
         vbox_rrv_centerbox.pack_start(self.title0, False, True)
         vbox_rrv_centerbox.pack_start(self.rrV,  True,  True)
         vbox_rrv_centerbox.pack_start(centerbox,  False,  False)
-        
+
         # and show
         vbox_rrv_centerbox.show()
         self.pagesControl.show()
         centerbox.show()
-        
+
         # And now put everything inside the vpaned
         vpanedExplainAndView = entries.RememberingVPaned(w3af, "pane-kbbexplainview", 100)
         vpanedExplainAndView.pack1( scrollwin22 )
         vpanedExplainAndView.pack2( vbox_rrv_centerbox )
         vpanedExplainAndView.show()
-        
+
         # pack & show
         self.pack1(treebox)
         self.pack2(vpanedExplainAndView)
@@ -214,7 +218,7 @@ class KBBrowser(entries.RememberingHPaned):
         '''Changes the filter of the KB in the tree.'''
         self.filters[ptype] = button.get_active()
         self.kbtree.setFilter(self.filters)
-    
+
     def _pageChange(self, page):
         '''
         Handle the page change in the page control.
@@ -235,11 +239,11 @@ class KBBrowser(entries.RememberingHPaned):
                 self.rrV.request.showObject( request )
                 self.rrV.response.showObject( response )
                 self.rrV.set_sensitive(True)
-        
+
 
 class URLsGraph(gtk.VBox):
     '''Graph the URLs that the system discovers.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
@@ -288,7 +292,7 @@ class URLsGraph(gtk.VBox):
         th.start()
         gobject.timeout_add(500, self._draw_end, q, evt)
         return False
-        
+
     def _draw_real(self, q, evt):
         new_widget = xdot.DotWidget()
         self._somethingnew = False
@@ -296,12 +300,12 @@ class URLsGraph(gtk.VBox):
         new_widget.set_dotcode(dotcode)
         evt.set()
         q.put(new_widget)
-        
+
     def _draw_end(self, q, evt):
         if not evt:
             return True
 
-        new_widget = q.get() 
+        new_widget = q.get()
         new_widget.zoom_to_fit()
 
         # put that drawing in the widget
@@ -314,13 +318,20 @@ class URLsGraph(gtk.VBox):
         gobject.timeout_add(500, self._draw_start)
 
 
+    def limitNode(self, parent, node, name):
+        self.nodos_code.append('"%s" [label="%s"]' % (node, name))
+        if parent:
+            nline = '"%s" -- "%s"' % (parent, node)
+            self.nodos_code.append(nline)
+        self._somethingnew = True
+
     def newNode(self, parent, node, name, isLeaf):
         if not isLeaf:
             self.nodos_code.append('"%s" [shape=box]' % node)
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         if parent:
             nline = '"%s" -- "%s"' % (parent, node)
-            self.nodos_code.append(nline) 
+            self.nodos_code.append(nline)
         self._somethingnew = True
 
 
@@ -333,7 +344,7 @@ User-Agent: w3af.sf.net
 
 class URLsTree(gtk.TreeView):
     '''Show the URLs that the system discovers.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, grapher):
@@ -394,7 +405,7 @@ class URLsTree(gtk.TreeView):
                 end += "#" + fragment
 
             # AR:
-            # This was the old way of doing it:            
+            # This was the old way of doing it:
             #nodes = path.split("/")[1:]
             # But it generated this bug:    http://sourceforge.net/tracker/index.php?func=detail&aid=1963947&group_id=170274&atid=853652
             # So I changed it to this:
@@ -407,19 +418,20 @@ class URLsTree(gtk.TreeView):
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]
-            self._insertNodes(None, parts, self.treeholder)
+            self._insertNodes(None, parts, self.treeholder, 1)
         yield False
 
-    def _insertNodes(self, parent, parts, holder):
+    def _insertNodes(self, parent, parts, holder, rec_cntr):
         '''Insert a new node in the tree.
 
-        It's recursive: it walks the path of nodes, being each node a 
+        It's recursive: it walks the path of nodes, being each node a
         part of the URL, checking every time if needs to create a new
         node or just enter in it.
 
         @param parent: the parent to insert the node
         @param parts: the rest of the parts to walk the path
         @param holder: the dict when what is already exists is stored.
+        @param rec_cntr: the recursion counter
 
         @return: The new or modified holder
         '''
@@ -427,23 +439,29 @@ class URLsTree(gtk.TreeView):
             return {}
         node = parts[0]
         rest = parts[1:]
+
+        if rec_cntr >= RECURSION_LIMIT:
+            newtreenode = self.treestore.append(parent, [RECURSION_MSG])
+            self.grapher.limitNode(parent, newtreenode, RECURSION_MSG)
+            return holder
+
         if node in holder:
             # already exists, use it if have more nodes
             (treenode, children) = holder[node]
-            return self._insertNodes(treenode, rest, children)
+            return self._insertNodes(treenode, rest, children, rec_cntr+1)
 
         # does not exist, create it
         newtreenode = self.treestore.append(parent, [node])
         self.grapher.newNode(parent, newtreenode, node, not rest)
-        newholdnode = self._insertNodes(newtreenode, rest, {})
+        newholdnode = self._insertNodes(newtreenode, rest, {}, rec_cntr+1)
         holder[node] = (newtreenode, newholdnode)
         return holder
 
     def popup_menu( self, tv, event ):
         '''Shows a menu when you right click on a plugin.
-        
+
         @param tv: the treeview.
-        @parameter event: The GTK event 
+        @parameter event: The GTK event
         '''
         if event.button != 3:
             return
@@ -466,14 +484,14 @@ class URLsTree(gtk.TreeView):
         e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.ManualRequests)
         gm.append( e )
-        
+
         image = gtk.Image()
         image.set_from_stock(gtk.STOCK_PROPERTIES,  gtk.ICON_SIZE_MENU)
         e = gtk.ImageMenuItem(_("Open with Fuzzy Request Editor..."))
         e.set_image(image)
         e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
         gm.append( e )
-        
+
         e = gtk.ImageMenuItem(_("Open with default browser..."))
         e.connect('activate', self._openBrowser, fullurl)
         gm.append( e )
@@ -484,28 +502,28 @@ class URLsTree(gtk.TreeView):
     def _openBrowser( self, widg, text):
         '''Opens the text with an external browser.'''
         webbrowser.open_new_tab(text)
-        
+
     def _sendRequest(self, widg, text, func):
         func(self.w3af, (text,""))
 
 class ScanRunBody(gtk.Notebook):
     '''The whole body of scan run.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
         super(ScanRunBody,self).__init__()
         self.w3af = w3af
         self.helpChapter = ("Browsing_the_Knowledge_Base", "Site_structure", "Requests_and_Responses")
-        self.connect("switch-page", self.changedPage) 
-        
+        self.connect("switch-page", self.changedPage)
+
         # KB Browser
         # this one does not go inside a scrolled window, because that's handled
         # in each widget of itself
         kbbrowser = KBBrowser(w3af)
         l = gtk.Label(_("KB Browser"))
         self.append_page(kbbrowser, l)
-        
+
         # urlstree, the tree
         pan = entries.RememberingHPaned(w3af, "pane-urltreegraph")
         urlsgraph = URLsGraph(w3af)
