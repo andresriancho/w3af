@@ -61,7 +61,6 @@ class xmlFile(baseOutputPlugin):
 
         # List with additional xml elements
         self._errorXML = []
-        self._printUniq = {}
         
         # xml
         self._xmldoc = xml.dom.minidom.Document()
@@ -205,27 +204,23 @@ class xmlFile(baseOutputPlugin):
         # Add the vulnerability results
         vulns = kb.kb.getAllVulns()
         for i in vulns:
-            if not self._printUniq.has_key(hash(i.getDesc())):
-                self._printUniq[hash(i.getDesc())] = ''
-                messageNode = self._xmldoc.createElement("vulnerability")
-                messageNode.setAttribute("severity", str(i.getSeverity()))
-                messageNode.setAttribute("method", str(i.getMethod()))
-                messageNode.setAttribute("url", str(i.getURL()))
-                messageNode.setAttribute("var", str(i.getVar()))
-                description = self._xmldoc.createTextNode(i.getDesc())
-                messageNode.appendChild(description)
-                self._topElement.appendChild(messageNode)
+          messageNode = self._xmldoc.createElement("vulnerability")
+          messageNode.setAttribute("severity", str(i.getSeverity()))
+          messageNode.setAttribute("method", str(i.getMethod()))
+          messageNode.setAttribute("url", str(i.getURL()))
+          messageNode.setAttribute("var", str(i.getVar()))
+          description = self._xmldoc.createTextNode(i.getDesc())
+          messageNode.appendChild(description)
+          self._topElement.appendChild(messageNode)
         
         # Add the information results
         infos = kb.kb.getAllInfos()
         for i in infos:
-            if not self._printUniq.has_key(hash(i.getDesc())):
-                self._printUniq[hash(i.getDesc())] = ''
-                messageNode = self._xmldoc.createElement("information")
-                messageNode.setAttribute("url", str(i.getURL()))
-                description = self._xmldoc.createTextNode(i.getDesc())
-                messageNode.appendChild(description)
-                self._topElement.appendChild(messageNode)
+          messageNode = self._xmldoc.createElement("information")
+          messageNode.setAttribute("url", str(i.getURL()))
+          description = self._xmldoc.createTextNode(i.getDesc())
+          messageNode.appendChild(description)
+          self._topElement.appendChild(messageNode)
         
         # Add additional information results
         for node in self._errorXML:
