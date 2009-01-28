@@ -95,6 +95,9 @@ class errorPages(baseGrepPlugin):
         mesg.append("eval()'d code</b> on line <b>")
         mesg.append("Cannot execute a blank command in")
         mesg.append("Fatal error</b>:  preg_replace")
+        mesg.append("thrown in <b>")
+        mesg.append("#0 {main}")
+        mesg.append("Stack trace:")
         
         # python
         mesg.append("PythonHandler django.core.handlers.modpython")
