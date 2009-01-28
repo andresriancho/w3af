@@ -3,7 +3,6 @@
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -15,15 +14,14 @@ back
 
 plugins
 audit osCommanding
-audit
 back
 
 target
-set target http://localhost/w3af/osCommanding/vulnerable.php?command=f0as9
-set targetOS unix
+set target http://localhost/w3af/audit/os_commanding/simple_osc.php?cmd=ls
+set targetOS windows
 back
 start
 
-assert len(kb.kb.getData('osCommanding','osCommanding')) == 1
+assert len(kb.kb.getData('osCommanding','osCommanding')) == 0
 
 exit
