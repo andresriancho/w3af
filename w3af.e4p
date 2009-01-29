@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-01-20, 18:57:58 -->
+<!-- Saved: 2009-01-27, 09:48:40 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -1030,11 +1030,6 @@
     <Source>
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
-      <Name>mysqlWebShell.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>attack</Dir>
       <Name>xssBeef.py</Name>
     </Source>
     <Source>
@@ -1465,18 +1460,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-localFileInclude+pathDisc.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-mysqlWebShell-noPathDisc.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-mysqlWebShell.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-phishtank.w3af</Name>
     </Source>
     <Source>
@@ -1624,10 +1607,6 @@
       <Name>script-listExploitPlugins.w3af</Name>
     </Source>
     <Source>
-      <Dir>scripts</Dir>
-      <Name>script-bsqlDetection-setIntersection.w3af</Name>
-    </Source>
-    <Source>
       <Dir>plugins</Dir>
       <Dir>audit</Dir>
       <Name>dav.py</Name>
@@ -1707,10 +1686,6 @@
       <Dir>data</Dir>
       <Dir>dc</Dir>
       <Name>cookie.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-cookieFuzzing.w3af</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -2994,10 +2969,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-localFileInclude-falsePositive.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-localProxy.w3af</Name>
     </Source>
     <Source>
@@ -3326,10 +3297,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-xssForms.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-xst.w3af</Name>
     </Source>
     <Source>
@@ -3407,6 +3374,34 @@
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
       <Name>eval.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>domain_dot.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>exploitAll.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>get_w3af_version.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>webroot.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Name>sql_webshell.py</Name>
     </Source>
   </Sources>
   <Forms>
