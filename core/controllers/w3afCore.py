@@ -452,30 +452,36 @@ class w3afCore:
                     for plugin in self._plugins['bruteforce']:
                         del(plugin)
                     
+                    # Sort URLs
+                    tmp_url_list = []
+                    for u in kb.kb.getData( 'urls', 'urlList'):
+                        tmp_url_list.append( '- ' + u )
+                    tmp_url_list = list(set(tmp_url_list))
+                    tmp_url_list.sort()
+        
+                    # Save the list of uniques to the kb; this will avoid some extra loops
+                    # in some plugins that use this knowledge
+                    kb.kb.save('urls', 'urlList', tmp_url_list )
+                    
                     # Filter out the fuzzable requests that aren't important (and will be ignored
                     # by audit plugins anyway...)
-                    msg = 'Found ' + str(len( kb.kb.getData( 'urls', 'urlList') )) + ' URLs and '
+                    msg = 'Found ' + str(len( tmp_url_list )) + ' URLs and '
                     msg += str(len( self._fuzzableRequestList)) + ' different points of injection.'
                     om.out.information( msg )
                     
-                    # Sort URLs and print them
-                    tmp_list = []
-                    for u in kb.kb.getData( 'urls', 'urlList'):
-                        tmp_list.append( '- ' + u )
-                    tmp_list.sort()
-                    
+                    # print the URLs
                     om.out.information('The list of URLs is:')
-                    for i in tmp_list:
+                    for i in tmp_url_list:
                         om.out.information( i )
                     
                     # Sort fuzzable requests and print them
-                    tmp_list = []
+                    tmp_fr_list = []
                     for fuzzRequest in self._fuzzableRequestList:
-                        tmp_list.append( '- ' + str(fuzzRequest) )
-                    tmp_list.sort()
+                        tmp_fr_list.append( '- ' + str(fuzzRequest) )
+                    tmp_fr_list.sort()
 
                     om.out.information('The list of fuzzable requests is:')
-                    for i in tmp_list:
+                    for i in tmp_fr_list:
                         om.out.information( i )
                 
                     self._audit()
