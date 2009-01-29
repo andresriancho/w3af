@@ -12,7 +12,6 @@ back
 back
 
 plugins
-audit osCommanding
 discovery webSpider
 discovery config webSpider
 set onlyForward True
@@ -24,18 +23,6 @@ set target http://localhost/w3af/core/encoding/indéx.html
 back
 start
 
-assert len(kb.kb.getData('osCommanding','osCommanding')) == 1
-
-exploit
-exploit osCommandingShell
-
-interact 0
-
-ls
-
-endInteraction
-back
-
-assert len(kb.kb.getData('osCommandingShell','shell')) == 1
+assert len(kb.kb.getData('urls','urlList')) >= 9
 
 exit

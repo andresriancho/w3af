@@ -87,10 +87,10 @@ class abstractParser:
         #url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
         url_regex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
         for url in re.findall(url_regex, httpResponse.getBody() ):
-            # This try is here because the _decodeString method raises an exception
+            # This try is here because the _decode_URL method raises an exception
             # whenever it fails to decode a url.
             try:
-                decoded_url = self._decodeString(url[0], self._encoding)
+                decoded_url = self._decode_URL(url[0], self._encoding)
             except w3afException:
                 pass
             else:
@@ -113,7 +113,7 @@ class abstractParser:
                     if not match_string.startswith('//'):
                         domainPath = urlParser.getDomainPath(httpResponse.getURL())
                         url = urlParser.urlJoin( domainPath , match_string )
-                        url = self._decodeString(url)
+                        url = self._decode_URL(url, self._encoding)
                         res.append( url )
                     
                     # continue
@@ -185,21 +185,60 @@ class abstractParser:
         '''
         raise Exception('You should create your own parser class and implement the getMetaTags() method.')
         
-    def _decodeString(self, string_to_decode, encoding='utf-8'):
+    def _decode_URL(self, url_to_decode, encoding):
         '''
+        This is one of the most important methods, because it will decode any URL
+        and return an utf-8 encoded string. In other words, this methods does c14n (Canonicalization)
+        (http://en.wikipedia.org/wiki/Canonicalization) and allows all layers of w3af to simply ignore the
+        encoding of the HTTP body (if that's what they want).
+        
+        This method is very related to httpResponse._charset_handling(), which decodes the HTTP
+        body of the response. The "problem" is that the body of the response is decoded as expected,
+        but URLs aren't... why? Let's see an example:
+        
+        - HTTP Body: <a href="http://host.tld/%05%44">Click m\x05\x44!</a>
+        - HTTP response header indicated encoding: xyz
+        - After running _charset_handling() and supposing that "\x05\x44" decodes to "é" in xyz,
+        the response is: <a href="http://host.tld/%05%44">Click mé!</a>
+        
+        As you may have noticed, the %05%44 (which in URL means "\x05\x44") wasn't decoded
+        (as expected because the decoding method doesn't handle URL encoding AND xyz encoding at the
+        same time!).
+        
+        So, when we use _decode_URL() we take as input "http://host.tld/%05%44", we decode the
+        URL encoding to get "http://host.tld/\x05\x44" and finally we decode that with the xyz encoding
+        to get "http://host.tld/é".
+        
+        Something small to remember:
         >>> print urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8')
         indéx.html
         '''
+        
+        # Avoid the double decoding performed by httpResponse._charset_handling() and
+        # by this function in the cases like this link:
+        #
+        #   http://host.tld/é.html
+        #
+        # Which is written without URL encoding.
+        if urllib.unquote(url_to_decode) == url_to_decode:
+            return url_to_decode
+            
         try:
-            return urllib.unquote(string_to_decode).decode(encoding).encode('utf-8')
+            return urllib.unquote(url_to_decode).decode(encoding).encode('utf-8')
         except UnicodeDecodeError, ude:
             # This error could have been produced by the buggy choice of encoding
-            # done by the user when calling _decodeString with two parameters, 
+            # done by the user when calling _decode_URL with two parameters, 
             # or "selected by default". So, now we are going to test something different
             if encoding == 'utf-8':
                 # Test an encoding that only uses one byte:
-                return urllib.unquote(string_to_decode).decode('iso-8859-1').encode('utf-8')
-            else:
-                msg = 'Failed to _decodeString: "' + string_to_decode +'" using encoding: ' + encoding
-                om.out.error(msg)
-                raise w3afException(msg)
+                return urllib.unquote(url_to_decode).decode('iso-8859-1').encode('utf-8')
+            elif encoding != 'utf-8':
+                # Sometimes, the web app developers, their editors, or some other component
+                # makes a mistake, and they are really encoding it with utf-8 and they say they are
+                # doing it with some other encoding; this is why I perform this last test:
+                try:
+                    return urllib.unquote(url_to_decode).decode('utf-8').encode('utf-8')
+                except UnicodeDecodeError, ude:
+                    msg = 'Failed to _decode_URL: "' + url_to_decode +'" using encoding: "' + encoding + '".'
+                    om.out.error(msg)
+                    raise ude

@@ -25,11 +25,14 @@ from core.controllers.w3afException import w3afException
 
 import core.data.dc.form as form
 import core.data.parsers.urlParser as urlParser
+from core.data.parsers.abstractParser import abstractParser as abstractParser
+
+from sgmllib import SGMLParser
+import traceback
 import string
 import re
-from sgmllib import SGMLParser
-from core.data.parsers.abstractParser import abstractParser as abstractParser
-import traceback
+import urllib
+
 
 class sgmlParser(abstractParser, SGMLParser):
     '''
@@ -187,7 +190,6 @@ class sgmlParser(abstractParser, SGMLParser):
                     content = attr[1]
                     
             if hasContent and hasHTTP_EQUIV:
-                content = self._decodeString( content, self._encoding )
                 self._metaRedirs.append( content )
                 
                 # And finally I add the URL to the list of url's found in the document...
@@ -196,8 +198,8 @@ class sgmlParser(abstractParser, SGMLParser):
                 # The content variables looks something like... "6  ; URL=http://www.f00.us/"
                 for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                     url = url.strip()
+                    url = self._decode_URL( url, self._encoding )
                     url = urlParser.urlJoin( self._baseUrl , url )
-                    url = self._decodeString(url, self._encoding)
                     
                     self._parsed_URLs.append( url )
                     self._tag_and_url.append( ('meta', url ) )
@@ -212,7 +214,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     if len(  attr[1] ):
                             if attr[1][0] != '#':
                                 url = urlParser.urlJoin( self._baseUrl ,attr[1] )
-                                url = self._decodeString(url, self._encoding)
+                                url = self._decode_URL(url, self._encoding)
                                 url = urlParser.normalizeURL( url )
                                 if url not in self._parsed_URLs:
                                     self._parsed_URLs.append( url )

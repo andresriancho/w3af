@@ -119,6 +119,12 @@ class httpResponse:
     def _charset_handling(self, body):
         '''
         This method decodes the body based on the header(or metadata) encoding.
+        
+        This is one of the most important methods, because it will decode any string
+        (usually HTTP response body contents) and return an utf-8 encoded string. In other words,
+        this methods does c14n (Canonicalization) (http://en.wikipedia.org/wiki/Canonicalization)
+        and allows all layers of w3af to simply ignore the encoding of the HTTP body (if that's
+        what they want).        
 
         @body: A string that represents the body of the HTTP response
         @return: None
@@ -177,6 +183,7 @@ class httpResponse:
                 # Now we use the unicode_str to create a utf-8 string that will be used in all w3af
                 self._body = unicode_str.encode('utf-8')
                 
+                # And we save the charset, just in case.
                 self._charset = charset
 
     def setHeaders( self, headers ):
