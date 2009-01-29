@@ -19,11 +19,11 @@ back
 audit sqli
 back
 target
-set target http://127.0.0.1/w3af/wmlParser/test-forms2.wml
+set target http://localhost/w3af/core/wml_parser/index.html
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 7
+assert len(kb.kb.getData('urls','urlList')) >= 7
 assert len(kb.kb.getData('sqli','sqli')) == 1
 
 exit

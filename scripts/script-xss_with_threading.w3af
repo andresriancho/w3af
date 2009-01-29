@@ -6,7 +6,6 @@ back
 
 plugins
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -14,12 +13,12 @@ back
 output config console
 set verbose False
 back
+
 audit xss
-audit
 back
 
 target
-set target http://localhost/w3af/xss/test-xss.php?a=f0as9
+set target http://localhost/w3af/audit/xss/simple_xss_no_js.php?text=1
 back
 
 start

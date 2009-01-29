@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 16
+assert len(kb.kb.getData('urls','urlList')) >= 14
 
 exit

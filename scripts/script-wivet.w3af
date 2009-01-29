@@ -24,6 +24,6 @@ back
 
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 2
+assert len( kb.kb.getData('urls', 'urlList') ) >= 70
 
 exit
