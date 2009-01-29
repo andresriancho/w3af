@@ -455,7 +455,7 @@ class w3afCore:
                     # Sort URLs
                     tmp_url_list = []
                     for u in kb.kb.getData( 'urls', 'urlList'):
-                        tmp_url_list.append( '- ' + u )
+                        tmp_url_list.append( u )
                     tmp_url_list = list(set(tmp_url_list))
                     tmp_url_list.sort()
         
@@ -472,7 +472,7 @@ class w3afCore:
                     # print the URLs
                     om.out.information('The list of URLs is:')
                     for i in tmp_url_list:
-                        om.out.information( i )
+                        om.out.information( '- ' + i )
                     
                     # Sort fuzzable requests and print them
                     tmp_fr_list = []
