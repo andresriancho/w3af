@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-01-27, 09:48:40 -->
+<!-- Saved: 2009-01-30, 12:22:20 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -1468,10 +1468,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-remoteFileInclude-XSS.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-requestHelp.w3af</Name>
     </Source>
     <Source>
@@ -1481,18 +1477,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-rfiW3afSite.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-simpleSQLi.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-simpleXss.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-threadXSS.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -3105,10 +3089,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-progressBar.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-pykto_mutate.w3af</Name>
     </Source>
     <Source>
@@ -3218,10 +3198,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-test-exploit-config.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-two-interactions.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>

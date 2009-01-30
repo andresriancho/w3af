@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-01-28, 00:56:28 -->
+<!-- Saved: 2009-01-30, 12:22:20 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -568,20 +568,6 @@
       <Linenumber>135</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add more checks here?</Summary>
-    <Description></Description>
-    <Created>2008-12-31, 16:48:34</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>documentParser.py</Name>
-      </Filename>
-      <Linenumber>84</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Memory usage!!!</Summary>
     <Description></Description>
@@ -607,34 +593,6 @@
         <Name>consoleUi.py</Name>
       </Filename>
       <Linenumber>298</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: For some reason this method failed to work:</Summary>
-    <Description></Description>
-    <Created>2009-01-14, 20:20:12</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>sgmlParser.py</Name>
-      </Filename>
-      <Linenumber>130</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Also matches //foo/bar.txt , which is bad</Summary>
-    <Description></Description>
-    <Created>2009-01-14, 21:01:17</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>abstractParser.py</Name>
-      </Filename>
-      <Linenumber>98</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -815,45 +773,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-01-23, 13:41:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>780</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-01-23, 13:41:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>824</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
-    <Description></Description>
-    <Created>2009-01-23, 13:41:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1183</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This message should be more descriptive</Summary>
     <Description></Description>
     <Created>2009-01-23, 13:45:22</Created>
@@ -865,20 +784,6 @@
         <Name>profiles.py</Name>
       </Filename>
       <Linenumber>399</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
-    <Description></Description>
-    <Created>2009-01-24, 15:45:52</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>exploit.py</Name>
-      </Filename>
-      <Linenumber>232</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -893,34 +798,6 @@
         <Name>reqResDBHandler.py</Name>
       </Filename>
       <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: check_same_thread=False</Summary>
-    <Description></Description>
-    <Created>2009-01-25, 13:02:32</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>persist.py</Name>
-      </Filename>
-      <Linenumber>62</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: check_same_thread=False</Summary>
-    <Description></Description>
-    <Created>2009-01-25, 13:02:32</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>persist.py</Name>
-      </Filename>
-      <Linenumber>153</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -952,34 +829,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: improve the second if condition (works it the</Summary>
-    <Description></Description>
-    <Created>2009-01-25, 20:50:54</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Dir>db</Dir>
-        <Name>dbDriverFunctions.py</Name>
-      </Filename>
-      <Linenumber>373</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: improve this check (works it the web</Summary>
-    <Description></Description>
-    <Created>2009-01-25, 20:50:54</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Dir>db</Dir>
-        <Name>dbDriverFunctions.py</Name>
-      </Filename>
-      <Linenumber>388</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
     <Description></Description>
     <Created>2009-01-26, 09:28:45</Created>
@@ -1003,59 +852,6 @@
         <Name>localFileInclude.py</Name>
       </Filename>
       <Linenumber>143</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 09:44:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>303</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 09:44:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>433</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 09:44:08</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>470</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 10:02:20</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>urlParser.py</Name>
-      </Filename>
-      <Linenumber>218</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1138,10 +934,175 @@
       <Linenumber>212</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 10:18:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>303</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 10:18:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>433</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 10:18:28</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>482</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve the second if condition (works it the</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 12:00:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>373</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve this check (works it the web</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 12:00:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>388</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 15:00:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>63</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: check_same_thread=False</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 15:00:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>db</Dir>
+        <Name>persist.py</Name>
+      </Filename>
+      <Linenumber>154</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
+    <Description></Description>
+    <Created>2009-01-28, 16:41:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>exploit.py</Name>
+      </Filename>
+      <Linenumber>262</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 16:42:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>218</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add more checks here?</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 16:44:40</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>documentParser.py</Name>
+      </Filename>
+      <Linenumber>84</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: For some reason this method failed to work:</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 18:23:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>sgmlParser.py</Name>
+      </Filename>
+      <Linenumber>133</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Also matches //foo/bar.txt , which is bad</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 19:06:46</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>abstractParser.py</Name>
+      </Filename>
+      <Linenumber>102</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
     <Description></Description>
-    <Created>2009-01-27, 00:08:28</Created>
+    <Created>2009-01-29, 19:56:37</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
@@ -1149,6 +1110,45 @@
         <Name>sql_webshell.py</Name>
       </Filename>
       <Linenumber>204</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 19:57:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>786</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 19:57:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>830</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2009-01-29, 19:57:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1189</Linenumber>
     </Resource>
   </Task>
 </Tasks>
