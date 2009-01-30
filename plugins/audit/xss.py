@@ -185,6 +185,9 @@ class xss(baseAuditPlugin):
         
         # Get the strings only
         xss_strings = [ i[0] for i in xss_tests ]
+        # And now replace the alert by fake_alert; I don't want to break web applications
+        xss_strings = [ xss_test.replace('alert', 'fake_alert') for xss_test in xss_strings ]
+        
         mutant_list = createMutants( mutant.getFuzzableReq() , xss_strings , \
                                                     fuzzableParamList=[mutant.getVar(), ])
         
