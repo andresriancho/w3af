@@ -28,6 +28,7 @@ from core.ui.consoleUi.kbMenu import *
 import core.controllers.miscSettings as ms
 #from core.ui.consoleUi.session import *
 from core.ui.consoleUi.util import *
+import core.ui.consoleUi.io.console as term
 
 from core.controllers.w3afException import *
 from core.controllers.misc.get_w3af_version import get_w3af_version
@@ -37,6 +38,8 @@ from core.ui.consoleUi.progress_bar import progress_bar
 import threading
 import sys
 import time
+
+# This is to perform the "print scan status" in show_progress_on_request()
 import select
 
 
@@ -97,13 +100,36 @@ class rootMenu(menu):
         When the user hits enter, show the progress
         '''
         while self._w3af.isRunning():
+            
+            # Define some variables...
+            rfds = []
+            wfds = []
+            efds = []
+            hitted_enter = False
+
+            # TODO: This if is terrible! I need to remove it!
             # read from sys.stdin with a 0.5 second timeout
-            rfds, wfds, efds = select.select( [sys.stdin], [], [], 0.5)
+            if sys.platform != 'win32':
+                # linux
+                rfds, wfds, efds = select.select( [sys.stdin], [], [], 0.5)
+                if rfds:
+                    sys.stdin.readline()
+                    hitted_enter = True
+            else:
+                # windows
+                import msvcrt
+                time.sleep(0.3)
+                if msvcrt.kbhit():
+                    if term.read(1) in ['\n', '\r', '\r\n', '\n\r']:
+                        hitted_enter = True
             
             # If something was written to sys.stdin, read it
-            if rfds:
+            if hitted_enter:
+                
+                # change back to the previous state
+                hitted_enter = False
+                
                 # Get the information
-                rfds[0].readline()
                 progress = self._w3af.progress.get_progress()
                 eta = self._w3af.progress.get_eta()
                 

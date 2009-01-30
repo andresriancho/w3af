@@ -21,13 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import traceback
-        
+
 import core.data.kb.knowledgeBase as kb        
 from core.ui.consoleUi.util import *
 from core.ui.consoleUi.history import *
 from core.ui.consoleUi.help import *
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
+
 
 class menu:
     '''
