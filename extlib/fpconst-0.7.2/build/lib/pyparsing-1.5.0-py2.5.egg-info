@@ -1,0 +1,17 @@
+Metadata-Version: 1.0
+Name: pyparsing
+Version: 1.5.0
+Summary: Python parsing module
+Home-page: http://pyparsing.wikispaces.com/
+Author: Paul McGuire
+Author-email: ptmcg@users.sourceforge.net
+License: MIT License
+Download-URL: http://sourceforge.net/project/showfiles.php?group_id=97203
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python

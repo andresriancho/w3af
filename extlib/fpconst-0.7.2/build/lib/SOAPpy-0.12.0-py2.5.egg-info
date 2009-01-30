@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: SOAPpy
+Version: 0.12.0
+Summary: SOAP Services for Python
+Home-page: http://pywebsvcs.sf.net/
+Author: Gregory Warnes
+Author-email: Gregory.R.Warnes@Pfizer.com
+License: UNKNOWN
+Description: SOAPpy provides tools for building SOAP clients and servers.  For more information see http://pywebsvcs.sf.net/
+Platform: UNKNOWN

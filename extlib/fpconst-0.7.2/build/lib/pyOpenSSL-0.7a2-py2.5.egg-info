@@ -1,0 +1,15 @@
+Metadata-Version: 1.0
+Name: pyOpenSSL
+Version: 0.7a2
+Summary: Python wrapper module around the OpenSSL library
+Home-page: http://pyopenssl.sourceforge.net/
+Author: Martin Sjögren, AB Strakt
+Author-email: msjogren@gmail.com
+License: LGPL
+Description: High-level wrapper around a subset of the OpenSSL library, includes
+        * SSL.Connection objects, wrapping the methods of Python's portable
+        sockets
+        * Callbacks written in Python
+        * Extensive error-handling mechanism, mirroring OpenSSL's error codes
+        ...  and much more ;)
+Platform: UNKNOWN
