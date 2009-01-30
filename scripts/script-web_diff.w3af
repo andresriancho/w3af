@@ -21,8 +21,8 @@ target
 set target http://127.0.0.1/
 back
 
-assert len(kb.kb.getData('urls','urlList')) == 11
-
 start
+
+assert len(kb.kb.getData('urls','urlList')) == 11
 
 exit
