@@ -5,7 +5,6 @@ audit htaccessMethods
 bruteforce formAuthBrute
 grep passwordProfiling
 output console,textFile
-output
 output config textFile
 set fileName output-w3af.txt
 set verbose True
@@ -14,8 +13,13 @@ output config console
 set verbose False
 back
 back
+
 target
 set target http://localhost/w3af/bruteforce/formLogin/formLogin.html
 back
+
 start
+
+assert len(kb.kb.getData('formAuthBrute','auth')) == 1
+
 exit
