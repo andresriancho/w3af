@@ -330,7 +330,7 @@ class sqlmap(baseAttackPlugin):
         The original sqlmap program was coded by Bernardo Damele and Daniele Bellucci, many thanks to both of
         them.
         
-        Seven configurable parameters exist:
+        Six configurable parameters exist:
             - url
             - method
             - data
