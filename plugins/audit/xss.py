@@ -194,7 +194,7 @@ class xss(baseAuditPlugin):
         # In the mutant, we have to save which browsers are vulnerable to that specific string
         for mutant in mutant_list:
             for xss_string, affected_browsers in xss_tests:
-                if xss_string in mutant.getModValue():
+                if xss_string.replace('alert', 'fake_alert') in mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
 
         for mutant in mutant_list:
