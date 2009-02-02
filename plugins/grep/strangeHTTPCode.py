@@ -41,7 +41,7 @@ class strangeHTTPCode(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._commonCodes = self._getCommonHTTPCodes()
+        self._common_http_codes = self._getCommonHTTPCodes()
 
     def grep(self, request, response):
         '''
@@ -49,16 +49,35 @@ class strangeHTTPCode(baseGrepPlugin):
         
         @return: None, all results are saved in the kb.
         '''
-        if response.getCode() not in self._commonCodes:
-            i = info.info()
-            i.setName('Strange HTTP Response code - ' + str(response.getCode()))
-            i.setURL( response.getURL() )
-            i.setId( response.id )
-            desc = 'The URL: "' +  i.getURL() + '" sent a strange HTTP response code: "'
-            desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
-            desc += '", manual inspection is adviced.'
-            i.setDesc( desc )
-            kb.kb.append( self , 'strangeHTTPCode' , i )
+        if response.getCode() not in self._common_http_codes:
+            
+            # I check if the kb already has a info object with this code:
+            strange_code_infos = kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode')
+            
+            corresponding_info = None
+            for info_obj in strange_code_infos:
+                if info_obj['code'] == response.getCode():
+                    corresponding_info = info_obj
+                    break
+            
+            if corresponding_info:
+                # Work with the "old" info object:
+                id_list = corresponding_info.getId()
+                id_list.append( response.id )
+                corresponding_info.setId( id_list )
+                
+            else:
+                # Create a new info object from scratch and save it to the kb:
+                i = info.info()
+                i.setName('Strange HTTP Response code - ' + str(response.getCode()))
+                i.setURL( response.getURL() )
+                i.setId( response.id )
+                i['code'] = response.getCode()
+                desc = 'The remote Web server sent a strange HTTP response code: "'
+                desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
+                desc += '", manual inspection is adviced.'
+                i.setDesc( desc )
+                kb.kb.append( self , 'strangeHTTPCode' , i )
     
     def setOptions( self, OptionList ):
         pass
