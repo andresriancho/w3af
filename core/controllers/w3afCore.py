@@ -1091,11 +1091,11 @@ class w3afCore:
             self.initPlugins()
         return pluginInst
     
-    def saveCurrentToNewProfile( self, profileName, profileDesc='' ):
+    def saveCurrentToNewProfile( self, profile_name, profileDesc='' ):
         '''
         Saves current config to a newly created profile.
         
-        @parameter profileName: The profile to cloneProfile
+        @parameter profile_name: The profile to clone
         @parameter profileDesc: The description of the new profile
         
         @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
@@ -1103,73 +1103,73 @@ class w3afCore:
         # Create the new profile.
         profileInstance = profile()
         profileInstance.setDesc( profileDesc )
-        profileInstance.setName( profileName )
-        profileInstance.save( profileName )
+        profileInstance.setName( profile_name )
+        profileInstance.save( profile_name )
         
         # Save current to profile
-        return self.saveCurrentToProfile( profileName, profileDesc )
+        return self.saveCurrentToProfile( profile_name, profileDesc )
 
-    def saveCurrentToProfile( self, profileName, profileDesc='' ):
+    def saveCurrentToProfile( self, profile_name, profileDesc='' ):
         '''
-        Save the current configuration of the core to the profile called profileName.
+        Save the current configuration of the core to the profile called profile_name.
         
         @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
         '''
         # Open the already existing profile
-        newProfile = profile(profileName)
+        new_profile = profile(profile_name)
         
         # Config the enabled plugins
         for pType in self.getPluginTypes():
             enabledPlugins = []
             for pName in self.getEnabledPlugins(pType):
                 enabledPlugins.append( pName )
-            newProfile.setEnabledPlugins( pType, enabledPlugins )
+            new_profile.setEnabledPlugins( pType, enabledPlugins )
         
         # Config the profile options
         for pType in self.getPluginTypes():
             for pName in self.getEnabledPlugins(pType):
                 pOptions = self.getPluginOptions( pType, pName )
                 if pOptions:
-                    newProfile.setPluginOptions( pType, pName, pOptions )
+                    new_profile.setPluginOptions( pType, pName, pOptions )
                 
         # Config the profile target
         if cf.cf.getData('targets'):
-            newProfile.setTarget( ' , '.join(cf.cf.getData('targets')) )
+            new_profile.setTarget( ' , '.join(cf.cf.getData('targets')) )
         
         # Config the misc and http settings
         misc_settings = miscSettings.miscSettings()
-        newProfile.setMiscSettings(misc_settings.getOptions())
-        newProfile.setHttpSettings(self.uriOpener.settings.getOptions())
+        new_profile.setMiscSettings(misc_settings.getOptions())
+        new_profile.setHttpSettings(self.uriOpener.settings.getOptions())
         
         # Config the profile name and description
-        newProfile.setDesc( profileDesc )
-        newProfile.setName( profileName )
+        new_profile.setDesc( profileDesc )
+        new_profile.setName( profile_name )
         
         # Save the profile to the file
-        newProfile.save( profileName )
+        new_profile.save( profile_name )
         
-        return newProfile
+        return new_profile
         
-    def removeProfile( self, profileName ):
+    def removeProfile( self, profile_name ):
         '''
         @return: True if the profile was successfully removed. Else, raise a w3afException.
         '''
-        profileInstance = profile( profileName )
+        profileInstance = profile( profile_name )
         profileInstance.remove()
         return True
         
-    def useProfile( self, profileName ):
+    def useProfile( self, profile_name ):
         '''
         Gets all the information from the profile, and runs it.
         Raise a w3afException if the profile to load has some type of problem.
         '''
-        # Clear all enabled plugins if profileName is None
-        if profileName == None:
+        # Clear all enabled plugins if profile_name is None
+        if profile_name == None:
             self._zeroSelectedPlugins()
             return
         
         try:            
-            profileInstance = profile( profileName ) 
+            profileInstance = profile( profile_name ) 
         except w3afException, w3:
             # The profile doesn't exist!
             raise w3
