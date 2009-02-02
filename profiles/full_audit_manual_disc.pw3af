@@ -2,8 +2,6 @@
 
 [audit.responseSplitting]
 
-[grep.ssn]
-
 [grep.svnUsers]
 
 [grep.passwordProfiling]
@@ -12,6 +10,9 @@
 
 [grep.lang]
 
+[grep.metaTags]
+search404 = False
+
 [audit.htaccessMethods]
 
 [grep.strangeHeaders]
@@ -19,8 +20,8 @@
 [audit.xpath]
 
 [discovery.spiderMan]
-listenPort = 44444
 listenAddress = 127.0.0.1
+listenPort = 44444
 
 [audit.LDAPi]
 
@@ -32,34 +33,17 @@ stopOnFirst = True
 
 [audit.formatString]
 
-[misc-settings]
-maxThreads = 0
-maxDiscoveryLoops = 500
-fuzzFCExt = txt
-autoDependencies = True
-demo = False
-fuzzableHeaders = 
-showProgressBar = True
-fuzzCookie = False
-fuzzFileContent = True
-fuzzFileName = False
-maxDepth = 10
-interface = eth0
-localAddress = 127.0.0.1
-nonTargets = 
+[audit.localFileInclude]
 
 [grep.fileUpload]
+
+[grep.objects]
 
 [audit.unSSL]
 
 [grep.strangeParameters]
 
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
-
-[audit.fileUpload]
-extensions = gif,html
+[grep.errorPages]
 
 [grep.motw]
 withoutMOTW = False
@@ -68,25 +52,6 @@ withoutMOTW = False
 
 [grep.creditCards]
 
-[http-settings]
-proxyPort = 8080
-headersFile = 
-maxFileSize = 400000
-proxyAddress = 
-basicAuthDomain = 
-always404 = 
-maxRetrys = 2
-404exceptions = 
-ignoreSessCookies = False
-cookieJarFile = 
-timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-byDirectoryAndExtension404 = False
-autodetect404 = True
-byDirectory404 = False
-
 [audit.blindSqli]
 equAlgorithm = setIntersection
 equalLimit = 0.8
@@ -94,13 +59,16 @@ equalLimit = 0.8
 [audit.globalRedirect]
 
 [discovery.webSpider]
+urlParameter = None
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
 
 [audit.xst]
 
-[grep.error500]
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
 
 [audit.sslCertificate]
 
@@ -108,10 +76,29 @@ onlyForward = False
 description = Perform a manual discovery using the spiderMan plugin, and afterwards scan the site for any known vulnerabilities.
 name = full_audit_manual_disc
 
-[grep.errorPages]
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 0
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+showProgressBar = True
+fuzzCookie = False
+fuzzFileName = False
+fuzzFileContent = True
+maxDiscoveryLoops = 500
+maxDepth = 25
+interface = eth0
+localAddress = 127.0.0.1
+nonTargets = 
 
 [grep.findComments]
 search404 = False
+
+[audit.eval]
+useEcho = True
+useTimeDelay = True
 
 [audit.osCommanding]
 
@@ -119,7 +106,7 @@ search404 = False
 
 [output.gtkOutput]
 
-[audit.sqli]
+[grep.ssn]
 
 [grep.dotNetEventValidation]
 
@@ -136,7 +123,7 @@ useSvnUsers = True
 
 [audit.phishingVector]
 
-[grep.objects]
+[audit.sqli]
 
 [audit.buffOverflow]
 
@@ -146,20 +133,23 @@ useSvnUsers = True
 
 [grep.httpInBody]
 
+[audit.mxInjection]
+
 [grep.feeds]
 
 [grep.directoryIndexing]
 
 [audit.remoteFileInclude]
-listenPort = 44449
 usew3afSite = True
 listenAddress = 
+listenPort = 44449
 
-[grep.codeDisclosure]
+[grep.error500]
 
 [grep.collectCookies]
 
 [grep.getMails]
+onlyTargetDomain = True
 
 [grep.privateIP]
 
@@ -167,8 +157,24 @@ listenAddress =
 
 [audit.xsrf]
 
-[grep.metaTags]
-search404 = False
+[http-settings]
+proxyPort = 8080
+basicAuthDomain = 
+maxFileSize = 400000
+always404 = 
+headersFile = 
+proxyAddress = 
+maxRetrys = 2
+404exceptions = 
+ignoreSessCookies = False
+byDirectory404 = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+byDirectoryAndExtension404 = False
+autodetect404 = True
+cookieJarFile = 
 
 [bruteforce.basicAuthBrute]
 profilingNumber = 50
@@ -185,13 +191,14 @@ useSvnUsers = True
 
 [grep.wsdlGreper]
 
-[audit.localFileInclude]
+[grep.codeDisclosure]
 
 [audit.dav]
 
 [grep.domXss]
 
-[audit.mxInjection]
+[audit.fileUpload]
+extensions = gif,html
 
 [grep.httpAuthDetect]
 

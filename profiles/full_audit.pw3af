@@ -2,6 +2,8 @@
 
 [audit.responseSplitting]
 
+[grep.ssn]
+
 [grep.svnUsers]
 
 [grep.passwordProfiling]
@@ -10,28 +12,10 @@
 
 [grep.lang]
 
+[grep.metaTags]
+search404 = False
+
 [audit.htaccessMethods]
-
-[http-settings]
-proxyPort = 8080
-headersFile = 
-maxFileSize = 400000
-proxyAddress = 
-basicAuthDomain = 
-always404 = 
-maxRetrys = 2
-404exceptions = 
-ignoreSessCookies = False
-cookieJarFile = 
-timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-byDirectoryAndExtension404 = False
-autodetect404 = True
-byDirectory404 = False
-
-[audit.sqli]
 
 [grep.strangeHeaders]
 
@@ -47,27 +31,20 @@ stopOnFirst = True
 
 [audit.formatString]
 
-[misc-settings]
-maxThreads = 0
-maxDiscoveryLoops = 500
-fuzzFCExt = txt
-autoDependencies = True
-demo = False
-fuzzableHeaders = 
-showProgressBar = True
-fuzzCookie = False
-fuzzFileContent = True
-fuzzFileName = False
-maxDepth = 10
-interface = eth0
-localAddress = 127.0.0.1
-nonTargets = 
-
 [grep.fileUpload]
 
 [audit.unSSL]
 
 [grep.strangeParameters]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[grep.errorPages]
+
+[audit.fileUpload]
+extensions = gif,html
 
 [grep.motw]
 withoutMOTW = False
@@ -76,8 +53,6 @@ withoutMOTW = False
 
 [grep.creditCards]
 
-[grep.codeDisclosure]
-
 [audit.blindSqli]
 equAlgorithm = setIntersection
 equalLimit = 0.8
@@ -85,6 +60,7 @@ equalLimit = 0.8
 [audit.globalRedirect]
 
 [discovery.webSpider]
+urlParameter = None
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
@@ -99,10 +75,27 @@ onlyForward = False
 description = This profile performs a full audit of the target website, using only the webSpider plugin for discovery.
 name = full_audit
 
-[grep.errorPages]
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 0
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+showProgressBar = True
+fuzzCookie = False
+fuzzFileName = False
+fuzzFileContent = True
+maxDiscoveryLoops = 500
+maxDepth = 25
+interface = eth0
+localAddress = 127.0.0.1
+nonTargets = 
 
 [grep.findComments]
 search404 = False
+
+[audit.eval]
 
 [audit.osCommanding]
 
@@ -110,7 +103,7 @@ search404 = False
 
 [output.gtkOutput]
 
-[grep.objects]
+[audit.sqli]
 
 [grep.dotNetEventValidation]
 
@@ -127,7 +120,7 @@ useSvnUsers = True
 
 [audit.phishingVector]
 
-[grep.ssn]
+[grep.objects]
 
 [audit.buffOverflow]
 
@@ -137,24 +130,21 @@ useSvnUsers = True
 
 [grep.httpInBody]
 
-[audit.mxInjection]
-
 [grep.feeds]
 
 [grep.directoryIndexing]
 
 [audit.remoteFileInclude]
-listenPort = 44449
 usew3afSite = True
 listenAddress = 
+listenPort = 44449
 
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
+[grep.codeDisclosure]
 
 [grep.collectCookies]
 
 [grep.getMails]
+onlyTargetDomain = True
 
 [grep.privateIP]
 
@@ -162,8 +152,24 @@ numberOfChecks = 3
 
 [audit.xsrf]
 
-[grep.metaTags]
-search404 = False
+[http-settings]
+proxyPort = 8080
+basicAuthDomain = 
+maxFileSize = 400000
+always404 = 
+headersFile = 
+proxyAddress = 
+maxRetrys = 2
+404exceptions = 
+ignoreSessCookies = False
+byDirectory404 = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+byDirectoryAndExtension404 = False
+autodetect404 = True
+cookieJarFile = 
 
 [bruteforce.basicAuthBrute]
 profilingNumber = 50
@@ -186,8 +192,7 @@ useSvnUsers = True
 
 [grep.domXss]
 
-[audit.fileUpload]
-extensions = gif,html
+[audit.mxInjection]
 
 [grep.httpAuthDetect]
 
