@@ -39,6 +39,7 @@ from core.controllers.w3afException import w3afException
 import os
 import os.path
 import shutil
+import tempfile
 
 
 class fileUpload(baseAuditPlugin):
@@ -53,7 +54,6 @@ class fileUpload(baseAuditPlugin):
         
         # Internal vars
         self._template_dir = 'plugins' + os.path.sep + 'audit'+ os.path.sep + 'fileUpload'
-        self._file_name_list = []
         self._file_list = []
         self._is_404 = None
         
@@ -99,44 +99,42 @@ class fileUpload(baseAuditPlugin):
         '''
         result = []
 
-        # Create a tmp directory
-        tmp_dir = '.tmp' + os.path.sep
-        try:
-            if not os.path.exists( tmp_dir ):
-                os.mkdir( tmp_dir )
-        except:
-            raise w3afException('Could not create "'+ tmp_dir + '" directory.')
+        # All of this work is done in the "/tmp" directory:
 
         for ext in self._extensions:
-            filename = 'template.' + ext
-            if filename in os.listdir( self._template_dir ):
-                # Copy to .tmp
-                tmp_filename = createRandAlNum( 8 ) + '.' + ext
-                src = os.path.join( self._template_dir, filename )
-                dst = os.path.join( tmp_dir , tmp_filename )
-                shutil.copy( src, dst )
+            
+            template_filename = 'template.' + ext
+            if template_filename in os.listdir( self._template_dir ):
                 
-                # Open
+                #
+                # Copy to "/tmp"
+                #
+                # Open target
+                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext)
+                file_handler = os.fdopen(low_level_fd, "w+b")
+                # Read source
+                template_content = file( os.path.join(self._template_dir, template_filename)).read()
+                # Write content to target
+                file_handler.write(template_content)
+                file_handler.close()
+                
+                # Open the target again:
                 try:
-                    file_handler = file( os.path.join( tmp_dir , tmp_filename ) , 'r')
+                    file_handler = file( file_name, 'r')
                 except:
                     raise w3afException('Failed to open temp file: "' + tmp_filename  + '".')
                 else:
-                    result.append( (file_handler, tmp_filename) )
-                    self._file_name_list.append( tmp_filename )
+                    path, file_name = os.path.split(file_name)
+                    result.append( (file_handler, file_name) )
                     
             else:
                 # I dont have a template for this file extension!
-                file_name = createRandAlNum( 8 ) + ext
-                path_and_name = tmp_dir + file_name
-                try:
-                    file_handler = file(  path_and_name , 'w' )
-                    file_handler.write( path_and_name )
-                except:
-                    raise w3afException('Failed to create tmp file for upload.')
-                else:
-                    result.append( (file_handler, file_name) )
-                    self._file_name_list.append( file_name )
+                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext)
+                file_handler = os.fdopen(low_level_fd, "w+b")
+                file_handler.write( createRandAlNum(32) )
+                file_handler.close()
+                path, file_name = os.path.split(file_name)
+                result.append( (file(file_name), file_name) )
         
         return result
         
@@ -182,9 +180,6 @@ class fileUpload(baseAuditPlugin):
         # Clean up
         for tmp_file, tmp_file_name in self._file_list:
             tmp_file.close()
-            
-        for tmp_file, tmp_file_name in self._file_list:
-            os.unlink( '.tmp'+ os.path.sep + tmp_file_name )     
         
     def _generate_paths( self, url, uploaded_file_name ):
         '''
