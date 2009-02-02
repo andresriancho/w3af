@@ -55,16 +55,33 @@ class strangeHeaders(baseGrepPlugin):
         # Check if the header names are common or not
         for header_name in response.getHeaders().keys():
             if header_name.upper() not in self._common_headers:
-                i = info.info()
-                i.setName('Strange header')
-                i.setURL( response.getURL() )
-                i.setId( response.id )
-                msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "' + header_name
-                msg += '" with value: "' + response.getHeaders()[header_name] + '"'
-                i.setDesc( msg )
-                i['header_name'] = header_name
-                i['headerValue'] = response.getHeaders()[header_name]
-                kb.kb.append( self , 'strangeHeaders' , i )
+                
+                # I check if the kb already has a info object with this code:
+                strange_header_infos = kb.kb.getData('strangeHeaders', 'strangeHeaders')
+                
+                corresponding_info = None
+                for info_obj in strange_header_infos:
+                    if info_obj['header_name'] == header_name:
+                        corresponding_info = info_obj
+                        break
+                
+                if corresponding_info:
+                    # Work with the "old" info object:
+                    id_list = corresponding_info.getId()
+                    id_list.append( response.id )
+                    corresponding_info.setId( id_list )
+                else:
+                    # Create a new info object from scratch and save it to the kb:
+                    i = info.info()
+                    i.setName('Strange header')
+                    i.setURL( response.getURL() )
+                    i.setId( response.id )
+                    msg = 'The remote web server sent the HTTP header: "' + header_name
+                    msg += '" with value: "' + response.getHeaders()[header_name] + '".'
+                    i.setDesc( msg )
+                    i['header_name'] = header_name
+                    i['header_value'] = response.getHeaders()[header_name]
+                    kb.kb.append( self , 'strangeHeaders' , i )
 
 
         # Now check for protocol anomalies
@@ -107,7 +124,7 @@ class strangeHeaders(baseGrepPlugin):
         headers = kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )
         # This is how I saved the data:
         #i['header_name'] = header_name
-        #i['headerValue'] = response.getHeaders()[header_name]
+        #i['header_value'] = response.getHeaders()[header_name]
         
         # Group correctly
         tmp = []
