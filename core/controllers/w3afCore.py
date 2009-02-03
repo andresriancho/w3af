@@ -921,8 +921,6 @@ class w3afCore:
         
         func = setMap[ pluginType ]
         func( pluginNames )
-        
-        #om.out.logEnabledPlugins( self._strPlugins,  self._pluginsOptions )
     
     def reloadModifiedPlugin(self,  pluginType,  pluginName):
         '''
