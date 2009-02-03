@@ -1,5 +1,5 @@
 '''
-question_target_2.py
+question_infrastructure_4.py
 
 Copyright 2008 Andres Riancho
 
@@ -27,40 +27,44 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
 
-class question_target_2(question):
+# Import the core singleton
+from core.controllers.w3afCore import wCore as w3af_core
+import core.data.kb.config as cf
+
+
+class question_infrastructure_4(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self):
         question.__init__( self )
+    
+        self._questionId = 'infrastructure_4'
 
-        self._questionId = 'target_2'
-
-        self._questionTitle = 'Target Location'
+        self._questionTitle = 'Plugin selection'
         
-        self._questionString = 'w3af has a group of plugins that fetch information about your target application'
-        self._questionString += ' using Internet search engines. In order to enable or disable those plugins, we need'
-        self._questionString += ' to know the following:'
-
+        self._questionString = 'w3af has a group of plugins that fetch information about the target'
+        self._questionString += ' application using Internet search engines. In order to enable or'
+        self._questionString += ' disable those plugins, we need to know the following:'
         
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
 
-        d1 = 'Is the target web application reachable from the Internet?'
-        o1 = option('internet',True, d1, 'boolean')
-
+        self._d1 = 'Is the target web application reachable from the Internet?'
+        o1 = option(self._d1, True, self._d1, 'boolean')
+    
         ol = optionList()
         ol.add(o1)
 
         return ol
         
     def getNextQuestionId(self,  optionsMap ):
-
-        internet = optionsMap['internet'].getValue()
-        # FIXME: Do something with this value
-
-        return None
-
-
+        cf.cf.save('reachable_from_internet', optionsMap[self._d1].getValue())
+       
+       # The next question
+        if cf.cf.getData('reachable_from_internet'):
+            return 'infrastructure_internet_1'
+        else:
+            return None

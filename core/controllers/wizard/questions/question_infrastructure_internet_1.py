@@ -1,5 +1,5 @@
 '''
-question_target_2.py
+question_infrastructure_internet_1.py
 
 Copyright 2008 Andres Riancho
 
@@ -27,40 +27,41 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
 
-class question_target_2(question):
+
+class question_infrastructure_internet_1(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self):
         question.__init__( self )
+    
+        self._questionId = 'infrastructure_internet_1'
 
-        self._questionId = 'target_2'
-
-        self._questionTitle = 'Target Location'
+        self._questionTitle = 'Plugin selection'
         
-        self._questionString = 'w3af has a group of plugins that fetch information about your target application'
-        self._questionString += ' using Internet search engines. In order to enable or disable those plugins, we need'
-        self._questionString += ' to know the following:'
-
+        self._questionString = 'Please choose from the options below:'
         
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
-
-        d1 = 'Is the target web application reachable from the Internet?'
-        o1 = option('internet',True, d1, 'boolean')
-
+        self._d1 = 'Find other virtual hosts using MSN search'
+        o1 = option(self._d1, False, self._d1, 'boolean')
+    
         ol = optionList()
         ol.add(o1)
 
         return ol
         
     def getNextQuestionId(self,  optionsMap ):
-
-        internet = optionsMap['internet'].getValue()
-        # FIXME: Do something with this value
-
+        plugin_list = []
+        
+        if optionsMap[self._d1].getValue():
+            plugin_list.append('sharedHosting')
+        
+        # Set the plugins to be run
+        old_discovery = self.w3af_core.getEnabledPlugins( 'discovery' )
+        plugin_list.extend(old_discovery)
+        self.w3af_core.setPlugins( plugin_list, 'discovery' )
+        
         return None
-
-

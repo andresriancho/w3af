@@ -27,6 +27,10 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
 
+# Import the core singleton
+from core.controllers.w3afCore import wCore as w3af_core
+
+
 class question_target_1(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
@@ -38,9 +42,9 @@ class question_target_1(question):
 
         self._questionTitle = 'Target URL'
         
-        self._questionString = 'In this step you should specify the URL of the targeted web application.'
+        self._questionString = 'In this step you should specify the URL of the target web application.'
         self._questionString += ' Remember that you can separate different URLs with commas like this: \n'
-        self._questionString += '    - http://localhost/a.php , http://localhost/b.php'
+        self._questionString += '    - http://host.tld/a.php , http://host.tld/b.php'
         
     def _getOptionObjects(self):
         '''
@@ -48,17 +52,22 @@ class question_target_1(question):
         '''
 
         d1 = 'Target URL'
-        o1 = option('Target URL','', d1, 'string')
+        o1 = option('target','', d1, 'list')
+        
+        o2 = option('targetOS','unknown', d1, 'string')
+        o3 = option('targetFramework','unknown', d1, 'string')
 
         ol = optionList()
         ol.add(o1)
+        ol.add(o2)
+        ol.add(o3)
 
         return ol
         
     def getNextQuestionId(self,  optionsMap ):
-        target = optionsMap['Target URL'].getValue()
-        if not target:
-            raise w3afException('You can not leave the "Target URL" parameter unconfigured.')
+        # Save the target to the core, all the validations are made there.
+        w3af_core.target.setOptions( optionsMap )
 
+        # The next question
         return 'target_2'
 

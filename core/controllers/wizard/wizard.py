@@ -24,11 +24,14 @@ import core.controllers.outputManager as om
 from core.controllers.misc.factory import factory
 
 class wizard:
-    def __init__( self ):
+    def __init__( self, w3af_core ):
         '''
         This method should be overwritten by the actual wizards, so they can define what questions they are
         going to ask.
         '''
+        # Save the core
+        self.w3af_core = w3af_core
+        
         # A list of question objects
         self._questionList = []
 
@@ -46,7 +49,9 @@ class wizard:
         '''
         res = []
         for question_id in question_list:
-            res.append( factory('core.controllers.wizard.questions.question_' + question_id) )
+            question_instance = factory('core.controllers.wizard.questions.question_' + question_id)
+            question_instance.w3af_core = self.w3af_core
+            res.append( question_instance )
         return res        
         
     def next(self):

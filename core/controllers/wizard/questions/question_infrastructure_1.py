@@ -1,5 +1,5 @@
 '''
-question_target_2.py
+question_infrastructure_1.py
 
 Copyright 2008 Andres Riancho
 
@@ -27,40 +27,49 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
 
-class question_target_2(question):
+
+class question_infrastructure_1(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self):
         question.__init__( self )
+    
+        self._questionId = 'infrastructure_1'
 
-        self._questionId = 'target_2'
-
-        self._questionTitle = 'Target Location'
+        self._questionTitle = 'Target URL'
         
-        self._questionString = 'w3af has a group of plugins that fetch information about your target application'
-        self._questionString += ' using Internet search engines. In order to enable or disable those plugins, we need'
-        self._questionString += ' to know the following:'
-
+        self._questionString = 'In this step you should specify the URL of the target web application.'
+        self._questionString += ' Remember that you can separate different URLs with commas like this: \n'
+        self._questionString += '    - http://host.tld/a.php , http://host.tld/b.php'
         
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
 
-        d1 = 'Is the target web application reachable from the Internet?'
-        o1 = option('internet',True, d1, 'boolean')
-
+        self._d1 = 'Target URL'
+        o1 = option( self._d1,'http://', self._d1, 'list')
+    
         ol = optionList()
         ol.add(o1)
 
         return ol
         
     def getNextQuestionId(self,  optionsMap ):
+        # I don't care about the target OS for these tests, so I add them here with the default value
+        o2 = option('targetOS','unknown', '', 'string')
+        o3 = option('targetFramework','unknown', '', 'string')
+        optionsMap.add(o2)
+        optionsMap.add(o3)
+       
+        # Get the "Target URL" and change it back to "target" so the core can understand it
+        o1 = optionsMap[self._d1]
+        o1.setName('target')
+        
+        # Save the target to the core, all the validations are made there.
+        self.w3af_core.target.setOptions( optionsMap )
 
-        internet = optionsMap['internet'].getValue()
-        # FIXME: Do something with this value
-
-        return None
-
+        # The next question
+        return 'infrastructure_2'
 

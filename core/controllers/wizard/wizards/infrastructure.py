@@ -1,5 +1,5 @@
 '''
-short_wizard.py
+infrastructure.py
 
 Copyright 2008 Andres Riancho
 
@@ -23,7 +23,8 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.controllers.wizard.wizard import wizard
 
-class short_wizard(wizard):
+
+class infrastructure(wizard):
     
     def __init__( self, w3af_core ):
         '''
@@ -32,7 +33,8 @@ class short_wizard(wizard):
         '''
         wizard.__init__( self, w3af_core )
 
-        self._questionList = self._get_instances( ['target_1','target_2'] )
+        self._questionList = self._get_instances( ['infrastructure_1','infrastructure_2','infrastructure_3'
+                                                ,'infrastructure_4','infrastructure_internet_1'] )
         
     def getWizardDescription(self):
         '''
@@ -40,11 +42,12 @@ class short_wizard(wizard):
         
         @return: A string that describes what the wizard will let you configure.
         '''
-        return 'This is a small demo wizard to be able to code the GUI'
+        return '''This wizard creates a scan profile that aims to identify the Web infrastructure
+        of the target site.'''
 
     def getName(self):
         '''
         @return: The name of the wizard.
         '''
-        return 'Short wizard'
+        return 'Infrastructure wizard'
 
