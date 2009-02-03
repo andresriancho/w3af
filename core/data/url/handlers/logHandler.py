@@ -144,8 +144,6 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         Send the request and the response to the output manager.
         '''
-        print 'logging', response.id
-        
         fr = fuzzableRequest.fuzzableRequest()
         fr.setURI( request.get_full_url() )
         fr.setMethod( request.get_method() )
