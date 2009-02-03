@@ -104,7 +104,10 @@ class targetSettings(configurable):
         aHTTP = targetUrl.count('http://') and len(targetUrl) > len('http://')
         aHTTPS = targetUrl.count('https://') and len(targetUrl) > len('https://')
         if not aFile and not aHTTP and not aHTTPS:
-            raise w3afException('Invalid format for target URL "'+ targetUrl + '", you have to specify the protocol (http/https/file) and a domain/IP.' )        
+            msg = 'Invalid format for target URL "'+ targetUrl
+            msg += '", you have to specify the protocol (http/https/file) and a domain or IP'
+            msg += 'address. Examples: http://host.tld/ ; https://127.0.0.1/ .'
+            raise w3afException( msg )
     
     def setOptions( self, optionsMap ):
         '''
