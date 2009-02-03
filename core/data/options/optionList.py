@@ -45,13 +45,13 @@ class optionList:
         '''
         return '<optionList: '+ '|'.join([i.getName() for i in self._oList]) +'>'
 
-    def __contains__( self, itemName ):
+    def __contains__( self, item_name ):
         for o in self._oList:
-            if o.getName() == itemName:
+            if o.getName() == item_name:
                 return True
         return False
     
-    def __getitem__( self, itemName ):
+    def __getitem__( self, item_name ):
         '''
         This method is used when on any configurable object the developer does something like:
         
@@ -61,13 +61,13 @@ class optionList:
         @return: The value of the item that was selected
         '''
         try:
-            itemName = int(itemName)
+            item_name = int(item_name)
         except:
             # A string
             for o in self._oList:
-                if o.getName() == itemName:
+                if o.getName() == item_name:
                     return o
-            raise w3afException('The optionList object doesn\'t contain an option with the name: ' + itemName )
+            raise w3afException('The optionList object doesn\'t contain an option with the name: ' + item_name )
         else:
             # An integer
-            return self._oList[ itemName ]
+            return self._oList[ item_name ]
