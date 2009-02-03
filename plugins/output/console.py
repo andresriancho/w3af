@@ -46,34 +46,32 @@ class console(baseOutputPlugin):
         or from the framework. This method should take an action for debug messages.
         '''
         if self.verbose:
-            toPrint = message
+            to_print = message
             if newLine == True:
-                toPrint += '\r\n'
-            sys.stdout.write( self._cleanString(toPrint) )
+                to_print += '\r\n'
+            sys.stdout.write( self._cleanString(to_print) )
             sys.stdout.flush()
 
-    
     def information(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         ''' 
-        toPrint = message
+        to_print = message
         if newLine == True:
-            toPrint += '\r\n'
-        sys.stdout.write( self._cleanString(toPrint) )
+            to_print += '\r\n'
+        sys.stdout.write( self._cleanString(to_print) )
         sys.stdout.flush()
-
 
     def error(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
         '''     
-        toPrint = message
+        to_print = message
         if newLine == True:
-            toPrint += '\r\n'
-        sys.stderr.write( self._cleanString(toPrint) )
+            to_print += '\r\n'
+        sys.stderr.write( self._cleanString(to_print) )
         sys.stdout.flush()
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
@@ -81,20 +79,20 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
         '''
-        toPrint = message
+        to_print = message
         if newLine == True:
-            toPrint += '\r\n'
-        sys.stdout.write( self._cleanString(toPrint) )
+            to_print += '\r\n'
+        sys.stdout.write( self._cleanString(to_print) )
         sys.stdout.flush()
         
     def console( self, message, newLine = True ):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        toPrint = message
+        to_print = message
         if newLine == True:
-            toPrint += '\r\n'
-        sys.stdout.write( self._cleanString(toPrint) )
+            to_print += '\r\n'
+        sys.stdout.write( self._cleanString(to_print) )
         sys.stdout.flush()
 
     def logHttp( self, request, response):
