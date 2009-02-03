@@ -201,6 +201,9 @@ class sqli(baseAuditPlugin):
         errors.append( ('SELECT .*? FROM .*?', dbms.UNKNOWN ))
         errors.append( ('UPDATE .*? SET .*?', dbms.UNKNOWN ))
         errors.append( ('INSERT INTO .*?', dbms.UNKNOWN ))
+        errors.append( ('Unknown column', dbms.UNKNOWN ))
+        errors.append( ('where clause', dbms.UNKNOWN ))
+        errors.append( ('SqlServer', dbms.UNKNOWN ))
         
         return errors
         
