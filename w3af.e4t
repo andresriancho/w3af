@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-01-30, 12:22:20 -->
+<!-- Saved: 2009-02-02, 19:08:20 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -555,19 +555,6 @@
       <Linenumber>52</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: verify if I need to add more values here</Summary>
-    <Description></Description>
-    <Created>2008-12-31, 00:18:35</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>strangeHeaders.py</Name>
-      </Filename>
-      <Linenumber>135</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Memory usage!!!</Summary>
     <Description></Description>
@@ -579,20 +566,6 @@
         <Name>dotNetEventValidation.py</Name>
       </Filename>
       <Linenumber>64</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: autocomplete for raw menu</Summary>
-    <Description></Description>
-    <Created>2009-01-14, 20:12:40</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>consoleUi.py</Name>
-      </Filename>
-      <Linenumber>298</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -773,20 +746,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This message should be more descriptive</Summary>
-    <Description></Description>
-    <Created>2009-01-23, 13:45:22</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>profiles.py</Name>
-      </Filename>
-      <Linenumber>399</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This re is buggy</Summary>
     <Description></Description>
     <Created>2009-01-25, 13:02:21</Created>
@@ -919,58 +878,6 @@
         <Name>blind_sqli_time_delay.py</Name>
       </Filename>
       <Linenumber>148</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 22:44:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>sqlmap.py</Name>
-      </Filename>
-      <Linenumber>212</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-01-28, 10:18:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>303</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-01-28, 10:18:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>433</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-01-28, 10:18:28</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>482</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1112,10 +1019,51 @@
       <Linenumber>204</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: autocomplete for raw menu</Summary>
+    <Description></Description>
+    <Created>2009-01-30, 16:04:27</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>consoleUi.py</Name>
+      </Filename>
+      <Linenumber>298</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: This if is terrible! I need to remove it!</Summary>
+    <Description></Description>
+    <Created>2009-01-30, 16:19:21</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>rootMenu.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: verify if I need to add more values here</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 10:34:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>strangeHeaders.py</Name>
+      </Filename>
+      <Linenumber>152</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
     <Description></Description>
-    <Created>2009-01-29, 19:57:49</Created>
+    <Created>2009-02-02, 13:53:05</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1128,7 +1076,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
     <Description></Description>
-    <Created>2009-01-29, 19:57:49</Created>
+    <Created>2009-02-02, 13:53:05</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1141,7 +1089,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
     <Description></Description>
-    <Created>2009-01-29, 19:57:49</Created>
+    <Created>2009-02-02, 13:53:05</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1149,6 +1097,72 @@
         <Name>w3afCore.py</Name>
       </Filename>
       <Linenumber>1189</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This message should be more descriptive</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 14:04:54</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>profiles.py</Name>
+      </Filename>
+      <Linenumber>399</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 15:39:14</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>sqlmap.py</Name>
+      </Filename>
+      <Linenumber>212</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 15:39:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>303</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 15:39:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>433</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-02-02, 15:39:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>482</Linenumber>
     </Resource>
   </Task>
 </Tasks>

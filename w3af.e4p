@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-01-30, 12:22:20 -->
+<!-- Saved: 2009-02-03, 11:36:12 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2353,16 +2353,6 @@
       <Name>splash.py</Name>
     </Source>
     <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>_web20Spider.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>_mailer.py</Name>
-    </Source>
-    <Source>
       <Dir>core</Dir>
       <Dir>data</Dir>
       <Dir>kb</Dir>
@@ -2921,10 +2911,6 @@
     </Source>
     <Source>
       <Dir>scripts</Dir>
-      <Name>script-html_parser-two_forms.w3af</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
       <Name>script-html_textarea.w3af</Name>
     </Source>
     <Source>
@@ -3054,10 +3040,6 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-performance.py</Name>
-    </Source>
-    <Source>
-      <Dir>scripts</Dir>
-      <Name>script-phantom.w3af</Name>
     </Source>
     <Source>
       <Dir>scripts</Dir>
@@ -3378,6 +3360,77 @@
       <Dir>plugins</Dir>
       <Dir>attack</Dir>
       <Name>sql_webshell.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>gtk_multithread.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>payload_generators.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>gtkUi</Dir>
+      <Name>wizard.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Name>wizard.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Name>question.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_target_1.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_target_2.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>wizards</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>wizards</Dir>
+      <Name>short_wizard.py</Name>
     </Source>
   </Sources>
   <Forms>
