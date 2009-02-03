@@ -127,12 +127,13 @@ class ProfileList(gtk.TreeView):
             self.set_cursor(0)
         else:
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
-                if selected == self.profile_instances[ prfid ].get_profile_file():
+                if selected == self.profile_instances[ prfid ].get_profile_file() or\
+                selected == self.profile_instances[ prfid ].getName():
                     self.set_cursor(i)
                     self._useProfile()
                     break
             else:
-                raise ValueError(_("Two profiles with the same name exist, one of them is %r.") % selected)
+                raise ValueError(_("Unexpected problem while loading profile %r (duplicated profile name?).") % selected)
                 
         # Now that we've finished loading everything, show the invalid profiles in a nice pop-up window
         if invalid_profiles:
