@@ -124,7 +124,6 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             #om.out.debug('The remote web application generated a redirect loop when requesting: ' + \
             #e.geturl() )
             e.id = id_for_error
-            print e.id, 'err id'
             raise e
         
     http_error_301 = http_error_303 = http_error_307 = http_error_302 = mod_http_error_302
