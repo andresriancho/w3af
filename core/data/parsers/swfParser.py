@@ -101,7 +101,7 @@ class swfParser(abstractParser):
         tmp_re_URLs = set(self._re_URLs) - set( self._parsed_URLs )
         return list(set( self._parsed_URLs )), list(tmp_re_URLs)
         
-    def _returnEmptyList( self ):
+    def _returnEmptyList( self, *args, **kwds ):
         '''
         This method is called (see below) when the caller invokes one of:
             - getForms
