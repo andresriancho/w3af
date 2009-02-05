@@ -572,17 +572,10 @@ class TextDialog(gtk.Dialog):
 
         # the ok button
         self.butt_ok = self.action_area.get_children()[0]
-        self.butt_ok.connect("clicked", lambda x: self.destroy())
         self.butt_ok.set_sensitive(False)
 
         self.resize(450,300)
         self.show_all()
-        self.flush()
-
-    def flush(self):
-        '''Flushes the GUI operations.'''
-        while gtk.events_pending(): 
-            gtk.main_iteration()
 
     def addMessage(self, text):
         '''Adds a message to the textview.
@@ -592,12 +585,13 @@ class TextDialog(gtk.Dialog):
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.insert(iterl, text+"\n")
         self.textview.scroll_to_mark(self.textbuffer.get_insert(), 0)
-        self.flush()
         
     def done(self):
         '''Actives the OK button, waits for user, and close self.'''
         self.butt_ok.set_sensitive(True)
-        self.run()
+        
+        # run() blocks until user clicks the OK button, which raises response()
+        return self.run()
 
 
 class Searchable(object):
