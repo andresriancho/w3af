@@ -31,6 +31,15 @@ def dependencyCheck():
 
     om.out.debug('Checking core dependencies')
     
+    # Check python version
+    major, minor, micro, releaselevel, serial = sys.version_info
+    if major == 2 and minor <= 4:
+        print 'Error: Python 2.' +str(minor)+' was found and Python >= 2.5 is required.'
+        sys.exit( 1 )
+    elif major > 2:
+        print 'It seems that you are running python 3k, please let us know if w3af works ok =)'
+        sys.exit( 1 )
+        
     try:
         import extlib.pygoogle.google as pygoogle
     except:
