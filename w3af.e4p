@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-02-03, 11:36:12 -->
+<!-- Saved: 2009-02-04, 16:03:14 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3431,6 +3431,48 @@
       <Dir>wizard</Dir>
       <Dir>wizards</Dir>
       <Name>short_wizard.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>wizards</Dir>
+      <Name>infrastructure.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_infrastructure_1.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_infrastructure_2.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_infrastructure_3.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_infrastructure_4.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>wizard</Dir>
+      <Dir>questions</Dir>
+      <Name>question_infrastructure_internet_1.py</Name>
     </Source>
   </Sources>
   <Forms>
