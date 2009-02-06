@@ -31,6 +31,7 @@ from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
 from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
+from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
 import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 
@@ -223,7 +224,7 @@ class urlOpenerSettings( configurable ):
             scheme = 'http://'
             self._password_mgr.add_password(None, domain, username, password)
 
-        self._basicAuthHandler = self._ulib.HTTPBasicAuthHandler(self._password_mgr)
+        self._basicAuthHandler = FastHTTPBasicAuthHandler(self._password_mgr)
 
         # Only for w3af, no usage in urllib2
         self._basicAuthStr = scheme + '://' + username + ':' + password + '@' + domain + '/'
