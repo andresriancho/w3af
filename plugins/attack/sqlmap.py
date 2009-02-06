@@ -421,7 +421,7 @@ class sqlShellObj(shell):
         except TypeError:
             res = 'Invalid number of parameters for command.'
         except KeyboardInterrupt, k:
-            raise k
+            res = 'The user interrupted the process with Ctrl+C.'
         except w3afException, e:
             res = 'An unexpected error was found while trying to run the specified command.\n'
             res +='Exception: "' + str(e) + '"'
