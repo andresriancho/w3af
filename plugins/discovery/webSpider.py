@@ -63,7 +63,7 @@ class webSpider(baseDiscoveryPlugin):
         self._follow_regex = '.*'
         self._only_forward = False
         self._compileRE()
-        self._url_parameter = None
+        self._url_parameter = ''
 
     def discover(self, fuzzableRequest ):
         '''
@@ -83,7 +83,7 @@ class webSpider(baseDiscoveryPlugin):
         self.is404 = kb.kb.getData( 'error404page', '404' )
 
         # Set the URL parameter if necessary
-        if self._url_parameter != None:
+        if self._url_parameter:
             fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._url_parameter))
             fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._url_parameter))
 
@@ -110,7 +110,7 @@ class webSpider(baseDiscoveryPlugin):
             # a image file, its useless and consumes cpu power.
             if response.is_text_or_html() or response.is_pdf() or response.is_swf():
                 originalURL = response.getRedirURI()
-                if self._url_parameter != None:
+                if self._url_parameter:
                     originalURL = urlParser.setParam(originalURL, self._url_parameter)
                 try:
                     documentParser = dpCache.dpc.getDocumentParserFor( response )
@@ -148,7 +148,7 @@ class webSpider(baseDiscoveryPlugin):
                     # then work with the parsed references and DO NOT report broken links
                     count = 0
                     for ref in references:
-                        if self._url_parameter != None:
+                        if self._url_parameter:
                             ref = urlParser.setParam(ref, self._url_parameter)
                         targs = (ref, fuzzableRequest, originalURL, count<len(parsed_references))
                         self._tm.startFunction( target=self._verifyReferences, args=targs, \
@@ -191,7 +191,7 @@ class webSpider(baseDiscoveryPlugin):
                     
                     # Process the list.
                     for fuzzableRequest in fuzzableRequestList:
-                        if self._url_parameter != None:
+                        if self._url_parameter:
                             fuzzableRequest.setURL(urlParser.setParam(fuzzableRequest.getURL(), self._url_parameter))
                             fuzzableRequest.setURI(urlParser.setParam(fuzzableRequest.getURI(), self._url_parameter))
                         fuzzableRequest.setReferer( originalURL )
