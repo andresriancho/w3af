@@ -36,11 +36,14 @@ class PromptView(gtk.TextView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, promptText, procfunc, exploit_tree):
+    def __init__(self, promptText, procfunc, inc_message_index, get_message_index):
         self.promptText = promptText
         self.procfunc = procfunc
         super(PromptView,self).__init__()
         self.set_wrap_mode(gtk.WRAP_CHAR)
+
+        self.inc_message_index = inc_message_index
+        self.get_message_index = get_message_index
 
         # keys
         self.keys = {
@@ -54,9 +57,8 @@ class PromptView(gtk.TextView):
         }
 
         # These lines are for printing the om.out.console messages
-        self.exploit_tree = exploit_tree
         self.messages = messages.getQueueDiverter()
-        gobject.timeout_add(300, self.addMessage().next)
+        gobject.timeout_add(200, self.addMessage().next)
 
         # mono spaced font looks more like a terminal to me =)
         # and works better with the output of some unix commands
@@ -87,17 +89,12 @@ class PromptView(gtk.TextView):
         @returns: True to gobject to keep calling it, and False when all
                   it's done.
         '''
-        for mess in self.messages.get(self.exploit_tree.message_index):
+        for mess in self.messages.get(self.get_message_index()):
             if mess is None:
                 yield True
                 continue
-
-            # This is the index to use in the message diverter
-            # The first window that is poped up, has 0 and starts from there
-            # that window consumes messages and increases this number.
-            # The next window will show messages starting from were the
-            # other window left the pointer.
-            self.exploit_tree.message_index += 1
+            
+            self.inc_message_index()
 
             if mess.getType() != 'console':
                 continue
@@ -282,7 +279,7 @@ class PromptDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, promptText, procfunc, exploit_tree):
+    def __init__(self, title, promptText, procfunc, inc_message_index, get_message_index):
         super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gtkUi/data/shell.png')
 
@@ -300,13 +297,13 @@ class PromptDialog(gtk.Dialog):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.prompt = PromptView(promptText, procfunc, exploit_tree)
+        self.prompt = PromptView(promptText, procfunc, inc_message_index, get_message_index)
         sw.add(self.prompt)
         self.vbox.pack_start(sw)
 
         self.resize(800,300)
         self.show_all()
-
+        
     def _save(self, widg):
         '''Saves the content to a file.'''
         text = self.prompt.getText()

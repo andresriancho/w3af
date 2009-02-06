@@ -551,7 +551,7 @@ class EntryDialog(gtk.Dialog):
 class TextDialog(gtk.Dialog):
     '''A dialog with a textview, fillable from outside
 
-    @param title: The title of thw window
+    @param title: The title of the window
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
@@ -572,10 +572,19 @@ class TextDialog(gtk.Dialog):
 
         # the ok button
         self.butt_ok = self.action_area.get_children()[0]
+        self.butt_ok.connect("clicked", self._handle_click )
         self.butt_ok.set_sensitive(False)
+        
+        self.wait = True
 
         self.resize(450,300)
         self.show_all()
+
+    def _handle_click(self, widg):
+        '''
+        Handle the Ok button click.
+        '''
+        self.wait = False
 
     def addMessage(self, text):
         '''Adds a message to the textview.
@@ -583,15 +592,27 @@ class TextDialog(gtk.Dialog):
         @param text: the message to add.
         '''
         iterl = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iterl, text+"\n")
+        self.textbuffer.insert(iterl, text)
         self.textview.scroll_to_mark(self.textbuffer.get_insert(), 0)
         
     def done(self):
         '''Actives the OK button, waits for user, and close self.'''
         self.butt_ok.set_sensitive(True)
-        
-        # run() blocks until user clicks the OK button, which raises response()
-        return self.run()
+    
+    def dialog_response_cb(self, widget, response_id):
+        '''
+        http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
+        '''
+        self.destroy()
+
+    def dialog_run(self):
+        '''
+        http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
+        '''
+        if not self.modal:
+            self.set_modal(True)
+        self.connect('response', self.dialog_response_cb)
+        self.show()
 
 
 class Searchable(object):
