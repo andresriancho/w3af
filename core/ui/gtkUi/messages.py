@@ -23,6 +23,7 @@ import gtk, gobject
 from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
 
+
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
     

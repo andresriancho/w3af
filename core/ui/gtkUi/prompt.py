@@ -22,8 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 import pango
 import time
-# For the queue diverter
-from . import messages
+
+# For write_console_messages
+from . import helpers
 
 
 class PromptView(gtk.TextView):
@@ -36,14 +37,11 @@ class PromptView(gtk.TextView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, promptText, procfunc, inc_message_index, get_message_index):
+    def __init__(self, promptText, procfunc):
         self.promptText = promptText
         self.procfunc = procfunc
         super(PromptView,self).__init__()
         self.set_wrap_mode(gtk.WRAP_CHAR)
-
-        self.inc_message_index = inc_message_index
-        self.get_message_index = get_message_index
 
         # keys
         self.keys = {
@@ -57,8 +55,7 @@ class PromptView(gtk.TextView):
         }
 
         # These lines are for printing the om.out.console messages
-        self.messages = messages.getQueueDiverter()
-        gobject.timeout_add(200, self.addMessage().next)
+        gobject.timeout_add(200, helpers.write_console_messages(self).next)
 
         # mono spaced font looks more like a terminal to me =)
         # and works better with the output of some unix commands
@@ -80,34 +77,15 @@ class PromptView(gtk.TextView):
         gobject.idle_add(self._prompt)
         gobject.idle_add(self.grab_focus)
 
-    def addMessage(self):
-        '''Adds a message to the textview.
-
-        The message is read from the iterated queue, only console message 
-        types are interesting to me.
-
-        @returns: True to gobject to keep calling it, and False when all
-                  it's done.
+    def addMessage(self, text):
         '''
-        for mess in self.messages.get(self.get_message_index()):
-            if mess is None:
-                yield True
-                continue
-            
-            self.inc_message_index()
-
-            if mess.getType() != 'console':
-                continue
-
-            # Handling new lines
-            text = mess.getMsg()
-            if mess.getNewLine():
-                text += '\n'
-
-            self.insert_into_textbuffer(text)
-
-        yield False
-
+        This method is called from the write_console_messages generator.
+        
+        @parameter text: A string to write to the console textviev
+        @return: None
+        '''
+        self.insert_into_textbuffer( text )
+        
     def insert_into_textbuffer(self, text):
         '''
         Insert a text into the text buffer, taking care of \r, \n, self.user_started.
@@ -279,7 +257,7 @@ class PromptDialog(gtk.Dialog):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title, promptText, procfunc, inc_message_index, get_message_index):
+    def __init__(self, title, promptText, procfunc):
         super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gtkUi/data/shell.png')
 
@@ -297,7 +275,7 @@ class PromptDialog(gtk.Dialog):
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.prompt = PromptView(promptText, procfunc, inc_message_index, get_message_index)
+        self.prompt = PromptView(promptText, procfunc)
         sw.add(self.prompt)
         self.vbox.pack_start(sw)
 

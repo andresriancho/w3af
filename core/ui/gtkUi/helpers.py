@@ -315,7 +315,11 @@ class IteratedQueue(RegistThread):
 
     def get(self, start_idx=0):
         '''Serves the elements taken from the queue.'''
+        if start_idx > len(self.repository):
+            start_idx = len(self.repository)
+            
         idx = start_idx
+        
         while True:
             if idx == len(self.repository):
                 msg = None
@@ -447,3 +451,36 @@ def open_help(chapter=''):
         chapter = '#' + chapter
     helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html" + chapter)
     webbrowser.open("file://" + helpfile)
+
+
+def write_console_messages( dlg ):
+    '''
+    Write console messages to the TextDialog.
+    
+    @parameter dlg: The TextDialog.
+    '''
+    import core.data.kb.knowledgeBase as kb
+    from . import messages
+    
+    msg_queue = messages.getQueueDiverter()
+    get_message_index = kb.kb.getData('get_message_index', 'get_message_index')
+    inc_message_index = kb.kb.getData('inc_message_index', 'inc_message_index')
+    
+    for msg in msg_queue.get(get_message_index()):
+        if msg is None:
+            yield True
+            continue
+        
+        inc_message_index()
+
+        if msg.getType() != 'console':
+            continue
+
+        # Handling new lines
+        text = msg.getMsg()
+        if msg.getNewLine():
+            text += '\n'
+
+        dlg.addMessage( text )
+
+    yield False

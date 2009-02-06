@@ -23,6 +23,7 @@ import gtk, gobject
 import threading
 from . import history, helpers
 
+
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
     
@@ -579,6 +580,9 @@ class TextDialog(gtk.Dialog):
 
         self.resize(450,300)
         self.show_all()
+
+    def run(self):
+        raise Exception('Please use dialog_run().')
 
     def _handle_click(self, widg):
         '''
