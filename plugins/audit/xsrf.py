@@ -67,67 +67,79 @@ class xsrf(baseAuditPlugin):
         '''
         om.out.debug( 'xsrf plugin is testing: ' + freq.getURL() )
 
+        # Vulnerable by definition
         if freq.getMethod() == 'GET' and hasQueryString( freq.getURI() ):
-            # Vulnerable by definition
-            v = vuln.vuln()
-            v.setURL( freq.getURL() )
-            v.setDc( freq.getDc() )
-            v.setName( 'Cross site request forgery vulnerability' )
-            v.setSeverity(severity.LOW)
-            v.setMethod( freq.getMethod() )
-            v.setDesc( 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.' )
-            v.setId( 0 )
-            self._vuln_simple.append( v )
+            
+            # Now check if we already added this target URL to the list
+            already_added = [ v.getURL() for v in self._vuln_simple ]
+            if freq.getURL() not in already_added:
+                
+                # Vulnerable and not in list, add:
+                v = vuln.vuln()
+                v.setURL( freq.getURL() )
+                v.setDc( freq.getDc() )
+                v.setName( 'Cross site request forgery vulnerability' )
+                v.setSeverity(severity.LOW)
+                v.setMethod( freq.getMethod() )
+                v.setDesc( 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.' )
+                self._vuln_simple.append( v )
         
+        # This is a POST request that can be sent using a GET and querystring
+        # Vulnerable by definition
         elif freq.getMethod() =='POST' and len ( freq.getDc() ) and isExchangable( self, freq ):
-            # This is a POST request that can be sent using a GET and querystring
-            # Vulnerable by definition
-            v = vuln.vuln()
-            v.setURL( freq.getURL() )
-            v.setSeverity(severity.LOW)
-            v.setDc( freq.getDc() )
-            v.setName( 'Cross site request forgery vulnerability' )
-            v.setMethod( freq.getMethod() )
-            msg = 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.'
-            msg += ' It allows the attacker to exchange the method from POST to GET when sending'
-            msg += ' data to the server.'
-            v.setDesc( msg )
-            v.setId( 0 )
-            self._vuln_complex.append( v )
+            
+            # Now check if we already added this target URL to the list
+            already_added = [ v.getURL() for v in self._vuln_complex ]
+            if freq.getURL() not in already_added:
+                
+                # Vulnerable and not in list, add:
+                v = vuln.vuln()
+                v.setURL( freq.getURL() )
+                v.setSeverity(severity.LOW)
+                v.setDc( freq.getDc() )
+                v.setName( 'Cross site request forgery vulnerability' )
+                v.setMethod( freq.getMethod() )
+                msg = 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.'
+                msg += ' It allows the attacker to exchange the method from POST to GET when sending'
+                msg += ' data to the server.'
+                v.setDesc( msg )
+                self._vuln_complex.append( v )
     
     def end( self ):
         '''
         This method is called at the end, when w3afCore aint going to use this plugin anymore.
         '''
-        hasPersistentCookie = False
+        has_persistent_cookie = False
         cookies = kb.kb.getData( 'collectCookies', 'cookies' )
         for cookie in cookies:
             if cookie.has_key('persistent'):
                 if not self._already_reported:
                     om.out.information('The web application sent a persistent cookie.')
-                    hasPersistentCookie = True
+                    has_persistent_cookie = True
                     self._already_reported = True
+                    break
         
         # If there is at least one persistent cookie
-        if hasPersistentCookie:
+        if has_persistent_cookie:
             if len( self._vuln_simple ):
                 om.out.vulnerability('The following scripts are vulnerable to a trivial form of XSRF:',
                         severity=severity.LOW)
                 
-                frStr = list(set([ str(v.getURL()) for v in self._vuln_simple ]))
+                fr_str = list(set([ str(v.getURL()) for v in self._vuln_simple ]))
                 kb.kb.save( self, 'get_xsrf', self._vuln_simple )
                 
-                for i in frStr:
+                for i in fr_str:
                     om.out.vulnerability( '- ' + i, severity=severity.LOW )
             
             if len( self._vuln_complex ):
                 msg = 'The following scripts allow an attacker to send POST data as query string'
-                msg +=' data (this makes XSRF more easy to exploit):'
+                msg +=' data (this makes XSRF easier to exploit):'
                 om.out.vulnerability(msg, severity=severity.LOW)
-                frStr = list(set([ str(fr) for fr in self._vuln_complex ]))
+                
+                fr_str = list(set([ str(fr) for fr in self._vuln_complex ]))
                 kb.kb.save( self, 'post_xsrf', self._vuln_complex )
                 
-                for i in frStr:
+                for i in fr_str:
                     om.out.vulnerability( '- ' + i, severity=severity.LOW )
                 
     def getOptions( self ):
