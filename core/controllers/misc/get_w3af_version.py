@@ -42,6 +42,9 @@ def get_w3af_version():
     res = 'w3af - Web Application Attack and Audit Framework'
     res += '\nVersion: beta7'
     if revision != -1:
+        res += ' (from SVN server)'
         res += '\nRevision: ' + str(revision)
+    else:
+        res += ' (from tgz)'
     res += '\nAuthor: Andres Riancho and the w3af team.'
     return res
