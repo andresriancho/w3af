@@ -38,6 +38,10 @@ class sourceforge(object):
         
         @author: Andres Riancho ( andres.riancho@gmail.com )
         '''
+        # Internal variables
+        self.logged_in = False
+        
+        # Init the urllib2 module
         self._init_urllib2_handlers()
         
     def _init_urllib2_handlers(self):
@@ -78,7 +82,8 @@ class sourceforge(object):
         except:
             return False
         else:
-            return 'Invalid username or password' not in the_page
+            self.logged_in = 'Invalid username or password' not in the_page
+            return self.logged_in
             
     def report_bug(self, user_title, user_description, w3af_version, traceback, filename):
         '''
