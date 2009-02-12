@@ -105,7 +105,7 @@ class info(dict):
         else:
             return self._desc
     
-    def _convert_to_range_wrapper(self,  list_of_integers):
+    def _convert_to_range_wrapper(self, list_of_integers):
         '''
         Just a wrapper for _convert_to_range; please see documentation below!
         
@@ -113,7 +113,7 @@ class info(dict):
         '''
         res = self._convert_to_range( list_of_integers )
         if res.endswith(','):
-            res = res [:-1]
+            res = res[:-1]
         return res
     
     def _convert_to_range(self, list_of_integers):
@@ -207,6 +207,12 @@ class info(dict):
         '''
         if isinstance(id, type([])):
             # A list with more than one ID:
+            
+            # I have to check if all of them are actually integers
+            for i in id:
+                if not isinstance(i, type(5)):
+                    raise w3afException('All request/response ids have to be integers.')
+                    
             id.sort()
             self._id = id
         else:
