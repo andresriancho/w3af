@@ -71,7 +71,7 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 import core.controllers.outputManager as om
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, exception_handler
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
 
@@ -556,7 +556,7 @@ class MainApp(object):
         '''
         if not self.saveStateToCore():
             return
-
+        asdf
         # Verify that everything is ready to run
         try:
             helpers.coreWrap(self.w3af.initPlugins)
