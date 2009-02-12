@@ -49,4 +49,5 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                     return response
         return response
 
+    https_request = http_request
     https_response = http_response

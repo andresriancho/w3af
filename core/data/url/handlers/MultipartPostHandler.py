@@ -87,7 +87,10 @@ class MultipartPostHandler(urllib2.BaseHandler):
 
             request.add_data(data)
         return request
-
+    
+    # I also want this to work with HTTPS!
+    https_request = http_request
+    
     def multipart_encode(vars, files, boundary = None, buffer = None):
         if boundary is None:
             # Before :

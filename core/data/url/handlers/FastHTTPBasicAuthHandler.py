@@ -35,4 +35,6 @@ class FastHTTPBasicAuthHandler(urllib2.AbstractBasicAuthHandler, urllib2.BaseHan
             request.add_header('Authorization', auth)
             
         return request
+        
+    https_request = http_request
 
