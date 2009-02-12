@@ -120,7 +120,7 @@ class bug_report_window(simple_base_window):
         self.set_modal(True)
         self.set_title(title)
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
-        self.connect("delete_event", gtk.main_quit)
+        self.connect("delete-event", gtk.main_quit)
         self.vbox = gtk.VBox()
         
         # Internal variables
@@ -201,7 +201,6 @@ Please provide any additional information below:
             gtk.BUTTONS_OK,
             None)
         dialog.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
-        
         
         msg = '<b>Step 1 of 2</b>\n\n\n'
         msg += 'Please provide the following information about the bug:\n'
