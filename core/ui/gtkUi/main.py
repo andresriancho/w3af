@@ -556,7 +556,7 @@ class MainApp(object):
         '''
         if not self.saveStateToCore():
             return
-        asdf
+        
         # Verify that everything is ready to run
         try:
             helpers.coreWrap(self.w3af.initPlugins)
