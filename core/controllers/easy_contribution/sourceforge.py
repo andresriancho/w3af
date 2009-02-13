@@ -112,7 +112,13 @@ class sourceforge(object):
         details += 'Version information: \n' + w3af_version + '\n\n\n'
         details += 'Traceback: \n' + traceback
         
-        url = 'https://sourceforge.net/tracker2/index.php'
+        # sourceforge rule #3759-3: Users that don't have logged in; can't send bugs using https.
+        if self.logged_in:
+            schema = 'https://'
+        else:
+            schema = 'http://'
+        url = schema + 'sourceforge.net/tracker2/index.php'
+        
         values = {'group_id' : '170274',
             'atid' : '853652',
             'func' : 'postadd', 
@@ -123,8 +129,13 @@ class sourceforge(object):
             'summary': summary,
             'details': details,
             'input_file': file(filename),
-            'file_description':'',
+            'file_description':'Traceback',
             'submit':'Add Artifact' }
+        
+        if not self.logged_in:
+            # anonymous bug reports are slightly different
+            values.pop('priority')
+            values.pop('assigned_to')
 
         req = urllib2.Request(url, values)
         try:
@@ -139,6 +150,7 @@ class sourceforge(object):
             re_result = re.findall('\\(Artifact <a href="(.*?)">\d*</a>\\)', the_page)
             if re_result:
                 return 'https://sourceforge.net' + re_result[0]
+            
             return None
         else:
             return None

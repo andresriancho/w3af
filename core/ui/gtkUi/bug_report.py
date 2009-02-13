@@ -143,10 +143,10 @@ class bug_report_window(simple_base_window):
         label_text += _("<i>All this info is in a file called ") + filename + _(" for later review.</i>\n\n")
         label_text += _('If you wish, <b>you can contribute</b> to the w3af project and submit this')
         label_text += _(' bug to the sourceforge bug tracking system from within this window.')
-        label_text += _(' Please click "Ok" to contribute, or "Cancel" to exit w3af.\n\n')
+        label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the exception traceback and the version information to')
-        label_text += _(' sourceforge, no personal or confidencial information is collected.\n')
-    
+        label_text += _(' sourceforge, no personal or confidencial information is collected.\n\n')
+        label_text += _('Please click "Ok" to contribute, or "Cancel" to exit w3af.\n')    
         self.label.set_markup( label_text )
         self.label.show()
         
