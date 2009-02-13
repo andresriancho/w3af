@@ -386,7 +386,8 @@ class w3afCore:
             om.out.error('')
             om.out.error( 'Unhandled error, traceback: ' + str( traceback.format_exc() ) )
             om.out.error('')
-            raise e
+            self.progress.stop()
+            raise
         else:
             om.out.information('Finished scanning process.')
             
