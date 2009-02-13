@@ -70,7 +70,6 @@ class bug_report_result(simple_base_window):
         self.label.set_line_wrap(True)
         self.label.set_selectable(True)
         
-        
         # The label text
         self.label.set_markup( text )
         
@@ -132,15 +131,31 @@ class bug_report_window(simple_base_window):
         self.w3af_version = w3af_version
         self.filename = filename
         
-        # the textview inside scrollbars
+        # the label for the title
+        self.title_label = gtk.Label()
+        self.title_label.set_line_wrap(True)
+        label_text = _('\n<b>An unhandled exception was raised:</b>\n\n')
+        self.title_label.set_markup( label_text )
+        self.title_label.show()
+        
+        # A gtk.TextView for the exception
+        sw = gtk.ScrolledWindow()
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        
+        self.text_view = gtk.TextView()
+        self.text_view.set_size_request(150, 250) 
+        self.text_view.set_editable(False)
+        self.text_view.set_wrap_mode( gtk.WRAP_CHAR )
+
+        buffer = self.text_view.get_buffer()
+        buffer.set_text(exception_text)
+        
+        sw.add(self.text_view)
+        
+        # the label for the rest of the message
         self.label = gtk.Label()
         self.label.set_line_wrap(True)
-        self.label.set_selectable(True)
-        
-        label_text = _('\n<b>An unhandled exception was raised:</b>\n\n')
-        exception_text = cgi.escape(exception_text)
-        label_text += exception_text + '\n'
-        label_text += _("<i>All this info is in a file called ") + filename + _(" for later review.</i>\n\n")
+        label_text = _("<i>All this info is in a file called ") + filename + _(" for later review.</i>\n\n")
         label_text += _('If you wish, <b>you can contribute</b> to the w3af project and submit this')
         label_text += _(' bug to the sourceforge bug tracking system from within this window.')
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
@@ -150,6 +165,8 @@ class bug_report_window(simple_base_window):
         self.label.set_markup( label_text )
         self.label.show()
         
+        self.vbox.pack_start(self.title_label, True, False)
+        self.vbox.pack_start(sw, False, False)
         self.vbox.pack_start(self.label, True, False)
         
         # the buttons
