@@ -266,7 +266,7 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def _help(self, action):
         '''Shows the help.'''
-        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html#Using_the_Proxy")
+        helpfile = os.path.join(os.getcwd(), "readme/EN/gtkUiHTML/gtkUiUsersGuide.html#Using_the_Proxy")
         webbrowser.open("file://" + helpfile)
 
 

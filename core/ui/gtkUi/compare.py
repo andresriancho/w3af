@@ -263,7 +263,7 @@ class Compare(entries.RememberingWindow):
         self.comp.setRightPane(*self._getElementText())
 
     def _help(self, action):
-        helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html#Comparing_HTTP_traffic")
+        helpfile = os.path.join(os.getcwd(), "readme/EN/gtkUiHTML/gtkUiUsersGuide.html#Comparing_HTTP_traffic")
         webbrowser.open("file://" + helpfile)
 
     def _clearAll(self, action):

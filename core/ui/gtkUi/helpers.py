@@ -406,7 +406,7 @@ def open_help(chapter=''):
     '''
     if chapter:
         chapter = '#' + chapter
-    helpfile = os.path.join(os.getcwd(), "readme/gtkUiHTML/gtkUiUsersGuide.html" + chapter)
+    helpfile = os.path.join(os.getcwd(), "readme/EN/gtkUiHTML/gtkUiUsersGuide.html" + chapter)
     webbrowser.open("file://" + helpfile)
 
 
