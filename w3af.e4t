@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-02-04, 16:03:17 -->
+<!-- Saved: 2009-02-12, 14:03:03 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -127,21 +127,6 @@
         <Name>clusterTable.py</Name>
       </Filename>
       <Linenumber>384</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This file ain't used, because it wasn't actually working!</Summary>
-    <Description></Description>
-    <Created>2008-09-14, 15:29:43</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Dir>handlers</Dir>
-        <Name>certHTTPSHandler.py</Name>
-      </Filename>
-      <Linenumber>31</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -689,20 +674,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: poner un HELP aca</Summary>
-    <Description></Description>
-    <Created>2009-01-22, 17:35:05</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>prompt.py</Name>
-      </Filename>
-      <Linenumber>297</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This re is buggy</Summary>
     <Description></Description>
     <Created>2009-01-25, 13:02:21</Created>
@@ -894,20 +865,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add more checks here?</Summary>
-    <Description></Description>
-    <Created>2009-01-29, 16:44:40</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>documentParser.py</Name>
-      </Filename>
-      <Linenumber>84</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: For some reason this method failed to work:</Summary>
     <Description></Description>
     <Created>2009-01-29, 18:23:37</Created>
@@ -989,19 +946,6 @@
       <Linenumber>152</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
-    <Description></Description>
-    <Created>2009-02-02, 15:39:14</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>sqlmap.py</Name>
-      </Filename>
-      <Linenumber>212</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Review this hack</Summary>
     <Description></Description>
@@ -1056,21 +1000,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work?</Summary>
-    <Description></Description>
-    <Created>2009-02-03, 10:07:09</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>url</Dir>
-        <Dir>handlers</Dir>
-        <Name>mangleHandler.py</Name>
-      </Filename>
-      <Linenumber>110</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Do something with this value</Summary>
     <Description></Description>
     <Created>2009-02-03, 13:04:50</Created>
@@ -1083,45 +1012,6 @@
         <Name>question_target_2.py</Name>
       </Filename>
       <Linenumber>62</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-02-03, 15:07:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>786</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-02-03, 15:07:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>830</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
-    <Description></Description>
-    <Created>2009-02-03, 15:07:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1187</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1152,10 +1042,90 @@
       <Linenumber>412</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add more checks here?</Summary>
+    <Description></Description>
+    <Created>2009-02-05, 11:55:32</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>documentParser.py</Name>
+      </Filename>
+      <Linenumber>84</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: poner un HELP aca</Summary>
+    <Description></Description>
+    <Created>2009-02-06, 10:03:27</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>prompt.py</Name>
+      </Filename>
+      <Linenumber>272</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
+    <Description></Description>
+    <Created>2009-02-06, 10:34:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>sqlmap.py</Name>
+      </Filename>
+      <Linenumber>212</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-02-11, 12:04:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>786</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-02-11, 12:04:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>830</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2009-02-11, 12:04:17</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1187</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
     <Description></Description>
-    <Created>2009-02-03, 15:21:14</Created>
+    <Created>2009-02-12, 00:17:41</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1169,7 +1139,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Show images</Summary>
     <Description></Description>
-    <Created>2009-02-03, 15:21:14</Created>
+    <Created>2009-02-12, 00:17:41</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1178,6 +1148,36 @@
         <Name>reqResViewer.py</Name>
       </Filename>
       <Linenumber>367</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This file ain't used, because it wasn't actually working!</Summary>
+    <Description></Description>
+    <Created>2009-02-12, 12:28:05</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>certHTTPSHandler.py</Name>
+      </Filename>
+      <Linenumber>31</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work?</Summary>
+    <Description></Description>
+    <Created>2009-02-12, 12:29:40</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>mangleHandler.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
     </Resource>
   </Task>
 </Tasks>

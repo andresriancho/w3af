@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-02-04, 16:03:14 -->
+<!-- Saved: 2009-02-12, 14:03:03 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3365,12 +3365,6 @@
       <Dir>core</Dir>
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
-      <Name>gtk_multithread.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>ui</Dir>
-      <Dir>gtkUi</Dir>
       <Name>payload_generators.py</Name>
     </Source>
     <Source>
@@ -3473,6 +3467,19 @@
       <Dir>wizard</Dir>
       <Dir>questions</Dir>
       <Name>question_infrastructure_internet_1.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>url</Dir>
+      <Dir>handlers</Dir>
+      <Name>FastHTTPBasicAuthHandler.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>easy_contribution</Dir>
+      <Name>sourceforge.py</Name>
     </Source>
   </Sources>
   <Forms>
