@@ -108,6 +108,7 @@ class errorPages(baseGrepPlugin):
         mesg.append('[java.lang.')
         mesg.append('class java.lang.')
         mesg.append('java.lang.NullPointerException')
+        mesg.append('java.rmi.ServerException')
         
         mesg.append('onclick="toggle(\'full exception chain stacktrace\')"')
         mesg.append('at org.apache.catalina')
