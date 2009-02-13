@@ -34,7 +34,7 @@ from core.controllers.w3afException import w3afException, w3afMustStopException
 import os
 
 manual_request_example = """\
-GET http://localhost/$xrange(10)$ HTTP/1.0
+GET http://localhost/script.php HTTP/1.0
 Host: www.some_host.com
 User-Agent: w3af.sf.net
 Pragma: no-cache
