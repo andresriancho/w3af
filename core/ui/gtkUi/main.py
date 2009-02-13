@@ -74,6 +74,7 @@ import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, exception_handler
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
+from . import exception_handler
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
@@ -570,6 +571,12 @@ class MainApp(object):
             except KeyboardInterrupt:
 #                print 'Ctrl+C found, exiting!'
                 pass
+            except Exception, e:
+                gobject.idle_add(self._scan_stopfeedback)
+                exception_class = type(e)
+                exception_instance = e
+                exception_traceback = sys.exc_traceback
+                exception_handler.handle_crash(exception_class, exception_instance, exception_traceback)
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()

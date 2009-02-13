@@ -37,7 +37,7 @@ from core.controllers.easy_contribution.sourceforge import sourceforge
 from core.controllers.misc.get_w3af_version import get_w3af_version
 
 
-def _crash(type, value, tb):
+def handle_crash(type, value, tb):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(type, KeyboardInterrupt ):
         helpers.endThreads()
@@ -72,6 +72,6 @@ def _crash(type, value, tb):
     bug_report_win = bug_report.bug_report_window(_('Bug detected!'), exception, versions, filename)
     
     # Blocks waiting for user interaction
-    bug_report_win.run()
+    bug_report_win.show()
     
-sys.excepthook = _crash
+sys.excepthook = handle_crash

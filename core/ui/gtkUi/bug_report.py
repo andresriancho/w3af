@@ -37,18 +37,14 @@ class simple_base_window(gtk.Window):
         One simple class to create other windows.
         '''
         super(simple_base_window,self).__init__(type=gtk.WINDOW_TOPLEVEL)
-    
-    def run(self):
-        while True:
-            time.sleep(0.1)
-            while gtk.events_pending():
-                gtk.main_iteration()
-    
+        self.connect("delete-event", gtk.main_quit)
+        
     def _handle_cancel(self, widg):
         # Exit w3af
         endThreads()
-        gtk.main_quit()
-        sys.exit(-1) 
+        self.destroy()
+        #gtk.main_quit()
+        #sys.exit(-1)
         
 class bug_report_result(simple_base_window):
     def __init__(self, text, url):
@@ -161,7 +157,7 @@ class bug_report_window(simple_base_window):
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the exception traceback and the version information to')
         label_text += _(' sourceforge, no personal or confidencial information is collected.\n\n')
-        label_text += _('Please click "Ok" to contribute, or "Cancel" to exit w3af.\n')    
+        label_text += _('Please click "Ok" to contribute, or "Cancel" to go back to w3af (possibly with an invalid state).\n')
         self.label.set_markup( label_text )
         self.label.show()
         
@@ -296,7 +292,7 @@ Please provide any additional information below:
             label_text += _(' contained inside the <i>'+self.filename+'</i> file here: ')
             brf = bug_report_result(label_text, self.manual_bug_report)
             
-        brf.run()
+        brf.show()
             
     def _ask_user_password(self, invalid_login=False):
         '''
