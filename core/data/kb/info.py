@@ -211,7 +211,8 @@ class info(dict):
             # I have to check if all of them are actually integers
             for i in id:
                 if not isinstance(i, type(5)):
-                    raise w3afException('All request/response ids have to be integers.')
+                    # w3afException is correctly handled, I want a crash!
+                    raise Exception('All request/response ids have to be integers.')
                     
             id.sort()
             self._id = id
