@@ -33,7 +33,15 @@ from core.data.db.reqResDBHandler import reqResDBHandler
 from core.controllers.w3afException import w3afException, w3afMustStopException
 import os
 
-request_example = """\
+manual_request_example = """\
+GET http://localhost/$xrange(10)$ HTTP/1.0
+Host: www.some_host.com
+User-Agent: w3af.sf.net
+Pragma: no-cache
+Content-Type: application/x-www-form-urlencoded
+"""
+
+fuzzy_request_example = """\
 GET http://localhost/$xrange(10)$ HTTP/1.0
 Host: www.some_host.com
 User-Agent: w3af.sf.net
@@ -100,7 +108,7 @@ class ManualRequests(entries.RememberingWindow):
 
         # Add a default request
         if initialRequest is None:
-            self.reqresp.request.rawShow(request_example, '')
+            self.reqresp.request.rawShow(manual_request_example, '')
         else:
             (initialUp, initialDn) = initialRequest
             self.reqresp.request.rawShow(initialUp, initialDn)
@@ -270,7 +278,7 @@ class FuzzyRequests(entries.RememberingWindow):
                                          functools.partial(self.sSB_state.change, "rRV")],
                                         editable=True, widgname="fuzzyrequest")
         if initialRequest is None:
-            self.originalReq.rawShow(request_example, '')
+            self.originalReq.rawShow(fuzzy_request_example, '')
         else:
             (initialUp, initialDn) = initialRequest
             self.originalReq.rawShow(initialUp, initialDn)
