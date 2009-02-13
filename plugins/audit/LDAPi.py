@@ -122,6 +122,7 @@ class LDAPi(baseAuditPlugin):
         # Java
         error_strings.append('javax.naming.NameNotFoundException')
         error_strings.append('LDAPException')
+        error_strings.append('com.sun.jndi.ldap')
         
         # http://support.microsoft.com/kb/218185
         error_strings.append('Protocol error occurred')
@@ -153,6 +154,7 @@ class LDAPi(baseAuditPlugin):
         # ???
         # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
         error_strings.append('Module Products.LDAPMultiPlugins')
+        
 
         return [ e.lower() for e in error_strings ]
         
