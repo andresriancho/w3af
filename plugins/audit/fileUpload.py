@@ -122,7 +122,7 @@ class fileUpload(baseAuditPlugin):
                 try:
                     file_handler = file( file_name, 'r')
                 except:
-                    raise w3afException('Failed to open temp file: "' + tmp_filename  + '".')
+                    raise w3afException('Failed to open temp file: "' + file_name  + '".')
                 else:
                     path, file_name = os.path.split(file_name)
                     result.append( (file_handler, file_name) )
