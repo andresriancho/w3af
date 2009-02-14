@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException, w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
