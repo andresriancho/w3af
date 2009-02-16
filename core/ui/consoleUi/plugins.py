@@ -183,8 +183,7 @@ class pluginsTypeMenu(menu):
                 enabled.append(plugin)
         
         if self._name == 'output' and 'console' not in enabled:
-            om.out.console("Warning: it's not allowed to disable \
-                console output plugin in the console UI")
+            om.out.console("Warning: You can't disable the console output plugin in the console UI")
             enabled.append('console')
             
         self._w3af.setPlugins(enabled, self._name)
