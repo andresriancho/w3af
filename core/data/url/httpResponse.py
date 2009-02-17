@@ -33,9 +33,6 @@ def _returnEscapedChar(exc):
     return ( unicode(slash_x_XX) , exc.end)
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
 
-# '<>,.;:-_{}[]\'"+*~^' and some others... go to ' ' (whitespace)
-special_chars = ''.join([chr(i) for i in xrange(128) if chr(i) not in string.ascii_letters + string.digits])
-TRANSLATION_TABLE= string.maketrans(special_chars,' '*len(special_chars))
 
 class httpResponse:
     
