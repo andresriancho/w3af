@@ -40,8 +40,13 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     
     def __init__(self):
         self._lock = thread.allocate_lock()
+        
+        # xUrllib needs access to this method to identify requests with strange errors
+        # requests that are returned when the target URL is blacklisted, or some other
+        # special cases.
+        kb.kb.save('idHandler', 'inc_counter', self.inc_counter )
     
-    def _inc_counter( self, step=1 ):
+    def inc_counter( self, step=1 ):
         '''
         @return: The next number to use in the request/response ID.
         '''
@@ -108,7 +113,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             return new_request
         else:
             err = urllib2.HTTPError(req.get_full_url(), code, msg, headers, fp)
-            err.id = self._inc_counter()
+            err.id = self.inc_counter()
             raise err
     
     old_http_error_302 = urllib2.HTTPRedirectHandler.http_error_302
@@ -169,7 +174,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         om.out.logHttp( fr, res )
     
     def http_response(self, request, response):
-        response.id = self._inc_counter()
+        response.id = self.inc_counter()
         self._log_request_response( request, response )
         request.id = response.id
         return response

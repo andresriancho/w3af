@@ -50,9 +50,12 @@ from core.controllers.misc.memoryUsage import dumpMemoryUsage
 import traceback
 
 import core.data.kb.config as cf
+import core.data.kb.knowledgeBase as kb
+
 
 class sizeExceeded( Exception ):
     pass
+
     
 class xUrllib:
     '''
@@ -83,6 +86,10 @@ class xUrllib:
         self._paused = False
         self._mustStop = False
         self._ignore_errors_conf = False
+        
+        # And a nice method, that gives me consecutive numbers to use as ids
+        # for requests.
+        self.inc_counter = kb.kb.getData('idHandler', 'inc_counter')
     
     def pause(self,  pauseYesNo):
         '''
@@ -265,7 +272,7 @@ class xUrllib:
         self._init()
 
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
         
         qs = urlParser.getQueryString( uri )
         if qs:
@@ -284,7 +291,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
             except Exception, e:
                 raise e
         
@@ -300,7 +307,7 @@ class xUrllib:
         '''
         self._init()
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
         
         req = urllib2.Request(uri, data )
         req = self._addHeaders( req, headers )
@@ -310,7 +317,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content' )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
             except Exception, e:
                 raise e
         
@@ -368,7 +375,7 @@ class xUrllib:
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( NO_CONTENT, '', {}, uri, uri, 'No Content' )
+                    return httpResponse( NO_CONTENT, '', {}, uri, uri, 'No Content', id=self.inc_counter() )
             
                 if 'data' in keywords:
                     req = self.methodRequest( uri, keywords['data'] )
@@ -450,7 +457,7 @@ class xUrllib:
         original_url = req._Request__original
         req = self._evasion( req )
         
-        startTime = time.time()
+        start_time = time.time()
         res = None
         try:
             if useCache:
@@ -504,7 +511,7 @@ class xUrllib:
                 info = e.info()
                 geturl = e.geturl()
                 read = self._readRespose( e )
-                httpResObj = httpResponse(code, read, info, geturl, original_url, id=e.id, time=time.time() - startTime, msg=e.msg )
+                httpResObj = httpResponse(code, read, info, geturl, original_url, id=e.id, time=time.time() - start_time, msg=e.msg )
                 
                 # Clear the log of failed requests; this request is done!
                 if id(req) in self._errorCount:
@@ -535,7 +542,7 @@ class xUrllib:
                 del self._errorCount[ id(req) ]
             self._incrementGlobalErrorCount()
             
-            return httpResponse( NO_CONTENT, '', {}, original_url, original_url, msg='No Content' )
+            return httpResponse( NO_CONTENT, '', {}, original_url, original_url, msg='No Content', id=self.inc_counter() )
         else:
             # Everything ok !
             if not req.get_data():
@@ -552,7 +559,7 @@ class xUrllib:
             info = res.info()
             geturl = res.geturl()
             read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl, original_url, id=res.id, time=time.time() - startTime, msg=res.msg )
+            httpResObj = httpResponse(code, read, info, geturl, original_url, id=res.id, time=time.time() - start_time, msg=res.msg )
             # Let the upper layers know that this response came from the local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
