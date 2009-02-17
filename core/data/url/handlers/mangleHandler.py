@@ -26,7 +26,8 @@ import core.data.request.fuzzableRequest as fuzzableRequest
 import core.data.url.httpResponse as httpResponse
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 import core.data.url.handlers.logHandler
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import getDomain
+
 
 class mangleHandler(urllib2.BaseHandler):
     """
