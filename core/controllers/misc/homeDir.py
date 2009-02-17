@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import user
 import os
+import shutil
+
 
 def create_home_dir():
     '''
@@ -36,10 +38,20 @@ def create_home_dir():
         except OSError:
             return False
     
+    # webroot for some plugins
     webroot = home_path + os.path.sep + 'webroot'
     if not os.path.exists(webroot):
         try:
             os.makedirs(webroot)
+        except OSError:
+            return False
+            
+    # and the profile directory
+    home_profiles = home_path + os.path.sep + 'profiles'
+    default_profiles = 'profiles' + os.path.sep
+    if not os.path.exists(home_profiles):
+        try:
+            shutil.copytree( default_profiles, home_profiles)
         except OSError:
             return False
             

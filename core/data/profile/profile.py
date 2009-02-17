@@ -25,6 +25,8 @@ import ConfigParser
 from core.controllers.misc.factory import *
 import os
 import shutil
+from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
+
 
 class profile:
     '''
@@ -57,10 +59,13 @@ class profile:
                 # The file isn't there, let's try with a .pw3af ...
                 if not profile_file_name.endswith('.pw3af'):
                     profile_file_name += '.pw3af'
-                if not os.path.exists(profile_file_name):
                 
-                    # Search in the default path...        
-                    profile_file_name = 'profiles' + os.path.sep + profile_file_name
+                if not os.path.exists(profile_file_name):
+                    
+                    # Search in the default path...
+                    profile_home = get_home_dir() + os.path.sep + 'profiles' + os.path.sep
+                    profile_file_name = profile_home + profile_file_name
+                    
                     if not os.path.exists(profile_file_name):
                         raise w3afException('The profile "' + profile_file_name + '" wasn\'t found.')
            
@@ -359,8 +364,9 @@ class profile:
             # The user is specifiyng a file_name!
             if not file_name.endswith('.pw3af'):
                 file_name += '.pw3af'
+                
             if os.path.sep not in file_name:
-                file_name = os.path.join('profiles', file_name )
+                file_name = os.path.join(get_home_dir(), 'profiles', file_name )
             self._profile_file_name = file_name
             
         try:
