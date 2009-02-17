@@ -38,6 +38,7 @@ from core.controllers.w3afException import w3afException
 import plugins.attack.payloads.payloads as payloads
 import urllib
 
+
 class davShell(baseAttackPlugin):
     '''
     Exploit web servers that have unauthenticated DAV access.
