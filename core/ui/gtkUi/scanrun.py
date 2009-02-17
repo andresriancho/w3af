@@ -91,14 +91,20 @@ class FullKBTree(kbtree.KBTree):
                     self.kbbrowser.pagesControl.hide()
                     self.kbbrowser.title0.hide()
 
-                    search_result = self._dbHandler.searchById( instance.getId()[0] )
-                    if len(search_result) == 1:
-                        request, response = search_result[0]
-                        self.kbbrowser.rrV.request.showObject( request )
-                        self.kbbrowser.rrV.response.showObject( response )
-                        success = True
+                    # This handles a special case, where the plugin writer made a mistake and
+                    # failed to set an id to the info / vuln object:
+                    if instance.getId() == None:
+                        success = False
                     else:
-                        om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
+                        # ok, we don't have None in the id:
+                        search_result = self._dbHandler.searchById( instance.getId()[0] )
+                        if len(search_result) == 1:
+                            request, response = search_result[0]
+                            self.kbbrowser.rrV.request.showObject( request )
+                            self.kbbrowser.rrV.response.showObject( response )
+                            success = True
+                        else:
+                            om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
                 else:
                     # There are MORE THAN ONE ids related to the object
                     # This is 2)
