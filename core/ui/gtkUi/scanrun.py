@@ -93,7 +93,8 @@ class FullKBTree(kbtree.KBTree):
 
                     # This handles a special case, where the plugin writer made a mistake and
                     # failed to set an id to the info / vuln object:
-                    if instance.getId() == None:
+                    if instance.getId()[0] == None:
+                        raise Exception('Exception - The id should not be None! "' + str(instance._desc) + '".')
                         success = False
                     else:
                         # ok, we don't have None in the id:
