@@ -160,6 +160,6 @@ class findComments(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for comments, special comments like the ones containing the words
-        "password" or "user" are specially reported.
+        This plugin greps every page for HTML comments, special comments like the ones containing
+        the words "password" or "user" are specially reported.
         '''
