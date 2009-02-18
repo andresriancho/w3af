@@ -52,6 +52,9 @@ import traceback
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
 
+# This is a singleton that's used for assigning request IDs
+from core.controllers.misc.number_generator import consecutive_number_generator
+
 
 class sizeExceeded( Exception ):
     pass
@@ -86,10 +89,6 @@ class xUrllib:
         self._paused = False
         self._mustStop = False
         self._ignore_errors_conf = False
-        
-        # And a nice method, that gives me consecutive numbers to use as ids
-        # for requests.
-        self.inc_counter = kb.kb.getData('idHandler', 'inc_counter')
     
     def pause(self,  pauseYesNo):
         '''
@@ -272,7 +271,7 @@ class xUrllib:
         self._init()
 
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
         
         qs = urlParser.getQueryString( uri )
         if qs:
@@ -291,7 +290,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
             except Exception, e:
                 raise e
         
@@ -307,7 +306,7 @@ class xUrllib:
         '''
         self._init()
         if self._isBlacklisted( uri ):
-            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
+            return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
         
         req = urllib2.Request(uri, data )
         req = self._addHeaders( req, headers )
@@ -317,7 +316,7 @@ class xUrllib:
             try:
                 self._checkFileSize( req )
             except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=self.inc_counter() )
+                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
             except Exception, e:
                 raise e
         
@@ -375,7 +374,7 @@ class xUrllib:
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( NO_CONTENT, '', {}, uri, uri, 'No Content', id=self.inc_counter() )
+                    return httpResponse( NO_CONTENT, '', {}, uri, uri, 'No Content', id=consecutive_number_generator.inc() )
             
                 if 'data' in keywords:
                     req = self.methodRequest( uri, keywords['data'] )
@@ -446,6 +445,11 @@ class xUrllib:
                 raise sizeExceeded( msg )
             
     def _send( self , req , useCache=False, useMultipart=False, grepResult=True ):
+        '''
+        Actually send the request object.
+        
+        @return: An httpResponse object.
+        '''
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
         self._callBeforeSend()
@@ -542,7 +546,7 @@ class xUrllib:
                 del self._errorCount[ id(req) ]
             self._incrementGlobalErrorCount()
             
-            return httpResponse( NO_CONTENT, '', {}, original_url, original_url, msg='No Content', id=self.inc_counter() )
+            return httpResponse( NO_CONTENT, '', {}, original_url, original_url, msg='No Content', id=consecutive_number_generator.inc() )
         else:
             # Everything ok !
             if not req.get_data():

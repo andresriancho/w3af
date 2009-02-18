@@ -29,6 +29,7 @@ import core.data.request.fuzzableRequest as fuzzableRequest
 import core.data.url.httpResponse as httpResponse
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
+from core.controllers.misc.number_generator import consecutive_number_generator
 
 
 class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
@@ -39,39 +40,19 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     handler_order = urllib2.HTTPErrorProcessor.handler_order -1
     
     def __init__(self):
-        self._lock = thread.allocate_lock()
-        
-        # xUrllib needs access to this method to identify requests with strange errors
-        # requests that are returned when the target URL is blacklisted, or some other
-        # special cases.
-        kb.kb.save('idHandler', 'inc_counter', self.inc_counter )
+        pass
     
     def inc_counter( self, step=1 ):
         '''
         @return: The next number to use in the request/response ID.
         '''
-        # Use a lock to make sure that we don't have problems with different
-        # threads that are requesting things to the xUrllib 
-        with self._lock:
-            c = kb.kb.getData('idHandler', 'counter')
-            if c == []:
-                kb.kb.save('idHandler', 'counter', 0 )
-                c = 0
-
-            c += step
-            kb.kb.save('idHandler', 'counter', c)
-            return c
+        return consecutive_number_generator.inc()
             
     def _get_counter( self ):
         '''
         @return: The current counter number to assign as the id for responses.
         '''
-        with self._lock:
-            c = kb.kb.getData('idHandler', 'counter')
-            if c == []:
-                kb.kb.save('idHandler', 'counter', 0 )
-                c = 0
-            return c
+        return consecutive_number_generator.get()
 
     def http_error_default(self, req, fp, code, msg, hdrs):
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, fp)
