@@ -113,8 +113,8 @@ class rootMenu(menu):
                 # linux
                 rfds, wfds, efds = select.select( [sys.stdin], [], [], 0.5)
                 if rfds:
-                    sys.stdin.readline()
-                    hitted_enter = True
+                    if len(sys.stdin.readline()):
+                        hitted_enter = True
             else:
                 # windows
                 import msvcrt
