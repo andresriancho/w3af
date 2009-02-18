@@ -44,6 +44,12 @@ class fingerprint_WAF(baseDiscoveryPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
+    '''
+    CHANGELOG:
+    Feb/17/2009- Added Signatures by Aung Khant (aungkhant[at]yehg.net):
+    - Old version F5 Traffic Shield, NetContinuum, TEROS, BinarySec
+    '''
+    
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
@@ -64,6 +70,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
             # I will only run this one time. All calls to fingerprint_WAF return 
             # the same url's ( none! )
             self._run = False
+            
             self._fingerprint_URLScan( fuzzableRequest )
             self._fingerprint_ModSecurity( fuzzableRequest )
             self._fingerprint_SecureIIS( fuzzableRequest )
@@ -71,6 +78,10 @@ class fingerprint_WAF(baseDiscoveryPlugin):
             self._fingerprint_Barracuda( fuzzableRequest )
             self._fingerprint_DenyAll( fuzzableRequest )
             self._fingerprint_F5ASM( fuzzableRequest )
+            self._fingerprint_F5TrafficShield( fuzzableRequest )
+            self._fingerprint_TEROS( fuzzableRequest )
+            self._fingerprint_NetContinuum( fuzzableRequest )
+            self._fingerprint_BinarySec( fuzzableRequest )
             self._fingerprint_HyperGuard( fuzzableRequest )
 
         return []
@@ -178,6 +189,93 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 # else
                     # more checks like special string in response
 
+    def _fingerprint_F5TrafficShield(self,  fuzzableRequest):
+        '''
+        Try to verify if the older version F5 TrafficShield is present.
+        Ref: Hacking Exposed - Web Application
+        
+        '''
+        om.out.debug( 'detect the older version F5 TrafficShield' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^ASINFO=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('F5 TrafficShield', response)
+                        return
+                # else
+                    # more checks like special string in response
+                    
+    def _fingerprint_TEROS(self,  fuzzableRequest):
+        '''
+        Try to verify if TEROS is present.
+        Ref: Hacking Exposed - Web Application
+        
+        '''
+        om.out.debug( 'detect TEROS' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^st8id=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('TEROS', response)
+                        return
+                # else
+                    # more checks like special string in response
+     
+    def _fingerprint_NetContinuum(self,  fuzzableRequest):
+        '''
+        Try to verify if NetContinuum is present.
+        Ref: Hacking Exposed - Web Application
+        
+        '''
+        om.out.debug( 'detect NetContinuum' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'set-cookie':
+                    protected_by = response.getHeaders()[header_name]
+                    if re.match('^NCI__SessionId=', protected_by):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('NetContinuum', response)
+                        return
+                # else
+                    # more checks like special string in response
+    
+    def _fingerprint_BinarySec(self,  fuzzableRequest):
+        '''
+        Try to verify if BinarySec is present.
+        '''
+        om.out.debug( 'detect BinarySec' )
+        try:
+            response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+        except KeyboardInterrupt,e:
+            raise e
+        else:
+            for header_name in response.getHeaders().keys():
+                if header_name.lower() == 'server':
+                    protected_by = response.getHeaders()[header_name]                    
+                    if re.match('BinarySec', protected_by, re.IGNORECASE):
+                        om.out.information( 'URL protected: ' + protected_by )
+                        self._report_finding('BinarySec', response)
+                        return
+                # else
+                    # more checks like special string in response
+
+    
     def _fingerprint_HyperGuard(self,  fuzzableRequest):
         '''
         Try to verify if HyperGuard is present.
@@ -240,7 +338,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         i = info.info()
         i.setURL( response.getURL() )
         i.setId( response.id )
-        i.setDesc( 'The remote web server seems to have a '+name+'.' )
+        i.setDesc( 'The remote web server seems to deploy the '+name+' firewall.' )
         i.setName('Found '+name)
         kb.kb.append( self, name, i )
         om.out.information( i.getDesc() )
