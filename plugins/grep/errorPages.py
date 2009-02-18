@@ -98,6 +98,7 @@ class errorPages(baseGrepPlugin):
         mesg.append("thrown in <b>")
         mesg.append("#0 {main}")
         mesg.append("Stack trace:")
+        mesg.append("</b> on line <b>")
         
         # python
         mesg.append("PythonHandler django.core.handlers.modpython")
