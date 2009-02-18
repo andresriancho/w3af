@@ -58,7 +58,7 @@ class bug_report_result(simple_base_window):
         self.text = text
         
         self.set_modal(True)
-        self.set_title('Bug report failed!')
+        self.set_title('Bug report results')
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.vbox = gtk.VBox()
         
