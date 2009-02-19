@@ -51,8 +51,8 @@ class findComments(baseGrepPlugin):
         self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit','stupid', 'tonto', 'porqueria',
         'ciudado', 'usuario', 'contrase', 'puta',
-		'secret','@', 'email','security','captcha'
-		]
+        'secret','@', 'email','security','captcha'
+        ]
         self._already_reported_interesting = []
         self.is404 = None
 
