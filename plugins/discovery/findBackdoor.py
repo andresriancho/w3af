@@ -104,20 +104,45 @@ class findBackdoor(baseDiscoveryPlugin):
         res.extend( ['PHANTASMA.php', 'nstview.php', 'nshell.php', 'NetworkFileManagerPHP.php'] )
         res.extend( ['simple_cmd.php', 'Uploader.php', 'php-include-w-shell.php', 'backupsql.php'] )
         res.extend( ['myshell.php', 'c99shell.php'] )
+        res.extend( ['c100.php', 'c100shell.php', 'locus7s.php', 'locus.php'] )
+        res.extend( ['safe0ver.php','stresbypass.php','ekin0x.php','liz0zim.php'])
+        res.extend( ['erne.php','spybypass.php','phpbypass.php','sosyete.php'])
+        res.extend( ['remview.php','zaco.php','nst.php','heykir.php'])
+        res.extend( ['simattacker.php','avent.php','fatal.php','dx.php'])
+        res.extend( ['goonshell.php','safemod.php','unreal.php','w4k.php'])
+        res.extend( ['winshell.php','mysql2.php','sql.php','jackal.php'])
+        res.extend( ['dc.php','w4cking.php','x.php','xx.php','xxx.php'])
+        res.extend( ['w3k.php','h4x.php','h4x0r.php','l33t.php'])
         
         # CGI / Perl
         res.extend( ['perlcmd.cgi', 'cmd.pl'] )
+        res.extend( ['shell.pl','cmd.cgi','shell.cgi'])
         
         # JSP
         res.extend( ['jsp-reverse.jsp', 'cmdjsp.jsp', 'cmd.jsp', 'cmd_win32.jsp'] )
         res.extend( ['JspWebshell.jsp', 'JspWebshell1.2.jsp'] )
+        res.extend( ['shell.jsp'])
+        res.extend( ['jsp-reverse.jspx', 'cmdjsp.jspx', 'cmd.jspx', 'cmd_win32.jspx'] )
+        res.extend( ['JspWebshell.jspx', 'JspWebshell1.2.jspx'] )
+        res.extend( ['shell.jspx'])        
         
         # ASP
         res.extend( ['cmd.asp', 'cmdasp.aspx', 'cmdasp.asp', 'cmd-asp-5.1.asp', 'cmd.aspx'] )
-        res.extend( ['ntdaddy.asp'] )
+        res.extend( ['ntdaddy.asp'] )        
+        res.extend( ['ntdaddy.aspx','ntdaddy.mspx','cmd.mspx'] )
+        res.extend( ['shell.asp','zehir4.asp','rhtools.asp','fso.asp'])
+        res.extend( ['shell.aspx','zehir4.aspx','rhtools.aspx','fso.aspx'])
+        res.extend( ['shell.mspx','zehir4.mspx','rhtools.mspx','fso.mspx'])
+        res.extend( ['kshell.asp','aspydrv.asp','kacak.asp'])
+        res.extend( ['kshell.aspx','aspydrv.aspx','kacak.aspx'])
+        res.extend( ['kshell.mspx','aspydrv.mspx','kacak.mspx'])
         
         # Other
         res.extend( ['cmd.cfm', 'cfexec.cfm'] )
+        res.extend( ['shell.cfm','shell.do','shell.nsf','shell.d2w','shell.GPL'])
+        res.extend( ['shell.show','shell.py'])
+        res.extend( ['cmd.do','cmd.nsf','cmd.d2w','cmd.GPL'])
+        res.extend( ['cmd.show','cmd.py'])
         return res
 
     def getOptions( self ):
