@@ -48,7 +48,7 @@ class findComments(baseGrepPlugin):
 
         # Internal variables
         self._comments = {}
-        self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
+        self._interestingWords = ['user', 'pass', 'xxx', 'secret','@', 'email', 'fix', 'bug', 'broken', 'oops', 'hack', 
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit','stupid', 'tonto', 'porqueria',
         'ciudado', 'usuario', 'contrase', 'puta']
         self._already_reported_interesting = []
