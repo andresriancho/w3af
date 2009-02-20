@@ -155,7 +155,10 @@ class persist:
             self._db = sqlite3.connect(filename, check_same_thread=False)
             self._db.text_factory = str
         except Exception, e:
-            raise w3afException('Failed to create the database in file "' + str(primary_key_columns)+'". Exception: ' + str(e) )
+            msg = 'Failed to create the database in file "' + str(filename) + '".'
+            msg += 'Exception: "' + str(e) + '".\n'
+            msg += 'Please verify if your user has permissions to create the specified file.'
+            raise w3afException( msg )
         else:
             # Create the table for the data
             database_creation = 'create table data_table'
