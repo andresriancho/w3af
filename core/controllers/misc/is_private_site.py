@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import socket
 import re
+from core.controllers.w3afException import w3afException
+
 
 def is_private_site( domain_or_IP_address ):
     '''
