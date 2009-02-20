@@ -59,12 +59,20 @@ class persist:
         
         @parameter filename: The filename where the database is.
         '''
+        # Convert the filename to UTF-8
+        # this is needed for windows, and special characters
+        #
+        # https://sourceforge.net/tracker2/index.php?func=detail&aid=2618162&group_id=170274&atid=853652
+        # http://www.sqlite.org/c3ref/open.html
+        unicode_filename = unicode( filename )
+        filename_utf8 = unicode_filename.encode( "utf-8" )
+        
         try:
             ### FIXME: check_same_thread=False
-            self._db = sqlite3.connect(filename, check_same_thread=False)
+            self._db = sqlite3.connect(filename_utf8, check_same_thread=False)
             self._db.text_factory = str
         except Exception, e:
-            raise w3afException('Failed to create the database in file "' + filename +'". Exception: ' + str(e) )
+            raise w3afException('Failed to create the database in file "' + filename_utf8 +'". Exception: ' + str(e) )
         else:
             # Read the column names to recreate self._primary_key_columns
             pk_getters = []
@@ -80,10 +88,10 @@ class persist:
                 pk_getters = [ c for c in col_names if c != 'raw_pickled_data']
                 
                 if not pk_getters:
-                    raise w3afException('There is an error in the database backend. The file ' + filename + ' is invalid.')
+                    raise w3afException('There is an error in the database backend. The file ' + filename_utf8 + ' is invalid.')
                 
                 # Now we save the data to the attributes
-                self._filename = filename
+                self._filename = filename_utf8
                 self._primary_key_columns = pk_getters
     
     def create( self, filename, primary_key_columns ):
@@ -150,12 +158,20 @@ class persist:
         @parameter primary_key_columns: The primary key getters.
         @return: None
         '''
+        # Convert the filename to UTF-8
+        # this is needed for windows, and special characters
+        #
+        # https://sourceforge.net/tracker2/index.php?func=detail&aid=2618162&group_id=170274&atid=853652
+        # http://www.sqlite.org/c3ref/open.html
+        unicode_filename = unicode( filename )
+        filename_utf8 = unicode_filename.encode( "utf-8" )
+        
         try:
             ### FIXME: check_same_thread=False
-            self._db = sqlite3.connect(filename, check_same_thread=False)
+            self._db = sqlite3.connect(filename_utf8, check_same_thread=False)
             self._db.text_factory = str
         except Exception, e:
-            msg = 'Failed to create the database in file "' + str(filename) + '".'
+            msg = 'Failed to create the database in file "' + str(filename_utf8) + '".'
             msg += 'Exception: "' + str(e) + '".\n'
             msg += 'Please verify if your user has permissions to create the specified file.'
             raise w3afException( msg )
@@ -173,7 +189,7 @@ class persist:
             database_creation += 'PRIMARY KEY ('+','.join(primary_key_columns)+'))'
             
             self._db.execute(database_creation)
-            self._filename = filename
+            self._filename = filename_utf8
             self._primary_key_columns = primary_key_columns
     
     def retrieve( self, primary_key ):
