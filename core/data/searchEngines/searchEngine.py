@@ -97,12 +97,12 @@ class searchEngine:
         '''
         number_of_results = 0
         while True:
-            res = self.search( query, numberOfResults, 10 )
+            res = self.search( query, number_of_results, 10 )
             number_of_results += len( res )
             if len( res ) != 10:
                 break
             
-        return numberOfResults
+        return number_of_results
         
     def search( self, query, start, count=10 ):
         '''
