@@ -24,6 +24,7 @@ from __future__ import with_statement
 
 import sqlite3
 import thread
+import sys
 
 try:
     from cPickle import Pickler, Unpickler
@@ -64,7 +65,7 @@ class persist:
         #
         # https://sourceforge.net/tracker2/index.php?func=detail&aid=2618162&group_id=170274&atid=853652
         # http://www.sqlite.org/c3ref/open.html
-        unicode_filename = unicode( filename )
+        unicode_filename = filename.decode( sys.getfilesystemencoding() )
         filename_utf8 = unicode_filename.encode( "utf-8" )
         
         try:
@@ -163,7 +164,7 @@ class persist:
         #
         # https://sourceforge.net/tracker2/index.php?func=detail&aid=2618162&group_id=170274&atid=853652
         # http://www.sqlite.org/c3ref/open.html
-        unicode_filename = unicode( filename )
+        unicode_filename = filename.decode( sys.getfilesystemencoding() )
         filename_utf8 = unicode_filename.encode( "utf-8" )
         
         try:
