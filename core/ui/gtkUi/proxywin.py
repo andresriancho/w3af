@@ -132,7 +132,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.proxyoptions.append("ipport", 
                 Option(_("Where to listen"), "localhost:8080", "IP:port", "ipport", _("IP and port where to listen")))
         self.proxyoptions.append("trap", 
-                Option(_("What to trap"), ".*", _("URLs to trap"), "string", _("REGEX that indicates what URL to trap")))
+                Option(_("What to trap"), ".*", _("URLs to trap"), "regex", _("Regular expression that indicates what URLs to trap")))
         self.proxyoptions.append("fixlength", 
                 Option("Fix content length", False, "Fix content length", "boolean"))
 
@@ -260,9 +260,15 @@ class ProxiedRequests(entries.RememberingWindow):
             self._startProxy()
 
         # rest of config
-        self.proxy.setWhatToTrap(self.proxyoptions.trap.getValue())
-        self.proxy.setIgnoreImages(self.proxyoptions.ignoreimgs.getValue())
-        self.proxy.setFixContentLength(self.proxyoptions.fixlength.getValue())
+        try:
+            self.proxy.setWhatToTrap(self.proxyoptions.trap.getValue())
+            self.proxy.setIgnoreImages(self.proxyoptions.ignoreimgs.getValue())
+            self.proxy.setFixContentLength(self.proxyoptions.fixlength.getValue())
+        except w3afException, w3:
+            msg = _("Invalid configuration!\n" + str(w3))
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            opt = dlg.run()
+            dlg.destroy()
 
     def _help(self, action):
         '''Shows the help.'''

@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 import threading
 from . import history, helpers
+import re
 
 
 class ValidatedEntry(gtk.Entry):
@@ -282,6 +283,29 @@ class ListOption(ValidatedEntry, ModifiedMixIn):
         '''
         return True
 
+class RegexOption(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option regex.
+
+    @author: Andres Riancho
+    '''
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getValueStr())
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ""
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return: True if the regex compiles.
+        '''
+        try:
+            re.compile(text)
+        except:
+            return False
+        else:
+            return True
+        
 class BooleanOption(gtk.CheckButton, ModifiedMixIn):
     '''Class that implements the config option Boolean.
 
@@ -1058,6 +1082,7 @@ wrapperWidgets = {
     "float": FloatOption,
     "list": ListOption,
     "combo": ComboBoxOption, 
+    "regex": RegexOption, 
 }
 
 
