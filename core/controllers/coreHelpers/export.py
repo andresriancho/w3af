@@ -29,26 +29,31 @@ from core.controllers.w3afException import w3afException, w3afMustStopException
 class export:
     """
     This class helps to export stuff.
+    
     @author: Kevin Denver ( muffysw@hotmail.com )
     """
 
     def __init__(self):
-      pass
+        pass
 
     def exportFuzzableRequestList( self, fuzzableRequestList ):
-      '''
-      Exports a list of fuzzable requests to a user configured file.
-      '''
-      if not hasattr(fuzzableRequestList,'__iter__'):
-        return
-      filename = cf.cf.getData('exportFuzzableRequests')
-      try:
-        file = open(filename, 'w')
-        file.write('HTTP-METHOD,URI,POSTDATA\n')
-        for fuzzRequest in fuzzableRequestList:
-          # TODO: How shall we export wsPostDataRequests?
-          if not isinstance(fuzzRequest, wsPostDataRequest.wsPostDataRequest):
-            file.write(fuzzRequest.export() + '\n')
-        file.close()
-      except Exception, e:
-        raise w3afException('An exception was raised while trying to export fuzzable requests to the output file.' + str(e))
+        '''
+        Exports a list of fuzzable requests to a user configured file.
+        '''
+        if not hasattr(fuzzableRequestList,'__iter__'):
+            return
+        filename = cf.cf.getData('exportFuzzableRequests')
+        try:
+            file = open(filename, 'w')
+            file.write('HTTP-METHOD,URI,POSTDATA\n')
+        
+            for fuzzRequest in fuzzableRequestList:
+                # TODO: How shall we export wsPostDataRequests?
+                if not isinstance(fuzzRequest, wsPostDataRequest.wsPostDataRequest):
+                    file.write(fuzzRequest.export() + '\n')
+            
+            file.close()
+        except Exception, e:
+            msg = 'An exception was raised while trying to export fuzzable requests to the'
+            msg += ' output file.' + str(e)
+            raise w3afException( msg )
