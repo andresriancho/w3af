@@ -327,7 +327,8 @@ class sql_webshell(baseAttackPlugin):
             driver.writeFile( remote_path , content )
             response = self._urlOpener.GET( test_url )
         except Exception, e:
-            raise e
+            om.out.error('Exception raised while uploading file: "' + str(e) + '".')
+            return False
         else:
             if test_string in response.getBody():
                 return True
