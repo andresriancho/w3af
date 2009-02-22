@@ -78,7 +78,7 @@ def run_script( scriptName ):
             
     return output
     
-def analyzeResult( resultString ):
+def analyze_result( resultString ):
     lines = resultString.split('\n')
     error = False
     for line in lines:
@@ -96,29 +96,30 @@ def w3afTest():
     '''
     Test all scripts that have an assert call.
     '''
-    assertScriptList, scriptsWithoutAssert = getScripts()
-    badCount = okCount = 0
+    assert_script_list, scriptsWithoutAssert = getScripts()
+    bad_list = []
+    ok_list = []
     
-    om.out.console( 'Going to test '+ str(len(assertScriptList)) + ' scripts.' )
+    om.out.console( 'Going to test '+ str(len(assert_script_list)) + ' scripts.' )
     
-    for assertScript in assertScriptList:
+    for assert_script in assert_script_list:
         try:
-            result = run_script( assertScript )
-            analyzeResult( result )
+            result = run_script( assert_script )
+            analyze_result( result )
         except KeyboardInterrupt:
             break
         except w3afException:
-            badCount += 1
+            bad_list.append(assert_script)
         else:
-            okCount += 1
+            ok_list.append(assert_script)
     
     om.out.console( '')
     om.out.console( 'Results:')
     om.out.console( '========')
-    om.out.console( '- ' + str(okCount + badCount) + '/ ', newLine=False)
-    om.out.console( str(len(assertScriptList)) + ' scripts have been tested.')
-    om.out.console( '- ' + str(okCount) + ' OK.')
-    om.out.console( '- ' + str(badCount) + ' Failed.')
+    om.out.console( '- ' + str(len(ok_list) + len(bad_list)) + '/ ', newLine=False)
+    om.out.console( str(len(assert_script_list)) + ' scripts have been tested.')
+    om.out.console( '- ' + str(len(ok_list)) + ' OK.')
+    om.out.console( '- ' + str(len(bad_list)) + ' Failed: ' + ', '.join(bad_list))
     om.out.console( '- ' + str(len(scriptsWithoutAssert)) + ' scripts don\'t have', newLine=False)
     om.out.console( ' assert statements. This is the list of scripts without assert statements:')
     scriptsWithoutAssert.sort()
