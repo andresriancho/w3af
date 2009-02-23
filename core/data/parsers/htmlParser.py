@@ -38,6 +38,7 @@ import core.data.parsers.urlParser as urlParser
 
 import core.data.dc.form as form
 
+
 class htmlParser(sgmlParser):
     '''
     This class parses HTML's.
@@ -155,10 +156,10 @@ class htmlParser(sgmlParser):
 
         # Create the form object and store everything for later use
         self._insideForm = True
-        f = form.form()
-        f.setMethod( method )
-        f.setAction( action )
-        self._forms.append( f )
+        form_obj = form.form()
+        form_obj.setMethod( method )
+        form_obj.setAction( action )
+        self._forms.append( form_obj )
 
         # Now I verify if they are any input tags that were found outside the scope of a form tag
         for tag, attrs in self._saved_inputs:
@@ -169,18 +170,18 @@ class htmlParser(sgmlParser):
 
     def _handle_input_tag_inside_form(self, tag, attrs):
         # We are working with the last form
-        f = self._forms[-1]
+        form_obj = self._forms[-1]
 
         # Try to get the type of input
         for attr in attrs:
             if attr[0].lower() == 'type' and attr[1].lower() == 'file':
                 # Let the form know, that this is a file input
-                f.hasFileInput = True
-                f.addFileInput( attrs )
+                form_obj.hasFileInput = True
+                form_obj.addFileInput( attrs )
                 return
         
         # Simply add all the other input types
-        f.addInput( attrs )
+        form_obj.addInput( attrs )
 
     def _handle_input_tag_outside_form(self, tag, attrs):
         # I'm going to use this ruleset:
@@ -234,8 +235,8 @@ class htmlParser(sgmlParser):
         if not self._forms:
             self._saved_inputs.append( ('input', attrs) )
         else:
-            f = self._forms[-1]
-            f.addInput( attrs )
+            form_obj = self._forms[-1]
+            form_obj.addInput( attrs )
 
     def _handle_select_tag_inside_form(self, tag, attrs):
         """
@@ -265,8 +266,8 @@ class htmlParser(sgmlParser):
         if not self._forms:
             self._saved_inputs.append( ('input', self._optionAttrs) )
         else:
-            f = self._forms[-1]
-            f.addInput( self._optionAttrs )
+            form_obj = self._forms[-1]
+            form_obj.addInput( self._optionAttrs )
 
     def _handle_option_tag_inside_form(self, tag, attrs):
         """

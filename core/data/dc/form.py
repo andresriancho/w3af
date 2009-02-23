@@ -24,6 +24,7 @@ from core.data.dc.dataContainer import dataContainer
 import copy
 import urllib
 
+
 class form(dataContainer):
     '''
     This class represents a HTML form.
@@ -64,13 +65,22 @@ class form(dataContainer):
         Adds a file input to the form
         @parameter attrs: attrs=[("class", "screen")]
         '''
+        name = ''
+        
         for attr in attrs:
-            if attr[0] == 'name' or attr[0] == 'id':
+            if attr[0] == 'name':
                 name = attr[1]
                 break
-
-        self._files.append( name )
-        self[name] = ''
+        
+        if not name:
+            for attr in attrs:
+                if attr[0] == 'id':
+                    name = attr[1]
+                    break
+        
+        if name:
+            self._files.append( name )
+            self[name] = ''
     
     def __str__( self ):
         '''
