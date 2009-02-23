@@ -31,6 +31,8 @@ from core.data.getResponseType import *
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.data.db.temp_persist import disk_list
+
 import re
 
 
@@ -43,6 +45,9 @@ class ajax(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        # Internal variables
+        self._already_inspected = disk_list()
         
         # Create the regular expression to search for AJAX
         regex_string = '< *?script.*?>.*?'
@@ -57,7 +62,11 @@ class ajax(baseGrepPlugin):
         
         @return: None, all results are saved in the kb.
         '''
-        if response.is_text_or_html():
+        if response.is_text_or_html() and response.getURL() not in self._already_inspected:
+            
+            # Don't repeat URLs
+            self._already_inspected.append( response.getURL() )
+            
             res = self._script_re.search( response.getBody() )
             if res:
                 i = info.info()
