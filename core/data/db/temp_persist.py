@@ -26,10 +26,14 @@ import thread
 import os
 from random import choice
 import string
-import tempfile
+try:
+   import cPickle as pickle
+except:
+   import pickle
+from core.controllers.misc.temp_dir import get_temp_dir
 
 
-class temp_shelve:
+class temp_shelve(object):
     '''
     It's a shelve wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
@@ -55,8 +59,8 @@ class temp_shelve:
         fail_count = 0
         while True:
             # Get the temp filename to use
-            tempdir = tempfile.gettempdir()
-            filename = ''.join([choice(string.letters) for i in range(8)]) + '.temp_shelve'
+            tempdir = get_temp_dir()
+            filename = ''.join([choice(string.letters) for i in range(8)]) + '.w3af.temp_shelve'
             self._filename = os.path.join(tempdir, filename)
             
             try:
@@ -70,26 +74,24 @@ class temp_shelve:
                     raise Exception('Failed to create shelve file.')
             else:
                 break
+                
+            # Now we perform a small trick... we remove the temp file directory entry
+            #
+            # According to the python documentation: On Windows, attempting to remove a file that
+            # is in use causes an exception to be raised; on Unix, the directory entry is removed
+            # but the storage allocated to the file is not made available until the original file
+            # is no longer in use
+            try:
+                os.remove(self._filename)
+            except Exception:
+                pass
         
-    def __del__(self):
-        '''
-        Clean up:
-            - Close the shelve (will also close the file)
-            - Remove the file.
-            
-        @return: None
-        '''
-        if self._shelve != None:
-            self._shelve.close()
-        
-        if self._filename != None:
-            # __del__ is tricky and os may have been deleted, so we re-import it.
-            import os
-            os.remove(self._filename)
+    def __repr__(self):
+        return repr(self)
     
-    def __getattr__(self, name):
-        print Exception('You forgot to implement: ' + name )
-        
+    def keys(self):
+        return self._shelve.keys()
+    
     def __contains__(self, value):
         return value in self._shelve
     
@@ -103,20 +105,7 @@ class temp_shelve:
         
     def __len__(self):
         return len(self._shelve)
-
-
-class disk_dict(temp_shelve):
-    '''
-    This is basically the same as a temp_shelve but with an append method.
-    
-    It was created to be able to replace the self._already_XXX = [] that were in many many
-    plugins and consumed tons of memory.
-    '''
-    def __init__(self):
-        temp_shelve.__init__(self)
         
-    def append(self, value):
-        self._shelve[value] = 1  
 
 class disk_list(object):
     '''
@@ -124,28 +113,25 @@ class disk_list(object):
     '''
     def __init__(self):
         self._temp_shelve = temp_shelve()
-        self._temp_shelve['list'] = []
 
     def append(self, value):
-        # TODO: This is slow! I should improve the performance of the
-        # append method somehow.
-        the_list = self._temp_shelve['list']
-        the_list.append(value)
-        self._temp_shelve['list'] = the_list
+        self._temp_shelve[value] = 1
         return None
         
     def __repr__(self):
-        return repr(self._temp_shelve['list'])
+        return repr(self._temp_shelve.keys())
         
     def __contains__(self, value):
-        return value in self._temp_shelve['list'] 
+        return value in self._temp_shelve
         
     def __len__(self):
-        return len(self._temp_shelve['list'])
-        
+        return len(self._temp_shelve.keys())
+
+
 if __name__ == '__main__':
     tshelve = temp_shelve()
-    
+    import time
+    time.sleep(4)
     print 'Testing temp_shelve:'
     print '1- Loading...'
     for i in xrange(10000):
@@ -165,25 +151,11 @@ if __name__ == '__main__':
     
     print '1- Loading items...'
     for i in xrange(1000):
-        dlist.append(i)
+        dlist.append(str(i))
+        '' in dlist
     
     print '2- Assert statements...'
     assert len(dlist) == 1000
-    assert 5 in dlist
-    assert not 5555 in dlist
+    assert '5' in dlist
+    assert not '5555' in dlist
     print 'Done!'
-    
-    print ''
-    print 'Testing disk_dict:'
-    ddict = disk_dict()
-    
-    print '1- Loading items...'
-    for i in xrange(10000):
-        ddict.append(str(i))
-    
-    print '2- Assert statements...'
-    assert not '55555' in ddict
-    assert '55555' not in ddict
-    assert '5' in ddict
-    assert len(ddict) == 10000
-    print 'Done!'    
