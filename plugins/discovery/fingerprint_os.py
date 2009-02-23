@@ -76,28 +76,30 @@ class fingerprint_os(baseDiscoveryPlugin):
         if len( dirs ) > 1 and filename:
             last = dirs[-1]
             windowsURL = last[0:-1] + '\\' + filename
-            windowsResponse = self._urlOpener.GET( windowsURL )
+            windows_response = self._urlOpener.GET( windowsURL )
             
-            originalResponse = self._urlOpener.GET( fuzzableRequest.getURL() )
+            original_response = self._urlOpener.GET( fuzzableRequest.getURL() )
             self._found_OS = True
             
-            if relative_distance( originalResponse.getBody(), windowsResponse.getBody() ) > 0.98:
+            if relative_distance( original_response.getBody(), windows_response.getBody() ) > 0.98:
                 i = info.info()
                 i.setName('Operating system')
-                i.setURL( windowsResponse.getURL() )
+                i.setURL( windows_response.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('Fingerprinted this host as a Microsoft Windows system.' )
-                i.setId( windowsResponse.id )
+                i.setId( [windows_response.id, original_response.id] )
                 kb.kb.append( self, 'operating_system_str', 'windows' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
             else:
                 i = info.info()
                 i.setName('Operating system')
-                i.setURL( originalResponse.getURL() )
+                i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
-                i.setDesc('Fingerprinted this host as a *nix system. Detection for this operating system is weak, "if not windows: is linux".' )
-                i.setId( originalResponse.id )
+                msg = 'Fingerprinted this host as a *nix system. Detection for this operating'
+                msg += ' system is weak, "if not windows: is linux".'
+                i.setDesc( msg )
+                i.setId( [original_response.id, windows_response.id] )
                 kb.kb.append( self, 'operating_system_str', 'unix' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
