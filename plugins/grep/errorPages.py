@@ -32,6 +32,7 @@ import core.data.kb.info as info
 
 import re
 
+
 class errorPages(baseGrepPlugin):
     '''
     Grep every page for error pages.
@@ -42,7 +43,7 @@ class errorPages(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._alreadyReportedVersions = []
+        self._already_reported_versions = []
         self._compiled_regex = []
 
     def _get_error_strings( self ):
@@ -162,7 +163,7 @@ class errorPages(baseGrepPlugin):
                     match = error_regex.search( response.getBody() )
                     if match:
                         match_string = match.groups()[0]
-                        if match_string not in self._alreadyReportedVersions:
+                        if match_string not in self._already_reported_versions:
                             # Save the info obj
                             i = info.info()
                             i.setName('Error page with information disclosure')
@@ -173,7 +174,7 @@ class errorPages(baseGrepPlugin):
                             kb.kb.append( self , 'server' , i )
                             # Save the string
                             kb.kb.append( self , 'server' , match_string )
-                            self._alreadyReportedVersions.append( match_string )
+                            self._already_reported_versions.append( match_string )
 
     def _get_regex_tuples( self ):
         '''

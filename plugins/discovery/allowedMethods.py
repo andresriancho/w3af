@@ -31,6 +31,8 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.data.db.temp_persist import disk_list
+
 from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.httpConstants as httpConstants
@@ -48,7 +50,7 @@ class allowedMethods(baseDiscoveryPlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = []
+        self._already_tested = disk_list()
         self._bad_codes = [ httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
                                     httpConstants.METHOD_NOT_ALLOWED, httpConstants.FORBIDDEN]
         

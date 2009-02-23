@@ -116,6 +116,7 @@ class consoleUi:
             pass
 
         if not hasattr(self, '_parent'):
+            self._w3af.quit()
             om.out.console(self._randomMessage())
 
 

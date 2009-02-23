@@ -40,6 +40,7 @@ import os
 import os.path
 import urllib
 import tempfile
+from core.controllers.misc.temp_dir import get_temp_dir
 
 
 class fileUploadShell(baseAttackPlugin):
@@ -161,7 +162,8 @@ class fileUploadShell(baseAttackPlugin):
             extension = real_extension
 
         # Open target
-        low_level_fd, self._path_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + extension)
+        temp_dir = get_temp_dir()
+        low_level_fd, self._path_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + extension, dir=temp_dir)
         file_handler = os.fdopen(low_level_fd, "w+b")
         
         # Write content to target

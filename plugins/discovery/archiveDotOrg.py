@@ -35,6 +35,8 @@ from core.data.parsers.dpCache import dpc as dpc
 import core.data.parsers.urlParser as urlParser
 import core.data.kb.knowledgeBase as kb
 
+from core.data.db.temp_persist import disk_list
+
 import re
 
 
@@ -50,7 +52,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_visited = []
+        self._already_visited = disk_list()
         self._is_404 = None
         
         # User configured parameters

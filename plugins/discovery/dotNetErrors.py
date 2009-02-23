@@ -32,6 +32,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.data.db.temp_persist import disk_list
+
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
@@ -46,7 +48,7 @@ class dotNetErrors(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
 
         # Internal variables
-        self._already_tested = []
+        self._already_tested = disk_list()
 
     def discover(self, fuzzableRequest ):
         '''

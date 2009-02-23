@@ -31,6 +31,8 @@ from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.data.parsers.urlParser as urlParser
 
+from core.data.db.temp_persist import disk_list
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -47,7 +49,7 @@ class phpEggs(baseDiscoveryPlugin):
         self._exec = True
         
         # Already analyzed extensions
-        self._already_analyzed_ext = []
+        self._already_analyzed_ext = disk_list()
         
         # This is a list of hashes and description of the egg for every PHP version.
         self._egg_DB = {}

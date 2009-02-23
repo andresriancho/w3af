@@ -33,6 +33,8 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
+from core.data.db.temp_persist import disk_list
+
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
@@ -50,7 +52,7 @@ class dav(baseAuditPlugin):
         
         # Internal variables
         self.is_404 = None
-        self._already_tested_dirs = []
+        self._already_tested_dirs = disk_list()
 
     def audit(self, freq ):
         '''

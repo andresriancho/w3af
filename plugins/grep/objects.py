@@ -31,6 +31,8 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.data.db.temp_persist import disk_list
+
 import re
 
 
@@ -45,8 +47,8 @@ class objects(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._object = re.compile(r'< *object([^>]*)>', re.IGNORECASE)
         self._applet = re.compile(r'< *applet([^>]*)>', re.IGNORECASE)
-        self._already_added_object = []
-        self._already_added_applet = []
+        self._already_added_object = disk_list()
+        self._already_added_applet = disk_list()
 
     def grep(self, request, response):
         '''

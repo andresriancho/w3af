@@ -32,6 +32,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
+from core.data.db.temp_persist import disk_list
+
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.controllers.w3afException import w3afException
@@ -49,9 +51,8 @@ class frontpage(baseAuditPlugin):
         
         # Internal variables
         self.is404 = None
-        self._already_tested = []
+        self._already_tested = disk_list()
         self._stop_on_first = True
-        
 
     def audit(self, freq ):
         '''

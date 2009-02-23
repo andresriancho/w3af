@@ -33,6 +33,7 @@ import core.controllers.miscSettings as miscSettings
 import os, sys
 
 from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
+from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir, get_temp_dir
 from core.controllers.misc.factory import factory
 
 from core.data.url.xUrllib import xUrllib
@@ -75,7 +76,11 @@ class w3afCore:
         Init some variables and files.
         Create the URI opener.
         '''
+        # Create some directories
         self._home_directory()
+        self._tmp_directory()
+        
+        # Init some internal variables
         self._initializeInternalVariables()
         self._zeroSelectedPlugins()
         
@@ -101,6 +106,19 @@ class w3afCore:
             msg += 'Please set the correct permissions and ownership.'
             print msg
             sys.exit(-3)
+            
+    def _tmp_directory(self):
+        '''
+        Handle the creation of the tmp directory, where a lot of stuff is stored.
+        Usually it's something like /tmp/w3af/<pid>/
+        '''
+        try:
+            create_temp_dir()
+        except:
+            msg = 'The w3af tmp directory "' + get_temp_dir() + '" is not writable. '
+            msg += 'Please set the correct permissions and ownership.'
+            print msg
+            sys.exit(-3)            
 
     def _zeroSelectedPlugins(self):
         '''
@@ -441,7 +459,7 @@ class w3afCore:
                 # Export all fuzzableRequests as CSV
                 # if this option is set in the miscSettings
                 if cf.cf.getData('exportFuzzableRequests') != '':
-                  self.export.exportFuzzableRequestList(self._fuzzableRequestList)
+                    self.export.exportFuzzableRequestList(self._fuzzableRequestList)
                     
                 if len( self._fuzzableRequestList ) == 0:
                     om.out.information('No URLs found by discovery.')
@@ -541,6 +559,8 @@ class w3afCore:
         '''
         self.uriOpener.stop()
         self._end()
+        # Now it's safe to remove the temp_dir
+        remove_temp_dir()
         
     def _end( self, exceptionInstance=None ):
         '''

@@ -510,6 +510,7 @@ class MainApp(object):
         self.generalconfig.close()
         gtk.main_quit()
         time.sleep(0.5)
+        self.w3af.stop()
         self.w3af.quit()
         return False
 

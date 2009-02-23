@@ -38,8 +38,8 @@ from core.controllers.w3afException import w3afException
 
 import os
 import os.path
-import shutil
 import tempfile
+from core.controllers.misc.temp_dir import get_temp_dir
 
 
 class fileUpload(baseAuditPlugin):
@@ -110,7 +110,8 @@ class fileUpload(baseAuditPlugin):
                 # Copy to "/tmp"
                 #
                 # Open target
-                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext)
+                temp_dir = get_temp_dir()
+                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext, dir=temp_dir)
                 file_handler = os.fdopen(low_level_fd, "w+b")
                 # Read source
                 template_content = file( os.path.join(self._template_dir, template_filename)).read()
@@ -129,7 +130,8 @@ class fileUpload(baseAuditPlugin):
                     
             else:
                 # I dont have a template for this file extension!
-                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext)
+                temp_dir = get_temp_dir()
+                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext, dir=temp_dir)
                 file_handler = os.fdopen(low_level_fd, "w+b")
                 file_handler.write( createRandAlNum(32) )
                 file_handler.close()

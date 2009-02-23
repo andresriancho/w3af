@@ -31,6 +31,8 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance
 import core.data.parsers.urlParser as urlParser
 
+from core.data.db.temp_persist import disk_list
+
 import core.data.kb.knowledgeBase as kb
 
 import re
@@ -44,7 +46,7 @@ class digitSum(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._already_visited = []
+        self._already_visited = disk_list()
         self._first_time = True
         
         # This is for the Referer

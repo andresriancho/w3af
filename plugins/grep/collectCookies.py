@@ -48,7 +48,7 @@ class collectCookies(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._alreadyReportedServer = []
+        self._already_reported_server = []
         self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
     
     def grep(self, request, response):
@@ -170,7 +170,7 @@ class collectCookies(baseGrepPlugin):
         '''
         for cookie in self._get_fingerprint_db():
             if cookie[0] in cookieObj.output(header=''):
-                if cookie[1] not in self._alreadyReportedServer:
+                if cookie[1] not in self._already_reported_server:
                     i = info.info()
                     i.setId( response.id )
                     i.setName('Identified cookie')
@@ -182,7 +182,7 @@ class collectCookies(baseGrepPlugin):
                     'has been found when requesting "' + response.getURL() + '" . ' +
                     'The remote platform is: "' + cookie[1] + '"')
                     kb.kb.append( self, 'cookies', i )
-                    self._alreadyReportedServer.append( cookie[1] )
+                    self._already_reported_server.append( cookie[1] )
 
     def _secure_over_http( self, request, response, cookieObj ):
         '''

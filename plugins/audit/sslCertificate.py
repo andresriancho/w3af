@@ -30,12 +30,15 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
 from core.data.parsers.urlParser import getProtocol, getNetLocation, getDomain
 
+from core.data.db.temp_persist import disk_list
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from OpenSSL import SSL, crypto
 import socket
 import select
+
 
 class sslCertificate(baseAuditPlugin):
     '''
@@ -45,8 +48,9 @@ class sslCertificate(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        
         # Internal variables
-        self._already_tested_domains = []
+        self._already_tested_domains = disk_list()
 
     def audit(self, freq ):
         '''

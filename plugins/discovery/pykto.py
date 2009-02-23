@@ -36,6 +36,8 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
+from core.data.db.temp_persist import disk_list
+
 import os.path
 import re
 
@@ -51,7 +53,7 @@ class pykto(baseDiscoveryPlugin):
         
         # int_ernal variables
         self._exec = True
-        self._already_visited = []
+        self._already_visited = disk_list()
         self._first_time = True
         
         # User configured parameters
