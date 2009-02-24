@@ -66,7 +66,7 @@ class form(dataContainer):
         @parameter attrs: attrs=[("class", "screen")]
         '''
         name = ''
-        
+
         for attr in attrs:
             if attr[0] == 'name':
                 name = attr[1]
@@ -120,10 +120,15 @@ class form(dataContainer):
         '''
         
         type = name = value = ''
-            
+        
+        # Try to get the name:
         for attr in attrs:
-            if attr[0] == 'name' or attr[0] == 'id':
+            if attr[0] == 'name':
                 name = attr[1]
+        if not name:
+            for attr in attrs:
+                if attr[0] == 'id':
+                    name = attr[1]
 
         if name != '':
             # Find the type
