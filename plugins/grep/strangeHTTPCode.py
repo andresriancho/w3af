@@ -75,7 +75,7 @@ class strangeHTTPCode(baseGrepPlugin):
                 i['code'] = response.getCode()
                 desc = 'The remote Web server sent a strange HTTP response code: "'
                 desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
-                desc += '", manual inspection is adviced.'
+                desc += '", manual inspection is advised.'
                 i.setDesc( desc )
                 kb.kb.append( self , 'strangeHTTPCode' , i )
     
