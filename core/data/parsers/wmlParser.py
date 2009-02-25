@@ -112,10 +112,22 @@ class wmlParser(sgmlParser):
                     
             elif tag == 'select':
                 self._insideSelect = True
-                try:
-                    self._selectTagName = [ v[1] for v in attrs if v[0] in ['name','id'] ][0]
-                except:
+                name = ''
+                
+                # Get the name
+                self._selectTagName = ''
+                for attr in attrs:
+                    if attr[0].lower() == 'name':
+                        self._selectTagName = attr[1]
+                
+                if not self._selectTagName:
+                    for attr in attrs:
+                        if attr[0].lower() == 'id':
+                            self._selectTagName = attr[1]
+                    
+                if not self._selectTagName:
                     om.out.debug('wmlParser found a select tag without a name attr !')
+                    self._insideSelect = False
             
             if self._insideSelect:
                 if tag == 'option':
@@ -124,4 +136,3 @@ class wmlParser(sgmlParser):
                     attrs.append( ('name',self._selectTagName) ) 
                     f.addInput( attrs )
 
-    

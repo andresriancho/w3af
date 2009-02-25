@@ -200,10 +200,20 @@ class htmlParser(sgmlParser):
         """
         Handler for textarea tag inside a form
         """
-        self._textareaData = ""
-        try:
-            self._textareaTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
-        except Exception,  e:
+        self._textareaData = ''
+        
+        # Get the name
+        self._textareaTagName = ''
+        for attr in attrs:
+            if attr[0].lower() == 'name':
+                self._textareaTagName = attr[1]
+        
+        if not self._textareaTagName:
+            for attr in attrs:
+                if attr[0].lower() == 'id':
+                    self._textareaTagName = attr[1]
+            
+        if not self._textareaTagName:    
             om.out.debug('htmlParser found a textarea tag without a name attr, IGNORING!')
             self._insideTextarea = False
         else:
@@ -243,9 +253,19 @@ class htmlParser(sgmlParser):
         Handler for select tag inside a form
         """
         self._optionAttrs = []
-        try:
-            self._selectTagName = [ v[1] for v in attrs if v[0].lower() in ['name','id'] ][0]
-        except Exception,  e:
+        
+        # Get the name
+        self._selectTagName = ''
+        for attr in attrs:
+            if attr[0].lower() == 'name':
+                self._selectTagName = attr[1]
+        
+        if not self._selectTagName:
+            for attr in attrs:
+                if attr[0].lower() == 'id':
+                    self._selectTagName = attr[1]
+            
+        if not self._selectTagName:            
             om.out.debug('htmlParser found a select tag without a name attr, IGNORING!')
             self._insideSelect = False
         else:
