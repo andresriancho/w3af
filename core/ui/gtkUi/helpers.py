@@ -210,9 +210,25 @@ def friendlyException(message):
 
     @param message: text received in the friendly exception.
     '''
-    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
-    dlg.run()
-    dlg.destroy()
+    class w3af_message_dialog(gtk.MessageDialog):
+        def dialog_response_cb(self, widget, response_id):
+            '''
+            http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
+            '''
+            self.destroy()
+            
+        def dialog_run(self):
+            '''
+            http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
+            '''
+            if not self.modal:
+                self.set_modal(True)
+            self.connect('response', self.dialog_response_cb)
+            self.show()
+            
+    dlg = w3af_message_dialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+    dlg.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+    dlg.dialog_run()
     return
 
 class _Wrapper(object):

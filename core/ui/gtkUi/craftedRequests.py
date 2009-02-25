@@ -528,9 +528,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
             # Let the user know ahout the problem
             msg = "Stopped sending requests because " + str(e)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-            opt = dlg.run()
-            dlg.destroy()
+            helpers.friendlyException( msg )
             return False
 
         if httpResp is not None:
