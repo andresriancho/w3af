@@ -221,13 +221,16 @@ class ghdb(baseDiscoveryPlugin):
         d2 = 'Fetch the first "resultLimit" results from the Google search'
         o2 = option('resultLimit', self._result_limit, d2, 'integer')
         
-        d3 = 'Update the google hack database.'
-        o3 = option('updateGHDB', self._update_ghdb, d3, 'boolean')
+        # The ghdb is not online anymore, updating may brake this plugin.
+        # http://johnny.ihackstuff.com/HFC/Home.html
+        #
+        #d3 = 'Update the google hack database.'
+        #o3 = option('updateGHDB', self._update_ghdb, d3, 'boolean')
         
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
-        ol.add(o3)
+        #ol.add(o3)
         return ol
 
     def setOptions( self, optionsMap ):
