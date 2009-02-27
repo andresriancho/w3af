@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<locatingRules xmlns="http://thaiopensource.com/ns/locating-rules/1.0">
-  <documentElement localName="section" typeId="DocBook"/>
-  <documentElement localName="webpage" typeId="WebSite"/>
-  
-  <typeId id="WebSite" uri="file:///c:/tools/website-2.5.0/schema/relaxng/website.rnc"/>
-</locatingRules>
