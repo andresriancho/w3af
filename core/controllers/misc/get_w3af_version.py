@@ -40,7 +40,7 @@ def get_w3af_version():
         revision = 0
 
     res = 'w3af - Web Application Attack and Audit Framework'
-    res += '\nVersion: beta7'
+    res += '\nVersion: 1.0-rc1'
     if revision != -1:
         res += ' (from SVN server)'
         res += '\nRevision: ' + str(revision)
