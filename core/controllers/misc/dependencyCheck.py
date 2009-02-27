@@ -52,7 +52,7 @@ def dependencyCheck():
 
     try:
         import nltk
-    except:
+    except Exception, e:
         print 'You have to install the nltk lib. Please read the users guide.'
         print 'Error: ' + str(e)
         sys.exit( 1 )
