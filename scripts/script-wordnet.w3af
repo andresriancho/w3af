@@ -22,6 +22,6 @@ set target http://localhost/w3af/discovery/wordnet/show.php?os=unix, http://loca
 back
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 15
+assert len( kb.kb.getData('urls', 'urlList') ) == 7
 
 exit
