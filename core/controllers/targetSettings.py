@@ -69,7 +69,7 @@ class targetSettings(configurable):
         d1 = 'A comma separated list of URLs'
         o1 = option('target', ','.join(cf.cf.getData('targets')), d1, 'list')
         
-        d2 = 'Target operating system.'
+        d2 = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
         h2 = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
@@ -78,7 +78,7 @@ class targetSettings(configurable):
         tmpList.insert(0, cf.cf.getData('targetOS') )
         o2 = comboOption('targetOS', tmpList, d2, 'combo', help=h2)
 
-        d3 = 'Target programming framework.'
+        d3 = 'Target programming framework ('+ '/'.join(self._programmingFrameworks) +')'
         h3 = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
