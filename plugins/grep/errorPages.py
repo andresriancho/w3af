@@ -118,6 +118,10 @@ class errorPages(baseGrepPlugin):
         mesg.append('at org.apache.tomcat.')
         mesg.append('at org.apache.jasper.')
 
+        # ruby
+        mesg.append('<h1 class="error_title">Ruby on Rails application could not be started</h1>')
+
+
         # Coldfusion
         mesg.append('<title>Error Occurred While Processing Request</title></head><body><p></p>')
         mesg.append('<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>')
