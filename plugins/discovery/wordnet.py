@@ -1,5 +1,5 @@
 '''
-wordnet.py
+wn.py
 
 Copyright 2006 Andres Riancho
 
@@ -30,13 +30,13 @@ from core.data.fuzzer.fuzzer import createMutants
 import core.data.kb.knowledgeBase as kb
 import re
 
-# The pywordnet includes
-#from extlib.pywordnet.wordnet import *
-import extlib.pywordnet.wntools as wntools
+# The wordnet includes!
+from nltk.corpus import wordnet as wn
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 
 class wordnet(baseDiscoveryPlugin):
     '''
@@ -103,87 +103,64 @@ class wordnet(baseDiscoveryPlugin):
             result.extend( self._generate_URL_from_result( key, wordnet_result, fuzzableRequest ) )
         return result
 
-    def _add_words( self, word ):
-        '''
-        Fills a list with all the wordnet word types of a word and returns it.
-        '''
-        wn_word_list = []
-        wntools_sources = [wntools.N, wntools.ADJ, wntools.V, wntools.ADV]
-        
-        for source in wntools_sources:
-            try:
-                wn_word_list.append( source[ word ] )
-            except:
-                pass
-            
-        return wn_word_list
-
     def _search_wn( self, word ):
         '''
         Search the wordnet for this word, based on user options.
         @return: A list of related words.
         '''
-        results = {'syno':[], 'anto':[], 'hyper':[], 'hypo':[], 'mero':[], 'holo':[]}
+        result = []
         
-        wn_word_list = self._add_words( word )
-        wntools_types = [ wntools.ANTONYM, wntools.HYPERNYM, wntools.HYPONYM, 
-                                    wntools.MEMBER_MERONYM, wntools.MEMBER_HOLONYM ]
+        # Now the magic that gets me a lot of results:
+        #
+        #>>> wn.synsets('blue')[0].hypernyms()
+        #[Synset('chromatic_color.n.01')]
+        #>>> wn.synsets('blue')[0].hypernyms()[0].hyponyms()
+        #[  Synset('orange.n.02'), Synset('brown.n.01'), Synset('green.n.01'), 
+        #   Synset('salmon.n.04'), Synset('red.n.01'), Synset('blue.n.01'), Synset('blond.n.02'), 
+        #   Synset('purple.n.01'), Synset('olive.n.05'), Synset('yellow.n.01'), Synset('pink.n.01'), 
+        #   Synset('pastel.n.01'), Synset('complementary_color.n.01')]
+        #>>> 
+        try:
+            result.extend( wn.synsets(word)[0].hypernyms()[0].hyponyms() )
+        except:
+            pass
         
-        for word in wn_word_list:
-            for sense in word:
-                try:
-                        
-                    for pointer in sense.getPointers( wntools.ANTONYM ):
-                        if not isinstance( pointer.target(), wntools.Synset ):
-                            results['anto'].append( pointer.target().getWord() )
-                        else:
-                            for i in pointer.target():
-                                results['anto'].append( i.getWord() )
-                
-                    for pointer in sense.getPointers( wntools.HYPERNYM ):
-                        if not isinstance( pointer.target(), wntools.Synset ):
-                            results['hyper'].append( pointer.target().getWord() )
-                        else:
-                            for i in pointer.target():
-                                results['hyper'].append( i.getWord() )
-                    
-                    for pointer in sense.getPointers( wntools.HYPONYM ):
-                        if not isinstance( pointer.target(), wntools.Synset ):
-                            results['hypo'].append( pointer.target().getWord() )
-                        else:
-                            for i in pointer.target():
-                                results['hypo'].append( i.getWord() )
-                    
-                    for pointer in sense.getPointers( wntools.MEMBER_MERONYM ):
-                        if not isinstance( pointer.target(), wntools.Synset ):
-                            results['mero'].append( pointer.target().getWord() )
-                        else:
-                            for i in pointer.target():
-                                results['mero'].append( i.getWord() )
-                    
-                    for pointer in sense.getPointers( wntools.MEMBER_HOLONYM ):
-                        if not isinstance( pointer.target(), wntools.Synset ):
-                            results['holo'].append( pointer.target().getWord() )
-                        else:
-                            for i in pointer.target():
-                                results['holo'].append( i.getWord() )
-                
-                except:
-                    pass
+        synset_list = wn.synsets( word )
         
-        # Now I have a results map filled up with a lot of words.
+        for synset in synset_list:
+            
+            # first I add the synsec as it is:
+            result.append( synset )
+            
+            # Now some variations...
+            result.extend( synset.hypernyms() )
+            result.extend( synset.hyponyms() )
+            result.extend( synset.member_holonyms() )
+            result.extend( synset.lemmas[0].antonyms() )
+
+        # Now I have a results list filled up with a lot of words, the problem is that
+        # this words are really Synset objects, so I'll transform them to strings:
+        result = [ i.name.split('.')[0] for i in result]
+        
+        # Another problem with Synsets is that the name is "underscore separated"
+        # so, for example:
+        # "big dog" is "big_dog"
+        result = [ i.replace('_', ' ') for i in result]
+        
+        # Now I make a "uniq"
+        result = list(set(result))
+        if word in result: result.remove(word)
+        
         # The next step is to order each list by popularity, so I only send to the web
         # the most common words, not the strange and unused words.
-        results = self._popularity_contest( results )
+        result = self._popularity_contest( result )
         
-        resultList = []
-        for key in results:
-            strList = self._wn_words_to_str( results[key][: self._wordnet_results ] )
-            resultList.extend( strList )
-            
-        return resultList
+        # left here for debugging!
+        #print word, result
+        
+        return result
     
-    def _popularity_contest( self, results ):
+    def _popularity_contest( self, result ):
         '''
         @parameter results: The result map of the wordnet search.
         @return: The same result map, but each item is ordered by popularity
@@ -194,21 +171,9 @@ class wordnet(baseDiscoveryPlugin):
             '''
             return cmp( len( i ) , len( j ) )
         
-        for key in results:
-            wordList = results[key]
-            wordList.sort( sort_function )
-            results[key] = wordList
+        result.sort( sort_function )
             
-        return results
-    
-    def _wn_words_to_str( self, wn_word_list ):
-        tmp = []
-        for i in wn_word_list:
-            tmp.append( re.sub('\(.\.\)', '', str(i) ) )
-                    
-        results = [ x for x in tmp if not x.count( ' ' ) ]
-        results = list( set( results ) )
-        return results
+        return result
     
     def _generate_fname( self, fuzzableRequest ):
         '''
@@ -302,7 +267,7 @@ class wordnet(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds new URL's using wordnet.
+        This plugin finds new URL's using wn.
         
         An example is the best way to explain what this plugin does, let's suppose that the input
         for this plugin is:
@@ -315,5 +280,5 @@ class wordnet(baseDiscoveryPlugin):
         
         If the response for those URL's is not a 404 error, and has not the same body content, then we have 
         found a new URI. The wordnet database is bundled with w3af, more information about wordnet can be
-        found at : http://wordnet.princeton.edu/
+        found at : http://wn.princeton.edu/
         '''
