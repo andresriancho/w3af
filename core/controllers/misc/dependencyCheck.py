@@ -51,6 +51,7 @@ def dependencyCheck():
     warnings.filterwarnings('ignore', '.*',)
 
     try:
+        sys.path.append("./extlib")
         import nltk
     except Exception, e:
         print 'You have to install the nltk lib. Please read the users guide.'
