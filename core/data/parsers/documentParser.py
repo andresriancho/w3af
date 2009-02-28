@@ -59,10 +59,10 @@ class documentParser:
         '''
         document = httpResponse.getBody()
         
-        headerMatch = self._getContentType(httpResponse) == 'application/pdf'
+        header_match = self._getContentType(httpResponse) == 'application/pdf'
         contentMatch = document.startswith('%PDF-') and document.endswith('%%EOF')
         
-        if headerMatch or contentMatch:
+        if header_match or contentMatch:
             try:
                 pyPdf.PdfFileReader( StringIO.StringIO(document) )
             except Exception:
@@ -94,10 +94,10 @@ class documentParser:
         '''
         document = httpResponse.getBody()
         
-        headerMatch = self._getContentType(httpResponse) == 'text/vnd.wap.wml'
+        header_match = self._getContentType(httpResponse) == 'text/vnd.wap.wml'
         contentMatch = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)
         
-        if headerMatch or contentMatch:
+        if header_match or contentMatch:
             return True
         else:
             return False
@@ -107,9 +107,10 @@ class documentParser:
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a HTML or Text document.
         '''
-        headerMatch = 'text/' in self._getContentType(httpResponse)
+        header_match = 'text' in self._getContentType(httpResponse)
+        header_match |= 'html' in self._getContentType(httpResponse)
         
-        if headerMatch:
+        if header_match:
             return True
         else:
             return False
