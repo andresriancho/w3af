@@ -30,14 +30,16 @@ def get_w3af_version():
     '''
     # Let's check if the user is using a version from SVN
     revision = -1
-    try:
-        for line in file('.svn' + os.path.sep +'entries').readlines()[:4]:
-            line = line.strip()
-            if re.match('^\d+$', line ):
-                if int(line) > int(revision):
-                    revision = int(line)
-    except (IOError, ValueError):
-        revision = 0
+    
+    if os.path.exists( os.path.join('.svn', 'entries') ):
+        try:
+            for line in file('.svn' + os.path.sep +'entries').readlines()[:4]:
+                line = line.strip()
+                if re.match('^\d+$', line ):
+                    if int(line) > int(revision):
+                        revision = int(line)
+        except (IOError, ValueError):
+            revision = 'unknown'
 
     res = 'w3af - Web Application Attack and Audit Framework'
     res += '\nVersion: 1.0-rc1'
