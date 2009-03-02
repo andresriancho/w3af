@@ -106,25 +106,22 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
                     res.append( wspdr )     
         
     else:
-        # create one httpPostDataRequest for each form
+        # create one httpPostDataRequest for each form variant
+        mode = cf.cf.getData('fuzzFormComboValues')
         for form in form_list:
-            if form.getMethod().upper() == 'GET':
-                qsr = httpQsRequest.httpQsRequest()
-                qsr.setURL( form.getAction() )
-                qsr.setDc( form )
-                qsr.setHeaders( headers )
-                qsr.setCookie( cookieObj )
-                res.append( qsr )
-            elif form.getMethod().upper() == 'POST':
-                pdr = httpPostDataRequest.httpPostDataRequest()
-                pdr.setURL( form.getAction() )
-                pdr.setMethod( form.getMethod() )
-                pdr.setFileVariables( form.getFileVariables() )
-                pdr.setDc( form )
-                pdr.setHeaders( headers )
-                pdr.setCookie( cookieObj )
-                res.append( pdr )
-
+            variants = form.getVariants(mode)
+            for variant in variants:
+                if form.getMethod().upper() == 'GET':
+                    r = httpQsRequest.httpQsRequest()
+                elif form.getMethod().upper() == 'POST':
+                    r = httpPostDataRequest.httpPostDataRequest()
+                    r.setMethod(variant.getMethod())
+                    r.setFileVariables(form.getFileVariables())
+                r.setURL(variant.getAction())
+                r.setDc(variant)
+                r.setHeaders(headers)
+                r.setCookie(cookieObj)
+                res.append(r)
     return res
 
 def createFuzzableRequestRaw( method, url, postData, headers ):

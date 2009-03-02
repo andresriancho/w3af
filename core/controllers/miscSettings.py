@@ -44,6 +44,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFileContent', True )
             cf.cf.save('fuzzFileName', False )
             cf.cf.save('fuzzFCExt', 'txt' )
+            cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('autoDependencies', True )
             cf.cf.save('maxDepth', 25 )
             cf.cf.save('maxThreads', 0 )
@@ -75,7 +76,11 @@ class miscSettings(configurable):
 
         d5 = 'A list with all fuzzable header names'
         o5 = option('fuzzableHeaders', cf.cf.getData('fuzzableHeaders'), d5, 'list', tabid='Fuzzer parameters')
-        
+
+        d15 = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
+        h15 = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom values), t (top values), b (bottom values)'
+        o15 = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), d15, 'string', help=h15, tabid='Fuzzer parameters')
+
         ######## Core parameters ########
         d6 = 'Automatic dependency enabling for plugins'
         h6 = 'If autoDependencies is enabled, and pluginA depends on pluginB that wasn\'t enabled, then pluginB is automatically enabled.'
@@ -125,6 +130,7 @@ class miscSettings(configurable):
         ol.add(o12)
         ol.add(o13)
         ol.add(o14)
+        ol.add(o15)
         return ol
     
     def getDesc( self ):
@@ -142,6 +148,7 @@ class miscSettings(configurable):
         cf.cf.save('fuzzFileContent', optionsMap['fuzzFileContent'].getValue() )
         cf.cf.save('fuzzFileName', optionsMap['fuzzFileName'].getValue() )
         cf.cf.save('fuzzFCExt', optionsMap['fuzzFCExt'].getValue() )
+        cf.cf.save('fuzzFormComboValues', optionsMap['fuzzFormComboValues'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )
         cf.cf.save('maxDepth', optionsMap['maxDepth'].getValue() )
         

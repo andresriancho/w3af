@@ -113,7 +113,14 @@ class fuzzableRequest:
         if self._dc:
             result_string += ' | Parameters: ('
             for i in self._dc:
-                result_string += i + ', '
+                
+                # Mangle the value for printing
+                the_value = self._dc[i]
+                if len(the_value) > 10:
+                    the_value = the_value[:10] + '...'
+                the_value = '"' + the_value + '"'
+                
+                result_string += i + '=' + the_value + ', '
             result_string = result_string[: -2]
             result_string += ')'
         return result_string

@@ -179,7 +179,10 @@ class htmlParser(sgmlParser):
                 form_obj.hasFileInput = True
                 form_obj.addFileInput( attrs )
                 return
-        
+            if attr[0].lower() == 'type' and attr[1].lower() == 'radio':
+                form_obj.addRadio( attrs )
+                return
+
         # Simply add all the other input types
         form_obj.addInput( attrs )
 
@@ -282,19 +285,18 @@ class htmlParser(sgmlParser):
         Handler for select end tag
         """
         sgmlParser._handle_select_endtag(self)
-        self._optionAttrs.append( ('name', self._selectTagName) )
         if not self._forms:
             self._saved_inputs.append( ('input', self._optionAttrs) )
         else:
             form_obj = self._forms[-1]
-            form_obj.addInput( self._optionAttrs )
+            form_obj.addSelect( self._selectTagName, self._optionAttrs )
 
     def _handle_option_tag_inside_form(self, tag, attrs):
         """
         Handler for option tag inside a form
         """
         if self._insideSelect:
-            self._optionAttrs = attrs
+            self._optionAttrs.append(attrs)
 
     def _handle_option_tag_outside_form(self, tag, attrs):
         """
