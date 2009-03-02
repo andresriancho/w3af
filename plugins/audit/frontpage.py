@@ -92,7 +92,8 @@ class frontpage(baseAuditPlugin):
                 
                 if found404:
                     upload_id = self._upload_file( domain_path,  randFile )
-                    self._verify_upload( domain_path,  randFile,  upload_id )
+                    if upload_id:
+                        self._verify_upload( domain_path,  randFile,  upload_id )
                 else:
                     msg = 'frontpage plugin failed to find a 404 page. This is mostly because of an'
                     msg += ' error in 404 page detection.'
@@ -133,13 +134,13 @@ class frontpage(baseAuditPlugin):
         
         return None
             
-    def _verify_upload(self,  domain_path,  randFile,  request_id):
+    def _verify_upload(self,  domain_path,  randFile,  upload_id):
         '''
         Verify if the file was uploaded.
         
         @parameter domain_path: http://localhost/f00/
         @parameter randFile: The filename that was supposingly uploaded
-        @parameter request_id: The id of the POST request to author.dll
+        @parameter upload_id: The id of the POST request to author.dll
         '''        
         targetURL = urlParser.urlJoin( domain_path, randFile )
         
@@ -155,7 +156,7 @@ class frontpage(baseAuditPlugin):
             if res.getBody() == '' and not self.is404( res ):
                 v = vuln.vuln()
                 v.setURL( targetURL )
-                v.setId( request_id )
+                v.setId( [upload_id, res.id] )
                 v.setSeverity(severity.HIGH)
                 v.setName( 'Insecure Frontpage extensions configuration' )
                 v.setMethod( 'POST' )
