@@ -298,6 +298,6 @@ class LogBody(entries.RememberingVPaned):
         '''
         @return: True so the timeout_add keeps calling it.
         '''
-        coreStatus = self.w3af.getCoreStatus()
-        self._what_is_being_run.set_text( coreStatus )
+        core_status = self.w3af.getCoreStatus()
+        self._what_is_being_run.set_text( core_status )
         return True
