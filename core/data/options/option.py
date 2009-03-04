@@ -25,6 +25,7 @@ import cgi
 import re
 from core.controllers.w3afException import w3afException
 
+
 class option:
     '''
     This class represents an option.
@@ -108,6 +109,16 @@ class option:
                     raise ValueError
             elif self._type in ('string', 'ipport'):
                 res = str(value)
+            elif self._type == 'regex':
+                # Parse regex stuff...
+                try:
+                    re.compile(value)
+                except:
+                    raise w3afException('The regular expression you are trying to use is invalid!')
+                else:
+                    res = value
+                # end regex stuff
+                
             else:
                 raise w3afException('Unknown type: ' + self._type)
         except ValueError:
