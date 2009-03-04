@@ -64,7 +64,7 @@ def main():
 
     # go with GTK, but first check about DISPLAY environment variable
     if sys.platform != "win32":
-        display = os.getenv("DISPLAY").strip()
+        display = os.getenv("DISPLAY")
         if not display:
             om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
             return -1
