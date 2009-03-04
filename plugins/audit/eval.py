@@ -37,6 +37,7 @@ import core.data.constants.severity as severity
 from core.controllers.w3afException import w3afException
 import re
 
+
 class eval(baseAuditPlugin):
     '''
     Find insecure eval() usage.
