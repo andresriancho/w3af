@@ -162,6 +162,7 @@ class eval(baseAuditPlugin):
                 # The first delay existed... I must report something...
                 i = info.info()
                 i.setId( response.id )
+                i.setDc( mutant.getDc() )
                 i.setName( 'eval() input injection vulnerability' )
                 msg = 'eval() input injection was found at: ' + mutant.foundAt()
                 msg += ' . Please review manually.'
