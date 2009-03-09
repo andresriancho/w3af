@@ -266,4 +266,6 @@ class form(dataContainer):
                 tmp[select_variant[0]] = select_variant[1]
             variants.append(tmp)
 
+        variants.append(self)
+
         return variants
