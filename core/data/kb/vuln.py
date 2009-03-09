@@ -24,6 +24,7 @@ from core.controllers.w3afException import w3afException
 from core.data.kb.info import info as info
 from core.data.fuzzer.mutant import mutant as mutant
 
+
 class vuln(info):
     '''
     This class represents a web vulnerability.

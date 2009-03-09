@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import uri2url
 import core.data.constants.severity as severity
+
 
 class info(dict):
     '''
@@ -41,7 +41,7 @@ class info(dict):
         self._name = ''
         self._dc = None
             
-        # Clone the object!
+        # Clone the info object!
         if isinstance( dataObj, info ):
             self.setURI( dataObj.getURI() )
             self.setDesc( dataObj.getDesc() )
