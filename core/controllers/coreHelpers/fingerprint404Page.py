@@ -207,7 +207,9 @@ class fingerprint404Page:
         @parameter httpResponse: The URL
         '''
         if len( self._404_page_LRU ) <= 25:
-            om.out.debug('I can\'t perform autodetection yet (404pageList has '+str(len(self._404_page_LRU))+' items). Keep on working with the worse case')
+            msg = 'I can\'t perform autodetection yet (404pageList has '
+            msg += str(len(self._404_page_LRU))+' items). Keep on working with the worse case'
+            om.out.debug( msg )
             return self._byDirectoryAndExtension( httpResponse )
         else:
             if not self._alreadyAnalyzed:
@@ -309,7 +311,7 @@ class fingerprint404Page:
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
         
-        # I don't want the random file to affect the 404, so I replace it with a blank space
+        # I don't want the random file name to affect the 404, so I replace it with a blank space
         response_body = self._get_clean_body( response )
         response.setBody(response_body)
         
