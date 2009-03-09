@@ -49,6 +49,16 @@ class QuestOptions(gtk.VBox):
         '''Saves the changed options.'''
         options = self.widg.options
         invalid = []
+        
+        #       Trying to reproduce bug 
+        #       https://sourceforge.net/tracker2/?func=detail&aid=2652434&group_id=170274&atid=853652
+        #
+        #       To get more info:
+        try:
+            opt.widg
+        except Exception, e:
+            raise Exception(str(e) + ' || ' + opt.getName())
+        
         for opt in options:
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
