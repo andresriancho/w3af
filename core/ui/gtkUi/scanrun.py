@@ -103,6 +103,12 @@ class FullKBTree(kbtree.KBTree):
                             request, response = search_result[0]
                             self.kbbrowser.rrV.request.showObject( request )
                             self.kbbrowser.rrV.response.showObject( response )
+                            
+                            # Don't forget to highlight if neccesary
+                            if instance.getToHighlight():
+                                text = instance.getToHighlight()
+                                self.kbbrowser.rrV.response.highlight( text )
+                            
                             success = True
                         else:
                             om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )

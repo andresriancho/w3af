@@ -40,6 +40,7 @@ class info(dict):
         self._id = None
         self._name = ''
         self._dc = None
+        self._string_match = ''
             
         # Clone the info object!
         if isinstance( dataObj, info ):
@@ -238,3 +239,17 @@ class info(dict):
     def getDc( self ):
         return self._dc
         
+    def getToHighlight(self):
+        '''
+        The string match is the string that was used to identify the vulnerability. For example,
+        in a SQL injection the string match would look like:
+        
+            - "...supplied argument is not a valid MySQL..."
+            
+        This information is used to highlight the string in the GTK user interface, when showing the
+        request / response.
+        '''
+        return self._string_match
+        
+    def setToHighlight(self, str_match):
+        self._string_match = str_match

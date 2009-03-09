@@ -83,6 +83,7 @@ class mxInjection(baseAuditPlugin):
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
+                v.setToHighlight( mx_error )
                 kb.kb.append( self, 'mxInjection', v )
     
     def end(self):
@@ -127,11 +128,12 @@ class mxInjection(baseAuditPlugin):
         errors.append( 'Unexpected extra arguments to Select' )
         errors.append( 'Bad or malformed request' )
         errors.append( 'Could not access the following folders' )
-        msg = 'To check for outside changes to the folder list go to the folders page'
-        errors.append( msg )
         errors.append( 'A000' )
         errors.append( 'A001' )
         errors.append( 'Invalid mailbox name' )
+        
+        error_msg = 'To check for outside changes to the folder list go to the folders page'
+        errors.append( error_msg )
         
         return errors
         
