@@ -246,7 +246,7 @@ class sgmlParser(abstractParser, SGMLParser):
     def getForms( self ):
         '''
         @return: Returns list of forms.
-        '''     
+        '''
         return self._forms
         
     def getReferences( self ):
