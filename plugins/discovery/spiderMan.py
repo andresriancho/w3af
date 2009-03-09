@@ -63,8 +63,21 @@ class spiderMan(baseDiscoveryPlugin):
         self._listenPort = w3afPorts.SPIDERMAN
 
     def append_fuzzable_request(self, command, path, postData, headers):
+        '''
+        Create a fuzzable request object and append it to the self._fuzzableRequests list.
+        After creating it, report it to the log.
+        
+        This method is called from the proxyHandler.
+        
+        @return: None.
+        '''
         freq = createFuzzableRequestRaw( command, path, postData, headers )
         self._fuzzableRequests.append(freq)
+        
+        if len(self._fuzzableRequests) == 1:
+            om.out.information('Trapped fuzzable requests:')
+        
+        om.out.information( str(freq) )
 
     def ext_fuzzable_requests(self, response):                 
         self._fuzzableRequests.extend(self._createFuzzableRequests(response))
