@@ -220,7 +220,7 @@ class osCommanding(baseAuditPlugin):
                 i['os'] = sentOs
                 i['separator'] = sentSeparator
                 msg = 'A possible OS Commanding was found at: ' + mutant.foundAt() 
-                msg += ' . Please review manually.'
+                msg += 'Please review manually.'
                 i.setDesc( msg )
                 kb.kb.append( self, 'osCommanding', i )
     
