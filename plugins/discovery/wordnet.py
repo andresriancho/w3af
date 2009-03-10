@@ -1,5 +1,5 @@
 '''
-wn.py
+wordnet.py
 
 Copyright 2006 Andres Riancho
 
@@ -218,7 +218,7 @@ class wordnet(baseDiscoveryPlugin):
                 name = splitted_fname[0]
                 extension = splitted_fname[1]
             else:
-                name = splitted_fname[:-1]
+                name = '.'.join(splitted_fname[:-1])
                 extension = 'html'
             
             for set_item in result_set:
