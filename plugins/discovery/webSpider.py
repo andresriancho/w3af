@@ -91,8 +91,9 @@ class webSpider(baseDiscoveryPlugin):
         original_dc = fuzzableRequest.getDc()
         if isinstance( fuzzableRequest, httpPostDataRequest.httpPostDataRequest ):
             to_send = original_dc.copy()
-            for parameter in to_send:
-                to_send[ parameter ] = smartFill( parameter )
+            for parameter_name in to_send:
+                for element_index in xrange(len(to_send[parameter_name])):
+                    to_send[ parameter_name ][element_index] = smartFill( parameter_name )
             fuzzableRequest.setDc( to_send )
 
         self._fuzzableRequests = []

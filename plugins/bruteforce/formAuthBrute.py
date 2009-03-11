@@ -105,8 +105,8 @@ class formAuthBrute(baseBruteforcePlugin):
         
         for user, passwd in tests:
             # setup the data_container
-            data_container[ user_field ] = user
-            data_container[ passwd_field ] = passwd
+            data_container[ user_field ][0] = user
+            data_container[ passwd_field ][0] = passwd
             freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
@@ -125,8 +125,8 @@ class formAuthBrute(baseBruteforcePlugin):
         
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
-            data_container[ user_field ] = user
-            data_container[ passwd_field ] = passwd
+            data_container[ user_field ][0] = user
+            data_container[ passwd_field ][0] = passwd
             freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
@@ -166,12 +166,12 @@ class formAuthBrute(baseBruteforcePlugin):
         
         if isinstance( data_container , form ):
             
-            for key in data_container.keys():
+            for parameter_name in data_container:
                 
-                if data_container.getType( key ).lower() == 'password':
+                if data_container.getType( parameter_name ).lower() == 'password':
                     passwd += 1
                 
-                elif data_container.getType( key ).lower() == 'text':
+                elif data_container.getType( parameter_name ).lower() == 'text':
                     text += 1
                 
                 else:
@@ -194,13 +194,13 @@ class formAuthBrute(baseBruteforcePlugin):
         data_container = freq.getDc()
         user = passwd = ''
         
-        for key in data_container.keys():
+        for parameter_name in data_container:
                 
-            if data_container.getType( key ).lower() == 'password':
-                passwd = key
+            if data_container.getType( parameter_name ).lower() == 'password':
+                passwd = parameter_name
             
-            elif data_container.getType( key ).lower() == 'text':
-                user = key
+            elif data_container.getType( parameter_name ).lower() == 'text':
+                user = parameter_name
             
         return user, passwd
         
@@ -212,8 +212,8 @@ class formAuthBrute(baseBruteforcePlugin):
         '''
         data_container = freq.getDc()
         for combination in combinations:
-            data_container[ self._user_field_name ] = combination[0]
-            data_container[ self._passwd_field_name ] = combination[1]
+            data_container[ self._user_field_name ][0] = combination[0]
+            data_container[ self._passwd_field_name ][0] = combination[1]
             freq.setDc( data_container )
             
             # This "if" is for multithreading

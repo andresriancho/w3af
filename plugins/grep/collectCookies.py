@@ -147,21 +147,26 @@ class collectCookies(baseGrepPlugin):
                     for key in cookie['cookie-object'].keys():
                         # This if is to create less false positives
                         if len( cookie['cookie-object'][key] ) > 4:
-                            for item in request.getDc().items():
-                                # The first statement of this if is to make this algorithm faster
-                                if len( item[1] ) > 4 and item[1] == cookie['cookie-object'][key]:
-                                    v = vuln.vuln()
-                                    v.setURL( response.getURL() )
-                                    v['cookie-string'] = cookie.output(header='')
-                                    v['cookie-object'] = cookie
-                                    v.setSeverity(severity.HIGH)
-                                    v.setId( response.id )
-                                    v.setName( 'Secure cookies over insecure channel' )
-                                    msg = 'Cookie values that were set over HTTPS, are sent over '
-                                    msg += 'an insecure channel when requesting URL: "' 
-                                    msg += request.getURL() + '" , parameter "' + item[0] + '"'
-                                    v.setDesc( msg )
-                                    kb.kb.append( self, 'cookies', v )
+                            
+                            for parameter_name in request.getDc():
+                                
+                                # added to support repeated parameter names.
+                                for item in request.getDc()[parameter_name]:
+                                    
+                                    # The first statement of this if is to make this algorithm faster
+                                    if len( item[1] ) > 4 and item[1] == cookie['cookie-object'][key]:
+                                        v = vuln.vuln()
+                                        v.setURL( response.getURL() )
+                                        v['cookie-string'] = cookie.output(header='')
+                                        v['cookie-object'] = cookie
+                                        v.setSeverity(severity.HIGH)
+                                        v.setId( response.id )
+                                        v.setName( 'Secure cookies over insecure channel' )
+                                        msg = 'Cookie values that were set over HTTPS, are sent over '
+                                        msg += 'an insecure channel when requesting URL: "' 
+                                        msg += request.getURL() + '" , parameter "' + item[0] + '"'
+                                        v.setDesc( msg )
+                                        kb.kb.append( self, 'cookies', v )
             
     def _match_cookie_fingerprint( self, request, response, cookieObj ):
         '''

@@ -29,6 +29,7 @@ from core.data.parsers.urlParser import *
 import copy
 import urllib
 
+
 class fuzzableRequest:
     '''
     This class represents a fuzzable request. Fuzzable requests where created to allow w3af plugins
@@ -43,6 +44,7 @@ class fuzzableRequest:
     '''
 
     def __init__(self):
+        
         # Internal variables
         self._url = ''
         self._method = 'GET'
@@ -92,6 +94,9 @@ class fuzzableRequest:
         if self._dc:
           strRes += '?'
           for i in self._dc:
+            #
+            #   FIXME: What about repeated parameter names?!
+            #
             strRes += i + '=' + urllib.quote(str(self._dc[i])) + '&'          
           strRes = strRes[: -1]
         strRes += ','
@@ -110,17 +115,25 @@ class fuzzableRequest:
         result_string = ''
         result_string += self._url
         result_string += ' | Method: ' + self._method
+        
         if self._dc:
             result_string += ' | Parameters: ('
-            for i in self._dc:
-                
-                # Mangle the value for printing
-                the_value = self._dc[i]
-                if len(the_value) > 10:
-                    the_value = the_value[:10] + '...'
-                the_value = '"' + the_value + '"'
-                
-                result_string += i + '=' + the_value + ', '
+            
+            # Mangle the value for printing
+            for param_name in self._dc:
+
+                #
+                # Because of repeated parameter names, we need to add this:
+                #
+                for the_value in self._dc[param_name]:
+
+                    # the_value is always a string
+                    if len(the_value) > 10:
+                        the_value = the_value[:10] + '...'
+                    the_value = '"' + the_value + '"'
+                    
+                    result_string += param_name + '=' + the_value + ', '
+                    
             result_string = result_string[: -2]
             result_string += ')'
         return result_string

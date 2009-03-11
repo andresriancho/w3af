@@ -69,35 +69,39 @@ class strangeParameters(baseGrepPlugin):
             parsed_references, re_references = dp.getReferences()
             
             for ref in parsed_references:
+                
                 qs = urlParser.getQueryString( ref )
-                for param in qs:
-                    if self._is_strange( request, param, qs[param] ):
-                        i = info.info()
-                        i.setName('Strange parameter')
-                        i.setURI( ref )
-                        i.setId( response.id )
-                        msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param
-                        msg += '" with value: "' + qs[param] + '", which is quite odd.'
-                        i.setDesc( msg )
-                        i.setVar( param )
-                        i['parameterValue'] = qs[param]
-                        kb.kb.append( self , 'strangeParameters' , i )
+                
+                for param_name in qs:
+                    # This for loop is to address the repeated parameter name issue
+                    for element_index in xrange(len(qs[param_name])):
+                        if self._is_strange( request, param_name, qs[param_name][element_index] ):
+                            i = info.info()
+                            i.setName('Strange parameter')
+                            i.setURI( ref )
+                            i.setId( response.id )
+                            msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param_name
+                            msg += '" with value: "' + qs[param_name][element_index] + '", which is quite odd.'
+                            i.setDesc( msg )
+                            i.setVar( param_name )
+                            i['parameterValue'] = qs[param_name][element_index]
+                            kb.kb.append( self , 'strangeParameters' , i )
 
-                    if self._is_SQL( request, param, qs[param] ): 
-                        # To find this kind of vulns
-                        # http://thedailywtf.com/Articles/Oklahoma-
-                        # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
-                        # Sensitive-Data.aspx
-                        v = vuln.vuln()
-                        v.setName('Parameter has SQL sentence')
-                        v.setURI( ref )
-                        v.setId( response.id )
-                        msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param
-                        msg +='" with value: "' + qs[param] + '", which is a SQL sentence.'
-                        v.setDesc( msg )
-                        v.setVar( param )
-                        v['parameterValue'] = qs[param]
-                        kb.kb.append( self , 'strangeParameters' , v )
+                        if self._is_SQL( request, param_name, qs[param_name][element_index] ): 
+                            # To find this kind of vulns
+                            # http://thedailywtf.com/Articles/Oklahoma-
+                            # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
+                            # Sensitive-Data.aspx
+                            v = vuln.vuln()
+                            v.setName('Parameter has SQL sentence')
+                            v.setURI( ref )
+                            v.setId( response.id )
+                            msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param_name
+                            msg +='" with value: "' + qs[param_name][element_index] + '", which is a SQL sentence.'
+                            v.setDesc( msg )
+                            v.setVar( param_name )
+                            v['parameterValue'] = qs[param_name][element_index]
+                            kb.kb.append( self , 'strangeParameters' , v )
     
     def setOptions( self, OptionList ):
         pass

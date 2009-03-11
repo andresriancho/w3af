@@ -112,7 +112,7 @@ class osCommanding(baseAuditPlugin):
         command_list = self._get_echo_commands()
         only_command_strings = [ v.getCommand() for v in command_list ]
         mutants = createMutants( freq , only_command_strings, oResponse=original_response )
-        
+
         for mutant in mutants:
             if self._hasNoBug( 'osCommanding', 'osCommanding', mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
@@ -239,10 +239,10 @@ class osCommanding(baseAuditPlugin):
         commands = []
         for special_char in self._special_chars:
             # Unix
-            cmd_string = special_char + " /bin/cat /etc/passwd"
+            cmd_string = special_char + "/bin/cat /etc/passwd"
             commands.append( command(cmd_string, 'unix', special_char))
             # Windows
-            cmd_string = special_char + " type %SYSTEMROOT%\\win.ini"
+            cmd_string = special_char + "type %SYSTEMROOT%\\win.ini"
             commands.append( command(cmd_string, 'windows', special_char))
         
         # Execution quotes
@@ -253,7 +253,7 @@ class osCommanding(baseAuditPlugin):
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
         commands = [ c for c in commands if c.getOs() == targetOS or targetOS == 'unknown']
-        
+
         return commands
     
     def _get_wait_commands( self ):
@@ -264,18 +264,18 @@ class osCommanding(baseAuditPlugin):
         commands = []
         for special_char in self._special_chars:
             # Windows
-            cmd_string = special_char + ' ping -n '+str(self._wait_time -1)+' localhost'
+            cmd_string = special_char + 'ping -n '+str(self._wait_time -1)+' localhost'
             commands.append( command( cmd_string, 'windows', special_char))
             # Unix
-            cmd_string = special_char + ' ping -c '+str(self._wait_time)+' localhost'
+            cmd_string = special_char + 'ping -c '+str(self._wait_time)+' localhost'
             commands.append( command( cmd_string, 'unix', special_char))
             # This is needed for solaris 10
-            cmd_string = special_char + ' /usr/sbin/ping -s localhost 1000 10 '
+            cmd_string = special_char + '/usr/sbin/ping -s localhost 1000 10 '
             commands.append( command( cmd_string, 'unix', special_char))
         
         # Using execution quotes
-        commands.append( command( '` ping -n '+str(self._wait_time -1)+' localhost`', 'windows', '`'))
-        commands.append( command( '` ping -c '+str(self._wait_time)+' localhost`', 'unix', '`'))
+        commands.append( command( '`ping -n '+str(self._wait_time -1)+' localhost`', 'windows', '`'))
+        commands.append( command( '`ping -c '+str(self._wait_time)+' localhost`', 'unix', '`'))
         
         # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
         commands.append( command( 'run ping -n '+str(self._wait_time -1)+' localhost', 'windows', 'run '))

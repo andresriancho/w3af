@@ -98,9 +98,11 @@ class wordnet(baseDiscoveryPlugin):
         result = []
 
         query_string = urlParser.getQueryString( fuzzableRequest.getURI() )
-        for key in query_string.keys():
-            wordnet_result = self._search_wn( query_string[key] )
-            result.extend( self._generate_URL_from_result( key, wordnet_result, fuzzableRequest ) )
+        for parameter_name in query_string:
+            # this for loop was added to address the repeated parameter name issue
+            for element_index in xrange(len(query_string[parameter_name])):
+                wordnet_result = self._search_wn( query_string[parameter_name][element_index] )
+                result.extend( self._generate_URL_from_result( parameter_name, element_index, wordnet_result, fuzzableRequest ) )
         return result
 
     def _search_wn( self, word ):
@@ -184,7 +186,7 @@ class wordnet(baseDiscoveryPlugin):
         fname = self._get_filename( url )
         
         wordnet_result = self._search_wn( fname )
-        result = self._generate_URL_from_result( None, wordnet_result, fuzzableRequest )
+        result = self._generate_URL_from_result( None, None, wordnet_result, fuzzableRequest )
                 
         return result
     
@@ -199,9 +201,15 @@ class wordnet(baseDiscoveryPlugin):
             name = splitted_fname[0]
         return name
             
-    def _generate_URL_from_result( self, analyzed_variable, result_set, fuzzableRequest ):
+    def _generate_URL_from_result( self, analyzed_variable, element_index, result_set, fuzzableRequest ):
         '''
         Based on the result, create the new URLs to test.
+        
+        @parameter analyzed_variable: The parameter name that is being analyzed
+        @parameter element_index: 0 in most cases, >0 if we have repeated parameter names
+        @parameter result_set: The set of results that wordnet gave use
+        @parameter fuzzableRequest: The fuzzable request that we got as input in the first place.
+        
         @return: An URL list.
         '''
         if analyzed_variable == None:

@@ -32,7 +32,7 @@ import core.data.kb.config as cf
 import string
 
 '''
-This module parses Url's.
+This module parses URLs.
 
 @author: Andres Riancho ( andres.riancho@gmail.com )
 '''
@@ -66,10 +66,23 @@ def getQueryString( url, ignoreExceptions=True ):
             parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=True)
         except Exception, e:
             if not ignoreExceptions:
-                raise w3afException('Strange things found when parsing query string: ' + qs)
+                raise w3afException('Strange things found when parsing query string: "' + qs + '"')
         else:
+            #
+            #   Before we had something like this:
+            #
+            #for i in parsedQs.keys():
+            #    result[ i ] = parsedQs[ i ][0]
+            #
+            #   But with that, we fail to handle web applications that use "duplicated parameter
+            #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
+            #
+            #   (please note the lack of [0]) , and that if the value isn't a list... I create an artificial list
             for i in parsedQs.keys():
-                result[ i ] = parsedQs[ i ][0]
+                if isinstance( parsedQs[ i ], list ):
+                    result[ i ] = parsedQs[ i ]
+                else:
+                    result[ i ] = [parsedQs[ i ], ]
 
     return result
 

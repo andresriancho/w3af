@@ -131,7 +131,8 @@ class fileUploadShell(baseAttackPlugin):
         
         # Upload the file
         for file_var_name in vuln_obj['fileVars']:
-            exploit_dc[file_var_name] = file_handler
+            # the [0] was added here to support repeated parameter names
+            exploit_dc[file_var_name][0] = file_handler
         http_method = getattr( self._urlOpener,  method)
         response = http_method( vuln_obj.getURL() ,  exploit_dc )
         

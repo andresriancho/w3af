@@ -153,5 +153,5 @@ class option:
         
         @return: A copy of myself.
         '''
-        return copy.copy( self )
+        return copy.deepcopy( self )
         

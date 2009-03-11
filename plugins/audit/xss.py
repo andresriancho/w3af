@@ -71,12 +71,14 @@ class xss(baseAuditPlugin):
         
         # This list is just to test if the parameter is echoed back
         fake_mutants = createMutants( freq , ['', ] )
-            
         for mutant in fake_mutants:
             # verify if the variable we are fuzzing is actually being echoed back
             if self._is_echoed( mutant ):
                 # Search for reflected XSS
                 self._search_reflected_xss(mutant)
+                # And also check stored
+                self._search_stored_xss(mutant)
+                
             elif self._check_stored_xss:
                 # Search for permanent XSS
                 self._search_stored_xss(mutant)
@@ -113,7 +115,7 @@ class xss(baseAuditPlugin):
         xss_strings = [ i[0] for i in filtered_xss_tests ]
         mutant_list = createMutants( mutant.getFuzzableReq() , xss_strings , \
                                                     fuzzableParamList=[mutant.getVar(), ])
-        
+
         # In the mutant, we have to save which browsers are vulnerable to that specific string
         for mutant in mutant_list:
             for xss_string, affected_browsers in filtered_xss_tests:

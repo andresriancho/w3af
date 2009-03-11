@@ -53,6 +53,9 @@ from core.data.fuzzer.mutantJSON import mutantJSON
 from core.data.fuzzer.mutantCookie import mutantCookie
 from core.data.fuzzer.mutantFileContent import mutantFileContent
 
+import core.controllers.outputManager as om
+
+
 def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] , oResponse = None ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
@@ -66,11 +69,13 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     _fuzzable = _createFuzzable( freq )
     # Query string parameters
     if isinstance( freq, httpQsRequest ):
+        om.out.debug('Fuzzing query string')
         result.extend( _createMutantsWorker( freq, mutantQs, mutant_str_list, fuzzableParamList , append ) )
     
     # POST-data parameters
     if isinstance( freq, httpPostDataRequest ):
         # If this is a POST request, it could be a JSON request, and I want to fuzz it !
+        om.out.debug('Fuzzing POST data')
         if isJSON( freq ):
             result.extend( _createJSONMutants( freq, mutantJSON, mutant_str_list, fuzzableParamList , append ) )
         else:
@@ -78,20 +83,23 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     
     # File name
     if 'fuzzedFname' in _fuzzable and isinstance( freq, httpQsRequest ):
+        om.out.debug('Fuzzing file name')
         result.extend( _createFileNameMutants( freq, mutantFileName, mutant_str_list, fuzzableParamList , append ) )
     
     # Headers
     if 'headers' in _fuzzable:
+        om.out.debug('Fuzzing headers')
         result.extend( _createMutantsWorker( freq, mutantHeaders, mutant_str_list, fuzzableParamList , append, dataContainer=_fuzzable['headers'] ) )
         
     # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
+        om.out.debug('Fuzzing cookie')
         result.extend( _createMutantsWorker( freq, mutantCookie, mutant_str_list, fuzzableParamList , append, dataContainer=freq.getCookie() ) )
         
     # File content of multipart forms
     if 'fuzzFileContent' in _fuzzable and isinstance( freq, httpPostDataRequest ):
+        om.out.debug('Fuzzing file content')
         result.extend( _createFileContentMutants( freq, mutantFileContent, mutant_str_list, fuzzableParamList , append ) )
-    
     
     #
     # Get the original response, and apply it to all mutants
@@ -99,7 +107,7 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     if oResponse:
         for m in result:
             m.setOriginalResponseBody( oResponse )
-    
+            
     return result
 
 def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
@@ -265,61 +273,64 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
     @return: A list of mutants.
     '''
     result = []
-    
     if not dataContainer:
         dataContainer = freq.getDc()
+
+    for parameter_name in dataContainer:
         
-    for var_to_mod in dataContainer.keys():
-        for mutant_str in mutant_str_list:
+        # This for is to support repeated parameter names
+        for element_index, element_value in enumerate(dataContainer[parameter_name]):
             
-            # Exclude the file parameters, those are fuzzed in _createFileContentMutants()
-            # (if the framework if configured to do so)
-            #
-            # But if we have a form with files, then we have a multipart form, and we have to keep it
-            # that way. If we don't send the multipart form as multipart, the remote programming
-            # language may ignore all the request, and the parameter that we are
-            # fuzzing (that's not the file content one) will be ignored too
-            #
-            # The "keeping the multipart form alive" thing is done some lines below, search for
-            # the "__HERE__" string!
-            #
-            # The exclusion is done here:
-            if var_to_mod in freq.getFileVariables() and not hasattr(mutant_str, 'name'):
-                continue
+            for mutant_str in mutant_str_list:
                 
-            # Only fuzz the specified parameters (if any)
-            # or fuzz all of them (the fuzzableParamList == [] case)
-            if var_to_mod in fuzzableParamList or fuzzableParamList == []:
-                
-                dataContainerCopy = dataContainer.copy()
-                originalValue = dataContainer[var_to_mod]
-                
-                if append :
-                    dataContainerCopy[var_to_mod] = dataContainerCopy[var_to_mod] + mutant_str
-                else:
-                    dataContainerCopy[var_to_mod] = mutant_str
-                
-                # __HERE__
-                # Please see the comment above for an explanation of what we are doing here:
-                for var_name in freq.getFileVariables():
-                    # I have to create the string_file with a "name" attr.
-                    # This is needed for MultipartPostHandler
-                    str_file_instance = string_file( '' )
-                    extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
-                    str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
-                    dataContainerCopy[var_name] = str_file_instance
-                
-                # Create the mutant
-                freq_copy = freq.copy()
-                m = mutantClass( freq_copy )
-                m.setVar( var_to_mod )
-                m.setDc( dataContainerCopy )
-                m.setOriginalValue( originalValue )
-                m.setModValue( mutant_str )
-                
-                # Done, add it to the result
-                result.append ( m )
-                
+                # Exclude the file parameters, those are fuzzed in _createFileContentMutants()
+                # (if the framework if configured to do so)
+                #
+                # But if we have a form with files, then we have a multipart form, and we have to keep it
+                # that way. If we don't send the multipart form as multipart, the remote programming
+                # language may ignore all the request, and the parameter that we are
+                # fuzzing (that's not the file content one) will be ignored too
+                #
+                # The "keeping the multipart form alive" thing is done some lines below, search for
+                # the "__HERE__" string!
+                #
+                # The exclusion is done here:
+                if parameter_name in freq.getFileVariables() and not hasattr(mutant_str, 'name'):
+                    continue
+                    
+                # Only fuzz the specified parameters (if any)
+                # or fuzz all of them (the fuzzableParamList == [] case)
+                if parameter_name in fuzzableParamList or fuzzableParamList == []:
+                    
+                    dataContainerCopy = dataContainer.copy()
+                    originalValue = element_value
+                    
+                    if append :
+                        dataContainerCopy[parameter_name][element_index] += mutant_str
+                    else:
+                        dataContainerCopy[parameter_name][element_index] = mutant_str
+
+                    # __HERE__
+                    # Please see the comment above for an explanation of what we are doing here:
+                    for var_name in freq.getFileVariables():
+                        # I have to create the string_file with a "name" attr.
+                        # This is needed for MultipartPostHandler
+                        str_file_instance = string_file( '' )
+                        extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
+                        str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
+                        dataContainerCopy[var_name][0] = str_file_instance
+                    
+                    # Create the mutant
+                    freq_copy = freq.copy()
+                    m = mutantClass( freq_copy )
+                    m.setVar( parameter_name, index=element_index )
+                    m.setDc( dataContainerCopy )
+                    m.setOriginalValue( originalValue )
+                    m.setModValue( mutant_str )
+                    
+                    # Done, add it to the result
+                    result.append( m )
+
     return result
     
 def createRandAlpha( length=0 ):

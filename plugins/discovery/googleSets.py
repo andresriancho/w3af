@@ -136,8 +136,13 @@ class googleSets(baseDiscoveryPlugin):
                     input_set_map[ key ].append( urlParser.getQueryString( uri )[ key ] )
         
         # Now I create the result, based on input_set_map
-        for key in input_set_map:
-            result.append( ( key, list(set(input_set_map[ key ] ) ) ) )
+        for parameter_name in input_set_map:
+            tmp = []
+            for element_index in xrange(len(input_set_map[parameter_name])):
+                tmp.extend( input_set_map[ key ][element_index] )
+                tmp = list(set( tmp ) )
+                
+            result.append( ( key,  tmp) )
             
         return result
 

@@ -44,6 +44,7 @@ import core.data.constants.w3afPorts as w3afPorts
 # an error if we used the original one! Thanks Cohny!
 TERMINATE_URL = 'http://127.7.7.7/spiderMan?terminate'
 
+
 class spiderMan(baseDiscoveryPlugin):
     '''
     SpiderMan is a local proxy that will collect new URLs.
@@ -73,7 +74,7 @@ class spiderMan(baseDiscoveryPlugin):
         '''
         freq = createFuzzableRequestRaw( command, path, postData, headers )
         self._fuzzableRequests.append(freq)
-        
+
         if len(self._fuzzableRequests) == 1:
             om.out.information('Trapped fuzzable requests:')
         

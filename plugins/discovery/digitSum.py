@@ -136,13 +136,17 @@ class digitSum(baseDiscoveryPlugin):
         
         # Now i'll mangle the query string variables
         if fuzzableRequest.getMethod() == 'GET':
-            for parameter in fuzzableRequest.getDc().keys():
-                for modified_value in self._do_combinations( fuzzableRequest.getDc()[ parameter ] ):
-                    fr_copy = fuzzableRequest.copy()
-                    new_dc = fr_copy.getDc()
-                    new_dc[ parameter ] = modified_value
-                    fr_copy.setDc( new_dc )
-                    res.append( fr_copy )
+            for parameter in fuzzableRequest.getDc():
+                
+                # to support repeater parameter names...
+                for element_index in xrange(len(fuzzableRequest.getDc()[parameter])):
+                    
+                    for modified_value in self._do_combinations( fuzzableRequest.getDc()[ parameter ][element_index] ):
+                        fr_copy = fuzzableRequest.copy()
+                        new_dc = fr_copy.getDc()
+                        new_dc[ parameter ][ element_index ] = modified_value
+                        fr_copy.setDc( new_dc )
+                        res.append( fr_copy )
         
         return res
         

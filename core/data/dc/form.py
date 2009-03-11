@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.dc.dataContainer import dataContainer
 import copy
-import urllib
+from core.data.parsers.encode_decode import urlencode
 
 
 class form(dataContainer):
@@ -33,6 +33,8 @@ class form(dataContainer):
     '''
     def __init__(self, init_val=(), strict=False):
         dataContainer.__init__(self)
+        
+        # Internal variables
         self._method = None
         self._action = None
         self._types = {}
@@ -81,7 +83,11 @@ class form(dataContainer):
         
         if name:
             self._files.append( name )
-            self[name] = ''
+            # added to support repeated parameter names
+            if name in self:
+                self[name].append('')
+            else:
+                self[name] = ['', ]
     
     def __str__( self ):
         '''
@@ -91,7 +97,13 @@ class form(dataContainer):
         tmp = self.copy()
         for i in self._submitMap:
             tmp[i] = self._submitMap[i]
-        return urllib.urlencode( tmp )
+        
+        #
+        #   FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.
+        #   Maybe we need another for?
+        #
+            
+        return urlencode( tmp )
     
     def copy(self):
         '''
@@ -103,7 +115,7 @@ class form(dataContainer):
         
     def addSubmit( self, name, value ):
         '''
-        This is something I havent thought about !
+        This is something I hadn't thought about !
         <input type="submit" name="b0f" value="Submit Request">
         '''
         self._submitMap[name] = value
@@ -145,8 +157,13 @@ class form(dataContainer):
             if type == 'submit':
                 self.addSubmit( name, value )
             else:
-                self._types[name] = type 
-                self[name] = value
+                self._types[name] = type
+                
+                # added to support repeated parameter names
+                if name in self:
+                    self[name].append(value)
+                else:
+                    self[name] = [value, ]
         
     def getType( self, name ):
         return self._types[name]
@@ -177,9 +194,17 @@ class form(dataContainer):
             self._selects[name] = []
 
         self._types[name] = "radio"
+        #
+        #   FIXME: how do you maintain the same value in self._selects[name] and in self[name] ?
+        #
         if value not in self._selects[name]:
             self._selects[name].append(value)
-        self[name] = value
+        
+        # added to support repeated parameter names
+        if name in self:
+            self[name].append(value)
+        else:
+            self[name] = [value, ]
 
     def addSelect(self, name, options):
         """
@@ -193,7 +218,12 @@ class form(dataContainer):
                 if attr[0].lower() == "value":
                     value = attr[1]
                     self._selects[name].append(value)
-        self[name] = value
+        
+        # added to support repeated parameter names
+        if name in self:
+            self[name].append(value)
+        else:
+            self[name] = [value, ]
 
     def getVariantsCount(self, mode="all"):
         """
@@ -237,7 +267,7 @@ class form(dataContainer):
         """
         result = []
         variants = []
-
+        
         for i in self._selects:
             tmp_result = copy.deepcopy(result)
             result = []
@@ -263,7 +293,8 @@ class form(dataContainer):
         for variant in result:
             tmp = copy.deepcopy(self)
             for select_variant in variant:
-                tmp[select_variant[0]] = select_variant[1]
+                # FIXME: Needs to support repeated parameter names
+                tmp[select_variant[0]] = [select_variant[1], ]
             variants.append(tmp)
 
         variants.append(self)

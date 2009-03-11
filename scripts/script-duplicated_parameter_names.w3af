@@ -1,0 +1,27 @@
+# Unit test for duplicated parameter names
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit sqli, xss
+
+back
+
+target
+set target http://localhost/w3af/core/repeated_parameter_names/repeated_parameter_names.php?id=1&id=3
+back
+
+
+start
+
+assert len(kb.kb.getData('sqli','sqli')) == 1
+assert len(kb.kb.getData('xss','xss')) == 1
+
+exit

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import copy
 
+
 class mutant:
     '''
     This class is a wrapper for fuzzable requests that have been modified.
@@ -31,6 +32,7 @@ class mutant:
         self._freq = freq
         self._fuzzableType = None
         self._var = ''
+        self._index = 0
         self._originalValue = ''
         self._originalResponseBody = None
     
@@ -40,13 +42,20 @@ class mutant:
     def getFuzzableReq( self ): return self._freq
     def setFuzzableReq( self, freq ): self._freq = freq
 
-    def setVar( self, var): 
+    def setVar( self, var, index=0): 
         '''
         Set the name of the variable that this mutant modifies.
+        
+        @parameter var: The variable name that's being modified.
+        @parameter index: The index. This was added to support repeated parameter names.
+            a=123&a=456
+        If I want to overwrite 456, index has to be 1.
         '''
         self._var = var
+        self._index = index
         
     def getVar( self ): return self._var
+    def getVarIndex( self ): return self._index
 
     def setOriginalValue( self , v ):
         self._originalValue = v
@@ -59,13 +68,13 @@ class mutant:
         Set the value of the variable that this mutant modifies.
         '''
         try:
-            self._freq._dc[ self.getVar() ] = val
-        except:
+            self._freq._dc[ self.getVar() ][ self._index ] = val
+        except Exception, e:
             raise w3afException('The mutant object wasn\'t correctly initialized.')
         
     def getModValue( self ): 
         try:
-            return self._freq._dc[ self.getVar() ]
+            return self._freq._dc[ self.getVar() ][ self._index ]
         except:
             raise w3afException('The mutant object was\'nt correctly initialized.')
     
@@ -86,8 +95,7 @@ class mutant:
         return False
     
     def copy( self ):
-        newMut = copy.deepcopy( self )
-        return newMut
+        return copy.deepcopy( self )
     
     def getOriginalResponseBody( self ):
         '''
@@ -96,7 +104,7 @@ class mutant:
         the first time.
         '''
         if self._originalResponseBody == None:
-            raise w3afException('[mutant error] You should set the original response body before getting its value!')
+            raise Exception('[mutant error] You should set the original response body before getting its value!')
         else:
             return self._originalResponseBody
     

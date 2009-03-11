@@ -135,6 +135,7 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
     @parameter headers: A dict that holds the headers
     '''
     res = None
+
     if postData and len( postData ):
         # Seems to be something that has post data
         pdr = httpPostDataRequest.httpPostDataRequest()
@@ -182,7 +183,7 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
         qsr.setMethod( method )
         qsr.setHeaders( headers )
         dc = urlParser.getQueryString( url )
-        qsr.setDc( dc )         
+        qsr.setDc( dc )
         res = qsr
         
     return res

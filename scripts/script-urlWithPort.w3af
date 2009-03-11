@@ -17,12 +17,12 @@ back
 back
 
 target
-set target http://localhost:80/w3af/sqli/sqli.php?tabla=agenda
+set target http://localhost:80/w3af/audit/sql_injection/select/sql_injection_table.php?table=users
 back
 
 start
 
 assert len( kb.kb.getData('sqli', 'sqli') ) == 1
-assert 'Apache' in kb.kb.getData( 'hmap','server')
+assert 'Apache' in kb.kb.getData( 'hmap','serverString')
 
 exit

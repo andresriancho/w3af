@@ -34,6 +34,7 @@ import plugins.discovery.oHmap.hmap as originalHmap
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce,  w3afException
 
+
 class hmap(baseDiscoveryPlugin):
     '''
     Fingerprint the server type, i.e apache, iis, tomcat, etc.

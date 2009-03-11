@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import urllib
+from core.data.parsers.encode_decode import urlencode
+import copy
+
 
 class dataContainer(dict):
     '''
@@ -32,12 +34,13 @@ class dataContainer(dict):
     def __init__(self, init_val=(), strict=False):
         self.strict = strict
         dict.__init__(self)
+        
         if isinstance(init_val, dataContainer):
             self._sequence = init_val.keys()
             dict.update(self, init_val)
         elif isinstance(init_val, dict):
             # we lose compatibility with other ordered dict types this way
-            raise TypeError('undefined order, cannot get items from dict')
+            raise TypeError('Undefined order, cannot get items from dict')
         else:
             self._sequence = []
 
@@ -45,17 +48,17 @@ class dataContainer(dict):
                 try:
                     key, val = item
                 except TypeError:
-                    raise TypeError('a')
+                    raise TypeError('key, val = item')
                 self[key] = val
                 
-    
     def __str__( self ):
         '''
         This method returns a string representation of the dataContainer Object.
         
         @return: string representation of the dataContainer Object.
         '''
-        return urllib.urlencode( self )
+        return urlencode( self )
+        #return urllib.urlencode( self )
         
     def copy(self):
         '''
@@ -63,4 +66,5 @@ class dataContainer(dict):
         
         @return: A copy of myself.
         '''
-        return dataContainer(self)
+        return copy.deepcopy(self)
+        

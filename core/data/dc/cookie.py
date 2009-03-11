@@ -24,6 +24,7 @@ import re
 from core.data.dc.dataContainer import dataContainer
 import copy
 
+
 class cookie(dataContainer):
     '''
     This class represents a cookie.
@@ -33,8 +34,15 @@ class cookie(dataContainer):
     def __init__(self, strValues='', strict=False):
         
         for k, v in re.findall('(.*?)=(.*?);', strValues + ';' ):
-            self[ k.strip() ] = v.strip()
-    
+            k = k.strip()
+            v = v.strip()
+            
+            # This was added to support repeated parameter names
+            if k in self:
+                self[ k ].append( v )
+            else:
+                self[ k ] = [ v, ]
+            
     def _sanitize( self, value ):
         value = value.replace('\n','%0a')
         value = value.replace('\r','%0d')
@@ -44,13 +52,14 @@ class cookie(dataContainer):
         '''
         This method returns a string representation of the cookie Object.
         
-        @return: string representation of the cookie Object.
+        @return: string representation of the cookie object.
         '''
         res = ''
-        for k in self:
-            ks = self._sanitize( k )
-            vs = self._sanitize( self[k] )
-            res += ks + '=' + vs + '; '
+        for parameter_name in self:
+            for element_index in xrange(len(self[parameter_name])):
+                ks = self._sanitize( parameter_name )
+                vs = self._sanitize( self[parameter_name][element_index] )
+                res += ks + '=' + vs + '; '
         return res[:-1]
         
     def copy(self):
@@ -59,4 +68,4 @@ class cookie(dataContainer):
         
         @return: A copy of myself.
         '''
-        return copy.copy( self )
+        return copy.deepcopy( self )

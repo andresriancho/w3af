@@ -80,7 +80,7 @@ class fileUpload(baseAuditPlugin):
                 # Only file handlers are passed to the createMutants functions
                 file_handlers = [ i[0] for i in self._file_list ]
                 mutants = createMutants( freq, file_handlers, fuzzableParamList=[file_parameter, ] )
-        
+
                 for i, mutant in enumerate(mutants):
                     mutant.uploaded_file_name = self._file_list[i][1]
        
