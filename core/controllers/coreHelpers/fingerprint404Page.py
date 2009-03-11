@@ -88,7 +88,7 @@ class fingerprint404Page:
 
         return original_body
         
-    def  _add404Knowledge( self, httpResponse ):
+    def _add404Knowledge( self, httpResponse ):
         '''
         Creates a (response, extension) tuple and saves it in the self._404_page_LRU.
         '''
