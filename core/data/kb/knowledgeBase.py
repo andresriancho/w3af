@@ -107,7 +107,7 @@ class knowledgeBase:
                 for savedName in self._kb[ pluginName ]:
                     if isinstance( self._kb[ pluginName ][ savedName ], list ):
                         for i in self._kb[ pluginName ][ savedName ]:
-                            if type( i ) == klass :
+                            if isinstance(i, klass) :
                                 res.append( i )
 
         return res
