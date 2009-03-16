@@ -108,7 +108,7 @@ class webSpider(baseDiscoveryPlugin):
             
             # Modified when I added the pdfParser
             # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze
-            # a image file, its useless and consumes cpu power.
+            # a image file, its useless and consumes CPU power.
             if response.is_text_or_html() or response.is_pdf() or response.is_swf():
                 originalURL = response.getRedirURI()
                 if self._url_parameter:
@@ -146,7 +146,7 @@ class webSpider(baseDiscoveryPlugin):
                     references = [ r for r in references if not self._compiled_ignore_re.match( r )]
                                           
                     # work with the parsed references and report broken links
-                    # then work with the parsed references and DO NOT report broken links
+                    # then work with the regex references and DO NOT report broken links
                     count = 0
                     for ref in references:
                         if self._url_parameter:
