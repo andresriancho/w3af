@@ -118,6 +118,9 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         perform some ugly hacking of request headers and go on...
         '''
+        #
+        # FIXME: What if the user doesn't want to add these headers?
+        #
         if not request.has_header('Host'):
             request.add_unredirected_header('Host', request.host )
             
