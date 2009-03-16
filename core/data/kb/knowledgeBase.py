@@ -28,6 +28,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.kb.shell as shell
 
+
 class knowledgeBase:
     '''
     This class saves the data that is sent to it by plugins. It is the only way in which
@@ -106,7 +107,7 @@ class knowledgeBase:
                 for savedName in self._kb[ pluginName ]:
                     if isinstance( self._kb[ pluginName ][ savedName ], list ):
                         for i in self._kb[ pluginName ][ savedName ]:
-                            if isinstance( i, klass ):
+                            if type( i ) == klass :
                                 res.append( i )
 
         return res
