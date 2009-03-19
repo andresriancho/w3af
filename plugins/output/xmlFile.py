@@ -207,6 +207,9 @@ class xmlFile(baseOutputPlugin):
             messageNode.setAttribute("method", str(i.getMethod()))
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("var", str(i.getVar()))
+            if i.getId():
+                messageNode.setAttribute("id", str(i.getId()))
+            messageNode.setAttribute("name", str(i.getName()))
             description = self._xmldoc.createTextNode(i.getDesc())
             messageNode.appendChild(description)
             self._topElement.appendChild(messageNode)
@@ -216,6 +219,9 @@ class xmlFile(baseOutputPlugin):
           for i in infos:
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.getURL()))
+            if i.getId():
+                messageNode.setAttribute("id", str(i.getId()))
+            messageNode.setAttribute("name", str(i.getName()))
             description = self._xmldoc.createTextNode(i.getDesc())
             messageNode.appendChild(description)
             self._topElement.appendChild(messageNode)
