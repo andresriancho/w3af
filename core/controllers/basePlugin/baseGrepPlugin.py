@@ -72,14 +72,14 @@ class baseGrepPlugin(basePlugin):
         '''
         url = urllib.unquote_plus( request.getURI() )
 
-        sentData = ''
+        sent_data = ''
         if request.getMethod().upper() == 'POST':
-            sentData = request.getData()
+            sent_data = request.getData()
             # This fixes bug #2012748
-            if sentData != None:
-                sentData = urllib.unquote( sentData )
+            if sent_data != None:
+                sent_data = urllib.unquote( str(sent_data) )
             else:
-                sentData = ''
+                sent_data = ''
         
         # This fixes bug #1990018
         # False positive with http://localhost/home/f00.html and
@@ -88,7 +88,7 @@ class baseGrepPlugin(basePlugin):
         if something_interesting[0:5] in path:
             return True
 
-        if url.count( something_interesting ) or sentData.count( something_interesting ):
+        if url.count( something_interesting ) or sent_data.count( something_interesting ):
             return True
 
         # I didn't sent the something_interesting in any way

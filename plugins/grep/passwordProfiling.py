@@ -91,7 +91,7 @@ class passwordProfiling(baseGrepPlugin):
             old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
             
             # "merge" both maps and update the repetitions
-            for d in data.keys():
+            for d in data:
                 if d.lower() not in self._commonWords[ lang ] \
                 and not self._wasSent( request, d ) and len(d) > 3 \
                 and d.isalnum() and d not in self._banned_words:
