@@ -97,8 +97,9 @@ class MSNSpider(baseDiscoveryPlugin):
             om.out.error('Exception while requesting ' + url + ' ' + str(w3) )
         except URLError, url_err:
             om.out.debug('URL Error while fetching page in MSNSpider, error: ' + str(url_err) )
-        fuzzReqs = self._createFuzzableRequests( response )
-        self._fuzzable_requests.extend( fuzzReqs )
+        else:
+            fuzzReqs = self._createFuzzableRequests( response )
+            self._fuzzable_requests.extend( fuzzReqs )
     
     def getOptions( self ):
         '''
