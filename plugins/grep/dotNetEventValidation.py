@@ -69,7 +69,8 @@ class dotNetEventValidation(baseGrepPlugin):
             else:
                 self._already_reported.append(request.getURI())
 
-            if self._viewstate.search(response.getBody()):
+            res = self._viewstate.search(response.getBody())
+            if res:
                 # I have __viewstate!, verify if event validation is enabled
                 if not self._eventvalidation.search(response.getBody()):
                     # Nice! We found a possible bug =)
@@ -77,6 +78,7 @@ class dotNetEventValidation(baseGrepPlugin):
                     i.setName('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
+                    i.addToHighlight(res)
                     msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled. '
                     msg += 'This programming/configuration error should be manually verified.'
                     i.setDesc( msg )

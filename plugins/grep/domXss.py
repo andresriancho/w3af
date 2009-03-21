@@ -105,6 +105,7 @@ class domXss(baseGrepPlugin):
                             for user_controlled in self._get_DOM_user_controlled():
                                 if user_controlled in parameters.groups()[0]:
                                     v = vuln.vuln()
+                                    v.addToHighlight(user_controlled)
                                     v.setURL( response.getURL() )
                                     v.setId( response.id )
                                     v.setSeverity(severity.LOW)

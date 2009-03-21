@@ -61,16 +61,17 @@ class ssn(baseGrepPlugin):
         @return: None.
         '''
         if response.is_text_or_html() and response.getCode() == 200:
-            found_ssn = self._find_SSN(response.getBody())
-            if found_ssn:
+            found_ssn, validated_ssn = self._find_SSN(response.getBody())
+            if validated_ssn:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'US Social Security Number disclosure' )
                 msg = 'The URL: "' + v.getURL() + '" possibly discloses a US '
-                msg += 'Social Security Number: "'+ found_ssn +'"'
+                msg += 'Social Security Number: "'+ validated_ssn +'"'
                 v.setDesc( msg )
+                v.addToHighlight( found_ssn )
                 kb.kb.append( self, 'ssn', v )
      
     def _find_SSN(self, body):
@@ -82,11 +83,14 @@ class ssn(baseGrepPlugin):
         body_without_tags = self._re_removeTags.sub('', body)
         
         validated_ssn = None
+        ssn = None
         for match in self._regex.finditer(body_without_tags):
             validated_ssn = self._validate_SSN(match)
             if validated_ssn:
+                ssn = match.group(0)
                 break
-        return validated_ssn
+
+        return ssn, validated_ssn
     
     def _validate_SSN(self, potential_ssn):
         '''

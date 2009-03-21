@@ -50,6 +50,18 @@ class collectCookies(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._already_reported_server = []
         self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
+
+    def _setCookieToRep(self, inst, **kwd):
+        if 'cobj' in kwd:
+            obj = kwd[obj]
+            inst['cookie-object'] = obj
+            cstr = obj.output(header='')
+        elif 'cstr' in kwd:
+            cstr = kwd['cstr']
+            
+        if cstr:
+            inst['cookie-string'] = cstr
+            inst.addToHighlight(cstr)
     
     def grep(self, request, response):
         '''
@@ -65,8 +77,9 @@ class collectCookies(baseGrepPlugin):
                 i = info.info()
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
-                i['cookie-string'] = headers[key].strip()
-                
+                cookieStr = headers[key].strip()
+                self._setCookieToRep(i, cstr=headers[key].strip())
+                 
                 C = Cookie.SimpleCookie()
                 try:
                     # Note to self: This line may print some chars to the console
@@ -95,6 +108,7 @@ class collectCookies(baseGrepPlugin):
                         i['persistent'] = True
                         
                     i.setId( response.id )
+                    i.addToHighlight(i['cookie-string'])
                     msg = 'The URL: "' + i.getURL() + '" sent the cookie: "'
                     msg += i['cookie-string'] + '".'
                     i.setDesc( msg )
@@ -157,8 +171,7 @@ class collectCookies(baseGrepPlugin):
                                     if len( item[1] ) > 4 and item[1] == cookie['cookie-object'][key]:
                                         v = vuln.vuln()
                                         v.setURL( response.getURL() )
-                                        v['cookie-string'] = cookie.output(header='')
-                                        v['cookie-object'] = cookie
+                                        self._setCookieToRep(v, cobj=cookie)
                                         v.setSeverity(severity.HIGH)
                                         v.setId( response.id )
                                         v.setName( 'Secure cookies over insecure channel' )
@@ -180,8 +193,7 @@ class collectCookies(baseGrepPlugin):
                     i.setId( response.id )
                     i.setName('Identified cookie')
                     i.setURL( response.getURL() )
-                    i['cookie-string'] = cookieObj.output(header='')
-                    i['cookie-object'] = cookieObj
+                    self._setCookieToRep(i, cobj=cookieObj)
                     i['httpd'] = cookie[1]
                     i.setDesc( 'A cookie matching the cookie fingerprint DB ' +
                     'has been found when requesting "' + response.getURL() + '" . ' +
@@ -209,8 +221,7 @@ class collectCookies(baseGrepPlugin):
             v = vuln.vuln()
             v.setURL( response.getURL() )
             v.setId( response.getId() )
-            v['cookie-string'] = cookieObj.output(header='')
-            v['cookie-object'] = cookieObj
+            self._setCookieToRep(v, cookieObj)
             v.setSeverity(severity.HIGH)
             v.setName( 'Secure cookies over insecure channel' )
             msg = 'A cookie marked as secure was sent over an insecure channel'

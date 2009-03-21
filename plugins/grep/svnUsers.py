@@ -69,6 +69,7 @@ class svnUsers(baseGrepPlugin):
                     v['user'] = m[0]
                     v.setSeverity(severity.LOW)
                     v.setName( 'SVN user disclosure vulnerability' )
+                    v.addToHighlight( m[0] )
                     
                     kb.kb.append( self, 'users', v )
         

@@ -78,6 +78,7 @@ class feeds(baseGrepPlugin):
                     msg += match_string + '" feed.'
                     i.setDesc( msg )
                     i.setId( response.id )
+                    i.addToHighlight( feed_type )
                     kb.kb.append( self, 'feeds', i )
     
     def setOptions( self, OptionList ):

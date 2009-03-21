@@ -83,6 +83,7 @@ class httpAuthDetect(baseGrepPlugin):
             v.setDesc( desc )
             v.setSeverity(severity.HIGH)
             v.setName( 'Basic HTTP credentials' )
+            v.addToHighlight( response.getURI() )
             
             kb.kb.append( self , 'userPassUri' , v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
@@ -101,6 +102,7 @@ class httpAuthDetect(baseGrepPlugin):
                 
                 v.setSeverity(severity.HIGH)
                 v.setName( 'Basic HTTP credentials' )
+                v.addToHighlight( authURI )
                 
                 kb.kb.append( self , 'userPassUri' , v )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
@@ -140,6 +142,7 @@ class httpAuthDetect(baseGrepPlugin):
             i.setDesc( 'The resource: "'+ response.getURL() + '" requires authentication.' +
             ' The realm is: "' + realm + '".')
             i['message'] = realm
+            i.addToHighlight( realm )
             
             kb.kb.append( self , 'auth' , i )
             

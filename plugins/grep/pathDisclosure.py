@@ -99,6 +99,7 @@ class pathDisclosure(baseGrepPlugin):
                             v.setSeverity(severity.LOW)
                             v.setName( 'Path disclosure vulnerability' )
                             v['path'] = match
+                            v.addToHighlight( match )
                             kb.kb.append( self, 'pathDisclosure', v )
         
         self._update_KB_path_list()

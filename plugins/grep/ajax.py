@@ -74,6 +74,8 @@ class ajax(baseGrepPlugin):
                 i.setURL( response.getURL() )
                 i.setDesc( 'The URL: "' + i.getURL() + '" has a ajax code.'  )
                 i.setId( response.id )
+                for f in res:
+                    i.addToHighlight(f)
                 kb.kb.append( self, 'ajax', i )
     
     def setOptions( self, OptionList ):

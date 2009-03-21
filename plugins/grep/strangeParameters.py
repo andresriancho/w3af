@@ -85,6 +85,8 @@ class strangeParameters(baseGrepPlugin):
                             i.setDesc( msg )
                             i.setVar( param_name )
                             i['parameterValue'] = qs[param_name][element_index]
+                            i.addToHighlight(qs[param_name][element_index], param_name)
+
                             kb.kb.append( self , 'strangeParameters' , i )
 
                         if self._is_SQL( request, param_name, qs[param_name][element_index] ): 
@@ -101,6 +103,7 @@ class strangeParameters(baseGrepPlugin):
                             v.setDesc( msg )
                             v.setVar( param_name )
                             v['parameterValue'] = qs[param_name][element_index]
+                            i.addToHighlight(qs[param_name][element_index], param_name)
                             kb.kb.append( self , 'strangeParameters' , v )
     
     def setOptions( self, OptionList ):

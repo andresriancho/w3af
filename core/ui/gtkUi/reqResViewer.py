@@ -24,6 +24,7 @@ from . import entries
 
 # To show request and responses
 from core.data.db.reqResDBHandler import reqResDBHandler
+from core.data.constants import severity
 
 useMozilla = False
 useGTKHtml2 = False
@@ -378,7 +379,7 @@ class responsePaned(requestResponsePaned):
             self._renderFunction(body, mimeType, baseURI)
 
 
-    def highlight(self, text):
+    def highlight(self, text, sev=severity.MEDIUM):
         '''
         Find the text, and handle highlight.
         @return: None.
@@ -406,8 +407,14 @@ class responsePaned(requestResponsePaned):
 
             # highlight them all
             for (ini, fin, iterini, iterfin) in positions:
-                text_buffer.apply_tag_by_name("red-background", iterini, iterfin)
+                text_buffer.apply_tag_by_name(sev, iterini, iterfin)
 
+SEVERITY_TO_COLOR={
+    severity.INFORMATION: 'green', 
+    severity.LOW: 'blue',
+    severity.MEDIUM: 'yellow',
+    severity.HIGH: 'red'}
+SEVERITY_TO_COLOR.setdefault('yellow')
 
 class searchableTextView(gtk.VBox, entries.Searchable):
     '''A textview widget that supports searches.
@@ -419,7 +426,8 @@ class searchableTextView(gtk.VBox, entries.Searchable):
         
         # Create the textview where the text is going to be shown
         self.textView = gtk.TextView()
-        self.textView.get_buffer().create_tag("red-background", background="red")
+        for sev in SEVERITY_TO_COLOR:
+            self.textView.get_buffer().create_tag(sev, background=SEVERITY_TO_COLOR[sev])
         self.textView.show()
         
         # Scroll where the textView goes

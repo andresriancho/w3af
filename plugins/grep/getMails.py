@@ -105,7 +105,9 @@ class getMails(baseGrepPlugin):
                 i['mail'] = m
                 i['url_list'] = [ response.getURL(), ]
                 i['user'] = m.split('@')[0]
+                i.addToHighlight( m )
              
+                
                 kb.kb.append( 'mails', kb_key, i )
                 kb.kb.append( self, 'mails', i )
                 continue

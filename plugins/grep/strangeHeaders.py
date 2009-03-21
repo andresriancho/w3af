@@ -80,7 +80,9 @@ class strangeHeaders(baseGrepPlugin):
                     msg += '" with value: "' + response.getHeaders()[header_name] + '".'
                     i.setDesc( msg )
                     i['header_name'] = header_name
-                    i['header_value'] = response.getHeaders()[header_name]
+                    hvalue = response.getHeaders()[header_name]
+                    i['header_value'] = hvalue
+                    i.addToHighlight( hvalue, header_name )
                     kb.kb.append( self , 'strangeHeaders' , i )
 
 
@@ -105,6 +107,7 @@ class strangeHeaders(baseGrepPlugin):
             msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
             msg += ' a violation to the RFC.'
             i.setDesc( msg )
+            i.addToHighlight( str(response.getCode()) )
             kb.kb.append( self , 'anomaly' , i )
 
     def setOptions( self, OptionList ):

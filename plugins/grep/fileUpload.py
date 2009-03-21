@@ -60,7 +60,8 @@ class fileUpload(baseGrepPlugin):
         '''
         if response.is_text_or_html():
             for input_tag in self._input.findall( response.getBody() ):
-                if self._file.search(input_tag):
+                tag = self._file.search( input_tag )
+                if tag:
                     i = info.info()
                     i.setName('File upload form')
                     i.setURL( response.getURL() )
@@ -68,6 +69,7 @@ class fileUpload(baseGrepPlugin):
                     msg = 'The URL: "' + response.getURL() + '" has form '
                     msg += 'with file upload capabilities.'
                     i.setDesc( msg )
+                    i.addToHighlight( tag.group(0) )
                     kb.kb.append( self , 'fileUpload' , i ) 
     
     def setOptions( self, OptionList ):

@@ -65,6 +65,7 @@ class hashFind(baseGrepPlugin):
                         i = info.info()
                         i.setName( hash_type + 'hash in HTML content')
                         i.setURL( response.getURL() )
+                        i.addToHighlight(possible_hash)
                         i.setId( response.id )
                         msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
                         msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash

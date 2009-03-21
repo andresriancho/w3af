@@ -79,6 +79,7 @@ class privateIP(baseGrepPlugin):
                     msg += 'with an IP address: "' +  match + '".'
                     v.setDesc( msg )
                     v['IP'] = match                            
+                    v.addToHighlight( match )
                     kb.kb.append( self, 'header', v )       
         
         # Search for IP addresses on HTML

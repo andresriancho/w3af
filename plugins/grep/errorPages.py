@@ -157,6 +157,7 @@ class errorPages(baseGrepPlugin):
                     i.setId( response.id )
                     i.setName( 'Error page' )
                     i.setDesc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
+                    i.addToHighlight( msg ) 
                     kb.kb.append( self , 'errorPage' , i )
                     
             # Now i'll check if I can get a version number from the error page
@@ -175,6 +176,8 @@ class errorPages(baseGrepPlugin):
                             i.setId( response.id )
                             i.setName( 'Error page with information disclosure' )
                             i.setDesc( 'An error page sent this ' + server +' version: "' + match_string + '".'  )
+                            i.addToHighlight( server )
+                            i.addToHighlight( match_string )
                             kb.kb.append( self , 'server' , i )
                             # Save the string
                             kb.kb.append( self , 'server' , match_string )

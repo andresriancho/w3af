@@ -105,6 +105,7 @@ class metaTags(baseGrepPlugin):
                                     msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
                                     msg += 'attribute '+ where +' "'+ value +'" which'
                                     msg += ' looks interesting.'
+                                    i.addToHighlight( where, value )
                                     if self._interesting_words.get(name, None):
                                         msg += ' The tag is used for '
                                         msg += self._interesting_words[name] + '.'

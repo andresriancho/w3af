@@ -104,6 +104,7 @@ class findComments(baseGrepPlugin):
                             i.setId( response.id )
                             i.setDc( request.getDc )
                             i.setURI( response.getURI() )
+                            i.addToHighlight( word )
                             kb.kb.append( self, 'interestingComments', i )
                             om.out.information( i.getDesc() )
                             self._already_reported_interesting.append( ( word, response.getURL() ) )

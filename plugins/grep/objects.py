@@ -64,6 +64,9 @@ class objects(baseGrepPlugin):
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 i.setDesc( 'The URL: "' + i.getURL() + '" has an object tag.' )          
+                for finding in res:
+                    i.addToHighlight( finding )
+
                 kb.kb.append( self, 'object', i )
                 self._already_added_object.append( response.getURL() )
         
@@ -75,6 +78,9 @@ class objects(baseGrepPlugin):
                 i.setURL( response.getURL() )
                 i.setId( response.id )
                 i.setDesc( 'The URL: "' + i.getURL() + '" has an applet tag.' )          
+                for finding in res:
+                    i.addToHighlight( finding )
+
                 kb.kb.append( self, 'applet', i )
                 self._already_added_applet.append( response.getURL() )
     

@@ -40,7 +40,7 @@ class info(dict):
         self._id = None
         self._name = ''
         self._dc = None
-        self._string_match = ''
+        self._string_matches = set()
             
         # Clone the info object!
         if isinstance( dataObj, info ):
@@ -249,7 +249,8 @@ class info(dict):
         This information is used to highlight the string in the GTK user interface, when showing the
         request / response.
         '''
-        return self._string_match
+        return self._string_matches
         
-    def setToHighlight(self, str_match):
-        self._string_match = str_match
+    def addToHighlight(self, *str_match):
+        for s in str_match:
+            self._string_matches.add(s)

@@ -71,15 +71,18 @@ class httpInBody (baseGrepPlugin):
                 # Now, remove tags
                 body_without_tags = self._re_removeTags.sub('', response.getBody() )
                 
-                if self._re_request.search( body_without_tags ):
+                res = self._re_request.search( body_without_tags )
+                if res:
                     i = info.info()
                     i.setName('HTTP Request in HTTP body')
                     i.setURI( response.getURI() )
                     i.setId( response.id )
                     i.setDesc( 'An HTTP request was found in the HTTP body of a response' )
+                    i.addToHighlight(res.group(0))
                     kb.kb.append( self, 'request', i )
                     
-                if self._re_response.search( body_without_tags ):
+                res = self._re_response.search( body_without_tags )
+                if res:
                     i = info.info()
                     i.setName('HTTP Response in HTTP body')
                     i.setURI( response.getURI() )

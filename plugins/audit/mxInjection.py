@@ -83,7 +83,7 @@ class mxInjection(baseAuditPlugin):
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
-                v.setToHighlight( mx_error )
+                v.addToHighlight( mx_error )
                 kb.kb.append( self, 'mxInjection', v )
     
     def end(self):

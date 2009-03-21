@@ -137,7 +137,7 @@ class pluginsTypeMenu(menu):
         if command in self.getCommands():
             return menu.suggestParams(self, command, params, part)
         
-        alreadySel =[lambda s: s.lstrip('!') for s in [command] + params]
+        alreadySel =[s.lstrip('!') for s in [command] + params]
         
         plugins = self._plugins.keys()
         return suggest(plugins, part.lstrip('!'), alreadySel)

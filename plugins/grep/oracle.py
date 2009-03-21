@@ -59,6 +59,7 @@ class oracle(baseGrepPlugin):
                     i.setName('Oracle application')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
+                    i.addToHighlight( msg )
                     msg = 'The URL: "' + response.getURL() + '" was created using Oracle'
                     msg += ' Application server.'
                     i.setDesc( msg )

@@ -105,9 +105,9 @@ class FullKBTree(kbtree.KBTree):
                             self.kbbrowser.rrV.response.showObject( response )
                             
                             # Don't forget to highlight if neccesary
-                            if instance.getToHighlight():
-                                text = instance.getToHighlight()
-                                self.kbbrowser.rrV.response.highlight( text )
+                            severity = instance.getSeverity()
+                            for s in instance.getToHighlight():
+                                self.kbbrowser.rrV.response.highlight( s, severity )
                             
                             success = True
                         else:
