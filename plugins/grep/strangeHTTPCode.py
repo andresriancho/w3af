@@ -77,7 +77,7 @@ class strangeHTTPCode(baseGrepPlugin):
                 desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
                 desc += '", manual inspection is advised.'
                 i.setDesc( desc )
-                i.addToHighlight( response.getCode(), response.getMsg() )
+                i.addToHighlight( str(response.getCode()), response.getMsg() )
                 kb.kb.append( self , 'strangeHTTPCode' , i )
     
     def setOptions( self, OptionList ):
