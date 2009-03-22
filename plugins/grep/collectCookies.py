@@ -53,7 +53,7 @@ class collectCookies(baseGrepPlugin):
 
     def _setCookieToRep(self, inst, **kwd):
         if 'cobj' in kwd:
-            obj = kwd[obj]
+            obj = kwd['cobj']
             inst['cookie-object'] = obj
             cstr = obj.output(header='')
         elif 'cstr' in kwd:
