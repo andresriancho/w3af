@@ -189,6 +189,9 @@ class htmlParser(sgmlParser):
             if attr[0].lower() == 'type' and attr[1].lower() == 'radio':
                 form_obj.addRadio( attrs )
                 return
+            if attr[0].lower() == 'type' and attr[1].lower() == 'checkbox':
+                form_obj.addCheckBox( attrs )
+                return
 
         # Simply add all the other input types
         form_obj.addInput( attrs )
