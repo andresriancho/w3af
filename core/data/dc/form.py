@@ -24,7 +24,6 @@ from core.data.dc.dataContainer import dataContainer
 import copy
 from core.data.parsers.encode_decode import urlencode
 
-
 class form(dataContainer):
     '''
     This class represents a HTML form.
@@ -41,6 +40,8 @@ class form(dataContainer):
         self._files = []
         self._selects = {}
         self._submitMap = {}
+        # it is used for processing checkboxes
+        self._secret_value = "3_!21#47w@"
         
     def getAction(self):
         '''
@@ -62,7 +63,17 @@ class form(dataContainer):
     
     def getFileVariables( self ):
         return self._files
-        
+
+    def _setVar(self, name, value):
+        '''
+        Auxiliary setter for name=value
+        '''
+        # added to support repeated parameter names
+        if name in self:
+            self[name].append(value)
+        else:
+            self[name] = [value, ]
+
     def addFileInput( self, attrs ):
         '''
         Adds a file input to the form
@@ -74,21 +85,17 @@ class form(dataContainer):
             if attr[0] == 'name':
                 name = attr[1]
                 break
-        
+
         if not name:
             for attr in attrs:
                 if attr[0] == 'id':
                     name = attr[1]
                     break
-        
+
         if name:
             self._files.append( name )
-            # added to support repeated parameter names
-            if name in self:
-                self[name].append('')
-            else:
-                self[name] = ['', ]
-    
+            self._setVar(name, '')
+
     def __str__( self ):
         '''
         This method returns a string representation of the form Object.
@@ -102,7 +109,7 @@ class form(dataContainer):
         #   FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.
         #   Maybe we need another for?
         #
-            
+
         return urlencode( tmp )
     
     def copy(self):
@@ -143,68 +150,66 @@ class form(dataContainer):
                 if attr[0] == 'id':
                     name = attr[1]
 
-        if name != '':
-            # Find the type
-            for attr in attrs:
-                if attr[0] == 'type':
-                    type = attr[1].lower()
+        if not name:
+            return (name, value)
 
-            # Find the default value
-            for attr in attrs:
-                if attr[0] == 'value':
-                    value = attr[1]
+        # Find the type
+        for attr in attrs:
+            if attr[0] == 'type':
+                type = attr[1].lower()
 
-            if type == 'submit':
-                self.addSubmit( name, value )
-            else:
-                self._types[name] = type
-                
-                # added to support repeated parameter names
-                if name in self:
-                    self[name].append(value)
-                else:
-                    self[name] = [value, ]
-        
+        # Find the default value
+        for attr in attrs:
+            if attr[0] == 'value':
+                value = attr[1]
+
+        if type == 'submit':
+            self.addSubmit( name, value )
+        else:
+            self._types[name] = type
+            self._setVar(name, value)
+        #
+        # TODO May be create special internal method instead of using
+        # addInput()?
+        #
+        return (name, value)
+
     def getType( self, name ):
         return self._types[name]
+
+    def addCheckBox(self, attrs):
+        """
+        Adds radio field
+        """
+        name, value = self.addInput(attrs)
+
+        if not name:
+            return
+
+        if name not in self._selects:
+            self._selects[name] = []
+
+        if value not in self._selects[name]:
+            self._selects[name].append(value)
+            self._selects[name].append(self._secret_value)
 
     def addRadio(self, attrs):
         """
         Adds radio field
         """
-        name = value = ''
+        name, value = self.addInput(attrs)
 
-        # Try to get the name:
-        for attr in attrs:
-            if attr[0] == 'name':
-                name = attr[1]
         if not name:
-            for attr in attrs:
-                if attr[0] == 'id':
-                    name = attr[1]
-
-        if name == '':
             return
-
-        for attr in attrs:
-            if attr[0] == 'value':
-                value = attr[1]
 
         if name not in self._selects:
             self._selects[name] = []
 
-        self._types[name] = "radio"
         #
         #   FIXME: how do you maintain the same value in self._selects[name] and in self[name] ?
         #
         if value not in self._selects[name]:
             self._selects[name].append(value)
-        
-        # added to support repeated parameter names
-        if name in self:
-            self[name].append(value)
-        else:
-            self[name] = [value, ]
 
     def addSelect(self, name, options):
         """
@@ -218,12 +223,8 @@ class form(dataContainer):
                 if attr[0].lower() == "value":
                     value = attr[1]
                     self._selects[name].append(value)
-        
-        # added to support repeated parameter names
-        if name in self:
-            self[name].append(value)
-        else:
-            self[name] = [value, ]
+
+        self._setVar(name, value)
 
     def getVariantsCount(self, mode="all"):
         """
@@ -267,7 +268,7 @@ class form(dataContainer):
         """
         result = []
         variants = []
-        
+
         for i in self._selects:
             tmp_result = copy.deepcopy(result)
             result = []
@@ -290,11 +291,17 @@ class form(dataContainer):
                     tmp.append((i,j))
                     result.append(tmp)
                 opt_index += 1
+
         for variant in result:
             tmp = copy.deepcopy(self)
             for select_variant in variant:
-                # FIXME: Needs to support repeated parameter names
-                tmp[select_variant[0]] = [select_variant[1], ]
+                if select_variant[1] != self._secret_value:
+                    # FIXME: Needs to support repeated parameter names
+                    tmp[select_variant[0]] = [select_variant[1], ]
+                else:
+                    # FIXME: Is it good solution to simply delete unwant to
+                    # send checkboxes? 
+                    del(tmp[select_variant[0]])
             variants.append(tmp)
 
         variants.append(self)
