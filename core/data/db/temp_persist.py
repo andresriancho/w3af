@@ -121,6 +121,10 @@ class disk_list(object):
         self._temp_shelve = temp_shelve()
 
     def append(self, value):
+        
+        if isinstance(value, unicode):
+            value = value.encode()
+            
         self._temp_shelve[value] = 1
         return None
         
@@ -128,6 +132,9 @@ class disk_list(object):
         return repr(self._temp_shelve.keys())
         
     def __contains__(self, value):
+        if isinstance(value, unicode):
+            value = value.encode()
+        
         return value in self._temp_shelve
         
     def __len__(self):
