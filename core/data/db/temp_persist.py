@@ -26,11 +26,17 @@ import thread
 import os
 from random import choice
 import string
+
 try:
    import cPickle as pickle
 except:
    import pickle
-from core.controllers.misc.temp_dir import get_temp_dir
+
+try:
+    from core.controllers.misc.temp_dir import get_temp_dir
+except:
+    def get_temp_dir():
+        return '/tmp/'
 
 
 class temp_shelve(object):
@@ -158,4 +164,8 @@ if __name__ == '__main__':
     assert len(dlist) == 1000
     assert '5' in dlist
     assert not '5555' in dlist
+    try:
+        unicode('a') in dlist
+    except:
+        print 'Exception raised (ok).'
     print 'Done!'
