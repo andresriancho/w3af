@@ -35,6 +35,7 @@ import core.data.constants.severity as severity
 
 import re
 
+
 def luhnCheck(value):
     '''
     The Luhn check against the value which can be an array of digits, 
