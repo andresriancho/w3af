@@ -223,7 +223,9 @@ class xUrllib:
         listOfNonTargets = cf.cf.getData('nonTargets') or []
         for u in listOfNonTargets:
             if urlParser.uri2url( uri ) == urlParser.uri2url( u ):
-                om.out.debug('The URL you are trying to reach was configured as a non-target. ( '+uri+' ). Returning an empty response.')
+                msg = 'The URL you are trying to reach was configured as a non-target. ( '
+                msg += uri +' ). Returning an empty response.'
+                om.out.debug( msg )
                 return True
         
         return False
@@ -256,8 +258,8 @@ class xUrllib:
             fuzzReq.setHeaders(headers)
         
         # Send it
-        functionReference = getattr( self , fuzzReq.getMethod() )
-        return functionReference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
+        function_reference = getattr( self , fuzzReq.getMethod() )
+        return function_reference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
                                                 useCache=False, grepResult=False, getSize=get_size )
         
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
@@ -335,14 +337,17 @@ class xUrllib:
                 if fileLen.isdigit():
                     fileLen = int( fileLen )
                 else:
-                    msg = 'The content length header value of the response wasn\'t an integer... this is strange... The value is: ' + res.getHeaders()[ i ]
+                    msg = 'The content length header value of the response wasn\'t an integer...'
+                    msg += ' this is strange... The value is: "' + res.getHeaders()[ i ] + '"'
                     om.out.error( msg )
                     raise w3afException( msg )
         
         if fileLen != None:
             return fileLen
         else:
-            om.out.debug( 'The response didn\'t contain a content-length header. Unable to return the remote file size of request with id: ' + str(res.id) )
+            msg = 'The response didn\'t contain a content-length header. Unable to return the'
+            msg += ' remote file size of request with id: ' + str(res.id)
+            om.out.debug( msg )
             # I prefer to fetch the file, before this om.out.debug was a "raise w3afException", but this didnt make much sense
             return 0
         
