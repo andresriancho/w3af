@@ -72,12 +72,12 @@ class temp_shelve(object):
             try:
                 # Create the shelve
                 self._shelve = shelve.open(self._filename, flag='c')
-            except:
+            except Exception,  e:
                 self._filename = None
                 
                 fail_count += 1
                 if fail_count == 5:
-                    raise Exception('Failed to create shelve file.')
+                    raise Exception('Failed to create shelve file. Original exception: ' + str(e))
             else:
                 break
                 
