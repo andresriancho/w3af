@@ -76,7 +76,7 @@ class findBackdoor(baseDiscoveryPlugin):
                         v.setName( 'Possible web backdoor' )
                         v.setSeverity(severity.HIGH)
                         v.setURL( response.getURL() )
-                        msg = 'A web backdoor was found at: ' + v.getURL() + ' ; this could'
+                        msg = 'A web backdoor was found at: "' + v.getURL() + '" ; this could'
                         msg += ' indicate that your server was hacked.'
                         v.setDesc( msg )
                         kb.kb.append( self, 'backdoors', v )
