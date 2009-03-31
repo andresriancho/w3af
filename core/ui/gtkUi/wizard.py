@@ -24,6 +24,7 @@ import gtk, os, cgi
 from . import entries, confpanel, helpers
 from core.controllers.w3afException import w3afException
 
+
 class Quest(object):
     def __init__(self, quest):
         self.quest = quest
@@ -50,16 +51,18 @@ class QuestOptions(gtk.VBox):
         options = self.widg.options
         invalid = []
         
-        #       Trying to reproduce bug 
-        #       https://sourceforge.net/tracker2/?func=detail&aid=2652434&group_id=170274&atid=853652
-        #
-        #       To get more info:
-        try:
-            opt.widg
-        except Exception, e:
-            raise Exception(str(e) + ' || ' + opt.getName())
-        
         for opt in options:
+            #       Trying to reproduce bug 
+            #       https://sourceforge.net/tracker2/?func=detail&aid=2652434&group_id=170274&atid=853652
+            #
+            #       To get more info:
+            try:
+                opt.widg
+            except Exception, e:
+                raise Exception(str(e) + ' || ' + opt.getName())
+            # end of debugging code
+                
+            
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
                     invalid.append(opt.getName())
