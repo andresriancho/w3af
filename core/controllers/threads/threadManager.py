@@ -24,6 +24,7 @@ from core.controllers.threads.threadpool import *
 import core.data.kb.config as cf
 import time
 
+
 class threadManager:
     '''
     This class manages threads.
