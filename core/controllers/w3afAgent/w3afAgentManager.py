@@ -131,13 +131,19 @@ class w3afAgentManager( w3afThread ):
         This method selects the w3afAgent client to use based on the remote OS and some other factors
         like having a working python installation.
         '''
-        ### TODO! Implement this!
+        # TODO: Implement this!
         python = self._exec('which python')
         if python.startswith('/'):
             fileContent = file( 'core' + os.path.sep + 'controllers' + os.path.sep + 'w3afAgent' + os.path.sep +\
             'client' + os.path.sep + 'w3afAgentClient.py' ).read()
             extension = 'py'
             interpreter = python
+        else:
+            # TODO: Implement this!
+            interpreter = ''
+            extension = 'py'
+            interpreter = '/usr/bin/python'
+            
         return interpreter, fileContent, extension
 
     def _getInboundPort( self ):

@@ -37,6 +37,7 @@ import core.data.constants.severity as severity
 from core.controllers.w3afException import w3afException
 import re
 
+
 class eval(baseAuditPlugin):
     '''
     Find insecure eval() usage.
@@ -161,6 +162,7 @@ class eval(baseAuditPlugin):
                 # The first delay existed... I must report something...
                 i = info.info()
                 i.setId( response.id )
+                i.setDc( mutant.getDc() )
                 i.setName( 'eval() input injection vulnerability' )
                 msg = 'eval() input injection was found at: ' + mutant.foundAt()
                 msg += ' . Please review manually.'

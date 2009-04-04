@@ -41,6 +41,7 @@ from core.controllers.configurable import configurable
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+
 class urlOpenerSettings( configurable ):
     '''
     This is a urllib2 configuration manager.
@@ -102,9 +103,9 @@ class urlOpenerSettings( configurable ):
             # 404 settings
             cf.cf.save('404exceptions', []  )
             cf.cf.save('always404', [] )
-            cf.cf.save('autodetect404', True )
+            cf.cf.save('autodetect404', False )
             cf.cf.save('byDirectory404', False )
-            cf.cf.save('byDirectoryAndExtension404', False)        
+            cf.cf.save('byDirectoryAndExtension404', True)        
     
     def setHeadersFile(self, HeadersFile ):
         '''

@@ -136,17 +136,23 @@ class halberd(baseDiscoveryPlugin):
         scantask.addr = ''
         scanner = halberd_shell.UniScanStrategy
         
-        s = scanner(scantask)
-        
         try:
-            # result should be: <Halberd.ScanTask.ScanTask instance at 0x85df8ec>
-            result = s.execute()
+            s = scanner(scantask)
         except halberd_shell.ScanError, msg:
-            om.out.debug('*** %s ***' % msg )
-        except KeyboardInterrupt:
-            raise
+            om.out.error('*** %s ***' % msg )
         else:
-            self._report( result )
+            #
+            #       The scantask initialization worked, we can start the actual scan!
+            #
+            try:
+                result = s.execute()
+                # result should be: <Halberd.ScanTask.ScanTask instance at 0x85df8ec>                
+            except halberd_shell.ScanError, msg:
+                om.out.debug('*** %s ***' % msg )
+            except KeyboardInterrupt:
+                raise
+            else:
+                self._report( result )
 
     def _report( self, scantask):
         """

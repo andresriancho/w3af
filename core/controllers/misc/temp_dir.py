@@ -55,4 +55,4 @@ def remove_temp_dir():
     '''
     Remove the directory that I created above.
     '''
-    shutil.rmtree( get_temp_dir() )
+    shutil.rmtree( get_temp_dir(), ignore_errors=True )

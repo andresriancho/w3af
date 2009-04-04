@@ -92,8 +92,7 @@ class frontpage(baseAuditPlugin):
                 
                 if found404:
                     upload_id = self._upload_file( domain_path,  randFile )
-                    if upload_id:
-                        self._verify_upload( domain_path,  randFile,  upload_id )
+                    self._verify_upload( domain_path,  randFile,  upload_id )
                 else:
                     msg = 'frontpage plugin failed to find a 404 page. This is mostly because of an'
                     msg += ' error in 404 page detection.'
@@ -130,9 +129,9 @@ class frontpage(baseAuditPlugin):
                 msg = 'frontpage plugin seems to have successfully uploaded a file to'
                 msg += ' the remote server.'
                 om.out.debug(msg)
-                return res.id
+            return res.id
         
-        return None
+        return 200
             
     def _verify_upload(self,  domain_path,  randFile,  upload_id):
         '''

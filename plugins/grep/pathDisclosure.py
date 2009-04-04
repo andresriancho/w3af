@@ -161,23 +161,31 @@ class pathDisclosure(baseGrepPlugin):
                 
                 # Get the webroot
                 webroot = longest_path_disc_vuln['path'].replace( longest_match, '' )
-                kb.kb.save( self, 'webroot', webroot )
                 
-                # Check what path separator we should use (linux / windows)
-                if webroot[0] == '/':
-                    path_sep = '/'
-                else:
-                    # windows
-                    path_sep = '\\'
-                
-                # Create the remote locations
-                remote_locations = []
-                for url in url_list:
-                    remote_path = urlParser.getPath( url ).replace('/', path_sep)
-                    remote_locations.append( webroot + remote_path )
-                remote_locations = list( set( remote_locations ) )
-                
-                kb.kb.save( self, 'listFiles', remote_locations )
+                #
+                #   This if fixes a strange case reported by Olle
+                #           if webroot[0] == '/':
+                #           IndexError: string index out of range
+                #   That seems to be because the webroot == ''
+                #
+                if webroot:
+                    kb.kb.save( self, 'webroot', webroot )
+                    
+                    # Check what path separator we should use (linux / windows)
+                    if webroot[0] == '/':
+                        path_sep = '/'
+                    else:
+                        # windows
+                        path_sep = '\\'
+                    
+                    # Create the remote locations
+                    remote_locations = []
+                    for url in url_list:
+                        remote_path = urlParser.getPath( url ).replace('/', path_sep)
+                        remote_locations.append( webroot + remote_path )
+                    remote_locations = list( set( remote_locations ) )
+                    
+                    kb.kb.save( self, 'listFiles', remote_locations )
         
     def setOptions( self, OptionList ):
         pass

@@ -747,7 +747,9 @@ class w3afCore:
             return 'Not running.'
         else:
             if self.getPhase() != '' and self.getRunningPlugin() != '':
-                return 'Running ' + self.getPhase() + '.' + self.getRunningPlugin() + ' on ' + str(self.getCurrentFuzzableRequest()) + '.'
+                running = 'Running ' + self.getPhase() + '.' + self.getRunningPlugin()
+                running += ' on ' + str(self.getCurrentFuzzableRequest()).replace('\x00', '') + '.'
+                return running
             else:
                 return 'Starting scan.'
     

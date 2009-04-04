@@ -140,7 +140,7 @@ class ProxiedRequests(entries.RememberingWindow):
         try:
             self._startProxy()
         except w3afException:
-            pass
+            self.w3af.mainwin.sb(_("Failed to start local proxy"))
         else:
             self.fuzzable = None
             self.waitingRequests = True
@@ -237,7 +237,10 @@ class ProxiedRequests(entries.RememberingWindow):
         '''Start/stops the proxy.'''
         proxyactive = widget.get_active()
         if proxyactive:
-            self._startProxy()
+            try:
+                self._startProxy()
+            except:
+                self.w3af.mainwin.sb(_("Failed to start local proxy"))
         else:
             self.w3af.mainwin.sb(_("Stopping local proxy"))
             self.proxy.stop()
@@ -257,7 +260,10 @@ class ProxiedRequests(entries.RememberingWindow):
         if new_ipport != previous_ipport:
             self.w3af.mainwin.sb(_("Stopping local proxy"))
             self.proxy.stop()
-            self._startProxy()
+            try:
+                self._startProxy()
+            except:
+                self.w3af.mainwin.sb(_("Failed to start local proxy"))
 
         # rest of config
         try:

@@ -103,8 +103,9 @@ class googleSpider(baseDiscoveryPlugin):
             om.out.debug('w3afException while fetching page in googleSpider: ' + str(w3) )
         except URLError, url_error:
             om.out.debug('URL Error while fetching page in googleSpider, error: ' + str(url_error) )
-        fuzzReqs = self._createFuzzableRequests( response )
-        self._fuzzableRequests.extend( fuzzReqs )
+        else:
+            fuzzReqs = self._createFuzzableRequests( response )
+            self._fuzzableRequests.extend( fuzzReqs )
     
     def getOptions( self ):
         '''

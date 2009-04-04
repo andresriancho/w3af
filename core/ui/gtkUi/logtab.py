@@ -298,6 +298,14 @@ class LogBody(entries.RememberingVPaned):
         '''
         @return: True so the timeout_add keeps calling it.
         '''
-        coreStatus = self.w3af.getCoreStatus()
-        self._what_is_being_run.set_text( coreStatus )
+        core_status = self.w3af.getCoreStatus()
+        
+        # Fixing 
+        # https://sourceforge.net/tracker/?func=detail&aid=2680683&group_id=170274&atid=853652
+        #
+        #   TypeError: GtkLabel.set_text() argument 1 must be string without null bytes, not str
+        #
+        core_status = core_status.replace('\0', '')
+        
+        self._what_is_being_run.set_text( core_status )
         return True

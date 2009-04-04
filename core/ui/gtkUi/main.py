@@ -176,7 +176,17 @@ class AboutDialog(gtk.Dialog):
 
     def _goWeb(self, w):
         '''Opens the web site and closes the dialog.'''
-        webbrowser.open("http://w3af.sourceforge.net/")
+        try:
+            webbrowser.open("http://w3af.sourceforge.net/")
+        except WindowsError, we:
+            #
+            #   This catches bug #2685576
+            #   https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2685576&group_id=170274
+            #
+            #   Which seems to be related to:
+            #   http://mail.python.org/pipermail/python-list/2004-July/269513.html
+            #
+            pass
         self.destroy()
 
 

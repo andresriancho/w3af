@@ -550,15 +550,38 @@ class FuzzyRequests(entries.RememberingWindow):
         return True
 
     def _pageChange(self, page):
+        '''
+        Change the page, and show the information that was stored in self.responses
+            
+        If OK, the responses are saved like this:
+            self.responses.append((True, httpResp.getId()))
+        
+        else:
+            self.responses.append((False, realreq, realbody, errorMsg))        
+        
+        @return: None.
+        '''
         info = self.responses[page]
         if info[0]:
             reqid = info[1]
             # no need to verify if it was ok: the request was succesful and
             # surely existant
-            request, response = self.dbh.searchById( reqid )[0]
-            self.resultReqResp.request.showObject( request )
-            self.resultReqResp.response.showObject( response )
-            self.title0.set_markup( "<b>Id: %d</b>" % reqid )
+            try:
+                request, response = self.dbh.searchById( reqid )[0]
+            except IndexError:
+                #
+                # This catches a strange error 
+                # https://sourceforge.net/tracker/?func=detail&aid=2696941&group_id=170274&atid=853652
+                # TODO: Investigate this further...
+                #
+                error_msg = 'Error searching the request database'
+                self.resultReqResp.request.rawShow( error_msg, error_msg )
+                self.resultReqResp.response.showError( error_msg )
+                self.title0.set_markup( "<b>Error</b>")
+            else:
+                self.resultReqResp.request.showObject( request )
+                self.resultReqResp.response.showObject( response )
+                self.title0.set_markup( "<b>Id: %d</b>" % reqid )
         else:
             # the request brought problems
             realreq, realbody, errorMsg = info[1:]
