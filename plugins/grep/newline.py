@@ -44,6 +44,9 @@ class newline(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
+        # User configured parameters
+        self._mixed_only = True
+
         # New line style
         self._unix = re.compile( '[^\r]\n' )
         self._windows = re.compile( '\r\n' )
@@ -70,7 +73,7 @@ class newline(baseGrepPlugin):
             
             msg = ''
             if len( unix ) > 0 and len(unix) >= len(windows) and len(unix) >= len(mac):
-                if len( windows ) == 0 and len( mac ) == 0:
+                if len( windows ) == 0 and len( mac ) == 0 and not self._mixed_only:
                     msg = 'The body of the URL: "'  + response.getURL() + '"'
                     msg += ' was created using a unix editor.'
                     i.setDesc( msg )
@@ -89,7 +92,7 @@ class newline(baseGrepPlugin):
             # Maybe I should think about doing this in a for loop or something...
             
             elif len( windows ) > 0 and len(windows) >= len(unix) and len(windows) >= len(mac):
-                if len( unix ) == 0 and len( mac ) == 0:
+                if len( unix ) == 0 and len( mac ) == 0  and not self._mixed_only:
                     msg = 'The body of the URL: "'  + response.getURL() + '" was created '
                     msg += 'using a windows editor.'
                     i.setDesc( msg )
@@ -106,7 +109,7 @@ class newline(baseGrepPlugin):
                     kb.kb.append( self, 'windows_mac', i )
             
             elif len( mac ) > 0 and len(mac) >= len(unix) and len(mac) >= len(windows):
-                if len( windows ) == 0 and len( unix ) == 0:
+                if len( windows ) == 0 and len( unix ) == 0  and not self._mixed_only:
                     msg = 'The body of the URL: "'  + response.getURL() + '" was created using '
                     msg += 'a mac editor.'
                     i.setDesc( msg )
@@ -137,7 +140,14 @@ class newline(baseGrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
+        d1 = 'Only report mixed newlines.'
+        h1 = 'If "mixedOnly" is enabled this plugin will only create objects in the knowledge base'
+        h1 += ' when the page under analysis has mixed new lines (i.e windows/unix).'
+        o1 = option('mixedOnly', self._mixed_only , d1, 'boolean', help=h1)
+        
         ol = optionList()
+        ol.add(o1)
+        
         return ol
 
     def end(self):
