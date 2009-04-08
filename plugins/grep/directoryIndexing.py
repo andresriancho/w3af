@@ -33,7 +33,10 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.data.db.temp_persist import disk_list
+
 import re
+
 
 class directoryIndexing(baseGrepPlugin):
     '''
@@ -44,7 +47,9 @@ class directoryIndexing(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-
+        
+        self._already_visited = disk_list()
+        
         # Added performance by compiling all the regular expressions
         # before using them. The setup time of the whole plugin raises,
         # but the execution time is lowered *a lot*.
@@ -55,22 +60,31 @@ class directoryIndexing(baseGrepPlugin):
         Plugin entry point, search for directory indexing.
         @return: None
         '''
-        if response.is_text_or_html():
-            html_string = response.getBody()
-            for indexing_regex in self._compiled_regex_list:
-                if indexing_regex.search( html_string ):
-                    v = vuln.vuln()
-                    v.setURL( response.getURL() )
-                    msg = 'The URL: "' + response.getURL() + '" has a directory '
-                    msg += 'indexing vulnerability.'
-                    v.setDesc( msg )
-                    v.setId( response.id )
-                    v.setSeverity(severity.LOW)
-                    path = urlParser.getPath( response.getURL() )
-                    v.setName( 'Directory indexing - ' + path )
-                    
-                    kb.kb.append( self , 'directory' , v )
-                    break
+        if response.getURL() in self._already_visited:
+            # Already worked for this URL, no reason to work twice
+            return
+        
+        else:
+            # Save it,
+            self._already_visited.append( response.getURL() )
+            
+            # Work,
+            if response.is_text_or_html():
+                html_string = response.getBody()
+                for indexing_regex in self._compiled_regex_list:
+                    if indexing_regex.search( html_string ):
+                        v = vuln.vuln()
+                        v.setURL( response.getURL() )
+                        msg = 'The URL: "' + response.getURL() + '" has a directory '
+                        msg += 'indexing vulnerability.'
+                        v.setDesc( msg )
+                        v.setId( response.id )
+                        v.setSeverity(severity.LOW)
+                        path = urlParser.getPath( response.getURL() )
+                        v.setName( 'Directory indexing - ' + path )
+                        
+                        kb.kb.append( self , 'directory' , v )
+                        break
     
     def setOptions( self, OptionList ):
         pass
