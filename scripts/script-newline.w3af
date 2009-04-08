@@ -13,7 +13,7 @@ grep newline
 back
 
 target
-set target http://localhost/w3af/grep/newline/abc.html
+set target http://localhost/w3af/grep/newline/
 back
 
 start

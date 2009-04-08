@@ -14,7 +14,7 @@ grep blankBody
 back
 
 target
-set target http://localhost/w3af/grep/grep_empty/abc.html
+set target http://localhost/w3af/grep/grep_empty/
 back
 
 start
