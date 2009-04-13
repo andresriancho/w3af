@@ -208,18 +208,20 @@ class sgmlParser(abstractParser, SGMLParser):
         '''
         This method finds references inside a document.
         '''
-        if tag.lower() in self._tagsContainingURLs:
-            for attr in attrs:
-                if attr[0].lower() in self._urlAttrs:
-                    if len(  attr[1] ):
-                            if attr[1][0] != '#':
-                                url = urlParser.urlJoin( self._baseUrl ,attr[1] )
-                                url = self._decode_URL(url, self._encoding)
-                                url = urlParser.normalizeURL( url )
-                                if url not in self._parsed_URLs:
-                                    self._parsed_URLs.append( url )
-                                    self._tag_and_url.append( (tag.lower(), url) )
-                                    break
+        if tag.lower() not in self._tagsContainingURLs:
+            return
+
+        for attr in attrs:
+            if attr[0].lower() in self._urlAttrs:
+                # We don't need fragments
+                if len(attr[1]) and attr[1][0] != '#':
+                    url = urlParser.urlJoin(self._baseUrl, attr[1])
+                    url = self._decode_URL(url, self._encoding)
+                    url = urlParser.normalizeURL(url)
+                    if url not in self._parsed_URLs:
+                        self._parsed_URLs.append(url)
+                        self._tag_and_url.append((tag.lower(), url))
+                        break
     
     def _parse(self, s):
         '''
