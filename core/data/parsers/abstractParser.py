@@ -42,7 +42,7 @@ class abstractParser:
         redirURL = httpResponse.getRedirURL()
         if redirURL:
             url = redirURL
-        self._baseUrl = urlParser.getDomainPath(url)
+        self._baseUrl = url
         self._baseDomain = urlParser.getDomain(url)
         self._rootDomain = urlParser.getRootDomain(url)
         
