@@ -165,9 +165,10 @@ def urlJoin( baseurl , relative ):
     urljoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
     yields the string
     'http://www.cwi.nl/%7Eguido/FAQ.html'
+    For more information read RFC 1808 espeally section 5
     @param baseurl: The base url to join
     @param relative: The relative url to add to the base url
-    '''        
+    '''
     if relative.find('//') == 0:
         # This special case had to be generated cause of some pykto tests
         scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
@@ -175,13 +176,17 @@ def urlJoin( baseurl , relative ):
         if lastSlash != 0:
             # I have more than one /
             path = path[: lastSlash]
-        
+
         relative = relative[1:]
-# TODO add params?!
+        # TODO add params?!
+        response =  scheme + '://' + domain + path + relative
+    elif relative[0] == '?':
+        scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
+        # TODO add params?!
         response =  scheme + '://' + domain + path + relative
     else:
         response = _uparse.urljoin( baseurl, relative )
-    
+
     response = normalizeURL(response)
     return response
 
