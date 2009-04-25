@@ -32,6 +32,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
+from core.data.db.temp_persist import disk_list
+
 from core.controllers.w3afException import w3afException
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
@@ -48,6 +50,9 @@ class strangeParameters(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        # Internal variables
+        self._already_reported = disk_list()
         
     def grep(self, request, response):
         '''
@@ -75,7 +80,11 @@ class strangeParameters(baseGrepPlugin):
                 for param_name in qs:
                     # This for loop is to address the repeated parameter name issue
                     for element_index in xrange(len(qs[param_name])):
-                        if self._is_strange( request, param_name, qs[param_name][element_index] ):
+                        if self._is_strange( request, param_name, qs[param_name][element_index] )\
+                        and ref not in self._already_reported:
+                            # Don't repeat findings
+                            self._already_reported.append(ref)
+
                             i = info.info()
                             i.setName('Strange parameter')
                             i.setURI( ref )
@@ -88,12 +97,17 @@ class strangeParameters(baseGrepPlugin):
                             i.addToHighlight(qs[param_name][element_index], param_name)
 
                             kb.kb.append( self , 'strangeParameters' , i )
-
-                        if self._is_SQL( request, param_name, qs[param_name][element_index] ): 
-                            # To find this kind of vulns
-                            # http://thedailywtf.com/Articles/Oklahoma-
-                            # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
-                            # Sensitive-Data.aspx
+                            
+                        # To find this kind of vulns
+                        # http://thedailywtf.com/Articles/Oklahoma-
+                        # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
+                        # Sensitive-Data.aspx
+                        if self._is_SQL( request, param_name, qs[param_name][element_index] )\
+                        and ref not in self._already_reported:
+                            
+                            # Don't repeat findings
+                            self._already_reported.append(ref)
+                            
                             v = vuln.vuln()
                             v.setName('Parameter has SQL sentence')
                             v.setURI( ref )
