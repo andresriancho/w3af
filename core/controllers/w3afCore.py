@@ -552,13 +552,22 @@ class w3afCore:
         @return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core.')
+        # Stop sending HTTP requests
+        self.uriOpener.stop()
+        
+        # End the grep plugins
+        self._end()
     
     def quit( self ):
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
+        # Stop sending HTTP requests
         self.uriOpener.stop()
-        self._end()
+        
+        # End the grep plugins
+        #self._end()
+        
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
         
