@@ -93,6 +93,11 @@ class privateIP(baseGrepPlugin):
                 ('192.168.' in response) or ('169.254.' in response)):
                 return
             
+            # Some proxy servers will return errors that include headers in the body
+            # along with the client IP
+            if 'X-Forwarded-For: ' in response:
+                return
+
             for regex in self._regex_list:
                 for match in regex.findall(response.getBody()):
                     match = match.strip()
