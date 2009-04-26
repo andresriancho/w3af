@@ -57,21 +57,51 @@ class ssi(baseAuditPlugin):
         '''
         om.out.debug( 'ssi plugin is testing: ' + freq.getURL() )
         
-        # Used in end()
-        self._fuzzable_requests.append( freq )
-        
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        
+        # Used in end() to detect "persistent SSI"
+        self._add_persistent_SSI( freq, oResponse )
+        
+        # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
         mutants = createMutants( freq , ssi_strings, oResponse=oResponse )
-            
+        
         for mutant in mutants:
             if self._hasNoBug( 'ssi', 'ssi', mutant.getURL() , mutant.getVar() ):
                 # Only spawn a thread if the mutant has a modified variable
                 # that has no reported bugs in the kb
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+    
+    def _add_persistent_SSI(self, freq, oResponse):
+        '''
+        Creates a wrapper object, around the freq variable, and also saves the original response to it.
+        Saves the wrapper to a list, that is going to be used in the end() method to identify persistent
+        SSI vulnerabilities.
         
+        @parameter freq: The fuzzable request to use in the creation of the wrapper object
+        @parameter oResponse: The original HTML response to use in the creation of the wrapper object
+        @return: None
+        '''
+        freq_copy = freq.copy()
         
+        class wrapper(object):
+            def __init__(self, freq, oResponse):
+                self.__dict__['freq'] = freq
+                self.__dict__['oResponse'] = oResponse
+            
+            def getOriginalResponseBody(self):
+                return self.oResponse
+                
+            def __getattr__(self, attr):
+                return getattr(self.__dict__['freq'], attr)
+            
+            def __setattr__(self, attr, value):
+                return setattr(self.__dict__['freq'], attr, value)  
+        
+        w = wrapper(freq_copy, oResponse)
+        self._fuzzable_requests.append(w)
+    
     def _get_ssi_strings( self ):
         '''
         This method returns a list of server sides to try to include.
@@ -156,7 +186,7 @@ class ssi(baseAuditPlugin):
         for file_pattern in self._get_file_patterns():
             match = re.search( file_pattern, response.getBody() , re.IGNORECASE )
             if  match:
-                msg = 'Found server side include. The section where the file is included is (only'
+                msg = 'Found file pattern. The section where the file pattern is included is (only'
                 msg += ' a fragment is shown): "' + response.getBody()[match.start():match.end()]
                 msg += '". The error was found on response with id ' + str(response.id) + '.'
                 om.out.information(msg)
