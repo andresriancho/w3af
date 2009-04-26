@@ -95,24 +95,31 @@ class shell(vuln, exploitResult, commonAttackMethods):
             self.help( command )
         if command == 'start vdaemon':
             # start a vdaemon!
-            # Advanced exploitation
+            # (advanced exploitation)
             from core.controllers.vdaemon.vdFactory import getVirtualDaemon
-            #om.out.console('')
-            vd = getVirtualDaemon(self._rexec)
-            vd.setRemoteIP( urlParser.getDomain( self.getURL() )  )
-            vd.start2()
-            # Let the server start
-            time.sleep(0.1)
-            return ''
+            try:
+                vd = getVirtualDaemon(self._rexec)
+            except w3afException, w3:
+                return 'Error' + str(w3)
+            else:
+                vd.setRemoteIP( urlParser.getDomain( self.getURL() )  )
+                vd.start2()
+                # Let the server start
+                time.sleep(0.1)
+                return 'Successfully started the virtual daemon.'
         elif command == 'start w3afAgent':
             # start a w3afAgent, to do this, I must transfer the agent client to the
             # remote end and start the w3afServer in this local machine
             # all this work is done by the w3afAgentManager, I just need to called
             # start and thats it.
             from core.controllers.w3afAgent.w3afAgentManager import w3afAgentManager
-            agentManager = w3afAgentManager(self._rexec)
-            agentManager.run()
-            return ''
+            try:
+                agentManager = w3afAgentManager(self._rexec)
+            except w3afException, w3:
+                return 'Error' + str(w3)
+            else:
+                agentManager.run()
+                return 'Successfully started the w3afAgent.'
         elif hasattr( self, '_rexec'):
             # forward to the plugin
             return self._rexec( command )
