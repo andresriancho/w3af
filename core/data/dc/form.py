@@ -95,6 +95,7 @@ class form(dataContainer):
         if name:
             self._files.append( name )
             self._setVar(name, '')
+            self._types[name] = 'file'
 
     def __str__( self ):
         '''
@@ -139,7 +140,7 @@ class form(dataContainer):
         <INPUT type="radio" name="sex" value="Male"> Male<BR>
         '''
         
-        type = name = value = ''
+        attr_type = name = value = ''
         
         # Try to get the name:
         for attr in attrs:
@@ -153,21 +154,24 @@ class form(dataContainer):
         if not name:
             return (name, value)
 
-        # Find the type
+        # Find the attr_type
         for attr in attrs:
             if attr[0] == 'type':
-                type = attr[1].lower()
+                attr_type = attr[1].lower()
 
         # Find the default value
         for attr in attrs:
             if attr[0] == 'value':
                 value = attr[1]
 
-        if type == 'submit':
+        if attr_type == 'submit':
             self.addSubmit( name, value )
         else:
-            self._types[name] = type
             self._setVar(name, value)
+        
+        # Save the attr_type
+        self._types[name] = attr_type
+        
         #
         # TODO May be create special internal method instead of using
         # addInput()?
@@ -192,6 +196,8 @@ class form(dataContainer):
         if value not in self._selects[name]:
             self._selects[name].append(value)
             self._selects[name].append(self._secret_value)
+            
+        self._types[name] = 'checkbox'
 
     def addRadio(self, attrs):
         """
@@ -201,7 +207,9 @@ class form(dataContainer):
 
         if not name:
             return
-
+        
+        self._types[name] = 'radio'
+        
         if name not in self._selects:
             self._selects[name] = []
 
@@ -217,6 +225,8 @@ class form(dataContainer):
         Options is list of options attrs (tuples)
         """
         self._selects[name] = []
+        self._types[name] = 'select'
+        
         value = ""
         for option in options:
             for attr in option:
