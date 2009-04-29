@@ -68,6 +68,15 @@ class rootMenu(menu):
         Start the core in a different thread, monitor keystrokes in the main thread.
         @return: None
         '''
+        # Check if the console output plugin is enabled or not, and warn.
+        output_plugins = self._w3af.getEnabledPlugins('output')
+        if 'console' not in output_plugins:
+            msg = "Warning: You disabled the console output plugin. The scan information, such as"
+            msg += ' discovered vulnerabilities won\'t be printed to the console, we advise you'
+            msg += ' to enable this output plugin in order to be able to actually see'
+            msg += ' the scan output in the console.'
+            print msg
+        
         threading.Thread(target=self._real_start).start()
         try:
             # let the core start
