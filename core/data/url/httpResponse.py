@@ -175,7 +175,16 @@ class httpResponse:
                     
                 # Now that we have the charset, we use it! (and save it)
                 # The return value of the decode function is a unicode string.
-                unicode_str = body.decode(charset, 'returnEscapedChar')
+                try:
+                    unicode_str = body.decode(charset, 'returnEscapedChar')
+                except LookupError:
+                    # warn about a buggy charset
+                    msg = 'Charset LookupError: unknown charset: ' + charset
+                    msg += '; ignored and set to default: ' + self._charset
+                    om.out.debug( msg )
+                    
+                    # Use the default
+                    unicode_str = body.decode(self._charset, 'returnEscapedChar')
                
                 # Now we use the unicode_str to create a utf-8 string that will be used in all w3af
                 self._body = unicode_str.encode('utf-8')
