@@ -180,7 +180,7 @@ def urlJoin( baseurl , relative ):
         relative = relative[1:]
         # TODO add params?!
         response =  scheme + '://' + domain + path + relative
-    elif relative[0] == '?':
+    elif len(relative)>0 and relative[0] == '?':
         scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
         # TODO add params?!
         response =  scheme + '://' + domain + path + relative
