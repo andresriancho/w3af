@@ -57,7 +57,7 @@ def factory(moduleName, *args):
             raise w3afException('The requested plugin ("'+ moduleName + '") doesn\'t have a correct format.')
         else:
             try:
-                res = apply(aClass, args)
+                res = aClass(*args)
             except Exception, e:
                 msg = 'Failed to get an instance of "' + className
                 msg += '". Original exception: "' + str(e) + '".'
