@@ -87,7 +87,6 @@ class rootMenu(menu):
             om.out.console('User hitted Ctrl+C, stopping scan.')
             time.sleep(1)
             self._w3af.stop()
-            self._w3af.quit()
  
     def _real_start(self):
         '''
