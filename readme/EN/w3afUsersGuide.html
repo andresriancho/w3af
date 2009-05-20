@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0">
-	<META NAME="CHANGED" CONTENT="20090331;9334600">
+	<META NAME="CHANGED" CONTENT="20090520;11570800">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in; margin: 0.79in }
@@ -42,7 +42,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
-<FONT SIZE=2>Document version: <B>1.6.6</B></FONT></P>
+<FONT SIZE=2>Document version: <B>1.6.7</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: medium; text-decoration: none">
@@ -59,8 +59,7 @@ User Guide</B></U></FONT></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; text-decoration: none">
 <FONT SIZE=2><B>Andy Bach</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; text-decoration: none">
-<BR>
-</P>
+<FONT COLOR="#00681c"><FONT SIZE=2><B>Chris Teodorski</B></FONT></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
@@ -85,8 +84,8 @@ User Guide</B></U></FONT></FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>March
-31, 2009</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>May
+20, 2009</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -103,7 +102,7 @@ User Guide</B></U></FONT></FONT></P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">w3af phases	4</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af	5</P>
 	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">Running w3af with
-	GTK user interface	9</P>
+	GTK user interface	8</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugins	10</P>
 	<P STYLE="margin-left: 0.39in; margin-bottom: 0in">Plugin
 	configuration	11</P>
@@ -158,9 +157,9 @@ framework. </FONT>
 <H2 CLASS="western">Installation</H2>
 <P ALIGN=JUSTIFY STYLE="background: #ffffff; font-style: normal; text-decoration: none">
 <FONT SIZE=3>The framework should work on all platforms supported <SPAN STYLE="background: #ffffff">by
-Python, parti</SPAN>cularly, w3af has been teste<SPAN STYLE="background: #ffffff">d
+Python.</SPAN> w3af has been teste<SPAN STYLE="background: #ffffff">d
 on Linux, Window</SPAN>s XP, Windows Vista and OpenBSD. This user
-guide will guide you through the installation on a Linux platform,
+guide will guide you through the installation on a Linux platform.
 installing w3af in a Windows box is straight forward if you use the
 available installer which can be downloaded from the official w3af
 site.</FONT></P>
@@ -238,7 +237,7 @@ setup.py install</FONT></P>
 <H2 CLASS="western">w3af phases</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Before even running w3af a user must know how the
+<P ALIGN=JUSTIFY>Before running w3af a user must know how the
 application is divided and how plugins are going to be executed.
 Basically, w3af has three types of plugins: discovery , audit and
 attack.</P>
@@ -268,9 +267,9 @@ the case of SQL injections exploits.</SPAN></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal">w3af has two user
 interfaces, the console user interface (consoleUI) and the graphical
 user interface (gtkUi). This user guide will focus on the consoleUI,
-which is, at the moment of this writing much more tested and complete
-than the gtkUi. To fire up the consoleUI you just have to execute
-w3af without parameters and you will get a prompt like this one:</P>
+which ismore fully tested and complete than the gtkUi. To fire up the
+consoleUI you just have to execute w3af without parameters and you
+will get a prompt like this one:</P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
 ./w3af_console</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B></FONT></P>
@@ -278,8 +277,8 @@ w3af without parameters and you will get a prompt like this one:</P>
 </P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">From
 this prompt you will be able to configure the framework, launch scans
-and ultimately exploit a vulnerability. At this point you can start
-typing commands, the first command you have to learn is “help”
+and ultimately exploit a vulnerability. At this  prompt you can start
+typing commands. The first command you have to learn is “help”
 (please note that commands are case sensitive):</FONT></P>
 <P STYLE="font-style: normal"><BR><BR>
 </P>
@@ -360,12 +359,12 @@ you already noticed, the “help” command can take a parameter, and
 if available, a detailed help for that parameter will be shown, <FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-style: normal"><SPAN STYLE="background: transparent">e.g.
 “help keys”.</SPAN></SPAN></FONT></FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">Other
-interesting things to notice about the consoleUI are the tab
-completion (type 'plu' and then TAB) and the command history (after
-typing some commands, navigate the history with the up and down
-arrows).</FONT></P>
+interesting things to notice about the consoleUI is  the ability for
+tabbed completion (type 'plu' and then TAB) and the command history
+(after typing some commands, navigate the history with the up and
+down arrows).</FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">To
-enter a configuration menu, you just have to type it's name and hit
+enter a configuration menu, you just have to type its name and hit
 enter, you will see how the prompt changes and you are now in that
 context:</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B><SPAN STYLE="font-weight: medium">http-settings
@@ -551,10 +550,10 @@ view</FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">To
 summarize, the “view” command is used to list all configurable
 parameters, with their values and a description. The set command is
-used to change its value. Finally we can execute “back”, “.”
-or press CTRL+C to return to the previous menu. A detailed help for
+used to change a value. Finally we can execute “back”, “.” or
+press CTRL+C to return to the previous menu. A detailed help for
 every configuration parameter can be obtained using “help
-parameter” like shown in this example:</FONT></P>
+parameter” as  shown in this example:</FONT></P>
 <P STYLE="font-style: normal"><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/config:http-settings&gt;&gt;&gt;</B>
@@ -573,8 +572,8 @@ connections.</FONT></P>
 are used to set system wide parameters that are used by the
 framework. All the parameters have defaults and in most cases you can
 leave them as they are. w3af was designed in a way that allows
-beginners to run it without having to learn a lot of its internals,
-and also flexible enough to be tunned by experts that know what they
+beginners to run it without having to learn a lot of its internals.
+It is also flexible enough to be tuned by experts that know what they
 want and need to change internal configuration parameters to fulfill
 their tasks.</FONT></P>
 <P STYLE="font-style: normal; font-weight: medium"><BR><BR>
@@ -600,8 +599,8 @@ graphical user interface allows you to perform all the actions that
 the framework offers and features a much easier and faster way to
 start a scan and analyze the results.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">In
-case you are wondering how the graphical user interface looks like,
-here is a screen shot:</FONT></P>
+case you are wondering  what the graphical user interface looks like,
+here is a screenshot:</FONT></P>
 <UL>
 	<P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: medium"><FONT COLOR="#000000"><IMG SRC="w3afUsersGuide_html_m51b850c5.png" NAME="graphics1" ALIGN=LEFT WIDTH=626 HEIGHT=418 BORDER=2></FONT></P>
 </UL>
@@ -610,10 +609,10 @@ here is a screen shot:</FONT></P>
 </P>
 <P ALIGN=JUSTIFY>Plugins do all the magic. The plugins will find the
 URLs, discover the vulnerabilities and exploit them. So now, we will
-learn how to configure the plugins. In a previous section I told you
-that w3af had three types of plugins: discovery, audit and exploit.
-Well, I actually lied a little bit because w3af other plugin types.
-The complete list of plugins types is:</P>
+learn how to configure the plugins. In a previous section it was
+explained that it was explained that w3af had three core types of
+plugins: discovery, audit and exploit.  The complete list of plugins
+types is:</P>
 <P><BR><BR>
 </P>
 <UL>
@@ -628,25 +627,24 @@ The complete list of plugins types is:</P>
 </UL>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>As said before, discovery plugins find new points of
-injection, that are later used by audit plugins to find
-vulnerabilities. Grep plugins analyze all page content and find
-vulnerabilities on pages that are requested by other plugins; for
-example a grep plugin will find a comment on the HTML body that has
-the word “password” inside it  and generate a vulnerability based
-on it.</P>
+<P ALIGN=JUSTIFY>Discovery plugins find new points of injection that
+are later used by audit plugins to find vulnerabilities. Grep plugins
+analyze all page content and find vulnerabilities on pages that are
+requested by other plugins; for example, a grep plugin will find a
+comment on the HTML body that has the word “password” inside it 
+and generate a vulnerability based on it.</P>
 <P ALIGN=JUSTIFY>Exploit plugins [ab]use the vulnerabilities found in
 the audit phase and return something useful to the user ( remote
 shell, SQL table dump, a proxy, etc ).</P>
 <P ALIGN=JUSTIFY>Output plugins are the way the framework and the
-plugins communicate with the user, output plugins save the data to a
-text or html file. Debugging information is also sent to the plugins
-and can be saved for analysis.</P>
-<P ALIGN=JUSTIFY>Mangle plugins are a way to modify requests and
-responses based on regular expressions, think “sed (stream editor)
-for the web”.</P>
-<P ALIGN=JUSTIFY>Bruteforce plugins will bruteforce logins, they are
-actually part of the discovery phase. 
+plugins communicate with the user. Output plugins save the data to a
+text or html file. Debugging information is also sent to the output
+plugins and can be saved for analysis.</P>
+<P ALIGN=JUSTIFY>Mangle plugins are a allow for  modification of
+requests and responses based on regular expressions, think “sed
+(stream editor) for the web”.</P>
+<P ALIGN=JUSTIFY>Bruteforce plugins will bruteforce logins. These
+plugins are  part of the discovery phase. 
 </P>
 <P ALIGN=JUSTIFY>Finally, evasion plugins try to evade simple
 intrusion detection rules.</P>
@@ -654,7 +652,8 @@ intrusion detection rules.</P>
 <H3 CLASS="western"></H3>
 <H3 CLASS="western">Plugin configuration</H3>
 <P ALIGN=JUSTIFY>The plugins are configured using the “plugins”
-configuration menu. Lets see how to do that:</P>
+configuration menu. 
+</P>
 <P><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
@@ -709,11 +708,9 @@ output     | View, configure and enable output plugins      | </FONT>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B></FONT></P>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">As
-you may have noticed, all plugins can be configured here except the
-exploit plugins, we will talk about them later. The first step to
-take here is to know the syntax for configuring the plugins, so lets
-do that:</FONT></P>
+<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">All
+plugins can be configured here except the exploit plugins.,   The
+example below demonstrates how to find the syntax for a plugin:</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
@@ -778,9 +775,9 @@ default all plugins are listed. </FONT>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B></FONT></P>
 <P STYLE="margin-left: 0.49in"><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">Ok,
-so w3af is nice enough to tell us how to use it. Now we will see how
-to get a list of the available plugins and their status:</FONT></P>
+<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">The
+example below demonstrates the use of the list command to see all
+available plugins and their status.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 list audit</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">|------------------------------------------------------------|
@@ -1042,9 +1039,9 @@ Running discovery.webSpider on http://localhost/w3af/ | Method: GET.</FONT></P>
 <H3 CLASS="western">A complete session</H3>
 <P STYLE="font-weight: medium"><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">A
-complete w3af session would look like this ( see the inline comments
-):</FONT></P>
+<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">An
+example of an entire w3af session appears below.  Attention should be
+paid to the inline comments as they provide additional details.</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
@@ -1565,8 +1562,8 @@ returned HTTP code &quot;200&quot; </FONT>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><BR><BR>
 </P>
 <P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">Output
-plugins also handle the logging of HTTP requests and responses, every
-plugin handles this data in a different way, for example, the
+plugins also handle the logging of HTTP requests and responses. Every
+plugin handles this data in a different way. For example, the
 textFile plugin writes requests and responses to a file, while the
 htmlFile plugin disregards the data and simply does nothing with it.
 An example of a HTTP log written by the textFile follows:</FONT></P>
@@ -1650,18 +1647,17 @@ min/avg/max/mdev = 0.024/0.033/0.037/0.006 ms </FONT>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><FONT FACE="Nimbus Mono L, monospace">=============================================================</FONT></P>
 <P STYLE="margin-left: 0.49in; font-weight: medium"><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">Just
-in case you are wondering, all messages sent by the plugins and the
-framework are sent to ALL enabled plugins, so if you have enabled
-textFile and htmlFile output plugins, both will log a vulnerability
-found by an audit plugin.</FONT></P>
+<P ALIGN=JUSTIFY STYLE="font-weight: medium"><FONT FACE="Bitstream Vera Sans, sans-serif">All
+messages sent by the plugins and the framework are sent to ALL
+enabled plugins, so if you have enabled textFile and htmlFile output
+plugins, both will log a vulnerability found by an audit plugin.</FONT></P>
 <P STYLE="font-weight: medium"><BR><BR>
 </P>
 <H2 CLASS="western">Complex sites</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Some sites use embedded objects, like macromedia
-flash and java applets, that the browser renders to the user. Because
+<P ALIGN=JUSTIFY>Some sites use embedded objects, like Macromedia
+flash and Java applets, that the browser renders to the user. Because
 of the inability of the framework to get any information out of those
 objects, a script called spiderMan was created. This script will run
 a HTTP proxy so the user can navigate the target site through it;
@@ -1670,7 +1666,7 @@ requests and responses.</P>
 <P ALIGN=JUSTIFY>A simple example will clarify things, let's suppose
 that w3af is auditing a site and can't find any links on the main
 page. After a closer interpretation of the results by the user, it is
-clear that the main page has a java applet menu where all the other
+clear that the main page has a Java applet menu where all the other
 sections are linked. The user runs w3af once again and now activates
 the spiderMan plugin, navigates the site manually using the browser
 and the spiderman proxy. When the user has finished his browsing,
@@ -2007,8 +2003,7 @@ exploitation:</P>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
 	process of uploading the file to the remote server depends on the
 	remote operating system, the privileges of the user running w3af and
-	the local operating system; but in most cases the following
-	happends:</FONT></P>
+	the local operating system; but in most cases the following happens:</FONT></P>
 </OL>
 <UL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
@@ -2020,16 +2015,17 @@ exploitation:</P>
 	outgoing firewall rules on the remote network</FONT></P>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">If
 	a TCP port is found to be allowed in the remote firewall, w3af will
-	try to run a server on that port and make a reverse connection from
-	the </FONT>compromised host in order to download the PE/ELF
-	generated file.<FONT FACE="Bitstream Vera Sans, sans-serif"> If </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">no
+	try </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">to run a
+	server on that port and make a reverse connection from the
+	</FONT>compromised host in order to download the PE/ELF generated
+	file.<FONT FACE="Bitstream Vera Sans, sans-serif"> If </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">no
 	TCP ports are enabled, w3af will send the ELF/PE file to the remote
 	</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">server using
 	several calls to the “echo” command, which is rather slow, but
 	should always work because it's an in-band transfer method.</FONT></P>
 </UL>
-<OL START=9>
-	<LI><P ALIGN=JUSTIFY>    <FONT FACE="Bitstream Vera Sans, sans-serif">The
+<OL>
+	<LI VALUE=1><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
 	payload runs in the remote server and possibly connects back to the
 	metasploit framework, that will handle the rest of the exploitation.</FONT></P>
 </OL>
@@ -2135,10 +2131,11 @@ vdaemon</SPAN></FONT>” command. With this w3af run we have covered
 items 1. and 2. of the theory. The next step is to configure the MSF
 module and run it; my preferred way is to use metasploit's web
 interface “msfweb”. The first step is to click on the “Exploit”
-button on the main menu, a small window will appear, there you should
-search for <I>w3af </I>and then select the exploit named: “w3af
-virtual daemon exploit”. Some important points to have in mind
-while configuring the w3af agent virtual daemon module inside MSF:</P>
+button on the main menu. This will cause a small window to appear. In
+this window, you should search for <I>w3af </I>and then select the
+exploit named: “w3af virtual daemon exploit”. Some important
+points to have in mind while configuring the w3af agent virtual
+daemon module inside MSF:</P>
 <UL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
 	target is of course the remote operating system you are exploiting</FONT></P>
@@ -2188,9 +2185,9 @@ executed the MSF payload on the remote server. </FONT>
 </P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
 last messages are printed when you run w3af as a normal user, the
-reason is simple, when you run w3af as a user you can't sniff and
-</FONT>therefore<FONT FACE="Bitstream Vera Sans, sans-serif"> can't
-perform a </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">successful
+reason is </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">simple,
+when you run w3af as a user you can't sniff and </FONT>therefore<FONT FACE="Bitstream Vera Sans, sans-serif">
+can't perform a </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">successful
 extrusion scan. A successful extrusion scan would look like:</FONT></P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
@@ -2318,9 +2315,9 @@ Starting handler </FONT>
 </P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Now the
 user has an interactive shell with the privileges of the user running
-the web server, that can be used without any restrictions, you could
-even close w3af now and continue working directly from the metasploit
-shell.</FONT></P>
+the web server, that can be used without any restrictions. It is
+possible at this point to close w3af  and continue working directly
+from the metasploit shell.</FONT></P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
 <H3 CLASS="western" ALIGN=JUSTIFY STYLE="margin-top: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent</FONT></H3>
@@ -2329,10 +2326,10 @@ shell.</FONT></P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">As said
 before, this feature allows you to create a reverse tunnel that will
 route TCP connections through the compromised server. Unlike virtual
-daemon, these feature is ready to use and doesn't require any other
+daemon, this  feature is ready to use and doesn't require any other
 software. B<FONT FACE="Bitstream Vera Sans, sans-serif">efore going
 through an example to see how to use this feature, we will make a
-summary of the steps that will happened during exploitation:</FONT></FONT></P>
+summary of the steps that will happen during exploitation:</FONT></FONT></P>
 <OL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
 	finds a vulnerability that allows remote command execution</FONT></P>
@@ -2344,11 +2341,9 @@ summary of the steps that will happened during exploitation:</FONT></FONT></P>
 	framework to identify outgoing firewall rules on the remote network.</FONT></P>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent
 	Manager will send a w3afAgentClient to the remote server. <FONT FACE="Bitstream Vera Sans, sans-serif">The
-	</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">process of
-	uploading the file to the remote server depends on the remote
-	operating system, the privileges of the user running w3af and the
-	local </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">operating
-	system; but in most cases the following happends:</FONT></FONT></P>
+	process of uploading the file to the remote server depends on the
+	remote operating system, the privileges of the user running w3af and
+	the local operating system; but in most cases the following happens:</FONT></FONT></P>
 </OL>
 <UL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
@@ -2364,8 +2359,8 @@ summary of the steps that will happened during exploitation:</FONT></FONT></P>
 	is rather slow, but should always work because it's an in-band
 	transfer method.</FONT></P>
 </UL>
-<OL START=5>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent
+<OL>
+	<LI VALUE=1><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent
 	Manager starts the w3afAgentServer that will bind on localhost:1080
 	(which will be used by the w3af user) and on the interface
 	configured in w3af ( misc-settings-&gt;interface ) on the port
@@ -2674,15 +2669,16 @@ the w3af world. For a list of known bugs and a TODO list, please see:</P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><A HREF="http://sourceforge.net/pm/?group_id=170274">http://sourceforge.net/pm/?group_id=170274</A></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
 </P>
+<H2 CLASS="western"></H2>
 <H2 CLASS="western">Final words</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>This document is merely and introduction, complete
+<P ALIGN=JUSTIFY>This document is merely an introduction, complete
 knowledge about the framework and its usage is complex and can be
 achieved only by using it.</P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Making a mistake and learning from it, takes you one
+<P ALIGN=JUSTIFY>Making a mistake and learning from it takes you one
 step closer to wisdom.</P>
 </BODY>
 </HTML>
