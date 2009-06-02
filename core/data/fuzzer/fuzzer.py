@@ -55,6 +55,8 @@ from core.data.fuzzer.mutantFileContent import mutantFileContent
 
 import core.controllers.outputManager as om
 
+from core.data.dc.form import form
+
 
 def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] , oResponse = None ):
     '''
@@ -314,12 +316,15 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     # all the other fields of the data container are empty (think about a form)
                     # We need to fill those in, with something *useful* to get around the easiest
                     # developer checks like: "parameter A was filled".
-                    for var_name_dc in dataContainerCopy:
-                        for element_index_dc, element_value_dc in enumerate(dataContainerCopy[var_name_dc]):
-                            if (var_name_dc, element_index_dc) != (parameter_name, element_index) and\
-                            dataContainerCopy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
-                                # Fill in smartly
-                                dataContainerCopy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
+                    
+                    # But I only perform this task in HTML forms, everything else is left as it is:
+                    if isinstance( dataContainerCopy, form ):
+                        for var_name_dc in dataContainerCopy:
+                            for element_index_dc, element_value_dc in enumerate(dataContainerCopy[var_name_dc]):
+                                if (var_name_dc, element_index_dc) != (parameter_name, element_index) and\
+                                dataContainerCopy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
+                                    # Fill in smartly
+                                    dataContainerCopy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
 
                     # __HERE__
                     # Please see the comment above for an explanation of what we are doing here:
