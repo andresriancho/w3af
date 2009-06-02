@@ -141,6 +141,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
         errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
+        errors.append( ("ADODB\\.Recordset'", dbms.MSSQL ))
         
         # DB2
         errors.append( ('SQLCODE', dbms.DB2 ) )
