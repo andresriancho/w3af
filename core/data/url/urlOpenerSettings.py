@@ -34,6 +34,7 @@ from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
 import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
+from core.data.url.handlers.urlParameterHandler import URLParameterHandler
 
 from core.controllers.configurable import configurable
 
@@ -66,6 +67,7 @@ class urlOpenerSettings( configurable ):
         self._httpsHandler = None
         self._mangleHandler = None
         self._cookieHandler = None
+        self._urlParameterHandler = None
         # Keep alive handlers are created on buildOpeners()
         
         # Openers
@@ -99,6 +101,8 @@ class urlOpenerSettings( configurable ):
             cf.cf.save('ignoreSessCookies', False )
             cf.cf.save('maxFileSize', 400000 )
             cf.cf.save('maxRetrys', 2 )
+            
+            cf.cf.save('urlParameter', '' )
             
             # 404 settings
             cf.cf.save('404exceptions', []  )
@@ -254,7 +258,7 @@ class urlOpenerSettings( configurable ):
                                 MultipartPostHandler.MultipartPostHandler, \
                                 self._kAHTTP, self._kAHTTPS, logHandler.logHandler, \
                                 mangleHandler.mangleHandler( self._manglePlugins ), \
-                                HTTPGzipProcessor ]:
+                                HTTPGzipProcessor, self._urlParameterHandler ]:
             if handler:
                 handlers.append(handler)
         
@@ -303,6 +307,17 @@ class urlOpenerSettings( configurable ):
     def getMaxRetrys( self ):
         return cf.cf.getData('maxRetrys')
     
+    def setUrlParameter ( self, urlParam ):
+        # Do some input cleanup/validation
+        urlParam = urlParam.replace("'", "")
+        urlParam = urlParam.replace("\"", "")
+        urlParam = urlParam.lstrip().rstrip()
+        if urlParam != '':
+            cf.cf.save('urlParameter', urlParam)
+            self._urlParameterHandler = URLParameterHandler(urlParam)
+    
+    def getUrlParameter ( self ):
+        return cf.cf.getData('urlParameter')
 
     def getOptions( self ):
         '''
@@ -371,6 +386,10 @@ class urlOpenerSettings( configurable ):
         d17 = 'Perform 404 page detection based on the knowledge found in the directory of the file AND the file extension'
         h17 = 'Only used when autoDetect404 and byDirectory404 are False.'
         o17 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d17, 'boolean', tabid='404 settings')
+        
+        d18 = 'Append the given URL parameter to every accessed URL.'
+        d18 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
+        o18 = option('urlParameter', cf.cf.getData('urlParameter'), d18, 'string')    
 
         ol = optionList()
         ol.add(o1)
@@ -390,6 +409,7 @@ class urlOpenerSettings( configurable ):
         ol.add(o15)
         ol.add(o16)
         ol.add(o17)
+        ol.add(o18)
         return ol
 
     def setOptions( self, optionsMap ):
@@ -420,6 +440,8 @@ class urlOpenerSettings( configurable ):
         
         self.setMaxFileSize( optionsMap['maxFileSize'].getValue() )
         self.setMaxRetrys( optionsMap['maxRetrys'].getValue() )
+        
+        self.setUrlParameter( optionsMap['urlParameter'].getValue() )
         
         # 404 settings are saved here
         cf.cf.save('404exceptions', optionsMap['404exceptions'].getValue() )
