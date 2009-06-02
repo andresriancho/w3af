@@ -60,7 +60,6 @@ equalLimit = 0.8
 [audit.globalRedirect]
 
 [discovery.webSpider]
-urlParameter = None
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
