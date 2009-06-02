@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 '''
 formFiller.py
 
@@ -24,61 +25,184 @@ from string import letters, digits
 from random import choice, randint
 import core.controllers.outputManager as om
 
-def smartFill( variableName ):
+def smartFill( variable_name ):
     '''
     This method returns a "smart" option for a variable name inside a form. For example, if the
-    variableName is "username" a smartFill response would be "john1309", not "0800-111-2233".
+    variable_name is "username" a smartFill response would be "john1309", not "0800-111-2233".
     This helps A LOT with server side validation.
     
     @return: The "most likely to be validated as a good value" string, OR a random str if no match is found.
     '''
-    for alphaVarName in _getAlphaVarNames(): 
-        if variableName.count( alphaVarName ) or alphaVarName.count( variableName ):
-            value = createRandAlpha( 7 )
-            om.out.debug('SmartFilling parameter ' + variableName + ' of form with alpha value: ' + value)
-            return value
+    variable_name = variable_name.lower()
     
-    for numericVarName in _getNumericVarNames(): 
-        if variableName.count( numericVarName ) or numericVarName.count( variableName ):
-            value = createRandNum( 7 )
-            om.out.debug('SmartFilling parameter ' + variableName + ' of form with numeric value: ' + value)
-            return value
+    handlers = [ (long_alpha, (createRandAlpha, 7)), 
+                        (short_alpha, (createRandAlpha, 3)), 
+                        (long_number, (createRandNum, 5)), 
+                        (short_number, (createRandNum, 2)), 
+                        (date, (createRandNum, 1)), 
+                        (mail, (lambda x: 'w3af@email.com', None)), 
+                        (state, (lambda x: 'AK', None)) ]
     
-    # Well... nothing was found, i'm soooo sad.
+    for name_function, (custom_generator, length) in handlers:
+    
+        for name_in_db in name_function():
+            if variable_name.count( name_in_db ) or name_in_db.count( variable_name ):
+                value = custom_generator( length )
+                om.out.debug('SmartFilling parameter ' + variable_name + ' of form with '+ repr(name_function) +' value: ' + value)
+                return value
+    
+    # Well... nothing was found (this is bad!)
     # Its better to send numbers when nothing matches.
-    return createRandNum( 6 )
+    return createRandNum( 4 )
 
-def _getAlphaVarNames():
+def long_alpha():
     '''
     @return: A list of variables that should be filled with alpha strings.
     '''
     l = []
+    
+    # english
     l.append('username')
     l.append('user')
-    l.append('usuario')
-    l.append('nombre')
-    l.append('apellido')
+    l.append('name')    
+    l.append('surname')
+    l.append('lastname')
     l.append('location')
     l.append('city')
+    l.append('country')    
+    l.append('addr')
+    l.append('address')
+    
+    # spanish
+    l.append('usuario')    
+    l.append('nombre')
+    l.append('apellido')
     l.append('ciudad')
-    l.append('name')
+    l.append('pais')
+    l.append('país')
+    l.append('dirección')
+    l.append('direccion')
+    
+    # portugués
+    l.append('nome')
+    l.append('sobrenome')
+    l.append('cidade')
+    l.append('endereço')
+    l.append('endereco')
+    
+    # passwords need to be long in order to be "complex"
+    l.append('pass')
+    l.append('word')
+    l.append('pswd')
+    l.append('pwd')
+    l.append('auth')
+    l.append('password')
+    l.append('contraseña')
+    l.append('senha')
+    
     return l
 
-def _getNumericVarNames():
+def short_alpha():
+    '''
+    @return: A list of variables that should be filled with alpha strings.
+    '''
+    l = []
+    return l
+
+def short_number():
+    l = []
+    
+    # english
+    l.append('postal')
+    l.append('zip')
+    l.append('pin')
+    l.append('id')
+    l.append('floor')
+    l.append('age')
+    
+    # spanish
+    l.append('piso')
+    l.append('edad')
+    
+    # portugués
+    l.append('postais')
+    
+    return l
+
+def long_number():
     '''
     @return: A list of variables that should be filled with numeric strings.
     '''
     l = []
+    
+    # english
     l.append('phone')
-    l.append('telefono')
-    l.append('numero')
-    l.append('postal')
     l.append('code')
     l.append('number')
-    l.append('pin')
-    l.append('piso')
-    l.append('floor')
-    l.append('id')
+    
+    # spanish
+    l.append('telefono')
+    l.append('numero')
+    l.append('número')
+    l.append('código')
+    l.append('codigo')
+
+    # portugués
+    # equal to the spanish ones
+
+    return l
+
+def mail():
+    '''
+    @return: A list of variables that should be filled with emails.
+    '''
+    l = []
+    # english
+    l.append('mail')
+    l.append('email')
+    l.append('e-mail') 
+    
+    # spanish
+    l.append('correo')
+    
+    # portugués
+    l.append('correio')
+    return l
+
+def state():
+    '''
+    @return: A list of form parameter names that may indicate that we have to input a state
+    '''
+    l = []
+    # english
+    l.append('state')
+    
+    # spanish and portugués
+    l.append('estado')
+    return l
+    
+def date():
+    '''
+    @return: A list of variables that should be filled with alpha strings.
+    '''
+    l = []
+    # english
+    l.append('year')
+    l.append('month')
+    l.append('day')
+    l.append('birthday')
+    
+    # spanish
+    l.append('año')
+    l.append('ano')
+    l.append('mes')
+    l.append('dia')
+    l.append('día')
+    
+    # portugués
+    l.append('mês')
+    
     return l
     
 from core.data.fuzzer.fuzzer import *
+

@@ -310,6 +310,17 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     else:
                         dataContainerCopy[parameter_name][element_index] = mutant_str
 
+                    # Ok, now we have a data container with the mutant string, but it's possible that
+                    # all the other fields of the data container are empty (think about a form)
+                    # We need to fill those in, with something *useful* to get around the easiest
+                    # developer checks like: "parameter A was filled".
+                    for var_name_dc in dataContainerCopy:
+                        for element_index_dc, element_value_dc in enumerate(dataContainerCopy[var_name_dc]):
+                            if (var_name_dc, element_index_dc) != (parameter_name, element_index) and\
+                            dataContainerCopy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
+                                # Fill in smartly
+                                dataContainerCopy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
+
                     # __HERE__
                     # Please see the comment above for an explanation of what we are doing here:
                     for var_name in freq.getFileVariables():
