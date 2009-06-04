@@ -25,7 +25,7 @@ class speedometer( gtk.DrawingArea ):
         self._current_speed = self._old_speed = 0
 
         # This is what gives the animation life!
-        gobject.timeout_add( 400, self.tick )
+        gobject.timeout_add( 2000, self.tick )
 
     def tick ( self ):
         # First I get a new speed from the "core"
