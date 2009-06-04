@@ -72,6 +72,10 @@ def long_alpha():
     l.append('country')    
     l.append('addr')
     l.append('address')
+    l.append('residence')
+    l.append('company')
+    l.append('position')
+    l.append('job')
     
     # spanish
     l.append('usuario')    
@@ -82,6 +86,9 @@ def long_alpha():
     l.append('país')
     l.append('dirección')
     l.append('direccion')
+    l.append('residencia')
+    l.append('empresa')
+    l.append('cargo')
     
     # portugués
     l.append('nome')
@@ -89,6 +96,10 @@ def long_alpha():
     l.append('cidade')
     l.append('endereço')
     l.append('endereco')
+    l.append('companhia')
+    l.append('posição')
+    l.append('residência')
+
     
     # passwords need to be long in order to be "complex"
     l.append('pass')
@@ -191,6 +202,8 @@ def date():
     l.append('month')
     l.append('day')
     l.append('birthday')
+    l.append('birthyear')
+    l.append('birthmonth')
     
     # spanish
     l.append('año')
