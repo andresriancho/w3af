@@ -70,7 +70,6 @@ class content_negotiation(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
                                                     (among other things) the URL to test.
         '''
-        print 'running!'
         if not self._exec :
             # This will remove the plugin from the discovery plugins to be runned.
             # This is true only when the remote web server is not vulnerable

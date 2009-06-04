@@ -1,0 +1,28 @@
+# phpEggs demo
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery content_negotiation, webSpider
+discovery config webSpider
+set onlyForward true
+back
+back
+
+target
+set target http://localhost/w3af/discovery/content_negotiation/backup.php
+back
+
+start
+
+assert len(kb.kb.getData('mod_negotiation','mod_negotiation')) == 1
+assert len(kb.kb.getData('urls','urlList')) == 5
+
+exit
