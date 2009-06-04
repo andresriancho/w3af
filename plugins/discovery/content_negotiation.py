@@ -29,12 +29,10 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 
 import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
 import core.data.kb.info as info
-import core.data.constants.severity as severity
 
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce
 
 from core.data.db.temp_persist import disk_list
 import os
@@ -60,6 +58,9 @@ class content_negotiation(baseDiscoveryPlugin):
         self._already_tested_resource = disk_list()
         self._is_vulnerable_result = None
         self._to_bruteforce = []
+        # I want to try 3 times to see if the remote host is vulnerable
+        # detection is not thaaat accurate!
+        self._tries_left = 3
 
     def discover(self, fuzzableRequest ):
         '''
@@ -258,7 +259,7 @@ class content_negotiation(baseDiscoveryPlugin):
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )
                 desc = 'HTTP Content negotiation is enabled in the remote web server. This '
-                desc += ' could be use to bruteforce file names and find new resources.'
+                desc += ' could be used to bruteforce file names and find new resources.'
                 i.setDesc( desc )
                 i.setId( response.id )
                 kb.kb.append( self, 'info', i )
@@ -266,8 +267,15 @@ class content_negotiation(baseDiscoveryPlugin):
             else:
                 om.out.information('The remote Web server has Content Negotiation disabled.')
                 
-                # Save the FALSE result internally
-                self._is_vulnerable_result = False
+                # I want to perform this test a couple of times... so I only return False
+                # if that "couple of times" is empty
+                self._tries_left -= 1
+                if self._tries_left == 0:
+                    # Save the FALSE result internally
+                    self._is_vulnerable_result = False
+                else:
+                    # None tells the plugin to keep trying with the next URL
+                    return None
             
             # return the result =)
             return self._is_vulnerable_result
