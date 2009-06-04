@@ -177,6 +177,7 @@ class webSpider(baseDiscoveryPlugin):
                         fuzzableRequestList = self._createFuzzableRequests( response, addSelf=False)
                         if report_broken:
                             self._brokenLinks.append( (response.getURL(), originalRequest.getURI()) )
+                            print response.getURL(), originalRequest.getURI()
                     else:
                         fuzzableRequestList = self._createFuzzableRequests( response, addSelf=True )
                     

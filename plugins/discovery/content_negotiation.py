@@ -262,7 +262,7 @@ class content_negotiation(baseDiscoveryPlugin):
                 desc += ' could be used to bruteforce file names and find new resources.'
                 i.setDesc( desc )
                 i.setId( response.id )
-                kb.kb.append( self, 'info', i )
+                kb.kb.append( self, 'content_negotiation', i )
                 om.out.information( i.getDesc() )
             else:
                 om.out.information('The remote Web server has Content Negotiation disabled.')
