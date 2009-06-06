@@ -66,7 +66,7 @@ class dbDriver(dbDriverFunctions, basePlugin):
         mutant = vuln.getMutant()
         url = mutant.getURI()       
         if vuln.getMethod() == 'POST':
-            url += '?' + vuln.getMutant().getData()
+            url += '?' + str(vuln.getMutant().getData())
         self.args.trueResult = vuln['trueHtml']
         
         falseValue = self._findFalseValue( vuln )
