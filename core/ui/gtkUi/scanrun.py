@@ -335,12 +335,12 @@ class URLsGraph(gtk.VBox):
         # I have to escape the quotes, because I don't want a "dot code injection"
         # This was bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
-        parent = parent.replace('"', '\\"')
-        node = node.replace('"', '\\"')
-        name = name.replace('"', '\\"')
+        node = str(node).replace('"', '\\"')
+        name = str(name).replace('"', '\\"')
         
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         if parent:
+            parent = str(parent).replace('"', '\\"')
             nline = '"%s" -- "%s"' % (parent, node)
             self.nodos_code.append(nline)
         self._somethingnew = True
@@ -349,14 +349,14 @@ class URLsGraph(gtk.VBox):
         # I have to escape the quotes, because I don't want a "dot code injection"
         # This was bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
-        parent = parent.replace('"', '\\"')
-        node = node.replace('"', '\\"')
-        name = name.replace('"', '\\"')
+        node = str(node).replace('"', '\\"')
+        name = str(name).replace('"', '\\"')
 
         if not isLeaf:
             self.nodos_code.append('"%s" [shape=box]' % node)
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         if parent:
+            parent = str(parent).replace('"', '\\"')
             nline = '"%s" -- "%s"' % (parent, node)
             self.nodos_code.append(nline)
         self._somethingnew = True
