@@ -149,20 +149,26 @@ class sgmlParser(abstractParser, SGMLParser):
         try:
             self._findReferences(tag, attrs)
         except Exception, e:
-            om.out.error('An unhandled exception was found while finding references inside a document. The exception is: "' + str(e) + '"')
+            msg = 'An unhandled exception was found while finding references inside a document.'
+            msg += ' The exception is: "' + str(e) + '"'
+            om.out.error( msg )
             om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
 
         try:
             self._findForms(tag, attrs)
         except Exception, e:
-            om.out.error('An unhandled exception was found while finding forms inside a document. The exception is: "' + str(e) + '"')
+            msg = 'An unhandled exception was found while finding forms inside a document.'
+            msg += 'The exception is: "' + str(e) + '"'
+            om.out.error( msg )
             om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
 
         try:        
             if tag.lower() == 'meta':
                 self._parseMetaTags(tag, attrs)
         except Exception, e:
-            om.out.error('An unhandled exception was found while parsing meta tags inside a document. The exception is: "' + str(e) + '"')
+            msg = 'An unhandled exception was found while parsing meta tags inside a document.'
+            msg += 'The exception is: "' + str(e) + '"'
+            om.out.error( msg )
             om.out.error('Error traceback: ' + str( traceback.format_exc() ) )
     
     def _parseMetaTags( self, tag , attrs ):
@@ -213,7 +219,8 @@ class sgmlParser(abstractParser, SGMLParser):
 
         for attr in attrs:
             if attr[0].lower() in self._urlAttrs:
-                # We don't need fragments
+                
+                # Only add it to the result of the current URL is not a fragment
                 if len(attr[1]) and attr[1][0] != '#':
                     url = urlParser.urlJoin(self._baseUrl, attr[1])
                     url = self._decode_URL(url, self._encoding)
