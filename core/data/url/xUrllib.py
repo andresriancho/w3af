@@ -392,6 +392,11 @@ class xUrllib:
                 if 'headers' in keywords:
                     req = self._xurllib._addHeaders( req, keywords['headers'] )
                     keywords.pop('headers')
+                else:
+                    # This adds the default headers like the user-agent,
+                    # and any headers configured by the user
+                    # https://sourceforge.net/tracker/?func=detail&aid=2788341&group_id=170274&atid=853652
+                    req = self._xurllib._addHeaders( req, {} )
                 
                 if 'getSize' in keywords:
                     keywords.pop('getSize')
