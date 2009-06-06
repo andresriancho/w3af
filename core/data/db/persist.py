@@ -85,8 +85,8 @@ class persist:
             except Exception, e:
                 raise w3afException('Exception found while opening database: ' + str(e) )
             else:
-                col_names = [ r[1] for r in table_info ]
-                pk_getters = [ c for c in col_names if c != 'raw_pickled_data']
+                col_names_types = [ r[1:3] for r in table_info ]
+                pk_getters = [ c for c in col_names_types if c[0] != 'raw_pickled_data']
                 
                 if not pk_getters:
                     raise w3afException('There is an error in the database backend. The file ' + filename_utf8 + ' is invalid.')
@@ -117,7 +117,7 @@ class persist:
 
         # The primary key data
         bindings = []
-        for column_number, column_name in enumerate(self._primary_key_columns):
+        for column_number, (column_name, column_type) in enumerate(self._primary_key_columns):
             # Create the stm
             insert_stm += "(?) ,"
             # Get the value
@@ -180,14 +180,14 @@ class persist:
             # Create the table for the data
             database_creation = 'create table data_table'
             database_creation += '('
-            for column_name in primary_key_columns:
-                attr_type = 'text'
+            for column_name, column_type in primary_key_columns:
+                attr_type = column_type
                 database_creation += column_name + ' ' + attr_type +' ,'
             
             # And now we add the column for the pickle
             database_creation = database_creation[:-1] + ', raw_pickled_data blob, '
             # Finally the PK
-            database_creation += 'PRIMARY KEY ('+','.join(primary_key_columns)+'))'
+            database_creation += 'PRIMARY KEY ('+','.join([c[0] for c in primary_key_columns])+'))'
             
             self._db.execute(database_creation)
             self._filename = filename_utf8
@@ -205,16 +205,16 @@ class persist:
             raise w3afException('No database has been initialized.')
         
         if len(primary_key) != len(self._primary_key_columns):
-            raise w3afException('The length of the primary_key should be equal to the length of the primary_key_columns.')
-        
-        
+            msg = 'The length of the primary_key should be equal to the length of the'
+            msg += ' primary_key_columns.'
+            raise w3afException( msg )
         
         # Get the row
         c = self._db.cursor()
         select_stm = "select * from data_table"
         select_stm += " where "
         bindings = []
-        for column_number, column_name in enumerate(self._primary_key_columns):
+        for column_number, (column_name, column_type) in enumerate(self._primary_key_columns):
             select_stm += column_name + '= (?)'
             bindings.append( primary_key[column_number] )
         
@@ -331,7 +331,7 @@ class test_class:
         
 if __name__ == '__main__':
     p = persist()
-    p.create('/tmp/a.sqlite', primary_key_columns=['id',] )
+    p.create('/tmp/a.sqlite', primary_key_columns=[('id', 'INTEGER'),] )
     
     print '1- Loading...'
     tc = test_class()

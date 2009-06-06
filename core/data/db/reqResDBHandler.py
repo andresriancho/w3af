@@ -22,9 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
-import re
+
 from core.controllers.w3afException import w3afException
 from core.data.db.persist import persist
+
+import re
+
 
 class reqResDBHandler:
     '''

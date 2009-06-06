@@ -89,7 +89,7 @@ class gtkOutput(baseOutputPlugin):
                         break
             
             # Create one!
-            self._db.create( db_name , ['id', 'url', 'code'] )
+            self._db.create( db_name , [('id', 'INTEGER'), ('url', 'TEXT'), ('code', 'INTEGER')] )
             kb.kb.save('gtkOutput', 'db', self._db )
     
     def debug(self, msgString, newLine = True ):
