@@ -160,6 +160,8 @@ def normalizeURL( url ):
             net_location = host
         elif protocol.lower() == 'https' and port == '443':
             net_location = host
+    else:
+        host = net_location
     
     # A normalized baseURL:
     baseURL = protocol + '://'+ host + '/'
