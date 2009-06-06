@@ -225,11 +225,12 @@ class Compare(entries.RememberingWindow):
         if element is None:
             element = self.elements[self.showingPage]
         (reqhead, reqbody, httpResp) = element
-        title = "Id: %d" % httpResp.id
         if httpResp is not None:
+            title = "Id: %d" % httpResp.id
             resphead = httpResp.dumpResponseHead()
             respbody = httpResp.getBody()
         else:
+            title = 'Error: No HTTP response was found.'
             resphead = ""
             respbody = ""
         alltexts = (reqhead, reqbody, resphead, respbody)
