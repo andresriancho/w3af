@@ -332,6 +332,13 @@ class URLsGraph(gtk.VBox):
 
 
     def limitNode(self, parent, node, name):
+        # I have to escape the quotes, because I don't want a "dot code injection"
+        # This was bug #2675512
+        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        parent = parent.replace('"', '\\"')
+        node = node.replace('"', '\\"')
+        name = name.replace('"', '\\"')
+        
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         if parent:
             nline = '"%s" -- "%s"' % (parent, node)
@@ -339,6 +346,13 @@ class URLsGraph(gtk.VBox):
         self._somethingnew = True
 
     def newNode(self, parent, node, name, isLeaf):
+        # I have to escape the quotes, because I don't want a "dot code injection"
+        # This was bug #2675512
+        # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
+        parent = parent.replace('"', '\\"')
+        node = node.replace('"', '\\"')
+        name = name.replace('"', '\\"')
+
         if not isLeaf:
             self.nodos_code.append('"%s" [shape=box]' % node)
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
