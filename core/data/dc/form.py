@@ -24,6 +24,7 @@ from core.data.dc.dataContainer import dataContainer
 import copy
 from core.data.parsers.encode_decode import urlencode
 
+
 class form(dataContainer):
     '''
     This class represents a HTML form.
@@ -40,6 +41,7 @@ class form(dataContainer):
         self._files = []
         self._selects = {}
         self._submitMap = {}
+        
         # it is used for processing checkboxes
         self._secret_value = "3_!21#47w@"
         
