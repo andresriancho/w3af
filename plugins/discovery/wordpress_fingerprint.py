@@ -113,33 +113,33 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
                 #########################
                 ## Find wordpress version from data ##
                 #########################
-		
+
                 # Wordpress version unique data, file/data/version
-                self._wp_fingerprint = [['/wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'], 
-						['/wp-admin/css/farbtastic.css','.farbtastic','2.7'],
-						['/wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'],
-						['/wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'],
-						['/wp-admin/async-upload.php','200','2.5'],
-						['/wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'],
-						['/readme.html','2.3','2.3'],
-						['/wp-includes/rtl.css','#adminmenu a','2.2.3'],
-						['/wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'],
-						['/wp-app.php','200','2.2']]
+                self._wp_fingerprint = [ ('/wp-includes/js/tinymce/tiny_mce.js','2009-05-25','2.8')
+                        ('/wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'), 
+                        ('/wp-admin/css/farbtastic.css','.farbtastic','2.7'),
+                        ('/wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'),
+                        ('/wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'),
+                        ('/wp-admin/async-upload.php','200','2.5'),
+                        ('/wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'),
+                        ('/readme.html','2.3','2.3'),
+                        ('/wp-includes/rtl.css','#adminmenu a','2.2.3'),
+                        ('/wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'),
+                        ('/wp-app.php','200','2.2')]
 
                 for row in self._wp_fingerprint:
-		
-		        test_url = fuzzableRequest.getURL() + row[0]
-                        response = self._urlOpener.GET( test_url, useCache=True )
+                    test_url = fuzzableRequest.getURL() + row[0]
+                    response = self._urlOpener.GET( test_url, useCache=True )
 
-                	if row[1] == '200' and not is_404(response):
-                       		self._version = row[2]
-                       		break
-                	elif row[1] in response.getBody():
-                       		self._version = row[2]
-                       		break
-                	else:
-                       		self._version = 'lower than 2.2'
-		
+                    if row[1] == '200' and not is_404(response):
+                        self._version = row[2]
+                        break
+                    elif row[1] in response.getBody():
+                        self._version = row[2]
+                        break
+                    else:
+                        self._version = 'lower than 2.2'
+
                 # Save it to the kb!
                 i = info.info()
                 i.setName('WordPress version')
