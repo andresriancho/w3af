@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-03-16, 00:51:25 -->
+<!-- Saved: 2009-03-27, 16:27:34 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3485,6 +3485,18 @@
     <Source>
       <Dir>scripts</Dir>
       <Name>script-slash.w3af</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>misc</Dir>
+      <Name>make_leet.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>db</Dir>
+      <Name>temp_persist.py</Name>
     </Source>
   </Sources>
   <Forms>

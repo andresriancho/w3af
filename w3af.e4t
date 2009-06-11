@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-03-16, 00:44:22 -->
+<!-- Saved: 2009-06-03, 13:55:45 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -326,20 +326,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: implement the help!"</Summary>
-    <Description></Description>
-    <Created>2008-09-21, 19:45:17</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>proxywin.py</Name>
-      </Filename>
-      <Linenumber>266</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: scale from points to pixels</Summary>
     <Description></Description>
     <Created>2008-10-11, 20:54:51</Created>
@@ -379,19 +365,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Add mod_perl ssi injection support</Summary>
-    <Description></Description>
-    <Created>2008-11-18, 17:17:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>ssi.py</Name>
-      </Filename>
-      <Linenumber>85</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
     <Description></Description>
     <Created>2008-12-05, 21:30:53</Created>
@@ -419,20 +392,6 @@
       <Linenumber>292</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Update this, it changes</Summary>
-    <Description></Description>
-    <Created>2008-12-24, 21:32:55</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>searchEngines</Dir>
-        <Name>googleSearchEngine.py</Name>
-      </Filename>
-      <Linenumber>156</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This method sucks, I should do something like</Summary>
     <Description></Description>
@@ -457,19 +416,6 @@
         <Name>hashFind.py</Name>
       </Filename>
       <Linenumber>108</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Summary>
-    <Description></Description>
-    <Created>2008-12-31, 00:18:13</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>passwordProfiling.py</Name>
-      </Filename>
-      <Linenumber>52</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -509,34 +455,6 @@
         <Name>rfiProxy.py</Name>
       </Filename>
       <Linenumber>194</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Code this</Summary>
-    <Description></Description>
-    <Created>2009-01-21, 16:46:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>kbtree.py</Name>
-      </Filename>
-      <Linenumber>110</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Right now I only get ValueError: invalid tree path</Summary>
-    <Description></Description>
-    <Created>2009-01-21, 16:46:18</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>kbtree.py</Name>
-      </Filename>
-      <Linenumber>283</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -593,46 +511,6 @@
       <Linenumber>271</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This re is buggy</Summary>
-    <Description></Description>
-    <Created>2009-01-25, 13:02:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>db</Dir>
-        <Name>reqResDBHandler.py</Name>
-      </Filename>
-      <Linenumber>66</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 09:28:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
-      </Filename>
-      <Linenumber>129</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 09:28:45</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
-      </Filename>
-      <Linenumber>143</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: If i'm scanning a windows system, do I really need to request case sensitive</Summary>
     <Description></Description>
@@ -644,19 +522,6 @@
         <Name>phpinfo.py</Name>
       </Filename>
       <Linenumber>110</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: review this code !!</Summary>
-    <Description></Description>
-    <Created>2009-01-26, 10:38:10</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>urlFuzzer.py</Name>
-      </Filename>
-      <Linenumber>159</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -757,20 +622,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
-    <Description></Description>
-    <Created>2009-01-28, 16:41:42</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>exploit.py</Name>
-      </Filename>
-      <Linenumber>262</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Also matches //foo/bar.txt , which is bad</Summary>
     <Description></Description>
     <Created>2009-01-29, 19:06:46</Created>
@@ -785,34 +636,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: autocomplete for raw menu</Summary>
-    <Description></Description>
-    <Created>2009-01-30, 16:04:27</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>consoleUi.py</Name>
-      </Filename>
-      <Linenumber>298</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: This if is terrible! I need to remove it!</Summary>
-    <Description></Description>
-    <Created>2009-01-30, 16:19:21</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>rootMenu.py</Name>
-      </Filename>
-      <Linenumber>110</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: verify if I need to add more values here</Summary>
     <Description></Description>
     <Created>2009-02-02, 10:34:41</Created>
@@ -823,45 +646,6 @@
         <Name>strangeHeaders.py</Name>
       </Filename>
       <Linenumber>152</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-02-02, 15:39:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>303</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-02-02, 15:39:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>433</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-02-02, 15:39:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>482</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -936,19 +720,6 @@
       <Linenumber>110</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: verify if I need to add more values here, IIS !!!</Summary>
-    <Description></Description>
-    <Created>2009-02-24, 23:16:11</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>grep</Dir>
-        <Name>directoryIndexing.py</Name>
-      </Filename>
-      <Linenumber>90</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: poner un HELP aca</Summary>
     <Description></Description>
@@ -977,71 +748,6 @@
       <Linenumber>84</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: The frontpage version should be obtained from the information saved in the kb</Summary>
-    <Description></Description>
-    <Created>2009-03-02, 10:56:25</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>frontpage.py</Name>
-      </Filename>
-      <Linenumber>111</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file</Summary>
-    <Description></Description>
-    <Created>2009-03-02, 10:56:25</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>frontpage.py</Name>
-      </Filename>
-      <Linenumber>120</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-03-03, 09:15:25</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>809</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
-    <Description></Description>
-    <Created>2009-03-03, 09:15:25</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>853</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
-    <Description></Description>
-    <Created>2009-03-03, 09:15:25</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Name>w3afCore.py</Name>
-      </Filename>
-      <Linenumber>1211</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Am I really saving anything here ?!?!</Summary>
     <Description></Description>
@@ -1053,20 +759,6 @@
         <Name>sql_webshell.py</Name>
       </Filename>
       <Linenumber>204</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Not 100% sure about this...</Summary>
-    <Description></Description>
-    <Created>2009-03-05, 09:52:56</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>options</Dir>
-        <Name>option.py</Name>
-      </Filename>
-      <Linenumber>137</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1083,48 +775,6 @@
       <Linenumber>133</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
-    <Description></Description>
-    <Created>2009-03-09, 19:37:56</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>242</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Show images</Summary>
-    <Description></Description>
-    <Created>2009-03-09, 19:37:56</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>reqResViewer.py</Name>
-      </Filename>
-      <Linenumber>367</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: What about repeated parameter names?!</Summary>
-    <Description></Description>
-    <Created>2009-03-10, 15:12:39</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>request</Dir>
-        <Name>fuzzableRequest.py</Name>
-      </Filename>
-      <Linenumber>98</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Code this!</Summary>
     <Description></Description>
@@ -1136,20 +786,6 @@
         <Name>collectCookies.py</Name>
       </Filename>
       <Linenumber>131</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
-    <Description></Description>
-    <Created>2009-03-10, 15:59:14</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>data</Dir>
-        <Dir>parsers</Dir>
-        <Name>urlParser.py</Name>
-      </Filename>
-      <Linenumber>231</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -1165,10 +801,24 @@
       <Linenumber>65</Linenumber>
     </Resource>
   </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Update this, it changes</Summary>
+    <Description></Description>
+    <Created>2009-03-11, 08:53:55</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>searchEngines</Dir>
+        <Name>googleSearchEngine.py</Name>
+      </Filename>
+      <Linenumber>156</Linenumber>
+    </Resource>
+  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: What if we have something like this: &amp;aacute ?!?!</Summary>
     <Description></Description>
-    <Created>2009-03-10, 17:39:47</Created>
+    <Created>2009-03-11, 10:42:24</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1180,51 +830,279 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.</Summary>
+    <Summary>FIXME: What if the user doesn't want to add these headers?</Summary>
     <Description></Description>
-    <Created>2009-03-10, 17:55:46</Created>
+    <Created>2009-03-13, 08:43:37</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>data</Dir>
-        <Dir>dc</Dir>
-        <Name>form.py</Name>
+        <Dir>url</Dir>
+        <Dir>handlers</Dir>
+        <Name>logHandler.py</Name>
       </Filename>
-      <Linenumber>102</Linenumber>
+      <Linenumber>122</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata</Summary>
+    <Description></Description>
+    <Created>2009-03-23, 19:01:56</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>passwordProfiling.py</Name>
+      </Filename>
+      <Linenumber>52</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: how do you maintain the same value in self._selects[name] and in self[name] ?</Summary>
+    <Summary>FIXME: Not 100% sure about this...</Summary>
     <Description></Description>
-    <Created>2009-03-10, 17:55:46</Created>
+    <Created>2009-03-31, 09:16:10</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>data</Dir>
-        <Dir>dc</Dir>
-        <Name>form.py</Name>
+        <Dir>options</Dir>
+        <Name>option.py</Name>
       </Filename>
-      <Linenumber>199</Linenumber>
+      <Linenumber>137</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Investigate this further...</Summary>
+    <Description></Description>
+    <Created>2009-03-31, 09:23:41</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>craftedRequests.py</Name>
+      </Filename>
+      <Linenumber>575</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The frontpage version should be obtained from the information saved in the kb</Summary>
+    <Description></Description>
+    <Created>2009-03-31, 09:57:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>frontpage.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file</Summary>
+    <Description></Description>
+    <Created>2009-03-31, 09:57:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>frontpage.py</Name>
+      </Filename>
+      <Linenumber>119</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Implement this!</Summary>
+    <Description></Description>
+    <Created>2009-03-31, 10:02:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>w3afAgent</Dir>
+        <Name>w3afAgentManager.py</Name>
+      </Filename>
+      <Linenumber>134</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Implement this!</Summary>
+    <Description></Description>
+    <Created>2009-03-31, 10:02:04</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>w3afAgent</Dir>
+        <Name>w3afAgentManager.py</Name>
+      </Filename>
+      <Linenumber>142</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 00:03:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>localFileInclude.py</Name>
+      </Filename>
+      <Linenumber>129</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 00:03:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>localFileInclude.py</Name>
+      </Filename>
+      <Linenumber>143</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 00:06:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>303</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 00:06:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>433</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 00:06:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>482</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: review this code !!</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 10:27:16</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>urlFuzzer.py</Name>
+      </Filename>
+      <Linenumber>159</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: verify if I need to add more values here, IIS !!!</Summary>
+    <Description></Description>
+    <Created>2009-04-08, 10:31:00</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>grep</Dir>
+        <Name>directoryIndexing.py</Name>
+      </Filename>
+      <Linenumber>104</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Add mod_perl ssi injection support</Summary>
+    <Description></Description>
+    <Created>2009-04-20, 10:58:37</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>audit</Dir>
+        <Name>ssi.py</Name>
+      </Filename>
+      <Linenumber>85</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
+    <Description></Description>
+    <Created>2009-04-23, 11:41:09</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>exploit.py</Name>
+      </Filename>
+      <Linenumber>262</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: Needs to support repeated parameter names</Summary>
+    <Summary>FIXME: This re is buggy</Summary>
     <Description></Description>
-    <Created>2009-03-10, 17:55:46</Created>
+    <Created>2009-04-30, 09:25:13</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
         <Dir>data</Dir>
-        <Dir>dc</Dir>
-        <Name>form.py</Name>
+        <Dir>db</Dir>
+        <Name>reqResDBHandler.py</Name>
       </Filename>
-      <Linenumber>297</Linenumber>
+      <Linenumber>66</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: autocomplete for raw menu</Summary>
+    <Description></Description>
+    <Created>2009-05-10, 11:38:53</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>consoleUi.py</Name>
+      </Filename>
+      <Linenumber>299</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: This if is terrible! I need to remove it!</Summary>
+    <Description></Description>
+    <Created>2009-05-10, 11:40:26</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>rootMenu.py</Name>
+      </Filename>
+      <Linenumber>120</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: THIS SUCKS</Summary>
     <Description></Description>
-    <Created>2009-03-16, 00:39:40</Created>
+    <Created>2009-05-25, 16:34:10</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1238,7 +1116,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL</Summary>
     <Description></Description>
-    <Created>2009-03-16, 00:39:40</Created>
+    <Created>2009-05-25, 16:34:10</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1246,7 +1124,200 @@
         <Dir>url</Dir>
         <Name>xUrllib.py</Name>
       </Filename>
-      <Linenumber>418</Linenumber>
+      <Linenumber>423</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
+    <Description></Description>
+    <Created>2009-05-29, 22:30:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>243</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Show images</Summary>
+    <Description></Description>
+    <Created>2009-05-29, 22:30:22</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>reqResViewer.py</Name>
+      </Filename>
+      <Linenumber>368</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: This is a kludge. Should we get lists as attr?!</Summary>
+    <Description></Description>
+    <Created>2009-05-30, 15:48:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>htmlParser.py</Name>
+      </Filename>
+      <Linenumber>179</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Code this</Summary>
+    <Description></Description>
+    <Created>2009-05-30, 16:44:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>kbtree.py</Name>
+      </Filename>
+      <Linenumber>110</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Right now I only get ValueError: invalid tree path</Summary>
+    <Description></Description>
+    <Created>2009-05-30, 16:44:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>kbtree.py</Name>
+      </Filename>
+      <Linenumber>283</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-05-31, 11:59:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>818</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
+    <Description></Description>
+    <Created>2009-05-31, 11:59:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>862</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
+    <Description></Description>
+    <Created>2009-05-31, 11:59:31</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Name>w3afCore.py</Name>
+      </Filename>
+      <Linenumber>1220</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 13:53:10</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>parsers</Dir>
+        <Name>urlParser.py</Name>
+      </Filename>
+      <Linenumber>236</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 19:46:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>dc</Dir>
+        <Name>form.py</Name>
+      </Filename>
+      <Linenumber>112</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: how do you maintain the same value in self._selects[name] and in self[name] ?</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 19:46:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>dc</Dir>
+        <Name>form.py</Name>
+      </Filename>
+      <Linenumber>219</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Needs to support repeated parameter names</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 19:46:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>dc</Dir>
+        <Name>form.py</Name>
+      </Filename>
+      <Linenumber>311</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: Is it good solution to simply delete unwant to</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 19:46:49</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>dc</Dir>
+        <Name>form.py</Name>
+      </Filename>
+      <Linenumber>314</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: What about repeated parameter names?!</Summary>
+    <Description></Description>
+    <Created>2009-06-02, 19:51:08</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>data</Dir>
+        <Dir>request</Dir>
+        <Name>fuzzableRequest.py</Name>
+      </Filename>
+      <Linenumber>98</Linenumber>
     </Resource>
   </Task>
 </Tasks>
