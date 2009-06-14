@@ -160,11 +160,15 @@ def normalizeURL( url ):
             net_location = host
         elif protocol.lower() == 'https' and port == '443':
             net_location = host
+        else:
+            # The net location has a specific port definition
+            net_location = host + ':' + port
     else:
+        # The net location has no port definition
         host = net_location
     
     # A normalized baseURL:
-    baseURL = protocol + '://'+ host + '/'
+    baseURL = protocol + '://'+ net_location + '/'
     
     # Now normalize the path:
     relativeURL = getPathQs( url )
