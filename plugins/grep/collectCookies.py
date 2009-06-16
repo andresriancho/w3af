@@ -165,10 +165,10 @@ class collectCookies(baseGrepPlugin):
                             for parameter_name in request.getDc():
                                 
                                 # added to support repeated parameter names.
-                                for item in request.getDc()[parameter_name]:
+                                for parameter_value_i in request.getDc()[parameter_name]:
                                     
                                     # The first statement of this if is to make this algorithm faster
-                                    if len( item[1] ) > 4 and item[1] == cookie['cookie-object'][key]:
+                                    if len( parameter_value_i ) > 4 and parameter_value_i == cookie['cookie-object'][key]:
                                         v = vuln.vuln()
                                         v.setURL( response.getURL() )
                                         self._setCookieToRep(v, cobj=cookie)
@@ -177,7 +177,7 @@ class collectCookies(baseGrepPlugin):
                                         v.setName( 'Secure cookies over insecure channel' )
                                         msg = 'Cookie values that were set over HTTPS, are sent over '
                                         msg += 'an insecure channel when requesting URL: "' 
-                                        msg += request.getURL() + '" , parameter "' + item[0] + '"'
+                                        msg += request.getURL() + '" , parameter "' + parameter_name + '"'
                                         v.setDesc( msg )
                                         kb.kb.append( self, 'cookies', v )
             
