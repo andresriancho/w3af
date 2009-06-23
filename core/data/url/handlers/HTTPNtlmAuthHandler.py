@@ -14,7 +14,7 @@
 import urllib2
 import httplib, socket
 from urllib import addinfourl
-import ntlm
+from extlib.ntlm import ntlm
 
 class AbstractNtlmAuthHandler:
     

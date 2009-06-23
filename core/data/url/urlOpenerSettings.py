@@ -35,7 +35,8 @@ from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHan
 import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
-import core.data.url.handlers.ntlm
+
+from extlib.ntlm import ntlm
 import core.data.url.handlers.HTTPNtlmAuthHandler
 
 from core.controllers.configurable import configurable
