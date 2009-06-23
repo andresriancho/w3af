@@ -48,7 +48,9 @@ def smartFill( variable_name ):
         for name_in_db in name_function():
             if variable_name.count( name_in_db ) or name_in_db.count( variable_name ):
                 value = custom_generator( length )
-                om.out.debug('SmartFilling parameter ' + variable_name + ' of form with '+ repr(name_function) +' value: ' + value)
+                dbg = 'SmartFilling parameter ' + variable_name + ' of form with '
+                dbg += repr(name_function) +' value: ' + value
+                om.out.debug( dbg )
                 return value
     
     # Well... nothing was found (this is bad!)
