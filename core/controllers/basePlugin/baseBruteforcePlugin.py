@@ -51,6 +51,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._useSvnUsers = True
         self._stopOnFirst = True
         self._passEqUser = True
+        self._l337_p4sswd = True
         self._useMails = True
         self._useProfiling = True
         self._profilingNumber = 50
@@ -68,6 +69,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._bruteforcer.setUseProfiling( self._useProfiling )
         self._bruteforcer.setProfilingNumber( self._profilingNumber )
         self._bruteforcer.setUseSvnUsers( self._profilingNumber )
+        self._bruteforcer.setLeetPasswd( self._l337_p4sswd )
         self._bruteforcer.init()
     
     def _fuzzRequests(self, freq ):
@@ -132,14 +134,17 @@ class baseBruteforcePlugin(baseAuditPlugin):
         d6 = 'This indicates if the bruteforce should try password equal user in logins.'
         o6 = option('passEqUser', self._passEqUser, d6, 'boolean')
         
-        d7 = 'This indicates if the bruteforcer should use usernames collected by w3af plugins.'
-        o7 = option('useMails', self._useMails, d7, 'boolean')
+        d7 = 'This indicates if the bruteforce should try l337 passwords'
+        o7 = option('useLeetPasswd', self._l337_p4sswd, d7, 'boolean')
         
-        d8 = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
-        o8 = option('useProfiling', self._useProfiling, d8, 'boolean')
+        d8 = 'This indicates if the bruteforcer should use usernames collected by w3af plugins.'
+        o8 = option('useMails', self._useMails, d8, 'boolean')
         
-        d9 = 'This indicates how many passwords from profiling will be used.'
-        o9 = option('profilingNumber', self._profilingNumber, d9, 'integer')
+        d9 = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
+        o9 = option('useProfiling', self._useProfiling, d9, 'boolean')
+        
+        d10 = 'This indicates how many passwords from profiling will be used.'
+        o10 = option('profilingNumber', self._profilingNumber, d10, 'integer')
         
         ol = optionList()
         ol.add(o1)
@@ -150,7 +155,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         ol.add(o6)
         ol.add(o7)
         ol.add(o8)
-        ol.add(o9)        
+        ol.add(o9)
+        ol.add(o10)
         return ol
         
     def setOptions( self, optionsMap ):
@@ -165,6 +171,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._stopOnFirst = optionsMap['stopOnFirst'].getValue()
         self._passwdFile = optionsMap['passwdFile'].getValue()
         self._passEqUser = optionsMap['passEqUser'].getValue()
+        self._l337_p4sswd = optionsMap['useLeetPasswd'].getValue()
         self._useMailUsers = optionsMap['useMailUsers'].getValue()
         self._useSvnUsers = optionsMap['useSvnUsers'].getValue()
         self._useMails = optionsMap['useMails'].getValue()
@@ -191,6 +198,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
             - stopOnFirst
             - passwdFile
             - passEqUser
+            - useLeetPasswd
             - useMailUsers
             - useSvnUsers
             - useMails

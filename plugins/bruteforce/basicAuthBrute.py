@@ -90,7 +90,7 @@ class basicAuthBrute(baseBruteforcePlugin):
         for combination in combinations:
             user = combination[0]
             passwd = combination[1]
-            
+
             uriOpener.settings.setBasicAuth( url, user, passwd  )
             # The next line replaces the uriOpener opener with a new one that has
             # the basic auth settings configured
@@ -141,6 +141,7 @@ class basicAuthBrute(baseBruteforcePlugin):
             - stopOnFirst
             - passwdFile
             - passEqUser
+            - useLeetPasswd
             - useMailUsers
             - useSvnUsers
             - useMails

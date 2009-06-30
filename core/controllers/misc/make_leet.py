@@ -20,19 +20,43 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-LEET_LETTERS = dict( zip("eEaAiItTsSoObB", "33441177550088") )
 
-def make_leet( pass2leet="1" ):
-    '''
-    Convert elite passwords like: "admin" into "4dm1n"
+LEET_LETTERS = dict( zip("aAeEiIoO", "44331100") )
+LEET_LETTERS_OPTIONALS = dict(zip("sStT","5577") ) 
+
+
+def basic_leet(string, LEETERS):
+    outlist = []
+    leeted_basic  = []
     
-    Based in Paul McGuire: ptmcg at austin.rr.com 
-    contribution for a python list:
-    http://mail.python.org/pipermail/python-list/2009-February/700090.html
-    '''
-    return ''.join( LEET_LETTERS.get(c,c) for c in pass2leet )
- 
+    for letter in string:
+        if letter in LEETERS:
+            letter = LEETERS[letter]
+        outlist.append(letter)
+        leeted_basic  = ''.join(outlist)
+
+    return leeted_basic
+
+
+def make_leet(original_string):
+    leeted_pass = []
+    
+    if  basic_leet(original_string, LEET_LETTERS) != original_string:
+        leeted_pass.append( basic_leet(original_string, LEET_LETTERS) )
+    
+    if  basic_leet(original_string, LEET_LETTERS_OPTIONALS) != original_string:
+        leeted_pass.append( basic_leet(original_string, LEET_LETTERS_OPTIONALS) )
+        
+    if  basic_leet(basic_leet(original_string, LEET_LETTERS), LEET_LETTERS_OPTIONALS) != original_string:
+        leeted_pass.append( basic_leet(basic_leet(original_string, LEET_LETTERS), LEET_LETTERS_OPTIONALS) )
+        
+    leeted_pass = list(set(leeted_pass))
+    
+    return leeted_pass
+
 if __name__ == '__main__':
-    print make_leet('admin')
-    print make_leet('pepe')
+    print make_leet('adminstradores')
+    print make_leet('pepepito ')
+    print make_leet('pepepitosS ')
+
     
