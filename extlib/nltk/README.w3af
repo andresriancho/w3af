@@ -13,3 +13,13 @@ $ diff nltk/data.py.orig nltk/data.py
 > embebed_data_dir = os.path.join( nltk_install_dir, 'nltk_data' )
 > path.append(embebed_data_dir)
 > 
+
+
+I then tried to change the whole nltk module in order to be able to use it even if nltk was
+installed in the operating system, so I tried:
+
+dz0@brick:~/w3af/w3af/trunk/extlib/nltk$ find . -name '*.py' | xargs perl -pi -w -e 's/import nltk/import extlib\.nltk as nltk/g;'
+dz0@brick:~/w3af/w3af/trunk/extlib/nltk$ find . -name '*.py' | xargs perl -pi -w -e 's/from nltk\./from extlib\.nltk\./g;'
+dz0@brick:~/w3af/w3af/trunk/extlib/nltk$ find . -name '*.py' | xargs perl -pi -w -e 's/from nltk import/from extlib\.nltk import/g;'
+
+But this ain't working. I need to dedicate more time to it.
