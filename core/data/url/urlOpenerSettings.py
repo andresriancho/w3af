@@ -37,7 +37,7 @@ import core.data.url.handlers.mangleHandler as mangleHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
 
 from extlib.ntlm import ntlm
-import core.data.url.handlers.HTTPNtlmAuthHandler
+import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
 
 from core.controllers.configurable import configurable
 
