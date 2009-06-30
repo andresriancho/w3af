@@ -125,6 +125,7 @@ class ProfileList(gtk.TreeView):
         self.selectedProfile = None
         if selected is None:
             self.set_cursor(0)
+            self._useProfile()
         else:
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
                 if selected == self.profile_instances[ prfid ].get_profile_file() or\
