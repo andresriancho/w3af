@@ -23,11 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 require 'msf/core'
 
-module Msf
 
-class Exploits::Unix::Misc::W3af_vdaemon < Msf::Exploit::Remote
+class Metasploit3 < Msf::Exploit::Remote
 
-	include Exploit::Remote::Tcp
+	include Msf::Exploit::Remote::Tcp
 
 	def initialize(info = {})
 		super(update_info(info,
@@ -135,5 +134,4 @@ class Exploits::Unix::Misc::W3af_vdaemon < Msf::Exploit::Remote
 		disconnect
 	end
 
-end
 end
