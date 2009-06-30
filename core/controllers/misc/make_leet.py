@@ -33,7 +33,8 @@ def basic_leet(string, LEETERS):
         if letter in LEETERS:
             letter = LEETERS[letter]
         outlist.append(letter)
-        leeted_basic  = ''.join(outlist)
+    
+    leeted_basic  = ''.join(outlist)
 
     return leeted_basic
 
