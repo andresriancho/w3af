@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-03-27, 16:27:34 -->
+<!-- Saved: 2009-06-23, 08:58:41 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -588,11 +588,6 @@
       <Dir>plugins</Dir>
       <Dir>output</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>crossDomain.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>
@@ -3497,6 +3492,30 @@
       <Dir>data</Dir>
       <Dir>db</Dir>
       <Name>temp_persist.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>wordpress_fingerprint.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>ria_enumerator.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>url</Dir>
+      <Dir>handlers</Dir>
+      <Name>HTTPNtlmAuthHandler.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>url</Dir>
+      <Dir>handlers</Dir>
+      <Name>urlParameterHandler.py</Name>
     </Source>
   </Sources>
   <Forms>
