@@ -25,6 +25,8 @@ from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
+import copy
+
 
 class baseAuditPlugin(basePlugin):
     '''
@@ -50,7 +52,28 @@ class baseAuditPlugin(basePlugin):
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = fuzzable_request.copy()
-        return self.audit( fuzzable_request_copy )
+        
+        # These lines were added because we need to return the new vulnerabilities found by this
+        # audit plugin, and I don't want to change the code of EVERY plugin!
+        before_vuln_dict = kb.kb.getData( self )
+        self.audit( fuzzable_request_copy )
+        after_vuln_dict = kb.kb.getData( self )
+        
+        # Now I get the difference between them:
+        before_list = []
+        after_list = []
+        for var_name in before_vuln_dict:
+            for item in before_vuln_dict[var_name]:
+                before_list.append(item)
+        
+        for var_name in after_vuln_dict:
+            for item in after_vuln_dict[var_name]:
+                after_list.append(item)
+        
+        new_ones = after_list[len(before_list)-1:]
+        
+        # And return it,
+        return new_ones
         
     def audit( self, freq ):
         '''

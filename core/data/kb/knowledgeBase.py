@@ -74,8 +74,16 @@ class knowledgeBase:
                 else:
                     self._kb[ name ][ variableName ] = [value,]
         
-    def getData( self, pluginWhoSavedTheData, variableName ):
+    def getData( self, pluginWhoSavedTheData, variableName=None ):
         '''
+        @parameter pluginWhoSavedTheData: The plugin that saved the data to the kb.info
+        Typically the name of the plugin, but could also be the plugin instance.
+        
+        @parameter variableName: The name of the variables under which the vuln objects were
+        saved. Typically the same name of the plugin, or something like "vulns", "errors", etc. In
+        most cases this is NOT None. When set to None, a dict with all the vuln objects found by the
+        pluginWhoSavedTheData is returned.
+        
         @return: Returns the data that was saved by another plugin.
         '''
         if isinstance( pluginWhoSavedTheData, basestring ):
@@ -89,7 +97,9 @@ class knowledgeBase:
             if name not in self._kb.keys():
                 res = []
             else:
-                if variableName not in self._kb[name].keys():
+                if variableName == None:
+                    res = self._kb[name]
+                elif variableName not in self._kb[name].keys():
                     res = []
                 else:
                     res = self._kb[name][variableName]
