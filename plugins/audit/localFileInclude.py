@@ -134,7 +134,7 @@ class localFileInclude(baseAuditPlugin):
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
                 v['file_pattern'] = file_content
-                kb.kb.append( 'localFileInclude', 'localFileInclude', v )
+                kb.kb.append( self, 'localFileInclude', v )
                 return
         
         # Check for interesting errors
@@ -147,7 +147,7 @@ class localFileInclude(baseAuditPlugin):
                 i.setId( response.id )
                 i.setName( 'File read error' )
                 i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
-                kb.kb.append( 'localFileInclude', 'error', i )
+                kb.kb.append( self, 'error', i )
                 
     
     def end(self):
