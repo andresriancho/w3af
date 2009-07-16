@@ -184,6 +184,8 @@ class findvhost(baseDiscoveryPlugin):
                     kb.kb.append( self, 'findvhost', i )
                     om.out.information( i.getDesc() )
         
+        res = [ r for r in res if r != '']
+        
         return res 
     
     def _can_resolve_domains(self):
