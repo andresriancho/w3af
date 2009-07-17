@@ -247,6 +247,10 @@ class xss(baseAuditPlugin):
                 [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7, browsers.NETSCAPE_IE]))
                 
         xss_tests.append(("<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>", [browsers.ALL, ]))
+        
+        # IE only
+        xss_tests.append(('</A/style="xss:exp/**/ression(alert(\'XSS\'))">',
+                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7]))
 
         # Javascript
         xss_tests.append(('jAvasCript:alert("RANDOMIZE");',
