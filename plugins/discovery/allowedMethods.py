@@ -127,6 +127,9 @@ class allowedMethods(baseDiscoveryPlugin):
             # 'DELETE' is not tested! I don't want to remove anything...
             # 'PUT' is not tested! I don't want to overwrite anything...
             methods_to_test = self._supported_methods[:]
+            
+            # remove dups, and dangerous methods.
+            methods_to_test = list(set(methods_to_test))
             methods_to_test.remove('DELETE')
             methods_to_test.remove('PUT')
 
