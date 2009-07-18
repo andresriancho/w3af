@@ -245,7 +245,9 @@ class urlOpenerSettings( configurable ):
 
     def getBasicAuth( self ):
         scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( cf.cf.getData('basicAuthDomain') )
-        return scheme + '://' + cf.cf.getData('basicAuthUser') + ':' + cf.cf.getData('basicAuthPass') + '@' + domain + '/'
+        res = scheme + '://' + cf.cf.getData('basicAuthUser') + ':' 
+        res += cf.cf.getData('basicAuthPass') + '@' + domain + '/'
+        return res
     
     def setNtlmAuth( self, url, username, password ):
 
@@ -389,15 +391,13 @@ class urlOpenerSettings( configurable ):
         o9 = option('ignoreSessCookies', cf.cf.getData('ignoreSessCookies'), d9, 'boolean', help=h9, tabid='Cookies')
        
         d10 = 'Proxy TCP port'
-        h10 = 'TCP port for the remote proxy server to use. On windows systems, if you left this'
-        h10 += ' setting blank w3af will use the system settings that are configured in Internet'
-        h10 += ' Explorer.'
+        h10 = 'TCP port for the remote proxy server to use. On Microsoft Windows systems, w3af'
+        h10 += ' will use the proxy settings that are configured in Internet Explorer.'
         o10 = option('proxyPort', cf.cf.getData('proxyPort'), d10, 'integer', help=h10, tabid='Outgoing proxy')
 
         d11 = 'Proxy IP address'
-        h11 = 'IP address for the remote proxy server to use. On windows systems, if you left this'
-        h11 += ' setting blank w3af will use the system settings that are configured in Internet'
-        h11 += 'Explorer.'
+        h11 = 'IP address for the remote proxy server to use. On Microsoft Windows systems, w3af'
+        h11 += ' will use the proxy settings that are configured in Internet Explorer.'
         o11 = option('proxyAddress', cf.cf.getData('proxyAddress'), d11, 'string', help=d11, tabid='Outgoing proxy')
 
         d12 = 'User Agent header'
