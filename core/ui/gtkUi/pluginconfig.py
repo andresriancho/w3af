@@ -671,8 +671,8 @@ class PluginConfigBody(gtk.VBox):
     def reload(self, profileDescription):
         '''Reloads all the configurations.'''
         # target url
-        plugin = self.w3af.target
-        options = plugin.getOptions()
+        configurable_obj = self.w3af.target
+        options = configurable_obj.getOptions()
         newurl = options['target'].getDefaultValueStr()
         if newurl:
             self.target.setText(newurl)

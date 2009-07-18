@@ -443,6 +443,7 @@ class AdvisedEntry(gtk.Entry):
         self.connect("focus-in-event", self._focus)
         self.firstfocus = True
         self.origMessage = message
+        self._current_message = message
         self.set_text(message)
         self.alertb = alertb
         if self.alertb is not None:
@@ -474,7 +475,7 @@ class AdvisedEntry(gtk.Entry):
         self.show()
 
     def _changed(self, widg):
-        self.alertmodif(changed = self.get_text() != self.origMessage)
+        self.alertmodif(changed = self.get_text() != self._current_message)
 
     def _focus(self, *vals):
         '''Cleans it own text.'''
@@ -492,12 +493,13 @@ class AdvisedEntry(gtk.Entry):
     def setText(self, message):
         '''Sets the widget text.'''
         self.firstfocus = False
-        self.origMessage = message
+        self._current_message = message
         self.set_text(message)
         
     def reset(self):
         '''Resets the message in the widget.'''
         self.firstfocus = True
+        self._current_message = self.origMessage
         self.set_text(self.origMessage)
         
     def insertURL(self, *w):

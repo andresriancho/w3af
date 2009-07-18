@@ -111,8 +111,18 @@ class ProfileList(gtk.TreeView):
                 if add_to_list:
                     tmpprofiles.append((nom, desc, profile_obj))
         
+        # Create the liststore using a specially sorted list, what I basically want is the
+        # empty profile at the beginning of the list, and the rest sorted in alpha order
+        tmpprofiles = sorted(tmpprofiles)
+        tmpprofiles_special_order = []
+        for nom, desc, profile_obj in tmpprofiles:
+            if nom == 'empty_profile':
+                tmpprofiles_special_order.insert( 0 , (nom, desc, profile_obj))
+            else:
+                tmpprofiles_special_order.append( (nom, desc, profile_obj))
+        
         # And now create the liststore and the internal dict
-        for nom, desc, profile_obj in sorted(tmpprofiles):
+        for nom, desc, profile_obj in tmpprofiles_special_order:
             prfid = str(id(profile_obj))
             self.profile_instances[prfid] = profile_obj
             liststore.append([nom, desc, prfid, 0, nom])
