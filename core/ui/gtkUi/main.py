@@ -61,7 +61,10 @@ splash = Splash()
 try:
     import sqlite3
 except ImportError:
-    print 'You have to install the sqlite3 database module to be able to run the GTK user interface. On debian based distributions you should install: python-pysqlite2'
+    # TODO: Why am I checking this here and not in the dependencyCheck?
+    msg = 'You have to install the sqlite3 database module to be able to run the GTK user'
+    msg += ' interface. On debian based distributions you should install: python-pysqlite2'
+    print msg
     sys.exit( 1 )
 
 import threading, shelve, os
@@ -72,6 +75,7 @@ import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
 import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, exception_handler
+from . import export_request
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
 from . import exception_handler
@@ -109,6 +113,7 @@ ui_menu = """
       <menuitem action="ManualRequest"/>
       <menuitem action="FuzzyRequest"/>
       <menuitem action="EncodeDecode"/>
+      <menuitem action="ExportRequest"/>
       <menuitem action="Compare"/>
       <menuitem action="Proxy"/>
     </menu>
@@ -137,6 +142,7 @@ ui_menu = """
     <toolitem action="ManualRequest"/>
     <toolitem action="FuzzyRequest"/>
     <toolitem action="EncodeDecode"/>
+    <toolitem action="ExportRequest"/>
     <toolitem action="Compare"/>
     <toolitem action="Proxy"/>
   </toolbar>
@@ -318,6 +324,7 @@ class MainApp(object):
             ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), None, _('Generate manual HTTP request'), self._manual_request),
             ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), None, _('Generate fuzzy HTTP requests'), self._fuzzy_request),
             ('EncodeDecode', gtk.STOCK_CONVERT, _('_Encode/Decode'), None, _('Encodes and Decodes in different ways'), self._encode_decode),
+            ('ExportRequest', gtk.STOCK_COPY, _('_Export Request'), None, _('Export HTTP request'), self._export_request),
             ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), None, _('Compare different requests and responses'), self._compare),
             ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), None, _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
             ('ToolsMenu', None, _('_Tools')),
@@ -386,7 +393,7 @@ class MainApp(object):
         self.startstopbtns = helpers.BroadcastWrapper()
 
         # get toolbar items
-        assert toolbar.get_n_items() == 15
+        assert toolbar.get_n_items() == 16
         toolbut_startstop = entries.ToolbuttonWrapper(toolbar, 5)
         self.startstopbtns.addWidget(toolbut_startstop)
         self.toolbut_pause = toolbar.get_nth_item(6)
@@ -802,6 +809,10 @@ class MainApp(object):
     def _manual_request(self, action):
         '''Generate manual HTTP requests.'''
         craftedRequests.ManualRequests(self.w3af)
+    
+    def _export_request(self, action):
+        '''Export HTTP requests to python, javascript, etc.'''
+        export_request.export_request(self.w3af)
 
     def _fuzzy_request(self, action):
         '''Generate fuzzy HTTP requests.'''
