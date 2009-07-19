@@ -131,7 +131,6 @@ class w3afCore:
 
         self._pluginsOptions = {'audit':{}, 'grep':{}, 'bruteforce':{}, 'discovery':{}, \
         'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
-
     
     def getHomePath( self ):
         '''
@@ -154,6 +153,7 @@ class w3afCore:
         self.target = targetSettings()
         
         # Init some values
+        # TODO: May be consuming a lot of memory
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         self._isRunning = False
         self._paused = False
@@ -201,8 +201,9 @@ class w3afCore:
                 try:
                     depType, depPlugin = dep.split('.')
                 except:
-                    raise w3afException('Plugin dependencies must be indicated using pluginType.pluginName notation.\
-                    This is an error in ' + pluginName +'.getPluginDeps() .')
+                    msg = 'Plugin dependencies must be indicated using pluginType.pluginName'
+                    msg += ' notation. This is an error in ' + pluginName +'.getPluginDeps().'
+                    raise w3afException( msg )
                 if depType == pluginType:
                     if depPlugin not in strReqPlugins:
                         if cf.cf.getData('autoDependencies'):
@@ -211,7 +212,9 @@ class w3afCore:
                             # nice recursive call, this solves the "dependency of dependency" problem =)
                             return self._rPlugFactory( strReqPlugins, depType )
                         else:
-                            raise w3afException('Plugin '+ pluginName +' depends on plugin ' + dep + ' and ' + dep + ' is not enabled. ')
+                            msg = 'Plugin "'+ pluginName +'" depends on plugin "' + dep + '" and "'
+                            msg += dep + '" is not enabled.'
+                            raise w3afException( msg )
                 else:
                     if depPlugin not in self._strPlugins[depType]:
                         if cf.cf.getData('autoDependencies'):
@@ -222,7 +225,9 @@ class w3afCore:
                                 self._strPlugins[depType].append( depPlugin )
                             om.out.information('Auto-enabling plugin: ' + depType + '.' + depPlugin)
                         else:
-                            raise w3afException('Plugin '+ pluginName +' depends on plugin ' + dep + ' and ' + dep + ' is not enabled. ')
+                            msg = 'Plugin "'+ pluginName +'" depends on plugin "' + dep + '" and "'
+                            msg += dep + '" is not enabled.'
+                            raise w3afException( msg )
                     else:
                         # if someone in another planet depends on me... run first
                         self._strPlugins[depType].remove( depPlugin )
@@ -257,9 +262,15 @@ class w3afCore:
         
         # This should never happend.
         if len(orderedPluginList) != len(requestedPluginsList):
-            om.out.error('There is an error in the way w3afCore orders plugins. The ordered plugin list length is not equal to the requested plugin list. ', newLine=False)
+            error_msg = 'There is an error in the way w3afCore orders plugins. The ordered plugin'
+            error_msg += ' list length is not equal to the requested plugin list.'
+            om.out.error( error_msg, newLine=False)
+            
             om.out.error('The error was found sorting plugins of type: '+ pluginType +'.')
-            om.out.error('Please report this bug to the developers including a complete list of commands that you run to get to this error.')
+            
+            error_msg = 'Please report this bug to the developers including a complete list of'
+            error_msg += ' commands that you run to get to this error.'
+            om.out.error( error_msg )
 
             om.out.error('Ordered plugins:')
             for plugin in orderedPluginList:
@@ -305,6 +316,9 @@ class w3afCore:
         '''
         Creates an URL list in the kb
         '''
+        # TODO:
+        # kb.kb.getData( 'urls', 'urlList') consumes a lot of memory
+        
         # Create the queue that will be used in gtkUi
         old_list = kb.kb.getData( 'urls', 'urlList')
         new_list = [ fr.getURL() for fr in fuzzableRequestList if fr.getURL() not in old_list ]
