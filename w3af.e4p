@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-06-23, 08:58:41 -->
+<!-- Saved: 2009-07-10, 18:24:27 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3516,6 +3516,11 @@
       <Dir>url</Dir>
       <Dir>handlers</Dir>
       <Name>urlParameterHandler.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>dir_bruter.py</Name>
     </Source>
   </Sources>
   <Forms>

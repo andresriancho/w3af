@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-07-09, 12:52:14 -->
+<!-- Saved: 2009-07-15, 09:45:45 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -99,34 +99,6 @@
         <Name>mozillaTab.py</Name>
       </Filename>
       <Linenumber>56</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
-    <Description></Description>
-    <Created>2008-08-02, 16:25:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>clusterTable.py</Name>
-      </Filename>
-      <Linenumber>362</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
-    <Description></Description>
-    <Created>2008-08-02, 16:25:57</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>clusterTable.py</Name>
-      </Filename>
-      <Linenumber>384</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -362,34 +334,6 @@
         <Name>xdot.py</Name>
       </Filename>
       <Linenumber>1214</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
-    <Description></Description>
-    <Created>2008-12-05, 21:30:53</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>clusterGraph.py</Name>
-      </Filename>
-      <Linenumber>283</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
-    <Description></Description>
-    <Created>2008-12-05, 21:30:53</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>gtkUi</Dir>
-        <Name>clusterGraph.py</Name>
-      </Filename>
-      <Linenumber>292</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="True">
@@ -1318,6 +1262,75 @@
         <Name>profiles.py</Name>
       </Filename>
       <Linenumber>401</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
+    <Description></Description>
+    <Created>2009-07-10, 21:49:03</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterGraph.py</Name>
+      </Filename>
+      <Linenumber>283</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: instead of hiding..., which may consume memory... why don't killing?</Summary>
+    <Description></Description>
+    <Created>2009-07-10, 21:49:03</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterGraph.py</Name>
+      </Filename>
+      <Linenumber>292</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2009-07-10, 21:49:55</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterTable.py</Name>
+      </Filename>
+      <Linenumber>364</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)</Summary>
+    <Description></Description>
+    <Created>2009-07-10, 21:49:55</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>gtkUi</Dir>
+        <Name>clusterTable.py</Name>
+      </Filename>
+      <Linenumber>386</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: create a dict here, and work with that, this simplistic approach fails when errors 403, 401, 500 are returned!!</Summary>
+    <Description></Description>
+    <Created>2009-07-11, 21:15:35</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>dir_bruter.py</Name>
+      </Filename>
+      <Linenumber>157</Linenumber>
     </Resource>
   </Task>
 </Tasks>
