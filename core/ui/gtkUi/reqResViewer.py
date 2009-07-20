@@ -443,6 +443,8 @@ class searchableTextView(gtk.VBox, entries.Searchable):
         
         # Create the textview where the text is going to be shown
         self.textView = gtk.TextView()
+        self.textView.set_wrap_mode(gtk.WRAP_WORD)
+
         for sev in SEVERITY_TO_COLOR:
             self.textView.get_buffer().create_tag(sev, background=SEVERITY_TO_COLOR[sev])
         self.textView.show()
