@@ -61,7 +61,8 @@ class fuzzableRequest:
         result_string = ''
         result_string += self.dumpRequestHead()
         result_string += '\n\n'
-        result_string += str( self.getData() )
+        if self.getData():
+            result_string += str( self.getData() )
         return result_string
     
     def dumpRequestHead( self ):
