@@ -422,8 +422,8 @@ class xUrllib:
     def _checkURI( self, req ):
         #bug bug !
         #
-        #[ Fri Sep 21 23:05:18 2007 - debug ] Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
-        #[ Fri Sep 21 23:05:18 2007 - error ] Too many retries when trying to get: http://localhost/w3af/globalRedirect/2.php?url=javascript%3Aalert
+        # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
+        # Too many retries when trying to get: http://localhost/w3af/globalRedirect/2.php?url=javascript%3Aalert
         #
         ###TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL    
         if req.get_full_url().startswith( 'http' ):
@@ -613,12 +613,14 @@ class xUrllib:
             om.out.debug('Re-sending request...')
             return self._send( req, useCache )
         else:
+            error_amt = self._errorCount[ id(req) ]
             # Clear the log of failed requests; this one definetly failed...
             del self._errorCount[ id(req) ]
             # No need to add this:
             #self._incrementGlobalErrorCount()
             # The global error count is already incremented by the _send method.
-            raise w3afException('Too many retries when trying to get: ' + req.get_full_url() )
+            msg = 'Too many retries (' + str(error_amt) +') while requesting: ' + req.get_full_url()
+            raise w3afException( msg )
     
     def _incrementGlobalErrorCount( self ):
         '''
