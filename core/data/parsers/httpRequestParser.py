@@ -20,8 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afException
+
 
 def httpRequestParser(head, postdata):
     '''
@@ -108,10 +109,5 @@ def httpRequestParser(head, postdata):
             headerValue = ' '.join(oneSplittedHeader[1:]).strip()
             headersDict[ oneSplittedHeader[0].strip() ] = headerValue
     
-    # And now we create the fuzzableRequest object
-    fuzzReq = fuzzableRequest()
-    fuzzReq.setURI(uri)
-    fuzzReq.setHeaders(headersDict)
-    fuzzReq.setMethod(method)
-    fuzzReq.setData(postdata) 
+    fuzzReq = createFuzzableRequestRaw(method, uri, postdata, headersDict )
     return fuzzReq
