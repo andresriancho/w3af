@@ -46,7 +46,9 @@ class pks(searchEngine):
         @parameter hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
-            raise w3afException('You must provide the pks search engine with a root domain name (as returned by urlParser.getRootDomain).')
+            msg = 'You must provide the pks search engine with a root domain name (as returned by'
+            msg += ' urlParser.getRootDomain).'
+            raise w3afException( msg )
     
         res = self.met_search( hostname )
         om.out.debug('pks search for hostname : '+ hostname + ' returned ' + str( len( res ) ) + ' results.' )
@@ -77,28 +79,25 @@ class pks(searchEngine):
         results = []
         accounts = []
         
-        for line in content.split('\n')[6:]:
+        for line in content.split('\n')[2:]:
             if not line.strip():
                 continue
 
             tokens = line.split()
             
-            email = None
-            name = None
-            
-            if re.search('\d{4}/\d{2}/\d{2}', line):
+            if len(tokens) >= 5:
                 email = tokens[-1]
                 name = ' '.join(tokens[3:-1])
-            else:
-                email = tokens[-1]
-                name = ' '.join(tokens[:-1])
-            
-            account = email.split('@')[0]
-            if not account.count('*'):  # This kills revokated lines
-                if name != None and email != None and account not in accounts:
-                    pksr = pksResult( name, account )
-                    results.append( pksr )
-                    accounts.append( account )
+
+                # Copy+paste from abstractParser.py
+                emailRegex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
+                if re.match(emailRegex, email, re.IGNORECASE):
+                    
+                    account = email.split('@')[0]
+                    if account not in accounts:
+                        pksr = pksResult( name, account )
+                        results.append( pksr )
+                        accounts.append( account )
 
         return results
     
