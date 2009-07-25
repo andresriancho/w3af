@@ -44,7 +44,7 @@ def python_export( request_string ):
     res += 'url = "' + http_request.getURI() + '"\n'
     
     if http_request.getData() != '\n':
-        escaped_data = http_request.getData().replace('"', '\\"')
+        escaped_data = str(http_request.getData()).replace('"', '\\"')
         res += 'data = "' + escaped_data + '"\n'
     else:
         res += 'data = None\n'
