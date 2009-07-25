@@ -30,6 +30,8 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afRunOnce
 
+import csv
+
 
 class importResults(baseDiscoveryPlugin):
     '''
@@ -68,22 +70,22 @@ class importResults(baseDiscoveryPlugin):
                     msg += str(e) + '".'
                     om.out.error( msg )
                 else:
-                    for line in file_handler:
-                        obj = self._obj_from_file( line.strip() )
+                    for row in csv.reader(file_handler):
+                        obj = self._obj_from_file( row )
                         if obj:
                             res.append( obj )
                         
         return res
     
-    def _obj_from_file( self, csv_line ):
+    def _obj_from_file( self, csv_row ):
         '''
         @return: A fuzzableRequest based on the csv_line.
         '''
         try:
-            method, uri, postdata = csv_line.split(',',2)
+            (method, uri, postdata) = csv_row
         except ValueError, value_error:
             msg = 'The file format is incorrect, an error was found while parsing: "'
-            msg += csv_line + '". Exception: "' + str(value_error) + '".'
+            msg += str(csv_row) + '". Exception: "' + str(value_error) + '".'
             om.out.error( msg )
         else:
             # Create the obj based on the information
