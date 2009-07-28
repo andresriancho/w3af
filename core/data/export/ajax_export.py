@@ -100,7 +100,7 @@ xmlhttp.onreadystatechange=function() {
         res += 'xmlhttp.setRequestHeader("' + header_name + '", "' + headers[header_name] + '");\n'
         
     # And finally the post data (if any)
-    if http_request.getData() != '\n':
+    if http_request.getData() and http_request.getData() != '\n':
         res += 'var post_data = (<r><![CDATA[' + http_request.getData() + ']]></r>).toString();\n'
         res += 'xmlhttp.send(post_data);\n'
     else:
