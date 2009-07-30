@@ -34,10 +34,11 @@ SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
 
 def get_webshells( extension, forceExtension=False ):
     '''
-    This method returns a webshell content to be used in exploits, based on the extension, or based on the
-    x-powered-by header.
+    This method returns a webshell content to be used in exploits, based on the extension, or based
+    on the x-powered-by header.
     
-    Plugins calling this function, should depend on "discovery.serverHeader" if they want to use the complete power if this function.
+    Plugins calling this function, should depend on "discovery.serverHeader" if they want to use 
+    the complete power if this function.
     '''
     return _get_file_list( 'webshell', extension, forceExtension )
 
