@@ -35,7 +35,14 @@ class HistorySuggestion(object):
         if os.access(filename, os.R_OK):
             # dict: {text:points}
             fileh = open(filename)
-            self.history = cPickle.load(fileh)
+            #
+            # Added this try/except because of this bug:
+            # https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2830825&group_id=170274
+            #
+            try:
+                self.history = cPickle.load(fileh)
+            except:
+                self.history = {}
             fileh.close()
 
     def getTexts(self):
