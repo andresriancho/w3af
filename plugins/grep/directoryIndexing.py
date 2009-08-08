@@ -60,13 +60,13 @@ class directoryIndexing(baseGrepPlugin):
         Plugin entry point, search for directory indexing.
         @return: None
         '''
-        if response.getURL() in self._already_visited:
+        if urlParser.getDomainPath(response.getURL()) in self._already_visited:
             # Already worked for this URL, no reason to work twice
             return
         
         else:
             # Save it,
-            self._already_visited.append( response.getURL() )
+            self._already_visited.append( urlParser.getDomainPath(response.getURL()) )
             
             # Work,
             if response.is_text_or_html():
