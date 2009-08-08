@@ -25,7 +25,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.httpRequestParser import httpRequestParser
 import re
 
-
+def ruby_escape_string( str_in ):
+    str_out = str_in.replace('\\', '\\\\')
+    str_out = str_out.replace('"', '\\"')
+    return str_out
+    
 def ruby_export( request_string ):
     '''
     @parameter request_string: The string of the request to export
@@ -44,7 +48,7 @@ def ruby_export( request_string ):
     res += 'url = URI.parse("' + http_request.getURI() + '")\n'
     
     if http_request.getData() != '\n':
-        escaped_data = str(http_request.getData()).replace('"', '\\"')
+        escaped_data = ruby_escape_string( str(http_request.getData()) )
         res += 'data = "' + escaped_data + '"\n'
     else:
         res += 'data = nil\n'
@@ -52,8 +56,8 @@ def ruby_export( request_string ):
     res += 'headers = { \n'
     headers = http_request.getHeaders()
     for header_name in headers:
-        header_name = header_name.replace('"', '\\"')
-        header_value = headers[header_name].replace('"', '\\"')
+        header_value = ruby_escape_string(headers[header_name])        
+        header_name = ruby_escape_string(header_name)
         res += '\t"' + header_name + '" => "' + header_value + '",\n'
         
     res = res [:-2]

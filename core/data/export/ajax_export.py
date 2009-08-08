@@ -25,7 +25,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.httpRequestParser import httpRequestParser
 import core.data.parsers.urlParser as urlParser
 
-
+def ajax_escape_string( str_in ):
+    str_out = str_in.replace('\\', '\\\\')
+    str_out = str_out.replace('"', '\\"')
+    return str_out
+    
 def ajax_export( request_string ):
     '''
     @parameter request_string: The string of the request to export
@@ -97,11 +101,12 @@ xmlhttp.onreadystatechange=function() {
     # Now I add the headers:
     headers = http_request.getHeaders()
     for header_name in headers:
-        res += 'xmlhttp.setRequestHeader("' + header_name + '", "' + headers[header_name] + '");\n'
+        res += 'xmlhttp.setRequestHeader("' + ajax_escape_string(header_name) + '", "'
+        res += ajax_escape_string(headers[header_name]) + '");\n'
         
     # And finally the post data (if any)
     if http_request.getData() and http_request.getData() != '\n':
-        res += 'var post_data = (<r><![CDATA[' + http_request.getData() + ']]></r>).toString();\n'
+        res += 'var post_data = (<r><![CDATA[' + str(http_request.getData()) + ']]></r>).toString();\n'
         res += 'xmlhttp.send(post_data);\n'
     else:
         res += 'xmlhttp.send(null);\n'
