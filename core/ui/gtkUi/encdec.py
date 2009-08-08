@@ -41,15 +41,33 @@ class SimpleTextView(gtk.TextView):
         start, end = self.buffer.get_bounds()
         self.buffer.delete(start, end)
 
+    def _my_repr(self, str_in):
+        '''
+        @param str_in: The input parameter to "repr()"
+        @return: The repr'ed string
+        '''
+        res = ''
+        for c in str_in:
+            if repr(c)[1:-1] != c and c not in ['\n', '\r', '\t']:
+                res += repr(c)[1:-1]
+            else:
+                res += c
+        return res
+
     def setText(self, newtext, use_repr=False):
-        '''Sets a new text in the pane, repr'ing it.
+        '''Sets a new text in the pane, repr'ing it if needed.
+        
+        @param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
+        escapes new lines, and tabs, but we would like to keep those as they can be represented
+        properly in a textview.
         
         @param newtext: the new text of the pane.
         '''
         self.clear()
         iterl = self.buffer.get_end_iter()
+        
         if use_repr:
-            newtext = repr(newtext)[1:-1]
+            newtext = self._my_repr(newtext)
         else:
             newtext = newtext
         
@@ -176,8 +194,6 @@ class EncodeDecode(entries.RememberingWindow):
 
         proc.start()
         gobject.timeout_add(200, procDone)
-
-
         
     def _encode(self, widg, combo):
         '''Encodes the upper text.'''
@@ -302,6 +318,7 @@ def html_unescape(t):
     '<script>'
     >>> 
     '''
+    print encode_decode.htmldecode(t)
     return encode_decode.htmldecode(t)
 
 def double_urlencode(t):
