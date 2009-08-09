@@ -12,7 +12,7 @@ back
 
 discovery importResults
 discovery config importResults
-set input_file scripts/input-test.csv
+set input_csv scripts/input-test.csv
 back
 
 back
