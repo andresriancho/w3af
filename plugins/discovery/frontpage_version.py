@@ -30,6 +30,8 @@ import core.data.parsers.urlParser as urlParser
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.data.db.temp_persist import disk_list
+
 #python modules
 import re
 
@@ -44,7 +46,7 @@ class frontpage_version(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = []
+        self._analyzed_dirs = disk_list()
         self._exec = True
 
     def discover(self, fuzzableRequest ):
