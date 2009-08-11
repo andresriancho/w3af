@@ -50,7 +50,6 @@ class osCommandingShell(baseAttackPlugin):
         self._data = ''
         self._inj_var = ''
         self._method = 'GET'
-        self._generateOnlyOne = True
 
     def fastExploit( self ):
         '''
@@ -193,7 +192,7 @@ class osCommandingShell(baseAttackPlugin):
         self._separator = optionsMap['separator'].getValue()
         self._url = optionsMap['url'].getValue()
         self._change_to_post = optionsMap['changeToPost'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+
             
     def getPluginDeps( self ):
         '''
