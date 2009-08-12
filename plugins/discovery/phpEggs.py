@@ -117,6 +117,11 @@ class phpEggs(baseDiscoveryPlugin):
                 ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
                 ("4b2c92409cf0bcf465d199e93a15ac3f", "PHP Logo 2"), 
                 ("da2dae87b166b7709dbd4061375b74cb", "Zend Logo") ]
+        self._egg_DB['4.4.7, PleskWin, ASP.NET'] = [
+                ('b8477b9b88e90f12e3200660a70eb765', 'Zend Logo'),
+                ('b8477b9b88e90f12e3200660a70eb765', 'PHP Credits'),
+                ('b8477b9b88e90f12e3200660a70eb765', 'PHP Logo 2'),
+                ('b8477b9b88e90f12e3200660a70eb765', 'PHP Logo')]
         self._egg_DB["4.4.8"] = [ 
                 ("4cdfec8ca11691a46f4f63839e559fc5", "PHP Credits"), 
                 ("11b9cfe306004fce599a1f8180b61266", "PHP Logo"), 
