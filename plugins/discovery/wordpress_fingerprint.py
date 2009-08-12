@@ -76,8 +76,10 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
 
             self._fuzzableRequests = []  
             
+            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            
             # Main scan URL passed from w3af + unique wp file
-            wp_unique_url = fuzzableRequest.getURL()  +  '/wp-login.php' 
+            wp_unique_url = urlParser.urlJoin( domain_path, 'wp-login.php' )
             response = self._urlOpener.GET( wp_unique_url, useCache=True )
 
             # If wp_unique_url is not 404, wordpress = true
@@ -89,7 +91,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
                 ##############################
             
                 # Main scan URL passed from w3af + wp index page
-                wp_index_url = fuzzableRequest.getURL()  +  '/index.php' 
+                wp_index_url = urlParser.urlJoin( domain_path, 'index.php' )
                 response = self._urlOpener.GET( wp_index_url, useCache=True )
 
                 # Find the string in the response html
@@ -115,20 +117,20 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
                 #########################
 
                 # Wordpress version unique data, file/data/version
-                self._wp_fingerprint = [ ('/wp-includes/js/tinymce/tiny_mce.js','2009-05-25','2.8')
-                        ('/wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'), 
-                        ('/wp-admin/css/farbtastic.css','.farbtastic','2.7'),
-                        ('/wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'),
-                        ('/wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'),
-                        ('/wp-admin/async-upload.php','200','2.5'),
-                        ('/wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'),
-                        ('/readme.html','2.3','2.3'),
-                        ('/wp-includes/rtl.css','#adminmenu a','2.2.3'),
-                        ('/wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'),
-                        ('/wp-app.php','200','2.2')]
+                self._wp_fingerprint = [ ('wp-includes/js/tinymce/tiny_mce.js','2009-05-25','2.8'), 
+                        ('wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'), 
+                        ('wp-admin/css/farbtastic.css','.farbtastic','2.7'),
+                        ('wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'),
+                        ('wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'),
+                        ('wp-admin/async-upload.php','200','2.5'),
+                        ('wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'),
+                        ('readme.html','2.3','2.3'),
+                        ('wp-includes/rtl.css','#adminmenu a','2.2.3'),
+                        ('wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'),
+                        ('wp-app.php','200','2.2')]
 
                 for row in self._wp_fingerprint:
-                    test_url = fuzzableRequest.getURL() + row[0]
+                    test_url = urlParser.urlJoin(  domain_path, row[0] )
                     response = self._urlOpener.GET( test_url, useCache=True )
 
                     if row[1] == '200' and not is_404(response):
