@@ -67,7 +67,7 @@ class temp_shelve(object):
         while True:
             # Get the temp filename to use
             tempdir = get_temp_dir()
-            filename = ''.join([choice(string.letters) for i in range(8)]) + '.w3af.temp_shelve'
+            filename = ''.join([choice(string.letters) for i in range(12)]) + '.w3af.temp_shelve'
             self._filename = os.path.join(tempdir, filename)
             
             # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
