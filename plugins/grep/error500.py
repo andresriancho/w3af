@@ -105,9 +105,10 @@ class error500(baseGrepPlugin):
                 v.setId( error_500_response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unhandled error in web application' )
-                msg = 'An unidentified web application error was found at: "' + v.getURL()+'".'
-                msg += ' Enable all plugins and try again, if the error still is not '
-                msg += 'identified, please verify mannually. And report it to the w3af developers.'
+                msg = 'An unidentified web application error (HTTP response code 500)'
+                msg += ' was found at: "' + v.getURL()+'".'
+                msg += ' Enable all plugins and try again, if the vulnerability still is not'
+                msg += ' identified, please verify mannually and report it to the w3af developers.'
                 v.setDesc( msg )
                 kb.kb.append( self, 'error500', v )
                 
