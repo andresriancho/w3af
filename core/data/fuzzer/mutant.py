@@ -82,7 +82,7 @@ class mutant:
         raise w3afException('You should implement the getMutantType method when inhereting from mutant.')
     
     def printModValue( self ):
-        return 'The sent '+ self.getMutantType() +' is: "' + self.getData() + '" .'
+        return 'The sent '+ self.getMutantType() +' is: "' + str(self.getData()) + '" .'
     
     def __repr__( self ):
         return '<'+ self.getMutantType() +' mutant | '+ self.getMethod() +' | '+ self.getURI() +' >'
