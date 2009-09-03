@@ -49,8 +49,10 @@ class searchEngine:
                 om.out.debug( str(w3) )
                 raise w3
             except Exception, e:
-                om.out.debug( 'Unhandled exception in searchEngines.searchEngine.search(): '+str(e) )
-                raise e
+                msg = 'An unhandled exception was found in searchEngines.searchEngine.search(): "'
+                msg += str(e) + '".'
+                om.out.error( msg )
+                raise w3afException( msg )
             else:
                 result.extend( tmp )
                 start += len( tmp )
