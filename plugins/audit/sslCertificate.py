@@ -38,6 +38,7 @@ import core.data.kb.info as info
 from OpenSSL import SSL, crypto
 import socket
 import select
+import re
 
 
 class sslCertificate(baseAuditPlugin):
@@ -156,7 +157,35 @@ class sslCertificate(baseAuditPlugin):
         cn = str(peer.commonName)
 
         # Check that the name of the site and the name reported in the certificate match.
-        if host != cn:
+        certinvalid=True
+        if re.match (r"\*",cn):
+            wildcardinvalid=True
+            # The leftmost component should start with '*.' and CountOf(*)==1
+            if re.match (r"^\*\.",cn) and (cn.count('*')==1):    
+                # there should be three components (at least two dots)
+                # but not ending with dot 
+                if (cn.count('.')>=2): # and not re.match (r"\.$",cn)):
+                    wildcardinvalid=False
+
+            if wildcardinvalid:
+                i = info.info()
+                i.setName('Potential wildcard SSL manipulation')
+                desc = 'The certificate is not using wildcard(*) properly'
+                desc += 'Certificate wildcard: '
+                desc += cn
+                i.setDesc (desc)
+                kb.kb.append(self,'version', i)
+            else:
+                tmpstr=cn    
+                tmpstr2=tmpstr.replace("*","",1)
+                tmphostregexp=tmpstr2.join("\$")
+                if re.search(tmphostregexp,host):
+                    certinvalid=False
+        else:
+            if host == cn:
+                certinvalid=False
+
+        if certinvalid: 
             i = info.info()
             i.setName('Invalid name of the certificate')
             desc = 'The certificate presented by this website ('
@@ -167,17 +196,17 @@ class sslCertificate(baseAuditPlugin):
             om.out.information( desc )
             kb.kb.append( self, 'cn', i )
 
-        # Check that the certificate is self issued
-        if peer == issuer:
-            i = info.info()
-            i.setName('Self issued SSL certificate')
-            desc = 'The certificate is self issued'
-            i.setDesc( desc )
-            om.out.information( desc )
-            kb.kb.append( self, 'si_cert', i )
-        # TODO
-        # 1. Self-signed
-        # 2. MD5 check like in Metasploit
+            # Check that the certificate is self issued
+            if peer == issuer:
+                i = info.info()
+                i.setName('Self issued SSL certificate')
+                desc = 'The certificate is self issued'
+                i.setDesc( desc )
+                om.out.information( desc )
+                kb.kb.append( self, 'si_cert', i )
+            # TODO
+            # 1. Self-signed
+            # 2. MD5 check like in Metasploit
 
     def _dump_X509(self, cert):
         '''
