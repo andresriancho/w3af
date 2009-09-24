@@ -18,4 +18,5 @@
 
 "generic","/debug.seam","<title>JBoss Seam Debug Page</title>","GET","JBoss Seam Debug Page is available."
 "generic","/.svn/entries","props","GET","SVN metadata is present"
+"generic","/.git/index","DIRC","GET","GIT metadata is present"
 
