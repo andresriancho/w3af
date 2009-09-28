@@ -70,6 +70,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._bruteforcer.setProfilingNumber( self._profilingNumber )
         self._bruteforcer.setUseSvnUsers( self._profilingNumber )
         self._bruteforcer.setLeetPasswd( self._l337_p4sswd )
+        self._bruteforcer.setUsersFile(self._usersFile)
+        self._bruteforcer.setPassFile(self._passwdFile)
         self._bruteforcer.init()
     
     def _fuzzRequests(self, freq ):
