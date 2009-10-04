@@ -383,13 +383,17 @@ class KeepAliveHandler:
         if self._cm.get_connectionNumber() >= MAXCONNECTIONS:
             # This will fix the 'Too many open files' exception
             if __name__ != '__main__':
-                om.out.debug('keepalive: Closing all connections. The connection number exceeded MAXCONNECTIONS (' + str(MAXCONNECTIONS) + ') .')
+                msg = 'keepalive: Closing all connections. The connection number exceeded'
+                msg += ' MAXCONNECTIONS (' + str(MAXCONNECTIONS) + ') .'
+                om.out.debug( msg )
             self._lock.acquire()
             self.close_all()
             self._lock.release()
         else:
             if __name__ != '__main__':
-                om.out.debug( 'keepalive: The connection manager has ' + str(self._cm.get_connectionNumber()) + ' active connections.')
+                msg = 'keepalive: The connection manager has '
+                msg += str(self._cm.get_connectionNumber()) + ' active connections.'
+                om.out.debug( msg )
             
         try:
             h = self._cm.get_ready_conn(host)
