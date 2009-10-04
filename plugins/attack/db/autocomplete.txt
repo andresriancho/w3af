@@ -1,0 +1,6 @@
+varchar
+localhost
+address
+email
+country
+

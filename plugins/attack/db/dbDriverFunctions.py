@@ -8,12 +8,15 @@ License: GPL v2.
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
+from core.controllers.threads.threadManager import threadManagerObj as tm
+import core.data.kb.config as cf
+
 import urllib
 import time
 import md5
-from core.controllers.threads.threadManager import threadManagerObj as tm
-import core.data.kb.config as cf
+import os
 import random
+
 
 class dbDriverFunctions:
     '''
@@ -28,6 +31,20 @@ class dbDriverFunctions:
         self._goodSamaritan = []
         self._tm = tm
         self._runningGS = False
+        self._load_autocomplete_strings()
+        
+    def _load_autocomplete_strings(self):
+        '''
+        This will load a list of autocomplete strings that will make blind sql injection
+        exploitation faster. (i hope)
+        '''
+        self._autocomplete_strings = []
+        
+        string_file = os.path.join('plugins', 'attack', 'db', 'autocomplete.txt')
+        for line in file(string_file):
+            line = line.strip()
+            if line:
+                self._autocomplete_strings.append( line )
     
     def isRunningGoodSamaritan( self ):
         return self._runningGS
@@ -147,7 +164,14 @@ class dbDriverFunctions:
                 # Continue with next character 
                 self._goodSamaritan = []
                 continue
-                
+            
+            # Now some predictive text which is automatically added...
+            # value is the variable that holds whatever we've already fetched from the DB
+            if len(value) == 4:
+                for autocomplete in self._autocomplete_strings:
+                    if autocomplete.startswith( value ):
+                        self._goodSamaritan.append(autocomplete[4:])
+            
             while (max - min) != 1:
                 
                 # someone contributed
