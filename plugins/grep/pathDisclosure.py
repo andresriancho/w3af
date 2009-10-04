@@ -222,15 +222,20 @@ class pathDisclosure(baseGrepPlugin):
             tmp[ url ] = list( set( tmp[ url ] ) )
         
         for url in tmp.keys():
-            om.out.information( 'The URL: ' + url + ' has the following path disclosure problems:' )
+            om.out.information( 'The URL: "' + url + '" has the following path disclosure problems:' )
             for path in tmp[ url ]:
-                to_print = '- ' + path + ' . Found in request id\'s: '
+                to_print = '    - ' + path + ' . Found in request with'
                 
                 list_of_id_list = ids[ path ]
                 complete_list = []
                 for list_of_id in list_of_id_list:
                     complete_list.extend(list_of_id)
-                to_print += str( list( set( complete_list ) ) )
+                
+                complete_list = list( set( complete_list ) )
+                if len(complete_list)==1:
+                    to_print += ' id ' + str( complete_list[0] ) + '.'
+                else:
+                    to_print += ' ids ' + str( complete_list )
                 om.out.information( to_print )
 
     def _get_path_disclosure_strings(self):
