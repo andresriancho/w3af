@@ -31,6 +31,8 @@ from core.controllers.misc.lru import LRU
 import urllib
 import cgi
 
+IS_EQUAL_RATIO = 0.90
+
 
 class fingerprint404Page:
     '''
@@ -132,8 +134,8 @@ class fingerprint404Page:
             response_body = tmp[0]
             html_body = self._get_clean_body( httpResponse )
             ratio = relative_distance( response_body, html_body )
-            if ratio > 0.72:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + '0.72' )
+            if ratio > IS_EQUAL_RATIO:
+                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + str(IS_EQUAL_RATIO) )
                 return True
             else:
                 return False
@@ -160,9 +162,25 @@ class fingerprint404Page:
             # All items in this directory/extension combination should be the same...
             response_body = tmp[0]
             html_body = self._get_clean_body( httpResponse )
+            
             ratio = relative_distance( response_body, html_body )
-            if ratio > 0.72:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio) + ' > ' + '0.72' )
+            
+            '''
+            print '=' * 60
+            print 'Comparing URL', httpResponse.getURL()
+            print '=' * 60
+            print repr(response_body)
+            print '=' * 60
+            print repr(html_body)
+            print '=' * 60
+            print ratio
+            print '=' * 60
+            '''
+            
+            if ratio > IS_EQUAL_RATIO:
+                msg = httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio)
+                msg += ' > ' + str(IS_EQUAL_RATIO)
+                om.out.debug( msg )
                 return True
             else:
                 return False
@@ -194,6 +212,7 @@ class fingerprint404Page:
           
         # Start the fun.
         if cf.cf.getData('autodetect404'):
+            print 'autodetect'
             return self._autodetect( httpResponse )
         elif cf.cf.getData('byDirectory404'):
             return self._byDirectory( httpResponse )
@@ -204,7 +223,9 @@ class fingerprint404Page:
     def _autodetect( self, httpResponse ):
         '''
         Try to autodetect how I'm going to handle the 404 messages
-        @parameter httpResponse: The URL
+        
+        @parameter httpResponse: The httpResponse, with the whole response information.
+        @return: True if the response is a 404.
         '''
         if len( self._404_page_LRU ) <= 25:
             msg = 'I can\'t perform autodetection yet (404pageList has '
@@ -227,8 +248,10 @@ class fingerprint404Page:
             elif kb.kb.getData('error404page', 'trustBody'):
                 html_body = self._get_clean_body( httpResponse )
                 ratio = relative_distance( html_body, kb.kb.getData('error404page', 'trustBody') )
-                if ratio > 0.72:
-                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting body). ' + str(ratio) + ' > ' + '0.72' )
+                if ratio > IS_EQUAL_RATIO:
+                    msg = httpResponse.getURL() + ' is a 404 (_autodetect trusting body). '
+                    msg += str(ratio) + ' > ' + str(IS_EQUAL_RATIO)
+                    om.out.debug( msg )
                     return True
                 else:
                     return False
@@ -240,9 +263,11 @@ class fingerprint404Page:
         # Check if all 404 responses are really HTTP 404
         tmp = [ (response, extension) for (response, extension) in self._404_page_LRU.values() if response.getCode() == 404 ]
         if len(tmp) == len(self._404_page_LRU):
-            om.out.debug('The remote web site uses 404 as 404.')
+            om.out.debug('The remote website uses 404 HTTP response code as 404.')
             kb.kb.save('error404page', 'trust404', True)
             return
+        else:
+            om.out.debug('The remote website DOES NOT use 404 HTTP response code as 404.')
             
         # Check if the 404 error message body is the same for all directories
         def areEqual( tmp, exactComparison=False ):
@@ -256,7 +281,7 @@ class fingerprint404Page:
                     
                     # The second method
                     if exactComparison == False:
-                        if relative_distance( a, b ) < 0.72:
+                        if relative_distance( a, b ) < IS_EQUAL_RATIO:
                             # If one is different, then we return false.
                             return False
                         
