@@ -335,6 +335,7 @@ class xss(baseAuditPlugin):
             msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
             msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
             v.setDesc( msg )
+            v.addToHighlight( mutant.getModValue() )
 
             kb.kb.append( self, 'xss', v )
     
@@ -413,6 +414,7 @@ class xss(baseAuditPlugin):
                         msg += ' URL: ' + mutant.getURL()+ '. ' + mutant.printModValue()
                         v.setDesc( msg )
                         v.setId( [response.id, mutant_response_id] )
+                        v.addToHighlight( mutant.getModValue() )
                         kb.kb.append( self, 'xss', v )
                         break
         
