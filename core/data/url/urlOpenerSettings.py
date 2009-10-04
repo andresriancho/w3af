@@ -215,7 +215,10 @@ class urlOpenerSettings( configurable ):
         
     def setBasicAuth( self, url, username, password ):
         if url == '':
-            raise w3afException('To properly configure the basic authentication settings, you should also set the auth domain. If you are unsure, you can set it to the target domain name.')
+            msg = 'To properly configure the basic authentication settings, you'
+            msg += ' should also set the auth domain. If you are unsure, you can'
+            msg += ' set it to the target domain name.'
+            raise w3afException( msg )
         
         cf.cf.save('basicAuthPass',  password)
         cf.cf.save('basicAuthUser', username )
@@ -428,7 +431,8 @@ class urlOpenerSettings( configurable ):
         d19 = 'Perform 404 page detection based on the knowledge found in the directory of the file'
         d19 += ' AND the file extension'
         h19 = 'Only used when autoDetect404 and byDirectory404 are False.'
-        o19 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d19, 'boolean', tabid='404 settings')
+        o19 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d19,
+                             'boolean', tabid='404 settings')
         
         d20 = 'Append the given URL parameter to every accessed URL.'
         d20 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
