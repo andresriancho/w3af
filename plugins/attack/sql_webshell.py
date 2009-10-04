@@ -201,7 +201,6 @@ class sql_webshell(baseAttackPlugin):
                             # Keep adding all shells to the kb
                             pass
                 
-                # FIXME: Am I really saving anything here ?!?!
                 return kb.kb.getData( self.getName(), 'shell' )
                 
     def _generateShell( self, vuln_obj ):
@@ -232,6 +231,7 @@ class sql_webshell(baseAttackPlugin):
                 shell_obj.setUrlOpener( self._urlOpener )
                 shell_obj.setWebShellURL( webshell_url )
                 shell_obj.setCut( self._header, self._footer )
+                kb.kb.append( self, 'shell', shell_obj )
                 return shell_obj
             else:
                 # Sad face :(
@@ -275,7 +275,7 @@ class sql_webshell(baseAttackPlugin):
             
                 # Create the test URL
                 test_url = urlParser.urlJoin(vuln_obj.getURL(), path + '/' + remote_filename )
-            
+
                 if self._upload_file( driver, remote_path, content, test_url, test_string):
                     upload_success = True
                     om.out.console('Successfully wrote a file to the webroot.')
