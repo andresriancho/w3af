@@ -52,10 +52,10 @@ class wsdlParser:
         try:
             self._proxy = SOAPpy.WSDL.Proxy( xmlData )
         except expat.ExpatError:
-            raise w3afException('The document aint a WSDL document.')
+            raise w3afException('The body content is not a WSDL.')
         except Exception, e:
-            msg = 'The document aint a WSDL document.'
-            msg += 'Unhandled exception in SOAPpy: "' + str(e) + '".'
+            msg = 'The body content is not a WSDL.'
+            msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
             om.out.debug(msg)
             raise w3afException(msg)
         
