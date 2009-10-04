@@ -142,18 +142,15 @@ class webSpider(baseDiscoveryPlugin):
                     count = 0
                     for ref in references:
                         targs = (ref, fuzzableRequest, originalURL, count<len(parsed_references))
-                        self._tm.startFunction( target=self._verifyReferences, args=targs, \
+                        self._tm.startFunction( target=self._verify_reference, args=targs, \
                                                             ownerObj=self )
                         count += 1
             
         self._tm.join( self )
-            
-        # Restore the Dc value
-        fuzzableRequest.setDc( original_dc )
         
         return self._fuzzableRequests
         
-    def _verifyReferences( self, reference, originalRequest, originalURL, report_broken ):
+    def _verify_reference( self, reference, originalRequest, originalURL, report_broken ):
         '''
         This method GET's every new link and parses it in order to get new links and forms.
         '''
@@ -162,6 +159,7 @@ class webSpider(baseDiscoveryPlugin):
             if not self._only_forward or isForward:
                 response = None
                 headers = { 'Referer': originalURL }
+                #headers = {}
                 
                 try:
                     response = self._urlOpener.GET( reference, useCache=True, headers= headers, \
