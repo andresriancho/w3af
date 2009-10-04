@@ -324,26 +324,26 @@ class xUrllib:
         
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
-    def getRemoteFileSize( self, uri, headers={}, useCache=True ):
+    def getRemoteFileSize( self, req, useCache=True ):
         '''
         @return: The file size of the remote file.
         '''
-        res = self.HEAD( uri, headers=headers, useCache=useCache )  
+        res = self.HEAD( req.get_full_url(), headers=req.headers, data=req.get_data(), useCache=useCache )  
         
-        fileLen = None
+        resource_length = None
         for i in res.getHeaders():
             if i.lower() == 'content-length':
-                fileLen = res.getHeaders()[ i ]
-                if fileLen.isdigit():
-                    fileLen = int( fileLen )
+                resource_length = res.getHeaders()[ i ]
+                if resource_length.isdigit():
+                    resource_length = int( resource_length )
                 else:
                     msg = 'The content length header value of the response wasn\'t an integer...'
                     msg += ' this is strange... The value is: "' + res.getHeaders()[ i ] + '"'
                     om.out.error( msg )
                     raise w3afException( msg )
         
-        if fileLen != None:
-            return fileLen
+        if resource_length != None:
+            return resource_length
         else:
             msg = 'The response didn\'t contain a content-length header. Unable to return the'
             msg += ' remote file size of request with id: ' + str(res.id)
@@ -401,8 +401,6 @@ class xUrllib:
                 if 'getSize' in keywords:
                     keywords.pop('getSize')
                     
-                om.out.debug( req.get_method() + ' ' + uri)
-                
                 # def _send( self , req , useCache=False, useMultipart=False, grepResult=True )
                 return apply(self._xurllib._send, (req,) , keywords )
         
@@ -443,7 +441,7 @@ class xUrllib:
             try:
                 size = self._sizeLRU[ req.get_full_url() ]
             except KeyError:
-                size = self.getRemoteFileSize( req.get_full_url() )
+                size = self.getRemoteFileSize( req )
                 self._sizeLRU[ req.get_full_url() ] = size
                 #om.out.debug('Size of response got from self._sizeLRU.')
             
@@ -535,7 +533,7 @@ class xUrllib:
                 if grepResult:
                     self._grepResult( req, httpResObj )
                 else:
-                    om.out.debug('No grep for : ' + geturl + ' , the plugin sent grepResult=False.')
+                    om.out.debug('No grep for: "' + geturl + '", the plugin sent grepResult=False.')
                 return httpResObj
         except KeyboardInterrupt, k:
             # Correct control+c handling...
