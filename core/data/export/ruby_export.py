@@ -47,7 +47,7 @@ def ruby_export( request_string ):
     
     res += 'url = URI.parse("' + http_request.getURI() + '")\n'
     
-    if http_request.getData() != '\n':
+    if http_request.getData() != '\n' and http_request.getData() != None:
         escaped_data = ruby_escape_string( str(http_request.getData()) )
         res += 'data = "' + escaped_data + '"\n'
     else:
