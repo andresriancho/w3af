@@ -215,6 +215,13 @@ class xss(baseAuditPlugin):
         '''
         xss_tests = []
         
+        #
+        #   TODO: with these xss tests, and the rest of the plugin as it is, w3af has false negatives
+        #    in the case in which we're already controlling something that is written inside <script></script>
+        #    tags.
+        #
+        
+        
         # The number 2 is to inject in stored xss and not "letting the user know we are testing 
         # the site". And also please note that I don't have this: alert2('abc'); this "failure" will
         # let me find XSS in web applications that have magic_quotes enabled and will also 
