@@ -386,6 +386,7 @@ class URLsTree(gtk.TreeView):
 
         # the TreeView column
         tvcolumn = gtk.TreeViewColumn('URLs')
+        tvcolumn.set_sort_column_id(0)
         cell = gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
         tvcolumn.add_attribute(cell, "text", 0)
@@ -446,6 +447,12 @@ class URLsTree(gtk.TreeView):
             nodes.append(end)
             parts = [x for x in nodes if x]
             self._insertNodes(None, parts, self.treeholder, 1)
+            
+            # TODO: Finish this, right now it's not automatically sorting after each insertion
+            # Order the treeview
+            #
+            self.treestore.sort_column_changed()
+            
         yield False
 
     def _insertNodes(self, parent, parts, holder, rec_cntr):
@@ -485,7 +492,7 @@ class URLsTree(gtk.TreeView):
         return holder
 
     def popup_menu( self, tv, event ):
-        '''Shows a menu when you right click on a plugin.
+        '''Shows a menu when you right click on a URL in the treeview.
 
         @param tv: the treeview.
         @parameter event: The GTK event
@@ -494,7 +501,7 @@ class URLsTree(gtk.TreeView):
             return
 
         (path, column) = tv.get_cursor()
-        # Is it over a plugin name ?
+        # Is it over a URL?
         if path is None:
             return
 
