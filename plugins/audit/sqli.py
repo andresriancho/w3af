@@ -79,6 +79,7 @@ class sqli(baseAuditPlugin):
                 v.setId( response.id )
                 v.setName( 'SQL injection vulnerability' )
                 v.setSeverity(severity.HIGH)
+                v.addToHighlight( sql_error[0] )
                 v['error'] = sql_error[0]
                 v['db'] = sql_error[1]
                 v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )

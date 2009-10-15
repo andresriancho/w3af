@@ -157,6 +157,7 @@ class buffOverflow(baseAuditPlugin):
                     msg = 'A possible buffer overflow (detection is really hard...) was found at: '
                     msg += mutant.foundAt()
                     v.setDesc( msg )
+                    v.addToHighlight( error )
                     kb.kb.append( self, 'buffOverflow', v )
     
     def end(self):

@@ -143,6 +143,7 @@ class osCommanding(baseAuditPlugin):
                 v.setDc( mutant.getDc() )
                 v.setId( response.id )
                 v.setURI( response.getURI() )
+                v.addToHighlight( file_pattern )
                 kb.kb.append( self, 'osCommanding', v )
                 break
     

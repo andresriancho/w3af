@@ -78,6 +78,7 @@ class formatString(baseAuditPlugin):
                     msg = 'A possible (detection is really hard...) format string was found at: '
                     msg += mutant.foundAt()
                     v.setDesc( msg )
+                    v.addToHighlight( error )
                     kb.kb.append( self, 'formatString', v )
     
     def _get_errors( self ):

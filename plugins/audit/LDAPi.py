@@ -77,14 +77,15 @@ class LDAPi(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        LDAPErrorList = self._findLDAPError( response )
-        for ldapError in LDAPErrorList:
-            if not re.search( ldapError, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        ldap_error_list = self._find_ldap_error( response )
+        for ldap_error in ldap_error_list:
+            if not re.search( ldap_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.HIGH)
                 v.setName( 'LDAP injection vulnerability' )
                 v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
+                v.addToHighlight( ldap_error )
                 kb.kb.append( self, 'LDAPi', v )
     
     def end(self):
@@ -94,7 +95,7 @@ class LDAPi(baseAuditPlugin):
         self._tm.join( self )
         self.printUniq( kb.kb.getData( 'LDAPi', 'LDAPi' ), 'VAR' )
         
-    def _findLDAPError( self, response ):
+    def _find_ldap_error( self, response ):
         '''
         This method searches for LDAP errors in html's.
         
@@ -102,18 +103,18 @@ class LDAPi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for ldapError in self._getLDAPErrors():
-            match = re.search( ldapError, response.getBody() , re.IGNORECASE )
+        for ldap_error in self._get_ldap_errors():
+            match = re.search( ldap_error, response.getBody() , re.IGNORECASE )
             if  match:
                 msg = 'Found LDAP error string. '
                 msg += 'The error returned by the web application is (only a fragment is shown): "'
                 msg += response.getBody()[match.start():match.end()] + '". The error was found on '
                 msg += 'response with id ' + str(response.id) + '.'
                 om.out.information(msg)
-                res.append( ldapError )
+                res.append( ldap_error )
         return res
         
-    def _getLDAPErrors( self ):
+    def _get_ldap_errors( self ):
         error_strings = []
         
         # Not sure which lang or LDAP engine

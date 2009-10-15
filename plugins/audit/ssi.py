@@ -130,6 +130,7 @@ class ssi(baseAuditPlugin):
                 v.setSeverity(severity.HIGH)
                 v.setDesc( 'Server Side Include was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
+                v.addToHighlight( ssi_error )
                 kb.kb.append( self, 'ssi', v )
     
     def end(self):

@@ -89,6 +89,7 @@ class xpath(baseAuditPlugin):
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
+                v.addToHighlight( xpath_error )
                 kb.kb.append( self, 'xpath', v )
     
     def end(self):

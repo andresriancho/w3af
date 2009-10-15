@@ -134,6 +134,7 @@ class localFileInclude(baseAuditPlugin):
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
                 v['file_pattern'] = file_content
+                v.addToHighlight( file_content )
                 kb.kb.append( self, 'localFileInclude', v )
                 return
         
