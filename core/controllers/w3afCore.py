@@ -339,39 +339,39 @@ class w3afCore:
         uriList = list( set( uriList ) )
         kb.kb.save( 'urls', 'uriList' ,  uriList )
     
-    def _discoverAndBF( self ):
+    def _discover_and_bruteforce( self ):
         '''
         Discovery and bruteforce phases are related, so I have joined them
         here in this method.
         '''
         go = True
-        tmpList = copy.deepcopy( self._fuzzableRequestList )
+        tmp_list = copy.deepcopy( self._fuzzableRequestList )
         res = []
-        discoveredFrList = []
+        discovered_fr_list = []
         
         # this is an identifier to know what call number of _discoverWorker we are working on
         self._count = 0
         
         while go:
-            discoveredFrList = self._discover( tmpList )
-            successfullyBruteforced = self._bruteforce( discoveredFrList )
-            if not successfullyBruteforced:
+            discovered_fr_list = self._discover( tmp_list )
+            successfully_bruteforced = self._bruteforce( discovered_fr_list )
+            if not successfully_bruteforced:
                 # Haven't found new credentials
                 go = False
-                for fr in discoveredFrList:
+                for fr in discovered_fr_list:
                     if fr not in res:
                         res.append( fr )
             else:
                 tmp = []
-                tmp.extend( discoveredFrList )
-                tmp.extend( successfullyBruteforced )
+                tmp.extend( discovered_fr_list )
+                tmp.extend( successfully_bruteforced )
                 for fr in tmp:
                     if fr not in res:
                         res.append( fr )
                 
                 # So in the next "while go:" loop I can do a discovery
                 # using the new credentials I found
-                tmpList = successfullyBruteforced
+                tmp_list = successfully_bruteforced
                 
                 # Now I reconfigure the urllib to use the newly found credentials
                 self._reconfigureUrllib()
@@ -468,7 +468,7 @@ class w3afCore:
                 # Load the target URLs to the KB
                 self._updateURLsInKb( self._fuzzableRequestList )
                 
-                self._fuzzableRequestList = self._discoverAndBF()
+                self._fuzzableRequestList = self._discover_and_bruteforce()
                 
                 # Export all fuzzableRequests as CSV
                 # if this option is set in the miscSettings
