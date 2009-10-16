@@ -324,7 +324,7 @@ class MainApp(object):
             ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), None, _('Generate manual HTTP request'), self._manual_request),
             ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), None, _('Generate fuzzy HTTP requests'), self._fuzzy_request),
             ('EncodeDecode', gtk.STOCK_CONVERT, _('_Encode/Decode'), None, _('Encodes and Decodes in different ways'), self._encode_decode),
-            ('ExportRequest', gtk.STOCK_COPY, _('_Export Request'), None, _('Export HTTP request'), self._export_request),
+            ('ExportRequest', gtk.STOCK_COPY, _('_Export Request'), '<Control>e', _('Export HTTP request'), self._export_request),
             ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), None, _('Compare different requests and responses'), self._compare),
             ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), None, _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
             ('ToolsMenu', None, _('_Tools')),
