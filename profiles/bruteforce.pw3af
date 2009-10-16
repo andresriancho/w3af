@@ -39,16 +39,14 @@ proxyAddress =
 basicAuthDomain = 
 always404 = 
 maxRetrys = 2
-404exceptions = 
+never404 = 
 ignoreSessCookies = False
 cookieJarFile = 
 timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
-byDirectoryAndExtension404 = False
-autodetect404 = True
-byDirectory404 = False
+404string = 
 
 [bruteforce.basicAuthBrute]
 profilingNumber = 50

@@ -203,15 +203,13 @@ always404 =
 headersFile = 
 proxyAddress = 
 maxRetrys = 2
-404exceptions = 
+never404 =
 ignoreSessCookies = False
-byDirectory404 = False
 timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
-byDirectoryAndExtension404 = False
-autodetect404 = True
+404string = 
 cookieJarFile = 
 
 [discovery.MSNSpider]

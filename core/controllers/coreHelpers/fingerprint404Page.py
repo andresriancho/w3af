@@ -43,23 +43,115 @@ class fingerprint404Page:
     def __init__(self, uriOpener):
         self._urlOpener =  uriOpener
         
-        self._404_page_LRU = LRU(250)
-        self._LRU_append_id = 0
-        
         # This is gooood! It will put the function in a place that's available for all.
-        kb.kb.save( 'error404page', '404', self.is404 )
+        kb.kb.save( 'error404page', '404', self.is_404 )
 
         # Only report once
         self._reported = False
-        self._alreadyAnalyzed = False
+        self._already_analyzed = False
+        self._404_body = ''
 
-    def _append_to_LRU(self, obj):
+    def is_404(self, http_response):
         '''
-        Appends obj to the self._404_page_LRU
+        All of my previous versions of is_404 were very complex and tried to struggle with all
+        possible cases. The truth is that in most "strange" cases I was failing miserably, so now
+        I changed my 404 detection once again, but keeping it as simple as possible.
+        
+        Also, and because I was trying to cover ALL CASES, I was performing a lot of
+        requests in order to cover them, which in most situations was unnecesary.
+        
+        So now I go for a much simple approach:
+            1- Cover the simplest case of all using only 1 HTTP request
+            2- Give the users the power to configure the 404 detection by setting a string that
+            identifies the 404 response (in case we are missing it for some reason in case #1)
+        
+        @parameter http_response: The HTTP response which we want to know if it is a 404 or not.
         '''
-        self._LRU_append_id += 1
-        self._404_page_LRU[ self._LRU_append_id ] = obj
-
+        #
+        #   First we handle the user configured exceptions:
+        #
+        domain_path = urlParser.getDomainPath(http_response.getURL())
+        if domain_path in cf.cf.getData('always404'):
+            return True
+        elif domain_path in cf.cf.getData('never404'):
+            return False        
+        
+        #
+        #   This is the most simple case, we don't even have to think about this.
+        #
+        #   If there is some custom website that always returns 404 codes, then we are
+        #   fucked, but this is open source, and the pentester working on that site can modify
+        #   these lines.
+        #
+        if http_response.getCode() == 404 or http_response.getCode() == 401:
+            return True
+            
+        #
+        #   The user configured setting. "If this string is in the response, then it is a 404"
+        #
+        if cf.cf.getData('never404') and cf.cf.getData('never404') in http_response:
+            return True
+            
+        if not self._already_analyzed:
+            # Generate a 404 and save it
+            self._404_body = self._generate404( http_response.getURL() )
+            self._already_analyzed = True
+            
+        # self._404_body was already cleaned inside self._generate404
+        # so we need to clean this one.
+        html_body = self._get_clean_body( http_response )
+        
+        ratio = relative_distance( self._404_body, html_body )
+        if ratio > IS_EQUAL_RATIO:
+            msg = '"' + http_response.getURL() + '" is a 404.' + str(ratio) + ' > '
+            msg += str(IS_EQUAL_RATIO)
+            om.out.debug( msg )
+            return True
+        else:
+            return False
+            
+    def _generate404( self, url ):
+        '''
+        Based on a URL, request something that we know is going to be a 404, 
+        and return the body.
+        '''
+        # Get the filename extension and create a 404 for it
+        extension = urlParser.getExtension( url )
+        domain_path = urlParser.getDomainPath( url )
+        
+        if not extension:
+            rand_alnum_file = createRandAlNum( 8 )
+            extension = ''
+        else:
+            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+            
+        url404 = urlParser.urlJoin(  domain_path , rand_alnum_file )
+        
+        try:
+            # I don't use the cache, because the URLs are random and the only thing that
+            # useCache does is to fill up disk space
+            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
+        except w3afException, w3:
+            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
+        except w3afMustStopException, mse:
+            # Someone else will raise this exception and handle it as expected
+            # whenever the next call to GET is done
+            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
+        except Exception, e:
+            raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+        
+        # I don't want the random file name to affect the 404, so I replace it with a blank space
+        response_body = self._get_clean_body( response )
+        response.setBody(response_body)
+        
+        return response, extension
+        
+        
+    #
+    #
+    #       Some helper functions
+    #
+    #
     def _get_clean_body(self, response):
         '''
         Definition of clean in this method:
@@ -90,254 +182,6 @@ class fingerprint404Page:
 
         return original_body
         
-    def _add404Knowledge( self, httpResponse ):
-        '''
-        Creates a (response, extension) tuple and saves it in the self._404_page_LRU.
-        '''
-        try:
-            response, extension = self._generate404( httpResponse.getURL() )
-        except w3afException, w3:
-            om.out.debug('w3afException in _generate404:' + str(w3) )
-            raise w3
-        except KeyboardInterrupt, k:
-            raise k
-        except w3afMustStopException:
-            # Someone else will raise this exception and handle it as expected
-            # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
-        except Exception, e:
-            om.out.debug('Something went wrong while getting a 404 page...')
-            raise e
-        else:
-            if response.getCode() not in [404, 401, 403] and not self._reported:
-                # Not using 404 in error pages
-                om.out.information('Server uses ' + str(response.getCode()) + ' instead of HTTP 404 error code. ')
-                self._reported = True
-            
-            # This fixes some problems with redirections and with pykto that
-            # sends requests to http://host// which is != from http://host/
-            # This fixes bug #2020211
-            response.setURL( httpResponse.getURL() )
-
-            self._append_to_LRU( (response, extension) )
-    
-    def _byDirectory( self, httpResponse ):
-        '''
-        @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
-        in _404pageList regarding the directory.
-        '''
-        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() if \
-        urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL())]
-        
-        if len( tmp ):
-            # All items in this directory should be the same...
-            response_body = tmp[0]
-            html_body = self._get_clean_body( httpResponse )
-            ratio = relative_distance( response_body, html_body )
-            if ratio > IS_EQUAL_RATIO:
-                om.out.debug(httpResponse.getURL() + ' is a 404 (_byDirectory).' + str(ratio) + ' > ' + str(IS_EQUAL_RATIO) )
-                return True
-            else:
-                return False
-        else:
-            try:
-                self._add404Knowledge( httpResponse )
-            except w3afException:
-                # bleh! I don't like this... but I only get here if there was an error in the _add404Knowledge ;
-                # which is really uncommon
-                return httpResponse.getCode() == 404
-            else:
-                return self._byDirectory( httpResponse )
-    
-    def _byDirectoryAndExtension( self, httpResponse ):
-        '''
-        @return: True if the httpResponse is a 404 based on the knowledge found by _add404Knowledge and the data
-        in _404pageList regarding the directory AND the file extension.
-        '''
-        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() if \
-        urlParser.getDomainPath(httpResponse.getURL()) == urlParser.getDomainPath(response.getURL()) and \
-        (urlParser.getExtension(httpResponse.getURL()) == '' or urlParser.getExtension(httpResponse.getURL()) == extension)]
-
-        if len( tmp ):
-            # All items in this directory/extension combination should be the same...
-            response_body = tmp[0]
-            html_body = self._get_clean_body( httpResponse )
-            
-            ratio = relative_distance( response_body, html_body )
-            
-            '''
-            print '=' * 60
-            print 'Comparing URL', httpResponse.getURL()
-            print '=' * 60
-            print repr(response_body)
-            print '=' * 60
-            print repr(html_body)
-            print '=' * 60
-            print ratio
-            print '=' * 60
-            '''
-            
-            if ratio > IS_EQUAL_RATIO:
-                msg = httpResponse.getURL() + ' is a 404 (_byDirectoryAndExtension). ' + str(ratio)
-                msg += ' > ' + str(IS_EQUAL_RATIO)
-                om.out.debug( msg )
-                return True
-            else:
-                return False
-        else:
-            try:
-                self._add404Knowledge( httpResponse )
-            except w3afException:
-                # bleh! I don't like this... but I only get here if there was an error in the _add404Knowledge ;
-                # which is really uncommon
-                return httpResponse.getCode() == 404
-            else:
-                return self._byDirectoryAndExtension( httpResponse )
-            
-    def is404( self, httpResponse ):
-        if not self._alreadyAnalyzed:
-            try:
-                self._add404Knowledge( httpResponse )
-            except w3afException:
-                om.out.debug('Failed to add 404 knowledge for ' + str(httpResponse) )
-        
-        # Set a variable that is widely used
-        domainPath = urlParser.getDomainPath( httpResponse.getURL() )
-        
-        # Check for the fixed responses
-        if domainPath in cf.cf.getData('always404'):
-            return True
-        elif domainPath in cf.cf.getData('404exceptions'):
-            return False
-          
-        # Start the fun.
-        if cf.cf.getData('autodetect404'):
-            print 'autodetect'
-            return self._autodetect( httpResponse )
-        elif cf.cf.getData('byDirectory404'):
-            return self._byDirectory( httpResponse )
-        # worse case
-        elif cf.cf.getData('byDirectoryAndExtension404'):
-            return self._byDirectoryAndExtension( httpResponse )
-        
-    def _autodetect( self, httpResponse ):
-        '''
-        Try to autodetect how I'm going to handle the 404 messages
-        
-        @parameter httpResponse: The httpResponse, with the whole response information.
-        @return: True if the response is a 404.
-        '''
-        if len( self._404_page_LRU ) <= 25:
-            msg = 'I can\'t perform autodetection yet (404pageList has '
-            msg += str(len(self._404_page_LRU))+' items). Keep on working with the worse case'
-            om.out.debug( msg )
-            return self._byDirectoryAndExtension( httpResponse )
-        else:
-            if not self._alreadyAnalyzed:
-                om.out.debug('Starting analysis of responses.')
-                self._analyzeData()
-                self._alreadyAnalyzed = True
-            
-            # Now return a response
-            if kb.kb.getData('error404page', 'trust404'):
-                if httpResponse.getCode() == 404:
-                    om.out.debug(httpResponse.getURL() + ' is a 404 (_autodetect trusting 404).')
-                    return True
-                else:
-                    return False
-            elif kb.kb.getData('error404page', 'trustBody'):
-                html_body = self._get_clean_body( httpResponse )
-                ratio = relative_distance( html_body, kb.kb.getData('error404page', 'trustBody') )
-                if ratio > IS_EQUAL_RATIO:
-                    msg = httpResponse.getURL() + ' is a 404 (_autodetect trusting body). '
-                    msg += str(ratio) + ' > ' + str(IS_EQUAL_RATIO)
-                    om.out.debug( msg )
-                    return True
-                else:
-                    return False
-            else:
-                # worse case
-                return self._byDirectoryAndExtension( httpResponse )
-            
-    def _analyzeData( self ):
-        # Check if all 404 responses are really HTTP 404
-        tmp = [ (response, extension) for (response, extension) in self._404_page_LRU.values() if response.getCode() == 404 ]
-        if len(tmp) == len(self._404_page_LRU):
-            om.out.debug('The remote website uses 404 HTTP response code as 404.')
-            kb.kb.save('error404page', 'trust404', True)
-            return
-        else:
-            om.out.debug('The remote website DOES NOT use 404 HTTP response code as 404.')
-            
-        # Check if the 404 error message body is the same for all directories
-        def areEqual( tmp, exactComparison=False ):
-            for a in tmp:
-                for b in tmp:
-                    
-                    # The first method
-                    if exactComparison == True:
-                        if a != b:
-                            return False
-                    
-                    # The second method
-                    if exactComparison == False:
-                        if relative_distance( a, b ) < IS_EQUAL_RATIO:
-                            # If one is different, then we return false.
-                            return False
-                        
-            return True
-        
-        # Now I check if all responses have the same extension (which is bad for the analysis)
-        # If they all have the same extension, I'll create a new one with a different extension
-        extensionList = [ extension for (response, extension) in self._404_page_LRU.values() ]
-        if areEqual( extensionList, exactComparison=True ):
-            responseCopy = response.copy()
-            responseURL = response.getURL()
-            extension = urlParser.getExtension( responseURL )
-            fakedURL = responseURL[0:len(responseURL)-len(extension)] + createRandAlpha(3)
-            responseCopy.setURL(fakedURL)
-            self._add404Knowledge(responseCopy)
-        
-        tmp = [ response.getBody() for (response, extension) in self._404_page_LRU.values() ]
-        if areEqual( tmp ):
-            om.out.debug('The remote web site uses always the same body for all 404 responses.')
-            kb.kb.save('error404page', 'trustBody', tmp[0] )
-            return
-            
-        # hmmm... I have nothing else to analyze... if I get here it means that the web application is wierd and
-        # nothing will help me detect 404 pages...
-        
     def getName( self ):
         return 'error404page'
-    
-    def _generate404( self, url ):
-        # Get the filename extension and create a 404 for it
-        extension = urlParser.getExtension( url )
-        domainPath = urlParser.getDomainPath( url )
         
-        if not extension:
-            rand_alnum_file = createRandAlNum( 8 )
-            extension = ''
-        else:
-            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
-            
-        url404 = urlParser.urlJoin(  domainPath , rand_alnum_file )
-        
-        try:
-            # I don't use the cache, because the URLs are random and the only thing that
-            # useCache does is to fill up disk space
-            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
-        except w3afException, w3:
-            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
-        except w3afMustStopException, mse:
-            # Someone else will raise this exception and handle it as expected
-            # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
-        except Exception, e:
-            raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
-        
-        # I don't want the random file name to affect the 404, so I replace it with a blank space
-        response_body = self._get_clean_body( response )
-        response.setBody(response_body)
-        
-        return response, extension

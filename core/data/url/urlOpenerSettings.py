@@ -112,11 +112,9 @@ class urlOpenerSettings( configurable ):
             cf.cf.save('urlParameter', '' )
             
             # 404 settings
-            cf.cf.save('404exceptions', []  )
+            cf.cf.save('never404', []  )
             cf.cf.save('always404', [] )
-            cf.cf.save('autodetect404', False )
-            cf.cf.save('byDirectory404', False )
-            cf.cf.save('byDirectoryAndExtension404', True)        
+            cf.cf.save('404string', '' )
     
     def setHeadersFile(self, HeadersFile ):
         '''
@@ -419,24 +417,14 @@ class urlOpenerSettings( configurable ):
         o15 = option('always404', cf.cf.getData('always404'), d15, 'list', tabid='404 settings')
 
         d16 = 'A comma separated list that determines what URLs will NEVER be detected as 404 pages.'
-        o16 = option('404exceptions', cf.cf.getData('404exceptions'), d16, 'list', tabid='404 settings')
+        o16 = option('never404', cf.cf.getData('never404'), d16, 'list', tabid='404 settings')
 
-        d17 = 'Perform 404 page autodetection.'
-        o17 = option('autodetect404', cf.cf.getData('autodetect404'), d17, 'boolean', tabid='404 settings')
+        d17 = 'If this string is found in an HTTP response, then it will be tagged as a 404.'
+        o17 = option('404string', cf.cf.getData('404string'), d17, 'string', tabid='404 settings')
 
-        d18 = 'Perform 404 page detection based on the knowledge found in the directory of the file'
-        h18 = 'Only used when autoDetect404 is False.'
-        o18 = option('byDirectory404', cf.cf.getData('byDirectory404'), d18, 'boolean', tabid='404 settings')
-
-        d19 = 'Perform 404 page detection based on the knowledge found in the directory of the file'
-        d19 += ' AND the file extension'
-        h19 = 'Only used when autoDetect404 and byDirectory404 are False.'
-        o19 = option('byDirectoryAndExtension404', cf.cf.getData('byDirectoryAndExtension404'), d19,
-                             'boolean', tabid='404 settings')
-        
-        d20 = 'Append the given URL parameter to every accessed URL.'
-        d20 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
-        o20 = option('urlParameter', cf.cf.getData('urlParameter'), d20, 'string')    
+        d18 = 'Append the given URL parameter to every accessed URL.'
+        d18 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
+        o18 = option('urlParameter', cf.cf.getData('urlParameter'), d18, 'string')    
 
         ol = optionList()
         ol.add(o1)
@@ -457,8 +445,6 @@ class urlOpenerSettings( configurable ):
         ol.add(o16)
         ol.add(o17)
         ol.add(o18)
-        ol.add(o19)
-        ol.add(o20)
         return ol
 
     def setOptions( self, optionsMap ):
@@ -495,11 +481,9 @@ class urlOpenerSettings( configurable ):
         self.setUrlParameter( optionsMap['urlParameter'].getValue() )
         
         # 404 settings are saved here
-        cf.cf.save('404exceptions', optionsMap['404exceptions'].getValue() )
+        cf.cf.save('never404', optionsMap['never404'].getValue() )
         cf.cf.save('always404', optionsMap['always404'].getValue() )
-        cf.cf.save('autodetect404', optionsMap['autodetect404'].getValue() )
-        cf.cf.save('byDirectory404', optionsMap['byDirectory404'].getValue() )
-        cf.cf.save('byDirectoryAndExtension404', optionsMap['byDirectoryAndExtension404'].getValue() )
+        cf.cf.save('404string', optionsMap['404string'].getValue() )
         
     def getDesc( self ):
         return 'This section is used to configure URL settings that affect the core and all plugins.'

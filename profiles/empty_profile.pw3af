@@ -36,7 +36,7 @@ proxyAddress =
 headersFile = 
 always404 = 
 maxRetrys = 2
-404exceptions = 
+never404 = 
 ntlmAuthUser = 
 ntlmAuthPass = 
 ignoreSessCookies = False
@@ -45,7 +45,5 @@ timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
-byDirectoryAndExtension404 = False
-autodetect404 = True
-byDirectory404 = False
+404string = 
 
