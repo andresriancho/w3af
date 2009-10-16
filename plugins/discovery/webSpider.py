@@ -26,7 +26,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
 import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import getDomain
 import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
@@ -76,6 +75,7 @@ class webSpider(baseDiscoveryPlugin):
             # I have to set some variables, in order to be able to code the "onlyForward" feature
             self._first_run = False
             self._target_urls = [ urlParser.getDomainPath(i) for i in cf.cf.getData('targets') ]
+            self._target_domain = urlParser.getDomain( cf.cf.getData('targets')[0] )
             
 
         # Init some internal variables
@@ -132,6 +132,10 @@ class webSpider(baseDiscoveryPlugin):
                     parsed_references = list( set( parsed_references ) )
 
                     references = parsed_references + re_references
+                    
+                    # Filter only the references that are inside the target domain
+                    # I don't want w3af sending request to 3rd parties!
+                    references = [ r for r in references if urlParser.getDomain( r ) in self._target_domain]
 
                     # Filter the URL's according to the configured regular expressions
                     references = [ r for r in references if self._compiled_follow_re.match( r ) ]
@@ -154,35 +158,33 @@ class webSpider(baseDiscoveryPlugin):
         '''
         This method GET's every new link and parses it in order to get new links and forms.
         '''
-        if getDomain( reference ) == getDomain( originalURL ):
-            isForward = self._isForward(reference)
-            if not self._only_forward or isForward:
-                response = None
-                headers = { 'Referer': originalURL }
-                #headers = {}
-                
-                try:
-                    response = self._urlOpener.GET( reference, useCache=True, headers= headers, \
-                                                                    getSize=True)
-                except KeyboardInterrupt,e:
-                    raise e
-                except w3afException,w3:
-                    om.out.error( str(w3) )
+        isForward = self._isForward(reference)
+        if not self._only_forward or isForward:
+            response = None
+            headers = { 'Referer': originalURL }
+            #headers = {}
+            
+            try:
+                response = self._urlOpener.GET( reference, useCache=True, headers= headers, \
+                                                                getSize=True)
+            except KeyboardInterrupt,e:
+                raise e
+            except w3afException,w3:
+                om.out.error( str(w3) )
+            else:
+                # Note: I WANT to follow links that are in the 404 page, but if the page
+                # I fetched is a 404... I should ignore it.
+                if self.is404( response ):
+                    fuzzableRequestList = self._createFuzzableRequests( response, addSelf=False)
+                    if report_broken:
+                        self._brokenLinks.append( (response.getURL(), originalRequest.getURI()) )
                 else:
-                    # Note: I WANT to follow links that are in the 404 page, but if the page
-                    # I fetched is a 404... I should ignore it.
-                    if self.is404( response ):
-                        fuzzableRequestList = self._createFuzzableRequests( response, addSelf=False)
-                        if report_broken:
-                            self._brokenLinks.append( (response.getURL(), originalRequest.getURI()) )
-                    else:
-                        fuzzableRequestList = self._createFuzzableRequests( response, addSelf=True )
-                    
-                    # Process the list.
-                    for fuzzableRequest in fuzzableRequestList:
-                        fuzzableRequest.setReferer( originalURL )
-                        self._fuzzableRequests.append( fuzzableRequest )
-                        
+                    fuzzableRequestList = self._createFuzzableRequests( response, addSelf=True )
+                
+                # Process the list.
+                for fuzzableRequest in fuzzableRequestList:
+                    fuzzableRequest.setReferer( originalURL )
+                    self._fuzzableRequests.append( fuzzableRequest )
     
     def end( self ):
         '''
