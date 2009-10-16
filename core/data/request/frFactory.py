@@ -111,12 +111,13 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
         for form in form_list:
             variants = form.getVariants(mode)
             for variant in variants:
-                if form.getMethod().upper() == 'GET':
-                    r = httpQsRequest.httpQsRequest()
-                elif form.getMethod().upper() == 'POST':
+                if form.getMethod().upper() == 'POST':
                     r = httpPostDataRequest.httpPostDataRequest()
                     r.setMethod(variant.getMethod())
                     r.setFileVariables(form.getFileVariables())
+                else:
+                    # The default is a GET request
+                    r = httpQsRequest.httpQsRequest()
                 r.setURL(variant.getAction())
                 r.setDc(variant)
                 r.setHeaders(headers)
