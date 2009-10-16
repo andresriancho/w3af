@@ -28,6 +28,8 @@ from core.data.export.ajax_export import ajax_export
 from core.data.export.python_export import python_export
 from core.data.export.ruby_export import ruby_export
 
+from core.controllers.w3afException import w3afException
+
 export_request_example = """\
 GET http://localhost/script.php HTTP/1.0
 Host: www.some_host.com
@@ -107,7 +109,14 @@ class export_request(entries.RememberingWindow):
         '''Exports the upper text.'''
         opc = combo.get_active()
         func = self._exporters[opc][1]
-        self.exported_text.setText(func(self.http_request.getText()))
+        
+        try:
+            exported_request = func(self.http_request.getText())
+        except w3afException, w3:
+            error_msg = str(w3)
+            self.exported_text.setText( error_msg )
+        else:
+            self.exported_text.setText( exported_request )
         
     def _save_as(self, widg):
         '''

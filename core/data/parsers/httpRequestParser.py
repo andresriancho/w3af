@@ -41,12 +41,15 @@ def httpRequestParser(head, postdata):
         splittedVersion = version.split('/')
         if len(splittedVersion) != 2:
             # Invalid!
-            raise w3afException('You are trying to send a HTTP request with an invalid version token: ' + version)
+            msg = 'The HTTP request has an invalid version token: "' + version +'"'
+            raise w3afException( msg )
         elif len(splittedVersion) == 2:
             if splittedVersion[0].lower() != 'http':
-                raise w3afException('You are trying to send a HTTP request with an invalid HTTP token in the version specification: ' + version)
+                msg = 'The HTTP request has an invalid HTTP token in the version specification: "'
+                msg += version + '"'
+                raise w3afException( msg )
             if splittedVersion[1] not in ['1.0', '1.1']:
-                raise w3afException('You are trying to send a HTTP request with a version that is unsupported: ' + version)
+                raise w3afException('HTTP request version' + version + 'is unsupported')
         return True
     
     def checkURISintax( uri ):
@@ -58,7 +61,9 @@ def httpRequestParser(head, postdata):
         elif uri.startswith('https://') and len(uri) != len('https://'):
             return True
         else:
-            raise w3afException('You have to specify the complete URI, including the protocol and the host. Invalid URI: ' + uri )
+            msg = 'You have to specify the complete URI, including the protocol and the host.'
+            msg += ' Invalid URI: ' + uri
+            raise w3afException( msg )
     
     # parse the request head
     splittedHead = head.split('\n')
@@ -76,7 +81,9 @@ def httpRequestParser(head, postdata):
         checkVersionSintax(version)
     elif len(firstLine) < 3:
         # Invalid!
-        raise w3afException('You are trying to send a HTTP request with an invalid <method> <uri> <version> token: ' + metUriVer )
+        msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
+        msg += metUriVer +'".'
+        raise w3afException( msg )
     elif len(firstLine) > 3:
         # This is mostly because the user sent something like this:
         # GET /hello world.html HTTP/1.0
@@ -104,7 +111,7 @@ def httpRequestParser(head, postdata):
         if len(oneSplittedHeader) == 2:
             headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
         elif len(oneSplittedHeader) == 1:
-            raise w3afException('You are trying to send a HTTP request with an invalid header: ' + header )
+            raise w3afException('The HTTP request has an invalid header: "' + header + '"')
         elif len(oneSplittedHeader) > 2:
             headerValue = ' '.join(oneSplittedHeader[1:]).strip()
             headersDict[ oneSplittedHeader[0].strip() ] = headerValue
