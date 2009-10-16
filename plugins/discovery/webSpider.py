@@ -135,8 +135,8 @@ class webSpider(baseDiscoveryPlugin):
                     
                     # Filter only the references that are inside the target domain
                     # I don't want w3af sending request to 3rd parties!
-                    references = [ r for r in references if urlParser.getDomain( r ) in self._target_domain]
-
+                    references = [ r for r in references if urlParser.getDomain( r ) == self._target_domain]
+                            
                     # Filter the URL's according to the configured regular expressions
                     references = [ r for r in references if self._compiled_follow_re.match( r ) ]
                     references = [ r for r in references if not self._compiled_ignore_re.match( r )]
