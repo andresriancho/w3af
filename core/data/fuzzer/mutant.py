@@ -70,16 +70,23 @@ class mutant:
         try:
             self._freq._dc[ self.getVar() ][ self._index ] = val
         except Exception, e:
-            raise w3afException('The mutant object wasn\'t correctly initialized.')
+            msg = 'The mutant object wasn\'t correctly initialized. Either the variable to be'
+            msg += ' modified, or the index of that variable are incorrect. This error was'
+            msg += ' found in mutant.setModValue()'
+            raise w3afException( msg )
         
     def getModValue( self ): 
         try:
             return self._freq._dc[ self.getVar() ][ self._index ]
         except:
-            raise w3afException('The mutant object was\'nt correctly initialized.')
+            msg = 'The mutant object wasn\'t correctly initialized. Either the variable to be'
+            msg += ' modified, or the index of that variable are incorrect. This error was'
+            msg += ' found in mutant.getModValue()'
+            raise w3afException( msg )
     
     def getMutantType( self ):
-        raise w3afException('You should implement the getMutantType method when inhereting from mutant.')
+        msg = 'You should implement the getMutantType method when inhereting from mutant.'
+        raise w3afException( msg )
     
     def printModValue( self ):
         return 'The sent '+ self.getMutantType() +' is: "' + str(self.getData()) + '" .'
