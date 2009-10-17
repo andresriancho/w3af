@@ -230,7 +230,7 @@ class xUrllib:
         
         return False
     
-    def sendRawRequest( self, head, postdata, fixContentLength=True, get_size=True):
+    def sendRawRequest( self, head, postdata, fixContentLength=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed in a textbox or is stored in a file.
         When something like that happens, this library allows the user to send the request by specifying two parameters
@@ -260,7 +260,7 @@ class xUrllib:
         # Send it
         function_reference = getattr( self , fuzzReq.getMethod() )
         return function_reference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
-                                                useCache=False, grepResult=False, getSize=get_size )
+                                                useCache=False, grepResult=False)
         
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
         '''
@@ -286,16 +286,6 @@ class xUrllib:
                 req = urllib2.Request( uri )
             
         req = self._addHeaders( req, headers )
-        
-        if getSize:
-            # Check the file size
-            try:
-                self._checkFileSize( req )
-            except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
-            except Exception, e:
-                raise e
-        
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
     def POST(self, uri, data='', headers={}, grepResult=True, getSize=False, useCache=False ):
@@ -312,20 +302,16 @@ class xUrllib:
         
         req = urllib2.Request(uri, data )
         req = self._addHeaders( req, headers )
-        
-        if getSize:
-            # Check the file size
-            try:
-                self._checkFileSize( req )
-            except sizeExceeded, se:
-                return httpResponse( NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
-            except Exception, e:
-                raise e
-        
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
     def getRemoteFileSize( self, req, useCache=True ):
         '''
+        This method was previously used in the framework to perform a HEAD request before each GET/POST (ouch!)
+        and get the size of the response. The bad thing was that I was performing two requests for each resource...
+        I moved the "protection against big files" to the keepalive.py module.
+        
+        I left it here because maybe I want to use it at some point... Mainly to call it directly or something.
+        
         @return: The file size of the remote file.
         '''
         res = self.HEAD( req.get_full_url(), headers=req.headers, data=req.get_data(), useCache=useCache )  
@@ -432,6 +418,15 @@ class xUrllib:
             return False
     
     def _checkFileSize( self, req ):
+        '''
+        **DEPRECATED**
+        
+        This method was previously used in the framework to perform a HEAD request before each GET/POST (ouch!)
+        and get the size of the response. The bad thing was that I was performing two requests for each resource...
+        I moved the "protection against big files" to the keepalive.py module.
+        
+        I left it here because maybe I want to use it at some point... Mainly to call it directly or something.
+        '''
         # No max file size.
         if self.settings.getMaxFileSize() == 0:
             pass

@@ -107,6 +107,7 @@ import socket
 import thread
 import traceback
 import urllib
+import sys
 
 if __name__ != '__main__':
     import core.controllers.outputManager as om
@@ -114,8 +115,10 @@ if __name__ != '__main__':
 DEBUG = None
 MAXCONNECTIONS = 500
 
-import sys
 from core.controllers.w3afException import w3afException
+import core.data.kb.config as cf
+from core.data.constants.httpConstants import *
+
 if sys.version_info < (2, 4): HANDLE_ERRORS = 1
 else: HANDLE_ERRORS = 0
     
@@ -157,7 +160,17 @@ class HTTPResponse(httplib.HTTPResponse):
         self._multiread = None
 
     def _raw_read(self, amt=None):
+        '''
+        This is the original read function from httplib with a minor modification
+        that allows me to check the size of the file being fetched, and throw an exception
+        in case it is too big.
+        '''
         if self.fp is None:
+            return ''
+
+        if self.length > cf.cf.getData('maxFileSize'):
+            self.status = NO_CONTENT
+            self.reason = 'No Content'  # Reason-Phrase
             return ''
 
         if self.chunked:
