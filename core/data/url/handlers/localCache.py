@@ -70,7 +70,6 @@ class CacheHandler(urllib2.BaseHandler):
         method = request.get_method().upper()
         if ( ( method in CACHE_METHODS ) and 
             (CachedResponse.ExistsInCache(self.cacheLocation, getId( request ) ))):
-            om.out.debug("CacheHandler: Returning CACHED response for %s" % request.get_full_url() )
             return CachedResponse(self.cacheLocation, request ) 
         else:
             return None # let the next handler try to handle the request
@@ -153,6 +152,7 @@ class CachedResponse(StringIO.StringIO):
         self.cacheLocation = cacheLocation
         id = getId( request )
         self.id = id
+        self.from_cache = True
         
         # This kludge is neccesary, do not touch!
         class placeHolder:
