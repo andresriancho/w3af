@@ -103,11 +103,21 @@ class fingerprint404Page:
         
         ratio = relative_distance( self._404_body, html_body )
         if ratio > IS_EQUAL_RATIO:
-            msg = '"' + http_response.getURL() + '" is a 404.' + str(ratio) + ' > '
-            msg += str(IS_EQUAL_RATIO)
+            msg = '"' + http_response.getURL() + '" is a 404. [' + str(ratio) + ' > '
+            msg += str(IS_EQUAL_RATIO) +']'
             om.out.debug( msg )
             return True
         else:
+            msg = '"' + http_response.getURL() + '" is NOT a 404. [' + str(ratio) + ' < '
+            msg += str(IS_EQUAL_RATIO) + ']'
+            om.out.debug( msg )
+            if 'google-a' in http_response.getURL():
+                om.out.debug( '=' * 55 )
+                om.out.debug( html_body )
+                om.out.debug( '=' * 55 )
+                om.out.debug( '=' * 55 )
+                om.out.debug( self._404_body )
+                om.out.debug( '=' * 55 )
             return False
             
     def _generate404( self, url ):
@@ -142,9 +152,8 @@ class fingerprint404Page:
         
         # I don't want the random file name to affect the 404, so I replace it with a blank space
         response_body = self._get_clean_body( response )
-        response.setBody(response_body)
-        
-        return response, extension
+
+        return response_body
         
         
     #
