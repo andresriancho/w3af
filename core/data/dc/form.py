@@ -97,6 +97,8 @@ class form(dataContainer):
         if name:
             self._files.append( name )
             self._setVar(name, '')
+            # TODO: This does not work if there are different parameters in a form
+            # with the same name, and different types
             self._types[name] = 'file'
 
     def __str__( self ):
