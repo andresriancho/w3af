@@ -111,13 +111,6 @@ class fingerprint404Page:
             msg = '"' + http_response.getURL() + '" is NOT a 404. [' + str(ratio) + ' < '
             msg += str(IS_EQUAL_RATIO) + ']'
             om.out.debug( msg )
-            if 'google-a' in http_response.getURL():
-                om.out.debug( '=' * 55 )
-                om.out.debug( html_body )
-                om.out.debug( '=' * 55 )
-                om.out.debug( '=' * 55 )
-                om.out.debug( self._404_body )
-                om.out.debug( '=' * 55 )
             return False
             
     def _generate404( self, url ):
