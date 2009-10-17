@@ -86,7 +86,7 @@ class abstractParser:
         @return: None. The findings are stored in self._re_URLs.
         '''
         #url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        url_regex = '((http|https)://([\w\./]*?)/[^ \n\r\t"<>]*)'
+        url_regex = '((http|https)://([a-zA-Z0-9_\-\./]*?)/[^ \n\r\t"<>]*)'
         for url in re.findall(url_regex, httpResponse.getBody() ):
             # This try is here because the _decode_URL method raises an exception
             # whenever it fails to decode a url.
@@ -102,7 +102,10 @@ class abstractParser:
             res = []
             # TODO: Also matches //foo/bar.txt , which is bad
             # I'm removing those matches manually below
-            relative_regex = re.compile('[A-Z0-9a-z%_~\./]+([\/][A-Z0-9a-z%_~\.]+)+\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?')
+            regex = '[A-Z0-9a-z%_\-~\./]+([\/][A-Z0-9a-z%_\-~\.]+)+'
+            regex += '\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*))'
+            regex += '{1}((&)([a-zA-Z0-9]*=\w*))*)?'
+            relative_regex = re.compile( regex )
             
             while True:
                 regex_match = relative_regex.search( doc )
