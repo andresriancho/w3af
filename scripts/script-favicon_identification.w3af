@@ -1,4 +1,4 @@
-# This scripts tests the wordnet plugin
+# This scripts tests the favicon_identification plugin
 
 plugins
 output console,textFile
