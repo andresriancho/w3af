@@ -63,7 +63,9 @@ class wsdlParser:
         '''
         @parameter xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
         '''
-        if self.is_WSDL(xmlData):
+        if not self.is_WSDL(xmlData):
+            raise w3afException('The body content is not a WSDL.')
+        else:
             try:
                 self._proxy = SOAPpy.WSDL.Proxy( xmlData )
             except expat.ExpatError:
