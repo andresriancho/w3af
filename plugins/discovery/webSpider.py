@@ -122,7 +122,16 @@ class webSpider(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
+            #
+            #   Simply ignore 401 responses, because they might bring problems
+            #   if I keep crawling them!
+            #
+            if response.getCode() == 401:
+                return []
+                
+            #
             # Note: I WANT to follow links that are in the 404 page.
+            #
             
             # Modified when I added the pdfParser
             # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze

@@ -83,7 +83,7 @@ class fingerprint404Page:
         #   fucked, but this is open source, and the pentester working on that site can modify
         #   these lines.
         #
-        if http_response.getCode() == 404 or http_response.getCode() == 401:
+        if http_response.getCode() == 404:
             return True
             
         #
