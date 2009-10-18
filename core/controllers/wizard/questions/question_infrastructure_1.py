@@ -22,10 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
+
+from core.data.options.optionList import optionList
 
 
 class question_infrastructure_1(question):
@@ -49,7 +52,7 @@ class question_infrastructure_1(question):
         '''
 
         self._d1 = 'Target URL'
-        o1 = option( self._d1,'http://', self._d1, 'list')
+        o1 = option( 'target','http://', self._d1, 'list')
     
         ol = optionList()
         ol.add(o1)
@@ -60,15 +63,19 @@ class question_infrastructure_1(question):
         # I don't care about the target OS for these tests, so I add them here with the default value
         o2 = option('targetOS','unknown', '', 'string')
         o3 = option('targetFramework','unknown', '', 'string')
-        optionsMap.add(o2)
-        optionsMap.add(o3)
+        
+        #   Manually copy the optionList object... the copy.deepcopy method fails :(
+        ol_copy = optionList()
+        for o in optionsMap:
+            ol_copy.add(o)
        
         # Get the "Target URL" and change it back to "target" so the core can understand it
-        o1 = optionsMap[self._d1]
-        o1.setName('target')
+        o1 = ol_copy['target']
+        ol_copy.add(o2)
+        ol_copy.add(o3)
         
         # Save the target to the core, all the validations are made there.
-        self.w3af_core.target.setOptions( optionsMap )
+        self.w3af_core.target.setOptions( ol_copy )
 
         # The next question
         return 'infrastructure_2'
