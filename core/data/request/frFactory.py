@@ -45,11 +45,16 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
 
-def createFuzzableRequests( httpResponse, addSelf=True ):
+def createFuzzableRequests( httpResponse, request=None, add_self=True ):
     '''
     Generates the fuzzable requests based on an http response instance.
     
     @parameter httpResponse: An httpResponse instance.
+    @parameter request: The HTTP request that generated the httpResponse
+    @parameter add_self: If I should add the current HTTP request (@parameter request) to the result
+    on not.
+    
+    @return: A list of fuzzable requests.
     '''
     res = []
     
@@ -57,21 +62,32 @@ def createFuzzableRequests( httpResponse, addSelf=True ):
     url = httpResponse.getURL()
     QSObject = urlParser.getQueryString( httpResponse.getURI() )
     
-    # Headers
+    # Headers for all fuzzable requests created here:
+    # And add the fuzzable headers to the dict
     headers = {}
-    for header in cf.cf.getData('fuzzableHeaders' ):
-        headers[ header ] = ''
+    for header_name in cf.cf.getData('fuzzableHeaders' ):
+        if header_name not in headers:
+            headers[ header_name ] = ''
     
     # Get the cookie!
     cookieObj = _createCookie( httpResponse )
     
-    # create a httpQsRequest
-    qsr = httpQsRequest.httpQsRequest()
-    qsr.setURL( url )
-    qsr.setDc( QSObject )
-    qsr.setHeaders( headers )
-    qsr.setCookie( cookieObj )
-    if addSelf:
+    #
+    # create the fuzzable request that represents the request object passed as parameter
+    #
+    if add_self:
+        self_headers = {}
+        if request:
+            self_headers = request.getHeaders()
+        for header_name in cf.cf.getData('fuzzableHeaders' ):
+            if header_name not in headers:
+                self_headers[ header_name ] = ''
+
+        qsr = httpQsRequest.httpQsRequest()
+        qsr.setURL( url )
+        qsr.setDc( QSObject )
+        qsr.setHeaders( self_headers )
+        qsr.setCookie( cookieObj )
         res.append( qsr )
     
     # Try to find forms in the document

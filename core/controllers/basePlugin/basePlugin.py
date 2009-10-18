@@ -164,7 +164,9 @@ class basePlugin(configurable):
         
         functor = getattr( self._urlOpener , method )
         # run functor , run !   ( forest gump flash )
-        res = apply( functor, args, {'data': data, 'headers': headers, 'grepResult': grepResult } )
+        res = apply( functor, args, 
+                            {'data': data, 'headers': headers, 'grepResult': grepResult,
+                            'useCache': True } )
         
         if analyze:
             if analyze_callback:

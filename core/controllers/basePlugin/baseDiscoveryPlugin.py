@@ -58,8 +58,8 @@ class baseDiscoveryPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method discover' )
 
-    def _createFuzzableRequests( self, httpResponse, addSelf=True ):
-        return createFuzzableRequests( httpResponse, addSelf )
+    def _createFuzzableRequests( self, httpResponse, request=None, add_self=True ):
+        return createFuzzableRequests( httpResponse, request, add_self )
     
     def getType( self ):
         return 'discovery'

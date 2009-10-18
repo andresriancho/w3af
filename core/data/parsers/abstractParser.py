@@ -97,7 +97,9 @@ class abstractParser:
             else:
                 self._re_URLs.append(decoded_url)
         
+        #
         # Now detect some relative URL's ( also using regexs )
+        #
         def find_relative( doc ):
             res = []
             # TODO: Also matches //foo/bar.txt , which is bad
@@ -114,14 +116,34 @@ class abstractParser:
                 else:
                     s, e = regex_match.span()
                     match_string = doc[s:e]
-                    if not match_string.startswith('//'):
-                        domainPath = urlParser.getDomainPath(httpResponse.getURL())
-                        url = urlParser.urlJoin( domainPath , match_string )
-                        url = self._decode_URL(url, self._encoding)
-                        res.append( url )
+                    
+                    #
+                    #   And now I filter out some of the common false positives
+                    #
+                    if match_string.startswith('//'):
+                        doc = doc[e:]
+                        continue
+                        
+                    if re.match('HTTP/\d\.\d', match_string):
+                        doc = doc[e:]
+                        continue
+                    
+                    # Matches "PHP/5.2.4-2ubuntu5.7" , "Apache/2.2.8", and "mod_python/3.3.1"
+                    if re.match('.*?/\d\.\d\.\d', match_string):
+                        doc = doc[e:]
+                        continue
+                    #
+                    #   Filter finished.
+                    #
+                    
+                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                    url = urlParser.urlJoin( domainPath , match_string )
+                    url = self._decode_URL(url, self._encoding)
+                    res.append( url )
                     
                     # continue
                     doc = doc[e:]
+                    
             return res
         
         relative_URLs = find_relative( httpResponse.getBody() )
@@ -129,12 +151,6 @@ class abstractParser:
         self._re_URLs = [ urlParser.normalizeURL(i) for i in self._re_URLs ]
         self._re_URLs = list(set(self._re_URLs))
         
-        '''
-        om.out.debug('Relative URLs found using regex:')
-        for u in self._re_URLs:
-            if '8_' in u:
-                om.out.information('! ' + u )
-        '''    
 
     def getEmails( self, domain=None ):
         '''

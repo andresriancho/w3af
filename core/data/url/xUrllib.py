@@ -262,7 +262,7 @@ class xUrllib:
         return function_reference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
                                                 useCache=False, grepResult=False)
         
-    def GET(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False ):
+    def GET(self, uri, data='', headers={}, useCache=False, grepResult=True):
         '''
         Gets a uri using a proxy, user agents, and other settings that where set previously.
         
@@ -288,7 +288,7 @@ class xUrllib:
         req = self._addHeaders( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
-    def POST(self, uri, data='', headers={}, grepResult=True, getSize=False, useCache=False ):
+    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False ):
         '''
         POST's data to a uri using a proxy, user agents, and other settings that where set previously.
         
@@ -353,10 +353,11 @@ class xUrllib:
                 self._xurllib = xu
                 self._method = method
             
-            #(self, uri, data='', headers={}, useCache=False, grepResult=True, getSize=False )
+            #(self, uri, data='', headers={}, useCache=False, grepResult=True )
             def __call__( self, *args, **keywords ):
                 if len( args ) != 1:
-                    msg = 'Invalid number of arguments. This method receives one argument and N keywords and you called it with:'
+                    msg = 'Invalid number of arguments. This method receives one argument and N'
+                    msg += ' keywords and you called it with:'
                     msg += 'args: ' + repr(args) + ' and keywords: ' + repr(keywords)
                     raise w3afException( msg )
                     
@@ -384,9 +385,6 @@ class xUrllib:
                     # https://sourceforge.net/tracker/?func=detail&aid=2788341&group_id=170274&atid=853652
                     req = self._xurllib._addHeaders( req, {} )
                 
-                if 'getSize' in keywords:
-                    keywords.pop('getSize')
-                    
                 # def _send( self , req , useCache=False, useMultipart=False, grepResult=True )
                 return apply(self._xurllib._send, (req,) , keywords )
         
@@ -511,6 +509,9 @@ class xUrllib:
                 # We usually get here when the response has codes 404, 403, 401, etc...
                 msg = req.get_method() + ' ' + original_url +' returned HTTP code "'
                 msg += str(e.code) + '" - id: ' + str(e.id)
+                
+                if hasattr(e,'from_cache'):
+                    msg += ' - from cache.'
                 om.out.debug( msg )
                 
                 # Return this info to the caller
@@ -555,11 +556,15 @@ class xUrllib:
             if not req.get_data():
                 msg = req.get_method() + ' ' + urllib.unquote_plus( original_url ) +' returned HTTP code "'
                 msg += str(res.code) + '" - id: ' + str(res.id)
+                if hasattr(res,'from_cache'):
+                    msg += ' - from cache.'
                 om.out.debug( msg )
             else:
                 msg = req.get_method() + ' ' + original_url +' with data: "'
                 msg += urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "'
                 msg += str(res.code) + '" - id: ' + str(res.id)
+                if hasattr(res,'from_cache'):
+                    msg += ' - from cache.'
                 om.out.debug( msg )
             
             code = int(res.code)

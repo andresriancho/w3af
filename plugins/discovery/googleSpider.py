@@ -96,7 +96,7 @@ class googleSpider(baseDiscoveryPlugin):
         @parameter url: A URL from google.
         '''
         try:
-            response = self._urlOpener.GET( url, useCache=True, getSize=True )
+            response = self._urlOpener.GET( url, useCache=True)
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:

@@ -429,7 +429,7 @@ class pykto(baseDiscoveryPlugin):
 
         function_reference = getattr( self._urlOpener , method )
         try:
-            response = function_reference( url, getSize=False )
+            response = function_reference( url )
         except KeyboardInterrupt,e:
             raise e
         except w3afException, e:

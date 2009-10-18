@@ -70,7 +70,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         if self._head_enabled():
             response = self._urlOpener.HEAD( url, useCache=True, headers=self._headers )
         else:
-            response = self._urlOpener.GET(url, useCache=True, headers=self._headers, getSize=True)
+            response = self._urlOpener.GET(url, useCache=True, headers=self._headers)
 
         if response.is_text_or_html() or self._fuzzImages:
             mutants = self._mutate( url )

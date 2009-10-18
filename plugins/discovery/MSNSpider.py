@@ -90,7 +90,7 @@ class MSNSpider(baseDiscoveryPlugin):
         @parameter url: The URL to GET.
         '''
         try:
-            response = self._urlOpener.GET( url, useCache=True, getSize=True )
+            response = self._urlOpener.GET( url, useCache=True)
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:
