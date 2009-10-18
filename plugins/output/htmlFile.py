@@ -387,7 +387,7 @@ class htmlFile(baseOutputPlugin):
         return '''
         This plugin writes the framework messages to an HTML report file.
         
-        Four configurable parameters exist:
+        Two configurable parameters exist:
             - fileName
             - verbose
 
