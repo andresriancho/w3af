@@ -606,12 +606,14 @@ class w3afCore:
         for plugin in self._plugins['grep']:
             plugin.end()
         
-        cf.cf.save('targets', [] )
         # Now I'm definitly not running:
         self._isRunning = False
         
         # Finally, close the output manager.
         om.out.endOutputPlugins()
+        
+        # No targets to be scanned.
+        cf.cf.save('targets', [] )
         
     def isRunning( self ):
         '''

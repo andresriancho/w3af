@@ -186,6 +186,24 @@ def normalizeURL( url ):
     fixedURL = _uparse.urljoin( baseURL, path )
     return fixedURL
 
+def getPort( url ):
+    '''
+    @return: The TCP port that is going to be used to contact the remote end.
+    '''
+    net_location = getNetLocation( url )
+    protocol = getProtocol( url )
+    if ':' in net_location:
+        host,  port = net_location.split(':')
+        return int(port)
+    else:
+        if protocol.lower() == 'http':
+            return 80
+        elif protocol.lower() == 'https':
+            return 443
+        else:
+            # Just in case...
+            return 80
+            
 def urlJoin( baseurl , relative ):
     '''
     Construct a full (``absolute'') URL by combining a ``base URL'' (base) with a ``relative URL'' (url). 
