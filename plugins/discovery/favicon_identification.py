@@ -108,6 +108,7 @@ class favicon_identification(baseDiscoveryPlugin):
                         if len(dbline)>1:
                             favname=dbline[1].rstrip()
                             desc += 'Favicon.ico file was identified as "' + favname + '".'
+                            break
                 
                 #
                 #   Left here for debugging, but the final user doesn't really care about the md5
@@ -124,6 +125,23 @@ class favicon_identification(baseDiscoveryPlugin):
                     i.setDesc( desc )
                     kb.kb.append( self, 'info', i )
                     om.out.information( i.getDesc() )
+                else:
+                    #
+                    #   Report to the kb that we failed to ID this favicon.ico and that the md5
+                    #   should be sent to the developers.
+                    #
+                    i = info.info()
+                    i.setName('Favicon identification failed')
+                    i.setURL( def_favicon_url )
+                    i.setId( response.id )
+                    desc = 'Favicon identification failed, please send a mail to w3af-develop'
+                    desc += '@lists.sourceforge.net including this md5 hash "'+favmd5+'"'
+                    desc += ' and what server or Web application it represents. New fingerprints'
+                    desc += ' make this plugin more powerfull and accurate.'
+                    i.setDesc( desc )
+                    kb.kb.append( self, 'info', i )
+                    om.out.information( i.getDesc() )
+
 
         return []
   
