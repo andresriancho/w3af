@@ -111,17 +111,17 @@ import sys
 
 if __name__ != '__main__':
     import core.controllers.outputManager as om
+    from core.controllers.w3afException import w3afException
+    import core.data.kb.config as cf
+    from core.data.constants.httpConstants import *
 
 DEBUG = None
 MAXCONNECTIONS = 500
 
-from core.controllers.w3afException import w3afException
-import core.data.kb.config as cf
-from core.data.constants.httpConstants import *
-
 if sys.version_info < (2, 4): HANDLE_ERRORS = 1
 else: HANDLE_ERRORS = 0
-    
+
+
 class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
     # 1) add readline() and readlines() methods
@@ -168,10 +168,11 @@ class HTTPResponse(httplib.HTTPResponse):
         if self.fp is None:
             return ''
 
-        if self.length > cf.cf.getData('maxFileSize'):
-            self.status = NO_CONTENT
-            self.reason = 'No Content'  # Reason-Phrase
-            return ''
+        if __name__ != '__main__':
+            if self.length > cf.cf.getData('maxFileSize'):
+                self.status = NO_CONTENT
+                self.reason = 'No Content'  # Reason-Phrase
+                return ''
 
         if self.chunked:
             return self._read_chunked(amt)
@@ -301,7 +302,9 @@ class ConnectionManager:
         finally:
             self._lock.release()
             if __name__ != '__main__':
-                om.out.debug('keepalive: added one connection, len(self._hostmap["'+host+'"]): ' + str( self.get_connectionNumber(host) ) )
+                msg = 'keepalive: added one connection, len(self._hostmap["'+host+'"]): '
+                msg += str( self.get_connectionNumber(host) )
+                om.out.debug( msg )
 
     def remove(self, connection):
         self._lock.acquire()
@@ -549,7 +552,9 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         try:
             host, port = self._proxy.split(':')
         except:
-            raise w3afException('The proxy you are specifying is invalid! (' + self._proxy + '), IP:Port is expected.')
+            msg = 'The proxy you are specifying is invalid! (' 
+            msg += self._proxy + '), IP:Port is expected.'
+            raise w3afException( msg )
 
         if not host or not port:
             self._proxy = None
