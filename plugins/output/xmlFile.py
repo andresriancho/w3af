@@ -241,6 +241,6 @@ class xmlFile(baseOutputPlugin):
         return '''
         This plugin writes the framework messages to an XML report file.
         
-        Four configurable parameters exist:
+        One configurable parameter exists:
             - fileName
         '''
