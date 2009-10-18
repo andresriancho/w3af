@@ -45,19 +45,34 @@ class wsdlParser:
     def __init__( self ):
         self._proxy = None
         
+    def is_WSDL(self, data):
+        '''
+        This is not a 100% accurate test, the real WSDL parsing is performed
+        in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to enhance
+        framework's performance.
+        
+        @parameter data: A string that might represent a WSDL
+        @return: True if the data parameter is a WSDL document.
+        '''
+        if '<definitions' in data[:150] or '<wsdl:definitions' in data[:150]:
+            return True
+        else:
+            return False
+        
     def setWsdl( self, xmlData ):
         '''
         @parameter xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
         '''
-        try:
-            self._proxy = SOAPpy.WSDL.Proxy( xmlData )
-        except expat.ExpatError:
-            raise w3afException('The body content is not a WSDL.')
-        except Exception, e:
-            msg = 'The body content is not a WSDL.'
-            msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
-            om.out.debug(msg)
-            raise w3afException(msg)
+        if is_WSDL(xmlData):
+            try:
+                self._proxy = SOAPpy.WSDL.Proxy( xmlData )
+            except expat.ExpatError:
+                raise w3afException('The body content is not a WSDL.')
+            except Exception, e:
+                msg = 'The body content is not a WSDL.'
+                msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
+                om.out.debug(msg)
+                raise w3afException(msg)
         
     def getNS( self, method ):
         '''
