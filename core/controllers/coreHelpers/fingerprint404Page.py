@@ -89,65 +89,109 @@ class fingerprint404Page:
         #
         #   The user configured setting. "If this string is in the response, then it is a 404"
         #
-        if cf.cf.getData('never404') and cf.cf.getData('never404') in http_response:
+        if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
             return True
             
         if not self._already_analyzed:
             # Generate a 404 and save it
-            self._404_body = self._generate404( http_response.getURL() )
+            self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
             self._already_analyzed = True
             
         # self._404_body was already cleaned inside self._generate404
         # so we need to clean this one.
         html_body = self._get_clean_body( http_response )
         
-        ratio = relative_distance( self._404_body, html_body )
-        if ratio > IS_EQUAL_RATIO:
-            msg = '"' + http_response.getURL() + '" is a 404. [' + str(ratio) + ' > '
-            msg += str(IS_EQUAL_RATIO) +']'
-            om.out.debug( msg )
-            return True
+        #
+        #   Compare this response to all the 404's I have in my DB
+        #
+        for body_404_db in self._404_bodies:
+            
+            ratio = relative_distance( body_404_db, html_body )
+            if ratio > IS_EQUAL_RATIO:
+                msg = '"' + http_response.getURL() + '" is a 404. [' + str(ratio) + ' > '
+                msg += str(IS_EQUAL_RATIO) +']'
+                om.out.debug( msg )
+                return True
+            else:
+                # If it is not eq to one of the 404 responses I have in my DB, that does not means
+                # that it won't match the next one, so I simply do nothing
+                pass
+        
         else:
+            #
+            #   I get here when the for ends and no 404 is matched.
+            #
             msg = '"' + http_response.getURL() + '" is NOT a 404. [' + str(ratio) + ' < '
             msg += str(IS_EQUAL_RATIO) + ']'
             om.out.debug( msg )
             return False
             
-    def _generate404( self, url ):
+    def _generate_404_knowledge( self, url ):
         '''
-        Based on a URL, request something that we know is going to be a 404, 
-        and return the body.
+        Based on a URL, request something that we know is going to be a 404.
+        Afterwards analyze the 404's and summarise them.
+        
+        @return: A list with 404 bodies.
         '''
         # Get the filename extension and create a 404 for it
         extension = urlParser.getExtension( url )
         domain_path = urlParser.getDomainPath( url )
         
-        if not extension:
-            rand_alnum_file = createRandAlNum( 8 )
-            extension = ''
-        else:
+        # the result
+        response_body_list = []
+        
+        #
+        #   This is a list of the most common handlers, in some configurations, the 404
+        #   depends on the handler, so I want to make sure that I catch the 404 for each one
+        #
+        handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm', extension]
+        handlers += ['pl', 'cgi', 'xhtml', 'htmls']
+        handlers = list(set(handlers))
+        
+        for extension in handlers:
+        
             rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+                
+            url404 = urlParser.urlJoin(  domain_path , rand_alnum_file )
             
-        url404 = urlParser.urlJoin(  domain_path , rand_alnum_file )
-        
-        try:
-            # I don't use the cache, because the URLs are random and the only thing that
-            # useCache does is to fill up disk space
-            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
-        except w3afException, w3:
-            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
-        except w3afMustStopException, mse:
-            # Someone else will raise this exception and handle it as expected
-            # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
-        except Exception, e:
-            raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
-        
-        # I don't want the random file name to affect the 404, so I replace it with a blank space
-        response_body = self._get_clean_body( response )
+            try:
+                # I don't use the cache, because the URLs are random and the only thing that
+                # useCache does is to fill up disk space
+                response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
+            except w3afException, w3:
+                raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
+            except w3afMustStopException, mse:
+                # Someone else will raise this exception and handle it as expected
+                # whenever the next call to GET is done
+                raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
+            except Exception, e:
+                raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+            
+            # I don't want the random file name to affect the 404, so I replace it with a blank space
+            response_body = self._get_clean_body( response )
 
-        return response_body
+            response_body_list.append( response_body )
         
+        #
+        #   I have the bodies in response_body_list , but maybe they all look the same, so I'll
+        #   filter the ones that look alike.
+        #
+        result = [ response_body_list[0], ]
+        for i in response_body_list:
+            for j in response_body_list:
+                
+                ratio = relative_distance( i, j )
+                if ratio > IS_EQUAL_RATIO:
+                    # They are equal, we are ok with that
+                    continue
+                else:
+                    # They are no equal, this means that we'll have to add this to the list
+                    result.append(j)
+        
+        result = list(set(result))
+        om.out.debug('The 404 body result database has a lenght of ' + str(len(result)) +'.')
+        
+        return result
         
     #
     #
