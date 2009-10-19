@@ -23,12 +23,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
+
 import core.data.parsers.urlParser as urlParser
+
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.misc.lru import LRU
+
 import urllib
+import thread
 import cgi
 
 IS_EQUAL_RATIO = 0.90
@@ -46,10 +50,9 @@ class fingerprint404Page:
         # This is gooood! It will put the function in a place that's available for all.
         kb.kb.save( 'error404page', '404', self.is_404 )
 
-        # Only report once
-        self._reported = False
         self._already_analyzed = False
-        self._404_body = ''
+        self._404_bodies = []
+        self._lock = thread.allocate_lock()
 
     def is_404(self, http_response):
         '''
@@ -92,10 +95,12 @@ class fingerprint404Page:
         if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
             return True
             
+        self._lock.acquire()
         if not self._already_analyzed:
             # Generate a 404 and save it
             self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
             self._already_analyzed = True
+        self._lock.release()
             
         # self._404_body was already cleaned inside self._generate404
         # so we need to clean this one.
