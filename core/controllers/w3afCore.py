@@ -710,6 +710,7 @@ class w3afCore:
             ##  The search has finished, now i'll some mangling with the requests
             ##
             newFR = []
+            tmp_sort = []
             for iFr, pluginWhoFoundIt in fuzzableRequestList:
                 # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
                 # so i'll remove fragments here
@@ -723,9 +724,14 @@ class w3afCore:
                     newFR.append( iFr )
                     self._alreadyWalked.append( iFr )
                     if iFr.getURL() not in self._urls:
-                        om.out.information('New URL found by ' + pluginWhoFoundIt +' plugin: ' +  iFr.getURL() )
+                        tmp_sort.append(iFr.getURL())
                         self._urls.append( iFr.getURL() )
             
+            #   Print the new URLs in a sorted manner.
+            tmp_sort.sort()
+            for u in tmp_sort:
+                om.out.information('New URL found by ' + pluginWhoFoundIt +' plugin: ' +  u )
+                
             # Update the list / queue that lives in the KB
             self._updateURLsInKb( newFR )
 
