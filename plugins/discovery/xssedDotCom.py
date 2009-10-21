@@ -35,7 +35,6 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from extlib.BeautifulSoup import BeautifulSoup
 import re, urllib2
 
 
