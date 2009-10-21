@@ -383,11 +383,21 @@ class PluginTree(gtk.TreeView):
                 # And the items
                 e = gtk.MenuItem(_("Edit plugin..."))
                 e.connect('activate', self._handleEditPluginEvent, pname, ptype, path)
+                f = gtk.MenuItem(_("Reload plugin"))
+                f.connect('activate', self._handleReloadPluginEvent,pname, ptype, path)
                 gm.append( e )
+                gm.append( f )
                 gm.show_all()
                 
                 gm.popup( None, None, None, event.button, _time)
-
+    
+    def _handleReloadPluginEvent(self, widget, pluginName, pluginType, path):
+        '''
+        I get here when the user right clicks on a plugin name, then he clicks on "Reload plugin"
+        This method calls the plugin editor with the corresponding parameters.
+        '''
+        self._finishedEditingPlugin(path, pluginType, pluginName)
+       
     def _handleEditPluginEvent(self, widget, pluginName, pluginType, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
