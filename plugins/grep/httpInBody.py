@@ -32,6 +32,7 @@ import core.data.kb.info as info
 
 import re
 
+
 class httpInBody (baseGrepPlugin):
     """
     Search for HTTP request/response string in response body.
