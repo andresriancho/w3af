@@ -103,6 +103,7 @@ class bruteforcer:
         self._specialPassIndex = -1
         self._specialPasswords = []
         self._specialPasswords.append( getDomain(self._url) )
+        self._specialPasswords.append( getRootDomain(self._url) )
         if self._useProfiling:
             self._specialPasswords.extend( self._getProfilingResults() )
         
@@ -112,6 +113,9 @@ class bruteforcer:
             for pwd in self._specialPasswords:
                 leet_passwds.extend( make_leet(pwd) )
             self._specialPasswords.extend( leet_passwds )
+        
+        # uniq
+        self._specialPasswords = list(set(self._specialPasswords))
             
     def stop( self ):
         self._passwordsFD.close()
