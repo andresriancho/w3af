@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-07-28, 18:02:49 -->
+<!-- Saved: 2009-10-23, 18:41:40 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3547,6 +3547,38 @@
       <Dir>ui</Dir>
       <Dir>gtkUi</Dir>
       <Name>export_request.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>favicon_identification.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>parsers</Dir>
+      <Name>httpRequestParser.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Dir>favicon</Dir>
+      <Name>favicon-md5</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>xssedDotCom.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>audit</Dir>
+      <Name>redos.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>discovery</Dir>
+      <Name>fingerprint_os.py</Name>
     </Source>
   </Sources>
   <Forms>
