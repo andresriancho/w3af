@@ -139,7 +139,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         d7 = 'This indicates if the bruteforce should try l337 passwords'
         o7 = option('useLeetPasswd', self._l337_p4sswd, d7, 'boolean')
         
-        d8 = 'This indicates if the bruteforcer should use usernames collected by w3af plugins.'
+        d8 = 'This indicates if the bruteforcer should use emails collected by w3af plugins as users.'
         o8 = option('useMails', self._useMails, d8, 'boolean')
         
         d9 = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
