@@ -284,8 +284,9 @@ class HTTPResponse(httplib.HTTPResponse):
 class ConnectionManager:
     """
     The connection manager must be able to:
-      * keep track of all existing
-      """
+        * keep track of all existing HTTPConnections
+        * kill the connections that we're not going to use anymore
+    """
     def __init__(self):
         self._lock = thread.allocate_lock()
         self._hostmap = {} # map hosts to a list of connections
