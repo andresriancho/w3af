@@ -43,7 +43,7 @@ class basicAuthBrute(baseBruteforcePlugin):
 
     def audit(self, freq ):
         '''
-        Tries to bruteforce a basic HTTP auth. This aint fast!
+        Tries to bruteforce a basic HTTP auth. This is not fast!
         
         @param freq: A fuzzableRequest
         '''
@@ -90,7 +90,9 @@ class basicAuthBrute(baseBruteforcePlugin):
         for combination in combinations:
             user = combination[0]
             passwd = combination[1]
-
+            
+            om.out.debug('[basicAuthBrute] Testing ' + user + '/' + passwd)
+            
             uriOpener.settings.setBasicAuth( url, user, passwd  )
             # The next line replaces the uriOpener opener with a new one that has
             # the basic auth settings configured
