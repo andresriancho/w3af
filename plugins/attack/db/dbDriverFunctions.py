@@ -32,6 +32,7 @@ class dbDriverFunctions:
         self._tm = tm
         self._runningGS = False
         self._load_autocomplete_strings()
+        self._previous_results = []
         
     def _load_autocomplete_strings(self):
         '''
@@ -217,6 +218,18 @@ class dbDriverFunctions:
                             om.out.console('\rgoodSamaritan('+value+')>>>', newLine=False)
         
         self.log( 'bisectionAlgorithm final value: "' + value + '"' )
+        
+        #
+        #   I'm going to keep track of the results, and if I see one that repeats more than once,
+        #   I'm adding it to the self._autocomplete_strings list.
+        #
+        if value in self._previous_results:
+            self._autocomplete_strings.append(value)
+            self._autocomplete_strings = list(set(self._autocomplete_strings))
+        else:
+            if len(value) >= 4:
+                self._previous_results.append(value)
+        
         return count, value
 
 
