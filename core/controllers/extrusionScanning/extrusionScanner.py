@@ -24,15 +24,17 @@ from core.controllers.extrusionScanning.server.extrusionServer import extrusionS
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadManager import threadManagerObj as tm
-import time
-import os
 from core.controllers.intrusionTools.execMethodHelpers import *
-import md5
 import core.data.kb.knowledgeBase as kb
 from core.controllers.payloadTransfer.echoWin import echoWin
 from core.controllers.payloadTransfer.echoLnx import echoLnx
-import socket
 import core.data.kb.config as cf
+
+import time
+import os
+import md5
+import socket
+
 
 class extrusionScanner:
     '''
