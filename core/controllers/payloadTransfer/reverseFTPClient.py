@@ -1,10 +1,3 @@
-'''
-reverseFTP.py
-
-Copyright 2007 Andres Riancho
-
-This file is part of w3af, w3af.sourceforge.net .
-'''
 import socket, sys
 
 ip = sys.argv[1]
