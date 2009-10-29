@@ -1,3 +1,7 @@
+#
+#	Original file comment
+#	=====================
+#
 # directory-list-2.3-big.txt
 #
 # Copyright 2007 James Fisher
@@ -10,6 +14,15 @@
 #
 # Priority ordered case sensative list, where entries were found 
 # on atleast 1 host
+#
+#
+#	w3af comments
+#	=============
+#
+# The size of this file was reduced to ~10k directories, mainly because I wanted to reduce
+# the scan time of the default scan. If users want to find longer lists, they should download
+# them from the DirBuster project and use them here.
+#
 #
 
 index
