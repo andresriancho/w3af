@@ -1,6 +1,19 @@
-varchar
-localhost
+about
 address
-email
+after
+because
+could
 country
+email
+first
+localhost
+other
+people
+their
+there
+these
+think
+varchar
+which
+would
 
