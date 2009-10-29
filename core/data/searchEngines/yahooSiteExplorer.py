@@ -25,6 +25,7 @@ from core.data.searchEngines.searchEngine import searchEngine as searchEngine
 import urllib
 import re
 
+
 class yahooSiteExplorer(searchEngine):
     '''
     This class is a wrapper for doing Yahoo Site Explorer searches. 
@@ -68,11 +69,12 @@ class yahooSiteExplorer(searchEngine):
         for body_line in response_body_lines:
             try:
                 text, url, length, content_type = body_line.split('\t')
-            except:
-                pass
-
-            yse_result = yahooSiteExplorerResult( url )
-            results.append( yse_result )
+            except Exception, e:
+                msg = 'Something went wrong while parsing the YSE result line: "' + body_line + '"'
+                om.out.debug( msg )
+            else:
+                yse_result = yahooSiteExplorerResult( url )
+                results.append( yse_result )
         
         # cut the required results
         results = results[start:start+count]
@@ -84,3 +86,6 @@ class yahooSiteExplorerResult:
     '''
     def __init__( self, url ):
         self.URL = url
+        
+    def __repr__(self):
+        return '<YSE: "' + self.URL + '">'

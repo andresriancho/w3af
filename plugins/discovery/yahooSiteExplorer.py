@@ -47,8 +47,12 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
+        # Internal variables
         self._run = True
-        self._resultLimit = 300
+        
+        # User configured settings
+        self._result_limit = 300
         
     def discover(self, fuzzableRequest ):
         '''
@@ -69,7 +73,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
                 msg += domain + '" . Yahoo doesnt index private pages.'
                 raise w3afException(msg)
 
-            results = self._yse.getNResults( domain, self._resultLimit )
+            results = self._yse.search( domain, 0, self._result_limit )
                 
             for res in results:
                 targs = (res.URL,)
@@ -102,7 +106,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Fetch the first "resultLimit" results from Yahoo search'
-        o1 = option('resultLimit', self._resultLimit, d1, 'integer')
+        o1 = option('resultLimit', self._result_limit, d1, 'integer')
                 
         ol = optionList()
         ol.add(o1)
@@ -116,7 +120,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._resultLimit = optionsMap['resultLimit'].getValue()
+        self._result_limit = optionsMap['resultLimit'].getValue()
 
     def getPluginDeps( self ):
         '''
