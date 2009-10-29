@@ -55,10 +55,6 @@ class dir_bruter(baseDiscoveryPlugin):
         # Internal variables
         self._fuzzable_requests = []
         self.is_404 = None
-        self._200_as_404 = False
-        self._404_as_404 = False
-        self._failed_to_fingerprint = False
-        self._404_content = None
         self._tested_base_url = False
 
     def discover(self, fuzzableRequest ):
@@ -92,8 +88,6 @@ class dir_bruter(baseDiscoveryPlugin):
                 to_test.append( domain_path )
             
             for base_path in to_test:
-                # Perform some requests to see how the server responds to "404"
-                self._fingerprint_404( base_path )
                 self._bruteforce_directories( base_path )
 
         return self._fuzzable_requests
@@ -113,88 +107,17 @@ class dir_bruter(baseDiscoveryPlugin):
 
                 http_response = self._urlOpener.GET( dir_url, useCache=False )
                 
-                if not self._internal_is_404( http_response ):
+                if not self.is_404( http_response ):
                     fuzzable_reqs = self._createFuzzableRequests( http_response )
                     self._fuzzable_requests.extend( fuzzable_reqs )
                     
                     msg = 'Directory bruteforcer plugin found directory "'
                     msg += http_response.getURL()  + '"'
-                    
-                    if self._404_as_404:
-                        msg += ' with HTTP response code ' + str(http_response.getCode())
-                        msg += ' and Content-Length: ' + str(len(http_response.getBody()))
-                    
-                    if self._200_as_404:
-                        msg +=  ' with Content-Length: ' + str(len(http_response.getBody()))
-                        
+                    msg += ' with HTTP response code ' + str(http_response.getCode())
+                    msg += ' and Content-Length: ' + str(len(http_response.getBody()))
                     msg += '.'
                     
                     om.out.information( msg )
-
-    def _fingerprint_404(self, base_path):
-        '''
-        Perform some requests to see what kind of 404 the server has.
-        
-        @return: None
-        '''
-        #
-        # Generate a list of 404's
-        #
-        response_list = []
-        for i in xrange(5):
-            rnd_str = createRandAlNum( i + 6)
-            
-            dir_url = urlParser.urlJoin( base_path, rnd_str + '/')
-            http_response = self._urlOpener.GET( dir_url, useCache=False )
-            response_list.append(http_response)
-            
-        #
-        # Analyze it
-        #
-        count_200 = 0
-        count_404 = 0
-        for response in response_list:
-            # TODO: create a dict here, and work with that, this simplistic approach fails when errors 403, 401, 500 are returned!!
-            if response.getCode() == 200:
-                count_200 += 1
-            if response.getCode() == 404:
-                count_404 += 1
-        
-        if len(response_list) == count_200:
-            # Server uses 200 as 404
-            self._200_as_404 = True
-            self._404_as_404 = False
-            self._404_content = response_list[0].getBody()
-            
-        elif len(response_list) == count_404:
-            # Server uses 200 as 404
-            self._404_as_404 = True
-            self._200_as_404 = False
-            
-        else:
-            self._failed_to_fingerprint = True
-        
-    def _internal_is_404(self, http_response):
-        '''
-        @parameter http_response: The http_response that we want to know if it's a 404 or not
-        @return: True if it's a 404
-        '''
-        if self._404_as_404:
-            if http_response.getCode() == 404:
-                return True
-            else:
-                return False
-                
-        elif self._200_as_404:
-            # relative_distance() == 1 , they are equal
-            # relative_distance() == 0 , they are completely different
-            if relative_distance( self._404_content, http_response.getBody() ) < 0.75:
-                return False
-            else:
-                return True
-                
-        elif self._failed_to_fingerprint:
-            return self.is_404( http_response )
             
     def getOptions( self ):
         '''
