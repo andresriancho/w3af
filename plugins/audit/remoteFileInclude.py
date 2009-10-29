@@ -40,6 +40,7 @@ from core.controllers.daemons.webserver import webserver
 import core.data.constants.w3afPorts as w3afPorts
 
 import os, time
+import re
 
 CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly configured to use.'
 CONFIG_ERROR_MSG += ' Please set the local address and port, or use the official w3af site'
@@ -132,8 +133,10 @@ class remoteFileInclude(baseAuditPlugin):
         
         @return: None
         '''
+        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        
         rfi_url_list = [ self._rfi_url,  ]
-        mutants = createMutants( freq, rfi_url_list )
+        mutants = createMutants( freq, rfi_url_list, oResponse=oResponse )
         
         for mutant in mutants:
             if self._hasNoBug( 'remoteFileInclude', 'remoteFileInclude', \
@@ -154,6 +157,23 @@ class remoteFileInclude(baseAuditPlugin):
             v.setName( 'Remote file inclusion vulnerability' )
             v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
             kb.kb.append( self, 'remoteFileInclude', v )
+        
+        else:
+            #
+            #   Analyze some errors that indicate that there is a RFI but with some
+            #   "configuration problems"
+            #
+            rfi_errors = ['php_network_getaddresses: getaddrinfo',
+                                'failed to open stream: Connection refused in']
+            for error in rfi_errors:
+                if error in response and not re.search( error, mutant.getOriginalResponseBody() ):
+                    v = vuln.vuln( mutant )
+                    v.setId( response.id )
+                    v.setSeverity(severity.MEDIUM)
+                    v.addToHighlight(error)
+                    v.setName( 'Remote file inclusion vulnerability' )
+                    v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
+                    kb.kb.append( self, 'remoteFileInclude', v )
     
     def end(self):
         '''
