@@ -63,7 +63,6 @@ class redos(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         om.out.debug( 'redos plugin is testing: ' + freq.getURL() )
-        self._with_time_delay(freq)
     
         # Send the fuzzableRequest without any fuzzing, so we can measure the response 
         # time of this script in order to compare it later
