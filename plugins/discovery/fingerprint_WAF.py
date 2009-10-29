@@ -122,8 +122,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^AL[_-]?(SESS|LB)=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('Airlock', response)
+                        self._report_finding('Airlock', response, protected_by)
                         return
                 # else 
                     # more checks, like path /error_path or encrypted URL in response
@@ -143,8 +142,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                     # ToDo: not sure if this is always there (08jul08 Achim)
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^barra_counter_session=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('Barracuda', response)
+                        self._report_finding('Barracuda', protected_by)
                         return
                 # else 
                     # don't know ...
@@ -163,8 +161,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^sessioncookie=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('Deny All rWeb', response)
+                        self._report_finding('Deny All rWeb', response, protected_by)
                         return
                 # else
                     # more checks like detection=detected cookie
@@ -183,8 +180,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^TS[a-zA-Z0-9]{3,6}=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('F5 ASM', response)
+                        self._report_finding('F5 ASM', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -205,8 +201,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^ASINFO=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('F5 TrafficShield', response)
+                        self._report_finding('F5 TrafficShield', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -227,8 +222,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^st8id=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('TEROS', response)
+                        self._report_finding('TEROS', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -249,8 +243,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^NCI__SessionId=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('NetContinuum', response)
+                        self._report_finding('NetContinuum', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -269,8 +262,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'server':
                     protected_by = response.getHeaders()[header_name]                    
                     if re.match('BinarySec', protected_by, re.IGNORECASE):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('BinarySec', response)
+                        self._report_finding('BinarySec', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -290,8 +282,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 if header_name.lower() == 'set-cookie':
                     protected_by = response.getHeaders()[header_name]
                     if re.match('^WODSESSION=', protected_by):
-                        om.out.information( 'URL protected: ' + protected_by )
-                        self._report_finding('HyperGuard', response)
+                        self._report_finding('HyperGuard', response, protected_by)
                         return
                 # else
                     # more checks like special string in response
@@ -330,15 +321,22 @@ class fingerprint_WAF(baseDiscoveryPlugin):
                 self._report_finding('URLScan', lock_response)
 
     
-    def _report_finding( self, name, response ):
+    def _report_finding( self, name, response, protected_by=None):
         '''
         Creates a information object based on the name and the response parameter and
         saves the data in the kb.
+        
+        @parameter name: The name of the WAF
+        @parameter response: The HTTP response object that was used to identify the WAF
+        @parameter protected_by: A more detailed description/version of the WAF
         '''
         i = info.info()
         i.setURL( response.getURL() )
         i.setId( response.id )
-        i.setDesc( 'The remote web server seems to deploy the '+name+' firewall.' )
+        msg = 'The remote web server seems to deploy a "'+name+'" WAF.'
+        if protected_by:
+            msg += ' The following is a detailed version of the WAF: "' + protected_by + '".'
+        i.setDesc( msg )
         i.setName('Found '+name)
         kb.kb.append( self, name, i )
         om.out.information( i.getDesc() )
