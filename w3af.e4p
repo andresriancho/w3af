@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-10-23, 18:41:40 -->
+<!-- Saved: 2009-10-29, 19:51:39 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -693,11 +693,6 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>fingerPKS.py</Name>
-    </Source>
-    <Source>
-      <Dir>plugins</Dir>
-      <Dir>discovery</Dir>
-      <Name>googleSets.py</Name>
     </Source>
     <Source>
       <Dir>plugins</Dir>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-10-23, 18:41:41 -->
+<!-- Saved: 2009-10-29, 19:51:39 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -638,73 +638,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Implement this!</Summary>
-    <Description></Description>
-    <Created>2009-03-31, 10:02:04</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>w3afAgent</Dir>
-        <Name>w3afAgentManager.py</Name>
-      </Filename>
-      <Linenumber>134</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Implement this!</Summary>
-    <Description></Description>
-    <Created>2009-03-31, 10:02:04</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>controllers</Dir>
-        <Dir>w3afAgent</Dir>
-        <Name>w3afAgentManager.py</Name>
-      </Filename>
-      <Linenumber>142</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-04-08, 00:06:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>303</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-04-08, 00:06:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>433</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-04-08, 00:06:37</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>482</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: I should use different variables to store shells and proxies</Summary>
     <Description></Description>
     <Created>2009-04-23, 11:41:09</Created>
@@ -843,19 +776,6 @@
       <Linenumber>386</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: create a dict here, and work with that, this simplistic approach fails when errors 403, 401, 500 are returned!!</Summary>
-    <Description></Description>
-    <Created>2009-07-11, 21:15:35</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>dir_bruter.py</Name>
-      </Filename>
-      <Linenumber>157</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This method AIN'T USED. Please deprecate in the future!</Summary>
     <Description></Description>
@@ -978,34 +898,6 @@
         <Name>clusterGraph.py</Name>
       </Filename>
       <Linenumber>292</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: improve the second if condition (works it the</Summary>
-    <Description></Description>
-    <Created>2009-10-04, 20:13:04</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Dir>db</Dir>
-        <Name>dbDriverFunctions.py</Name>
-      </Filename>
-      <Linenumber>397</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: improve this check (works it the web</Summary>
-    <Description></Description>
-    <Created>2009-10-04, 20:13:04</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Dir>db</Dir>
-        <Name>dbDriverFunctions.py</Name>
-      </Filename>
-      <Linenumber>412</Linenumber>
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
@@ -1285,7 +1177,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: this list should be updated from time to time, automatically.</Summary>
     <Description></Description>
-    <Created>2009-10-18, 13:01:25</Created>
+    <Created>2009-10-18, 12:01:25</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1299,7 +1191,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Not 100% sure about this...</Summary>
     <Description></Description>
-    <Created>2009-10-18, 13:53:47</Created>
+    <Created>2009-10-18, 12:53:47</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1313,7 +1205,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Add more checks here?</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:00:57</Created>
+    <Created>2009-10-18, 16:00:57</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1327,7 +1219,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: May be consuming a lot of memory</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:46:27</Created>
+    <Created>2009-10-18, 16:46:27</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1340,7 +1232,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO:</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:46:27</Created>
+    <Created>2009-10-18, 16:46:27</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1353,7 +1245,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:46:27</Created>
+    <Created>2009-10-18, 16:46:27</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1366,7 +1258,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:46:27</Created>
+    <Created>2009-10-18, 16:46:27</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1379,7 +1271,7 @@
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: Does this work with output plugin options? What about target, http-settings, etc?</Summary>
     <Description></Description>
-    <Created>2009-10-18, 17:46:27</Created>
+    <Created>2009-10-18, 16:46:27</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1389,23 +1281,10 @@
       <Linenumber>1242</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="True">
-    <Summary>FIXME: In the future, xUrllib should only raise w3afException</Summary>
-    <Description></Description>
-    <Created>2009-10-22, 17:51:20</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>discovery</Dir>
-        <Name>yahooSiteExplorer.py</Name>
-      </Filename>
-      <Linenumber>39</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Also matches //foo/bar.txt , which is bad</Summary>
     <Description></Description>
-    <Created>2009-10-23, 11:14:45</Created>
+    <Created>2009-10-23, 10:14:45</Created>
     <Resource>
       <Filename>
         <Dir>core</Dir>
@@ -1419,7 +1298,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: review this code !!</Summary>
     <Description></Description>
-    <Created>2009-10-23, 17:05:39</Created>
+    <Created>2009-10-23, 16:05:39</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
@@ -1427,6 +1306,114 @@
         <Name>urlFuzzer.py</Name>
       </Filename>
       <Linenumber>159</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Review this hack</Summary>
+    <Description></Description>
+    <Created>2009-10-26, 12:56:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>303</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
+    <Description></Description>
+    <Created>2009-10-26, 12:56:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>433</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Complete this list with windows stuff</Summary>
+    <Description></Description>
+    <Created>2009-10-26, 12:56:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
+      </Filename>
+      <Linenumber>482</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Implement this!</Summary>
+    <Description></Description>
+    <Created>2009-10-27, 14:45:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>w3afAgent</Dir>
+        <Name>w3afAgentManager.py</Name>
+      </Filename>
+      <Linenumber>134</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: Implement this!</Summary>
+    <Description></Description>
+    <Created>2009-10-27, 14:45:59</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>controllers</Dir>
+        <Dir>w3afAgent</Dir>
+        <Name>w3afAgentManager.py</Name>
+      </Filename>
+      <Linenumber>142</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve the second if condition (works it the</Summary>
+    <Description></Description>
+    <Created>2009-10-27, 17:26:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>410</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: improve this check (works it the web</Summary>
+    <Description></Description>
+    <Created>2009-10-27, 17:26:38</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>db</Dir>
+        <Name>dbDriverFunctions.py</Name>
+      </Filename>
+      <Linenumber>425</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="True">
+    <Summary>FIXME: In the future, xUrllib should only raise w3afException</Summary>
+    <Description></Description>
+    <Created>2009-10-29, 14:24:02</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>discovery</Dir>
+        <Name>yahooSiteExplorer.py</Name>
+      </Filename>
+      <Linenumber>39</Linenumber>
     </Resource>
   </Task>
 </Tasks>
