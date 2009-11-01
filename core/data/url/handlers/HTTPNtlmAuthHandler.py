@@ -14,13 +14,20 @@
 import urllib2
 import httplib, socket
 from urllib import addinfourl
-from extlib.ntlm import ntlm
+
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../../../../extlib/')
+    import ntlm
+else:
+    from extlib.ntlm import ntlm
+
 
 class AbstractNtlmAuthHandler:
     
     def __init__(self, password_mgr=None):
         if password_mgr is None:
-            password_mgr = HTTPPasswordMgr()
+            password_mgr = urllib2.HTTPPasswordMgr()
         self.passwd = password_mgr
         self.add_password = self.passwd.add_password
 
@@ -104,7 +111,7 @@ class ProxyNtlmAuthHandler(AbstractNtlmAuthHandler, urllib2.BaseHandler):
 
 
 if __name__ == "__main__":
-    url = "http://ntlmprotectedserver/securedfile.html"
+    url = "http://localhost/"
     user = u'DOMAIN\\User'
     password = 'Password'
 
