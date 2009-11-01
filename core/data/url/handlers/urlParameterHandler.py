@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import core.data.parsers.urlParser as urlParser
 
+
 class URLParameterHandler(urllib2.BaseHandler):
     '''
     Appends a user configured URL parameter to the request URL.
@@ -35,13 +36,13 @@ class URLParameterHandler(urllib2.BaseHandler):
     @author: Kevin Denver ( muffysw@hotmail.com )
     '''
     
-    def __init__( self, urlParam ):
-        self._urlParameter = urlParam
+    def __init__( self, url_param ):
+        self._url_parameter = url_param
         
     def http_request( self, req ):
-        newUrl = urlParser.setParam(req.get_full_url(), self._urlParameter)
-        newRequest = urllib2.Request(newurl, headers=req.headers,
+        new_url = urlParser.setParam(req.get_full_url(), self._url_parameter)
+        new_request = urllib2.Request(new_url, headers=req.headers,
             origin_req_host=req.get_origin_req_host(),
             unverifiable=req.is_unverifiable())
-        return newRequest
+        return new_request
 
