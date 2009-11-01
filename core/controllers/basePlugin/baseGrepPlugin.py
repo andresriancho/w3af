@@ -20,13 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.urlParser
 from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-import urllib
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
+import urllib
+
 
 class baseGrepPlugin(basePlugin):
     '''
@@ -62,6 +63,15 @@ class baseGrepPlugin(basePlugin):
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )
             pass
     
+    def grep(self, fuzzableRequest, response ):
+        '''
+        Analyze the response.
+        
+        @parameter fuzzableRequest: The request that was sent
+        @parameter response: The HTTP response obj
+        '''
+        raise w3afException('Plugin is not implementing required method grep' )
+
     def _wasSent( self, request, something_interesting ):
         '''
         Checks if the something_interesting was sent in the request.
