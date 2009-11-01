@@ -184,7 +184,7 @@ class AboutDialog(gtk.Dialog):
         '''Opens the web site and closes the dialog.'''
         try:
             webbrowser.open("http://w3af.sourceforge.net/")
-        except WindowsError, we:
+        except Exception,  e:
             #
             #   This catches bug #2685576
             #   https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2685576&group_id=170274
