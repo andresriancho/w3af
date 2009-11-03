@@ -36,10 +36,12 @@ from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
+from core.controllers.misc.temp_dir import get_temp_dir
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+
 import os
 import os.path
 import tempfile
-from core.controllers.misc.temp_dir import get_temp_dir
 
 
 class fileUpload(baseAuditPlugin):
@@ -55,7 +57,6 @@ class fileUpload(baseAuditPlugin):
         # Internal vars
         self._template_dir = 'plugins' + os.path.sep + 'audit'+ os.path.sep + 'fileUpload'
         self._file_list = []
-        self._is_404 = None
         
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
@@ -66,10 +67,6 @@ class fileUpload(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        # Init...
-        if self._is_404 == None:
-            self._is_404 = kb.kb.getData( 'error404page', '404' )
-        
         # Start
         if freq.getMethod().upper() == 'POST' and len ( freq.getFileVariables() ) != 0:
             om.out.debug( 'fileUpload plugin is testing: ' + freq.getURL() )
@@ -156,7 +153,7 @@ class fileUpload(baseAuditPlugin):
             for path in self._generate_paths( url, mutant.uploaded_file_name ):
 
                 get_response = self._urlOpener.GET( path, useCache=False )
-                if not self._is_404( get_response ):
+                if not is_404( get_response ):
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
                     mutant.setModValue( '<file_object>' )

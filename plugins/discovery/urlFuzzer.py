@@ -31,6 +31,7 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.data.fuzzer.fuzzer import createRandAlNum
 
@@ -61,7 +62,6 @@ class urlFuzzer(baseDiscoveryPlugin):
         if self._firstTime:
             self._verify_head_enabled( url )
             self._firstTime = False
-            self.is404 = kb.kb.getData( 'error404page', '404' )
         
         # First we need to delete fragments and query strings from URL.
         url = urlParser.uri2url( url )
@@ -92,7 +92,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            if not self.is404( response ) and response.getCode() not in [403, 401]:
+            if not is_404( response ) and response.getCode() not in [403, 401]:
                 if not self._return_without_eval( mutant ):
                     fr_list = self._createFuzzableRequests( response )
                     self._fuzzableRequests.extend( fr_list )
@@ -118,7 +118,7 @@ class urlFuzzer(baseDiscoveryPlugin):
             msg += str(e)
             om.out.error( msg )
         else:
-            if not self.is404( response ):
+            if not is_404( response ):
                 return True
         return False
 

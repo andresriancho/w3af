@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.controllers.misc.factory import factory
 
@@ -80,7 +81,6 @@ class passwordProfiling(baseGrepPlugin):
         @return: None.
         '''
         # Initial setup
-        is_404 = kb.kb.getData( 'error404page', '404' )
         lang = kb.kb.getData( 'lang', 'lang' )
         if lang == []:
             lang = 'unknown'

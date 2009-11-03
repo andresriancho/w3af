@@ -28,6 +28,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -60,11 +61,8 @@ class newline(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-
-        is404 = kb.kb.getData( 'error404page', '404' )
-
         if response.is_text_or_html() and request.getMethod() in ['GET', 'POST']\
-        and not is404( response ):
+        and not is_404( response ):
             unix = self._unix.findall( response.getBody() )
             windows = self._windows.findall( response.getBody() )
             mac = self._mac.findall( response.getBody() )

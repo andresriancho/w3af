@@ -31,6 +31,7 @@ from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.info as info
 
 import re
@@ -62,7 +63,6 @@ class oracleDiscovery(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             
-            is_404 = kb.kb.getData( 'error404page', '404' )
             baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
             
             for url, regex_string in self.getOracleData():

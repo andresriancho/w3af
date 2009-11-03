@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
-import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.parsers.urlParser as urlParser
 
 import os
@@ -75,7 +75,6 @@ class webDiff(baseDiscoveryPlugin):
         else:
             om.out.debug( 'webDiff plugin is testing: ' + fuzzableRequest.getURL() )
             self._run = False
-            self.is404 = kb.kb.getData( 'error404page', '404' )
                     
             if self._local_dir != '' and self._remote_path != '':
                 os.path.walk( self._local_dir, self._compare_dir, None )
@@ -164,7 +163,7 @@ class webDiff(baseDiscoveryPlugin):
                 url = urlParser.urlJoin( path, fname )
                 response = self._easy_GET( url )
             
-                if not self.is404( response ):
+                if not is_404( response ):
                     if response.is_text_or_html():
                         self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
                     self._check_content( response, directory + os.path.sep + fname )

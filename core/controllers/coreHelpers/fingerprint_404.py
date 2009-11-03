@@ -37,6 +37,15 @@ import cgi
 
 IS_EQUAL_RATIO = 0.90
 
+#
+#   Here I create a is_404 "singleton" that I use in most plugins.
+#
+is_404 = None
+#
+#   In the plugins, I'll just do something like "from core.controllers.coreHelpers.fingerprint_404 import is_404"
+#   and then "is_404( response )"
+#
+
 
 class fingerprint_404:
     '''
@@ -56,6 +65,10 @@ class fingerprint_404:
         self._already_analyzed = False
         self._404_bodies = []
         self._lock = thread.allocate_lock()
+        
+        #   The "singleton"
+        global is_404
+        is_404 = self.is_404
 
     def is_404(self, http_response):
         '''
@@ -236,13 +249,4 @@ class fingerprint_404:
 
         return original_body
 
-#
-#   Here I create a is_404 "singleton" that I use in most plugins.
-#
-fp404 = fingerprint_404()
-is_404 = fp404.is404
 
-#
-#   In the plugins, I'll just do something like "from core.coreHelpers.fingerprint404 import is_404"
-#   and then "is_404( response )"
-#

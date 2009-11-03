@@ -30,6 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -58,8 +59,6 @@ class findBackdoor(baseDiscoveryPlugin):
         
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.append( domain_path )
-            # Init some variables
-            is_404 = kb.kb.getData( 'error404page', '404' )
 
             # Search for the web shells
             for web_shell_filename in self._get_web_shells():

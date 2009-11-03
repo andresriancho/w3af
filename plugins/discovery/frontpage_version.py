@@ -28,6 +28,7 @@ from core.controllers.w3afException import w3afException, w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.info as info
 
 from core.data.db.temp_persist import disk_list
@@ -65,7 +66,6 @@ class frontpage_version(baseDiscoveryPlugin):
             # Run the plugin.
             self._exec = False
 
-        is_404 = kb.kb.getData( 'error404page', '404' )
         for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
 
             if domain_path not in self._analyzed_dirs:

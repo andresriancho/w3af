@@ -29,10 +29,12 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afException
+
 
 class metaTags(baseGrepPlugin):
     '''
@@ -44,7 +46,6 @@ class metaTags(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self.is404 = None
         self._comments = {}
         self._search404 = False
         
@@ -72,9 +73,8 @@ class metaTags(baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html():
-            self.is404 = kb.kb.getData( 'error404page', '404' )
             
-            if not self.is404( response ):
+            if not is_404( response ):
                 try:
                     dp = dpCache.dpc.getDocumentParserFor( response )
                 except w3afException:

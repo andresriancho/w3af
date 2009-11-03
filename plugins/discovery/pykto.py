@@ -37,6 +37,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
 from core.data.db.temp_persist import disk_list
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import os.path
 import re
@@ -92,8 +93,6 @@ class pykto(baseDiscoveryPlugin):
             # run!
             if self._update_scandb:
                 self._update_db()
-            
-            self.is404 = kb.kb.getData( 'error404page', '404' )
             
             # Run the basic scan (only once)
             if self._first_time:
@@ -472,10 +471,10 @@ class pykto(baseDiscoveryPlugin):
         if expected_response.isdigit():
             int_er = int( expected_response )
             # This is used when expected_response is 200 , 401, 403, etc.
-            if response.getCode() == int_er and not self.is404( response ):
+            if response.getCode() == int_er and not is_404( response ):
                 return True
         
-        elif expected_response in response and not self.is404( response ):
+        elif expected_response in response and not is_404( response ):
             # If the content is found, and it's not in a 404 page, then we have a vuln.
             return True
         
@@ -502,7 +501,7 @@ class pykto(baseDiscoveryPlugin):
             msg += str(e)
             om.out.error( msg )
         else:
-            if not self.is404( response ):
+            if not is_404( response ):
                 return True
         return False
 

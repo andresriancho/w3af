@@ -52,7 +52,7 @@ from core.data.request.frFactory import createFuzzableRequests
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # 404 detection
-from core.controllers.coreHelpers.fingerprint404Page import fingerprint404Page
+from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404
 
 # Progress tracking
 from core.controllers.coreHelpers.progress import progress
@@ -309,8 +309,8 @@ class w3afCore:
         self._plugins['mangle'] = self._rPlugFactory( self._strPlugins['mangle'] , 'mangle')
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
         
-        # Only by creating this object I'm adding 404 detection to all plugins
-        fingerprint404Page( self.uriOpener )
+        # I init the 404 detection for the whole framework
+        fingerprint_404( self.uriOpener )
 
     def _updateURLsInKb( self, fuzzableRequestList ):
         '''

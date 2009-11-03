@@ -27,7 +27,7 @@ from core.controllers.w3afException import w3afException
 
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants
-import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import re
 
 # The wordnet includes!
@@ -57,7 +57,6 @@ class wordnet(baseDiscoveryPlugin):
                                                     (among other things) the URL to test.
         '''
         self._fuzzableRequests = []
-        self.is404 = kb.kb.getData( 'error404page', '404' )
         
         self._original_response = self._sendMutant( fuzzableRequest, analyze=False )
         
@@ -73,7 +72,7 @@ class wordnet(baseDiscoveryPlugin):
         @return: None, all important data is saved to self._fuzzableRequests
         '''
         response = self._sendMutant( mutant, analyze=False )
-        if not self.is404( response ) and self._original_response.getBody() != response.getBody() :
+        if not is_404( response ) and self._original_response.getBody() != response.getBody() :
             fuzzReqs = self._createFuzzableRequests( response )
             self._fuzzableRequests.extend( fuzzReqs )
     

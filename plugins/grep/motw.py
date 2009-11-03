@@ -27,6 +27,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -60,8 +61,6 @@ class motw (baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html():
-
-            is_404 = kb.kb.getData( 'error404page', '404' )
 
             if not is_404( response ):
                 motw_match = self._motw_re.search(response.getBody())

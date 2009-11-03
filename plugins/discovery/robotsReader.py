@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -59,7 +60,6 @@ class robotsReader(baseDiscoveryPlugin):
         else:
             # Only run once
             self._exec = False
-            self.is404 = kb.kb.getData( 'error404page', '404' )
             
             dirs = []
             self._fuzzableRequests = []         
@@ -68,7 +68,7 @@ class robotsReader(baseDiscoveryPlugin):
             robots_url = urlParser.urlJoin(  base_url , 'robots.txt' )
             http_response = self._urlOpener.GET( robots_url, useCache=True )
             
-            if not self.is404( http_response ):
+            if not is_404( http_response ):
                 # Save it to the kb!
                 i = info.info()
                 i.setName('robots.txt file')

@@ -30,8 +30,11 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
+
 import re
+
 
 class lang(baseGrepPlugin):
     '''
@@ -81,8 +84,7 @@ class lang(baseGrepPlugin):
         @parameter response: The HTTP response object
         '''
         with self._lang_lock:
-            self.is404 = kb.kb.getData( 'error404page', '404' )
-            if self._exec and not self.is404( response ):
+            if self._exec and not is_404( response ):
                 kb.kb.save( self, 'lang', 'unknown' )
                 
                 # Init the count map

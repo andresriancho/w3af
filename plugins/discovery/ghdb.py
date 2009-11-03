@@ -35,6 +35,7 @@ from core.data.searchEngines.googleSearchEngine import googleSearchEngine as goo
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.is_private_site import is_private_site
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
 
@@ -136,7 +137,6 @@ class ghdb(baseDiscoveryPlugin):
     def _classic_worker( self, gh, search ):
         
         # Init some variables
-        is_404 = kb.kb.getData( 'error404page', '404' )
         google_se = google( self._urlOpener, self._key )
         
         google_list = google_se.getNResults( search, 9 )

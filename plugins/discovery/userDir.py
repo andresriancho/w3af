@@ -74,7 +74,6 @@ class userDir(baseDiscoveryPlugin):
                 
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             self._headers = {'Referer': base_url }
-            self.is404 = kb.kb.getData( 'error404page', '404' )
             
             # Create a response body to compare with the others
             non_existant_user = '~_w_3_a_f_/'

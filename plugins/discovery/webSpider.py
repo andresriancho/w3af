@@ -29,7 +29,7 @@ import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.levenshtein import relative_distance
 
-import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.config as cf
 from core.data.fuzzer.formFiller import smartFill
 import core.data.dc.form as form
@@ -84,11 +84,7 @@ class webSpider(baseDiscoveryPlugin):
             self._first_run = False
             self._target_urls = [ urlParser.getDomainPath(i) for i in cf.cf.getData('targets') ]
             self._target_domain = urlParser.getDomain( cf.cf.getData('targets')[0] )
-            
-
-        # Init some internal variables
-        self.is404 = kb.kb.getData( 'error404page', '404' )
-
+        
         # If its a form, then smartFill the Dc.
         original_dc = fuzzableRequest.getDc()
         if isinstance( fuzzableRequest, httpPostDataRequest.httpPostDataRequest ):
@@ -211,7 +207,7 @@ class webSpider(baseDiscoveryPlugin):
             else:
                 # Note: I WANT to follow links that are in the 404 page, but if the page
                 # I fetched is a 404... I should ignore it.
-                if self.is404( response ):
+                if is_404( response ):
                     #
                     # add_self == False, because I don't want to return a 404 to the core
                     #

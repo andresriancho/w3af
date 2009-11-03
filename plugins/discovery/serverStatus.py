@@ -34,7 +34,9 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 import core.data.parsers.urlParser as urlParser
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afRunOnce
+
 import re
 
 
@@ -66,8 +68,6 @@ class serverStatus(baseDiscoveryPlugin):
         else:
             # Only run once
             self._exec = False
-            
-            is_404 = kb.kb.getData( 'error404page', '404' )
             
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             server_status_url = urlParser.urlJoin(  base_url , 'server-status' )

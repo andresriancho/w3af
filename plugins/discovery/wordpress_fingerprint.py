@@ -37,6 +37,7 @@ import core.data.constants.severity as severity
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
 # Main class
@@ -71,9 +72,6 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
             ## Check if the server is running wp ##
             #########################
             
-            # 404 error messages
-            is_404 = kb.kb.getData( 'error404page', '404' )
-
             self._fuzzableRequests = []  
             
             domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )

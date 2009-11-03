@@ -38,6 +38,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
@@ -78,9 +79,6 @@ class favicon_identification(baseDiscoveryPlugin):
             
             # Only run once
             self._exec = False
-
-            # 404 error messages
-            is_404 = kb.kb.getData( 'error404page', '404' )
 
             domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
             

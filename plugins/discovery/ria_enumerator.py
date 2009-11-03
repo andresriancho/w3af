@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -66,7 +67,6 @@ class ria_enumerator(baseDiscoveryPlugin):
         else:
             # Only run once
             self._exec = False
-            is_404 = kb.kb.getData( 'error404page', '404' )
 
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             

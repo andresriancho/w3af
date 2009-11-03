@@ -36,6 +36,7 @@ import core.data.parsers.urlParser as urlParser
 import core.data.kb.knowledgeBase as kb
 
 from core.data.db.temp_persist import disk_list
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import re
 
@@ -53,7 +54,6 @@ class archiveDotOrg(baseDiscoveryPlugin):
         
         # Internal variables
         self._already_visited = disk_list()
-        self._is_404 = None
         
         # User configured parameters
         self._max_depth = 3
@@ -75,7 +75,6 @@ class archiveDotOrg(baseDiscoveryPlugin):
         else:
             # Work
             om.out.debug( 'archiveDotOrg plugin is testing: ' + fuzzableRequest.getURL() )
-            self.is_404 = kb.kb.getData( 'error404page', '404' )
             
             start_url = 'http://web.archive.org/web/*/' + fuzzableRequest.getURL()
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
@@ -198,7 +197,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         except w3afException,e:
             pass
         else:
-            if not self.is_404( response ):
+            if not is_404( response ):
                 res = True
         
         if res:

@@ -30,6 +30,8 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
@@ -65,7 +67,6 @@ class phpinfo(baseDiscoveryPlugin):
         
         new_fuzzable_requests = []
 
-        is_404 = kb.kb.getData( 'error404page', '404' )
         for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
 
             if domain_path not in self._analyzed_dirs:

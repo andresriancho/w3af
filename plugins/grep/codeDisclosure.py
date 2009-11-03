@@ -32,6 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.db.temp_persist import disk_list
 
 import re
@@ -94,8 +95,6 @@ class codeDisclosure(baseGrepPlugin):
         '''
 
         if response.is_text_or_html() and response.getURL() not in self._already_added:
-    
-            is_404 = kb.kb.getData( 'error404page', '404' )
             
             for regex, lang in self._regexs:
                 res = regex.search( response.getBody() )

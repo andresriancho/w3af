@@ -31,7 +31,7 @@ from core.controllers.w3afException import w3afRunOnce
 import core.data.parsers.urlParser as urlParser
 import os
 
-import core.data.kb.knowledgeBase as kb
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance
 from core.data.fuzzer.fuzzer import createRandAlNum
 
@@ -54,7 +54,6 @@ class dir_bruter(baseDiscoveryPlugin):
 
         # Internal variables
         self._fuzzable_requests = []
-        self.is_404 = None
         self._tested_base_url = False
 
     def discover(self, fuzzableRequest ):
@@ -70,9 +69,6 @@ class dir_bruter(baseDiscoveryPlugin):
             if not self._be_recursive:
                 # Only run once
                 self._exec = False
-                
-            if self.is_404 == None:
-                self.is_404 = kb.kb.getData( 'error404page', '404' )
 
             self._fuzzable_requests = []
             
@@ -107,7 +103,7 @@ class dir_bruter(baseDiscoveryPlugin):
 
                 http_response = self._urlOpener.GET( dir_url, useCache=False )
                 
-                if not self.is_404( http_response ):
+                if not is_404( http_response ):
                     fuzzable_reqs = self._createFuzzableRequests( http_response )
                     self._fuzzable_requests.extend( fuzzable_reqs )
                     

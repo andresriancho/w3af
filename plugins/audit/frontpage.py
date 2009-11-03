@@ -32,6 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.db.temp_persist import disk_list
 
 import core.data.parsers.urlParser as urlParser
@@ -50,7 +51,6 @@ class frontpage(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self.is404 = None
         self._already_tested = disk_list()
         self._stop_on_first = True
 
@@ -60,10 +60,6 @@ class frontpage(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        # Init...
-        if self.is404 == None:
-            self.is404 = kb.kb.getData( 'error404page', '404' )
-
         # Set some value
         domain_path = urlParser.getDomainPath( freq.getURL() )
         
@@ -86,7 +82,7 @@ class frontpage(baseAuditPlugin):
                     randFile = createRandAlpha( 5 ) + '.html'
                     randPathFile = urlParser.urlJoin(domain_path,  randFile)
                     res = self._urlOpener.GET( randPathFile )
-                    if self.is404( res ):
+                    if is_404( res ):
                         found404 = True
                         break
                 
@@ -152,7 +148,7 @@ class frontpage(baseAuditPlugin):
         else:
             # The file I upload has blank content
             # And it must be there
-            if res.getBody() == '' and not self.is404( res ):
+            if res.getBody() == '' and not is_404( res ):
                 v = vuln.vuln()
                 v.setURL( targetURL )
                 v.setId( [upload_id, res.id] )

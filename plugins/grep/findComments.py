@@ -30,6 +30,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.controllers.w3afException import w3afException
 
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -54,7 +55,6 @@ class findComments(baseGrepPlugin):
         'secret','@', 'email','security','captcha'
         ]
         self._already_reported_interesting = []
-        self.is404 = None
 
         # User configurations
         self._search404 = False
@@ -67,12 +67,8 @@ class findComments(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        # Set the is404 method if not already set
-        if not self.is404:
-            self.is404 = kb.kb.getData( 'error404page', '404' )
-
         if response.is_text_or_html():
-            if not self.is404( response ) or self._search404:
+            if not is_404( response ) or self._search404:
                 
                 try:
                     dp = dpCache.dpc.getDocumentParserFor( response )

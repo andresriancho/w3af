@@ -33,6 +33,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance
 
 from core.data.db.temp_persist import disk_list
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
 class slash( baseDiscoveryPlugin ):
@@ -52,7 +53,6 @@ class slash( baseDiscoveryPlugin ):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''     
         self._fuzzableRequests = []
-        self.is404 = kb.kb.getData( 'error404page', '404' )
         
         url = fuzzableRequest.getURL()
         if url not in self._already_visited:
@@ -98,7 +98,7 @@ class slash( baseDiscoveryPlugin ):
             raise e
         else:
             if relative_distance( response.getBody(), original_response.getBody() ) < 0.70\
-            and not self.is404( response ):
+            and not is_404( response ):
                 self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
                 om.out.debug( 'slash plugin found new URI: "' + fuzzableRequest.getURI() + '".' )
         
