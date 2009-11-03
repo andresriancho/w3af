@@ -157,9 +157,9 @@ class osCommanding(baseAuditPlugin):
         file_patterns.append("daemon:x:1:1:")
         file_patterns.append(":/bin/bash")
         file_patterns.append(":/bin/sh")
-        file_patterns.append("[fonts]")
-        file_patterns.append("[extensions]")
-        file_patterns.append("[files]")
+        file_patterns.append("\\[fonts\\]")
+        file_patterns.append("\\[extensions\\]")
+        file_patterns.append("\\[files\\]")
         return file_patterns
 
     def _get_os_separator(self, mutant):
