@@ -63,6 +63,7 @@ from core.controllers.coreHelpers.export import export
 # Profile objects
 from core.data.profile.profile import profile as profile
 
+
 class w3afCore:
     '''
     This is the core of the framework, it calls all plugins, handles exceptions,
@@ -87,6 +88,9 @@ class w3afCore:
         self.uriOpener = xUrllib()
         self.progress = progress()
         self.export = export()
+        
+        # I init the 404 detection for the whole framework
+        fingerprint_404( self.uriOpener )
 
     def _home_directory(self):
         '''
@@ -309,8 +313,7 @@ class w3afCore:
         self._plugins['mangle'] = self._rPlugFactory( self._strPlugins['mangle'] , 'mangle')
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
         
-        # I init the 404 detection for the whole framework
-        fingerprint_404( self.uriOpener )
+
 
     def _updateURLsInKb( self, fuzzableRequestList ):
         '''
