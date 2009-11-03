@@ -74,6 +74,9 @@ class passwordProfiling(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Get responses, analyze words, create dictionary.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None.
         '''
         # Initial setup

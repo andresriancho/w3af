@@ -45,8 +45,10 @@ class strangeHTTPCode(baseGrepPlugin):
 
     def grep(self, request, response):
         '''
-        Plugin entry point.
+        Plugin entry point. Analyze if the HTTP response codes are strange.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         if response.getCode() not in self._common_http_codes:

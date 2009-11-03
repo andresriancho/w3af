@@ -84,6 +84,8 @@ class creditCards(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the credit cards.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() == 200:

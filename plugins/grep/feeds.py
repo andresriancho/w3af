@@ -59,6 +59,9 @@ class feeds(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, find feeds.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
 

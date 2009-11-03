@@ -67,6 +67,8 @@ class pathDisclosure(baseGrepPlugin):
         '''
         Identify the path disclosure vulnerabilities.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, the result is saved in the kb.
         '''
         if response.is_text_or_html():

@@ -58,6 +58,9 @@ class privateIP(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Search for private IPs in the header and the body.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, results are saved to the kb.
         '''
         

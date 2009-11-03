@@ -62,6 +62,9 @@ class findComments(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, parse those comments!
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         # Set the is404 method if not already set

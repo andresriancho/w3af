@@ -53,6 +53,9 @@ class objects(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Parse the object tags.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
 

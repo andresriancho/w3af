@@ -58,6 +58,8 @@ class ssn(baseGrepPlugin):
         '''
         Plugin entry point, find the SSN numbers.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None.
         '''
         if response.is_text_or_html() and response.getCode() == 200:

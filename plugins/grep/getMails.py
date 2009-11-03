@@ -50,6 +50,7 @@ class getMails(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, get the emails and save them to the kb.
+        
         @parameter request: The HTTP request
         @parameter request: The HTTP response
         @return: None

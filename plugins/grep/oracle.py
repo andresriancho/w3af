@@ -45,6 +45,9 @@ class oracle(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Grep for oracle applications.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
 

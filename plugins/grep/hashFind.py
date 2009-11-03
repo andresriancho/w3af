@@ -50,6 +50,9 @@ class hashFind(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, identify hashes in the HTTP response.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...

@@ -77,7 +77,8 @@ class lang(baseGrepPlugin):
         '''
         Get the page indicated by the fuzzableRequest and determine the language using the preposition list.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         '''
         with self._lang_lock:
             self.is404 = kb.kb.getData( 'error404page', '404' )

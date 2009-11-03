@@ -55,6 +55,9 @@ class newline(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Analyze the new line convention of the site.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
 

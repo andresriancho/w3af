@@ -88,6 +88,8 @@ class codeDisclosure(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the code disclosures.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
 

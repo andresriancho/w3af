@@ -60,6 +60,9 @@ class dotNetEventValidation(baseGrepPlugin):
     def grep(self, request, response):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         '''
         if response.is_text_or_html():
 

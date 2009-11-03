@@ -58,6 +58,8 @@ class directoryIndexing(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         if urlParser.getDomainPath(response.getURL()) in self._already_visited:

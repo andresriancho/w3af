@@ -49,6 +49,8 @@ class strangeHeaders(baseGrepPlugin):
         '''
         Plugin entry point.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
 

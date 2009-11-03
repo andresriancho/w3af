@@ -56,6 +56,8 @@ class httpInBody (baseGrepPlugin):
         '''
         Plugin entry point.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:

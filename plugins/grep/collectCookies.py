@@ -66,6 +66,8 @@ class collectCookies(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for cookies.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         for key in response.getHeaders():  

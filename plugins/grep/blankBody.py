@@ -42,6 +42,8 @@ class blankBody(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, find the blank bodies and report them.
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\

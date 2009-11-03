@@ -56,6 +56,9 @@ class fileUpload(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html():

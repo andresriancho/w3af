@@ -60,6 +60,8 @@ class ajax(baseGrepPlugin):
         '''
         Plugin entry point.
         
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         if response.is_text_or_html() and response.getURL() not in self._already_inspected:

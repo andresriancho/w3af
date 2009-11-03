@@ -47,6 +47,9 @@ class error500(baseGrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, identify which requests generated a 500 error.
+        
+        @parameter request: The HTTP request object.
+        @parameter response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() in range(400, 600)\
