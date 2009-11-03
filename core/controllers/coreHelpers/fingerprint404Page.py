@@ -1,5 +1,5 @@
 '''
-fingerprint404Page.py
+fingerprint_404.py
 
 Copyright 2006 Andres Riancho
 
@@ -38,18 +38,21 @@ import cgi
 IS_EQUAL_RATIO = 0.90
 
 
-class fingerprint404Page:
+class fingerprint_404:
     '''
-    Read the 404 page returned by the server.
+    Read the 404 page(s) returned by the server.
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self, uriOpener):
+        #
+        #   Set the opener, I need it to perform some tests and gain the knowledge about the
+        #   server's 404 response bodies.
+        #
         self._urlOpener =  uriOpener
-        
-        # This is gooood! It will put the function in a place that's available for all.
-        kb.kb.save( 'error404page', '404', self.is_404 )
 
+        #   Internal variables
         self._already_analyzed = False
         self._404_bodies = []
         self._lock = thread.allocate_lock()
@@ -232,7 +235,14 @@ class fingerprint404Page:
                 original_body = original_body.replace(cgi.escape(urllib.unquote_plus(i)), '')
 
         return original_body
-        
-    def getName( self ):
-        return 'error404page'
-        
+
+#
+#   Here I create a is_404 "singleton" that I use in most plugins.
+#
+fp404 = fingerprint_404()
+is_404 = fp404.is404
+
+#
+#   In the plugins, I'll just do something like "from core.coreHelpers.fingerprint404 import is_404"
+#   and then "is_404( response )"
+#
