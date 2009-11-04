@@ -54,7 +54,7 @@ class httpQsRequest(fuzzableRequest):
             res = self._url
         return res
     
-    def setData( self ):
+    def setData( self, d=None ):
         pass
         
     def getData( self ):

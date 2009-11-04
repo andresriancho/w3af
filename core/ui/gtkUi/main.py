@@ -702,7 +702,6 @@ class MainApp(object):
         '''Set the exploits tabs to real window or dummies labels. 
         
         @param sensit: if it's active or not
-        
         '''
         # the View menu
         for menu in self.menuViews.values():
@@ -828,6 +827,7 @@ class MainApp(object):
 
     def _proxy_tool(self, action):
         '''Proxies the HTTP calls.'''
+        self.setTabs(True)
         proxywin.ProxiedRequests(self.w3af)
 
     def _wizards(self, action):

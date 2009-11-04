@@ -25,12 +25,11 @@ import urllib2
 import thread
 
 import core.controllers.outputManager as om
-import core.data.request.fuzzableRequest as fuzzableRequest
 import core.data.url.httpResponse as httpResponse
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
-
+from core.data.request.frFactory import createFuzzableRequestRaw
 
 class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
     """
@@ -133,20 +132,15 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         Send the request and the response to the output manager.
         '''
-        fr = fuzzableRequest.fuzzableRequest()
-        fr.setURI( request.get_full_url() )
-        fr.setMethod( request.get_method() )
-        
+        method = request.get_method()
+        url =  request.get_full_url()
         headers = request.headers
+        postData = request.get_data()
+
         for i in request.unredirected_hdrs.keys():
             headers[ i ] = request.unredirected_hdrs[ i ]
-        fr.setHeaders( headers )
-        
-        if request.get_data() == None:
-            fr.setData( '' )
-        else:
-            fr.setData( request.get_data() )
-        
+        fr = createFuzzableRequestRaw(method, url, postData, headers)
+
         if isinstance(response, httpResponse.httpResponse):
             res = response
         else:

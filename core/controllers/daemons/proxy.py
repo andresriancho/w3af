@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import uri2url, getQueryString
 
@@ -36,7 +36,6 @@ import SocketServer
 import time
 import socket, select
 import httplib
-
 
 class proxy(w3afThread):
     '''
@@ -102,7 +101,7 @@ class proxy(w3afThread):
             self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
         except socket.error, se:
             if se[0] == 98:
-                raise w3afException('Address already in use ' + self._ip + ':' + str(self._port))
+                raise w3afProxyException('Address already in use ' + self._ip + ':' + str(self._port))
             else:
                 raise w3afException(str(se))
     

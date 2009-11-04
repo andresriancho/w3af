@@ -20,31 +20,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-from core.controllers.w3afException import w3afException
-from core.controllers.misc.homeDir import get_home_dir
-from core.data.db.persist import persist
-
-# The output plugin must know the session name that is saved in the config object,
-# the session name is assigned in the target settings
-import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
-import core.data.constants.severity as severity
-
 # Only to be used with care.
-import core.controllers.outputManager as om
+import Queue
 import os
 
 # I'm timestamping the messages
 import time
 
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.misc.homeDir import get_home_dir
+from core.data.db.history import HistoryItem
+from core.data.db.db import DB
+# The output plugin must know the session name that is saved in the config object,
+# the session name is assigned in the target settings
+import core.data.kb.config as cf
+import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.constants.severity as severity
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-import Queue
-
 
 class gtkOutput(baseOutputPlugin):
     '''
@@ -61,13 +57,11 @@ class gtkOutput(baseOutputPlugin):
             self._db = kb.kb.getData('gtkOutput', 'db')
             self.queue = kb.kb.getData('gtkOutput', 'queue')
         else:
-            # Create the DB object
             self.queue = Queue.Queue()
-            kb.kb.save( 'gtkOutput', 'queue' , self.queue )
-            
+            kb.kb.save('gtkOutput', 'queue' , self.queue)
+            # Create DB and add tables
             sessionName = cf.cf.getData('sessionName')
-            db_name = os.path.join(get_home_dir(), 'sessions', 'db_' + sessionName )
-            
+            dbName = os.path.join(get_home_dir(), 'sessions', 'db_' + sessionName)
             # Just in case the directory doesn't exist...
             try:
                 os.mkdir(os.path.join(get_home_dir() , 'sessions'))
@@ -76,21 +70,25 @@ class gtkOutput(baseOutputPlugin):
                 if oe.errno != 17:
                     msg = 'Unable to write to the user home directory: ' + get_home_dir()
                     raise w3afException( msg )
-            
-            self._db = persist()
-            
+
+            self._db = DB()
             # Check if the database already exists
-            if os.path.exists(db_name):
+            if os.path.exists(dbName):
                 # Find one that doesn't exist
                 for i in xrange(100):
-                    new_db_name = db_name + '-' + str(i)
-                    if not os.path.exists(new_db_name):
-                        db_name = new_db_name
+                    newDbName = dbName + '-' + str(i)
+                    if not os.path.exists(newDbName):
+                        dbName = newDbName
                         break
-            
-            # Create one!
-            self._db.create( db_name , [('id', 'INTEGER'), ('url', 'TEXT'), ('code', 'INTEGER')] )
-            kb.kb.save('gtkOutput', 'db', self._db )
+
+            # Create DB!
+            self._db.open(dbName)
+            # Create table
+            historyItem = HistoryItem(self._db)
+            self._db.createTable(historyItem.getTableName(),
+                    historyItem.getColumns(),
+                    historyItem.getPrimaryKeyColumns())
+            kb.kb.save('gtkOutput', 'db', self._db)
     
     def debug(self, msgString, newLine = True ):
         '''
@@ -139,9 +137,11 @@ class gtkOutput(baseOutputPlugin):
         self.queue.put( m )
     
     def logHttp( self, request, response):
+        historyItem = HistoryItem()
         try:
-            self._db.persist( (response.getId(), request.getURI(), response.getCode()), 
-                              (request, response) )
+            historyItem.request = request
+            historyItem.response = response
+            historyItem.save()
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:

@@ -31,7 +31,7 @@ import core.controllers.outputManager as om
 from extlib.xdot import xdot
 
 # To show request and responses
-from core.data.db.reqResDBHandler import reqResDBHandler
+from core.data.db.history import HistoryItem
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
@@ -48,7 +48,7 @@ class FullKBTree(kbtree.KBTree):
     '''
     def __init__(self, w3af, kbbrowser, ifilter):
         super(FullKBTree,self).__init__(w3af, ifilter, 'Knowledge Base', strict=False)
-        self._dbHandler = reqResDBHandler()
+        self._historyItem = HistoryItem()
         self.kbbrowser = kbbrowser
         self.connect('cursor-changed', self._showDesc)
         self.show()
@@ -98,11 +98,10 @@ class FullKBTree(kbtree.KBTree):
                         success = False
                     else:
                         # ok, we don't have None in the id:
-                        search_result = self._dbHandler.searchById( instance.getId()[0] )
-                        if len(search_result) == 1:
-                            request, response = search_result[0]
-                            self.kbbrowser.rrV.request.showObject( request )
-                            self.kbbrowser.rrV.response.showObject( response )
+                        historyItem = self._historyItem.read(instance.getId()[0])
+                        if historyItem:
+                            self.kbbrowser.rrV.request.showObject(historyItem.request)
+                            self.kbbrowser.rrV.response.showObject(historyItem.response)
                             
                             # Don't forget to highlight if neccesary
                             severity = instance.getSeverity()
@@ -145,7 +144,7 @@ class KBBrowser(entries.RememberingHPaned):
         self.req_res_ids = []
         # This is to search the DB and print the different request and responses as they are
         # requested from the page control, "_pageChange" method.
-        self._dbHandler = reqResDBHandler()
+        self._historyItem = HistoryItem()
 
         # the filter to the tree
         filterbox = gtk.HBox()
@@ -240,7 +239,7 @@ class KBBrowser(entries.RememberingHPaned):
         if self.req_res_ids:
             request_id = self.req_res_ids[page]
             try:
-                request, response = self._dbHandler.searchById( request_id )[0]
+                historyItem = self._historyItem.read(request_id)
             except:
                 # the request brought problems
                 self.rrV.request.clearPanes()
@@ -249,8 +248,8 @@ class KBBrowser(entries.RememberingHPaned):
                 self.title0.set_markup( "<b>Error</b>")
             else:
                 self.title0.set_markup( "<b>Id: %d</b>" % request_id )
-                self.rrV.request.showObject( request )
-                self.rrV.response.showObject( response )
+                self.rrV.request.showObject( historyItem.request )
+                self.rrV.response.showObject( historyItem.response )
                 self.rrV.set_sensitive(True)
 
 

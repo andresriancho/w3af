@@ -55,4 +55,9 @@ class w3afMustStopException(Exception):
     a few places. NOT to be used extensively.
     '''
     pass
-    
+
+class w3afProxyException(w3afException):
+    '''
+    A small class that defines a w3af Proxy Exception.
+    '''
+    pass
