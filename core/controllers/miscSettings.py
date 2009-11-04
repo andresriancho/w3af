@@ -30,6 +30,8 @@ from core.data.options.optionList import optionList
 # Raise errors
 from core.controllers.w3afException import w3afException
 
+from core.controllers.misc.get_local_ip import get_local_ip
+
 
 class miscSettings(configurable):
     '''
@@ -57,7 +59,17 @@ class miscSettings(configurable):
             cf.cf.save('fuzzableHeaders', [] )
             cf.cf.save('maxDiscoveryLoops', 500 )
             cf.cf.save('interface', 'eth0' )
-            cf.cf.save('localAddress', '127.0.0.1' )
+            
+            #
+            #   This doesn't send any packets, and gives you a nice default setting.
+            #   In most cases, it is the "public" IP address, which will work perfectly
+            #   in all plugins that need a reverse connection (rfiProxy)
+            #
+            local_address = get_local_ip()
+            if not local_address:
+                local_address = '127.0.0.1' #do'h!                
+        
+            cf.cf.save('localAddress', local_address)
             cf.cf.save('demo', False )
             cf.cf.save('nonTargets', [] )
             cf.cf.save('exportFuzzableRequests', '')
@@ -127,7 +139,7 @@ class miscSettings(configurable):
 
         d11 = 'Local IP address to use when doing reverse connections'
         o11 = option('localAddress', cf.cf.getData('localAddress'), d11, 'string',
-                                tabid='Core settings')
+                                tabid='Network settings')
         
         ######### Misc ###########
         d12 = 'Enable this when you are doing a demo in a conference'

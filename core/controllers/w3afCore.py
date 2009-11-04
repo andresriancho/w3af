@@ -35,6 +35,7 @@ import os, sys
 from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir, get_temp_dir
 from core.controllers.misc.factory import factory
+from core.controllers.misc.get_local_ip import get_local_ip
 
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
@@ -1247,14 +1248,26 @@ class w3afCore:
                     except Exception, e:
                         # This is because of an invalid plugin, or something like that...
                         # Added as a part of the fix of bug #1937272
-                        raise w3afException('The profile you are trying to load seems to be corrupt, or one of the enabled plugins has a bug. If your profile is ok, please report this as a bug to the w3af sourceforge page: Exception while setting '+ pluginName +' plugin options: "' + str(e) + '"' )
+                        msg = 'The profile you are trying to load seems to be corrupt, or one of'
+                        msg += ' the enabled plugins has a bug. If your profile is ok, please report'
+                        msg += ' this as a bug to the w3af sourceforge page: Exception while setting '
+                        msg += pluginName +' plugin options: "' + str(e) + '"'
+                        raise w3afException( msg )
                     
             # Set the target settings of the profile to the core
             self.target.setOptions( profileInstance.getTarget() )
             
             # Set the misc and http settings
+            #
+            # IGNORE the following parameters from the profile:
+            #   - miscSettings.localAddress
+            #
+            if 'localAddress' in profileInstance.getMiscSettings():
+                profile_misc_settings = profileInstance.getMiscSettings()
+                profile_misc_settings['localAddress'].setValue(get_local_ip())
+            
             misc_settings = miscSettings.miscSettings()
-            misc_settings.setOptions( profileInstance.getMiscSettings() )
+            misc_settings.setOptions( profile_misc_settings )
             self.uriOpener.settings.setOptions( profileInstance.getHttpSettings() )
     
 # """"Singleton""""

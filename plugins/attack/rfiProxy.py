@@ -23,17 +23,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 import core.controllers.outputManager as om
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
-from core.controllers.w3afException import w3afException
-from core.controllers.daemons.webserver import webserver
+import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
- 
+from core.data.kb.shell import shell as shell
+
+from core.controllers.w3afException import w3afException
+from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+
+from core.controllers.daemons.webserver import webserver
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
 import core.data.constants.w3afPorts as w3afPorts
-from core.data.kb.shell import shell as shell
 
 # options
 from core.data.options.option import option
@@ -65,7 +67,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         baseAttackPlugin.__init__(self)
         w3afThread.__init__( self )
         
-        self._listenAddress = '127.0.0.1'
+        self._proxyAddress = '127.0.0.1'
         self._proxyPort = w3afPorts.RFIPROXY
         self._rfiConnGenerator = ''
         self._httpdPort = w3afPorts.RFIPROXY2
@@ -77,7 +79,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         self._url = None
         self._method = None
         self._exploitQs = None
-        self._proxyPublicIP = None
+        self._proxyPublicIP = cf.cf.getData( 'localAddress' )
         
     def fastExploit(self, url, method, data ):
         '''
@@ -125,7 +127,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         self.start2()
         time.sleep(0.5) # wait for webserver thread to start
         
-        p = proxy_rfi_shell( self._listenAddress + ':' + str(self._proxyPort) )
+        p = proxy_rfi_shell( self._proxyAddress + ':' + str(self._proxyPort) )
         
         return p
         
@@ -137,7 +139,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
             self._go = False
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s.connect((self._listenAddress, self._proxyPort))
+                s.connect((self._proxyAddress, self._proxyPort))
                 s.close()
             except:
                 pass
@@ -192,8 +194,8 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         rfiConnGenerator = self._rfiConnGenerator
         variable = self._variable
         
-        self._proxy = HTTPServer((self._listenAddress, self._proxyPort ),  w3afProxyHandler )
-        message = 'Proxy server running on '+ self._listenAddress + ':'+ str(self._proxyPort) +' .'
+        self._proxy = HTTPServer((self._proxyAddress, self._proxyPort ),  w3afProxyHandler )
+        message = 'Proxy server running on '+ self._proxyAddress + ':'+ str(self._proxyPort) +' .'
         message += ' You may now configure this proxy in w3af or your browser. '
         om.out.information( message )
         
@@ -209,7 +211,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         @return: A list of option objects for this plugin.
         '''
         desc_1 = 'IP address that the proxy will use to receive requests'
-        option_1 = option('listenAddress', self._listenAddress, desc_1, 'string')
+        option_1 = option('proxyAddress', self._proxyAddress, desc_1, 'string')
         
         desc_2 = 'Port that the proxy will use to receive requests'
         option_2 = option('proxyPort', self._proxyPort, desc_2, 'integer')
@@ -221,7 +223,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         option_3 = option('httpdPort', self._httpdPort, desc_3, 'integer', help=help_3)
 
         desc_4 = 'This is the ip that the remote server will connect to in order to'
-        desc_4 += ' retrieve the file inclusion.'
+        desc_4 += ' retrieve the file inclusion payload "rfip.txt".'
         help_4 = 'When exploiting a remote file include for generating a proxy, w3af can use'
         help_4 += ' a local web server to serve the included file. This setting will configure'
         help_4 += ' the IP address where this webserver listens.'
@@ -259,7 +261,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listenAddress = optionsMap['listenAddress'].getValue()
+        self._proxyAddress = optionsMap['proxyAddress'].getValue()
         self._proxyPort = optionsMap['proxyPort'].getValue()
         self._httpdPort = optionsMap['httpdPort'].getValue()
         self._proxyPublicIP = optionsMap['proxyPublicIP'].getValue()
@@ -290,7 +292,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         end, where the connections are actually created.
         
         Five configurable parameters exist:
-            - listenAddress
+            - proxyAddress
             - proxyPort
             - httpdPort
             - proxyPublicIP
