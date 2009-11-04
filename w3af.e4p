@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-10-29, 19:51:39 -->
+<!-- Saved: 2009-11-03, 18:54:48 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3574,6 +3574,18 @@
       <Dir>plugins</Dir>
       <Dir>discovery</Dir>
       <Name>fingerprint_os.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>rfiProxy</Dir>
+      <Name>rfip.txt</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>controllers</Dir>
+      <Dir>coreHelpers</Dir>
+      <Name>fingerprint_404.py</Name>
     </Source>
   </Sources>
   <Forms>
