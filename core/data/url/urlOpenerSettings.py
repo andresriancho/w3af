@@ -384,7 +384,11 @@ class urlOpenerSettings( configurable ):
         o7 = option('ntlmAuthPass', cf.cf.getData('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
                 
         d8 = 'Set the cookiejar filename.'
-        h8 = 'The cookiejar file must be in mozilla format'
+        h8 = 'The cookiejar file must be in mozilla format.'
+        h8 += ' An example of a valid mozilla cookie jar file follows:\n\n'
+        h8 += '# Netscape HTTP Cookie File\n'
+        h8 += '.domain.com    TRUE   /       FALSE   1731510001      user    admin\n\n'
+        h8 += 'The comment seems to be mandatory. Take special attention to spaces.'
         o8 = option('cookieJarFile', cf.cf.getData('cookieJarFile'), d8, 'string', help=h8, tabid='Cookies')
 
         d9 = 'Ignore session cookies'
