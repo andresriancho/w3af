@@ -223,7 +223,7 @@ class reqResViewer(gtk.VBox):
                 for itemId in result.getId():
                     historyItem = HistoryItem()
                     historyItem.load(itemId)
-                    historyItem.tag = impact.pluginName
+                    historyItem.tag = result.plugin_name
                     historyItem.info = result.getDesc()
                     historyItem.save()
                     
@@ -879,7 +879,7 @@ class ThreadedURLImpact(threading.Thread):
         self.pluginName = pluginName
         self.pluginType = pluginType
         self.event = event
-        self.result = None
+        self.result = []
         self.ok = False
         threading.Thread.__init__(self)
 
@@ -888,17 +888,47 @@ class ThreadedURLImpact(threading.Thread):
         try:
             # First, we check if the user choosed 'All audit plugins'
             if self.pluginType == 'audit_all':
-                all_plugins = True
-                print all_plugins
+                
+                #
+                #   Get all the plugins and work with that list
+                #
+                for pluginName in self.w3af.getPluginList('audit'):
+                    plugin = self.w3af.getPluginInstance(pluginName, 'audit')
+                    tmp_result = []
+                    try:
+                        tmp_result = plugin.audit_wrapper(self.request)
+                        plugin.end()
+                    except w3afException, e:
+                        om.out.error(str(e))
+                    else:
+                        #
+                        #   Save the plugin that found the vulnerability in the result
+                        #
+                        for r in tmp_result:
+                            r.plugin_name = pluginName
+                        self.result.extend(tmp_result)
+
+                
             else:
+                #
+                #   Only one plugin was enabled
+                #
                 plugin = self.w3af.getPluginInstance(self.pluginName, self.pluginType)
                 try:
                     self.result = plugin.audit_wrapper(self.request)
                     plugin.end()
                 except w3afException, e:
-                    #om.out.error(str(e))
-                    print str(e)
+                    om.out.error(str(e))
+                else:
+                    #
+                    #   Save the plugin that found the vulnerability in the result
+                    #
+                    for r in self.result:
+                        r.plugin_name = pluginName
+            
+            #   We got here, everything is OK!
             self.ok = True
+            
         except Exception, e:
             self.exception = e
         finally:
