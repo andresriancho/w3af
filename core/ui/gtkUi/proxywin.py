@@ -300,6 +300,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.reqresp.response.clearPanes()
         self.reqresp.response.set_sensitive(False)
         self.bt_next.set_sensitive(False)
+        self.reqresp.nb.prev_page()
         self.waitingRequests = True
 
     def _close(self):
