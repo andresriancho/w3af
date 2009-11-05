@@ -369,6 +369,9 @@ class httpLogTab(entries.RememberingHPaned):
             if historyItem.info:
                 buff = self._reqResViewer.info.get_buffer()
                 buff.set_text(historyItem.info)
+                self._reqResViewer.info.show()
+            else:
+                self._reqResViewer.info.hide()
             self._reqResViewer.set_sensitive(True)
         else:
             self._showMessage(_('Error'), _('The id ') + str(search_id) +\

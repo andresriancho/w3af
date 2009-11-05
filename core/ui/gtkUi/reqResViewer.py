@@ -102,7 +102,7 @@ class reqResViewer(gtk.VBox):
         self.info = searchableTextView()
         self.info.set_editable(False)
         self.info.set_border_width(5)
-        self.info.show()
+        #self.info.show()
         nb.append_page(self.info, gtk.Label(_("Info")))
 
         # Buttons
