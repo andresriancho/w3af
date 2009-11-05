@@ -33,7 +33,10 @@ import core.controllers.outputManager as om
 import os.path
 from core.controllers.w3afException import w3afException
 
+
 CACHE_METHODS = [ 'GET' , 'HEAD' ]
+
+
 
 def getId( request ):
     '''
@@ -79,7 +82,10 @@ class CacheHandler(urllib2.BaseHandler):
         
         if method in CACHE_METHODS :
             id = getId( request )
-            CachedResponse.StoreInCache(self.cacheLocation, id, response)
+            try:
+                CachedResponse.StoreInCache(self.cacheLocation, id, response)
+            except w3afException,  w3:
+                om.out.debug( str(w3) )
         
         return response
 
@@ -108,7 +114,7 @@ class CachedResponse(StringIO.StringIO):
         except KeyboardInterrupt, e:
             raise e
         except Exception, e:
-            raise w3afException('localCache.py : Could not save headers file. Error: '+ str(e) )
+            raise w3afException('localCache.py: Could not save headers file. Error: '+ str(e) )
         
         
         try:
@@ -116,7 +122,7 @@ class CachedResponse(StringIO.StringIO):
         except KeyboardInterrupt, e:
             raise e
         except:
-            om.out.error('localCache.py : Timeout while fetching page body.' )
+            om.out.error('localCache.py: Timeout while fetching page body.' )
         else:
             try:
                 f = open(cacheLocation + os.path.sep + id + ".body", "w")
@@ -125,7 +131,7 @@ class CachedResponse(StringIO.StringIO):
             except KeyboardInterrupt, e:
                 raise e
             except Exception, e:
-                raise w3afException('localCache.py : Could not save body file. Error: '+ str(e) )
+                raise w3afException('localCache.py: Could not save body file. Error: '+ str(e) )
             
         try:
             f = open(cacheLocation + os.path.sep + id + ".code", "w")
@@ -134,7 +140,7 @@ class CachedResponse(StringIO.StringIO):
         except KeyboardInterrupt, e:
             raise e
         except:
-            raise w3afException('localCache.py : Could not save msg file. Error: '+ str(e) )
+            raise w3afException('localCache.py: Could not save msg file. Error: '+ str(e) )
             
         try:
             f = open(cacheLocation + os.path.sep + id + ".msg", "w")
@@ -143,7 +149,7 @@ class CachedResponse(StringIO.StringIO):
         except KeyboardInterrupt, e:
             raise e
         except:
-            om.out.error('localCache.py : Could not save msg file. Error: '+ str(e) )
+            om.out.error('localCache.py: Could not save msg file. Error: '+ str(e) )
             raise e
             
     StoreInCache = staticmethod(StoreInCache)
