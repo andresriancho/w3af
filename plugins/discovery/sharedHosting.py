@@ -111,7 +111,7 @@ class sharedHosting(baseDiscoveryPlugin):
                     if is_vulnerable:
                         v = vuln.vuln()
                         v.setURL( fuzzableRequest.getURL() )
-                        v.setId( 0 )
+                        v.setId( 1 )
                         v['alsoInHosting'] = results
                         msg = 'The web application under test seems to be in a shared hosting.'
                         v.setDesc( msg )
