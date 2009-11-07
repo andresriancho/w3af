@@ -38,6 +38,8 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import getQueryString
 from core.data.dc.queryString import queryString
 
+import core.controllers.outputManager as om
+
 from .export_request import export_request
 
 # import the throbber for the audit plugin analysis
