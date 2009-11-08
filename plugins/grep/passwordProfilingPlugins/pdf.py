@@ -25,6 +25,7 @@ import extlib.pyPdf.pyPdf as pyPdf
 import StringIO
 from core.data.getResponseType import isPDF
 
+
 class pdf(basePpPlugin):
     '''
     This plugin creates a map of possible passwords by reading pdf documents.
