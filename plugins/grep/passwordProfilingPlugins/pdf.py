@@ -21,9 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
-import extlib.pyPdf.pyPdf as pyPdf
-import StringIO
 from core.data.getResponseType import isPDF
+
+# Added this try/except to fix a bug in debian/ubuntu.
+try:
+    import extlib.pyPdf.pyPdf as pyPdf
+except:
+    import pyPdf
+    
+import StringIO
+
 
 
 class pdf(basePpPlugin):
