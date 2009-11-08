@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
-$send = $_POST[rfipsend];
-$host = $_POST[rfihost];
-$port = $_POST[rfiport];
-$separator = $_POST[rfipsep];
+$send = $_POST['rfipsend'];
+$host = $_POST['rfihost'];
+$port = $_POST['rfiport'];
+$separator = $_POST['rfipsep'];
 $http_response = "";
 
 	// Print the initial separator for parsing
