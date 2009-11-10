@@ -17,6 +17,12 @@
 # This file is part of urlgrabber, a high-level cross-protocol url-grabber
 # Copyright 2002-2004 Michael D. Stenner, Ryan Tomayko
 
+# This file was modified (considerably) to be integrated with w3af. Some modifications are:
+#   - Added the size limit for responses
+#   - Raising w3afExceptions in some places
+#   - Modified the HTTPResponse object in order to be able to perform multiple reads, and
+#     added a hack for the HEAD method.
+
 """An HTTP handler for urllib2 that supports HTTP 1.1 and keepalive.
 
 >>> import urllib2
