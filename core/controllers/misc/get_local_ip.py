@@ -30,7 +30,9 @@ def get_local_ip():
     '''
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('gmail.com',80))  #UDP is connectionless
+        #   UDP is connectionless, no packets are sent to 4.4.4.2
+        #   I use port 80, but could use any port
+        sock.connect(('4.4.4.2',80))
         local_address = sock.getsockname()[0]
     except Exception, e:
         return None
