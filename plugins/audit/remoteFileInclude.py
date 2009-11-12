@@ -30,6 +30,8 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.get_local_ip import get_local_ip
+from core.controllers.misc.is_private_site import is_private_site
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -45,6 +47,7 @@ import re
 CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly configured to use.'
 CONFIG_ERROR_MSG += ' Please set the local address and port, or use the official w3af site'
 CONFIG_ERROR_MSG += ' as the target server for remote inclusions.'
+
 
 class remoteFileInclude(baseAuditPlugin):
     '''
@@ -63,7 +66,7 @@ class remoteFileInclude(baseAuditPlugin):
         self._rfi_url = ''
         self._rfi_result = ''
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
-        self._listen_address = ''
+        self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
         
     def audit(self, freq ):
@@ -103,17 +106,29 @@ class remoteFileInclude(baseAuditPlugin):
         @param freq: A fuzzableRequest object
         @return: None, everything is saved to the kb
         '''
-        om.out.debug( 'RFI test using local web server for URL: ' + freq.getURL() )
-        om.out.debug('w3af is running a webserver')
-        self._start_server()             
-        
-        # Perform the real work
-        self._test_inclusion( freq )
+        #
+        #   The listen address is an empty string when I have no default route
+        #
+        #   Only work if:
+        #       - The listen address is private and the target address is private
+        #       - The listen address is public and the target address is public
+        #
+        if self._listen_address == '':
+            return
             
-        self._stop_server()
-        
-        # Wait for threads to finish
-        self._tm.join( self )
+        if (is_private_site(self._listen_address) and is_private_site(urlParser.getDomain(freq.getURL()))) or\
+        (not is_private_site(self._listen_address) and not is_private_site(urlParser.getDomain(freq.getURL()))):
+            om.out.debug( 'RFI test using local web server for URL: ' + freq.getURL() )
+            om.out.debug('w3af is running a webserver')
+            self._start_server()             
+            
+            # Perform the real work
+            self._test_inclusion( freq )
+                
+            self._stop_server()
+            
+            # Wait for threads to finish
+            self._tm.join( self )
             
     def _w3af_site_test_inclusion(self, freq):
         '''
