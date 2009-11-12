@@ -48,7 +48,7 @@ IS_EQUAL_RATIO = 0.90
 
 class webSpider(baseDiscoveryPlugin):
     '''
-    Crawl the whole site to find new URLs
+    Crawl the web application.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
@@ -196,7 +196,17 @@ class webSpider(baseDiscoveryPlugin):
         is_forward = self._is_forward(reference)
         if not self._only_forward or is_forward:
             response = None
-            headers = { 'Referer': originalURL }
+            #
+            #   Remember that this "breaks" the useCache=True in most cases!
+            #
+            #headers = { 'Referer': originalURL }
+            #
+            #   But this does not, and it is friendlier that simply ignoring the referer
+            #
+            referer = urlParser.getDomainPath(originalURL).replace( urlParser.getPath(originalURL), '' )
+            if not referer.endswith('/'):
+                referer += '/'
+            headers = { 'Referer': referer }
             
             try:
                 response = self._urlOpener.GET( reference, useCache=True, headers= headers)
@@ -211,7 +221,8 @@ class webSpider(baseDiscoveryPlugin):
                     #
                     # add_self == False, because I don't want to return a 404 to the core
                     #
-                    fuzzable_request_list = self._createFuzzableRequests( response, request=original_request, add_self = False)
+                    fuzzable_request_list = self._createFuzzableRequests( response, 
+                                                                request=original_request, add_self = False)
                     if not possibly_broken:
                         self._brokenLinks.append( (response.getURL(), original_request.getURI()) )
                 else:
@@ -266,7 +277,7 @@ class webSpider(baseDiscoveryPlugin):
                 
                 # Process the list.
                 for fuzzableRequest in fuzzable_request_list:
-                    fuzzableRequest.setReferer( originalURL )
+                    fuzzableRequest.setReferer( referer )
                     self._fuzzableRequests.append( fuzzableRequest )
     
     def end( self ):
