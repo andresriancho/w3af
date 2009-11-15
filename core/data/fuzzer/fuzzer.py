@@ -125,55 +125,76 @@ def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , 
     def _makeMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append, jsonPostData):
         res = []
         
-        for fuzzed in _fuzzJSON( mutant_str_list, jsonPostData, append ):
+        for fuzzed_json, original_value in _fuzzJSON( mutant_str_list, jsonPostData, append ):
         
             # Create the mutants
             freq_copy = freq.copy()
             m = mutantClass( freq_copy ) 
-            m.setOriginalValue( jsonPostData )
+            m.setOriginalValue( original_value )
             m.setVar( 'JSON data' )
-            m.setDc( fuzzed )
+            m.setDc( fuzzed_json )
             res.append( m )
             
         return res
         
     # Now we define a function that does the work...
     def _fuzzJSON( mutant_str_list, jsonPostData, append ):
+        '''
+        @return: A list with tuples containing
+        (fuzzed list/dict/string/int that represents a JSON object, original value)
+        '''
         res = []
         
         if isinstance(jsonPostData, int):
             for mutant_str in mutant_str_list:
                 if mutant_str.isdigit():
                     # This (a mutant str that really is an integer) will happend once every 100000 years, 
-                    # but I wanted to be sure to cover all cases
+                    # but I wanted to be sure to cover all cases. This will look something like:
+                    #
+                    # 1
+                    #
+                    # In the postdata.
                     if append:
-                        res.append( int(str(jsonPostData) +  str(mutant_str)) )
+                        fuzzed = int(str(jsonPostData) +  str(mutant_str))
+                        res.append( (fuzzed, str(jsonPostData)) )
                     else:
-                        res.append( int(mutant_str) )
+                        fuzzed = int(mutant_str)
+                        res.append( (fuzzed, jsonPostData) )
         
         elif isinstance(jsonPostData, basestring):
+            # This will look something like:
+            #
+            # "abc"
+            #
+            # In the postdata.
             for mutant_str in mutant_str_list:
                 if append:
-                    res.append( jsonPostData +  mutant_str )
+                    fuzzed = jsonPostData +  mutant_str
+                    res.append( (fuzzed, jsonPostData) )
                 else:
-                    res.append( mutant_str )
+                    res.append( (mutant_str, jsonPostData) )
                     
                     
         elif isinstance( jsonPostData, list ):
+            # This will look something like:
+            #
+            # ["abc", "def"]
+            #
+            # In the postdata.
             for item, i in zip( jsonPostData,xrange(len(jsonPostData)) ):
-                fuzzedItemList = _fuzzJSON( mutant_str_list, jsonPostData[i] , append )
-                for fuzzedItem in fuzzedItemList:
+                fuzzed_item_list = _fuzzJSON( mutant_str_list, jsonPostData[i] , append )
+                for fuzzed_item, original_value in fuzzed_item_list:
                     jsonPostDataCopy = copy.deepcopy( jsonPostData )
-                    jsonPostDataCopy[ i ] = fuzzedItem
-                    res.append( jsonPostDataCopy )
+                    jsonPostDataCopy[ i ] = fuzzed_item
+                    res.append( (jsonPostDataCopy, original_value) )
         
         elif isinstance( jsonPostData, dict ):
             for key in jsonPostData:
-                fuzzedItemList = _fuzzJSON( mutant_str_list, jsonPostData[key] , append )
-                for fuzzedItem in fuzzedItemList:
+                fuzzed_item_list = _fuzzJSON( mutant_str_list, jsonPostData[key] , append )
+                for fuzzed_item, original_value in fuzzed_item_list:
                     jsonPostDataCopy = copy.deepcopy( jsonPostData )
-                    jsonPostDataCopy[ key ] = fuzzedItem
-                    res.append( jsonPostDataCopy )
+                    jsonPostDataCopy[ key ] = fuzzed_item
+                    res.append( (jsonPostDataCopy, original_value) )
         
         return res
     
@@ -305,7 +326,7 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                 if parameter_name in fuzzableParamList or fuzzableParamList == []:
                     
                     dataContainerCopy = dataContainer.copy()
-                    originalValue = element_value
+                    original_value = element_value
                     
                     if append :
                         dataContainerCopy[parameter_name][element_index] += mutant_str
@@ -341,7 +362,7 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     m = mutantClass( freq_copy )
                     m.setVar( parameter_name, index=element_index )
                     m.setDc( dataContainerCopy )
-                    m.setOriginalValue( originalValue )
+                    m.setOriginalValue( original_value )
                     m.setModValue( mutant_str )
                     
                     # Done, add it to the result

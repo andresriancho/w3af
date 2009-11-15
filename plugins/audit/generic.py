@@ -37,6 +37,8 @@ from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createMutants, createRandNum, createRandAlNum
 from core.controllers.misc.levenshtein import relative_distance
 
+import copy
+
 
 class generic(baseAuditPlugin):
     '''
@@ -142,7 +144,7 @@ class generic(baseAuditPlugin):
         @return: The limit response object
         '''
         # Copy the dc, needed to make a good vuln report
-        dc = m.getDc().copy()
+        dc = copy.deepcopy(m.getDc())
         
         if m.getOriginalValue().isdigit():
             m.setModValue( createRandNum(length=8) )
