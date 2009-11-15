@@ -466,7 +466,8 @@ class requestResponsePart(gtk.Notebook):
         for special_char in ['\n', '\r', '\t']:
             text = text.replace( repr(special_char)[1:-1], special_char )
             
-        text = text.replace('\\\'', '\'')
+        text = text.replace("\\'", "'")
+        text = text.replace('\\\\"', '\\"')
         
         return text
 
