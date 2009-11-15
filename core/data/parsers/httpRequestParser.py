@@ -49,7 +49,7 @@ def httpRequestParser(head, postdata):
                 msg += version + '"'
                 raise w3afException( msg )
             if splittedVersion[1] not in ['1.0', '1.1']:
-                raise w3afException('HTTP request version' + version + 'is unsupported')
+                raise w3afException('HTTP request version "' + version + '" is unsupported')
         return True
     
     def checkURISintax( uri ):
