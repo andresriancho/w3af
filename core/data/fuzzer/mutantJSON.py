@@ -32,4 +32,17 @@ class mutantJSON(mutantPostData):
     def getMutantType( self ):
         return 'JSON data'
 
-    
+    def foundAt(self):
+        '''
+        I had to implement this again here instead of just inheriting from mutantPostData because
+        of the duplicated parameter name support which I added to the framework.
+        
+        @return: A string representing WHAT was fuzzed. This string is used like this:
+                - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        '''
+        res = ''
+        res += '"' + self.getURL() + '", using HTTP method '
+        res += self.getMethod() + '. The sent JSON-data was: "'
+        res += str(self.getDc())
+        res += '"'
+        return res

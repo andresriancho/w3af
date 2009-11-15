@@ -158,8 +158,11 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
         pdr = httpPostDataRequest.httpPostDataRequest()
         pdr.setURL( url )
         pdr.setMethod( method )
-        if 'content-length' in headers.keys():
-            headers.pop('content-length')
+
+        for header_name in headers.keys():
+            if header_name.lower() == 'content-length':
+                del headers[header_name]
+
         pdr.setHeaders( headers )
         
         # Parse the content
