@@ -66,7 +66,7 @@ class webSpider(baseDiscoveryPlugin):
         self._already_filled_form = disk_list()
 
         # User configured variables
-        self._ignore_regex = 'None'
+        self._ignore_regex = ''
         self._follow_regex = '.*'
         self._only_forward = False
         self._compileRE()
@@ -349,11 +349,18 @@ class webSpider(baseDiscoveryPlugin):
         Now we compile the regular expressions that are going to be
         used to ignore or follow links.
         '''
-        try:
-            self._compiled_ignore_re = re.compile( self._ignore_regex )
-        except:
-            msg = 'You specified an invalid regular expression: "' + self._ignore_regex + '".'
-            raise w3afException(msg)
+        #
+        #   If the self._ignore_regex is '' then I don't have to ignore anything. To be able to do
+        #   that, I simply compile an re with "abc" as the pattern.
+        #
+        if self._ignore_regex != '':
+            try:
+                self._compiled_ignore_re = re.compile( self._ignore_regex )
+            except:
+                msg = 'You specified an invalid regular expression: "' + self._ignore_regex + '".'
+                raise w3afException(msg)
+        else:
+            self._compiled_ignore_re = re.compile( 'abc' )
 
         try:
             self._compiled_follow_re = re.compile( self._follow_regex )
@@ -386,7 +393,9 @@ class webSpider(baseDiscoveryPlugin):
         all URLs except the "logout" or some other more exciting link like "Reboot Appliance"
         that would make the w3af run finish without the expected result.
         
-        By default ignoreRegex is 'None' (nothing is ignored) and followRegex is '.*' ( everything is
+        By default ignoreRegex is an empty string (nothing is ignored) and followRegex is '.*' ( everything is
         followed ). Both regular expressions are normal regular expressions that are compiled with
         the python's re module.
+        
+        The regular expressions are applied to the URLs that are found using the match function.
         '''
