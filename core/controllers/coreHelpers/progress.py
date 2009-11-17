@@ -42,7 +42,7 @@ class progress:
         Set the max value that the progress "bar" will have.
         '''
         self._max_value = value
-        self._current_value = 0.0
+        self._current_value = 0.1
         self._first_amount_change_time = None
         
     def inc(self):
@@ -62,9 +62,16 @@ class progress:
             self._first_amount_change_time = time.time()
         else:
             time_already_elapsed = time.time() - self._first_amount_change_time
+            #
             # regla de tres para estimar cuanto va a tardar en total
-            time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
-            self._eta = time_for_all_requests - time_already_elapsed
+            #
+            try:
+                time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
+            except ZeroDivisionError:
+                # I should never get here...
+                time_for_all_requests = time_already_elapsed * 2
+            else:
+                self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
         '''
