@@ -31,8 +31,10 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+import core.data.kb.info as info
 
+from core.data.db.temp_persist import disk_list
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 
@@ -44,9 +46,11 @@ class urlFuzzer(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._firstTime = True
+        
+        self._first_time = True
         self._fuzzImages = False
         self._headers = {}
+        self._already_reported = disk_list()
         
     def discover(self, fuzzableRequest ):
         '''
@@ -54,18 +58,22 @@ class urlFuzzer(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
             
         url = fuzzableRequest.getURL()
         self._headers = {'Referer':url }
         
-        if self._firstTime:
+        if self._first_time:
             self._verify_head_enabled( url )
-            self._firstTime = False
+            self._first_time = False
         
         # First we need to delete fragments and query strings from URL.
         url = urlParser.uri2url( url )
 
+        # And we mark this one as a "do not return" URL, because the core already
+        # found it using another technique.
+        self._already_reported.append( url )
+        
         self._verify_head_enabled( url )
         if self._head_enabled():
             response = self._urlOpener.HEAD( url, useCache=True, headers=self._headers )
@@ -80,7 +88,7 @@ class urlFuzzer(baseDiscoveryPlugin):
                 self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
             self._tm.join( self )
         
-        return self._fuzzableRequests
+        return self._fuzzable_requests
 
     def _do_request( self, url, mutant ):
         '''
@@ -94,8 +102,27 @@ class urlFuzzer(baseDiscoveryPlugin):
         else:
             if not is_404( response ) and response.getCode() not in [403, 401]:
                 if not self._return_without_eval( mutant ):
+                    #
+                    #   Return it to the core...
+                    #
                     fr_list = self._createFuzzableRequests( response )
-                    self._fuzzableRequests.extend( fr_list )
+                    self._fuzzable_requests.extend( fr_list )
+                    
+                    #
+                    #   Save it to the kb (if new)!
+                    #
+                    if response.getURL() not in self._already_reported and not response.getURL().endswith('/'):
+                        i = info.info()
+                        i.setName('Potentially interesting file')
+                        i.setURL( response.getURL() )
+                        i.setId( response.id )
+                        i.setDesc( 'A potentially interesting file was found at: "'+ response.getURL() +'".' )
+                        kb.kb.append( self, 'files', i )
+                        om.out.information( i.getDesc() )
+                        
+                        #   Report only once
+                        self._already_reported.append( response.getURL() )
+                    
     
     def _return_without_eval( self, uri ):
         '''
@@ -203,8 +230,11 @@ class urlFuzzer(baseDiscoveryPlugin):
             toAppendList = self._get_to_append()
             for toAppend in toAppendList:
                 mutants.append ( url + toAppend )
+            
+            if not url.endswith('/'):
+                url += '/'
             mutants.append( url )
-            mutants.append( url + '/')
+            
         return mutants
     
     def _get_backup_extensions( self ):
