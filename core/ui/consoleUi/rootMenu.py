@@ -87,6 +87,15 @@ class rootMenu(menu):
             om.out.console('User hitted Ctrl+C, stopping scan.')
             time.sleep(1)
             self._w3af.stop()
+            
+    def _cmd_cleanup(self, params):
+        '''
+        The user runs this command, when he has finished a scan, and wants to cleanup everything to
+        start a new scan to another target.
+        
+        @return: None
+        '''
+        self._w3af.cleanup()
  
     def _real_start(self):
         '''

@@ -35,6 +35,7 @@ This is the central help file for the consoleUi
                 <head>List and use scan profiles.</head>
                 <body>Scan profiles are predefined set of plugins and customized configurations.</body>
             </item>
+            <item name="cleanup">Cleanup before starting a new scan.  </item>
         </category>
         <category name="config">
             <item name="http-settings">Configure the HTTP settings of the framework.</item>
