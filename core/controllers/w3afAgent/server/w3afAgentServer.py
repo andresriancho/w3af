@@ -174,8 +174,12 @@ class tcprelay( w3afThread ):
         self._keepRunning = False
         s = socket( AF_INET, SOCK_STREAM )
         s.setsockopt( SOL_SOCKET, SO_REUSEADDR, 1)
-        s.connect( ('localhost', self._port) )
-        s.close()
+        try:
+            s.connect( ('localhost', self._port) )
+            s.close()
+        except:
+            pass
+
         
         for pipe in self._pipes:
             pipe.stop()
