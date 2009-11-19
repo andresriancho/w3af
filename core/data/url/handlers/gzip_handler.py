@@ -23,6 +23,7 @@ import urllib2
 from cStringIO import StringIO
 import gzip
 
+
 class HTTPGzipProcessor(urllib2.BaseHandler):
     handler_order = 200  # response processing before HTTPEquivProcessor
 
