@@ -35,6 +35,7 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.daemons.webserver import webserver
 from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.get_local_ip import get_local_ip
 
 # Advanced shell stuff
 from core.data.kb.shell import shell as shell
@@ -63,8 +64,8 @@ class remoteFileIncludeShell(baseAttackPlugin):
         self._exploit_dc = None
         
         # User configured variables
-        self._listen_port = w3afPorts.REMOTEFILEINCLUDE
-        self._listen_address = '0.0.0.0'
+        self._listen_port = w3afPorts.REMOTEFILEINCLUDE_SHELL
+        self._listen_address = get_local_ip()
         self._use_XSS_vuln = False
         self._generateOnlyOne = True
 
