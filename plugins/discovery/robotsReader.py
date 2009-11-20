@@ -82,10 +82,13 @@ class robotsReader(baseDiscoveryPlugin):
                 # Work with it...
                 dirs.append( robots_url )
                 for line in http_response.getBody().split('\n'):
+                    
+                    line = line.strip()
+                    
                     if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or\
                     line.upper().find('DISALLOW') == 0 ):
+                        
                         url = line[ line.find(':') + 1 : ]
-                        url = url.strip()
                         url = urlParser.urlJoin(  base_url , url )
                         dirs.append( url )
 
