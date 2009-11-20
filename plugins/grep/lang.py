@@ -97,6 +97,7 @@ class lang(baseGrepPlugin):
                     for preposition in self._prepositions[ possible_lang ]:
                         # I want to match WHOLE words
                         response_words = re.split('[^\w]', response.getBody())
+                        response_words = [ word.lower() for word in response_words ]
                         if preposition in response_words:
                             om.out.debug('Found preposition: "' + preposition + '"')
                             number_of_matches[ possible_lang ] += 1
