@@ -1,0 +1,29 @@
+# grep demo for strangeHttpCode
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+grep strangeReason
+back
+
+target
+set target http://localhost/w3af/grep/error_500/500.php?id=2
+back
+
+start
+
+assert len(kb.kb.getData( 'strangeReason', 'strangeReason' )) == 1
+
+exit
+
