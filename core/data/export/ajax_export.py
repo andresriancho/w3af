@@ -25,11 +25,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.httpRequestParser import httpRequestParser
 import core.data.parsers.urlParser as urlParser
 
+
 def ajax_escape_string( str_in ):
-    str_out = str_in.replace('\\', '\\\\')
-    str_out = str_out.replace('"', '\\"')
+    str_out = str_in.replace('"', '\\"')
     return str_out
-    
+
+
 def ajax_export( request_string ):
     '''
     @parameter request_string: The string of the request to export
@@ -83,7 +84,7 @@ if (!xmlhttp && window.createRequest) {
     
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.getMethod() + '", "'
-    res +=  urlParser.getPathQs(http_request.getURL()) + '",true);\n'
+    res +=  ajax_escape_string( http_request.getURI() ) + '",true);\n'
 
     # For debugging
     res += '''

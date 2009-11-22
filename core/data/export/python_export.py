@@ -25,11 +25,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.httpRequestParser import httpRequestParser
 import re
 
+
 def python_escape_string( str_in ):
-    str_out = str_in.replace('\\', '\\\\')
-    str_out = str_out.replace('"', '\\"')
+    str_out = str_in.replace('"', '\\"')
     return str_out
-    
+
+
 def python_export( request_string ):
     '''
     @parameter request_string: The string of the request to export
@@ -45,7 +46,7 @@ def python_export( request_string ):
     # Now I do the real magic...
     res = 'import urllib2\n\n'
     
-    res += 'url = "' + http_request.getURI() + '"\n'
+    res += 'url = "' + python_escape_string(http_request.getURI()) + '"\n'
     
     if http_request.getData() != '\n' and http_request.getData() != None:
         escaped_data = python_escape_string(str(http_request.getData()) )
