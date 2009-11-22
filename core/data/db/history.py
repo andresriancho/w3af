@@ -72,7 +72,7 @@ class HistoryItem:
         '''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
-
+        result = []
         sql = 'SELECT * FROM ' + self._dataTable
         where = WhereHelper(searchData)
         sql += where.sql()
@@ -88,7 +88,6 @@ class HistoryItem:
             sql += " ORDER BY " + orderby
 
         sql += ' LIMIT '  + str(resultLimit)
-
         try:
             rawResult = self._db.retrieveAll(sql, where.values())
             for row in rawResult:
