@@ -27,7 +27,7 @@ import sys
 
 from core.controllers.w3afException import w3afException
 
-class DB:
+class DB(object):
     """Simple W3AF DB interface"""
 
     def __init__(self):
@@ -124,3 +124,60 @@ class DB:
         '''Commit changes and close the connection to the underlaying db.'''
         self._db.close()
         self._filename = None
+
+class WhereHelper(object):
+    '''Simple WHERE condition maker.'''
+    conditions = {}
+    _values = []
+
+    def __init__(self, conditions = {}):
+        '''Construct object.'''
+        self.conditions = conditions
+
+    def values(self):
+        '''Return values for prep.statements.'''
+        if not self._values:
+            self.sql()
+        return self._values
+
+    def _makePair(self, field, conditions, conjunction='AND'):
+        '''Auxiliary method.'''
+        result = ''
+        oper = '='
+        value = conditions[0]
+        if len(conditions) > 1:
+            oper = conditions[1]
+        result = ' ' + conjunction + ' ' + field + ' ' + oper + ' ?'
+        return (result, value)
+
+    def sql(self, whereStr=True):
+        '''Return SQL string.'''
+        result = ''
+        self._values = []
+
+        for field in self.conditions.keys():
+            item = self.conditions[field]
+            if field.lower() == 'or':
+                tmpWhere = ''
+                for tmpField in item.keys():
+                    tmpItem = item[tmpField]
+                    sql, value = self._makePair(tmpField, tmpItem, 'OR')
+                    self._values.append(value)
+                    tmpWhere += sql
+                if tmpWhere:
+                    result += " AND (" + tmpWhere[4:] + ")"
+            else:
+                sql, value = self._makePair(field, item)
+                self._values.append(value)
+                result += sql
+        result = result[5:]
+
+        if whereStr and result:
+            result = ' WHERE ' + result
+
+        return result
+
+    def __str__(self):
+        return self.sql() + ' | ' + str(self.values())
+
+
