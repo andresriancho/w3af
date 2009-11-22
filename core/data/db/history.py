@@ -38,7 +38,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
-from core.data.db.db import DB
+from core.data.db.db import DB, WhereHelper
 
 class HistoryItem:
     '''Represents history item.'''
@@ -67,26 +67,19 @@ class HistoryItem:
 
     def find(self, searchData, resultLimit=-1, orderData=[]):
         '''Make complex search.
-        search_data = [(name, value, operator), ...]
+        search_data = {name: (value, operator), ...}
         orderData = [(name, direction)]
         '''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
 
         sql = 'SELECT * FROM ' + self._dataTable
-        where = ' WHERE 1=1 '
-        result = []
-        values = []
-
-        for item in searchData:
-            oper = "="
-            value = item[1]
-            if len(item) > 2:
-                oper = item[2]
-            values.append(value)
-            where += " AND (" + item[0] + " " + oper + " ? )"
-        sql += where
+        where = WhereHelper(searchData)
+        sql += where.sql()
         orderby = ""
+        # 
+        # TODO we need to move SQL code to parent class
+        #
         for item in orderData:
             orderby += item[0] + " " + item[1] + ","
         orderby = orderby[:-1]
@@ -95,8 +88,9 @@ class HistoryItem:
             sql += " ORDER BY " + orderby
 
         sql += ' LIMIT '  + str(resultLimit)
+
         try:
-            rawResult = self._db.retrieveAll(sql, values)
+            rawResult = self._db.retrieveAll(sql, where.values())
             for row in rawResult:
                 item = self.__class__(self._db)
                 item._loadFromRow(row)
