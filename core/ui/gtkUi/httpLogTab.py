@@ -289,26 +289,28 @@ class httpLogTab(entries.RememberingHPaned):
         codeOper = self._comboValues[self._codeCombo.get_active()]
         code = self._codeEntry.get_text()
         code = code.strip()
-        searchData = []
+        searchData = {}
 
         if searchText:
-            searchData.append(('url', "%"+searchText+"%", 'like'))
-            searchData.append(('tag', "%"+searchText+"%", 'like'))
+            likePieces = {}
+            likePieces['url'] = ("%"+searchText+"%", 'like')
+            likePieces['tag'] = ("%"+searchText+"%", 'like')
+            searchData['or'] = likePieces
 
         if entryId:
             if idOper == ">" and refresh:
-                searchData.append(('id', int(self._lastId), ">"))
+                searchData['id'] = (int(self._lastId), ">")
             elif refresh:
                 # We don't need to execute SQL request for refresh if searching for
                 # rows with id <= something
                 return
             else:
-                searchData.append(('id', int(entryId), idOper))
+                searchData['id'] = (int(entryId), idOper)
         elif refresh:
-            searchData.append(('id', int(self._lastId), ">"))
+            searchData['id'] = (int(self._lastId), ">")
 
         if code:
-            searchData.append(('code', int(code), codeOper))
+            searchData['code'] = (int(code), codeOper)
 
         try:
             # Please see the 5000 below
