@@ -84,7 +84,7 @@ class lang(baseGrepPlugin):
         @parameter response: The HTTP response object
         '''
         with self._lang_lock:
-            if self._exec and not is_404( response ):
+            if self._exec and not is_404( response ) and response.is_text_or_html():
                 kb.kb.save( self, 'lang', 'unknown' )
                 
                 # Init the count map
