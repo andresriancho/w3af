@@ -61,10 +61,14 @@ class fingerprint_404:
         #
         self._urlOpener =  uriOpener
 
+        #
         #   Internal variables
+        #
         self._already_analyzed = False
         self._404_bodies = []
         self._lock = thread.allocate_lock()
+        # it is OK to store 200 here, I'm only storing int as the key, and bool as the value.
+        self._is_404_LRU = LRU(200)
         
         #   The "singleton"
         global is_404
@@ -111,13 +115,20 @@ class fingerprint_404:
         if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
             return True
             
+        #
+        #   Before actually working, I'll check if this response is in the LRU, if it is I just return
+        #   the value stored there.
+        #
+        if http_response.id in self._is_404_LRU:
+            return self._is_404_LRU[ http_response.id ]
+            
         self._lock.acquire()
         if not self._already_analyzed:
             # Generate a 404 and save it
             self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
             self._already_analyzed = True
         self._lock.release()
-            
+        
         # self._404_body was already cleaned inside self._generate404
         # so we need to clean this one.
         html_body = self._get_clean_body( http_response )
@@ -132,6 +143,7 @@ class fingerprint_404:
                 msg = '"' + http_response.getURL() + '" is a 404. [' + str(ratio) + ' > '
                 msg += str(IS_EQUAL_RATIO) +']'
                 om.out.debug( msg )
+                self._is_404_LRU[ http_response.id ] = True
                 return True
             else:
                 # If it is not eq to one of the 404 responses I have in my DB, that does not means
@@ -145,6 +157,7 @@ class fingerprint_404:
             msg = '"' + http_response.getURL() + '" is NOT a 404. [' + str(ratio) + ' < '
             msg += str(IS_EQUAL_RATIO) + ']'
             om.out.debug( msg )
+            self._is_404_LRU[ http_response.id ] = False
             return False
             
     def _generate_404_knowledge( self, url ):
