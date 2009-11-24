@@ -107,6 +107,8 @@ EXTRA ATTRIBUTES AND METHODS
 
 # $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
 
+from __future__ import with_statement
+
 import urllib2
 import httplib
 import socket
@@ -300,22 +302,26 @@ class ConnectionManager:
         self._readymap = {} # map connection to ready state
 
     def add(self, host, connection, ready):
-        self._lock.acquire()
-        try:
-            if not self._hostmap.has_key(host): self._hostmap[host] = []
-            self._hostmap[host].append(connection)
-            self._connmap[connection] = host
-            self._readymap[connection] = ready
-        finally:
-            self._lock.release()
-            if __name__ != '__main__':
-                msg = 'keepalive: added one connection, len(self._hostmap["'+host+'"]): '
-                msg += str( self.get_connectionNumber(host) )
-                om.out.debug( msg )
+        '''
+        Add a connection to the connmap.
+        '''
+        with self._lock:
+            try:
+                if not self._hostmap.has_key(host): self._hostmap[host] = []
+                self._hostmap[host].append(connection)
+                self._connmap[connection] = host
+                self._readymap[connection] = ready
+            finally:
+                if __name__ != '__main__':
+                    msg = 'keepalive: added one connection, len(self._hostmap["'+host+'"]): '
+                    msg += str( self.get_connectionNumber(host) )
+                    om.out.debug( msg )
 
     def remove(self, connection):
-        self._lock.acquire()
-        try:
+        '''
+        Remove a connection, it was closed by the server.
+        '''
+        with self._lock:
             try:
                 host = self._connmap[connection]
             except KeyError:
@@ -325,26 +331,25 @@ class ConnectionManager:
                 del self._readymap[connection]
                 self._hostmap[host].remove(connection)
                 if __name__ != '__main__':
-                    om.out.debug('keepalive: removed one connection,  len(self._hostmap["'+host+'"]): ' + str( self.get_connectionNumber(host) ) )
+                    msg = 'keepalive: removed one connection,  len(self._hostmap["'+host+'"]): '
+                    msg += str( self.get_connectionNumber(host) )
+                    om.out.debug( msg )
                 if not self._hostmap[host]: del self._hostmap[host]
-        finally:
-            self._lock.release()
 
     def set_ready(self, connection, ready):
         self._readymap[connection] = ready
         
     def get_ready_conn(self, host):
         conn = None
-        self._lock.acquire()
-        try:
+        
+        with self._lock:
             if self._hostmap.has_key(host):
                 for c in self._hostmap[host]:
                     if self._readymap[c]:
                         self._readymap[c] = 0
                         conn = c
                         break
-        finally:
-            self._lock.release()
+        
         return conn
 
     def get_all(self, host=None):
@@ -409,9 +414,10 @@ class KeepAliveHandler:
                 msg = 'keepalive: Closing all connections. The connection number exceeded'
                 msg += ' MAXCONNECTIONS (' + str(MAXCONNECTIONS) + ') .'
                 om.out.debug( msg )
-            self._lock.acquire()
-            self.close_all()
-            self._lock.release()
+            
+            with self._lock:
+                self.close_all()
+
         else:
             if __name__ != '__main__':
                 msg = 'keepalive: The connection manager has '
