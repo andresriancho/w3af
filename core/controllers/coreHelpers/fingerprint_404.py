@@ -37,15 +37,6 @@ import cgi
 
 IS_EQUAL_RATIO = 0.90
 
-#
-#   Here I create a is_404 "singleton" that I use in most plugins.
-#
-is_404 = None
-#
-#   In the plugins, I'll just do something like "from core.controllers.coreHelpers.fingerprint_404 import is_404"
-#   and then "is_404( response )"
-#
-
 
 class fingerprint_404:
     '''
@@ -70,9 +61,15 @@ class fingerprint_404:
         # it is OK to store 200 here, I'm only storing int as the key, and bool as the value.
         self._is_404_LRU = LRU(200)
         
-        #   The "singleton"
+        #
+        #   Here I create a is_404 "singleton" that I use in most plugins.
+        #
         global is_404
         is_404 = self.is_404
+        #
+        #   In the plugins, I'll just do something like "from core.controllers.coreHelpers.fingerprint_404 import is_404"
+        #   and then "is_404( response )"
+        #
 
     def is_404(self, http_response):
         '''
