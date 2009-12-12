@@ -30,6 +30,8 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 
+from core.data.db.temp_persist import disk_list
+
 
 class wsdlFinder(baseDiscoveryPlugin):
     '''
@@ -42,8 +44,8 @@ class wsdlFinder(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._tested = []
-        self._fuzzableRequests = []
+        self._already_tested = disk_list()
+        self._new_fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):
         '''
@@ -52,22 +54,34 @@ class wsdlFinder(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         url = urlParser.uri2url( fuzzableRequest.getURL() )
-        if url not in self._tested:
-            self._tested.append( url )
+        if url not in self._already_tested:
+            self._already_tested.append( url )
             
             # perform the requests
             for wsdl_parameter in self._get_WSDL():
                 url_to_request = url + wsdl_parameter
-                try:
-                    response = self._urlOpener.GET( url_to_request, useCache=True )
-                except w3afException:
-                    om.out.debug('Failed to request the WSDL file: ' + url_to_request)
-                else:
-                    # The response is analyzed by the wsdlGreper plugin
-                    pass
-        self._tm.join( self )
+                
+                #   Send the requests using threads:
+                targs = ( url_to_request, )
+                self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
         
-        return self._fuzzableRequests
+            # Wait for all threads to finish
+            self._tm.join( self )
+        
+        return self._new_fuzzable_requests
+
+    def _do_request(self, url_to_request):
+        '''
+        Perform an HTTP request to the url_to_request parameter.
+        @return: None.
+        '''
+        try:
+            response = self._urlOpener.GET( url_to_request, useCache=True )
+        except w3afException:
+            om.out.debug('Failed to request the WSDL file: ' + url_to_request)
+        else:
+            # The response is analyzed by the wsdlGreper plugin
+            pass
 
     def _get_WSDL( self ):
         '''

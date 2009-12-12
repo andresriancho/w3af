@@ -62,7 +62,7 @@ class robotsReader(baseDiscoveryPlugin):
             self._exec = False
             
             dirs = []
-            self._fuzzableRequests = []         
+            self._new_fuzzable_requests = []         
             
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             robots_url = urlParser.urlJoin(  base_url , 'robots.txt' )
@@ -89,16 +89,47 @@ class robotsReader(baseDiscoveryPlugin):
                     line.upper().find('DISALLOW') == 0 ):
                         
                         url = line[ line.find(':') + 1 : ]
+                        url = url.strip()
                         url = urlParser.urlJoin(  base_url , url )
                         dirs.append( url )
 
             for url in dirs:
-                http_response = self._urlOpener.GET( url, useCache=True )
+                #   Send the requests using threads:
+                targs = ( url,  )
+                self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
+            
+            # Wait for all threads to finish
+            self._tm.join( self )
+        
+        return self._new_fuzzable_requests
+    
+    def _get_and_parse(self, url):
+        '''
+        GET and URL that was found in the robots.txt file, and parse it.
+        
+        @parameter url: The URL to GET.
+        @return: None, everything is saved to self._new_fuzzable_requests.
+        '''
+    def _get_and_parse(self, url):
+        '''
+        GET and URL that was found in the robots.txt file, and parse it.
+        
+        @parameter url: The URL to GET.
+        @return: None, everything is saved to self._new_fuzzable_requests.
+        '''
+        try:
+            http_response = self._urlOpener.GET( url, useCache=True )
+        except KeyboardInterrupt, k:
+            raise k
+        except w3afException, w3:
+            msg = 'w3afException while fetching page in discovery.robotsReader, error: "'
+            msg += str(w3) + '"'
+            om.out.debug( msg )
+        else:
+            if not is_404( http_response ):
                 fuzz_reqs = self._createFuzzableRequests( http_response )
-                self._fuzzableRequests.extend( fuzz_reqs )
-        
-        return self._fuzzableRequests
-        
+                self._new_fuzzable_requests.extend( fuzz_reqs )
+                
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.

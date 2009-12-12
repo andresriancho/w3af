@@ -91,8 +91,12 @@ class userDir(baseDiscoveryPlugin):
             url_user_list = self._create_dirs( base_url )
             for url, user in url_user_list :
                 om.out.debug('userDir is testing ' + url )
+                
+                #   Send the requests using threads:
                 targs = ( url, user )
                 self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
+                
+            # Wait for all threads to finish
             self._tm.join( self )
             
             # Only do this if I already know that users can be identified.

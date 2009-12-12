@@ -61,8 +61,11 @@ class wordnet(baseDiscoveryPlugin):
         self._original_response = self._sendMutant( fuzzableRequest, analyze=False )
         
         for mutant in self._generate_mutants( fuzzableRequest ):
+            #   Send the requests using threads:
             targs = ( mutant, )
             self._tm.startFunction( target=self._check_existance, args=targs, ownerObj=self )
+            
+        # Wait for all threads to finish
         self._tm.join( self )
         return self._fuzzableRequests
     

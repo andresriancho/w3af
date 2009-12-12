@@ -84,7 +84,13 @@ class dir_bruter(baseDiscoveryPlugin):
                 to_test.append( domain_path )
             
             for base_path in to_test:
-                self._bruteforce_directories( base_path )
+                
+                #   Send the requests using threads:
+                targs = ( base_path,  )
+                self._tm.startFunction( target=self._bruteforce_directories, args=targs , ownerObj=self )
+            
+            # Wait for all threads to finish
+            self._tm.join( self )
 
         return self._fuzzable_requests
     
@@ -104,16 +110,28 @@ class dir_bruter(baseDiscoveryPlugin):
                 http_response = self._urlOpener.GET( dir_url, useCache=False )
                 
                 if not is_404( http_response ):
-                    fuzzable_reqs = self._createFuzzableRequests( http_response )
-                    self._fuzzable_requests.extend( fuzzable_reqs )
-                    
-                    msg = 'Directory bruteforcer plugin found directory "'
-                    msg += http_response.getURL()  + '"'
-                    msg += ' with HTTP response code ' + str(http_response.getCode())
-                    msg += ' and Content-Length: ' + str(len(http_response.getBody()))
-                    msg += '.'
-                    
-                    om.out.information( msg )
+                    #
+                    #   Looking fine... but lets see if this is a false positive or not...
+                    #
+                    dir_url = urlParser.urlJoin(  base_path , directory_name + createRandAlNum(5) )
+                    dir_url +=  '/'
+                    invalid_http_response = self._urlOpener.GET( dir_url, useCache=False )
+
+                    if is_404( invalid_http_response ):
+                        #
+                        #   Good, the directory_name + createRandAlNum(5) return a 404, the original
+                        #   directory_name is not a false positive.
+                        #
+                        fuzzable_reqs = self._createFuzzableRequests( http_response )
+                        self._fuzzable_requests.extend( fuzzable_reqs )
+                        
+                        msg = 'Directory bruteforcer plugin found directory "'
+                        msg += http_response.getURL()  + '"'
+                        msg += ' with HTTP response code ' + str(http_response.getCode())
+                        msg += ' and Content-Length: ' + str(len(http_response.getBody()))
+                        msg += '.'
+                        
+                        om.out.information( msg )
             
     def getOptions( self ):
         '''

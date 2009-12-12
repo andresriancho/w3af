@@ -37,6 +37,7 @@ import sha
 import mimetypes
 import core.data.parsers.documentParser as documentParser
 
+
 class findCaptchas(baseDiscoveryPlugin):
     '''
     Identify captcha images on web pages.
@@ -114,6 +115,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 image_list = document_parser.getReferencesOfTag('img')
                 image_list = [ urlParser.uri2url(i) for i in image_list]
                 for img_src in image_list:
+                    # TODO: Use self._tm.startFunction
                     try:
                         image_response = self._urlOpener.GET( img_src, useCache=False )
                     except:

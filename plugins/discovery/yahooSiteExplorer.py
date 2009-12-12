@@ -58,7 +58,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
         '''
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
+        self._new_fuzzable_requests = []
         if not self._run:
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
@@ -76,11 +76,15 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
             results = self._yse.search( domain, 0, self._result_limit )
                 
             for res in results:
+                #   Send the requests using threads:
                 targs = (res.URL,)
                 self._tm.startFunction( target=self._generate_fuzzable_requests, \
                                                     args=targs, ownerObj=self )
+            
+            # Wait for all threads to finish
             self._tm.join( self )
-        return self._fuzzableRequests
+            
+        return self._new_fuzzable_requests
     
     def _generate_fuzzable_requests( self, url ):
         '''
@@ -99,7 +103,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
             om.out.debug('URL Error while fetching page in yahooSiteExplorer, error: ' + str(w3) )
         else:
             fuzzReqs = self._createFuzzableRequests( response )
-            self._fuzzableRequests.extend( fuzzReqs )
+            self._new_fuzzable_requests.extend( fuzzReqs )
     
     def getOptions( self ):
         '''

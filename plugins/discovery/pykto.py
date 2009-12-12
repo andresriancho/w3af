@@ -83,7 +83,7 @@ class pykto(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                                       (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
+        self._new_fuzzable_requests = []
         
         if not self._exec:
             # dont run anymore
@@ -113,7 +113,7 @@ class pykto(baseDiscoveryPlugin):
                     self._already_visited.append( url )
                     self.__run( url )
 
-        return self._fuzzableRequests
+        return self._new_fuzzable_requests
                 
     def __run( self, url ):
         '''
@@ -276,12 +276,14 @@ class pykto(baseDiscoveryPlugin):
                         # Send the request to the remote server and check the response.
                         targs = (final_url, parameters)
                         try:
-                            # Performing this with different threads adds overhead
-                            # Without threads:
-                            #           Performed 3630 requests in 12 seconds (302.500000 req/sec)
-                            # With threads:
+                            # Performing this with different threads adds overhead, but works better now.
+                            #   WithOUT threads:
+                            #self._send_and_check(final_url, parameters)
+                            
+                            #   With threads:
                             #           Performed 3630 requests in 13 seconds (279.230769 req/sec)
-                            self._send_and_check(final_url, parameters)
+                            self._tm.startFunction( target=self._send_and_check, args=targs , ownerObj=self )
+                            
                         except w3afException, e:
                             om.out.information( str(e) )
                             return
@@ -460,7 +462,7 @@ class pykto(baseDiscoveryPlugin):
             kb.kb.append( self, 'vuln', v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
-            self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+            self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
         
     def _analyzeResult( self , response , expected_response, parameters, uri ):
         '''

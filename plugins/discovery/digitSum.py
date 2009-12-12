@@ -82,7 +82,9 @@ class digitSum(baseDiscoveryPlugin):
                     targs = ( fr, original_response)
                     self._tm.startFunction( target=self._do_request, args=targs , ownerObj=self )
             
+            # Wait for all threads to finish
             self._tm.join( self )
+            
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
             self._already_visited.append( fuzzableRequest.getURI() )

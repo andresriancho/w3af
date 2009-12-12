@@ -58,7 +58,7 @@ class sitemapReader(baseDiscoveryPlugin):
         else:
             # Only run once
             self._exec = False
-            self._fuzzableRequests = []
+            self._new_fuzzable_requests = []
             
             base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
             sitemap_url = urlParser.urlJoin(  base_url , 'sitemap.xml' )
@@ -70,7 +70,7 @@ class sitemapReader(baseDiscoveryPlugin):
             if '</urlset>' in response and not is_404( response ):
                 om.out.debug('Analyzing sitemap.xml file.')
                 
-                self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+                self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
                 
                 import xml.dom.minidom
                 om.out.debug('Parsing xml file with xml.dom.minidom.')
@@ -81,11 +81,41 @@ class sitemapReader(baseDiscoveryPlugin):
                 urlList = dom.getElementsByTagName("loc")
                 for url in urlList:
                     url = url.childNodes[0].data 
-                    om.out.information( 'sitemapReader found a new URL: ' + url )
-                    response = self._urlOpener.GET( url, useCache=True )
-                    self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-
-        return self._fuzzableRequests
+                    #   Send the requests using threads:
+                    targs = ( url,  )
+                    self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
+            
+                # Wait for all threads to finish
+                self._tm.join( self )
+        
+            return self._new_fuzzable_requests
+        
+    def _get_and_parse(self, url):
+        '''
+        GET and URL that was found in the robots.txt file, and parse it.
+        
+        @parameter url: The URL to GET.
+        @return: None, everything is saved to self._new_fuzzable_requests.
+        '''
+    def _get_and_parse(self, url):
+        '''
+        GET and URL that was found in the robots.txt file, and parse it.
+        
+        @parameter url: The URL to GET.
+        @return: None, everything is saved to self._new_fuzzable_requests.
+        '''
+        try:
+            http_response = self._urlOpener.GET( url, useCache=True )
+        except KeyboardInterrupt, k:
+            raise k
+        except w3afException, w3:
+            msg = 'w3afException while fetching page in discovery.sitemapReader, error: "'
+            msg += str(w3) + '"'
+            om.out.debug( msg )
+        else:
+            if not is_404( http_response ):
+                fuzz_reqs = self._createFuzzableRequests( http_response )
+                self._new_fuzzable_requests.extend( fuzz_reqs )
         
     def getOptions( self ):
         '''

@@ -47,6 +47,7 @@ class findBackdoor(baseDiscoveryPlugin):
         
         # Internal variables
         self._analyzed_dirs = []
+        self._fuzzable_requests_to_return = []
 
     def discover(self, fuzzableRequest ):
         '''
@@ -55,7 +56,7 @@ class findBackdoor(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
-        fuzzable_requests_to_return = []
+        self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.append( domain_path )
@@ -64,27 +65,41 @@ class findBackdoor(baseDiscoveryPlugin):
             for web_shell_filename in self._get_web_shells():
                 web_shell_url = urlParser.urlJoin(  domain_path , web_shell_filename )
                 
-                try:
-                    response = self._urlOpener.GET( web_shell_url, useCache=True )
-                except w3afException:
-                    om.out.debug('Failed to GET webshell:' + web_shell_url)
-                else:
-                    if not is_404( response ):
-                        v = vuln.vuln()
-                        v.setId( response.id )
-                        v.setName( 'Possible web backdoor' )
-                        v.setSeverity(severity.HIGH)
-                        v.setURL( response.getURL() )
-                        msg = 'A web backdoor was found at: "' + v.getURL() + '" ; this could'
-                        msg += ' indicate that your server was hacked.'
-                        v.setDesc( msg )
-                        kb.kb.append( self, 'backdoors', v )
-                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                        
-                        fuzzable_requests = self._createFuzzableRequests( response )
-                        fuzzable_requests_to_return.extend( fuzzable_requests )
+                # Perform the check in different threads
+                targs = (web_shell_url, )
+                self._tm.startFunction( target=self._check_if_exists, args=targs, ownerObj=self )
+            
+            # Wait for all threads to finish
+            self._tm.join( self )
+                
+            return self._fuzzable_requests_to_return
+    
+    def _check_if_exists(self, web_shell_url):
+        '''
+        Check if the file exists.
+        
+        @parameter web_shell_url: The URL to check
+        '''
+        try:
+            response = self._urlOpener.GET( web_shell_url, useCache=True )
+        except w3afException:
+            om.out.debug('Failed to GET webshell:' + web_shell_url)
+        else:
+            if not is_404( response ):
+                v = vuln.vuln()
+                v.setId( response.id )
+                v.setName( 'Possible web backdoor' )
+                v.setSeverity(severity.HIGH)
+                v.setURL( response.getURL() )
+                msg = 'A web backdoor was found at: "' + v.getURL() + '" ; this could'
+                msg += ' indicate that your server was hacked.'
+                v.setDesc( msg )
+                kb.kb.append( self, 'backdoors', v )
+                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                
+                fuzzable_requests = self._createFuzzableRequests( response )
+                self._fuzzable_requests_to_return.extend( fuzzable_requests )
                     
-        return fuzzable_requests_to_return
     
     def _get_web_shells( self ):
         '''

@@ -57,6 +57,7 @@ class phpinfo(baseDiscoveryPlugin):
         # Internal variables
         self._analyzed_dirs = []
         self._has_audited = 0
+        self._new_fuzzable_requests = []
 
     def discover(self, fuzzableRequest ):
         '''
@@ -64,8 +65,7 @@ class phpinfo(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        
-        new_fuzzable_requests = []
+        self._new_fuzzable_requests = []
 
         for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
 
@@ -77,68 +77,80 @@ class phpinfo(baseDiscoveryPlugin):
                 # Work!
                 for php_info_filename in self._get_PHP_infofile():
 
-                    # Request the file
-                    php_info_url = urlParser.urlJoin(  domain_path , php_info_filename )
-                    try:
-                        response = self._urlOpener.GET( php_info_url, useCache=True )
-                        om.out.debug( '[phpinfo] Testing "' + php_info_url + '".' )
-                    except w3afException,  w3:
-                        msg = 'Failed to GET phpinfo file: "' + php_info_url + '".'
-                        msg += 'Exception: "' + str(w3) + '".'
-                        om.out.debug( msg )
-                    else:
-                        # Feb/17/2009 by Aung Khant:
-                        # when scanning phpinfo in window box
-                        # the problem is generating a lot of results
-                        # due to all-the-same-for-windows files phpVersion.php, phpversion.php ..etc
-                        # Well, how to solve it? 
-                        # Finding one phpinfo file is enough for auditing for the target
-                        # So, we report every phpinfo file found
-                        # but we do and report auditing once. Sounds logical?
-                        # 
-                        # Feb/17/2009 by Andres Riancho:
-                        # Yes, that sounds ok for me.
-                        
-                        # Check if it's a phpinfo file                        
-                        if not is_404( response ):
-                            
-                            # Create the fuzzable request
-                            new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
-                            
-                            '''
-                            |Modified|
-                            old: regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
-                            new: regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
-                            
-                            by aungkhant - I've been seeing phpinfo pages which don't print php logo image. One example, ning.com.
-                            
-                            '''
-                            regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
-                            php_version = re.search(regex_str, response.getBody(), re.IGNORECASE)
+                    #   Send the requests using threads:
+                    targs = ( domain_path, php_info_filename, )
+                    self._tm.startFunction( target=self._check_and_analyze, args=targs , ownerObj=self )
+            
+                # Wait for all threads to finish
+                self._tm.join( self )
+                
+        return self._new_fuzzable_requests
 
-                            regex_str = 'System </td><td class="v">(.*?)</td></tr>'
-                            sysinfo = re.search(regex_str, response.getBody() , re.IGNORECASE)
+    def _check_and_analyze(self, domain_path, php_info_filename):
+        '''
+        Check if a php_info_filename exists in the domain_path.
+        @return: None, everything is saved to the self._new_fuzzable_requests list.
+        '''
+        # Request the file
+        php_info_url = urlParser.urlJoin(  domain_path , php_info_filename )
+        try:
+            response = self._urlOpener.GET( php_info_url, useCache=True )
+            om.out.debug( '[phpinfo] Testing "' + php_info_url + '".' )
+        except w3afException,  w3:
+            msg = 'Failed to GET phpinfo file: "' + php_info_url + '".'
+            msg += 'Exception: "' + str(w3) + '".'
+            om.out.debug( msg )
+        else:
+            # Feb/17/2009 by Aung Khant:
+            # when scanning phpinfo in window box
+            # the problem is generating a lot of results
+            # due to all-the-same-for-windows files phpVersion.php, phpversion.php ..etc
+            # Well, how to solve it? 
+            # Finding one phpinfo file is enough for auditing for the target
+            # So, we report every phpinfo file found
+            # but we do and report auditing once. Sounds logical?
+            # 
+            # Feb/17/2009 by Andres Riancho:
+            # Yes, that sounds ok for me.
+            
+            # Check if it's a phpinfo file                        
+            if not is_404( response ):
+                
+                # Create the fuzzable request
+                self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+                
+                '''
+                |Modified|
+                old: regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
+                new: regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
+                
+                by aungkhant - I've been seeing phpinfo pages which don't print php logo image. One example, ning.com.
+                
+                '''
+                regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
+                php_version = re.search(regex_str, response.getBody(), re.IGNORECASE)
 
-                            if (php_version and sysinfo):
-                                v = vuln.vuln()
-                                v.setId( response.id )
-                                v.setName( 'phpinfo() file found' )
-                                v.setSeverity(severity.MEDIUM)
-                                v.setURL( response.getURL() )
-                                desc = 'The phpinfo() file was found at: ' + v.getURL()
-                                desc += '. The version of PHP is: "' + php_version.group(2)
-                                desc += '" and the system information is: "' + sysinfo.group(1)
-                                desc += '".'
-                                v.setDesc( desc )
-                                kb.kb.append( self, 'phpinfo', v )
-                                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                                if (self._has_audited == 0):
-                                    self.audit_phpinfo(response)
-                                    self._has_audited = 1
+                regex_str = 'System </td><td class="v">(.*?)</td></tr>'
+                sysinfo = re.search(regex_str, response.getBody() , re.IGNORECASE)
+
+                if (php_version and sysinfo):
+                    v = vuln.vuln()
+                    v.setId( response.id )
+                    v.setName( 'phpinfo() file found' )
+                    v.setSeverity(severity.MEDIUM)
+                    v.setURL( response.getURL() )
+                    desc = 'The phpinfo() file was found at: ' + v.getURL()
+                    desc += '. The version of PHP is: "' + php_version.group(2)
+                    desc += '" and the system information is: "' + sysinfo.group(1)
+                    desc += '".'
+                    v.setDesc( desc )
+                    kb.kb.append( self, 'phpinfo', v )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    if (self._has_audited == 0):
+                        self.audit_phpinfo(response)
+                        self._has_audited = 1
                                 
                                  
-        return new_fuzzable_requests
-
     def audit_phpinfo(self, response):
         '''
         Scan for insecure php settings
@@ -320,7 +332,9 @@ class phpinfo(baseDiscoveryPlugin):
                 v.setName( 'curl_file_support:not_fixed' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
-                desc = 'The phpinfo()::cURL::file_support has a security hole present in this version of PHP allows the cURL functions to bypass safe_mode and open_basedir restrictions.  .'
+                desc = 'The phpinfo()::cURL::file_support has a security hole present in this'
+                desc += ' version of PHP allows the cURL functions to bypass safe_mode and'
+                desc += ' open_basedir restrictions.  .'
                 v.setDesc( desc )
                 kb.kb.append( self, 'phpinfo', v )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )  
@@ -397,7 +411,8 @@ class phpinfo(baseDiscoveryPlugin):
             v.setName( 'default_charset: Off' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
-            desc = 'The phpinfo()::default_charset is set to none. This makes PHP scripts vulnerable to variable charset encoding XSS.'
+            desc = 'The phpinfo()::default_charset is set to none. This makes PHP scripts vulnerable'
+            desc += ' to variable charset encoding XSS.'
             v.setDesc( desc )
             kb.kb.append( self, 'phpinfo', v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )  
