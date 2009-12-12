@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2009-11-03, 18:54:48 -->
+<!-- Saved: 2009-11-19, 07:33:36 -->
 <!-- Copyright (C) 2009 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -2216,12 +2216,6 @@
       <Dir>core</Dir>
       <Dir>controllers</Dir>
       <Dir>coreHelpers</Dir>
-      <Name>fingerprint404Page.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>controllers</Dir>
-      <Dir>coreHelpers</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
@@ -2301,12 +2295,6 @@
       <Dir>data</Dir>
       <Dir>db</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>data</Dir>
-      <Dir>db</Dir>
-      <Name>reqResDBHandler.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -2456,12 +2444,6 @@
       <Dir>data</Dir>
       <Dir>parsers</Dir>
       <Name>encode_decode.py</Name>
-    </Source>
-    <Source>
-      <Dir>core</Dir>
-      <Dir>data</Dir>
-      <Dir>db</Dir>
-      <Name>persist.py</Name>
     </Source>
     <Source>
       <Dir>core</Dir>
@@ -3586,6 +3568,24 @@
       <Dir>controllers</Dir>
       <Dir>coreHelpers</Dir>
       <Name>fingerprint_404.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>db</Dir>
+      <Name>db.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>data</Dir>
+      <Dir>db</Dir>
+      <Name>history.py</Name>
+    </Source>
+    <Source>
+      <Dir>core</Dir>
+      <Dir>ui</Dir>
+      <Dir>consoleUi</Dir>
+      <Name>help.xml</Name>
     </Source>
   </Sources>
   <Forms>
