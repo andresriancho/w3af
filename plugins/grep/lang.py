@@ -87,20 +87,20 @@ class lang(baseGrepPlugin):
             if self._exec and not is_404( response ) and response.is_text_or_html():
                 kb.kb.save( self, 'lang', 'unknown' )
                 
-                # Init the count map
                 number_of_matches = {}
-                for i in self._prepositions.keys():
-                    number_of_matches[ i ] = 0
                 
-                # Count prepositions
-                for possible_lang in self._prepositions.keys():
-                    for preposition in self._prepositions[ possible_lang ]:
-                        # I want to match WHOLE words
-                        response_words = re.split('[^\w]', response.getBody())
-                        response_words = [ word.lower() for word in response_words ]
-                        if preposition in response_words:
-                            om.out.debug('Found preposition: "' + preposition + '"')
-                            number_of_matches[ possible_lang ] += 1
+                for lang_string in self._prepositions:
+                    # Init the count map
+                    number_of_matches[ lang_string ] = 0
+                    
+                    # Create regular expression
+                    # I add the ' 's because I want the whole word.
+                    prepositions = [' ' + i + ' ' for i in self._prepositions[lang_string]]
+                    preposition_regex = '(' + '|'.join(prepositions) + ')'
+                    
+                    # Find all the matches for this regular expression
+                    matches = re.findall(preposition_regex, response.getBody().lower())
+                    number_of_matches[ lang_string ] = len(matches)
                             
                 # Determine who is the winner
                 def sortfunc(x,y):
