@@ -93,6 +93,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.bt_drop = toolbar.get_nth_item(3)
         self.bt_send = toolbar.get_nth_item(4)
         self.bt_next = toolbar.get_nth_item(5)
+        self.bt_next.set_sensitive(False)
         separat = toolbar.get_nth_item(6)
         #assert toolbar.get_n_items() == 4
         separat.set_draw(False)
@@ -255,6 +256,7 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.reqresp.request.set_sensitive(True)
                 self.reqresp.request.showObject(req)
                 self.bt_drop.set_sensitive(True)
+                self.bt_next.set_sensitive(True)
         return self.keepChecking
 
     def _drop(self, widg):
@@ -286,7 +288,6 @@ class ProxiedRequests(entries.RememberingWindow):
             self.reqresp.response.set_sensitive(True)
             self.reqresp.response.showObject(httpResp)
             self.reqresp.nb.next_page()
-            self.bt_next.set_sensitive(True)
             self.bt_drop.set_sensitive(False)
             self.bt_send.set_sensitive(False)
 
@@ -295,6 +296,10 @@ class ProxiedRequests(entries.RememberingWindow):
 
         @param widget: who sent the signal.
         """
+        head, data = self.reqresp.response.getBothTexts()
+        # If there is request to send, let's send it first
+        if not head:
+            self._send(None)
         self.reqresp.request.clearPanes()
         self.reqresp.request.set_sensitive(False)
         self.reqresp.response.clearPanes()
