@@ -70,6 +70,7 @@ class serverHeader(baseDiscoveryPlugin):
                 for h in response.getHeaders().keys():
                     if h.lower() == 'server':
                         server = response.getHeaders()[h]
+                        break
                 
                 if server != '':
                     i = info.info()
@@ -78,6 +79,7 @@ class serverHeader(baseDiscoveryPlugin):
                     i.setDesc('The server header for the remote web server is: "' + server + '".' )
                     i['server'] = server
                     om.out.information( i.getDesc() )
+                    i.addToHighlight( h + ':' )
                     
                     # Save the results in the KB so the user can look at it
                     kb.kb.append( self, 'server', i )
@@ -129,6 +131,7 @@ class serverHeader(baseDiscoveryPlugin):
                         i.setDesc( msg )
                         i['poweredBy'] = powered_by
                         om.out.information( i.getDesc() )
+                        i.addToHighlight( header_name + ':' )
                         
                         # Save the results in the KB so that other plugins can use this information
                         

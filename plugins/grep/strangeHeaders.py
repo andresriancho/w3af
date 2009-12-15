@@ -109,7 +109,7 @@ class strangeHeaders(baseGrepPlugin):
             msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
             msg += ' a violation to the RFC.'
             i.setDesc( msg )
-            i.addToHighlight( str(response.getCode()) )
+            i.addToHighlight( 'content-location' )
             kb.kb.append( self , 'anomaly' , i )
 
     def setOptions( self, OptionList ):

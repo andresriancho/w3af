@@ -55,38 +55,38 @@ class wsdlGreper(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.is_text_or_html():
-
-            if response.getCode() == 200:
-                is_WSDL = False
-                for wsdl_string in self._wsdl_strings:
-                    if wsdl_string in response:
-                        is_WSDL = True
-                        break
-                    
-                if is_WSDL:
-                    i = info.info()
-                    i.setName('WSDL file')
-                    i.setURL( response.getURL() )
-                    i.setId( response.id )
-                    msg = 'The URL: "' +  i.getURL() + '" is a Web Services '
-                    msg += 'Description Language page.'
-                    i.setDesc( msg )
-                    kb.kb.append( self , 'wsdl' , i )
+        if response.is_text_or_html() and response.getCode() == 200:
+            is_WSDL = False
+            for wsdl_string in self._wsdl_strings:
+                if wsdl_string in response:
+                    is_WSDL = True
+                    break
                 
-                is_Disco = False
-                for disco_string in self._disco_strings:
-                    if disco_string in response:
-                        is_Disco = True
-                        break
-                    
-                if is_Disco:
-                    i = info.info()
-                    i.setURL( response.getURL() )
-                    msg = 'The URL: "' +  i.getURL() + '" is a DISCO file that contains'
-                    msg += ' references to WSDLs.'
-                    i.setDesc( msg )
-                    kb.kb.append( self , 'disco' , i )
+            if is_WSDL:
+                i = info.info()
+                i.setName('WSDL file')
+                i.setURL( response.getURL() )
+                i.setId( response.id )
+                i.addToHighlight( wsdl_string )
+                msg = 'The URL: "' +  i.getURL() + '" is a Web Services '
+                msg += 'Description Language page.'
+                i.setDesc( msg )
+                kb.kb.append( self , 'wsdl' , i )
+            
+            is_Disco = False
+            for disco_string in self._disco_strings:
+                if disco_string in response:
+                    is_Disco = True
+                    break
+                
+            if is_Disco:
+                i = info.info()
+                i.setURL( response.getURL() )
+                msg = 'The URL: "' +  i.getURL() + '" is a DISCO file that contains'
+                msg += ' references to WSDLs.'
+                i.setDesc( msg )
+                i.addToHighlight( disco_string )
+                kb.kb.append( self , 'disco' , i )
             
     def setOptions( self, OptionList ):
         pass

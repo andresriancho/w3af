@@ -108,7 +108,8 @@ class findComments(baseGrepPlugin):
                             om.out.information( i.getDesc() )
                             self._already_reported_interesting.append( ( word, response.getURL() ) )
                     
-                    if re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment) and \
+                    html_in_comment = re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment)
+                    if html_in_comment and \
                     ( comment, response.getURL() ) not in self._already_reported_interesting:
                         # There is HTML code in the comment.
                         i = info.info()
@@ -119,6 +120,7 @@ class findComments(baseGrepPlugin):
                         i.setId( response.id )
                         i.setDc( request.getDc )
                         i.setURI( response.getURI() )
+                        i.addToHighlight( html_in_comment.group(0) )
                         kb.kb.append( self, 'htmlCommentsHideHtml', i )
                         om.out.information( i.getDesc() )
                         self._already_reported_interesting.append( ( comment, response.getURL() ) )

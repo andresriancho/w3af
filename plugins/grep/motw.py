@@ -71,6 +71,7 @@ class motw (baseGrepPlugin):
                     i.setName('Mark of the web')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
+                    i.addToHighlight(motw_match.group(0))
                 
                 # Act based on finding/non-finding
                 if motw_match:
