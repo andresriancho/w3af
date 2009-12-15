@@ -31,6 +31,8 @@ from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.misc.lru import LRU
 
+from core.controllers.threads.threadManager import threadManagerObj as tm
+
 import urllib
 import thread
 import cgi
@@ -169,7 +171,7 @@ class fingerprint_404:
         domain_path = urlParser.getDomainPath( url )
         
         # the result
-        response_body_list = []
+        self._response_body_list = []
         
         #
         #   This is a list of the most common handlers, in some configurations, the 404
@@ -180,36 +182,25 @@ class fingerprint_404:
         handlers = list(set(handlers))
         
         for extension in handlers:
-        
+
             rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
                 
             url404 = urlParser.urlJoin(  domain_path , rand_alnum_file )
-            
-            try:
-                # I don't use the cache, because the URLs are random and the only thing that
-                # useCache does is to fill up disk space
-                response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
-            except w3afException, w3:
-                raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
-            except w3afMustStopException, mse:
-                # Someone else will raise this exception and handle it as expected
-                # whenever the next call to GET is done
-                raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
-            except Exception, e:
-                raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
-            
-            # I don't want the random file name to affect the 404, so I replace it with a blank space
-            response_body = self._get_clean_body( response )
 
-            response_body_list.append( response_body )
+            #   Send the requests using threads:
+            targs = ( url404,  )
+            tm.startFunction( target=self._send_404, args=targs , ownerObj=self )
+            
+        # Wait for all threads to finish sending the requests.
+        tm.join( self )
         
         #
-        #   I have the bodies in response_body_list , but maybe they all look the same, so I'll
+        #   I have the bodies in self._response_body_list , but maybe they all look the same, so I'll
         #   filter the ones that look alike.
         #
-        result = [ response_body_list[0], ]
-        for i in response_body_list:
-            for j in response_body_list:
+        result = [ self._response_body_list[0], ]
+        for i in self._response_body_list:
+            for j in self._response_body_list:
                 
                 ratio = relative_distance( i, j )
                 if ratio > IS_EQUAL_RATIO:
@@ -219,10 +210,38 @@ class fingerprint_404:
                     # They are no equal, this means that we'll have to add this to the list
                     result.append(j)
         
+        # I don't need these anymore
+        self._response_body_list = None
+        
+        # And I return the ones I need
         result = list(set(result))
         om.out.debug('The 404 body result database has a lenght of ' + str(len(result)) +'.')
         
         return result
+
+    def _send_404(self, url404):
+        '''
+        Sends a GET request to url404 and saves the response in self._response_body_list .
+        @return: None.
+        '''
+        try:
+            # I don't use the cache, because the URLs are random and the only thing that
+            # useCache does is to fill up disk space
+            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
+        except w3afException, w3:
+            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
+        except w3afMustStopException, mse:
+            # Someone else will raise this exception and handle it as expected
+            # whenever the next call to GET is done
+            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
+        except Exception, e:
+            raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+        
+        else:
+            # I don't want the random file name to affect the 404, so I replace it with a blank space
+            response_body = self._get_clean_body( response )
+
+            self._response_body_list.append( response_body )
         
     #
     #
