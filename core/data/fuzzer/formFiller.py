@@ -40,6 +40,7 @@ def smartFill( variable_name ):
                         (long_number, (createRandNum, 5)), 
                         (short_number, (createRandNum, 2)), 
                         (date, (createRandNum, 1)), 
+                        (password, (lambda x: 'w3af-FrAmEW0rK.', None)), 
                         (mail, (lambda x: 'w3af@email.com', None)), 
                         (state, (lambda x: 'AK', None)) ]
     
@@ -192,6 +193,27 @@ def state():
     
     # spanish and portugués
     l.append('estado')
+    return l
+    
+    
+def password():
+
+    '''
+    @return: A list of variables that should be filled with a password.
+    '''
+    
+    l = []
+    
+    # password will be a constant
+    l.append('pass')
+    l.append('word')
+    l.append('pswd')
+    l.append('pwd')
+    l.append('auth')
+    l.append('password')
+    l.append('contraseña')
+    l.append('senha')
+    
     return l
     
 def date():
