@@ -153,6 +153,7 @@ class ManualRequests(entries.RememberingWindow):
             if impact.ok:
                 self.reqresp.response.set_sensitive(True)
                 self.reqresp.response.showObject(impact.httpResp)
+                self.reqresp.nb.next_page()
             else:
                 if impact.exception.__class__ == w3afException:
                     msg = str(impact.exception)
