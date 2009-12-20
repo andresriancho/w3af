@@ -139,6 +139,7 @@ class sqli(baseAuditPlugin):
         errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', dbms.MSSQL ))
         errors.append( ('Microsoft OLE DB Provider for SQL Server', dbms.MSSQL ))
         errors.append( ('Incorrect syntax near', dbms.MSSQL ) )
+        errors.append( ('Sintaxis incorrecta cerca de', dbms.MSSQL ) )
         errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
         errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
         errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
