@@ -46,6 +46,9 @@ class sqli(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        
+        # Internal variables
+        self._errors = []
 
     def audit(self, freq ):
         '''
@@ -72,16 +75,16 @@ class sqli(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         '''
         sql_error_list = self._findsql_error( response )
-        for sql_error in sql_error_list:
-            if not re.search( sql_error[0], mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        for sql_regex, sql_error_string, dbms_type in sql_error_list:
+            if not sql_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 # Create the vuln,
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setName( 'SQL injection vulnerability' )
                 v.setSeverity(severity.HIGH)
-                v.addToHighlight( sql_error[0] )
-                v['error'] = sql_error[0]
-                v['db'] = sql_error[1]
+                v.addToHighlight( sql_error_string )
+                v['error'] = sql_error_string
+                v['db'] = dbms_type
                 v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'sqli', v )
                 break
@@ -111,104 +114,124 @@ class sqli(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for sql_error in self._get_SQL_errors():
-            match = re.search( sql_error[0] , response.getBody() , re.IGNORECASE )
+        for sql_regex, dbms_type in self._get_SQL_errors():
+            match = sql_regex.search( response.getBody() , re.IGNORECASE )
             if  match:
                 msg = 'A SQL error was found in the response supplied by the web application,'
                 msg += ' the error is (only a fragment is shown): "' 
-                msg += response.getBody()[match.start():match.end()]  + '". The error was found '
+                msg += match.group(0)  + '". The error was found '
                 msg += 'on response with id ' + str(response.id) + '.'
                 om.out.information( msg )
-                res.append( sql_error )
+                res.append( (sql_regex, match.group(0), dbms_type) )
         return res
 
     def _get_SQL_errors(self):
-        errors = []
         
-        # ASP / MSSQL
-        errors.append( ('System\.Data\.OleDb\.OleDbException', dbms.MSSQL ) )
-        errors.append( ('\\[SQL Server\\]', dbms.MSSQL ) )
-        errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', dbms.MSSQL ) )
-        errors.append( ('\\[SQLServer JDBC Driver\\]', dbms.MSSQL ) )
-        errors.append( ('\\[SqlException', dbms.MSSQL ) )
-        errors.append( ('System.Data.SqlClient.SqlException', dbms.MSSQL ) )
-        errors.append( ('Unclosed quotation mark after the character string', dbms.MSSQL ) )
-        errors.append( ("'80040e14'", dbms.MSSQL ) )
-        errors.append( ('mssql_query\\(\\)', dbms.MSSQL ) )
-        errors.append( ('odbc_exec\\(\\)', dbms.MSSQL ) )
-        errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', dbms.MSSQL ))
-        errors.append( ('Microsoft OLE DB Provider for SQL Server', dbms.MSSQL ))
-        errors.append( ('Incorrect syntax near', dbms.MSSQL ) )
-        errors.append( ('Sintaxis incorrecta cerca de', dbms.MSSQL ) )
-        errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
-        errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
-        errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
-        errors.append( ("ADODB\\.Recordset'", dbms.MSSQL ))
-        
-        # DB2
-        errors.append( ('SQLCODE', dbms.DB2 ) )
-        errors.append( ('DB2 SQL error:', dbms.DB2 ) )
-        errors.append( ('SQLSTATE', dbms.DB2 ) )
-        
-        # Sybase
-        errors.append( ("Sybase message:", dbms.SYBASE ) )
-        
-        # Access
-        errors.append( ('Syntax error in query expression', dbms.ACCESS ))
-        errors.append( ('Data type mismatch in criteria expression.', dbms.ACCESS ))
-        errors.append( ('Microsoft JET Database Engine', dbms.ACCESS ))
-        errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', dbms.ACCESS ) )
-        
-        # ORACLE
-        errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE ) )
-        
-        # POSTGRE
-        errors.append( ('PostgreSQL query failed:', dbms.POSTGRE ) )
-        errors.append( ('supplied argument is not a valid PostgreSQL result', dbms.POSTGRE ) )
-        errors.append( ('pg_query\\(\\) \\[:', dbms.POSTGRE ) )
-        errors.append( ('pg_exec\\(\\) \\[:', dbms.POSTGRE ) )
-        
-        # MYSQL
-        errors.append( ('supplied argument is not a valid MySQL', dbms.MYSQL ) )
-        errors.append( ('mysql_fetch_array\\(\\)', dbms.MYSQL ) )
-        errors.append( ('mysql_', dbms.MYSQL ) )
-        errors.append( ('on MySQL result index', dbms.MYSQL ) )
-        errors.append( ('You have an error in your SQL syntax;', dbms.MYSQL ) )
-        errors.append( ('You have an error in your SQL syntax near', dbms.MYSQL ) )
-        errors.append( ('MySQL server version for the right syntax to use', dbms.MYSQL ) )
-        errors.append( ('\\[MySQL\\]\\[ODBC', dbms.MYSQL ))
-        errors.append( ("Column count doesn't match", dbms.MYSQL ))
-        errors.append( ("the used select statements have different number of columns", dbms.MYSQL ))
-        errors.append( ("Table '[^']+' doesn't exist", dbms.MYSQL ))
+        if len(self._errors) != 0:
+            #
+            #   This will use a little bit more of memory, but will increase the performance of the
+            #   plugin considerably, because the regular expressions are going to be compiled
+            #   only once, and then used many times.
+            #
+            return self._errors
+            
+        else:
+            #
+            #   Populate the self._errors list with the compiled versions of the regular expressions.
+            #
+            errors = []
+            
+            # ASP / MSSQL
+            errors.append( ('System\.Data\.OleDb\.OleDbException', dbms.MSSQL ) )
+            errors.append( ('\\[SQL Server\\]', dbms.MSSQL ) )
+            errors.append( ('\\[Microsoft\\]\\[ODBC SQL Server Driver\\]', dbms.MSSQL ) )
+            errors.append( ('\\[SQLServer JDBC Driver\\]', dbms.MSSQL ) )
+            errors.append( ('\\[SqlException', dbms.MSSQL ) )
+            errors.append( ('System.Data.SqlClient.SqlException', dbms.MSSQL ) )
+            errors.append( ('Unclosed quotation mark after the character string', dbms.MSSQL ) )
+            errors.append( ("'80040e14'", dbms.MSSQL ) )
+            errors.append( ('mssql_query\\(\\)', dbms.MSSQL ) )
+            errors.append( ('odbc_exec\\(\\)', dbms.MSSQL ) )
+            errors.append( ('Microsoft OLE DB Provider for ODBC Drivers', dbms.MSSQL ))
+            errors.append( ('Microsoft OLE DB Provider for SQL Server', dbms.MSSQL ))
+            errors.append( ('Incorrect syntax near', dbms.MSSQL ) )
+            errors.append( ('Sintaxis incorrecta cerca de', dbms.MSSQL ) )
+            errors.append( ('Syntax error in string in query expression', dbms.MSSQL ) )
+            errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
+            errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
+            errors.append( ("ADODB\\.Recordset'", dbms.MSSQL ))
+            
+            # DB2
+            errors.append( ('SQLCODE', dbms.DB2 ) )
+            errors.append( ('DB2 SQL error:', dbms.DB2 ) )
+            errors.append( ('SQLSTATE', dbms.DB2 ) )
+            
+            # Sybase
+            errors.append( ("Sybase message:", dbms.SYBASE ) )
+            
+            # Access
+            errors.append( ('Syntax error in query expression', dbms.ACCESS ))
+            errors.append( ('Data type mismatch in criteria expression.', dbms.ACCESS ))
+            errors.append( ('Microsoft JET Database Engine', dbms.ACCESS ))
+            errors.append( ('\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\]', dbms.ACCESS ) )
+            
+            # ORACLE
+            errors.append( ('(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE ) )
+            
+            # POSTGRE
+            errors.append( ('PostgreSQL query failed:', dbms.POSTGRE ) )
+            errors.append( ('supplied argument is not a valid PostgreSQL result', dbms.POSTGRE ) )
+            errors.append( ('pg_query\\(\\) \\[:', dbms.POSTGRE ) )
+            errors.append( ('pg_exec\\(\\) \\[:', dbms.POSTGRE ) )
+            
+            # MYSQL
+            errors.append( ('supplied argument is not a valid MySQL', dbms.MYSQL ) )
+            errors.append( ('mysql_fetch_array\\(\\)', dbms.MYSQL ) )
+            errors.append( ('mysql_', dbms.MYSQL ) )
+            errors.append( ('on MySQL result index', dbms.MYSQL ) )
+            errors.append( ('You have an error in your SQL syntax;', dbms.MYSQL ) )
+            errors.append( ('You have an error in your SQL syntax near', dbms.MYSQL ) )
+            errors.append( ('MySQL server version for the right syntax to use', dbms.MYSQL ) )
+            errors.append( ('\\[MySQL\\]\\[ODBC', dbms.MYSQL ))
+            errors.append( ("Column count doesn't match", dbms.MYSQL ))
+            errors.append( ("the used select statements have different number of columns", dbms.MYSQL ))
+            errors.append( ("Table '[^']+' doesn't exist", dbms.MYSQL ))
 
-        
-        # Informix
-        errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
-        errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
-        
-        errors.append( ('<b>Warning</b>:  ibase_', dbms.INTERBASE ))
-        errors.append( ('Dynamic SQL Error', dbms.INTERBASE ))
-        
-        # DML
-        errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', dbms.DMLDATABASE ))
-        errors.append( ('has occurred in the vicinity of:', dbms.DMLDATABASE ))
-        errors.append( ('A Parser Error \\(syntax error\\)', dbms.DMLDATABASE ))
-        
-        # Java
-        errors.append( ('java\\.sql\\.SQLException', dbms.JAVA ))
+            
+            # Informix
+            errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
+            errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
+            
+            errors.append( ('<b>Warning</b>:  ibase_', dbms.INTERBASE ))
+            errors.append( ('Dynamic SQL Error', dbms.INTERBASE ))
+            
+            # DML
+            errors.append( ('\\[DM_QUERY_E_SYNTAX\\]', dbms.DMLDATABASE ))
+            errors.append( ('has occurred in the vicinity of:', dbms.DMLDATABASE ))
+            errors.append( ('A Parser Error \\(syntax error\\)', dbms.DMLDATABASE ))
+            
+            # Java
+            errors.append( ('java\\.sql\\.SQLException', dbms.JAVA ))
 
-        # Coldfusion
-        errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', dbms.MSSQL ))
+            # Coldfusion
+            errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', dbms.MSSQL ))
+            
+            # Generic errors..
+            errors.append( ('SELECT .*? FROM .*?', dbms.UNKNOWN ))
+            errors.append( ('UPDATE .*? SET .*?', dbms.UNKNOWN ))
+            errors.append( ('INSERT INTO .*?', dbms.UNKNOWN ))
+            errors.append( ('Unknown column', dbms.UNKNOWN ))
+            errors.append( ('where clause', dbms.UNKNOWN ))
+            errors.append( ('SqlServer', dbms.UNKNOWN ))
+            
+            #
+            #   Now that I have the regular expressions in the "errors" list, I will compile them
+            #   and save that into self._errors.
+            #
+            for re_string, dbms_type in errors:
+                self._errors.append( (re.compile(re_string), dbms_type) )
         
-        # Generic errors..
-        errors.append( ('SELECT .*? FROM .*?', dbms.UNKNOWN ))
-        errors.append( ('UPDATE .*? SET .*?', dbms.UNKNOWN ))
-        errors.append( ('INSERT INTO .*?', dbms.UNKNOWN ))
-        errors.append( ('Unknown column', dbms.UNKNOWN ))
-        errors.append( ('where clause', dbms.UNKNOWN ))
-        errors.append( ('SqlServer', dbms.UNKNOWN ))
-        
-        return errors
+        return self._errors
         
     def getOptions( self ):
         '''
