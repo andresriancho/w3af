@@ -76,7 +76,7 @@ class sqli(baseAuditPlugin):
         '''
         sql_error_list = self._findsql_error( response )
         for sql_regex, sql_error_string, dbms_type in sql_error_list:
-            if not sql_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
+            if not sql_regex.search( mutant.getOriginalResponseBody() ):
                 # Create the vuln,
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
@@ -115,7 +115,7 @@ class sqli(baseAuditPlugin):
         '''
         res = []
         for sql_regex, dbms_type in self._get_SQL_errors():
-            match = sql_regex.search( response.getBody() , re.IGNORECASE )
+            match = sql_regex.search( response.getBody() )
             if  match:
                 msg = 'A SQL error was found in the response supplied by the web application,'
                 msg += ' the error is (only a fragment is shown): "' 
@@ -229,7 +229,7 @@ class sqli(baseAuditPlugin):
             #   and save that into self._errors.
             #
             for re_string, dbms_type in errors:
-                self._errors.append( (re.compile(re_string), dbms_type) )
+                self._errors.append( (re.compile(re_string, re.IGNORECASE ), dbms_type) )
         
         return self._errors
         

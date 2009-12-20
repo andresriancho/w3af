@@ -50,6 +50,9 @@ class mxInjection(baseAuditPlugin):
         this plugin... THEN my job has been done :P
         '''
         baseAuditPlugin.__init__(self)
+        
+        # Internal variables.
+        self._errors = []
 
     def audit(self, freq ):
         '''
@@ -76,14 +79,14 @@ class mxInjection(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         '''
         mx_error_list = self._find_MX_error( response )
-        for mx_error in mx_error_list:
-            if not re.search( mx_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        for mx_error_re, mx_error_string in mx_error_list:
+            if not mx_error_re.search( mutant.getOriginalResponseBody() ):
                 v = vuln.vuln( mutant )
                 v.setName( 'MX injection vulnerability' )
                 v.setSeverity(severity.MEDIUM)
                 v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
-                v.addToHighlight( mx_error )
+                v.addToHighlight( mx_error_string )
                 kb.kb.append( self, 'mxInjection', v )
     
     def end(self):
@@ -113,29 +116,48 @@ class mxInjection(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for mx_error in self._get_MX_errors():
-            match = re.search( mx_error, response.getBody() )
-            if  match:
-                res.append(mx_error)
+        for mx_error_re in self._get_MX_errors():
+            match = mx_error_re.search( response.getBody() )
+            if match:
+                res.append( (mx_error_re, match.group(0)) )
         return res
 
     def _get_MX_errors(self):
         '''
         @return: A list of MX errors.
         '''
-        errors = []
+        if len(self._errors) != 0:
+            #
+            #   This will use a little bit more of memory, but will increase the performance of the
+            #   plugin considerably, because the regular expressions are going to be compiled
+            #   only once, and then used many times.
+            #
+            return self._errors
+            
+        else:
+            #
+            #   Populate the self._errors list with the compiled versions of the regular expressions.
+            #
+            errors = []
         
-        errors.append( 'Unexpected extra arguments to Select' )
-        errors.append( 'Bad or malformed request' )
-        errors.append( 'Could not access the following folders' )
-        errors.append( 'A000' )
-        errors.append( 'A001' )
-        errors.append( 'Invalid mailbox name' )
-        
-        error_msg = 'To check for outside changes to the folder list go to the folders page'
-        errors.append( error_msg )
-        
-        return errors
+            errors.append( 'Unexpected extra arguments to Select' )
+            errors.append( 'Bad or malformed request' )
+            errors.append( 'Could not access the following folders' )
+            errors.append( 'A000' )
+            errors.append( 'A001' )
+            errors.append( 'Invalid mailbox name' )
+            
+            error_msg = 'To check for outside changes to the folder list go to the folders page'
+            errors.append( error_msg )
+            
+            #
+            #   Now that I have the regular expressions in the "errors" list, I will compile them
+            #   and save that into self._errors.
+            #
+            for re_string in errors:
+                self._errors.append( re.compile(re_string, re.IGNORECASE ) )
+                
+            return self._errors
         
     def getOptions( self ):
         '''

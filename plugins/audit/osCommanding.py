@@ -47,10 +47,13 @@ class osCommanding(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-        # Some internal variables
+        #
+        #   Some internal variables
+        #
         self._special_chars = ['', '&&', '|', ';']
         # The wait time of the unfuzzed request
         self._original_wait_time = 0
+        self._file_compiled_regex = []
         
         # The wait time of the first test I'm going to perform
         self._wait_time = 4
@@ -127,9 +130,12 @@ class osCommanding(baseAuditPlugin):
         Analyze results of the _sendMutant method that was sent in the _with_echo method.
         '''
         file_patterns = self._get_file_patterns()
-        for file_pattern in file_patterns:
-            if not re.search( file_pattern, mutant.getOriginalResponseBody(), re.IGNORECASE )\
-            and re.search(file_pattern, response.getBody(), re.IGNORECASE):
+        for file_pattern_re in file_patterns:
+            
+            match = file_pattern_re.search( response.getBody() )
+            
+            if match\
+            and not file_pattern_re.search( mutant.getOriginalResponseBody() ):
                 # Search for the correct command and separator
                 sentOs, sentSeparator = self._get_os_separator(mutant)
 
@@ -143,7 +149,7 @@ class osCommanding(baseAuditPlugin):
                 v.setDc( mutant.getDc() )
                 v.setId( response.id )
                 v.setURI( response.getURI() )
-                v.addToHighlight( file_pattern )
+                v.addToHighlight( match.group(0) )
                 kb.kb.append( self, 'osCommanding', v )
                 break
     
@@ -152,15 +158,37 @@ class osCommanding(baseAuditPlugin):
         @return: A list of file patterns, that if found in the response, indicate that a command
         was successfully executed.
         '''
-        file_patterns = []
-        file_patterns.append("root:x:0:0:")	
-        file_patterns.append("daemon:x:1:1:")
-        file_patterns.append(":/bin/bash")
-        file_patterns.append(":/bin/sh")
-        file_patterns.append("\\[fonts\\]")
-        file_patterns.append("\\[extensions\\]")
-        file_patterns.append("\\[files\\]")
-        return file_patterns
+        if self._file_compiled_regex:
+            # returning the already compiled regular expressions
+            return self._file_compiled_regex
+        
+        else:
+            # Compile them for the first time, and return the compiled regular expressions
+            
+            file_patterns = []
+            
+            # /etc/passwd
+            file_patterns.append("root:x:0:0:")  
+            file_patterns.append("daemon:x:1:1:")
+            file_patterns.append(":/bin/bash")
+            file_patterns.append(":/bin/sh")
+
+            # /etc/passwd in AIX
+            file_patterns.append("root:!:x:0:0:")
+            file_patterns.append("daemon:!:x:1:1:")
+            file_patterns.append(":usr/bin/ksh") 
+
+            # boot.ini
+            file_patterns.append("\\[boot loader\\]")
+            file_patterns.append("default=multi\\(")
+            file_patterns.append("\\[operating systems\\]")
+            
+            # win.ini
+            file_patterns.append("\\[fonts\\]")
+            
+            self._file_compiled_regex = [re.compile(i, re.IGNORECASE) for i in file_patterns]
+            
+            return self._file_compiled_regex
 
     def _get_os_separator(self, mutant):
         '''
