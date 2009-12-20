@@ -44,6 +44,9 @@ class LDAPi(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
+        # Internal variables
+        self._errors = []
+        
     def audit(self, freq ):
         '''
         Tests an URL for LDAP injection vulnerabilities.
@@ -78,14 +81,14 @@ class LDAPi(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         '''
         ldap_error_list = self._find_ldap_error( response )
-        for ldap_error in ldap_error_list:
-            if not re.search( ldap_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+        for ldap_error_regex, ldap_error_string in ldap_error_list:
+            if not ldap_error_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
                 v = vuln.vuln( mutant )
                 v.setId( response.id )
                 v.setSeverity(severity.HIGH)
                 v.setName( 'LDAP injection vulnerability' )
                 v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
-                v.addToHighlight( ldap_error )
+                v.addToHighlight( ldap_error_string )
                 kb.kb.append( self, 'LDAPi', v )
     
     def end(self):
@@ -103,61 +106,80 @@ class LDAPi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for ldap_error in self._get_ldap_errors():
-            match = re.search( ldap_error, response.getBody() , re.IGNORECASE )
+        for ldap_error_regex in self._get_ldap_errors():
+            match = ldap_error_regex.search( response.getBody() , re.IGNORECASE )
             if  match:
                 msg = 'Found LDAP error string. '
                 msg += 'The error returned by the web application is (only a fragment is shown): "'
-                msg += response.getBody()[match.start():match.end()] + '". The error was found on '
+                msg += match.group(0) + '". The error was found on '
                 msg += 'response with id ' + str(response.id) + '.'
                 om.out.information(msg)
-                res.append( ldap_error )
+                res.append( (ldap_error_regex, match.group(0) ) )
         return res
         
     def _get_ldap_errors( self ):
-        error_strings = []
         
-        # Not sure which lang or LDAP engine
-        error_strings.append('supplied argument is not a valid ldap')
+        if len(self._errors) != 0:
+            #
+            #   This will use a little bit more of memory, but will increase the performance of the
+            #   plugin considerably, because the regular expressions are going to be compiled
+            #   only once, and then used many times.
+            #
+            return self._errors
+            
+        else:
+            #
+            #   Populate the self._errors list with the compiled versions of the regular expressions.
+            #
+            error_strings = []
         
-        # Java
-        error_strings.append('javax.naming.NameNotFoundException')
-        error_strings.append('LDAPException')
-        error_strings.append('com.sun.jndi.ldap')
+            # Not sure which lang or LDAP engine
+            error_strings.append('supplied argument is not a valid ldap')
+            
+            # Java
+            error_strings.append('javax.naming.NameNotFoundException')
+            error_strings.append('LDAPException')
+            error_strings.append('com.sun.jndi.ldap')
+            
+            # http://support.microsoft.com/kb/218185
+            error_strings.append('Protocol error occurred')
+            error_strings.append('Size limit has exceeded')
+            error_strings.append('An inappropriate matching occurred')
+            error_strings.append('A constraint violation occurred')
+            error_strings.append('The syntax is invalid')
+            error_strings.append('Object does not exist')
+            error_strings.append('The alias is invalid')
+            error_strings.append('The distinguished name has an invalid syntax')
+            error_strings.append('The server does not handle directory requests')
+            error_strings.append('There was a naming violation')
+            error_strings.append('There was an object class violation')
+            error_strings.append('Results returned are too large')
+            error_strings.append('Unknown error occurred')
+            error_strings.append('Local error occurred')
+            error_strings.append('The search filter is incorrect')
+            error_strings.append('The search filter is invalid')
+            error_strings.append('The search filter cannot be recognized')
+            
+            # OpenLDAP
+            error_strings.append('Invalid DN syntax')
+            error_strings.append('No Such Object')
+            
+            # IPWorks LDAP
+            # http://www.tisc-insight.com/newsletters/58.html
+            error_strings.append('IPWorksASP.LDAP')
+            
+            # ???
+            # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
+            error_strings.append('Module Products.LDAPMultiPlugins')
+            
+            #
+            #   Now that I have the regular expressions in the "error_strings" list, I will compile
+            #   them and save that into self._errors.
+            #
+            for re_string in error_strings:
+                self._errors.append( re.compile(re_string) )
         
-        # http://support.microsoft.com/kb/218185
-        error_strings.append('Protocol error occurred')
-        error_strings.append('Size limit has exceeded')
-        error_strings.append('An inappropriate matching occurred')
-        error_strings.append('A constraint violation occurred')
-        error_strings.append('The syntax is invalid')
-        error_strings.append('Object does not exist')
-        error_strings.append('The alias is invalid')
-        error_strings.append('The distinguished name has an invalid syntax')
-        error_strings.append('The server does not handle directory requests')
-        error_strings.append('There was a naming violation')
-        error_strings.append('There was an object class violation')
-        error_strings.append('Results returned are too large')
-        error_strings.append('Unknown error occurred')
-        error_strings.append('Local error occurred')
-        error_strings.append('The search filter is incorrect')
-        error_strings.append('The search filter is invalid')
-        error_strings.append('The search filter cannot be recognized')
-        
-        # OpenLDAP
-        error_strings.append('Invalid DN syntax')
-        error_strings.append('No Such Object')
-        
-        # IPWorks LDAP
-        # http://www.tisc-insight.com/newsletters/58.html
-        error_strings.append('IPWorksASP.LDAP')
-        
-        # ???
-        # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
-        error_strings.append('Module Products.LDAPMultiPlugins')
-        
-
-        return [ e.lower() for e in error_strings ]
+            return self._errors
         
     def getOptions( self ):
         '''
