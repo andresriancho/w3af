@@ -143,8 +143,9 @@ class form(dataContainer):
         <INPUT type="text" name="email"><BR>
         <INPUT type="radio" name="sex" value="Male"> Male<BR>
         '''
-        
-        attr_type = name = value = ''
+        # Set the default input type to text.
+        attr_type = 'text'
+        name = value = ''
         
         # Try to get the name:
         for attr in attrs:

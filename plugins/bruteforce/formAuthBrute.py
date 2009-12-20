@@ -60,29 +60,33 @@ class formAuthBrute(baseBruteforcePlugin):
                 # Save it (we don't want dups!)
                 self._alreadyTested.append( freq.getURL() )
                 
-                # Init
-                self._initBruteforcer( freq.getURL() )
-                self._idFailedLoginPage( freq )
-                self._user_field_name, self._passwd_field_name = self._getLoginFieldNames( freq )
+                try:
+                    self._user_field_name, self._passwd_field_name = self._getLoginFieldNames( freq )
+                except w3afException, w3:
+                    om.out.error( str(w3) )
+                else:
+                    # Init
+                    self._initBruteforcer( freq.getURL() )
+                    self._idFailedLoginPage( freq )
                 
-                # Let the user know what we are doing
-                om.out.information('Found a form login. The action of the form is: "' + freq.getURL() +'".')
-                om.out.information('The username field to be used is: "' + self._user_field_name + '".')
-                om.out.information('The password field to be used is: "' + self._passwd_field_name + '".')
-                om.out.information('Starting form authentication bruteforce on URL: "' + freq.getURL() + '".')
-                
-                # Work
-                while not self._found or not self._stopOnFirst:
-                    combinations = []
+                    # Let the user know what we are doing
+                    om.out.information('Found a form login. The action of the form is: "' + freq.getURL() +'".')
+                    om.out.information('The username field to be used is: "' + self._user_field_name + '".')
+                    om.out.information('The password field to be used is: "' + self._passwd_field_name + '".')
+                    om.out.information('Starting form authentication bruteforce on URL: "' + freq.getURL() + '".')
                     
-                    for i in xrange( 30 ):
-                        try:
-                            combinations.append( self._bruteforcer.getNext() )
-                        except w3afException:
-                            om.out.information('No more user/password combinations available.')
-                            return
-                    
-                    self._bruteforce( freq, combinations )
+                    # Work
+                    while not self._found or not self._stopOnFirst:
+                        combinations = []
+                        
+                        for i in xrange( 30 ):
+                            try:
+                                combinations.append( self._bruteforcer.getNext() )
+                            except w3afException:
+                                om.out.information('No more user/password combinations available.')
+                                return
+                        
+                        self._bruteforce( freq, combinations )
     
     
     def _idFailedLoginPage( self, freq ):
@@ -167,7 +171,7 @@ class formAuthBrute(baseBruteforcePlugin):
         if isinstance( data_container , form ):
             
             for parameter_name in data_container:
-                
+
                 if data_container.getType( parameter_name ).lower() == 'password':
                     passwd += 1
                 
@@ -192,7 +196,8 @@ class formAuthBrute(baseBruteforcePlugin):
         @return: The names of the form fields where to input the user and the password.
         '''
         data_container = freq.getDc()
-        user = passwd = ''
+        passwd = ''
+        user_param_list = []
         
         for parameter_name in data_container:
                 
@@ -200,8 +205,29 @@ class formAuthBrute(baseBruteforcePlugin):
                 passwd = parameter_name
             
             elif data_container.getType( parameter_name ).lower() == 'text':
-                user = parameter_name
-            
+                user_param_list.append( parameter_name )
+        
+        user = None
+        #
+        #   If there is more than one text field in the form, I'll choose the one that looks more
+        #   like a "user field", based on the name. The other ones will be smartFilled (tm).
+        #
+        if len(user_param_list) == 1:
+            user = user_param_list[0]
+        
+        else:
+            for parameter_name in user:
+                for common_user_param_name in ['usr', 'usuario', 'user', 'name', 'nombre']:
+                    if common_user_param_name in parameter_name.lower():
+                        user = parameter_name
+                        break
+                        
+            if user == None:
+                msg = 'There seems to be an HTML login form at "' + freq.getURL() + '", but it was'
+                msg += ' impossible to determine which parameter should be used as the username'
+                msg += ' during the bruteforce process.'
+                raise w3afException( msg )
+        
         return user, passwd
         
                 
