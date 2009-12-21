@@ -1262,8 +1262,8 @@ class w3afCore:
             # IGNORE the following parameters from the profile:
             #   - miscSettings.localAddress
             #
+            profile_misc_settings = profileInstance.getMiscSettings()
             if 'localAddress' in profileInstance.getMiscSettings():
-                profile_misc_settings = profileInstance.getMiscSettings()
                 profile_misc_settings['localAddress'].setValue(get_local_ip())
             
             misc_settings = miscSettings.miscSettings()
