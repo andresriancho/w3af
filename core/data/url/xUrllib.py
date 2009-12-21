@@ -657,9 +657,12 @@ class xUrllib:
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
         if len( self._grepPlugins ) and urlParser.getDomain( request.get_full_url() ) in cf.cf.getData('targetDomains'):
+            
             # I'll create a fuzzable request based on the urllib2 request object
             fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )
             targs = (fuzzReq, response)
+            
+            # TODO: Analyze if creating a different threadpool for grep workers speeds up the whole process
             self._tm.startFunction( target=self._grepWorker, args=targs, ownerObj=self, restrict=False )
     
     def _grepWorker( self , request, response):
