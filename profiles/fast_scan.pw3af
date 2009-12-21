@@ -5,7 +5,7 @@ description = Perform a fast scan of the target site, using only a few discovery
 [output.gtkOutput]
 
 [misc-settings]
-maxThreads = 0
+maxThreads = 15
 maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True

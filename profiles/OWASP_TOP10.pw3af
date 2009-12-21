@@ -42,7 +42,7 @@ equalLimit = 0.8
 [grep.strangeHeaders]
 
 [misc-settings]
-maxThreads = 0
+maxThreads = 15
 fuzzFCExt = txt
 autoDependencies = True
 demo = False

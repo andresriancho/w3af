@@ -17,7 +17,7 @@ listenAddress =
 
 [misc-settings]
 exportFuzzableRequests = 
-maxThreads = 0
+maxThreads = 15
 maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True

@@ -55,7 +55,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('autoDependencies', True )
             cf.cf.save('maxDepth', 25 )
-            cf.cf.save('maxThreads', 0 )
+            cf.cf.save('maxThreads', 15 )
             cf.cf.save('fuzzableHeaders', [] )
             cf.cf.save('maxDiscoveryLoops', 500 )
             cf.cf.save('interface', 'eth0' )

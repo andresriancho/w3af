@@ -9,7 +9,7 @@ resultLimit = 300
 
 [misc-settings]
 exportFuzzableRequests = 
-maxThreads = 0
+maxThreads = 15
 fuzzFCExt = txt
 autoDependencies = True
 demo = False

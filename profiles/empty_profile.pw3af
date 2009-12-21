@@ -1,6 +1,6 @@
 [misc-settings]
 exportFuzzableRequests = 
-maxThreads = 0
+maxThreads = 15
 fuzzFormComboValues = tmb
 fuzzFCExt = txt
 autoDependencies = True
