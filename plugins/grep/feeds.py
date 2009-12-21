@@ -73,7 +73,7 @@ class feeds(baseGrepPlugin):
             for regex, feed_type in self._get_feeds():
                 match = regex.search( response.getBody() )
                 if match:
-                    match_string = match.groups()[0]
+                    match_string = match.group(0)
                     i = info.info()
                     i.setName(feed_type +' feed')
                     i.setURL( response.getURL() )

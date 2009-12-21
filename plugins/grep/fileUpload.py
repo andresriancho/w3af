@@ -32,6 +32,7 @@ import core.data.kb.info as info
 
 import re
 
+
 class fileUpload(baseGrepPlugin):
     '''
     Find HTML forms with file upload capabilities.

@@ -34,6 +34,7 @@ import core.data.constants.severity as severity
 
 import re
 
+
 class domXss(baseGrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
