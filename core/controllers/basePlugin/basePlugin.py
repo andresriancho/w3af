@@ -26,6 +26,7 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.configurable import configurable
 import core.data.kb.vuln as vuln
 
+
 class basePlugin(configurable):
     '''
     This is the base class for ALL plugins, all plugins should inherit from it 
