@@ -102,7 +102,22 @@ def long_alpha():
     l.append('companhia')
     l.append('posição')
     l.append('residência')
-
+    
+    # German
+    l.append('benutzername')
+    l.append('benutzer')
+    l.append('name')
+    l.append('vorname')
+    l.append('nachname')
+    l.append('ort')
+    l.append('stadt')
+    l.append('land')
+    l.append('addresse')
+    l.append('wohnort')
+    l.append('wohnsitz')
+    l.append('unternehmen')
+    l.append('unternehmung')
+    l.append('position')
     
     # passwords need to be long in order to be "complex"
     l.append('pass')
@@ -114,7 +129,7 @@ def long_alpha():
     l.append('contraseña')
     l.append('senha')
     
-    return l
+    return list(set(l))
 
 def short_alpha():
     '''
@@ -138,10 +153,17 @@ def short_number():
     l.append('piso')
     l.append('edad')
     
+    # german
+    l.append('postleitzahl')
+    l.append('plz')
+    l.append('id')
+    l.append('stock')
+    l.append('alter')
+    
     # portugués
     l.append('postais')
     
-    return l
+    return list(set(l))
 
 def long_number():
     '''
@@ -160,11 +182,17 @@ def long_number():
     l.append('número')
     l.append('código')
     l.append('codigo')
+    
+    # German
+    l.append('telefon')
+    l.append('tel')
+    l.append('code')
+    l.append('nummer')
 
     # portugués
     # equal to the spanish ones
 
-    return l
+    return list(set(l))
 
 def mail():
     '''
@@ -175,6 +203,9 @@ def mail():
     l.append('mail')
     l.append('email')
     l.append('e-mail') 
+    
+    #german
+    # equal to the english ones
     
     # spanish
     l.append('correo')
@@ -211,7 +242,14 @@ def password():
     l.append('pwd')
     l.append('auth')
     l.append('password')
+    
+    # German
+    l.append('passwort')
+    
+    # Spanish
     l.append('contraseña')
+    
+    # Portuguese
     l.append('senha')
     
     return l
@@ -236,6 +274,12 @@ def date():
     l.append('dia')
     l.append('día')
     
+    # german
+    l.append('jahr')
+    l.append('monat')
+    l.append('tag')
+    l.append('geburts')
+        
     # portugués
     l.append('mês')
     
