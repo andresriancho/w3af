@@ -25,6 +25,7 @@ from string import letters, digits
 from random import choice, randint
 import core.controllers.outputManager as om
 
+
 def smartFill( variable_name ):
     '''
     This method returns a "smart" option for a variable name inside a form. For example, if the
@@ -34,29 +35,53 @@ def smartFill( variable_name ):
     @return: The "most likely to be validated as a good value" string, OR a random str if no match is found.
     '''
     variable_name = variable_name.lower()
-    
-    handlers = [ (long_alpha, (createRandAlpha, 7)), 
-                        (short_alpha, (createRandAlpha, 3)), 
-                        (long_number, (createRandNum, 5)), 
-                        (short_number, (createRandNum, 2)), 
-                        (date, (createRandNum, 1)), 
-                        (password, (lambda x: 'w3af-FrAmEW0rK.', None)), 
-                        (mail, (lambda x: 'w3af@email.com', None)), 
+   
+    handlers = [ (long_alpha, (createRandAlpha, 7)),
+                        (short_alpha, (createRandAlpha, 3)),
+                        (long_number, (createRandNum, 5)),
+                        (short_number, (createRandNum, 2)),
+                        (date, (createRandNum, 1)),
+                        (password, (lambda x: 'w3af-FrAmEW0rK.', None)),
+                        (mail, (lambda x: 'w3af@email.com', None)),
                         (state, (lambda x: 'AK', None)) ]
-    
+   
+    value = None
+    used_name_from_db = None
+   
     for name_function, (custom_generator, length) in handlers:
-    
+   
         for name_in_db in name_function():
-            if variable_name.count( name_in_db ) or name_in_db.count( variable_name ):
-                value = custom_generator( length )
-                dbg = 'SmartFilling parameter ' + variable_name + ' of form with '
-                dbg += repr(name_function) +' value: ' + value
-                om.out.debug( dbg )
-                return value
-    
-    # Well... nothing was found (this is bad!)
-    # Its better to send numbers when nothing matches.
-    return createRandNum( 4 )
+            #new db name in variable
+            if variable_name.count( name_in_db ) or name_in_db.count( variable_name ): 
+                
+                #new db name longer
+                if value == None or len(name_in_db) > len(used_name_from_db): 
+                    #use it
+                    used_name_from_db = name_in_db
+                    value = custom_generator( length )
+                
+                #new db same length as old db name
+                elif len(name_in_db) == len(used_name_from_db): 
+                    #When we have abcdefg we prefer bcd instead of def
+                    
+                    # One of both is -1
+                    used_index = max(variable_name.find(used_name_from_db), used_name_from_db.find(variable_name)) 
+                    # One of both is -1
+                    new_index = max(variable_name.find(name_in_db), name_in_db.find(variable_name)) 
+                    if new_index < used_index:
+                        used_name_from_db = name_in_db
+                        value = custom_generator( length )
+
+    if value == None:
+        # Well... nothing was found (this is bad!)
+        # Its better to send numbers when nothing matches.
+        value = createRandNum( 4 )
+    else:
+        dbg = 'SmartFilling parameter ' + variable_name + ' of form because matching with '
+        dbg += used_name_from_db +' value: ' + value
+        om.out.debug( dbg )
+       
+    return value
 
 def long_alpha():
     '''
