@@ -20,9 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from __future__ import with_statement
 import urllib2
-import thread
 
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
@@ -30,6 +28,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.request.frFactory import createFuzzableRequestRaw
+
 
 class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
     """
