@@ -46,8 +46,13 @@ class afd(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
 
-        # Internal variable
+        #
+        #   Internal variables
+        #
         self._exec = True
+        # The results
+        self._not_filtered = []
+        self._filtered = []        
         
     def discover(self, fuzzableRequest ):
         '''
@@ -77,10 +82,6 @@ class afd(baseDiscoveryPlugin):
         rnd_value = createRandAlNum(7)
         originalURL = fuzzableRequest.getURL() + '?' + rnd_param + '=' + rnd_value
         
-        # The results
-        not_filtered = []
-        filtered = []        
-        
         try:
             original_response_body = self._urlOpener.GET( originalURL , useCache=True ).getBody()
         except Exception:
@@ -93,25 +94,39 @@ class afd(baseDiscoveryPlugin):
             
             for offending_string in self._get_offending_strings():
                 offending_URL = fuzzableRequest.getURL() + '?' + rnd_param + '=' + offending_string
-                try:
-                    response_body = self._urlOpener.GET( offending_URL, useCache=False ).getBody()
-                except KeyboardInterrupt,e:
-                    raise e
-                except Exception:
-                    # I get here when the remote end closes the connection
-                    filtered.append( offending_URL )
-                else:
-                    # I get here when the remote end returns a 403 or something like that...
-                    # So I must analyze the response body
-                    response_body = response_body.replace(offending_string,'')
-                    response_body = response_body.replace(rnd_param,'')
-                    if relative_distance(response_body, original_response_body) < 0.15:
-                        filtered.append( offending_URL )
-                    else:
-                        not_filtered.append( offending_URL )
+                
+                # Perform requests in different threads
+                targs = (offending_string, offending_URL, original_response_body, rnd_param)
+                self._tm.startFunction( target=self._send_and_analyze, args=targs, ownerObj=self )
+            
+            # Wait for threads to finish
+            self._tm.join( self )
+            
+            # Analyze the results
+            return self._filtered, self._not_filtered
+                
+    def _send_and_analyze(self, offending_string, offending_URL, original_response_body, rnd_param):
+        '''
+        Actually send the HTTP request.
+        @return: None, everything is saved to the self._filtered and self._not_filtered lists.
+        '''
+        try:
+            response_body = self._urlOpener.GET( offending_URL, useCache=False ).getBody()
+        except KeyboardInterrupt,e:
+            raise e
+        except Exception:
+            # I get here when the remote end closes the connection
+            self._filtered.append( offending_URL )
+        else:
+            # I get here when the remote end returns a 403 or something like that...
+            # So I must analyze the response body
+            response_body = response_body.replace(offending_string,'')
+            response_body = response_body.replace(rnd_param,'')
+            if relative_distance(response_body, original_response_body) < 0.15:
+                self._filtered.append( offending_URL )
+            else:
+                self._not_filtered.append( offending_URL )
         
-        return filtered, not_filtered
-
     def _analyze_results( self, filtered, not_filtered ):
         '''
         Analyze the test results and save the conclusion to the kb.
