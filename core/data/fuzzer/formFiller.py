@@ -144,16 +144,6 @@ def long_alpha():
     l.append('unternehmung')
     l.append('position')
     
-    # passwords need to be long in order to be "complex"
-    l.append('pass')
-    l.append('word')
-    l.append('pswd')
-    l.append('pwd')
-    l.append('auth')
-    l.append('password')
-    l.append('contraseña')
-    l.append('senha')
-    
     return list(set(l))
 
 def short_alpha():
