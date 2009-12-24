@@ -139,7 +139,7 @@ class allowedMethods(baseDiscoveryPlugin):
                     i = info.info()
                     i.setName( 'Non existent methods default to GET' )
                     i.setURL( url )
-                    i.setId( [non_exist_response.getCode(), get_response.getCode()] )
+                    i.setId( [non_exist_response.getId(), get_response.getId()] )
                     msg = 'The remote Web server has a custom configuration, in which any non'
                     msg += ' existent methods that are invoked are defaulted to GET instead of'
                     msg += ' returning a "Not Implemented" response.'
