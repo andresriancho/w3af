@@ -111,6 +111,9 @@ class frontpage(baseAuditPlugin):
         content = "method=put document:4.0.2.4715&service_name=&document=[document_name="
         content += file_path
         content += ";meta_info=[]]&put_option=overwrite&comment=&keep_checked_out=false"
+        content += '\n'
+        # The content of the file I'm uploading is the file name reversed
+        content += randFile[::-1]
         
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
         # inside the discovery.frontpage_version plugin, and then used here
@@ -148,7 +151,7 @@ class frontpage(baseAuditPlugin):
         else:
             # The file I upload has blank content
             # And it must be there
-            if res.getBody() == '' and not is_404( res ):
+            if res.getBody() == randFile[::-1] and not is_404( res ):
                 v = vuln.vuln()
                 v.setURL( targetURL )
                 v.setId( [upload_id, res.id] )
@@ -159,7 +162,7 @@ class frontpage(baseAuditPlugin):
                 msg += ' unauthenticated users to upload files to the remote web server.' 
                 v.setDesc( msg )
                 om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
-                kb.kb.append( self, 'fileUpload', v )
+                kb.kb.append( self, 'frontpage', v )
             else:
                 om.out.debug('The file that was uploaded using the POST method isn\'t there!')
 
