@@ -25,6 +25,7 @@ from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
+
 import copy
 
 
@@ -56,7 +57,10 @@ class baseAuditPlugin(basePlugin):
         # These lines were added because we need to return the new vulnerabilities found by this
         # audit plugin, and I don't want to change the code of EVERY plugin!
         before_vuln_dict = kb.kb.getData( self )
+        
         self.audit( fuzzable_request_copy )
+        self._tm.join( self )
+        
         after_vuln_dict = kb.kb.getData( self )
         
         # Now I get the difference between them:
