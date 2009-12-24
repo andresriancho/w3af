@@ -164,7 +164,7 @@ class dav(baseAuditPlugin):
         elif put_response.getCode() == 403:
             i = info.info()
             i.setURL( url )
-            i.setId( res.id )
+            i.setId( [put_response.id, res.id] )
             i.setName( 'DAV insufficient privileges' )
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
