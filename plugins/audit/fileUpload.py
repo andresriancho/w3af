@@ -82,11 +82,8 @@ class fileUpload(baseAuditPlugin):
                     mutant.uploaded_file_name = self._file_list[i][1]
        
                 for mutant in mutants:
-                    if self._hasNoBug( 'fileUpload' , 'fileUpload' , mutant.getURL() , mutant.getVar()):
-                        # Only spawn a thread if the mutant has a modified variable
-                        # that has no reported bugs in the kb
-                        targs = (mutant,)
-                        self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                    targs = (mutant,)
+                    self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
     def _get_files( self ):
         '''

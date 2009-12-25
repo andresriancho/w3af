@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -154,10 +155,12 @@ class remoteFileInclude(baseAuditPlugin):
         mutants = createMutants( freq, rfi_url_list, oResponse=oResponse )
         
         for mutant in mutants:
-            if self._hasNoBug( 'remoteFileInclude', 'remoteFileInclude', \
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'remoteFileInclude' , 'remoteFileInclude',\
                                         mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+                
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs , ownerObj=self )
                 
@@ -165,30 +168,43 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        if self._rfi_result in response:
-            v = vuln.vuln( mutant )
-            v.setId( response.id )
-            v.setSeverity(severity.HIGH)
-            v.setName( 'Remote file inclusion vulnerability' )
-            v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
-            kb.kb.append( self, 'remoteFileInclude', v )
-        
-        else:
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
             #
-            #   Analyze some errors that indicate that there is a RFI but with some
-            #   "configuration problems"
+            #   I will only report the vulnerability once.
             #
-            rfi_errors = ['php_network_getaddresses: getaddrinfo',
-                                'failed to open stream: Connection refused in']
-            for error in rfi_errors:
-                if error in response and not re.search( error, mutant.getOriginalResponseBody() ):
+            if self._hasNoBug( 'remoteFileInclude' , 'remoteFileInclude' ,\
+                                        mutant.getURL() , mutant.getVar() ):
+                
+                if self._rfi_result in response:
                     v = vuln.vuln( mutant )
                     v.setId( response.id )
-                    v.setSeverity(severity.MEDIUM)
-                    v.addToHighlight(error)
+                    v.setSeverity(severity.HIGH)
                     v.setName( 'Remote file inclusion vulnerability' )
                     v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
                     kb.kb.append( self, 'remoteFileInclude', v )
+                
+                else:
+                    #
+                    #   Analyze some errors that indicate that there is a RFI but with some
+                    #   "configuration problems"
+                    #
+                    rfi_errors = ['php_network_getaddresses: getaddrinfo',
+                                        'failed to open stream: Connection refused in']
+                    for error in rfi_errors:
+                        if error in response and not error in mutant.getOriginalResponseBody():
+                            v = vuln.vuln( mutant )
+                            v.setId( response.id )
+                            v.setSeverity(severity.MEDIUM)
+                            v.addToHighlight(error)
+                            v.setName( 'Remote file inclusion vulnerability' )
+                            v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
+                            kb.kb.append( self, 'remoteFileInclude', v )
     
     def end(self):
         '''

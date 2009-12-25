@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -67,10 +68,11 @@ class localFileInclude(baseAuditPlugin):
         mutants = createMutants( freq , local_files, oResponse=oResponse )
             
         for mutant in mutants:
-            if self._hasNoBug( 'localFileInclude', 'localFileInclude', mutant.getURL() , \
-            mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'localFileInclude' , 'localFileInclude', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
                 # I don't grep the result, because if I really find a local file inclusion,
                 # I will be requesting /etc/passwd and that would generate A LOT of false
@@ -127,33 +129,45 @@ class localFileInclude(baseAuditPlugin):
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
+        Try to find the local file inclusions.
         '''
-        # Try to find the local file inclusions
-        file_content_list = self._find_file( response )
-        for file_pattern_regex, file_content in file_content_list:
-            if not file_pattern_regex.search( mutant.getOriginalResponseBody() ):
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setName( 'Local file inclusion vulnerability' )
-                v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
-                v['file_pattern'] = file_content
-                v.addToHighlight( file_content )
-                kb.kb.append( self, 'localFileInclude', v )
-                return
-        
-        # Check for interesting errors
-        for regex in self.get_include_errors():
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
             
-            match = regex.search( response.getBody() )
-            
-            if match and not \
-            regex.search( mutant.getOriginalResponseBody() ):
-                i = info.info( mutant )
-                i.setId( response.id )
-                i.setName( 'File read error' )
-                i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
-                kb.kb.append( self, 'error', i )
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'localFileInclude' , 'localFileInclude' , mutant.getURL() , mutant.getVar() ):
+                
+                file_content_list = self._find_file( response )
+                for file_pattern_regex, file_content in file_content_list:
+                    if not file_pattern_regex.search( mutant.getOriginalResponseBody() ):
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setName( 'Local file inclusion vulnerability' )
+                        v.setSeverity(severity.MEDIUM)
+                        v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
+                        v['file_pattern'] = file_content
+                        v.addToHighlight( file_content )
+                        kb.kb.append( self, 'localFileInclude', v )
+                        return
+                
+                # Check for interesting errors
+                for regex in self.get_include_errors():
+                    
+                    match = regex.search( response.getBody() )
+                    
+                    if match and not \
+                    regex.search( mutant.getOriginalResponseBody() ):
+                        i = info.info( mutant )
+                        i.setId( response.id )
+                        i.setName( 'File read error' )
+                        i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
+                        kb.kb.append( self, 'error', i )
                 
     
     def end(self):
@@ -200,7 +214,7 @@ class localFileInclude(baseAuditPlugin):
             msg += ' a fragment is shown): "' + res[0] [1]
             msg += '". This is just an informational message, which might be related to a'
             msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
-            om.out.information( msg )
+            om.out.debug( msg )
         if len(res) > 1:
             msg = 'File fragments have been found. The following is a list of file fragments'
             msg += ' that were returned by the web application while testing for local file'
@@ -209,7 +223,7 @@ class localFileInclude(baseAuditPlugin):
                 msg += '- "' + file_pattern + '" \n'
             msg += 'This is just an informational message, which might be related to a'
             msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
-            om.out.information( msg )
+            om.out.debug( msg )
         return res
     
     def _get_file_patterns(self):

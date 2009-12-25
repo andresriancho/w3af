@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -67,9 +68,11 @@ class mxInjection(baseAuditPlugin):
         mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
             
         for mutant in mutants:
-            if self._hasNoBug( 'mxInjection' , 'mxInjection' , mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'mxInjection' , 'mxInjection', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
@@ -78,16 +81,28 @@ class mxInjection(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        mx_error_list = self._find_MX_error( response )
-        for mx_error_re, mx_error_string in mx_error_list:
-            if not mx_error_re.search( mutant.getOriginalResponseBody() ):
-                v = vuln.vuln( mutant )
-                v.setName( 'MX injection vulnerability' )
-                v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
-                v.setId( response.id )
-                v.addToHighlight( mx_error_string )
-                kb.kb.append( self, 'mxInjection', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'mxInjection' , 'mxInjection' , mutant.getURL() , mutant.getVar() ):
+                
+                mx_error_list = self._find_MX_error( response )
+                for mx_error_re, mx_error_string in mx_error_list:
+                    if not mx_error_re.search( mutant.getOriginalResponseBody() ):
+                        v = vuln.vuln( mutant )
+                        v.setName( 'MX injection vulnerability' )
+                        v.setSeverity(severity.MEDIUM)
+                        v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
+                        v.setId( response.id )
+                        v.addToHighlight( mx_error_string )
+                        kb.kb.append( self, 'mxInjection', v )
     
     def end(self):
         '''

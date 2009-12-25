@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -62,9 +63,11 @@ class xpath(baseAuditPlugin):
         mutants = createMutants( freq , xpath_strings, oResponse=oResponse )
             
         for mutant in mutants:
-            if self._hasNoBug( 'xpath', 'xpath', mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'xpath' , 'xpath', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
@@ -84,16 +87,28 @@ class xpath(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        xpath_error_list = self._find_xpath_error( response )
-        for xpath_error_re, xpath_error in xpath_error_list:
-            if not xpath_error_re.search( mutant.getOriginalResponseBody() ):
-                v = vuln.vuln( mutant )
-                v.setName( 'XPATH injection vulnerability' )
-                v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )
-                v.setId( response.id )
-                v.addToHighlight( xpath_error )
-                kb.kb.append( self, 'xpath', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'xpath' , 'xpath' , mutant.getURL() , mutant.getVar() ):
+                
+                xpath_error_list = self._find_xpath_error( response )
+                for xpath_error_re, xpath_error in xpath_error_list:
+                    if not xpath_error_re.search( mutant.getOriginalResponseBody() ):
+                        v = vuln.vuln( mutant )
+                        v.setName( 'XPATH injection vulnerability' )
+                        v.setSeverity(severity.MEDIUM)
+                        v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )
+                        v.setId( response.id )
+                        v.addToHighlight( xpath_error )
+                        kb.kb.append( self, 'xpath', v )
     
     def end(self):
         '''

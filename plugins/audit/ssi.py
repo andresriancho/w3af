@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -68,9 +69,11 @@ class ssi(baseAuditPlugin):
         mutants = createMutants( freq , ssi_strings, oResponse=oResponse )
         
         for mutant in mutants:
-            if self._hasNoBug( 'ssi', 'ssi', mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'ssi' , 'ssi', mutant.getURL() , mutant.getVar() ):
+
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
     

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -58,28 +59,45 @@ class formatString(baseAuditPlugin):
         mutants = createMutants( freq , string_list, oResponse=oResponse )
             
         for mutant in mutants:
-            targs = (mutant,)
-            self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'formatString' , 'formatString', mutant.getURL() , mutant.getVar() ):
+
+                targs = (mutant,)
+                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
         '''
-        for error in self._get_errors():
-            # Check if the error string is in the response
-            if error in response:
-                # And not in the originally requested (non fuzzed) request
-                if not error not in mutant.getOriginalResponseBody():
-                    # vuln, vuln!
-                    v = vuln.vuln( mutant )
-                    v.setId( response.id )
-                    v.setSeverity(severity.MEDIUM)
-                    v.setName( 'Format string vulnerability' )
-                    msg = 'A possible (detection is really hard...) format string was found at: '
-                    msg += mutant.foundAt()
-                    v.setDesc( msg )
-                    v.addToHighlight( error )
-                    kb.kb.append( self, 'formatString', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'formatString' , 'formatString' , mutant.getURL() , mutant.getVar() ):
+                
+                for error in self._get_errors():
+                    # Check if the error string is in the response
+                    if error in response:
+                        # And not in the originally requested (non fuzzed) request
+                        if not error not in mutant.getOriginalResponseBody():
+                            # vuln, vuln!
+                            v = vuln.vuln( mutant )
+                            v.setId( response.id )
+                            v.setSeverity(severity.MEDIUM)
+                            v.setName( 'Format string vulnerability' )
+                            msg = 'A possible (detection is really hard...) format string was found at: '
+                            msg += mutant.foundAt()
+                            v.setDesc( msg )
+                            v.addToHighlight( error )
+                            kb.kb.append( self, 'formatString', v )
     
     def _get_errors( self ):
         '''

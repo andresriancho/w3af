@@ -64,7 +64,7 @@ class frontpage(baseAuditPlugin):
         domain_path = urlParser.getDomainPath( freq.getURL() )
         
         # Start
-        if self._stop_on_first and kb.kb.getData('frontpage', 'fileUpload'):
+        if self._stop_on_first and kb.kb.getData('frontpage', 'frontpage'):
             # Nothing to do, I have found vuln(s) and I should stop on first
             msg = 'Not verifying if I can upload files to: "' + domain_path + '" using author.dll'
             msg += '. Because I already found one vulnerability.'

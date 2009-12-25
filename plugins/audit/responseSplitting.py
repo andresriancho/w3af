@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -58,10 +59,12 @@ class responseSplitting(baseAuditPlugin):
         mutants = createMutants( freq , rsList )
             
         for mutant in mutants:
-            if self._hasNoBug( 'responseSplitting', 'responseSplitting', \
-                                        mutant.getURL(), mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'responseSplitting' , 'responseSplitting',\
+                                        mutant.getURL() , mutant.getVar() ):
+                                            
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
@@ -80,30 +83,43 @@ class responseSplitting(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        # When trying to send a response splitting to php 5.1.2 I get :
-        # Header may not contain more than a single header, new line detected
-        for error in self._get_errors():
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
             
-            if error in response:
-                msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
-                msg += ' modifies the headers of the response, but this error was sent while '
-                msg += 'testing for response splitting: "' + error + '"'
-                
-                i = info.info()
-                i.setDesc( msg )
-                i.setId( response.id )
-                i.setName( 'Parameter modifies headers' )
-                kb.kb.append( self, 'responseSplitting', i )
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'responseSplitting' , 'responseSplitting' ,\
+                                        mutant.getURL() , mutant.getVar() ):
+                                            
+                # When trying to send a response splitting to php 5.1.2 I get :
+                # Header may not contain more than a single header, new line detected
+                for error in self._get_errors():
+                    
+                    if error in response:
+                        msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
+                        msg += ' modifies the headers of the response, but this error was sent while'
+                        msg += ' testing for response splitting: "' + error + '"'
+                        
+                        i = info.info()
+                        i.setDesc( msg )
+                        i.setId( response.id )
+                        i.setName( 'Parameter modifies headers' )
+                        kb.kb.append( self, 'responseSplitting', i )
 
-                return
-            
-        if self._header_was_injected( response ):
-            v = vuln.vuln( mutant )
-            v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
-            v.setId( response.id )
-            v.setSeverity(severity.MEDIUM)
-            v.setName( 'Response splitting vulnerability' )
-            kb.kb.append( self, 'responseSplitting', v )
+                        return
+                    
+                if self._header_was_injected( response ):
+                    v = vuln.vuln( mutant )
+                    v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
+                    v.setId( response.id )
+                    v.setSeverity(severity.MEDIUM)
+                    v.setName( 'Response splitting vulnerability' )
+                    kb.kb.append( self, 'responseSplitting', v )
     
     def end(self):
         '''

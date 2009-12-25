@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.fuzzer.fuzzer import createRandAlpha
@@ -35,6 +36,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 from core.controllers.w3afException import w3afException
+
 import re
 
 
@@ -75,7 +77,12 @@ class eval(baseAuditPlugin):
 
         if self._use_echo:
             self._fuzz_with_echo( freq )
-
+        
+        #   Wait until the echo tests finish. I need to do this because of an odd problem with
+        #   Python's "with" statement. It seems that if I use two different with statements and
+        #   the same thread lock at the same time, the application locks and stops working.
+        self._tm.join(self)
+        
         if self._use_time_delay:
             self._fuzz_with_time_delay( freq )
 
@@ -89,13 +96,14 @@ class eval(baseAuditPlugin):
         mutants = createMutants( freq , print_strings, oResponse=oResponse )
 
         for mutant in mutants:
-            if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyzeEcho}
-                self._tm.startFunction( target=self._sendMutant, args=targs,\
-                        kwds=kwds, ownerObj=self )
+                kwds = {'analyze_callback':self._analyze_echo}
+                self._tm.startFunction( target=self._sendMutant, args=targs, kwds=kwds, ownerObj=self )
 
     def _fuzz_with_time_delay( self, freq):
         '''
@@ -110,64 +118,90 @@ class eval(baseAuditPlugin):
         mutants = createMutants( freq, wait_strings )
 
         for mutant in mutants:
-            if self._hasNoBug( 'eval', 'eval', mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyzeWait}
-                self._tm.startFunction( target=self._sendMutant, args=targs , \
-                                                    kwds=kwds, ownerObj=self )
+                kwds = {'analyze_callback':self._analyze_wait}
+                self._tm.startFunction( target=self._sendMutant, args=targs, kwds=kwds, ownerObj=self )
+            
 
-    def _analyzeEcho( self, mutant, response ):
+    def _analyze_echo( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the
         _fuzz_with_echo method.
         '''
-        eval_error_list = self._find_eval_result( response )
-        for eval_error in eval_error_list:
-            if not re.search( eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setSeverity(severity.HIGH)
-                v.setName( 'eval() input injection vulnerability' )
-                v.setDesc( 'eval() input injection was found at: ' + mutant.foundAt() )
-                kb.kb.append( self, 'eval', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
+                
+                eval_error_list = self._find_eval_result( response )
+                for eval_error in eval_error_list:
+                    if not re.search( eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setSeverity(severity.HIGH)
+                        v.setName( 'eval() input injection vulnerability' )
+                        v.setDesc( 'eval() input injection was found at: ' + mutant.foundAt() )
+                        kb.kb.append( self, 'eval', v )
 
-    def _analyzeWait( self, mutant, response ):
+    def _analyze_wait( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the
         _fuzz_with_time_delay method.
         '''
-        if response.getWaitTime() > (self._original_wait_time + self._wait_time - 2) and \
-        response.getWaitTime() < (self._original_wait_time + self._wait_time + 2):
-            # generates a delay in the response; so I'll resend changing the time and see 
-            # what happens
-            originalWaitParam = mutant.getModValue()
-            moreWaitParam = originalWaitParam.replace( \
-                                                        str(self._wait_time), \
-                                                        str(self._second_wait_time) )
-            mutant.setModValue( moreWaitParam )
-            response = self._sendMutant( mutant, analyze=False )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
+                        
+                if response.getWaitTime() > (self._original_wait_time + self._wait_time - 2) and \
+                response.getWaitTime() < (self._original_wait_time + self._wait_time + 2):
+                    # generates a delay in the response; so I'll resend changing the time and see 
+                    # what happens
+                    originalWaitParam = mutant.getModValue()
+                    moreWaitParam = originalWaitParam.replace( \
+                                                                str(self._wait_time), \
+                                                                str(self._second_wait_time) )
+                    mutant.setModValue( moreWaitParam )
+                    response = self._sendMutant( mutant, analyze=False )
 
-            if response.getWaitTime() > (self._original_wait_time + self._second_wait_time - 3) and \
-            response.getWaitTime() < (self._original_wait_time + self._second_wait_time + 3):
-                # Now I can be sure that I found a vuln, I control the time of the response.
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setSeverity(severity.HIGH)
-                v.setName( 'eval() input injection vulnerability' )
-                v.setDesc( 'eval() input injection was found at: ' + mutant.foundAt() )
-                kb.kb.append( self, 'eval', v )
-            else:
-                # The first delay existed... I must report something...
-                i = info.info()
-                i.setId( response.id )
-                i.setDc( mutant.getDc() )
-                i.setName( 'eval() input injection vulnerability' )
-                msg = 'eval() input injection was found at: ' + mutant.foundAt()
-                msg += ' . Please review manually.'
-                i.setDesc( msg )
-                kb.kb.append( self, 'eval', i )
+                    if response.getWaitTime() > (self._original_wait_time + self._second_wait_time - 3) and \
+                    response.getWaitTime() < (self._original_wait_time + self._second_wait_time + 3):
+                        # Now I can be sure that I found a vuln, I control the time of the response.
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setSeverity(severity.HIGH)
+                        v.setName( 'eval() input injection vulnerability' )
+                        v.setDesc( 'eval() input injection was found at: ' + mutant.foundAt() )
+                        kb.kb.append( self, 'eval', v )
+                    else:
+                        # The first delay existed... I must report something...
+                        i = info.info()
+                        i.setId( response.id )
+                        i.setDc( mutant.getDc() )
+                        i.setName( 'eval() input injection vulnerability' )
+                        msg = 'eval() input injection was found at: ' + mutant.foundAt()
+                        msg += ' . Please review manually.'
+                        i.setDesc( msg )
+                        kb.kb.append( self, 'eval', i )
 
     def _get_print_strings( self ):
         '''

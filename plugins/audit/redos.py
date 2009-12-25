@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -74,9 +75,11 @@ class redos(baseAuditPlugin):
         mutants = createMutants( freq , patterns_list )
         
         for mutant in mutants:
-            if self._hasNoBug( 'redos', 'redos', mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'redos' , 'redos', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
                 kwds = {'analyze_callback':self._analyze_wait}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
@@ -86,46 +89,58 @@ class redos(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method that was sent in the audit method.
         '''
-        if response.getWaitTime() > (self._original_wait_time + self._wait_time) :
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
             
-            # This could be because of a ReDoS vuln, or because of an error that
-            # generates a delay in the response; so I'll resend changing the length and see 
-            # what happens.
-            
-            first_wait_time = response.getWaitTime()
-            
-            # Replace the old pattern with the new one:
-            original_wait_param = mutant.getModValue()
-            more_wait_param = original_wait_param.replace( 'X', 'XX' )
-            more_wait_param = more_wait_param.replace( '9', '99' )
-            mutant.setModValue( more_wait_param )
-            
-            # send
-            response = self._sendMutant( mutant, analyze=False )
-            
-            # compare the times
-            if response.getWaitTime() > (first_wait_time * 1.5):
-                # Now I can be sure that I found a vuln, I control the time of the response.
-                v = vuln.vuln( mutant )
-                v.setName( 'ReDoS vulnerability' )
-                v.setSeverity(severity.MEDIUM)
-                v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
-                v.setDc( mutant.getDc() )
-                v.setId( response.id )
-                v.setURI( response.getURI() )
-                kb.kb.append( self, 'redos', v )
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
+                
+                if response.getWaitTime() > (self._original_wait_time + self._wait_time) :
+                    
+                    # This could be because of a ReDoS vuln, an error that generates a delay in the
+                    # response or simply a network delay; so I'll resend changing the length and see
+                    # what happens.
+                    
+                    first_wait_time = response.getWaitTime()
+                    
+                    # Replace the old pattern with the new one:
+                    original_wait_param = mutant.getModValue()
+                    more_wait_param = original_wait_param.replace( 'X', 'XX' )
+                    more_wait_param = more_wait_param.replace( '9', '99' )
+                    mutant.setModValue( more_wait_param )
+                    
+                    # send
+                    response = self._sendMutant( mutant, analyze=False )
+                    
+                    # compare the times
+                    if response.getWaitTime() > (first_wait_time * 1.5):
+                        # Now I can be sure that I found a vuln, I control the time of the response.
+                        v = vuln.vuln( mutant )
+                        v.setName( 'ReDoS vulnerability' )
+                        v.setSeverity(severity.MEDIUM)
+                        v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
+                        v.setDc( mutant.getDc() )
+                        v.setId( response.id )
+                        v.setURI( response.getURI() )
+                        kb.kb.append( self, 'redos', v )
 
-            else:
-                # The first delay existed... I must report something...
-                i = info.info()
-                i.setName('Possible ReDoS vulnerability')
-                i.setId( response.id )
-                i.setDc( mutant.getDc() )
-                i.setMethod( mutant.getMethod() )
-                msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
-                msg += ' . Please review manually.'
-                i.setDesc( msg )
-                kb.kb.append( self, 'redos', i )
+                    else:
+                        # The first delay existed... I must report something...
+                        i = info.info()
+                        i.setName('Possible ReDoS vulnerability')
+                        i.setId( response.id )
+                        i.setDc( mutant.getDc() )
+                        i.setMethod( mutant.getMethod() )
+                        msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
+                        msg += ' . Please review manually.'
+                        i.setDesc( msg )
+                        kb.kb.append( self, 'redos', i )
     
     def end(self):
         '''

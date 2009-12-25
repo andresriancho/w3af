@@ -33,6 +33,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.sql_tools.blind_sqli_time_delay import blind_sqli_time_delay
 
+
 class blindSqli(baseAuditPlugin):
     '''
     Find blind SQL injection vulnerabilities.

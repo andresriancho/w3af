@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+from __future__ import with_statement
 
 from core.data.fuzzer.fuzzer import createMutants
 import core.controllers.outputManager as om
@@ -33,7 +33,9 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.w3afException import w3afException
+
 import re
+
 
 class LDAPi(baseAuditPlugin):
     '''
@@ -60,11 +62,14 @@ class LDAPi(baseAuditPlugin):
         mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )
             
         for mutant in mutants:
-            if self._hasNoBug( 'LDAPi', 'LDAPi', mutant.getURL(), mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+            
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'LDAPi' , 'LDAPi', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant, )
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+            
             
     def _get_LDAPi_strings( self ):
         '''
@@ -80,16 +85,28 @@ class LDAPi(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        ldap_error_list = self._find_ldap_error( response )
-        for ldap_error_regex, ldap_error_string in ldap_error_list:
-            if not ldap_error_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setSeverity(severity.HIGH)
-                v.setName( 'LDAP injection vulnerability' )
-                v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
-                v.addToHighlight( ldap_error_string )
-                kb.kb.append( self, 'LDAPi', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'LDAPi' , 'LDAPi' , mutant.getURL() , mutant.getVar() ):
+                
+                ldap_error_list = self._find_ldap_error( response )
+                for ldap_error_regex, ldap_error_string in ldap_error_list:
+                    if not ldap_error_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setSeverity(severity.HIGH)
+                        v.setName( 'LDAP injection vulnerability' )
+                        v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
+                        v.addToHighlight( ldap_error_string )
+                        kb.kb.append( self, 'LDAPi', v )
     
     def end(self):
         '''

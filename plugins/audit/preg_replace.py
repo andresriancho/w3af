@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -62,10 +63,11 @@ class preg_replace(baseAuditPlugin):
         mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
         
         for mutant in mutants:
-            if self._hasNoBug( 'preg_replace' , 'preg_replace' , \
-                                        mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
+
+            # Only spawn a thread if the mutant has a modified variable
+            # that has no reported bugs in the kb
+            if self._hasNoBug( 'preg_replace' , 'preg_replace', mutant.getURL() , mutant.getVar() ):
+                
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
         
@@ -73,16 +75,28 @@ class preg_replace(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        preg_error_list = self._find_preg_error( response )
-        for preg_error_re, preg_error_string in preg_error_list:
-            if not preg_error_re.search( mutant.getOriginalResponseBody() ):
-                v = vuln.vuln( mutant )
-                v.setId( response.id )
-                v.setSeverity(severity.HIGH)
-                v.setName( 'Unsafe usage of preg_replace' )
-                v.setDesc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
-                v.addToHighlight( preg_error_string )
-                kb.kb.append( self, 'preg_replace', v )
+        #
+        #   Only one thread at the time can enter here. This is because I want to report each
+        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
+        #   could not be done.
+        #
+        with self._plugin_lock:
+            
+            #
+            #   I will only report the vulnerability once.
+            #
+            if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
+                
+                preg_error_list = self._find_preg_error( response )
+                for preg_error_re, preg_error_string in preg_error_list:
+                    if not preg_error_re.search( mutant.getOriginalResponseBody() ):
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setSeverity(severity.HIGH)
+                        v.setName( 'Unsafe usage of preg_replace' )
+                        v.setDesc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
+                        v.addToHighlight( preg_error_string )
+                        kb.kb.append( self, 'preg_replace', v )
         
     def end(self):
         '''
