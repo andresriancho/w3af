@@ -179,9 +179,9 @@ class sqli(baseAuditPlugin):
             errors.append( ('SQLCODE', dbms.DB2 ) )
             errors.append( ('DB2 SQL error:', dbms.DB2 ) )
             errors.append( ('SQLSTATE', dbms.DB2 ) )
-            errors.append( ('[IBM][CLI Driver][DB2/6000]', dbms.DB2 ) )
-            errors.append( ('[CLI Driver]', dbms.DB2 ) )
-            errors.append( ('[DB2/6000]', dbms.DB2 ) )
+            errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2/6000\\]', dbms.DB2 ) )
+            errors.append( ('\\[CLI Driver\\]', dbms.DB2 ) )
+            errors.append( ('\\[DB2/6000\\]', dbms.DB2 ) )
             
             # Sybase
             errors.append( ("Sybase message:", dbms.SYBASE ) )
