@@ -179,7 +179,10 @@ class htmlParser(sgmlParser):
             #   FIXME: This is a kludge. Should we get lists as attr?!
             #
             if isinstance(attr, list):
-                attr = attr[0]
+                if len(attr) == 0:
+                    return
+                else:
+                    attr = attr[0]
             
             if attr[0].lower() == 'type' and attr[1].lower() == 'file':
                 # Let the form know, that this is a file input
