@@ -1,3 +1,4 @@
+#REQUIRE_LINUX
 import re
 
 result = []
@@ -7,3 +8,4 @@ def parse_gcc_version( proc_version ):
     return gcc_version.group(0)
 
 result.append(parse_gcc_version( read( '/proc/version')))
+result = [p for p in result if p != '']
