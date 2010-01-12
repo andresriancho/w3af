@@ -52,7 +52,7 @@ else:
 # Load the theme (this fixes bug [ 2022433 ] windows buttons without images)
 # https://sourceforge.net/tracker/index.php?func=detail&aid=2022433&group_id=170274&atid=853652
 if sys.platform == "win32":
-    gtk.rc_add_default_file('core/ui/gtkUi/data/w3af_gtkrc')
+    gtk.rc_add_default_file('%USERPROFILE%/.gtkrc-2.0')
 
 # splash!
 from core.ui.gtkUi.splash import Splash
