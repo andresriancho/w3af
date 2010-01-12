@@ -22,12 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-import sys
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 # severity constants for vuln messages
 import core.data.constants.severity as severity
+
+import string
+import sys
+
 
 class console(baseOutputPlugin):
     '''
@@ -40,6 +45,13 @@ class console(baseOutputPlugin):
         baseOutputPlugin.__init__(self)
         self.verbose = False
 
+    def _make_printable(self, a_string):
+        result = ''
+        for char in a_string:
+            if char in string.printable:
+                result += char
+        return result
+
     def debug(self, message, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -49,7 +61,7 @@ class console(baseOutputPlugin):
             to_print = message
             if newLine == True:
                 to_print += '\r\n'
-            sys.stdout.write( self._cleanString(to_print) )
+            sys.stdout.write( self._make_printable(to_print) )
             sys.stdout.flush()
 
     def information(self, message , newLine = True ):
@@ -60,7 +72,7 @@ class console(baseOutputPlugin):
         to_print = message
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._cleanString(to_print) )
+        sys.stdout.write( self._make_printable(to_print) )
         sys.stdout.flush()
 
     def error(self, message , newLine = True ):
@@ -71,7 +83,7 @@ class console(baseOutputPlugin):
         to_print = message
         if newLine == True:
             to_print += '\r\n'
-        sys.stderr.write( self._cleanString(to_print) )
+        sys.stderr.write( self._make_printable(to_print) )
         sys.stdout.flush()
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
@@ -82,7 +94,7 @@ class console(baseOutputPlugin):
         to_print = message
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._cleanString(to_print) )
+        sys.stdout.write( self._make_printable(to_print) )
         sys.stdout.flush()
         
     def console( self, message, newLine = True ):
@@ -92,7 +104,7 @@ class console(baseOutputPlugin):
         to_print = message
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._cleanString(to_print) )
+        sys.stdout.write( self._make_printable(to_print) )
         sys.stdout.flush()
 
     def logHttp( self, request, response):
