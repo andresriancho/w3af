@@ -103,7 +103,7 @@ class localFileInclude(baseAuditPlugin):
             
             # This test adds support for finding vulnerabilities like this one
             # http://website/zen-cart/extras/curltest.php?url=file:///etc/passwd
-            local_files.append("file:///etc/passwd")
+            #local_files.append("file:///etc/passwd")
             
             local_files.append("/etc/passwd\0")
             local_files.append("/etc/passwd\0.html")
