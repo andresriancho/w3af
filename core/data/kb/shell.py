@@ -26,8 +26,12 @@ from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import *
 
+import plugins.attack.payloads.payload_handler as payload_handler
+
 # python stuff
 import time
+import os
+
 
 class shell(vuln, exploitResult, commonAttackMethods):
     '''
@@ -149,22 +153,33 @@ class shell(vuln, exploitResult, commonAttackMethods):
         '''
         raise w3afException('You should implement the _rexec method of classes that inherit from "shell"')
     
-    def readFile( self, filename ):
+    def _payload(self, payload_filename):
         '''
-        @return: The contents of a file passed as parameter
+        Run a payload.
         '''
-        if self._rOS == 'windows':
-            return self.rexec('type ' + filename )
-        else:
-            return self.rexec('cat ' + filename )
+        payload_filename = os.path.join('plugins','attack','payloads','payloads', payload_filename)
+        payload_filename += '.py'
+        requirements =  payload_handler.get_used_syscalls( payload_filename )
     
-    def removeFile( self, filename ):
-        om.out.debug('Removing file: "' + filename + '".')
-        if self._rOS == 'windows':
-            return self.rexec('del ' + filename )
+        if payload_handler.can_run( self , requirements):
+            om.out.debug( 'The payload can be run. Starting execution.' )
+            result = payload_handler.exec_payload( self,  payload_filename)
+            result_str = '\n'.join(result)
         else:
-            return self.rexec('rm ' + filename )
+            msg = 'The payload can NOT be run, payload requirements (' + ','.join(requirements) +')'
+            msg += ' exceed the exploit capabilities.'
+            result_str = '\n'.join(result)
+            
+        return result_str
     
+    def _print_runnable_payloads(self):
+        '''
+        Print the payloads that can be run using this exploit.
+        
+        @return: A list with all runnable payloads.
+        '''
+        return '\n'.join( payload_handler.runnable_payloads( self ) )
+        
     def end( self ):
         '''
         This method is called when the shell is not going to be used anymore. It should be used to remove the
