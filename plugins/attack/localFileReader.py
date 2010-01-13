@@ -321,13 +321,11 @@ class fileReaderShell(shell):
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
-            return self._cut( response.getBody() )
+            return self._filter_errors( self._cut( response.getBody() ) )
                 
     def _filter_errors( self, result ):
         '''
         Filter out ugly php errors and print a simple "Permission denied" or "File not found"
-        
-        NOT being used now!
         '''
         if result.count('<b>Warning</b>'):
             if result.count( 'Permission denied' ):
@@ -338,7 +336,9 @@ class fileReaderShell(shell):
                 result = READ_DIRECTORY
             elif result.count('</a>]: failed to open stream:'):
                 result = FAILED_STREAM
-        return result
+        #   Please see the next lines!
+        #return result
+        return ''
     
     def end( self ):
         '''
