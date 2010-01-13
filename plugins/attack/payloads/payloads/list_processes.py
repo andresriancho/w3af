@@ -1,15 +1,27 @@
+#REQUIRE_LINUX
 import re
 
 result = []
 
 def parse_proc_name ( status_file ):
     name = re.search('(?<=Name:\t)(.*)', status_file)
-    return name.group(1)
-    
-#NO OLVIARME: EN ENVIRON ESTAN TODAS LAS VARIABLES E ENTORNO DE CADA PROCESO!! SOLO CON PERMISO DE ROOT.
+    if name:
+        name.group(1)
+    else:
+        return ''
 
-max_pid = open('/proc/sys/kernel/pid_max').read()[:-1]
+def parse_proc_state ( status_file ):
+    state = re.search('(?<=State:\t)(.*)', status_file)
+    if state:
+        state.group(1)
+    else:
+        return ''
+
 result.append('PID      CMD')
-for i in xrange(1, int(max_pid) ):
-        result.append(str(i)+'      '+parse_proc_name(open('/proc/'+str(i)+'/status').read()))
-result = [p for p in result if p != '']
+max_pid = read('/proc/sys/kernel/pid_max')[:-1]
+
+#for i in xrange(1, int(max_pid)):
+#   print i
+#   result.append(str(i)+'      '+parse_proc_name(read('/proc/'+str(i)+'/status')))
+#result = [p for p in result if p != '']
+#TODO: cmdline!

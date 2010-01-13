@@ -6,21 +6,27 @@ paths = []
 
 def parse_apache2_init( apache_file_read ):
     directory = re.search('(?<=APACHE_PID_FILE needs to be defined in )(.*?)envvars', apache_file_read)
-    return directory.group(1)
+    if directory:
+        return directory.group(1)
+    else:
+        return ''
 
 def parse_apache_init( apache_file_read ):
     directory = re.search('(?<=APACHE_HOME=")(.*?)\"', apache_file_read)
-    return directory.group(1)
+    if directory:
+        return directory.group(1)
+    else:
+        return ''
     
 def parse_httpd_file( httpd_file_read ):
     directory = re.search('(?<=# config: )(.*?)/httpd.conf', httpd_file_read)
-    return directory.group(1)
+    if directory:
+        return directory.group(1)
+    else:
+        return ''
 
 def check_apache_config_dir( apache_config_directory ):
-    if read( apache_config_directory + 'httpd.conf') == '':
-        return False
-    else:
-        return True
+    return read( apache_config_directory + 'httpd.conf') != ''
 
 paths.append( parse_apache2_init( read ('/etc/init.d/apache2') ) )
 paths.append( parse_apache_init( read ('/etc/init.d/apache') ) )
@@ -33,9 +39,10 @@ paths.append('/usr/local/apache/conf/')
 paths.append('/opt/apache/conf/')
 paths.append('/etc/httpd/conf/')
 
-
-
 for path in paths:
     if check_apache_config_dir(path):
         result.append(path)
+
+result = list(set(result))
 result = [p for p in result if p != '']
+
