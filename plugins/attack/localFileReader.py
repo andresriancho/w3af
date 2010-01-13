@@ -338,7 +338,8 @@ class fileReaderShell(shell):
                 result = FAILED_STREAM
         #   Please see the next lines!
         #return result
-        return ''
+            return ''
+        return result
     
     def end( self ):
         '''
