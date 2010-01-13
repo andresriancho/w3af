@@ -64,7 +64,6 @@ class miscSettings(configurable):
             #
             #
             ifname = get_net_iface()
-            print ifname
             cf.cf.save('interface', ifname )
             
             #
