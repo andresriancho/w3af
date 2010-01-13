@@ -31,6 +31,7 @@ from core.data.options.optionList import optionList
 from core.controllers.w3afException import w3afException
 
 from core.controllers.misc.get_local_ip import get_local_ip
+from core.controllers.misc.get_net_iface import get_net_iface
 
 
 class miscSettings(configurable):
@@ -58,7 +59,13 @@ class miscSettings(configurable):
             cf.cf.save('maxThreads', 15 )
             cf.cf.save('fuzzableHeaders', [] )
             cf.cf.save('maxDiscoveryLoops', 500 )
-            cf.cf.save('interface', 'eth0' )
+            
+            #
+            #
+            #
+            ifname = get_net_iface()
+            print ifname
+            cf.cf.save('interface', ifname )
             
             #
             #   This doesn't send any packets, and gives you a nice default setting.
