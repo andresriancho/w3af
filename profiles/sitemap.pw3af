@@ -9,6 +9,7 @@ name = sitemap
 [misc-settings]
 exportFuzzableRequests = 
 maxThreads = 15
+maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
@@ -17,29 +18,35 @@ fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
 maxDepth = 25
-interface = eth0
-maxDiscoveryLoops = 500
-localAddress = 127.0.0.1
+
+
+fuzzFormComboValues = tmb
 nonTargets = 
 
 [discovery.robotsReader]
 
 [http-settings]
 proxyPort = 8080
-basicAuthDomain = 
-maxFileSize = 400000
-always404 = 
-headersFile = 
-proxyAddress = 
-maxRetrys = 2
+urlParameter = 
 never404 = 
+headersFile = 
+maxFileSize = 400000
+proxyAddress = 
+basicAuthDomain = 
+always404 = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
 ignoreSessCookies = False
 timeout = 10
-basicAuthUser = 
 userAgent = w3af.sourceforge.net
+basicAuthUser = 
 basicAuthPass = 
 404string = 
 cookieJarFile = 
+
+[output.console]
+verbose = False
 
 [discovery.yahooSiteExplorer]
 resultLimit = 300

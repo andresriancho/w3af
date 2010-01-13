@@ -4,8 +4,14 @@
 resultLimit = 300
 
 [audit.frontpage]
+stopOnFirst = True
+
+[audit.eval]
+useTimeDelay = True
+useEcho = True
 
 [grep.motw]
+withoutMOTW = False
 
 [grep.creditCards]
 
@@ -13,7 +19,9 @@ resultLimit = 300
 equAlgorithm = setIntersection
 equalLimit = 0.8
 
-[grep.newline]
+[discovery.allowedMethods]
+reportDavOnly = True
+execOneTime = False
 
 [grep.feeds]
 
@@ -21,17 +29,16 @@ equalLimit = 0.8
 
 [audit.phishingVector]
 
-[discovery.allowedMethods]
+[grep.newline]
+mixedOnly = True
 
 [grep.pathDisclosure]
 
 [audit.xsrf]
 
-[audit.sslCertificate]
+[grep.hashFind]
 
 [discovery.dnsWildcard]
-
-[discovery.userDir]
 
 [discovery.detectTransparentProxy]
 
@@ -42,19 +49,21 @@ equalLimit = 0.8
 [grep.strangeHeaders]
 
 [misc-settings]
+exportFuzzableRequests = 
 maxThreads = 15
+fuzzFormComboValues = tmb
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
 fuzzableHeaders = 
 showProgressBar = True
 fuzzCookie = False
-fuzzFileName = False
+
 fuzzFileContent = True
+fuzzFileName = False
+maxDepth = 25
 maxDiscoveryLoops = 500
-maxDepth = 10
-interface = eth0
-localAddress = 127.0.0.1
+
 nonTargets = 
 
 [discovery.fingerprint_os]
@@ -70,21 +79,21 @@ nonTargets =
 [audit.unSSL]
 
 [discovery.sharedHosting]
+resultLimit = 300
 
 [discovery.webSpider]
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
 
-[grep.hashFind]
-
-[audit.eval]
+[audit.sslCertificate]
 
 [audit.osCommanding]
 
 [audit.ssi]
 
 [discovery.serverHeader]
+execOneTime = True
 
 [audit.sqli]
 
@@ -97,20 +106,25 @@ onlyForward = False
 [grep.collectCookies]
 
 [grep.getMails]
+onlyTargetDomain = True
 
 [grep.oracle]
+
+[grep.metaTags]
+search404 = False
 
 [grep.strangeHTTPCode]
 
 [audit.xpath]
 
 [audit.generic]
-
-[grep.fileUpload]
-
-[grep.passwordProfiling]
+diffRatio = 0.35
 
 [grep.httpInBody]
+
+[discovery.sitemapReader]
+
+[grep.fileUpload]
 
 [grep.ajax]
 
@@ -127,8 +141,11 @@ onlyForward = False
 [grep.objects]
 
 [discovery.hmap]
+genFpF = False
 
-[grep.metaTags]
+[discovery.userDir]
+identifyOS = True
+identifyApplications = True
 
 [audit.htaccessMethods]
 
@@ -140,9 +157,9 @@ onlyForward = False
 target = 
 
 [audit.remoteFileInclude]
-listenPort = 44449
 usew3afSite = True
 listenAddress = 
+listenPort = 44449
 
 [grep.wsdlGreper]
 
@@ -154,13 +171,16 @@ listenAddress =
 
 [grep.svnUsers]
 
-[discovery.sitemapReader]
+[grep.passwordProfiling]
 
 [grep.blankBody]
 
 [grep.errorPages]
 
 [audit.dav]
+
+[output.console]
+verbose = True
 
 [audit.formatString]
 
@@ -194,16 +214,21 @@ search404 = True
 [grep.privateIP]
 
 [discovery.phishtank]
+dbFile = plugins/discovery/phishtank/index.xml
+updateDB = False
 
 [http-settings]
 proxyPort = 8080
-basicAuthDomain = 
-maxFileSize = 400000
-always404 = 
+urlParameter = 
+never404 = 
 headersFile = 
+maxFileSize = 400000
 proxyAddress = 
+basicAuthDomain = 
+always404 = 
 maxRetrys = 2
-never404 =
+ntlmAuthUser = 
+ntlmAuthPass = 
 ignoreSessCookies = False
 timeout = 10
 userAgent = w3af.sourceforge.net
@@ -213,6 +238,7 @@ basicAuthPass =
 cookieJarFile = 
 
 [discovery.MSNSpider]
+resultLimit = 300
 
 [audit.fileUpload]
 extensions = gif,html

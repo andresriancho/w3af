@@ -10,7 +10,7 @@ fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
 maxDepth = 25
-interface = eth0
+
 nonTargets = 
 localAddress = 127.0.0.1
 maxDiscoveryLoops = 500

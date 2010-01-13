@@ -2,8 +2,6 @@
 
 [audit.responseSplitting]
 
-[grep.ssn]
-
 [grep.svnUsers]
 
 [grep.passwordProfiling]
@@ -12,12 +10,12 @@
 
 [grep.lang]
 
-[grep.metaTags]
-search404 = False
-
 [audit.htaccessMethods]
 
 [grep.strangeHeaders]
+
+[output.console]
+verbose = False
 
 [audit.xpath]
 
@@ -31,20 +29,15 @@ stopOnFirst = True
 
 [audit.formatString]
 
+[audit.localFileInclude]
+
 [grep.fileUpload]
+
+[grep.objects]
 
 [audit.unSSL]
 
 [grep.strangeParameters]
-
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
-
-[grep.errorPages]
-
-[audit.fileUpload]
-extensions = gif,html
 
 [grep.motw]
 withoutMOTW = False
@@ -52,6 +45,26 @@ withoutMOTW = False
 [grep.ajax]
 
 [grep.creditCards]
+
+[http-settings]
+proxyPort = 8080
+urlParameter = 
+never404 = 
+headersFile = 
+maxFileSize = 400000
+proxyAddress = 
+basicAuthDomain = 
+always404 = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
+ignoreSessCookies = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+404string = 
+cookieJarFile = 
 
 [audit.blindSqli]
 equAlgorithm = setIntersection
@@ -66,7 +79,9 @@ onlyForward = False
 
 [audit.xst]
 
-[grep.error500]
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
 
 [audit.sslCertificate]
 
@@ -74,27 +89,14 @@ onlyForward = False
 description = This profile performs a full audit of the target website, using only the webSpider plugin for discovery.
 name = full_audit
 
-[misc-settings]
-exportFuzzableRequests = 
-maxThreads = 15
-fuzzFCExt = txt
-autoDependencies = True
-demo = False
-fuzzableHeaders = 
-showProgressBar = True
-fuzzCookie = False
-fuzzFileName = False
-fuzzFileContent = True
-maxDiscoveryLoops = 500
-maxDepth = 25
-interface = eth0
-localAddress = 127.0.0.1
-nonTargets = 
+[grep.errorPages]
 
 [grep.findComments]
 search404 = False
 
 [audit.eval]
+useTimeDelay = True
+useEcho = True
 
 [audit.osCommanding]
 
@@ -102,32 +104,27 @@ search404 = False
 
 [output.gtkOutput]
 
-[audit.sqli]
+[grep.ssn]
 
 [grep.dotNetEventValidation]
 
-[bruteforce.formAuthBrute]
-profilingNumber = 50
-useMails = True
-useProfiling = True
-passwdFile = core/controllers/bruteforce/passwords.txt
-useMailUsers = True
-passEqUser = True
-usersFile = core/controllers/bruteforce/users.txt
-stopOnFirst = True
-useSvnUsers = True
+[grep.metaTags]
+search404 = False
 
 [audit.phishingVector]
 
-[grep.objects]
+[audit.sqli]
 
 [audit.buffOverflow]
 
 [grep.oracle]
 
 [grep.newline]
+mixedOnly = True
 
 [grep.httpInBody]
+
+[audit.mxInjection]
 
 [grep.feeds]
 
@@ -135,10 +132,10 @@ useSvnUsers = True
 
 [audit.remoteFileInclude]
 usew3afSite = True
-listenAddress = 
 listenPort = 44449
+listenAddress = 
 
-[grep.codeDisclosure]
+[grep.error500]
 
 [grep.collectCookies]
 
@@ -151,26 +148,10 @@ onlyTargetDomain = True
 
 [audit.xsrf]
 
-[http-settings]
-proxyPort = 8080
-basicAuthDomain = 
-maxFileSize = 400000
-always404 = 
-headersFile = 
-proxyAddress = 
-maxRetrys = 2
-never404 = 
-ignoreSessCookies = False
-timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-404string = 
-cookieJarFile = 
-
-[bruteforce.basicAuthBrute]
+[bruteforce.formAuthBrute]
 profilingNumber = 50
 useMails = True
+useLeetPasswd = True
 useProfiling = True
 passwdFile = core/controllers/bruteforce/passwords.txt
 useMailUsers = True
@@ -179,17 +160,48 @@ usersFile = core/controllers/bruteforce/users.txt
 stopOnFirst = True
 useSvnUsers = True
 
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFormComboValues = tmb
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+showProgressBar = True
+fuzzCookie = False
+
+fuzzFileContent = True
+fuzzFileName = False
+maxDepth = 25
+maxDiscoveryLoops = 500
+
+nonTargets = 
+
 [grep.hashFind]
 
 [grep.wsdlGreper]
 
-[audit.localFileInclude]
+[grep.codeDisclosure]
+
+[bruteforce.basicAuthBrute]
+profilingNumber = 50
+useMails = True
+useLeetPasswd = True
+useProfiling = True
+passwdFile = core/controllers/bruteforce/passwords.txt
+useMailUsers = True
+passEqUser = True
+usersFile = core/controllers/bruteforce/users.txt
+stopOnFirst = True
+useSvnUsers = True
 
 [audit.dav]
 
 [grep.domXss]
 
-[audit.mxInjection]
+[audit.fileUpload]
+extensions = gif,html
 
 [grep.httpAuthDetect]
 

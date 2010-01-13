@@ -1,56 +1,50 @@
-[misc-settings]
-exportFuzzableRequests = 
-maxThreads = 15
-fuzzFCExt = txt
-autoDependencies = True
-demo = False
-fuzzableHeaders = 
-fuzzCookie = False
-fuzzFileName = False
-fuzzFileContent = True
-maxDiscoveryLoops = 500
-maxDepth = 25
-interface = eth0
-localAddress = 127.0.0.1
-nonTargets = 
-
 [profile]
 description = Bruteforce form or basic authentication access controls using default credentials. To run this profile, set the target URL to the resource where the access control is, and then click on Start.
 name = bruteforce
 
 [output.gtkOutput]
 
-[bruteforce.formAuthBrute]
-profilingNumber = 50
-useMails = True
-useProfiling = True
-passEqUser = True
-useMailUsers = True
-passwdFile = core/controllers/bruteforce/passwords.txt
-usersFile = core/controllers/bruteforce/users.txt
-stopOnFirst = True
-useSvnUsers = True
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFormComboValues = tmb
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+fuzzCookie = False
+
+fuzzFileContent = True
+fuzzFileName = False
+maxDepth = 25
+maxDiscoveryLoops = 500
+
+nonTargets = 
 
 [http-settings]
 proxyPort = 8080
-headersFile = 
-maxFileSize = 400000
-proxyAddress = 
-basicAuthDomain = 
-always404 = 
-maxRetrys = 2
+urlParameter = 
 never404 = 
+basicAuthDomain = 
+maxFileSize = 400000
+always404 = 
+headersFile = 
+proxyAddress = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
 ignoreSessCookies = False
-cookieJarFile = 
 timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
 404string = 
+cookieJarFile = 
 
-[bruteforce.basicAuthBrute]
+[bruteforce.formAuthBrute]
 profilingNumber = 50
 useMails = True
+useLeetPasswd = True
 useProfiling = True
 passEqUser = True
 useMailUsers = True
@@ -58,4 +52,19 @@ passwdFile = core/controllers/bruteforce/passwords.txt
 usersFile = core/controllers/bruteforce/users.txt
 stopOnFirst = True
 useSvnUsers = True
+
+[bruteforce.basicAuthBrute]
+profilingNumber = 50
+useMails = True
+useLeetPasswd = True
+useProfiling = True
+passEqUser = True
+useMailUsers = True
+passwdFile = core/controllers/bruteforce/passwords.txt
+usersFile = core/controllers/bruteforce/users.txt
+stopOnFirst = True
+useSvnUsers = True
+
+[output.console]
+verbose = True
 

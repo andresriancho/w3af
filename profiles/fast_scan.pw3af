@@ -16,7 +16,7 @@ fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
 maxDepth = 10
-interface = eth0
+
 localAddress = 127.0.0.1
 nonTargets = 
 
