@@ -337,6 +337,13 @@ class ProxiedRequests(entries.RememberingWindow):
         """Toggle the trap flag."""
         trapactive = widget.get_active()
         self.proxy.setTrap(trapactive)
+        # Send all requests in queue if Intercept is switched off
+        if not trapactive:
+            resHead, resData = self.reqresp.response.getBothTexts()
+            reqHead, reqData = self.reqresp.request.getBothTexts()
+            # If there is request to send, let's send it first
+            if reqHead and not resHead:
+                self._send(None)
 
     def _help(self, action):
         """Shows the help."""
