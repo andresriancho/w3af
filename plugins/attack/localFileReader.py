@@ -327,18 +327,24 @@ class fileReaderShell(shell):
         '''
         Filter out ugly php errors and print a simple "Permission denied" or "File not found"
         '''
+        filtered = ''
+        
         if result.count('<b>Warning</b>'):
             if result.count( 'Permission denied' ):
-                result = PERMISSION_DENIED
+                filtered = PERMISSION_DENIED
             elif result.count( 'No such file or directory in' ):
-                result = NO_SUCH_FILE
+                filtered = NO_SUCH_FILE
             elif result.count( 'Not a directory in' ):
-                result = READ_DIRECTORY
+                filtered = READ_DIRECTORY
             elif result.count('</a>]: failed to open stream:'):
-                result = FAILED_STREAM
-        #   Please see the next lines!
-        #return result
+                filtered = FAILED_STREAM
+
+        #
+        #   I want this function to return an empty string on errors. Not the error itself.
+        #
+        if filtered != '':
             return ''
+        
         return result
     
     def end( self ):
