@@ -98,12 +98,17 @@ def exec_payload(shell_obj, payload_filename):
     # Inject the functions provided by the framework for debugging
     __globals['console'] = getattr(om.out, 'console')
 
-    exec compiled in __globals
-    
-    if 'result' in __globals:
-        return __globals['result']
+    try:
+        exec compiled in __globals
+    except Exception, e:
+        #   Invalid payload...
+        return ['The payload raised an exception: "' + str(e) + '".']
     else:
-        return []
+        #   Ok :)
+        if 'result' in __globals:
+            return __globals['result']
+        else:
+            return ['The payload returned an empty result.']
 
 def runnable_payloads(shell_obj):
     '''
