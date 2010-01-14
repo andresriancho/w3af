@@ -3,8 +3,8 @@ import re
 
 result = []
 values = []
-values.append(open( '/etc/hostname').read()[:-1])
-values.append(open( '/proc/sys/kernel/hostname').read()[:-1])
+values.append(read( '/etc/hostname')[:-1])
+values.append(read('/proc/sys/kernel/hostname')[:-1])
 
 for v in values:
     if not v in result:

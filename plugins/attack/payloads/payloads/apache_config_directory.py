@@ -26,7 +26,12 @@ def parse_httpd_file( httpd_file_read ):
         return ''
 
 def check_apache_config_dir( apache_config_directory ):
-    return read( apache_config_directory + 'httpd.conf') != ''
+    httpd = read( apache_config_directory + 'httpd.conf')
+    apache = read( apache_config_directory + 'apache2.conf')
+    if httpd != '' or apache != '':
+        return True
+    else:
+        return False
 
 paths.append( parse_apache2_init( read ('/etc/init.d/apache2') ) )
 paths.append( parse_apache_init( read ('/etc/init.d/apache') ) )
@@ -45,4 +50,3 @@ for path in paths:
 
 result = list(set(result))
 result = [p for p in result if p != '']
-

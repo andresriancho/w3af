@@ -6,11 +6,18 @@ paths = []
 
 def parse_proc_version ( proc_version ):
        version = re.search('(?<=Linux version ).*?\)', proc_version)
-       return version.group(0)
+       if version:
+           return version.group(0)
+       else:
+           return ''
+
 
 def parse_sched_debug ( sched_debug ):
     version = re.search('(?<=Sched Debug Version: )(v\d\.\d\d, )(.*)', sched_debug)
-    return version.group(2)
+    if version:
+        return version.group(2)
+    else:
+        return ''
 
 paths.append(parse_proc_version(read( '/proc/version' )) )
 paths.append(read('/proc/sys/kernel/osrelease')[:-1])
