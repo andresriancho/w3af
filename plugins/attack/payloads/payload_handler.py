@@ -99,7 +99,11 @@ def exec_payload(shell_obj, payload_filename):
     __globals['console'] = getattr(om.out, 'console')
 
     exec compiled in __globals
-    return __globals['result']
+    
+    if 'result' in __globals:
+        return __globals['result']
+    else:
+        return []
 
 def runnable_payloads(shell_obj):
     '''
