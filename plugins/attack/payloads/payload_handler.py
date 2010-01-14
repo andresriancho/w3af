@@ -24,20 +24,48 @@ import sys
 import os
 import compiler
 import core.controllers.outputManager as om
+import copy
 
+PAYLOAD_PATH= os.path.join('plugins','attack','payloads','payloads')
 
-def get_used_syscalls( payload_filename ):
+def get_used_syscalls( payload_name ):
     '''
     With functions I get the syscalls that are used by the payload.
     
-    @parameter payload_filename: The payload filename that we want to analyze.
+    @parameter payload_name: The payload name that we want to analyze.
     @return: The list of syscalls that the payload needs.
     '''
-    class payload_visitor:
+    class payload_visitor(compiler.visitor.ExampleASTVisitor):
         def __init__(self):
+            compiler.visitor.ExampleASTVisitor.__init__(self)
             self.defined_functions = []
             self.called_functions = []
-
+            self.payload_dependencies = []
+    
+        def dispatch(self, node, *args):
+            self.node = node
+            meth = self._cache.get(node.__class__, None)
+            className = node.__class__.__name__
+            if meth is None:
+                meth = getattr(self.visitor, 'visit' + className, 0)
+                self._cache[node.__class__] = meth
+            if self.VERBOSE > 1:
+                print "dispatch", className, (meth and meth.__name__ or '')
+            if meth:
+                meth(node, *args)
+            elif self.VERBOSE > 0:
+                klass = node.__class__
+                if not self.examples.has_key(klass):
+                    self.examples[klass] = klass
+                    print
+                    print self.visitor
+                    print klass
+                    for attr in dir(node):
+                        if attr[0] != '_':
+                            print "\t", "%-12.12s" % attr, getattr(node, attr)
+                    print
+            return self.default(node, *args)
+        
         def visitFunction(self, parsed_func):
             if parsed_func.name in dir(__builtins__):
                 msg = 'Please use a different name, overriding Python builtin functions'
@@ -52,19 +80,64 @@ def get_used_syscalls( payload_filename ):
             #  when a user does something like this: "file_handler.read()"
             #
             try:
-                if info.node.name not in dir(__builtins__):
+                if 'run_payload' == info.node.name:
+                    #   The current payload calls another payload
+                    self.payload_dependencies.append( info.args[0].value )
+                    
+                    # debug
+                    #msg = payload_name + ' --> requires --> ' + info.args[0].value
+                    #om.out.debug( msg )
+                    
+                elif not __builtins__.has_key(info.node.name):
                     self.called_functions.append( info.node.name )
+                    
             except Exception,  e:
                 pass
 
         def get_requirements(self):
             return list( set(self.called_functions) - set(self.defined_functions) )
+            
+        def get_payload_dependencies(self):
+            return self.payload_dependencies
 
-    ast = compiler.parseFile( payload_filename )
-    result = compiler.visitor.walk(ast, payload_visitor() )
-    return result.get_requirements()
+    #   Here I save the requirements for the initial payloads, and all the payloads that are called
+    #   from that one. This is the final result.
+    global_requirements = []
+    
+    #
+    #   Parse the first payload. Remember that one payload can call many others, and those payloads
+    #   can call even more.
+    #
+    ast = compiler.parseFile( payload_to_file(payload_name) )
+    visitor = payload_visitor()
+    result = compiler.visitor.walk(ast, visitor, walker=visitor, verbose=0 )
+    global_requirements.extend( result.get_requirements() )
+    
+    #   Now I'll analyze each of the payloads called by the initial payload.
+    for referenced_payload in result.get_payload_dependencies():
+        #   I don't want to end up in a loop!
+        #   TODO: 
+        #       This only protects me from "direct loops", not from "long loops"
+        #       Direct Loops:
+        #           * A---> B---> A
+        #       Long Loops:
+        #           * A---> B---> C ---> A
+        if referenced_payload != payload_name:
+            global_requirements.extend( get_used_syscalls( referenced_payload) )
+    
+    #   Uniq
+    global_requirements = list(set(global_requirements))
+        
+    return global_requirements
 
 
+def payload_to_file( payload_name ):
+    '''
+    @parameter payload_name: The name of the payload.
+    @return: The filename related to the payload.
+    '''
+    return os.path.join( PAYLOAD_PATH, payload_name + '.py' )
+    
 def can_run(shell_obj, requirements):
     '''
     @parameter requirements: The syscalls that the current payload needs.
@@ -79,25 +152,62 @@ def can_run(shell_obj, requirements):
             return False
     return True
 
-
-def exec_payload(shell_obj, payload_filename):
+def get_unmet_requirements(shell_obj, requirements):
+    '''
+    @return: A list with the unmet dependencies.
+    '''
+    result = []
+    available_functions = dir(shell_obj)
+    available_functions.append('console')
+    
+    for name in requirements:
+        if not name in available_functions:
+            result.append(name)
+    return result
+    
+def is_payload( function_name ):
+    '''
+    @return: True if the function_name is referencing a payload.
+    '''
+    return function_name in get_payload_list()
+    
+def exec_payload(shell_obj, payload_name):
     '''
     Now I execute the payload, by providing the function names that are in the shell_obj
     as "globals".
     
     @parameter shell_obj: The shell object instance.
+    @parameter payload_name: The name of the payload I want to run.
     @return: The payload "result" variable.
     '''
-    compiled = compiler.compile( file(payload_filename).read() , payload_filename, 'exec')
+    
+    compiled = compiler.compile( file(payload_to_file(payload_name)).read() , payload_name, 'exec')
+    
+    def run_payload( name ):
+        return exec_payload(shell_obj,  name)
+    
+    def create_fake_globals():
+        #
+        # Inject the syscalls provided by the exploit
+        #
+        __globals = {}
+        for name in dir(shell_obj):
+            __globals[name] = getattr(shell_obj, name)
 
-    # Inject the syscalls provided by the exploit
-    __globals = {}
-    for name in dir(shell_obj):
-        __globals[name] = getattr(shell_obj, name)
+        #
+        # Inject the functions provided by the framework for debugging
+        #
+        __globals['console'] = getattr(om.out, 'console')
         
-    # Inject the functions provided by the framework for debugging
-    __globals['console'] = getattr(om.out, 'console')
-
+        #
+        # Inject this function, that will allow me to run a payload from a payload
+        #
+        __globals['run_payload'] = run_payload
+        
+        return __globals
+    
+    __globals = create_fake_globals()
+    
     try:
         exec compiled in __globals
     except Exception, e:
@@ -116,16 +226,25 @@ def runnable_payloads(shell_obj):
     @return: A list with all runnable payloads.
     '''
     result = []
-    payload_path = os.path.join('plugins','attack','payloads','payloads')
     
-    for payload in os.listdir(payload_path):
-        requirements = get_used_syscalls( os.path.join(payload_path, payload) )
+    for payload_name in get_payload_list():
+        requirements = get_used_syscalls( payload_name )
         if can_run( shell_obj , requirements):
-            result.append( payload.replace('.py', '') )
+            result.append( payload_name )
         
     return result
 
-
+def get_payload_list():
+    '''
+    @return: A list of the payload names in the payloads directory.
+    '''
+    result = []
+    
+    for payload in os.listdir(PAYLOAD_PATH):
+        result.append( payload.replace('.py', '') )
+        
+    return result
+    
 if __name__ == '__main__':
     payload_filename = 'payloads/test.py'
     

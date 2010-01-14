@@ -153,22 +153,22 @@ class shell(vuln, exploitResult, commonAttackMethods):
         '''
         raise w3afException('You should implement the _rexec method of classes that inherit from "shell"')
     
-    def _payload(self, payload_filename):
+    def _payload(self, payload_name):
         '''
-        Run a payload.
+        Run a payload by name.
+        
+        @parameter payload_name: The name of the payload I want to run.
         '''
-        payload_filename = os.path.join('plugins','attack','payloads','payloads', payload_filename)
-        payload_filename += '.py'
-        requirements =  payload_handler.get_used_syscalls( payload_filename )
+        requirements =  payload_handler.get_used_syscalls( payload_name )
     
         if payload_handler.can_run( self , requirements):
             om.out.debug( 'The payload can be run. Starting execution.' )
-            result = payload_handler.exec_payload( self,  payload_filename)
+            result = payload_handler.exec_payload( self,  payload_name)
             result_str = '\n'.join(result)
         else:
-            msg = 'The payload can NOT be run, payload requirements (' + ','.join(requirements) +')'
-            msg += ' exceed the exploit capabilities.'
-            result_str = '\n'.join(result)
+            unmet_requirements = payload_handler.get_unmet_requirements( self , requirements)
+            result_str = 'The payload can NOT be run, payload requirements (' + ','.join(unmet_requirements) +')'
+            result_str += ' exceed the exploit capabilities.'
             
         return result_str
     

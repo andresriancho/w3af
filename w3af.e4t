@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2009-12-11, 14:36:48 -->
+<!-- Saved: 2010-01-13, 13:39:09 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -1219,45 +1219,6 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Review this hack</Summary>
-    <Description></Description>
-    <Created>2009-11-18, 21:05:29</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>303</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: maybe this should be on a different file, where all the framework</Summary>
-    <Description></Description>
-    <Created>2009-11-18, 21:05:29</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>433</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Complete this list with windows stuff</Summary>
-    <Description></Description>
-    <Created>2009-11-18, 21:05:29</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>attack</Dir>
-        <Name>localFileReader.py</Name>
-      </Filename>
-      <Linenumber>482</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: I dont like globals, please see TODO below.</Summary>
     <Description></Description>
     <Created>2009-11-19, 00:04:49</Created>
@@ -1419,29 +1380,16 @@
     </Resource>
   </Task>
   <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if file_content has a ( that creates an invalid regex?!</Summary>
+    <Summary>TODO: Review this hack</Summary>
     <Description></Description>
-    <Created>2009-12-09, 11:30:39</Created>
+    <Created>2010-01-13, 10:55:06</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
+        <Dir>attack</Dir>
+        <Name>localFileReader.py</Name>
       </Filename>
-      <Linenumber>134</Linenumber>
-    </Resource>
-  </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: Is this safe? What if match.group(0) has a ( that creates an invalid regex?!</Summary>
-    <Description></Description>
-    <Created>2009-12-09, 11:30:39</Created>
-    <Resource>
-      <Filename>
-        <Dir>plugins</Dir>
-        <Dir>audit</Dir>
-        <Name>localFileInclude.py</Name>
-      </Filename>
-      <Linenumber>149</Linenumber>
+      <Linenumber>312</Linenumber>
     </Resource>
   </Task>
 </Tasks>

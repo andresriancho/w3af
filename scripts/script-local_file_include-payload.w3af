@@ -22,5 +22,5 @@ exploit
 exploit localFileReader
 interact 0
 
-payload gcc_version
+payload apache_config_directory
 
