@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import sqlite3
-import thread
+import threading
 import sys
 
 from core.controllers.w3afException import w3afException
@@ -36,7 +36,7 @@ class DB(object):
         self._db = None
         self._insertionCount = 0
         self._commitNumber = 50
-        self._dbLock = thread.allocate_lock()
+        self._dbLock = threading.RLock()
 
     def open(self, filename):
         '''Open database file.'''

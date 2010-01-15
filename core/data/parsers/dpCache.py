@@ -27,7 +27,7 @@ import core.data.parsers.documentParser as documentParser
 from core.controllers.misc.lru import LRU
 
 import md5
-import thread
+import threading
 
 
 class dpCache:
@@ -38,7 +38,7 @@ class dpCache:
     '''
     def __init__(self):
         self._cache = LRU(30)
-        self._LRULock = thread.allocate_lock()
+        self._LRULock = threading.RLock()
         
     def getDocumentParserFor( self, httpResponse, normalizeMarkup=True ):
         res = None

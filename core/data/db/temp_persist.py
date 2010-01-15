@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from __future__ import with_statement
 import shelve
-import thread
+import threading
 import os
 import sys
 from random import choice
@@ -61,7 +61,7 @@ class temp_shelve(object):
         self._filename = None
         
         # Create the lock
-        self._shelve_lock = thread.allocate_lock()
+        self._shelve_lock = threading.RLock()
         
         fail_count = 0
         while True:

@@ -112,7 +112,7 @@ from __future__ import with_statement
 import urllib2
 import httplib
 import socket
-import thread
+import threading
 import traceback
 import urllib
 import sys
@@ -296,7 +296,7 @@ class ConnectionManager:
         * kill the connections that we're not going to use anymore
     """
     def __init__(self):
-        self._lock = thread.allocate_lock()
+        self._lock = threading.RLock()
         self._hostmap = {} # map hosts to a list of connections
         self._connmap = {} # map connections to host
         self._readymap = {} # map connection to ready state
@@ -370,7 +370,7 @@ class ConnectionManager:
 class KeepAliveHandler:
     def __init__(self):
         self._cm = ConnectionManager()
-        self._lock = thread.allocate_lock()
+        self._lock = threading.RLock()
         
     #### Connection Management
     def open_connections(self):

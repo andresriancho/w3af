@@ -34,7 +34,7 @@ import core.data.kb.config as cf
 import sys
 from socket import *
 from threading import Thread
-import thread
+import threading
 import time
 
 
@@ -49,7 +49,7 @@ class connectionManager( w3afThread ):
         self._connections = []
         self._port = port
         
-        self._cmLock = thread.allocate_lock()
+        self._cmLock = threading.RLock()
     
         self._keepRunning = True
         self._reportedConnection = False

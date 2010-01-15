@@ -23,7 +23,7 @@ from __future__ import with_statement
 
 import os,sys
 from core.controllers.w3afException import w3afException
-import thread
+import threading
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.kb.shell as shell
@@ -39,7 +39,7 @@ class knowledgeBase:
     
     def __init__(self):
         self._kb = {}
-        self._kb_lock = thread.allocate_lock()
+        self._kb_lock = threading.RLock()
 
     def save( self, callingInstance, variableName, value ):
         '''
