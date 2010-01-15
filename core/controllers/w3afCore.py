@@ -511,7 +511,65 @@ class w3afCore:
                     for i in tmp_url_list:
                         om.out.information( '- ' + i )
                     
-                    # Sort fuzzable requests and print them
+                    #
+                    #   What I want to do here, is filter the repeated fuzzable requests.
+                    #   For example, if the spidering process found:
+                    #       - http://host.tld/?id=3739286
+                    #       - http://host.tld/?id=3739285
+                    #       - http://host.tld/?id=3739282
+                    #       - http://host.tld/?id=3739212
+                    #
+                    #   I don't want to have all these different fuzzable requests. The reason is that
+                    #   audit plugins will try to send the payload to each parameter, thus generating
+                    #   the following requests:
+                    #       - http://host.tld/?id=payload1
+                    #       - http://host.tld/?id=payload1
+                    #       - http://host.tld/?id=payload1
+                    #       - http://host.tld/?id=payload1
+                    #
+                    #   w3af has a cache, but its still a waste of time to send those requests.
+                    #
+                    #   Now lets analyze this with more than one parameter. Spidered URIs:
+                    #       - http://host.tld/?id=3739286&action=create
+                    #       - http://host.tld/?id=3739285&action=create
+                    #       - http://host.tld/?id=3739282&action=remove
+                    #       - http://host.tld/?id=3739212&action=remove
+                    #
+                    #   Generated requests:
+                    #       - http://host.tld/?id=payload1&action=create
+                    #       - http://host.tld/?id=3739286&action=payload1
+                    #       - http://host.tld/?id=payload1&action=create
+                    #       - http://host.tld/?id=3739285&action=payload1
+                    #       - http://host.tld/?id=payload1&action=remove
+                    #       - http://host.tld/?id=3739282&action=payload1
+                    #       - http://host.tld/?id=payload1&action=remove
+                    #       - http://host.tld/?id=3739212&action=payload1
+                    #
+                    #   In cases like this one, I'm sending these repeated requests:
+                    #       - http://host.tld/?id=payload1&action=create
+                    #       - http://host.tld/?id=payload1&action=create
+                    #       - http://host.tld/?id=payload1&action=remove
+                    #       - http://host.tld/?id=payload1&action=remove
+                    #   But there is not much I can do about it... (except from having a nice cache)
+                    #
+                    #   TODO: Is the previous statement completely true?
+                    #
+                    filtered_fuzzable_requests = []
+                    for fr_original in self._fuzzableRequestList:
+                        
+                        different_from_all = True
+                        
+                        for fr_filtered in filtered_fuzzable_requests:
+                            if fr_filtered.loose_eq( fr_original ):
+                                different_from_all = False
+                                break
+                        
+                        if different_from_all:
+                            filtered_fuzzable_requests.append( fr_original )
+                    
+                    self._fuzzableRequestList = filtered_fuzzable_requests
+                    
+                    #   Now I simply print the list that I have after the filter.
                     tmp_fr_list = []
                     for fuzzRequest in self._fuzzableRequestList:
                         tmp_fr_list.append( '- ' + str(fuzzRequest) )

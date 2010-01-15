@@ -140,12 +140,70 @@ class fuzzableRequest:
         return result_string
         
     def __eq__( self, other ):
+        '''
+        Two requests are equal if:
+            - They have the same URL
+            - They have the same method
+            - They have the same parameters
+            - The values for each parameter is equal
+        
+        @return: True if the requests are equal.
+        '''
         if self._uri == other._uri and\
         self._method == other._method and\
         self._dc == other._dc:
             return True
         else:
             return False
+            
+    def loose_eq(self, other):
+        '''
+        Two requests are loosely equal if:
+            - They have the same URL
+            - They have the same method
+            - They have the same parameters
+            - The values for each parameter has the same type (int / string)
+            
+        @return: True if self and other are loosely equal.
+        '''
+        if self._uri == other._uri and\
+        self._method == other._method and\
+        self._dc.keys() == other._dc.keys():
+            
+            #
+            #   TODO: Please see comment in w3afCore.
+            #
+            if len(self._dc) > 1:
+                return False
+                
+            #
+            #   Ok, so it has the same URI, method, dc and more than one parameter.
+            #   I need to work now :(
+            #
+            
+            #   What I do now, is check if the values for each parameter has the same
+            #   type or not.
+            for param_name in self._dc:
+                
+                #   repeated parameter names
+                for index in xrange(len(self._dc[param_name])):
+                    try:
+                        #   I do it in a try, because "other" might not have that many repeated
+                        #   parameters, and index could be out of bounds.
+                        value_self = self._dc[param_name][index]
+                        value_other = self._dc[param_name][index]
+                    except Exception, e:
+                        return False
+                    else:
+                        if value_other.isdigit() and not value_self.isdigit():
+                            return False
+                        elif value_self.isdigit() and not value_other.isdigit():
+                            return False
+                
+            return True
+        else:
+            return False
+        
     
     def __ne__( self,other):
         return not self.__eq__( other )
@@ -165,7 +223,9 @@ class fuzzableRequest:
         if isinstance(dataCont, dc):
             self._dc = dataCont
         else:
-            raise w3afException('Invalid call to fuzzableRequest.setDc(), the argument must be a dataContainer instance.')
+            msg = 'Invalid call to fuzzableRequest.setDc(), the argument must be a'
+            msg += ' dataContainer instance.'
+            raise w3afException( msg )
         
     def setHeaders( self , headers ):
         self._headers = headers
