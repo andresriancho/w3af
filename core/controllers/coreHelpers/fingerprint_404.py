@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
@@ -121,12 +122,12 @@ class fingerprint_404:
         if http_response.id in self._is_404_LRU:
             return self._is_404_LRU[ http_response.id ]
             
-        self._lock.acquire()
-        if not self._already_analyzed:
-            # Generate a 404 and save it
-            self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
-            self._already_analyzed = True
-        self._lock.release()
+        with self._lock:
+            if not self._already_analyzed:
+                # Generate a 404 and save it
+                self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
+                self._already_analyzed = True
+
         
         # self._404_body was already cleaned inside self._generate404
         # so we need to clean this one.
