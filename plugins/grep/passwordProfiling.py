@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
@@ -68,9 +69,9 @@ class passwordProfiling(baseGrepPlugin):
         
         self._commonWords['unknown'] = self._commonWords['en']
         
-        
         # Some words that are banned
-        self._banned_words = [ 'Forbidden', 'browsing', 'Index' ]
+        self._banned_words = [ 'forbidden', 'browsing', 'index' ]
+        
         
     def grep(self, request, response):
         '''
@@ -86,25 +87,50 @@ class passwordProfiling(baseGrepPlugin):
             lang = 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.getCode() not in [500, 401, 403, 404] and \
-        not is_404( response ) and \
-        request.getMethod() in ['POST', 'GET']:
+        if response.getCode() not in [500, 401, 403, 404]\
+        and not is_404( response )\
+        and request.getMethod() in ['POST', 'GET']:
             # Run the plugins
             data = self._run_plugins( response )
-            old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
             
-            # "merge" both maps and update the repetitions
-            for d in data:
-                if d.lower() not in self._commonWords[ lang ] \
-                and not self._wasSent( request, d ) and len(d) > 3 \
-                and d.isalnum() and d not in self._banned_words:
-                    if d in old_data:
-                        old_data[ d ] += data[ d ]
-                    else:
-                        old_data[ d ] = data[ d ]
-            
-            # save the merged map
-            kb.kb.save( self, 'passwordProfiling', old_data )
+            with self._plugin_lock:
+                old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+                
+                # "merge" both maps and update the repetitions
+                for d in data:
+                    
+                    if len(d) >= 4\
+                    and d.isalnum()\
+                    and not d.isdigit()\
+                    and d.lower() not in self._banned_words\
+                    and d.lower() not in self._commonWords[ lang ] \
+                    and not self._wasSent( request, d ):
+                        
+                        if d in old_data:
+                            old_data[ d ] += data[ d ]
+                        else:
+                            old_data[ d ] = data[ d ]
+                
+                #   If the dict grows a lot, I want to trim it. Basically, if it grows to a length of 
+                #   more than 2000 keys, I'll trim it to 1000 keys.
+                if len( old_data ) > 2000:
+                    def sortfunc(x_obj, y_obj):
+                        return cmp(y_obj[1], x_obj[1])
+                
+                    items = old_data.items()
+                    items.sort(sortfunc)
+                    
+                    items = items[:1000]
+                    
+                    new_data = {}
+                    for key, value in items:
+                        new_data[key] = value
+                        
+                else:
+                    new_data = old_data
+                
+                # save the updated map
+                kb.kb.save( self, 'passwordProfiling', new_data )
     
     def _run_plugins( self, response ):
         '''
@@ -151,11 +177,11 @@ class passwordProfiling(baseGrepPlugin):
             items.sort(sortfunc)
             om.out.information('Password profiling TOP 100:')
             
-            listLen = len(items)
-            if listLen > 100:
+            list_length = len(items)
+            if list_length > 100:
                 xLen = 100
             else:
-                xLen = listLen
+                xLen = list_length
             
             for i in xrange(xLen):
                 msg = '- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) 
