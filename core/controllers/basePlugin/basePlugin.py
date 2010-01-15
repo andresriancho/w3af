@@ -26,7 +26,7 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.configurable import configurable
 import core.data.kb.vuln as vuln
 
-import thread
+import threading
 
 
 class basePlugin(configurable):
@@ -48,7 +48,7 @@ class basePlugin(configurable):
         '''
         self._urlOpener = None
         self._tm = tm
-        self._plugin_lock = thread.allocate_lock()
+        self._plugin_lock = threading.RLock()
 
     def setUrlOpener( self, urlOpener):
         '''
