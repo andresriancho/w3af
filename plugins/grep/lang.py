@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
-import thread
 
 import core.controllers.outputManager as om
 
@@ -74,8 +73,6 @@ class lang(baseGrepPlugin):
         'gibi', 'haber', 'kadar', 'karar', 'kaynak', 'olarak', 'sayfa', 'siteye', 
         'sorumlu', 'tamam', 'yasak', 'zorunlu']
         
-        self._lang_lock = thread.allocate_lock()
-        
     def grep(self, request, response):
         '''
         Get the page indicated by the fuzzableRequest and determine the language using the preposition list.
@@ -83,7 +80,7 @@ class lang(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         '''
-        with self._lang_lock:
+        with self._plugin_lock:
             if self._exec and not is_404( response ) and response.is_text_or_html():
                 kb.kb.save( self, 'lang', 'unknown' )
                 
