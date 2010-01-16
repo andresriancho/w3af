@@ -95,6 +95,8 @@ class bruteforcer:
         if self._useSvnUsers:
             users = kb.kb.getData( 'svnUsers', 'users' )
             self._specialUsers.extend( [ v['user'] for v in users ]  )
+            
+        self._specialUsers = list(set(self._specialUsers))
         
     def _genSpecialPasswords( self ):
         '''
@@ -149,7 +151,7 @@ class bruteforcer:
             else:
                 passwd = self._passwordsFD.readline().strip()
                 # here we create the leet passwords from the file
-                self._leeted_passwords.extend( make_leet(passwd))
+                self._leeted_passwords.extend( make_leet(passwd) )
                 
                 if passwd == '' :
                     self._passwordsFD.seek(0)
