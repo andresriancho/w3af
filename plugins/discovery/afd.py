@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.controllers.misc.levenshtein import relative_distance
 
@@ -68,8 +68,12 @@ class afd(baseDiscoveryPlugin):
         else:
             self._exec = False
             
-            filtered, not_filtered = self._send_requests( fuzzableRequest )
-            self._analyze_results( filtered, not_filtered )
+            try:
+                filtered, not_filtered = self._send_requests( fuzzableRequest )
+            except w3afException, w3:
+                om.out.error( str(w3) )
+            else:
+                self._analyze_results( filtered, not_filtered )
 
         return []
 
@@ -86,8 +90,8 @@ class afd(baseDiscoveryPlugin):
             original_response_body = self._urlOpener.GET( originalURL , useCache=True ).getBody()
         except Exception:
             msg = 'Active filter detection plugin failed to recieve a '
-            msg += 'response for the first request.'
-            om.out.error( msg )
+            msg += 'response for the first request. Can not perform analysis.'
+            raise w3afException( msg )
         else:
             original_response_body = original_response_body.replace( rnd_param, '' )
             original_response_body = original_response_body.replace( rnd_value, '' )
