@@ -111,9 +111,11 @@ class threadManager:
             apply( target, args, kwds )
         else:
             # Assign a job to a thread in the thread pool
-            om.out.debug('Assigning function object with id: "' + str(id(target)) + '" to a thread in the thread pool.' )
             wr = WorkRequest( target, args=args, kwds=kwds, ownerObj=ownerObj )
             self._threadPool.putRequest( wr )
+            msg = '[thread manager] Successfully added function to threadpool. Work queue size: '
+            msg += str(self._threadPool.requestsQueue.qsize())
+            om.out.debug( msg )
             
     def join( self, ownerObj=None, joinAll=False ):
         self._threadPool.wait( ownerObj, joinAll )

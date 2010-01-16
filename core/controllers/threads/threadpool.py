@@ -72,6 +72,8 @@ class WorkerThread(threading.Thread):
         while not self._dismissed.isSet():
             # thread blocks here, if queue empty
             request = self.workRequestQueue.get()
+            #om.out.debug('[worker] workRequestQueue length for thread with id ' + str(id(self)) + ' is ' + str(self.workRequestQueue.qsize()) )
+            
             if self._dismissed.isSet():
                 # return the work request we just picked up
                 self.workRequestQueue.put(request)
@@ -80,10 +82,14 @@ class WorkerThread(threading.Thread):
             try:
                 self.resultQueue.put( (request, request.callable(*request.args, **request.kwds)) )
             except Exception, e:
-                om.out.debug('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
-                om.out.debug('Exception: ' + str( e ) )
-                om.out.debug( 'Traceback: ' + str( traceback.format_exc() ) )
+                om.out.error('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
+                om.out.error('Exception: ' + str( e ) )
+                om.out.error( 'Traceback: ' + str( traceback.format_exc() ) )
                 self.resultQueue.put( (request, e) )
+        
+        om.out.debug('[worker] says bye!')
+                
+            
 
     def dismiss(self):
         """Sets a flag to tell the thread to exit when done with current job.
@@ -139,8 +145,15 @@ class ThreadPool:
         thread pool blocks when queue is full and it tries to put more
         work requests in it.
         """
+        #   TODO: Fix this
+        #   If I put q_size like this, the framework dead-locks!!
+        #
+        #self.requestsQueue = Queue.Queue(q_size)
+        #
+        #   But it would be awesome to have it like this, mostly because of memory consumption
+        #   problems.
 
-        self.requestsQueue = Queue.Queue(q_size)
+        self.requestsQueue = Queue.Queue()
         self.resultsQueue = Queue.Queue()
         self.workers = []
         self.workRequests = {}
@@ -171,35 +184,27 @@ class ThreadPool:
             try:
                 # still results pending?
                 if not joinAll:
-                    ownedWordRequests = [ wr for wr in self.workRequests.values() if id(wr.ownerObj) == id(ownerObj) ]
+                    owned_work_requests = [ wr for wr in self.workRequests.values() if id(wr.ownerObj) == id(ownerObj) ]
                 else:
-                    ownedWordRequests = self.workRequests.values()
-                if not ownedWordRequests:
+                    owned_work_requests = self.workRequests.values()
+                if not owned_work_requests:
                     raise NoResultsPending
-                
+                    
                 # are there still workers to process remaining requests?
                 elif block and not self.workers:
                     raise NoWorkersAvailable
-                
+                                
                 # get back next results
-                request, result = self.resultsQueue.get(block=block)
-                
+                request, result = self.resultsQueue.get(block=block, timeout=1)
+
                 if id(request.ownerObj) == id(ownerObj) or joinAll:
                     # and hand them to the callback, if any
                     if request.callback:
                         request.callback(request, result)
                     del self.workRequests[request.requestID]
-                    
-                    # Raise the exception that was catched before in:
-                    '''
-                    try:
-                        self.resultQueue.put( (request, request.callable(*request.args, **request.kwds)) )
-                    except Exception, e:
-                        om.out.debug('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
-                    self.resultQueue.put( (request, e) )
-                    '''
+
+                    # Raised here so I can handle it in the main thread...
                     if isinstance( result, Exception ):
-                        # Raised here so I can handle it in the main thread...
                         raise result
                     
                 else:
@@ -212,7 +217,7 @@ class ThreadPool:
         """Wait for results, blocking until all have arrived."""
         while 1:
             try:
-                self.poll(True, ownerObj, joinAll)
+                self.poll(block=True, ownerObj=ownerObj, joinAll=joinAll)
             except NoResultsPending:
                 break
 
