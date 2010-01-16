@@ -193,10 +193,9 @@ class urlFuzzer(baseDiscoveryPlugin):
         @return: A list of mutants.
         '''
         mutants = []
-        if url[ len( url ) -1 ] != '/':
-            toAppendList = self._get_to_append()
-            for toAppend in toAppendList:
-                mutants.append ( url + toAppend )
+        if not url.endswith('/'):
+            for to_append in self._get_to_append():
+                mutants.append ( url + to_append )
         return mutants
     
     def _mutate_file_type( self, url ):
@@ -208,14 +207,16 @@ class urlFuzzer(baseDiscoveryPlugin):
         @return: A mutant list.
         '''
         mutants = []
-        if url.rfind('.') > url.rfind('/'):
-            # Has a file specification
-            # http://a.com/foo.asp
-            #                           ^  This
-            url = url[ : url.rfind('.')+1 ]
-            filetypes = self._get_file_types()
-            for filetype in filetypes:
-                mutants.append ( url + filetype )
+        
+        extension = urlParser.getExtension( url )
+        if extension:
+            
+            if url.rfind('.') > url.rfind('/'):
+                url = url[ : url.rfind('.')+1 ]
+                filetypes = self._get_file_types()
+                for filetype in filetypes:
+                    mutants.append ( url + filetype )
+                    
         return mutants
 
     def _mutate_path( self, url ):
