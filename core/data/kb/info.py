@@ -98,7 +98,7 @@ class info(dict):
             if len(self._id) > 1:
                 desc_to_return += ' This information was found in the requests with'
                 desc_to_return += ' ids ' + self._convert_to_range_wrapper( self._id ) + '.'
-            else:
+            elif len(self._id) == 1:
                 desc_to_return += ' This information was found in the request with'
                 desc_to_return += ' id ' + str(self._id[0]) + '.'
                 
