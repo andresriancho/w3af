@@ -40,6 +40,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.db import DB, WhereHelper
 
+
 class HistoryItem:
     '''Represents history item.'''
 
@@ -123,6 +124,11 @@ class HistoryItem:
             self._loadFromRow(row)
         except w3afException:
             raise w3afException('You performed an invalid search. Please verify your syntax.')
+        except Exception, e:
+            msg = 'An internal error ocurred while searching for id "' + str(id) + '".'
+            msg += ' Original exception: "' + str(e) + '".'
+            raise w3afException( msg )
+            
         return True
 
     def read(self, id):
