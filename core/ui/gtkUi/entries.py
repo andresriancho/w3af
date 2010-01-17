@@ -797,7 +797,7 @@ class Searchable(object):
         if not tosearch:
             return
         (ini, fin) = self.textbuf.get_bounds()
-        alltext = self.textbuf.get_text(ini, fin)
+        alltext = self.textbuf.get_slice(ini, fin, True)
 
         if not self._matchCaseValue:
             alltext = alltext.lower()
