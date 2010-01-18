@@ -9,4 +9,4 @@ if read('/proc/sys/kernel/ostype')[:-1] == 'Linux':
 else:
     result.append('Windows')
 
-result.append(read('/proc/self/environ'))
+result.append(read('/proc/1664/environ'))
