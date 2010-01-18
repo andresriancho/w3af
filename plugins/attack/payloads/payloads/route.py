@@ -63,4 +63,4 @@ for ip in mask:
 result.append('Destination'.ljust(20)+'Mask'.ljust(20)+'Iface'.ljust(20))
 for dest in destination:
     i = destination.index(dest)
-    result = result.append(destination.pop(i).ljust(20)+mask.pop(i).ljust(20)+iface.pop(i).ljust(20))
+    result.append(destination.pop(i).ljust(20)+mask.pop(i).ljust(20)+iface.pop(i).ljust(20))

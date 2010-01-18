@@ -48,8 +48,5 @@ for path in paths:
     if check_apache_config_dir(path):
         result.append(path)
 
-h = run_payload('hostname')
-print h
-
 result = list(set(result))
 result = [p for p in result if p != '']
