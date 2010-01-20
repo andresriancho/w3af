@@ -1,43 +1,22 @@
 #REQUIRE_LINUX
+#This payload shows the IP Routing Table.
 import re
 
 result = []
-destination = []
-gateway = []
-mask = []
+list = []
 
-def parse_iface(net_route):
-    iface = re.findall('^(.*?)\t', net_route,  re.MULTILINE)
-    if iface:
-        return iface
-    else:
-        return ''
+def parse_route(net_route):
+    new = []
+    list = net_route.split(' ')
+    list[0] = list[0]+list[1]
+    list.pop(1)
+    list = [i for i in list if i != '']
+    for line in list:
+        new.append(line.split('\t'))
+    print new
+    return new
 
-def parse_destination(net_route):
-    destination = re.findall('^\w*\t(.*?)\t', net_route,  re.MULTILINE)
-    if destination:
-        return destination
-    else:
-        return ''
-
-def parse_gateway(net_route):
-    gateway = re.findall('^\w*\t\w*\t(.*?)\t', net_route,  re.MULTILINE)
-    if gateway:
-        return gateway
-    else:
-        return ''
-
-def parse_mask(net_route):
-    mask= re.findall('^\w*\t\w*\t\w*\t\w*\t\w*\t\w*\t\w*\t(.*?)\s', net_route,  re.MULTILINE)
-    if mask:
-        return mask
-    else:
-        return ''
-
-iface = parse_iface(read('/proc/net/route'))
-destination = parse_destination(read('/proc/net/route'))
-gateway = parse_gateway(read('/proc/net/route'))
-mask = parse_mask(read('/proc/net/route'))
+list = parse_route(open('/proc/net/route').read())
 
 def dec_to_dotted_quad(n):
     d = 256 * 256 * 256
@@ -49,16 +28,16 @@ def dec_to_dotted_quad(n):
     q.reverse()
     return '.'.join(q)
 
-destination = [ip for ip in destination if ip != 'Destination']
-for ip in destination:
-    ip = str(dec_to_dotted_quad(int(ip, 16)))
+for list in result:
+    if list[1] != 'Destination':
+        list[1] = str(dec_to_dotted_quad(int(list[1], 16)))
 
-gateway = [id for id in gateway if id != 'Gateway']
-#TODO: Translate correctly HEX-ASCII
+    if list[2] != 'Gateway':
+        list[2] = str(dec_to_dotted_quad(int(list[2], 16)))
+    
+    if list[7] != 'Mask':
+        list[7] = str(dec_to_dotted_quad(int(list[7], 16)))
 
-mask = [ip for ip in mask if ip != 'Mask']
-for ip in mask:
-    ip = str(dec_to_dotted_quad(int(ip, 16)))
 
 result.append('Destination'.ljust(20)+'Mask'.ljust(20)+'Iface'.ljust(20))
 for dest in destination:

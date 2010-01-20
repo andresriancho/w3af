@@ -1,4 +1,5 @@
 #REQUIRE_LINUX
+from plugins.attack.payloads.misc.get_files import get_files
 import re
 
 result = []
@@ -19,6 +20,7 @@ if apache_dir:
         for file in files:
             if read(dir+file) != '':
                 result.append(dir+file)
+                result.append(get_files(dir+file))
 
 result = [p for p in result if p != '']
 

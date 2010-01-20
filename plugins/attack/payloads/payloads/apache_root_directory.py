@@ -1,4 +1,6 @@
 #REQUIRE_LINUX
+#This payload finds Apache Root Directory where websites are hosted.
+import core.data.kb.knowledgeBase as kb
 import re
 
 result = []
@@ -28,7 +30,8 @@ if apache_config_files:
         if parse_config_file(read(file)) != '':
             result.append(parse_config_file(read(file))+'/')
 
-
+if kb.kb.getData('pathdisclosure', 'webroot'):
+    result.append(kb.kb.getData('pathdisclosure', 'webroot'))
 
 result = list(set(result))
 result = [p for p in result if p != '']
