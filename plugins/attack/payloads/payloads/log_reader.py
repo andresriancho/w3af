@@ -38,9 +38,14 @@ logs.append('/var/log/apache/access.log')
 logs.append('/var/log/apache2/access.log')
 logs.append('/var/log/apache/error.log')
 logs.append('/var/log/apache2/error.log')
-
-
-
+logs.append('/usr/local/apache/logs/error_log')
+logs.append('/usr/local/apache/logs/access_log')
+logs.append('/usr/local/apache2/logs/error_log')
+logs.append('/usr/local/apache2/logs/access_log')
+logs.append('/var/log/httpd/error_log')
+logs.append('/var/log/httpd/access_log')
+logs.append('/var/log/apache2/error_log')
+logs.append('/var/log/apache2/access_log')
 
 for i in xrange(10):
     ext = '.gz'

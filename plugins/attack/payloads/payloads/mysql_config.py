@@ -3,6 +3,8 @@
 result = []
 files = []
 
+files.append('my.cnf')
+
 directory = run_payload('mysql_config_directory')
 for file in files:
     if read(file) != '':

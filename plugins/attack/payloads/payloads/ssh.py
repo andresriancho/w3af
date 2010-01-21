@@ -12,4 +12,4 @@ def parse_binary(bin_ssh):
     else:
         return ''
 
-result.append('Version => '+parse_binary(read('/usr/bin/sshd')))
+result.append('Version => '+parse_binary(read('/usr/sbin/sshd')))

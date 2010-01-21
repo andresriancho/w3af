@@ -19,15 +19,12 @@ deny = parse_hosts(read('/etc/hosts.deny'))
 #Resolv.conf?
 
 result.append('Hosts:')
-for host in hosts:
-    result.append(host)
+result.append(read('/etc/hosts'))
 
 result.append('Hosts Allowed:')
-for all in allow:
-    result.append(all)
+result.append(read('/etc/hosts.allow'))
 
 result.append('Hosts Denied:')
-for den in deny:
-    result.append(den)
+result.append(read('/etc/hosts.deny'))
 
 result = [p for p in result if p != '']

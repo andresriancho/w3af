@@ -1,5 +1,6 @@
 #REQUIRE_LINUX
 #This payload shows the IP Routing Table.
+#FIXME
 import re
 
 result = []
@@ -12,8 +13,10 @@ def parse_route(net_route):
     list.pop(1)
     list = [i for i in list if i != '']
     for line in list:
-        new.append(line.split('\t'))
-    print new
+        tmp = line.split('\t')
+        print tmp
+        tmp = [i for i in tmp if i !='']
+        new.append(tmp)
     return new
 
 list = parse_route(open('/proc/net/route').read())
@@ -42,4 +45,4 @@ for list in result:
 result.append('Destination'.ljust(20)+'Mask'.ljust(20)+'Iface'.ljust(20))
 for dest in destination:
     i = destination.index(dest)
-    result.append(destination.pop(i).ljust(20)+mask.pop(i).ljust(20)+iface.pop(i).ljust(20))
+    result.append(str(' '.join(destination.pop(i).ljust(20)+mask.pop(i).ljust(20)+iface.pop(i).ljust(20))))

@@ -1,5 +1,5 @@
 #REQUIRE_LINUX
-#This payload displays Apache Configuration Files.
+#This payload displays content of Apache Configuration Files.
 
 import re
 

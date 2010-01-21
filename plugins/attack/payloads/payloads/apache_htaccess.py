@@ -1,4 +1,5 @@
 #REQUIRE_LINUX
+#This payload shows Apache distributed configuration files (.htaccess & .htpasswd)
 import re
 
 result = []

@@ -11,5 +11,5 @@ def parse_users_home( etc_passwd ):
     else:
         return ''
 
-for user in parse_users_home(open('/etc/passwd').read()):
+for user in parse_users_home(read('/etc/passwd')):
     result.append('/home/'+str(user)+'/')

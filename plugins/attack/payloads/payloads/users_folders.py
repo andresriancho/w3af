@@ -11,5 +11,5 @@ def parse_users_folders( etc_passwd ):
     else:
         return ''
 
-for user in parse_users_folders(open('/etc/passwd').read()):
+for user in parse_users_folders(read('/etc/passwd')):
     result.append('/'+str(user)+'/')

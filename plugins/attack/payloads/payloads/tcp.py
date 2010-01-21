@@ -1,5 +1,7 @@
 #REQUIRE_LINUX
 #This payload shows TCP socket information
+#TODO:Read TCP and TCP6?
+#TODO:Support UDP
 import re
 
 result = []
@@ -17,7 +19,7 @@ def parse_tcp(net_tcp):
     return new
 
 def get_username(etc_passwd, user):
-    user = re.search('(\w*):\d*:(?<='+user+')', etc_passwd,  re.MULTILINE)
+    user = re.search('(\w*):(\w*):\d*:'+user, etc_passwd,  re.MULTILINE)
     if user:
         return user.group(1)
     else:
@@ -37,11 +39,12 @@ def dec_to_dotted_quad(n):
     q.reverse()
     return '.'.join(q)
 
-table = parse_tcp(open('/proc/net/tcp').read())
+table = parse_tcp(read('/proc/net/tcp'))
 
 for list in table:
+    new = []
     list[0]=list[0].ljust(3)
-    
+
     if list[1] != 'local_address':
         list[1] = str(dec_to_dotted_quad(int(split_ip(list[1])[0], 16)))
     list[1] = list[1].ljust(15)
@@ -50,15 +53,17 @@ for list in table:
         list[2] = str(dec_to_dotted_quad(int(split_ip(list[2])[0] , 16)))
     list[2] = list[2].ljust(15)
     
-    list[3] = list[3].ljust(2)
-    list[4] = list[4].ljust(17)
-    list[5] = list[5].ljust(11)
-    list[6] = list[6].ljust(8)
-    list[7] = list[7].ljust(8)
-
-    if list[8] != 'uid':
-        list[8] = get_username(open('/etc/passwd').read(), list[8])
-    list[8] = list[8].ljust(9)
-    list[9] = list[9].ljust(9)
-    list[10] = list[10].ljust(9)
-    result.append(str(" ".join(list)))
+    if list[7] == 'tm->when':
+        list[7] = 'uid'
+    
+    if list[7] != 'uid':
+        list[7] = get_username(read('/etc/passwd'), list[7])
+    list[7] = list[7].ljust(10)
+  
+    new.append(list[0])
+    new.append(list[1])
+    new.append(list[2])
+    new.append(list[3])
+    new.append(list[7])
+    new.append(list[11])
+    result.append(str(" ".join(new)))

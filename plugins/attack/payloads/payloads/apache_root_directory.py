@@ -1,5 +1,5 @@
 #REQUIRE_LINUX
-#This payload finds Apache Root Directory where websites are hosted.
+#This payload finds Apache Root Directories where websites are hosted.
 import core.data.kb.knowledgeBase as kb
 import re
 

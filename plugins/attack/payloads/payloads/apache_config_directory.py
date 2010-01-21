@@ -1,4 +1,5 @@
 #REQUIRE_LINUX
+#This payload finds Apache Config Directory
 import re
 
 result = []
@@ -35,14 +36,18 @@ def check_apache_config_dir( apache_config_directory ):
 
 paths.append( parse_apache2_init( read ('/etc/init.d/apache2') ) )
 paths.append( parse_apache_init( read ('/etc/init.d/apache') ) )
-paths.append( parse_apache_init( read ('/etc/rc.d/init.d/httpd') ) )
 paths.append('/etc/apache2/')
 paths.append('/etc/apache/')
 paths.append('/etc/httpd/')
 paths.append('/usr/local/apache2/conf/')
 paths.append('/usr/local/apache/conf/')
+paths.append('/usr/local/etc/apache/')
+paths.append('/usr/local/etc/apache2/')
 paths.append('/opt/apache/conf/')
 paths.append('/etc/httpd/conf/')
+paths.append('/usr/pkg/etc/httpd/')
+paths.append('/usr/local/etc/apache22/')
+
 
 for path in paths:
     if check_apache_config_dir(path):
