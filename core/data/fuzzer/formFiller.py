@@ -21,10 +21,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from string import letters, digits
-from random import choice, randint
 import core.controllers.outputManager as om
 
+
+parameter_name_knowledge = {
+    'John8212': ['username','user','usuario','benutzername','benutzer'],
+    'John': ['name','nombre','nome','name'],  
+    'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
+    'w3af-FrAmEW0rK.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha'], 
+    'w3af@email.com':['mail','email','e-mail','correo','correio'], 
+    'AK':['state','estado'], 
+    'Argentina':['location','country','pais','país','land'], 
+    'Buenos Aires':['city','ciudad','cidade','stadt'], 
+    'Bonsai Street 123':['addr','address','residence','dirección','direccion','residencia','endereço','endereco','residência','addresse','wohnsitz','wohnort'],
+    'Bonsai':['company','empresa','companhia','unternehmen'],  
+    'Manager':['position','jon','cargo','posição','unternehmung','position'],
+    '90210':['postal','zip','postleitzahl','plz','postais'],
+    '3419':['pin','id'],
+    '22':['floor','age','piso','edad','stock','alter'],
+    '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon','tel','code','nummer'],        
+    '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês', 'amount', 'cantidad' ], 
+    '1982':['year','birthyear','año','ano','jahr'], 
+    'HelloWorld':['content','text'], 
+    }
 
 def smartFill( variable_name ):
     '''
@@ -32,273 +51,42 @@ def smartFill( variable_name ):
     variable_name is "username" a smartFill response would be "john1309", not "0800-111-2233".
     This helps A LOT with server side validation.
     
-    @return: The "most likely to be validated as a good value" string, OR a random str if no match is found.
+    @return: The "most likely to be validated as a good value" string, OR '5672' if no match is found.
     '''
     variable_name = variable_name.lower()
-   
-    handlers = [ (long_alpha, (createRandAlpha, 7)),
-                        (short_alpha, (createRandAlpha, 3)),
-                        (long_number, (createRandNum, 5)),
-                        (short_number, (createRandNum, 2)),
-                        (date, (createRandNum, 1)),
-                        (password, (lambda x: 'w3af-FrAmEW0rK.', None)),
-                        (mail, (lambda x: 'w3af@email.com', None)),
-                        (state, (lambda x: 'AK', None)) ]
-   
-    value = None
-    used_name_from_db = None
-   
-    for name_function, (custom_generator, length) in handlers:
-   
-        for name_in_db in name_function():
-            #new db name in variable
-            if variable_name.count( name_in_db ) or name_in_db.count( variable_name ): 
-                
-                #new db name longer
-                if value == None or len(name_in_db) > len(used_name_from_db): 
-                    #use it
-                    used_name_from_db = name_in_db
-                    value = custom_generator( length )
-                
-                #new db same length as old db name
-                elif len(name_in_db) == len(used_name_from_db): 
-                    #When we have abcdefg we prefer bcd instead of def
-                    
-                    # One of both is -1
-                    used_index = max(variable_name.find(used_name_from_db), used_name_from_db.find(variable_name)) 
-                    # One of both is -1
-                    new_index = max(variable_name.find(name_in_db), name_in_db.find(variable_name)) 
-                    if new_index < used_index:
-                        used_name_from_db = name_in_db
-                        value = custom_generator( length )
 
-    if value == None:
-        # Well... nothing was found (this is bad!)
-        # Its better to send numbers when nothing matches.
-        value = createRandNum( 4 )
-    else:
-        dbg = 'SmartFilling parameter ' + variable_name + ' of form because matching with '
-        dbg += used_name_from_db +' value: ' + value
-        om.out.debug( dbg )
-       
-    return value
+    possible_results = []
 
-def long_alpha():
-    '''
-    @return: A list of variables that should be filled with alpha strings.
-    '''
-    l = []
-    
-    # english
-    l.append('username')
-    l.append('user')
-    l.append('name')    
-    l.append('surname')
-    l.append('lastname')
-    l.append('location')
-    l.append('city')
-    l.append('country')    
-    l.append('addr')
-    l.append('address')
-    l.append('residence')
-    l.append('company')
-    l.append('position')
-    l.append('job')
-    
-    # spanish
-    l.append('usuario')    
-    l.append('nombre')
-    l.append('apellido')
-    l.append('ciudad')
-    l.append('pais')
-    l.append('país')
-    l.append('dirección')
-    l.append('direccion')
-    l.append('residencia')
-    l.append('empresa')
-    l.append('cargo')
-    
-    # portugués
-    l.append('nome')
-    l.append('sobrenome')
-    l.append('cidade')
-    l.append('endereço')
-    l.append('endereco')
-    l.append('companhia')
-    l.append('posição')
-    l.append('residência')
-    
-    # German
-    l.append('benutzername')
-    l.append('benutzer')
-    l.append('name')
-    l.append('vorname')
-    l.append('nachname')
-    l.append('ort')
-    l.append('stadt')
-    l.append('land')
-    l.append('addresse')
-    l.append('wohnort')
-    l.append('wohnsitz')
-    l.append('unternehmen')
-    l.append('unternehmung')
-    l.append('position')
-    
-    return list(set(l))
-
-def short_alpha():
-    '''
-    @return: A list of variables that should be filled with alpha strings.
-    '''
-    l = []
-    return l
-
-def short_number():
-    l = []
-    
-    # english
-    l.append('postal')
-    l.append('zip')
-    l.append('pin')
-    l.append('id')
-    l.append('floor')
-    l.append('age')
-    
-    # spanish
-    l.append('piso')
-    l.append('edad')
-    
-    # german
-    l.append('postleitzahl')
-    l.append('plz')
-    l.append('id')
-    l.append('stock')
-    l.append('alter')
-    
-    # portugués
-    l.append('postais')
-    
-    return list(set(l))
-
-def long_number():
-    '''
-    @return: A list of variables that should be filled with numeric strings.
-    '''
-    l = []
-    
-    # english
-    l.append('phone')
-    l.append('code')
-    l.append('number')
-    
-    # spanish
-    l.append('telefono')
-    l.append('numero')
-    l.append('número')
-    l.append('código')
-    l.append('codigo')
-    
-    # German
-    l.append('telefon')
-    l.append('tel')
-    l.append('code')
-    l.append('nummer')
-
-    # portugués
-    # equal to the spanish ones
-
-    return list(set(l))
-
-def mail():
-    '''
-    @return: A list of variables that should be filled with emails.
-    '''
-    l = []
-    # english
-    l.append('mail')
-    l.append('email')
-    l.append('e-mail') 
-    
-    #german
-    # equal to the english ones
-    
-    # spanish
-    l.append('correo')
-    
-    # portugués
-    l.append('correio')
-    return l
-
-def state():
-    '''
-    @return: A list of form parameter names that may indicate that we have to input a state
-    '''
-    l = []
-    # english
-    l.append('state')
-    
-    # spanish and portugués
-    l.append('estado')
-    return l
-    
-    
-def password():
-
-    '''
-    @return: A list of variables that should be filled with a password.
-    '''
-    
-    l = []
-    
-    # password will be a constant
-    l.append('pass')
-    l.append('word')
-    l.append('pswd')
-    l.append('pwd')
-    l.append('auth')
-    l.append('password')
-    
-    # German
-    l.append('passwort')
-    
-    # Spanish
-    l.append('contraseña')
-    
-    # Portuguese
-    l.append('senha')
-    
-    return l
-    
-def date():
-    '''
-    @return: A list of variables that should be filled with alpha strings.
-    '''
-    l = []
-    # english
-    l.append('year')
-    l.append('month')
-    l.append('day')
-    l.append('birthday')
-    l.append('birthyear')
-    l.append('birthmonth')
-    
-    # spanish
-    l.append('año')
-    l.append('ano')
-    l.append('mes')
-    l.append('dia')
-    l.append('día')
-    
-    # german
-    l.append('jahr')
-    l.append('monat')
-    l.append('tag')
-    l.append('geburts')
+    for filled_value, variable_name_list in parameter_name_knowledge.items():
         
-    # portugués
-    l.append('mês')
-    
-    return l
-    
-from core.data.fuzzer.fuzzer import *
-
+        for variable_name_db in variable_name_list:
+            
+            #
+            #   If the name in the database is eq to the variable name, there is not much thinking
+            #   involved. We just return it.
+            #
+            if variable_name_db == variable_name:
+                return filled_value
+                
+            if variable_name in variable_name_db:
+                possible_results.append( (filled_value, len(variable_name)) )
+                continue
+                
+            if variable_name_db in variable_name:
+                possible_results.append( (filled_value, len(variable_name_db)) )
+                continue
+                
+    #
+    #   We get here when there is not a 100% match and we need to analyze the possible_results
+    #
+    if possible_results:
+        def sortfunc(x_obj, y_obj):
+            return cmp(y_obj[1], x_obj[1])
+        
+        possible_results.sort(sortfunc)
+        
+        return possible_results[0][0]
+        
+    else:
+        om.out.debug('[smartFill] Failed to find a value for parameter with name "'+variable_name+'".')
+        return '5672'
