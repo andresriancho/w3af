@@ -28,21 +28,26 @@ parameter_name_knowledge = {
     'John8212': ['username','user','usuario','benutzername','benutzer'],
     'John': ['name','nombre','nome','name'],  
     'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
+    
     'w3af-FrAmEW0rK.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha'], 
     'w3af@email.com':['mail','email','e-mail','correo','correio'], 
+    
     'AK':['state','estado'], 
     'Argentina':['location','country','pais','país','land'], 
     'Buenos Aires':['city','ciudad','cidade','stadt'], 
     'Bonsai Street 123':['addr','address','residence','dirección','direccion','residencia','endereço','endereco','residência','addresse','wohnsitz','wohnort'],
+    
     'Bonsai':['company','empresa','companhia','unternehmen'],  
     'Manager':['position','jon','cargo','posição','unternehmung','position'],
+    
     '90210':['postal','zip','postleitzahl','plz','postais'],
     '3419':['pin','id'],
     '22':['floor','age','piso','edad','stock','alter'],
     '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon','tel','code','nummer'],        
     '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês', 'amount', 'cantidad' ], 
     '1982':['year','birthyear','año','ano','jahr'], 
-    'HelloWorld':['content','text'], 
+    
+    'HelloWorld':['content','text', 'words'], 
     }
 
 
@@ -53,6 +58,17 @@ def sortfunc(x_obj, y_obj):
     '''
     return cmp(y_obj[1], x_obj[1])
 
+def get_match_rate(variable_name, variable_name_db):
+    '''
+    @parameter variable_name: The name of the variable for which we want a value
+    @parameter variable_name_db: A name from the DB that ressembles the variable_name
+    
+    @return: A match rate between variable_name and variable_name_db.
+    '''
+    match_rate = len(variable_name)
+    if variable_name.startswith(variable_name_db):
+        match_rate += len(variable_name) / 2
+    return match_rate
 
 def smartFill( variable_name ):
     '''
@@ -78,11 +94,13 @@ def smartFill( variable_name ):
                 return filled_value
                 
             if variable_name in variable_name_db:
-                possible_results.append( (filled_value, len(variable_name)) )
+                match_rate = get_match_rate(variable_name, variable_name_db)
+                possible_results.append( (filled_value, match_rate) )
                 continue
                 
             if variable_name_db in variable_name:
-                possible_results.append( (filled_value, len(variable_name_db)) )
+                match_rate = get_match_rate(variable_name, variable_name_db)
+                possible_results.append( (filled_value, match_rate) )
                 continue
                 
     #
