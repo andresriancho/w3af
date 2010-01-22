@@ -37,7 +37,7 @@ class info(dict):
         self._desc = ''
         self._method = ''
         self._variable = ''
-        self._id = None
+        self._id = []
         self._name = ''
         self._dc = None
         self._string_matches = set()
