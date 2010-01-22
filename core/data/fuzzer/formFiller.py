@@ -45,6 +45,15 @@ parameter_name_knowledge = {
     'HelloWorld':['content','text'], 
     }
 
+
+def sortfunc(x_obj, y_obj):
+    '''
+    A simple sort function to sort the values of a list using the second item of each item.
+    @return: The answer to: which one is greater?
+    '''
+    return cmp(y_obj[1], x_obj[1])
+
+
 def smartFill( variable_name ):
     '''
     This method returns a "smart" option for a variable name inside a form. For example, if the
@@ -80,13 +89,12 @@ def smartFill( variable_name ):
     #   We get here when there is not a 100% match and we need to analyze the possible_results
     #
     if possible_results:
-        def sortfunc(x_obj, y_obj):
-            return cmp(y_obj[1], x_obj[1])
-        
         possible_results.sort(sortfunc)
-        
         return possible_results[0][0]
         
     else:
-        om.out.debug('[smartFill] Failed to find a value for parameter with name "'+variable_name+'".')
+        msg = '[smartFill] Failed to find a value for parameter with name "'
+        msg += variable_name + '".'
+        om.out.debug( msg )
+        
         return '5672'
