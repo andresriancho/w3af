@@ -25,17 +25,22 @@ import core.controllers.outputManager as om
 
 
 parameter_name_knowledge = {
-    'John8212': ['username','user','usuario','benutzername','benutzer'],
+    'John8212': ['username','user','usuario','benutzername','benutzer', 'nickname', 'logname'],
     'John': ['name','nombre','nome','name'],  
     'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
     
-    'w3af-FrAmEW0rK.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha'], 
-    'w3af@email.com':['mail','email','e-mail','correo','correio'], 
+    'w3af-FrAmEW0rK.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha',
+                                    'key', 'hash'], 
+
+    'w3af@email.com':['mail','email','e-mail','correo','correio', 'to', 'cc', 'bcc'], 
+    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino'], 
     
     'AK':['state','estado'], 
     'Argentina':['location','country','pais','país','land'], 
+    'English':['language', 'lang',  'idioma'], 
     'Buenos Aires':['city','ciudad','cidade','stadt'], 
-    'Bonsai Street 123':['addr','address','residence','dirección','direccion','residencia','endereço','endereco','residência','addresse','wohnsitz','wohnort'],
+    'Bonsai Street 123':['addr','address','residence','dirección','direccion','residencia',
+                                    'endereço','endereco','residência','addresse','wohnsitz','wohnort'],
     
     'Bonsai':['company','empresa','companhia','unternehmen'],  
     'Manager':['position','jon','cargo','posição','unternehmung','position'],
@@ -43,11 +48,13 @@ parameter_name_knowledge = {
     '90210':['postal','zip','postleitzahl','plz','postais'],
     '3419':['pin','id'],
     '22':['floor','age','piso','edad','stock','alter'],
-    '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon','tel','code','nummer'],        
-    '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês', 'amount', 'cantidad' ], 
+    '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon',
+                        'tel','code','nummer'],
+    '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês',
+            'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article' ], 
     '1982':['year','birthyear','año','ano','jahr'], 
     
-    'HelloWorld':['content','text', 'words'], 
+    'HelloWorld':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data', 'payload'], 
     }
 
 
