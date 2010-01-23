@@ -17,13 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+'''
+from __future__ import with_statement
 
-'''
-
-'''
-Important note: Original version found in pype.sourceforge.net and the python cookbook.
-Not coded by me.
-'''
+import threading
 
 class Node(object):
     __slots__ = ['prev', 'next', 'me']
@@ -38,8 +35,12 @@ class LRU:
     Built for and used by PyPE:
     http://pype.sourceforge.net
     Copyright 2003 Josiah Carlson.
+    
+    These is a list of the modifications that I (Andres Riancho) introduced to the code:
+        - Thread safety
     """
     def __init__(self, count, pairs=[]):
+        self.lock = threading.RLock()
         self.count = max(count, 1)
         self.d = {}
         self.first = None
@@ -51,44 +52,50 @@ class LRU:
         return obj in self.d
         
     def __getitem__(self, obj):
-        item = self.d[obj].me
-        self[item[0]] = item[1]
-        return item[1]
+        with self.lock:
+            item = self.d[obj].me
+            self[item[0]] = item[1]
+            return item[1]
         
     def __setitem__(self, obj, val):
-        if obj in self.d:
-            del self[obj]
-        nobj = Node(self.last, (obj, val))
-        if self.first is None:
-            self.first = nobj
-        if self.last:
-            self.last.next = nobj
-        self.last = nobj
-        self.d[obj] = nobj
-        if len(self.d) > self.count:
-            if self.first == self.last:
-                self.first = None
-                self.last = None
-                return
-            item = self.first
-            item.next.prev = None
-            self.first = item.next
-            item.next = None
-            del self.d[item.me[0]]
-            del item
+        with self.lock:
+            if obj in self.d:
+                del self[obj]
+            nobj = Node(self.last, (obj, val))
+            if self.first is None:
+                self.first = nobj
+            if self.last:
+                self.last.next = nobj
+            self.last = nobj
+            self.d[obj] = nobj
+            if len(self.d) > self.count:
+                if self.first == self.last:
+                    self.first = None
+                    self.last = None
+                    return
+                item = self.first
+                item.next.prev = None
+                self.first = item.next
+                item.next = None
+                del self.d[item.me[0]]
+                del item
         
     def __delitem__(self, obj):
-        nobj = self.d[obj]
-        if nobj.prev:
-            nobj.prev.next = nobj.next
-        else:
-            self.first = nobj.next
-        if nobj.next:
-            nobj.next.prev = nobj.prev
-        else:
-            self.last = nobj.prev
-        del self.d[obj]
-        
+        with self.lock:
+            nobj = self.d[obj]
+            if nobj.prev:
+                nobj.prev.next = nobj.next
+            else:
+                self.first = nobj.next
+            if nobj.next:
+                nobj.next.prev = nobj.prev
+            else:
+                self.last = nobj.prev
+            del self.d[obj]
+    
+    '''
+    @w3af note: I think that the following methods are never used in the framework.
+    '''
     def __iter__(self):
         cur = self.first
         while cur != None:
