@@ -25,15 +25,15 @@ import core.controllers.outputManager as om
 
 
 parameter_name_knowledge = {
-    'John8212': ['username','user','usuario','benutzername','benutzer', 'nickname', 'logname'],
-    'John': ['name','nombre','nome','name'],  
+    'John8212': ['username','user','uname','usuario','benutzername','benutzer', 'nickname', 'logname', 'ident'],
+    'John': ['name','nombre','nome','name', 'naam'],  
     'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
     
-    'w3af-FrAmEW0rK.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha',
-                                    'key', 'hash'], 
+    'FrAmE30.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha',
+                                    'key', 'hash', 'pword', 'passe'], 
 
     'w3af@email.com':['mail','email','e-mail','correo','correio', 'to', 'cc', 'bcc'], 
-    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino'], 
+    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website', 'web'], 
     
     'AK':['state','estado'], 
     'Argentina':['location','country','pais','país','land'], 
@@ -47,14 +47,30 @@ parameter_name_knowledge = {
     
     '90210':['postal','zip','postleitzahl','plz','postais'],
     '3419':['pin','id'],
-    '22':['floor','age','piso','edad','stock','alter'],
+    '22':['floor','age','piso','edad','stock','alter', 'port', 'puerto'],
     '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon',
-                        'tel','code','nummer'],
+                        'tel','code','nummer', 'call', 'llamar'],
     '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês',
-            'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article' ], 
-    '1982':['year','birthyear','año','ano','jahr'], 
+            'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article', 'score', 'puntos', 
+            'hour', 'hora', 'minute', 'minuto', 'second', 'segundo', 'weight','peso', 'largo', 'length',
+             'height', 'altura', 'step', 'pageid'], 
+    '1982':['year','birthyear','año','ano','jahr', 'since', 'desde'], 
     
-    'HelloWorld':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data', 'payload'], 
+    'Hello World':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data',
+                             'payload', 'answer', 'respuesta', 'prefix', 'suffix', 'description', 'descripcion', 
+                             'message', 'mensaje', 'excerpt'], 
+                             
+    'Spam or Eggs?':['question', 'pregunta'], 
+    
+    '<html>w3af</html>':['html', 'wysiwyg'], 
+    
+    'Blue':['color'], 
+    
+    '1':['debug', 'is_admin', 'admin', 'verbose'], 
+    
+    '127.0.0.1':['ip', 'ipaddress', 'host', 'server', 'servidor'], 
+    'w3af.sf.net':['domain', 'dominio']
+    
     }
 
 
