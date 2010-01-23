@@ -59,7 +59,13 @@ except Exception, e:
 
 try:
     import gtkhtml2
-    withGtkHtml2 = True
+    #
+    #   This brings crashes like:
+    #       HtmlView-ERROR **: file htmlview.c: line 1906 (html_view_insert_node): assertion failed: (node->style != NULL)
+    #
+    #   TODO: Change this to True when gtkhtml2 is fixed
+    #
+    withGtkHtml2 = False
 except Exception, e:
     withGtkHtml2 = False
 
@@ -234,6 +240,7 @@ class reqResViewer(gtk.VBox):
                 for itemId in result.getId():
                     historyItem = HistoryItem()
                     historyItem.load(itemId)
+                    print 'tagging', result.plugin_name
                     historyItem.tag = result.plugin_name
                     historyItem.info = result.getDesc()
                     historyItem.save()
