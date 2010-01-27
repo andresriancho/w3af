@@ -90,6 +90,8 @@ class remoteFileInclude(baseAuditPlugin):
             # 2- create a request that will include a file from a local web server        
             if self._use_w3af_site:
                 self._w3af_site_test_inclusion( freq )
+                
+        self._tm.join( self )
     
     def _correctly_configured(self):
         '''

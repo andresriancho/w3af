@@ -77,6 +77,8 @@ class blindSqli(baseAuditPlugin):
             elif time_delay != None:
                 om.out.vulnerability( time_delay.getDesc() )
                 kb.kb.append(self, 'blindSqli', time_delay)
+                
+        self._tm.join( self )
         
     def getOptions( self ):
         '''

@@ -111,6 +111,8 @@ class osCommanding(baseAuditPlugin):
                 kwds = {'analyze_callback':self._analyze_wait}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
                                                     kwds=kwds, ownerObj=self )
+                                                    
+            self._tm.join( self )
 
     def _with_echo(self, freq):
         '''

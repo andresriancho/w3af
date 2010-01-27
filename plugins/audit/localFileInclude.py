@@ -80,6 +80,8 @@ class localFileInclude(baseAuditPlugin):
                 kwds = {'grepResult':False}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
                                                     kwds=kwds, ownerObj=self )
+                                                    
+        self._tm.join( self )
         
     def _get_local_file_list( self, origUrl):
         '''

@@ -88,6 +88,8 @@ class buffOverflow(baseAuditPlugin):
             targs = (mutant,)
             self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
             
+        self._tm.join( self )
+            
     def _sendMutant( self, mutant, analyze=True, grepResult=True ):
         '''
         Sends a mutant to the remote web server. I override the _sendMutant of basePlugin

@@ -84,6 +84,8 @@ class fileUpload(baseAuditPlugin):
                 for mutant in mutants:
                     targs = (mutant,)
                     self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                    
+            self._tm.join( self )
             
     def _get_files( self ):
         '''

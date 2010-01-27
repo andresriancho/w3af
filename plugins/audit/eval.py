@@ -85,6 +85,8 @@ class eval(baseAuditPlugin):
         
         if self._use_time_delay:
             self._fuzz_with_time_delay( freq )
+            
+        self._tm.join( self )
 
     def _fuzz_with_echo( self, freq ):
         '''

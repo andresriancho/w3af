@@ -75,6 +75,8 @@ class mxInjection(baseAuditPlugin):
                 
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                
+        self._tm.join( self )
         
             
     def _analyzeResult( self, mutant, response ):

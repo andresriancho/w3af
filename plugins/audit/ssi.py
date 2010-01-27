@@ -76,6 +76,8 @@ class ssi(baseAuditPlugin):
 
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                
+        self._tm.join( self )
     
     def _add_persistent_SSI(self, freq, oResponse):
         '''

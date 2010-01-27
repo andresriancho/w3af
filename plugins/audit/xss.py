@@ -131,6 +131,8 @@ class xss(baseAuditPlugin):
                 
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                
+        self._tm.join( self )
     
     def _get_allowed_chars(self, mutant):
         '''
@@ -205,6 +207,8 @@ class xss(baseAuditPlugin):
         for mutant in mutant_list:
             targs = (mutant,)
             self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+            
+        self._tm.join( self )
         
     def _get_xss_tests( self ):
         '''
