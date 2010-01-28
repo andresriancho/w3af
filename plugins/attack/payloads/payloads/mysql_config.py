@@ -8,9 +8,9 @@ files.append('debian.cnf')
 
 directory = run_payload('mysql_config_directory')
 for file in files:
-    if read(file) != '':
+    if read(directory+file) != '':
         result.append('-------------------------')
-        result.append('FILE => '+file)
-        result.append(read(file))
+        result.append('FILE => '+directory+file)
+        result.append(read(directory+file))
 
 result = [p for p in result if p != '']

@@ -22,6 +22,9 @@ def check_mysql_config_dir( mysql ):
 paths.append( parse_mysql_init( read('/etc/init.d/mysql') ) )
 paths.append('/etc/mysql/')
 paths.append('/etc/')
+paths.append('/opt/local/etc/mysql5/')
+paths.append('/var/lib/mysql/')
+
 folders = run_payload('users_folders')
 for folder in folders:
     paths.append(folder)
