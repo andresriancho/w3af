@@ -599,16 +599,18 @@ class ProxyHTTPConnection(httplib.HTTPConnection):
             raise ValueError, "unknown URL type: %s" % url
         #get host
         host, rest = urllib.splithost(rest)
+        self._real_host = host
+        
         #try to get port
         host, port = urllib.splitport(host)
         #if port is not defined try to get from proto
         if port is None:
             try:
-                port = self._ports[proto]
+                self._real_port = self._ports[proto]
             except KeyError:
                 raise ValueError, "unknown protocol for: %s" % url
-        self._real_host = host
-        self._real_port = port
+        else:
+            self._real_port = port           
        
     def connect(self):
         httplib.HTTPConnection.connect(self)
