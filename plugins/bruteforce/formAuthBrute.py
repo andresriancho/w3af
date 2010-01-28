@@ -83,12 +83,18 @@ class formAuthBrute(baseBruteforcePlugin):
                             try:
                                 combinations.append( self._bruteforcer.getNext() )
                             except w3afException:
-                                om.out.information('No more user/password combinations available.')
-                                return
+                                break
                         
                         self._bruteforce( freq, combinations )
-    
-    
+                    
+                    #    Wait for all _bruteWorker threads to finish.
+                    self._tm.join( self )
+                    
+                    #   Report that we've finished.
+                    msg = 'Finished bruteforcing "'+ freq.getURL() + '".'
+                    om.out.information( msg )
+
+
     def _idFailedLoginPage( self, freq ):
         '''
         Generate TWO different response bodies that are the result of failed logins.
