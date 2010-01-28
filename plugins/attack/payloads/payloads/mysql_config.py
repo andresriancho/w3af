@@ -4,6 +4,7 @@ result = []
 files = []
 
 files.append('my.cnf')
+files.append('debian.cnf')
 
 directory = run_payload('mysql_config_directory')
 for file in files:
