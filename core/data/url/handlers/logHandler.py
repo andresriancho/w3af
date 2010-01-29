@@ -147,6 +147,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             url = response.geturl()
             body = response.read()
             id = response.id
+            # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
             res = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg, id=id)
         om.out.logHttp( fr, res )
     
