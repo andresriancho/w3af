@@ -1,4 +1,5 @@
 #REQUIRE_LINUX
+#This payload shows CPU Model and Core info.
 import re
 
 result = []
