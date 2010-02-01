@@ -458,7 +458,7 @@ class requestResponsePart(gtk.Notebook):
         # It's POST!
         if tmp != -1:
             headers = rawText[0:tmp+1]
-            data = rawText[tmp+3:]
+            data = rawText[tmp+2:]
             if data.strip() == "":
                 data = ""
         return (headers, data)
