@@ -18,12 +18,6 @@ def parse_route(net_route):
         new.append(tmp)
     return new
 
-list = parse_route(open('/proc/net/route').read())
-
-for line in list:
-    new = line[0].ljust(20)+line[1].ljust(20)+line[2].ljust(20)+line[7].ljust(20)
-    result.append(new)
-
 def dec_to_dotted_quad(n):
     d = 256 * 256 * 256
     q = []
@@ -34,18 +28,13 @@ def dec_to_dotted_quad(n):
     q.reverse()
     return '.'.join(q)
 
-#for list in result:
-    #if list[1] != 'Destination':
-     #   list[1] = str(dec_to_dotted_quad(int(list[1], 16)))
+list = parse_route(read('/proc/net/route'))
+result.append('Iface'.ljust(20)+'Destination'.ljust(20)+'Gateway'.ljust(20)+'Mask'.ljust(20))
+for line in list:
+    if len(line) > 7 and 'Iface' not in line:
+        new = line[0][1:].ljust(20)+\
+        str(dec_to_dotted_quad(int(line[1], 16))).ljust(20)+\
+        str(dec_to_dotted_quad(int(line[2], 16))).ljust(20)+\
+        str(dec_to_dotted_quad(int(line[7], 16))).ljust(20)
+        result.append(new)
 
-    #if list[2] != 'Gateway':
-    #    list[2] = str(dec_to_dotted_quad(int(list[2], 16)))
-    
-    #if list[7] != 'Mask':
-     #   list[7] = str(dec_to_dotted_quad(int(list[7], 16)))
-
-
-result.append('Destination'.ljust(20)+'Mask'.ljust(20)+'Iface'.ljust(20))
-for dest in destination:
-    i = destination.index(dest)
-    result.append(str(' '.join(destination.pop(i).ljust(20)+mask.pop(i).ljust(20)+iface.pop(i).ljust(20))))

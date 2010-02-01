@@ -50,6 +50,8 @@ logs.append('/var/log/httpd/error_log')
 logs.append('/var/log/httpd/access_log')
 logs.append('/var/log/apache2/error_log')
 logs.append('/var/log/apache2/access_log')
+logs.append('/var/log/apache2/modsec_audit.log')
+
 
 for i in xrange(10):
     ext = '.gz'
