@@ -8,7 +8,6 @@ files.append('/etc/ftpd/ftpconversions')
 files.append('/etc/ftpd/ftphosts')
 files.append('/etc/ftpd/ftpusers')
 files.append('/etc/ftpd/ftpgroups')
-
 files.append('/etc/vsftpd.ftpusers')
 files.append('/etc/vsftpd/ftpusers')
 files.append('/etc/vsftpd.conf')
@@ -30,7 +29,7 @@ files.append('/opt/bin/ftponly')
 
 
 for file in files:
-    if read(file) != '':
+    if read(file):
         result.append('-------------------------')
         result.append('FILE => '+file)
         result.append(read(file))

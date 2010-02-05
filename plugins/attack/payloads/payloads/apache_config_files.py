@@ -15,6 +15,7 @@ files.append('ports.conf')
 files.append('conf.d/security')
 files.append('sites-available/default')
 files.append('sites-available/default-ssl')
+files.append('conf.d/subversion.conf')
 
 apache_dir = run_payload('apache_config_directory')
 if apache_dir:
