@@ -116,7 +116,7 @@ class buffOverflow(baseAuditPlugin):
             if data:
                 msg = 'A possible (most probably a false positive than a bug) buffer overflow was'
                 msg += ' found when requesting: "' + url + '", using HTTP method ' + method
-                msg += '. The data sent was: "' + data + '".'
+                msg += '. The data sent was: "' + str(data) + '".'
                 i.setDesc( msg )
             else:
                 msg = 'A possible (most probably a false positive than a bug) buffer overflow was'
