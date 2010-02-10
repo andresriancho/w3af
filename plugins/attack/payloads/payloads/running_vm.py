@@ -70,4 +70,5 @@ class running_vm(base_payload):
         result.append(condition)
 
         result = [p for p in result if p != '']
+        
         return result

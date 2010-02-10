@@ -26,6 +26,8 @@ class apache_run_group(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Apache Run Group not found.')
         return result
 
 

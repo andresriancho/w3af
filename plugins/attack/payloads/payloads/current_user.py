@@ -1,9 +1,10 @@
-#TODO self
+#TODO: SELF ENVIRON NOT READABLE
 import re
 from plugins.attack.payloads.base_payload import base_payload
 
 class current_user(base_payload):
     '''
+    This payload shows current user on the system.
     '''
     def run_read(self):
         result = []

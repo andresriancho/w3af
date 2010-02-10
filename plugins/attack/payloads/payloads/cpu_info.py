@@ -23,6 +23,8 @@ class cpu_info(base_payload):
                 return ''
 
         result.append(parse_cpu_info( self.shell.read('/proc/cpuinfo') ) \
-                                           +' ['+parse_cpu_cores( self.shell.read('/proc/cpuinfo'))+' Cores]' )
+        +' ['+parse_cpu_cores( self.shell.read('/proc/cpuinfo'))+' Cores]' )
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('CPU Info not found.')
         return result

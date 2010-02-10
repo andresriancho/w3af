@@ -28,5 +28,7 @@ class apache_version(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Apache version not found.')
         return result
         

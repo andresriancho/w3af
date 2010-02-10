@@ -27,15 +27,19 @@ class root_login_allowed(base_payload):
         ssh_config_result = self.exec_payload('ssh_config_files')
         for config in ssh_config_result:
             if parse_permit_root_login(config) == 'yes':
-                ssh_string = 'A SSH Bruteforce attack is posible'
+                ssh_string = 'A SSH Bruteforce attack is posible.'
             elif parse_permit_root_login(config) == 'no':
-                ssh_string = 'A SSH Bruteforce attack is NOT posible'
+                ssh_string = 'A SSH Bruteforce attack is NOT posible.'
             else:
-                ssh_string = 'A SSH Bruteforce attack MIGHT be posible'
+                ssh_string = 'A SSH Bruteforce attack MIGHT be posible.'
 
-        if parse_securetty(read('/etc/securetty')):
-            result.append('Root user is allowed to login on CONSOLE. '+ssh_string)
+        securetty = read('/etc/securetty')
+        if securetty:
+            if parse_securetty(securetty):
+                result.append('Root user is allowed to login on CONSOLE. '+ssh_string)
+            else:
+                result.append('Root user is not allowed to login on CONSOLE. '+ssh_string)
         else:
-            result.append('Root user is not allowed to login on CONSOLE. '+ssh_string)
+            result.append('A SSH Bruteforce attack MIGHT be posible.')
         
         return result

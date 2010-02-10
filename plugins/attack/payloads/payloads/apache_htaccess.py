@@ -31,3 +31,7 @@ class apache_htaccess(base_payload):
                     result.append(self.shell.read(dir+htaccess))
                     result.append('File => '+dir+'.htpasswd')
                     result.append(self.shell.read(dir+'.htpasswd'))
+        
+        if result == [ ]:
+            result.append('Htaccess files not found.')
+        return result

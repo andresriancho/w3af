@@ -21,8 +21,6 @@ class smb_config_files(base_payload):
 
         files.append('/usr/local/etc/dhcpd.conf')
 
-
-
         for file in files:
             if self.shell.read(file) != '':
                 result.append('-------------------------')
@@ -30,5 +28,7 @@ class smb_config_files(base_payload):
                 result.append(self.shell.read(file))
 
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('SMB configuration files not found.')
         return result
         

@@ -7,9 +7,17 @@ class uptime(base_payload):
     '''
     def run_read(self):
         result = []
+        
         uptime = self.shell.read('/proc/uptime')
-        uptime.split(' ')
-        mins, secs = divmod(secs, 60)
+        uptime = uptime.split(' ')
+        uptime[0] = int(float(uptime[0]))
+        mins, secs = divmod(int(uptime[0]), 60)
         hours, mins = divmod(mins, 60)
-        result.append('%02d:%02d:%02d' % (hours, mins, secs))
+        result.append('Uptime: %02d:%02d:%02d' % (hours, mins, secs))
+        uptime[1] = int(float(uptime[1]))
+        mins, secs = divmod(int(uptime[1]), 60)
+        hours, mins = divmod(mins, 60)
+        result.append('Idletime: %02d:%02d:%02d' % (hours, mins, secs))
+        if result == [ ]:
+            result.append('Uptime information not found.')
         return result

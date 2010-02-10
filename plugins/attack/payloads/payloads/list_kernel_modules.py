@@ -18,4 +18,7 @@ class list_kernel_modules(base_payload):
         result.append('Module'.ljust(28)+'Size'.ljust(7)+'Used by'.ljust(20))
         for module in parse_module_name(self.shell.read( '/proc/modules')):
             result.append(module[0].ljust(28)+module[1].ljust(7)+module[2].ljust(20))
+        
+        if result == [ ]:
+            result.append('Kernel modules information not found.')
         return result

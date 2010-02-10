@@ -73,8 +73,6 @@ class log_reader(base_payload):
             logs.append('/var/log/messages.log.'+str(i)+ext)
             logs.append('/var/log/gdm/:0.log.'+str(i))
 
-
-
         def readable(log):
             if read(log):
                 return True

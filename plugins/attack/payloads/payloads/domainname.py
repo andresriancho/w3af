@@ -10,4 +10,6 @@ class domainname(base_payload):
 
         result.append(self.shell.read('/proc/sys/kernel/domainname')[:-1])
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Domainname not found.')
         return result

@@ -27,4 +27,6 @@ class apache_run_user(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Apache Run User not found.')
         return result

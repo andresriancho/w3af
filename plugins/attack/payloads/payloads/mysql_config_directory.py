@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class mysql_config_directory(base_payload):
     '''
+    This payload finds MySQL configuration directory.
     '''
     def run_read(self):
         result = []
@@ -38,6 +39,8 @@ class mysql_config_directory(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('MySQL configuration directory not found.')
         return result
         
 

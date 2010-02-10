@@ -17,7 +17,12 @@ class users_folders(base_payload):
             else:
                 return ''
 
-        for user in parse_users_folders(self.shell.read('/etc/passwd')):
-            result.append('/'+str(user)+'/')
+        passwd = self.shell.read('/etc/passwd')
+        if passwd:
+            for user in parse_users_folders(passwd):
+                result.append('/'+str(user)+'/')
+           
+        if result == [ ]:
+            result.append('Users folders not found.')
         
         return result

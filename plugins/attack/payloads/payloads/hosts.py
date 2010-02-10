@@ -33,6 +33,8 @@ class hosts(base_payload):
         result.append(self.shell.read('/etc/hosts.deny'))
 
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Hosts files not found.')
         return result
 
 

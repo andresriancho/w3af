@@ -30,4 +30,6 @@ class apache_ssl(base_payload):
             if parse_ssl_key(self.shell.read(file)) != '':
                 result.append(read(parse_ssl_key(self.shell.read(file))))
         
+        if result == [ ]:
+            result.append('Apache SSL configuration files not found.')
         return result

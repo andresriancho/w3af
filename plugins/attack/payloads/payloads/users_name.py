@@ -16,7 +16,10 @@ class users_name(base_payload):
             else:
                 return ''
 
-        for user in parse_users_name(self.shell.read('/etc/passwd')):
-            result.append(str(user))
-        
+        passwd = self.shell.read('/etc/passwd')
+        if passwd:
+            for user in parse_users_name(passwd):
+                result.append(str(user))
+        if result == [ ]:
+            result.append('Users name not found.')
         return result

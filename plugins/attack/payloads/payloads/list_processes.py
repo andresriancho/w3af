@@ -51,4 +51,6 @@ class list_processes(base_payload):
 
         console('')
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Cant list proccesses.')
         return result

@@ -19,7 +19,7 @@ class gcc_version(base_payload):
         if version:
             result.append(version)
         else:
-            result.append('GCC not found.')
+            result.append('GCC Version not found.')
         result = [p for p in result if p != '']
         return result
         

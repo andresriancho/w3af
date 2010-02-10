@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class current_user_home(base_payload):
     '''
+    This payload shows the current user home.
     '''
     def run_read(self):
         result = []

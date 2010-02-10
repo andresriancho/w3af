@@ -39,4 +39,6 @@ class apache_root_directory(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Apache root directory not found.')
         return result

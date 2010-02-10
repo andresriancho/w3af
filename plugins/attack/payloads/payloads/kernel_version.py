@@ -3,7 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class kernel_version(base_payload):
     '''
-    This payload shows Kernel Information
+    This payload shows Kernel version
     '''
     def run_read(self):
         result = []
@@ -33,4 +33,6 @@ class kernel_version(base_payload):
             if len(version) > len(longest):
                 longest = version
         result.append(longest)
+        if result == [ ]:
+            result.append('Cant identify Kernel Version.')
         return result

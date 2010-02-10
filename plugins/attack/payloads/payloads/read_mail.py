@@ -21,4 +21,6 @@ class read_mail(base_payload):
                     result.append(direct+user)
 
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('No mail stored found.')
         return result

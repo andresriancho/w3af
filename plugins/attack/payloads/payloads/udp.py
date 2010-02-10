@@ -2,20 +2,18 @@ import re
 from plugins.attack.payloads.base_payload import base_payload
 
 #TODO:Read TCP and TCP6?
-#TODO:Support UDP
 
-
-class tcp(base_payload):
+class udp(base_payload):
     '''
-    This payload shows TCP socket information
+    This payload shows UDP socket information
     '''
     def run_read(self):
         result = []
         table = []
 
-        def parse_tcp(net_tcp):
+        def parse_udp(net_udp):
             new = []
-            list = net_tcp.split('\n')
+            list = net_udp.split('\n')
             list = [i for i in list if i != '']
             for item in list:
                 tmp = item.split(' ')
@@ -46,11 +44,11 @@ class tcp(base_payload):
             return '.'.join(q)
         
         etc = self.shell.read('/etc/passwd')
-        table = parse_tcp(self.shell.read('/proc/net/tcp'))
+        table = parse_udp(self.shell.read('/proc/net/udp'))
     
         for list in table:
             new = []
-            list[0]=list[0].ljust(3)
+            list[0]=list[0].ljust(4)
             if list[1] != 'local_address':
                 ip = split_ip(list[1])
                 list[1] = str(dec_to_dotted_quad(int(ip[0], 16)))+':'+str(int(ip[1], 16))
@@ -76,5 +74,5 @@ class tcp(base_payload):
             new.append(list[11])
             result.append(str(" ".join(new)))
         if result == [ ]:
-            result.append('TCP socket information not found.')
+            result.append('UDP socket information not found.')
         return result

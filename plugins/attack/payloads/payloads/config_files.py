@@ -53,4 +53,6 @@ class config_files(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Configuration files not found.')
         return result

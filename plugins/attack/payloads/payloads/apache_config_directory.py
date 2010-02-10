@@ -59,4 +59,6 @@ class apache_config_directory(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Apache configuration directory not found.')
         return result

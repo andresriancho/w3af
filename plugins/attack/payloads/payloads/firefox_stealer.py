@@ -44,5 +44,5 @@ class firefox_stealer(base_payload):
 
         result = [p for p in result if p != '']
         if result == [ ]:
-            console('Stealing files didnt work, Server is configured correctly')
+            console('Server is configured correctly, cant steal firefox information.')
         return result

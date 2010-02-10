@@ -14,7 +14,10 @@ class hostname(base_payload):
         for v in values:
             if not v in result:
                result.append(v)
-
+        
+        result = list(set(result))
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('Hostname not found.')
         return result
         

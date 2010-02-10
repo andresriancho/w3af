@@ -22,5 +22,7 @@ class dhcp_config_files(base_payload):
                 result.append(self.shell.read(file))
 
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('DHCP configuration files not found.')
         return result
         

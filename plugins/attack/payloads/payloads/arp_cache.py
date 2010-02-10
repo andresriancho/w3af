@@ -18,3 +18,7 @@ class arp_cache(base_payload):
                 result.append('-------------------------')
                 result.append('FILE => '+file)
                 result.append(self.shell.read(file))
+        
+        if result == [ ]:
+            result.append('ARP Cache configuration files not found.')
+        return result

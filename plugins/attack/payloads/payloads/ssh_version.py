@@ -9,12 +9,14 @@ class ssh_version(base_payload):
         files = []
 
         def parse_binary(bin_ssh):
-            version = re.search('(OpenSSH(.*?))\%s', bin_ssh)
+            version = re.search('(?<=OpenSSH)(.*?)\x00', bin_ssh)
             if version:
                 return version.group(1)
             else:
                 return ''
 
-        result.append('Version => '+parse_binary(self.shell.read('/usr/sbin/sshd')))
+        result.append('Version => '+'OpenSSH'+parse_binary(self.shell.read('/usr/sbin/sshd')))
+
+        
         return result
         
