@@ -93,7 +93,7 @@ class log_reader(base_payload):
             else:
                 return ''
 
-        config_file = run_payload('apache_config_files')
+        config_file = self.exec_payload('apache_config_files')
         for config in config_file:
             apache_logs = parse_apache_logs(self.shell.read(config))
             for log in apache_logs:

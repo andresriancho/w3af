@@ -9,7 +9,7 @@ class apache_config(base_payload):
         result = []
         files = []
 
-        apache_config_files = run_payload('apache_config_files')
+        apache_config_files = self.exec_payload('apache_config_files')
         if apache_config_files:
             for file in apache_config_files:
                 if self.shell.read(file):

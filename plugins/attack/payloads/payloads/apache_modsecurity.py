@@ -31,8 +31,8 @@ class apache_modsecurity(base_payload):
                 return ''
 
         bin_location = []
-        apache_config_files = run_payload('apache_config_files')
-        apache_config_dir = run_payload('apache_config_directory')
+        apache_config_files = self.exec_payload('apache_config_files')
+        apache_config_dir = self.exec_payload('apache_config_directory')
         for file in apache_config_files:
             if re.search('security2_module', self.shell.read(file)) or re.search('security_module', self.shell.read(file)):
                 bin_location.append(parse_binary_location(self.shell.read(file)))

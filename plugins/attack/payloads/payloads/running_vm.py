@@ -64,7 +64,7 @@ class running_vm(base_payload):
         for file in files:
             if 'VMware' in read(file):
                 condition = True
-        if 'VMware' in run_payload('list_kernel_modules'):
+        if 'VMware' in self.exec_payload('list_kernel_modules'):
             condition = True
 
         result = [p for p in result if p != '']

@@ -12,7 +12,7 @@ class mysql_config(base_payload):
         files.append('my.cnf')
         files.append('debian.cnf')
 
-        directory = run_payload('mysql_config_directory')
+        directory = self.exec_payload('mysql_config_directory')
         for file in files:
             if self.shell.self.shell.read(directory+file) != '':
                 result.append('-------------------------')

@@ -15,7 +15,7 @@ class apache_htaccess(base_payload):
             else:
                 return ''
 
-        apache_config = run_payload('apache_config')
+        apache_config = self.exec_payload('apache_config')
         htaccess = '.htaccess'
         if apache_config:
             for line in apache_config:
@@ -23,7 +23,7 @@ class apache_htaccess(base_payload):
                     htaccess = parse_htaccess(line)
 
 
-        apache_root = run_payload('apache_root_directory')
+        apache_root = self.exec_payload('apache_root_directory')
         if apache_root:
             for dir in apache_root:
                 if htaccess and self.shell.read(dir+htaccess):

@@ -15,7 +15,7 @@ class apache_run_user(base_payload):
             else:
                 return ''
 
-        apache_dir = run_payload('apache_config_directory')
+        apache_dir = self.exec_payload('apache_config_directory')
         if apache_dir:
             for dir in apache_dir:
                 users.append(parse_user_envvars(self.shell.read(dir+'envvars')))

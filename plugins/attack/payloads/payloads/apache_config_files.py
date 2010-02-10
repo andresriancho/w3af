@@ -20,7 +20,7 @@ class apache_config_files(base_payload):
         files.append('sites-available/default-ssl')
         files.append('conf.d/subversion.conf')
 
-        apache_dir = run_payload('apache_config_directory')
+        apache_dir = self.exec_payload('apache_config_directory')
         if apache_dir:
             for dir in apache_dir:
                 for file in files:

@@ -38,8 +38,8 @@ class apache_config_directory(base_payload):
             else:
                 return False
 
-        paths.append( parse_apache2_init( read ('/etc/init.d/apache2') ) )
-        paths.append( parse_apache_init( read ('/etc/init.d/apache') ) )
+        paths.append( parse_apache2_init( self.shell.read('/etc/init.d/apache2') ) )
+        paths.append( parse_apache_init( self.shell.read('/etc/init.d/apache') ) )
         paths.append('/etc/apache2/')
         paths.append('/etc/apache/')
         paths.append('/etc/httpd/')

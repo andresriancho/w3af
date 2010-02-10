@@ -10,7 +10,7 @@ class config_files(base_payload):
         result = []
         config_files = []
 
-        folders = run_payload('users_folders')
+        folders = self.exec_payload('users_folders')
         for folder in folders:
             config_files.append(folder+'.bashrc')
             config_files.append(folder+'.bashrc~')

@@ -24,7 +24,7 @@ class apache_ssl(base_payload):
                 return ''
 
 
-        apache_files = run_payload('apache_config_files')
+        apache_files = self.exec_payload('apache_config_files')
         for file in apache_files:
             if parse_ssl_cert(self.shell.read(file)) != '':
                 result.append(read(parse_ssl_cert(self.shell.read(file))))

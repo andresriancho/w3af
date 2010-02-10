@@ -28,7 +28,7 @@ class mysql_config_directory(base_payload):
         paths.append('/opt/local/etc/mysql5/')
         paths.append('/var/lib/mysql/')
 
-        folders = run_payload('users_folders')
+        folders = self.exec_payload('users_folders')
         for folder in folders:
             paths.append(folder)
 

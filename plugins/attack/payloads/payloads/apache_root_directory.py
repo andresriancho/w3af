@@ -23,12 +23,12 @@ class apache_root_directory(base_payload):
             else:
                 return ''
 
-        users = run_payload('apache_run_user')
+        users = self.exec_payload('apache_run_user')
         if users:
             for user in users:
                 result.append('/'+parse_etc_passwd(self.shell.read('/etc/passwd'),  user)+'/')
 
-        apache_config_files = run_payload('apache_config_files')
+        apache_config_files = self.exec_payload('apache_config_files')
         if apache_config_files:
             for file in apache_config_files:
                 if parse_config_file(self.shell.read(file)) != '':

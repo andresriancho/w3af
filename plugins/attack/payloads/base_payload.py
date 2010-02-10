@@ -20,7 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import plugins.attack.payloads.payload_handler as payload_handler
+
 SYSCALL_LIST = ['read', 'write', 'exec']
+
 
 class base_payload(object):
 
@@ -43,6 +46,15 @@ class base_payload(object):
         run_options = set(run_options)
         
         return available_syscalls.intersection(run_options)
+        
+    def exec_payload(self, payload_name):
+        '''
+        Execute ANOTHER payload, by providing the other payload name.
+        
+        @parameter payload_name: The name of the payload I want to run.
+        @return: The payload result.
+        '''
+        return payload_handler.exec_payload(self.shell, payload_name)
         
     def run(self, *args):
         '''

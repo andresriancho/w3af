@@ -12,7 +12,7 @@ class read_mail(base_payload):
         directory.append('/var/mail/')
         directory.append('/var/spool/mail/')
 
-        users = run_payload('users_name')
+        users = self.exec_payload('users_name')
         for direct in directory:
             for user in users:
                 if self.shell.self.shell.read(direct+user) != '':
