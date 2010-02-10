@@ -67,7 +67,7 @@ class running_vm(base_payload):
         if 'VMware' in self.exec_payload('list_kernel_modules'):
             condition = 'Is running through a VM !'
         
-        
+        result.append(condition)
 
         result = [p for p in result if p != '']
         return result

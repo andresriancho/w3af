@@ -29,17 +29,20 @@ class running_honeypot(base_payload):
             else:
                 return ''
         
-        running_honeypot = ''
+        running_honeypot = 'Is NOT running Honeypots.'
         for file in files:
-            if read(file):
-                running_honeypot = 'Is running honeypots !'
-        is_a_honeypot = ''
-        if parse_cpu_info(read('/proc/cpuinfo')) == 'UML':
+            if self.shell.read(file):
+                running_honeypot = 'Is running Honeypots !!'
+        
+        is_a_honeypot = 'Is not a Honeypot'
+        if parse_cpu_info(self.shell.read('/proc/cpuinfo')) == 'UML':
             is_a_honeypot = 'Is a Honeypot !'
-        devices = read('/proc/devices')
+        devices = self.shell.read('/proc/devices')
         if '60 cow' in devices or '90 ubd' in devices:
             is_a_honeypot = 'Is a Honeypot !'
-        if 'nodev\thostfs' in read('/proc/filesystems'):
-            is_a_honeypot = ''
+        if 'nodev\thostfs' in self.shell.read('/proc/filesystems'):
+            is_a_honeypot = 'Is a Honeypot !'
         
+        result.append(running_honeypot+' <--> '+is_a_honeypot)
+
         return result
