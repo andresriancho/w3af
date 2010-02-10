@@ -16,7 +16,6 @@ class apache_ssl(base_payload):
                 return ''
 
         def parse_ssl_key (apache_config):
-            #key = re.search('(?<=SSLCertificateKeyFile )(.*?)\'', apache_config)
             key = re.search('(?<=SSLCertificateKeyFile )(.*)', apache_config)
             if key:
                 return key.group(1)

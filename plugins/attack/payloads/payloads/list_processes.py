@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class list_processes(base_payload):
     '''
+    This payload shows current proccesses on the system.
     '''
     def run_read(self):
         result = []

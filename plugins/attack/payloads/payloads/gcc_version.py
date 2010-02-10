@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class gcc_version(base_payload):
     '''
+    This payload shows the current GCC Version
     '''
     def run_read(self):
         result = []
@@ -13,8 +14,12 @@ class gcc_version(base_payload):
                 return gcc_version.group(0)
             else:
                 return ''
-
-        result.append(parse_gcc_version( self.shell.read('/proc/version')))
+        
+        version = parse_gcc_version( self.shell.read('/proc/version'))
+        if version:
+            result.append(version)
+        else:
+            result.append('GCC not found.')
         result = [p for p in result if p != '']
         return result
         

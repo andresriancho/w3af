@@ -4,7 +4,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class running_honeypot(base_payload):
     '''
-    This payload check if the server is  a Honeypot
+    This payload check if the server is a Honeypot or is running one.
     '''
     def run_read(self):
         result = []
@@ -28,15 +28,18 @@ class running_honeypot(base_payload):
                 return processor.group(1)
             else:
                 return ''
-
-        condition = False
+        
+        running_honeypot = ''
+        for file in files:
+            if read(file):
+                running_honeypot = 'Is running honeypots !'
+        is_a_honeypot = ''
         if parse_cpu_info(read('/proc/cpuinfo')) == 'UML':
-            condition = True
-        if '60 cow' in read('/proc/devices'):
-            condition = True
-        if '90 ubd' in read('/proc/devices'):
-            condition = True
+            is_a_honeypot = 'Is a Honeypot !'
+        devices = read('/proc/devices')
+        if '60 cow' in devices or '90 ubd' in devices:
+            is_a_honeypot = 'Is a Honeypot !'
         if 'nodev\thostfs' in read('/proc/filesystems'):
-            condition = True
+            is_a_honeypot = ''
         
         return result

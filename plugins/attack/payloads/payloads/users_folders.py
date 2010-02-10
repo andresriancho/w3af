@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class users_folders(base_payload):
     '''
+    This payload shows folders assosiated with every user on the system.
     '''
     def run_read(self):
                 

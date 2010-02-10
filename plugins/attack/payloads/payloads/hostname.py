@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class hostname(base_payload):
     '''
+    This payload shows the server hostname
     '''
     def run_read(self):
         result = []

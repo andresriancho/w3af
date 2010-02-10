@@ -1,3 +1,4 @@
+#TODO self
 import re
 from plugins.attack.payloads.base_payload import base_payload
 

@@ -3,7 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class users_name(base_payload):
     '''
-    This payload shows users name parsing the /etc/passwd file
+    This payload shows users name
     '''
     def run_read(self):
         result = []

@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class list_kernel_modules(base_payload):
     '''
+    This payload displays a list of all modules loaded into the kernel
     '''
     def run_read(self):
         result = []

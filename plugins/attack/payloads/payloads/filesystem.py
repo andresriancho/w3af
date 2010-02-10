@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class filesystem(base_payload):
     '''
+    This payload shows filesystem info.
     '''
     def run_read(self):
         result = []

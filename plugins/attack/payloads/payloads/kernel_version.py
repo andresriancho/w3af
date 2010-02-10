@@ -3,6 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class kernel_version(base_payload):
     '''
+    This payload shows Kernel Information
     '''
     def run_read(self):
         result = []

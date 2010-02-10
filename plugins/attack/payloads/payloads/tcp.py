@@ -44,26 +44,29 @@ class tcp(base_payload):
                 d = d/256
             q.reverse()
             return '.'.join(q)
-
+        etc = read('/etc/passwd')
         table = parse_tcp(self.shell.read('/proc/net/tcp'))
-
         for list in table:
+            print list
             new = []
             list[0]=list[0].ljust(3)
-
             if list[1] != 'local_address':
-                list[1] = str(dec_to_dotted_quad(int(split_ip(list[1])[0], 16)))
-            list[1] = list[1].ljust(15)
-            
+                print table[2]
+                ip = split_ip(list[1])
+                list[1] = str(dec_to_dotted_quad(int(ip[0], 16)))+':'+str(int(ip[1], 16))
+            list[1] = list[1].ljust(25)
+
             if list[2] != 'rem_address':
-                list[2] = str(dec_to_dotted_quad(int(split_ip(list[2])[0] , 16)))
-            list[2] = list[2].ljust(15)
+                ip = split_ip(list[2])
+                list[2] = str(dec_to_dotted_quad(int(ip[0] , 16)))+':'+str(int(ip[2], 16))
+                print 'hola'
+            list[2] = list[2].ljust(25)
             
             if list[7] == 'tm->when':
                 list[7] = 'uid'
             
             if list[7] != 'uid':
-                list[7] = get_username(self.shell.read('/etc/passwd'), list[7])
+                list[7] = get_username(etc, list[7])
             list[7] = list[7].ljust(10)
           
             new.append(list[0])
@@ -73,5 +76,4 @@ class tcp(base_payload):
             new.append(list[7])
             new.append(list[11])
             result.append(str(" ".join(new)))
-        
         return result
