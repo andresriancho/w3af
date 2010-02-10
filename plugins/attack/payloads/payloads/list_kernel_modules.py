@@ -1,15 +1,20 @@
-#REQUIRE_LINUX
 import re
+from plugins.attack.payloads.base_payload import base_payload
 
-result = []
+class list_kernel_modules(base_payload):
+    '''
+    '''
+    def run_read(self):
+        result = []
 
-def parse_module_name ( modules_file ):
-    name = re.findall('(.*?)\s(\d{0,6}) (\d.*?),? -?\s?Live', modules_file)
-    if name:
-        return name
-    else:
-        return ''
+        def parse_module_name ( modules_file ):
+            name = re.findall('(.*?)\s(\d{0,6}) (\d.*?),? -?\s?Live', modules_file)
+            if name:
+                return name
+            else:
+                return ''
 
-result.append('Module'.ljust(28)+'Size'.ljust(7)+'Used by'.ljust(20))
-for module in parse_module_name(open( '/proc/modules').read()):
-    result.append(module[0].ljust(28)+module[1].ljust(7)+module[2].ljust(20))
+        result.append('Module'.ljust(28)+'Size'.ljust(7)+'Used by'.ljust(20))
+        for module in parse_module_name(self.shell.read( '/proc/modules')):
+            result.append(module[0].ljust(28)+module[1].ljust(7)+module[2].ljust(20))
+        return result

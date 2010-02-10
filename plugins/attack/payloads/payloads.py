@@ -1,7 +1,7 @@
 '''
 payloads.py
 
-Copyright 2006 Andres Riancho
+Copyright 2009 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 

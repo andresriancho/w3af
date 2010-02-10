@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-4.2.dtd">
 <!-- eric4 project file for project w3af -->
-<!-- Saved: 2010-01-13, 13:37:41 -->
+<!-- Saved: 2010-01-14, 17:01:31 -->
 <!-- Copyright (C) 2010 Andres Riancho, andres.riancho@gmail.com -->
 <Project version="4.2">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -3627,6 +3627,131 @@
     </Source>
     <Source>
       <Name>get_net_iface.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Name>payload_handler.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>apache_config_directory.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>apache_run_user.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>cpu_info.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>current_user_home.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>current_user.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>domainname.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>gcc_version2.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>hostname.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>hosts.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>kernel_version.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>list_kernel_modules.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>list_processes.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>os_fingerprint.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>payloads.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>route.py</Name>
+    </Source>
+    <Source>
+      <Dir>plugins</Dir>
+      <Dir>attack</Dir>
+      <Dir>payloads</Dir>
+      <Dir>payloads</Dir>
+      <Name>users_home.py</Name>
     </Source>
   </Sources>
   <Forms>

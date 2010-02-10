@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-4.1.dtd">
 <!-- eric4 tasks file for project w3af -->
-<!-- Saved: 2010-01-13, 13:39:09 -->
+<!-- Saved: 2010-01-14, 17:01:41 -->
 <Tasks version="4.1">
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: review this, I'm not sure *when* activate this</Summary>
@@ -894,20 +894,6 @@
       <Linenumber>271</Linenumber>
     </Resource>
   </Task>
-  <Task priority="1" completed="False" bugfix="False">
-    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
-    <Description></Description>
-    <Created>2009-10-30, 11:31:36</Created>
-    <Resource>
-      <Filename>
-        <Dir>core</Dir>
-        <Dir>ui</Dir>
-        <Dir>consoleUi</Dir>
-        <Name>exploit.py</Name>
-      </Filename>
-      <Linenumber>261</Linenumber>
-    </Resource>
-  </Task>
   <Task priority="1" completed="False" bugfix="True">
     <Summary>FIXME: This method sucks, I should do something like</Summary>
     <Description></Description>
@@ -1382,7 +1368,7 @@
   <Task priority="1" completed="False" bugfix="False">
     <Summary>TODO: Review this hack</Summary>
     <Description></Description>
-    <Created>2010-01-13, 10:55:06</Created>
+    <Created>2010-01-14, 11:39:47</Created>
     <Resource>
       <Filename>
         <Dir>plugins</Dir>
@@ -1390,6 +1376,34 @@
         <Name>localFileReader.py</Name>
       </Filename>
       <Linenumber>312</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO: I should use different variables to store shells and proxies</Summary>
+    <Description></Description>
+    <Created>2010-01-14, 11:41:13</Created>
+    <Resource>
+      <Filename>
+        <Dir>core</Dir>
+        <Dir>ui</Dir>
+        <Dir>consoleUi</Dir>
+        <Name>exploit.py</Name>
+      </Filename>
+      <Linenumber>261</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" bugfix="False">
+    <Summary>TODO:</Summary>
+    <Description></Description>
+    <Created>2010-01-14, 16:53:42</Created>
+    <Resource>
+      <Filename>
+        <Dir>plugins</Dir>
+        <Dir>attack</Dir>
+        <Dir>payloads</Dir>
+        <Name>payload_handler.py</Name>
+      </Filename>
+      <Linenumber>119</Linenumber>
     </Resource>
   </Task>
 </Tasks>

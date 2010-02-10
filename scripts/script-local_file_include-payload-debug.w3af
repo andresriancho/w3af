@@ -26,5 +26,6 @@ exploit
 exploit localFileReader
 interact 0
 
-payload apache_config_directory
+payload hosts
+
 

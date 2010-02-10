@@ -1,7 +1,12 @@
-#REQUIRE_LINUX
 import re
+from plugins.attack.payloads.base_payload import base_payload
 
-result = []
+class domainname(base_payload):
+    '''
+    '''
+    def run_read(self):
+        result = []
 
-result.append(read( '/proc/sys/kernel/domainname')[:-1])
-result = [p for p in result if p != '']
+        result.append(self.shell.read('/proc/sys/kernel/domainname')[:-1])
+        result = [p for p in result if p != '']
+        return result

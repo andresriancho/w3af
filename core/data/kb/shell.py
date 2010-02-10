@@ -159,16 +159,14 @@ class shell(vuln, exploitResult, commonAttackMethods):
         
         @parameter payload_name: The name of the payload I want to run.
         '''
-        requirements =  payload_handler.get_used_syscalls( payload_name )
-    
-        if payload_handler.can_run( self , requirements):
+        result_str = ''
+        
+        if payload_name in payload_handler.runnable_payloads(self):
             om.out.debug( 'The payload can be run. Starting execution.' )
             result = payload_handler.exec_payload( self,  payload_name)
             result_str = '\n'.join(result)
         else:
-            unmet_requirements = payload_handler.get_unmet_requirements( self , requirements)
-            result_str = 'The payload can NOT be run, payload requirements (' + ','.join(unmet_requirements) +')'
-            result_str += ' exceed the exploit capabilities.'
+            result_str = 'The payload could not be run'
             
         return result_str
     

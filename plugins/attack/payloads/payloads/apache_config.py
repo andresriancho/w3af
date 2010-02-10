@@ -1,17 +1,21 @@
-#REQUIRE_LINUX
-#This payload displays content of Apache Configuration Files.
-
 import re
+from plugins.attack.payloads.base_payload import base_payload
 
-result = []
-files = []
+class apache_config(base_payload):
+    '''
+    This payload displays content of Apache Configuration Files.
+    '''
+    def run_read(self):
+        result = []
+        files = []
 
-apache_config_files = run_payload('apache_config_files')
-if apache_config_files:
-    for file in apache_config_files:
-        if read(file):
-            result.append('------------------------- ')
-            result.append('FILE => '+file)
-            result.append(read(file))
+        apache_config_files = run_payload('apache_config_files')
+        if apache_config_files:
+            for file in apache_config_files:
+                if self.shell.read(file):
+                    result.append('------------------------- ')
+                    result.append('FILE => '+file)
+                    result.append(self.shell.read(file))
 
-result = [p for p in result if p != '']
+        result = [p for p in result if p != '']
+        return result

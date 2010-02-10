@@ -1,13 +1,19 @@
-#REQUIRE_LINUX
 import re
+from plugins.attack.payloads.base_payload import base_payload
 
-result = []
-values = []
-values.append(read( '/etc/hostname')[:-1])
-values.append(read('/proc/sys/kernel/hostname')[:-1])
+class hostname(base_payload):
+    '''
+    '''
+    def run_read(self):
+        result = []
+        values = []
+        values.append(self.shell.read('/etc/hostname')[:-1])
+        values.append(self.shell.read('/proc/sys/kernel/hostname')[:-1])
 
-for v in values:
-    if not v in result:
-       result.append(v)
+        for v in values:
+            if not v in result:
+               result.append(v)
 
-result = [p for p in result if p != '']
+        result = [p for p in result if p != '']
+        return result
+        
