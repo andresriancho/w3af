@@ -48,13 +48,13 @@ class running_vm(base_payload):
             else:
                 return ''
 
-        condition = False
+        condition = 'Is not running through a VM'
         for candidate in candidates:
-            file = read('/sys/bus/pci/devices/'+candidate)
+            file = self.shell.read('/sys/bus/pci/devices/'+candidate)
             pci_id = parse_pci_id(file)
             pci_subsys_id = parse_subsys_id(file)
             if pci_id in pci_list or pci_subsys_id in pci_list:
-                condition = True
+                condition = 'Is running through a VM !'
 
         files.append('/var/log/dmesg')
         files.append('/proc/interrupts')
@@ -62,10 +62,12 @@ class running_vm(base_payload):
         files.append('/proc/iomem')
         files.append('/proc/meminfo')
         for file in files:
-            if 'VMware' in read(file):
-                condition = True
+            if 'VMware' in self.shell.read(file):
+                condition = 'Is running through a VM !'
         if 'VMware' in self.exec_payload('list_kernel_modules'):
-            condition = True
+            condition = 'Is running through a VM !'
+        
+        
 
         result = [p for p in result if p != '']
         return result
