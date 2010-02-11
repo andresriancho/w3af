@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
+from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # options
 from core.data.options.option import option
@@ -198,7 +199,9 @@ class miscSettings(configurable):
         
         if optionsMap['maxThreads'].getValue()  > 100:
             raise w3afException('The maximum valid number of threads is 100.')
-        cf.cf.save('maxThreads', optionsMap['maxThreads'].getValue() )
+        max_threads = optionsMap['maxThreads'].getValue()
+        cf.cf.save('maxThreads', max_threads )
+        tm.setMaxThreads( max_threads )
         
         cf.cf.save('fuzzableHeaders', optionsMap['fuzzableHeaders'].getValue() )
         cf.cf.save('maxDiscoveryLoops', optionsMap['maxDiscoveryLoops'].getValue() )
