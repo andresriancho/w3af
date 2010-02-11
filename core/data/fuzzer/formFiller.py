@@ -48,7 +48,7 @@ parameter_name_knowledge = {
     '90210':['postal','zip','postleitzahl','plz','postais'],
     '3419':['pin','id'],
     '22':['floor','age','piso','edad','stock','alter', 'port', 'puerto'],
-    '55550178':['phone','code','number','telefono','numero','número','código','codigo','telefon',
+    '55550178':['phone','fax','code','number','telefono','numero','número','código','codigo','telefon',
                         'tel','code','nummer', 'call', 'llamar'],
     '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês',
             'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article', 'score', 'puntos', 
