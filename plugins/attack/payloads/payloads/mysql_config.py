@@ -20,5 +20,7 @@ class mysql_config(base_payload):
                 result.append(self.shell.self.shell.read(directory+file))
 
         result = [p for p in result if p != '']
+        if result == [ ]:
+            result.append('MySQL configuration files not found.')
         return result
         

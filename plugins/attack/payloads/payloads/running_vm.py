@@ -27,12 +27,12 @@ class running_vm(base_payload):
         candidates.append('0000:02:03.0')
 
         pci_list = []
-        pci_list.append('15AD:0405')
-        pci_list.append('15AD:1976')
-        pci_list.append('15AD:07a0')
-        pci_list.append('15AD:0790')
-        pci_list.append('15AD:0770')
-        pci_list.append('15AD:0740')
+        pci_list.append('15AD')
+        pci_list.append('1233')
+        pci_list.append('1af4:1100')
+        pci_list.append('80ee:beef')
+        pci_list.append('80ee:cafe')
+
 
         def parse_pci_id( uevent ):
             processor = re.search('(?<=PCI_ID=)(.*)', uevent)
@@ -53,8 +53,9 @@ class running_vm(base_payload):
             file = self.shell.read('/sys/bus/pci/devices/'+candidate)
             pci_id = parse_pci_id(file)
             pci_subsys_id = parse_subsys_id(file)
-            if pci_id in pci_list or pci_subsys_id in pci_list:
-                condition = 'Is running through a VM !'
+            for pci_item in pci_list:
+                if pci_item in pci_id or pci_item in pci_subsys_id:
+                    condition = 'Its running through a VM!'
 
         files.append('/var/log/dmesg')
         files.append('/proc/interrupts')
@@ -62,9 +63,14 @@ class running_vm(base_payload):
         files.append('/proc/iomem')
         files.append('/proc/meminfo')
         for file in files:
-            if 'VMware' in self.shell.read(file):
+            file_content = self.shell.read(file)
+            if 'vmware' in file_content.lower() or 'qemu' in file_content.lower() \
+                or 'virtualbox' in file_content.lower() or 'bochs' in file_content.lower():
                 condition = 'Is running through a VM !'
-        if 'VMware' in self.exec_payload('list_kernel_modules'):
+        
+        kernel_modules = self.exec_payload('list_kernel_modules')
+        if 'vmware' in kernel_modules.lower() or 'qemu' in kernel_modules.lower() \
+            or 'virtualbox' in kernel_modules.lower() or 'bochs' in kernel_modules.lower():
             condition = 'Is running through a VM !'
         
         result.append(condition)

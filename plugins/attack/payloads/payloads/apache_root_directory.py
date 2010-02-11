@@ -25,14 +25,16 @@ class apache_root_directory(base_payload):
 
         users = self.exec_payload('apache_run_user')
         if users:
+            passwd = self.shell.read('/etc/passwd')
             for user in users:
-                result.append('/'+parse_etc_passwd(self.shell.read('/etc/passwd'),  user)+'/')
+                result.append('/'+parse_etc_passwd(passwd,  user)+'/')
 
         apache_config_files = self.exec_payload('apache_config_files')
         if apache_config_files:
             for file in apache_config_files:
-                if parse_config_file(self.shell.read(file)) != '':
-                    result.append(parse_config_file(self.shell.read(file))+'/')
+                file_content = self.shell.read(file)
+                if parse_config_file(file_content) != '':
+                    result.append(parse_config_file(file_content)+'/')
 
         if kb.kb.getData('pathdisclosure', 'webroot'):
             result.append(kb.kb.getData('pathdisclosure', 'webroot'))
