@@ -64,9 +64,7 @@ class threadManager:
             self._threadPool = ThreadPool( 5, 15 )
     
     def setMaxThreads( self, threads ):
-        if self._maxThreads == threads:
-            self._maxThreads = threads
-        elif self._maxThreads > threads:
+        if self._maxThreads > threads:
             self._threadPool.dismissWorkers( self._maxThreads - threads )
             self._maxThreads = threads
         elif self._maxThreads < threads:

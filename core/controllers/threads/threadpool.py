@@ -37,6 +37,9 @@ __date__ = "2005-07-19"
 import threading, Queue
 import core.controllers.outputManager as om
 import traceback
+import time
+
+DEBUG = False
 
 class NoResultsPending(Exception):
     """All work requests have been processed."""
@@ -61,6 +64,8 @@ class WorkerThread(threading.Thread):
         threading.Thread.__init__(self, **kwds)
         self.setDaemon(1)
         self.workRequestQueue = requestsQueue
+        if DEBUG:
+            print '[worker] Init with queue',  id(self.workRequestQueue)
         self.resultQueue = resultsQueue
         self._dismissed = threading.Event()
         self.start()
@@ -68,11 +73,31 @@ class WorkerThread(threading.Thread):
     def run(self):
         """Repeatedly process the job queue until told to exit.
         """
-
         while not self._dismissed.isSet():
-            # thread blocks here, if queue empty
-            request = self.workRequestQueue.get()
-            #om.out.debug('[worker] workRequestQueue length for thread with id ' + str(id(self)) + ' is ' + str(self.workRequestQueue.qsize()) )
+            
+            if DEBUG:
+                msg = '[worker] Blocking at Queue.get().'
+                om.out.debug( msg )
+                
+            try:
+                # thread blocks here for 1 second, if queue empty
+                request = self.workRequestQueue.get(timeout=1)
+            except:
+                if DEBUG:
+                    msg = '[worker] Is blocked at Queue.get() because the queue is empty (size='
+                    msg += str(self.workRequestQueue.qsize()) +').'
+                    om.out.debug( msg )
+                continue
+
+            
+            if DEBUG:
+                msg = '[worker] Unblocking after Queue.get().'
+                om.out.debug( msg )
+            
+            if DEBUG:
+                msg = '[worker] workRequestQueue length for thread with id ' + str(id(self)) + ' is '
+                msg += str(self.workRequestQueue.qsize())
+                om.out.debug( msg )
             
             if self._dismissed.isSet():
                 # return the work request we just picked up
@@ -87,7 +112,8 @@ class WorkerThread(threading.Thread):
                 om.out.error( 'Traceback: ' + str( traceback.format_exc() ) )
                 self.resultQueue.put( (request, e) )
         
-        om.out.debug('[worker] says bye!')
+        if DEBUG:
+            om.out.debug('[worker] Ending!')
                 
             
 
@@ -131,7 +157,7 @@ class WorkRequest:
         self.ownerObj = ownerObj
 
 
-class ThreadPool:
+class ThreadPoolImplementation:
     """A thread pool, distributing work requests and collecting results.
 
     See the module doctring for more information.
@@ -155,6 +181,8 @@ class ThreadPool:
 
         self.requestsQueue = Queue.Queue()
         self.resultsQueue = Queue.Queue()
+        if DEBUG:
+            print '[ThreadPool][',id(self),'] Init with queue',  id(self.requestsQueue)
         self.workers = []
         self.workRequests = {}
         self.createWorkers(num_workers)
@@ -189,12 +217,17 @@ class ThreadPool:
                     owned_work_requests = self.workRequests.values()
                 if not owned_work_requests:
                     raise NoResultsPending
-                    
-                # are there still workers to process remaining requests?
+                
+                if DEBUG:
+                    msg = 'The object calling poll() still owns ' + str(len(owned_work_requests))
+                    msg += ' work requests.'
+                    om.out.debug( msg )
+                
+                #   Are there still workers to process remaining requests?
                 elif block and not self.workers:
                     raise NoWorkersAvailable
                                 
-                # get back next results
+                #   Get back a new result from the queue where the workers put their result.
                 request, result = self.resultsQueue.get(block=block, timeout=1)
 
                 if id(request.ownerObj) == id(ownerObj) or joinAll:
@@ -211,6 +244,9 @@ class ThreadPool:
                     self.resultsQueue.put( (request,result) )
                 
             except Queue.Empty:
+                if DEBUG:
+                    msg = 'The results Queue is empty, breaking.'
+                    om.out.debug( msg )
                 break
 
     def wait(self, ownerObj=None, joinAll=False ):
@@ -243,6 +279,47 @@ def makeRequests(callable, args_list, callback=None):
               WorkRequest(callable, [item], None, callback=callback))
     return requests
 
+class ThreadPool( object ):
+    '''
+    This is a Singleton class that I had to add here as a kludge, in order to avoid the
+    creation of two ThreadPool instances. If two ThreadPools are created, the whole
+    threading system is crazy...
+    '''
+    ## Stores the unique Singleton instance-
+    _iInstance = None
+ 
+    ## Class used with this Python singleton design pattern
+    #  @todo Add all variables, and methods needed for the Singleton class below
+    Singleton = ThreadPoolImplementation
+ 
+    ## The constructor
+    #  @param self The object pointer.
+    def __init__( self, num_workers, q_size=0):
+        # Check whether we already have an instance
+        if ThreadPool._iInstance is None:
+            # Create and remember instanc
+            ThreadPool._iInstance = ThreadPool.Singleton(num_workers,  q_size)
+ 
+        # Store instance reference as the only member in the handle
+        self._EventHandler_instance = ThreadPool._iInstance
+ 
+ 
+    ## Delegate access to implementation.
+    #  @param self The object pointer.
+    #  @param attr Attribute wanted.
+    #  @return Attribute
+    def __getattr__(self, aAttr):
+        return getattr(self._iInstance, aAttr)
+ 
+ 
+    ## Delegate access to implementation.
+    #  @param self The object pointer.
+    #  @param attr Attribute wanted.
+    #  @param value Vaule to be set.
+    #  @return Result of operation.
+    def __setattr__(self, aAttr, aValue):
+        return setattr(self._iInstance, aAttr, aValue)
+        
 
 if __name__ == '__main__':
     import random
