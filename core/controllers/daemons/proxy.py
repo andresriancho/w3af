@@ -536,15 +536,20 @@ class SSLConnectionFile:
     
     def __init__(self, sslCon, socket):
         self.closed = False
-        self._readBuf = ''
+        self._read_buffer = ''
         self._sslCon = sslCon
         self._socket = socket
 
     def read( self, amount ):
-        if self._readBuf == '':
-            self._readBuf = self._sslCon.recv(4096)
+        if len(self._read_buffer) < amount:
+            #   We actually want to read ahead in order to have more data in the buffer.
+            if amount <= 4096:
+                to_read = 4096
+            else:
+                to_read = amount
+            self._read_buffer = self._sslCon.recv( to_read )
 
-        result, self._readBuf = self._readBuf[0:amount], self._readBuf[amount:]
+        result, self._read_buffer = self._read_buffer[0:amount], self._read_buffer[amount:]
         return result
     
     def write( self, data ):
