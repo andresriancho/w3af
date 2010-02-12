@@ -462,12 +462,12 @@ class w3afCore:
                         self._end()
                         raise
                     except w3afException, w3:
-                        om.out.information( 'The target URL: ' + url + ' is unreachable.' )
-                        om.out.information( 'Error description: ' + str(w3) )
+                        om.out.error( 'The target URL: ' + url + ' is unreachable.' )
+                        om.out.error( 'Error description: ' + str(w3) )
                     except Exception, e:
-                        om.out.information( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
-                        om.out.information( 'Error description: "' + str(e) + '". See debug output for more information.')
-                        om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                        om.out.error( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
+                        om.out.error( 'Error description: "' + str(e) + '". See debug output for more information.')
+                        om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
                 
                 # Load the target URLs to the KB
                 self._updateURLsInKb( self._fuzzableRequestList )
@@ -898,9 +898,6 @@ class w3afCore:
         
         # This two for loops do all the audit magic [KISS]
         for plugin in self._plugins['audit']:
-            
-            # FIXME: I should remove this information lines, they duplicate functionality with the setRunningPlugin
-            om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
             
             # For status
             self._setRunningPlugin( plugin.getName() )
