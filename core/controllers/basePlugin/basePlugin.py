@@ -191,7 +191,9 @@ class basePlugin(configurable):
         @parameter mutant: The mutated request.
         @parameter res: The HTTP response.
         '''
-        raise w3afException('You must override the _analyzeResult method of basePlugin if you want to use _sendMutant().')
+        msg = 'You must override the "_analyzeResult" method of basePlugin if'
+        msg += ' you want to use "_sendMutant" with the default callback.'
+        raise w3afException( msg )
     
     def __eq__( self, other ):
         '''

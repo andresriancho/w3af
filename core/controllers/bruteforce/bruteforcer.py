@@ -198,12 +198,36 @@ class bruteforcer:
     
     def getNext( self ):
         '''
-        Get the next user/password combination
+        @return: The next user/password combination
         '''     
         user = self._getUser()
         passwd = self._getPassword( user )
         
         return user, passwd
+        
+    def getNextPassword(self):
+        '''
+        @return: The next password to be tested. 
+        @raise w3afException: when there are no more passwords.
+        
+        This is used by parts of the framework that at some point need passwords, WITHOUT
+        an associated username. If you want a username and password combination, please use
+        getNext().
+        
+        Calling getNextPassword() and getNext() together in the same loop will break things.
+        '''
+        #   This is just for the first call:
+        if self._nextUser:
+            self._nextUser = False
+        
+        #   The _getPassword method will change the self._nextUser variable when there are no more
+        #   passwords for the 'admin' user.
+        password = self._getPassword('admin')
+        
+        if self._nextUser:
+            raise w3afException('No more passwords.')
+        else:
+            return password
     
     def _getProfilingResults(self):
         '''

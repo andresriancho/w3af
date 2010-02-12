@@ -71,20 +71,39 @@ class formAuthBrute(baseBruteforcePlugin):
                 
                     # Let the user know what we are doing
                     om.out.information('Found a form login. The action of the form is: "' + freq.getURL() +'".')
-                    om.out.information('The username field to be used is: "' + self._user_field_name + '".')
+                    if self._user_field_name != None:
+                        om.out.information('The username field to be used is: "' + self._user_field_name + '".')
                     om.out.information('The password field to be used is: "' + self._passwd_field_name + '".')
                     om.out.information('Starting form authentication bruteforce on URL: "' + freq.getURL() + '".')
                     
-                    # Work
-                    while not self._found or not self._stopOnFirst:
+                    # Work until something is found, or no more passwords are available
+                    more_passwords = True
+                    
+                    while not (self._found and self._stopOnFirst) and more_passwords:
                         combinations = []
                         
                         for i in xrange( 30 ):
-                            try:
-                                combinations.append( self._bruteforcer.getNext() )
-                            except w3afException:
-                                break
-                        
+                            
+                            #
+                            #   Two different cases, one for user/password forms, the other for
+                            #   password only forms.
+                            #
+                            if self._user_field_name != None:
+                                #   user/pass form:
+                                try:
+                                    combinations.append( self._bruteforcer.getNext() )
+                                except w3afException:
+                                    more_passwords = False
+                                    break
+                            else:
+                                #   password only form:
+                                try:
+                                    c = ['dummy-placeholder',self._bruteforcer.getNextPassword()]
+                                    combinations.append( c )
+                                except w3afException:
+                                    more_passwords = False
+                                    break
+                            
                         self._bruteforce( freq, combinations )
                     
                     #    Wait for all _bruteWorker threads to finish.
@@ -103,7 +122,7 @@ class formAuthBrute(baseBruteforcePlugin):
         one is for a filled user and a blank passwd.
         '''
         data_container = freq.getDc()
-        user_field, passwd_field = self._getLoginFieldNames( freq )
+        data_container = self._true_extra_fields( data_container )
         
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
@@ -114,9 +133,11 @@ class formAuthBrute(baseBruteforcePlugin):
         self._login_failed_result_list = []
         
         for user, passwd in tests:
-            # setup the data_container
-            data_container[ user_field ][0] = user
-            data_container[ passwd_field ][0] = passwd
+            #   Setup the data_container
+            #   Remember that we can have password only forms!
+            if self._user_field_name != None:
+                data_container[ self._user_field_name ][0] = user
+            data_container[ self._passwd_field_name ][0] = passwd
             freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
@@ -135,8 +156,10 @@ class formAuthBrute(baseBruteforcePlugin):
         
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
-            data_container[ user_field ][0] = user
-            data_container[ passwd_field ][0] = passwd
+            #   Remember that we can have password only forms!
+            if self._user_field_name != None:
+                data_container[ self._user_field_name ][0] = user
+            data_container[ self._passwd_field_name ][0] = passwd
             freq.setDc( data_container )
             response = self._sendMutant( freq , analyze=False, grepResult=False )
             
@@ -156,7 +179,7 @@ class formAuthBrute(baseBruteforcePlugin):
         # In the ratio, 1 is completely equal.
         ratio0 = relative_distance( response_body, self._login_failed_result_list[0])
         ratio1 = relative_distance( response_body, self._login_failed_result_list[1])
-
+        
         if ratio0 > 0.65 or ratio1 > 0.65:
             return True
         else:
@@ -185,11 +208,21 @@ class formAuthBrute(baseBruteforcePlugin):
                 
                 else:
                     other += 1
-                    
+            
+            #
+            #   These are the ones we support
+            #
             if text == 1 and passwd == 1:
                 return True
             elif text == 0 and passwd == 1:
-                om.out.information( freq.getURL() + ' detected a form with a password field and no username field.')
+                msg = 'Identified a form with a password field and no username field: "'
+                msg += freq.getURL() + '".'
+                om.out.information( msg )
+                return True
+                
+            #
+            #   These we don't
+            #
             elif passwd == 2:
                 om.out.information( freq.getURL() + ' is a registration form.')
             elif passwd == 3:
@@ -199,62 +232,51 @@ class formAuthBrute(baseBruteforcePlugin):
     def _getLoginFieldNames( self, freq ):
         '''
         @return: The names of the form fields where to input the user and the password.
+        Please remember that maybe user_parameter might be None, since we support
+        password only login forms.
         '''
         data_container = freq.getDc()
-        passwd = ''
-        user_param_list = []
+        passwd_parameter = None
+        user_parameter = None
         
         for parameter_name in data_container:
                 
             if data_container.getType( parameter_name ).lower() == 'password':
-                passwd = parameter_name
+                passwd_parameter = parameter_name
             
             elif data_container.getType( parameter_name ).lower() == 'text':
-                user_param_list.append( parameter_name )
+                user_parameter = parameter_name
         
-        user = None
-        #
-        #   If there is more than one text field in the form, I'll choose the one that looks more
-        #   like a "user field", based on the name. The other ones will be smartFilled (tm).
-        #
-        if len(user_param_list) == 1:
-            user = user_param_list[0]
+        return user_parameter, passwd_parameter
+    
+    def _true_extra_fields(self, data_container):
+        '''
+        Some login forms have "extra" parameters. In some cases I've seen login forms
+        that have an "I agree with the terms and conditions" checkbox. If w3af does not
+        set that extra field to "true", even if I have the correct username and password
+        combination, it won't perform a successful login.
         
-        else:
-            for parameter_name in user:
-                for common_user_param_name in ['usr', 'usuario', 'user', 'name', 'nombre']:
-                    if common_user_param_name in parameter_name.lower():
-                        user = parameter_name
-                        break
-                        
-            if user == None:
-                msg = 'There seems to be an HTML login form at "' + freq.getURL() + '", but it was'
-                msg += ' impossible to determine which parameter should be used as the username'
-                msg += ' during the bruteforce process.'
-                raise w3afException( msg )
+        @return: A data_container that has all fields (other than the username and password)
+        set to 1,
+        '''
+        for parameter_name in data_container:
+            if parameter_name not in [self._user_field_name, self._passwd_field_name]:
+                data_container[ parameter_name ][0] = 1
+        return data_container
         
-        return user, passwd
-        
-                
     def _bruteWorker( self, freq, combinations ):
         '''
         @parameter freq: A fuzzableRequest
         @parameter combinations: A list of tuples with (user,pass)
         '''
         data_container = freq.getDc()
-        #
-        #   Some login forms have "extra" parameters. In some cases I've seen login forms
-        #   that have an "I agree with the terms and conditions" checkbox. If w3af does not
-        #   set that extra field to "true", even if I have the correct username and password
-        #   combination, it won't perform a successful login.
-        #
-        for parameter_name in data_container:
-            if parameter_name not in [self._user_field_name, self._passwd_field_name]:
-                data_container[ parameter_name ][0] = 1
+        data_container = self._true_extra_fields( data_container )
         
         #   Ok, now we start with the real bruteforcing!
         for combination in combinations:
-            data_container[ self._user_field_name ][0] = combination[0]
+            #   Remember that we can have password only forms!
+            if self._user_field_name != None:
+                data_container[ self._user_field_name ][0] = combination[0]
             data_container[ self._passwd_field_name ][0] = combination[1]
             freq.setDc( data_container )
             
@@ -271,8 +293,16 @@ class formAuthBrute(baseBruteforcePlugin):
                     v = vuln.vuln()
                     v.setURL( freq.getURL() )
                     v.setId(response.id)
-                    v.setDesc( 'Found authentication credentials to: "'+ freq.getURL() +
-                    '". A correct user and password combination is: ' + combination[0] + '/' + combination[1])
+                    if self._user_field_name != None:
+                        msg = 'Found authentication credentials to: "'+ freq.getURL()
+                        msg += '". A correct user and password combination is: ' + combination[0]
+                        msg += '/' + combination[1]
+                    else:
+                        #   There is no user field!
+                        msg = 'Found authentication credentials to: "'+ freq.getURL()
+                        msg += '". The correct password is: "' + combination[1] + '".'
+
+                    v.setDesc( msg )
                     v['user'] = combination[0]
                     v['pass'] = combination[1]
                     v['response'] = response
