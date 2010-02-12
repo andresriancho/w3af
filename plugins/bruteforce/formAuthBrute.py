@@ -157,7 +157,6 @@ class formAuthBrute(baseBruteforcePlugin):
         ratio0 = relative_distance( response_body, self._login_failed_result_list[0])
         ratio1 = relative_distance( response_body, self._login_failed_result_list[1])
 
-
         if ratio0 > 0.65 or ratio1 > 0.65:
             return True
         else:
@@ -243,6 +242,17 @@ class formAuthBrute(baseBruteforcePlugin):
         @parameter combinations: A list of tuples with (user,pass)
         '''
         data_container = freq.getDc()
+        #
+        #   Some login forms have "extra" parameters. In some cases I've seen login forms
+        #   that have an "I agree with the terms and conditions" checkbox. If w3af does not
+        #   set that extra field to "true", even if I have the correct username and password
+        #   combination, it won't perform a successful login.
+        #
+        for parameter_name in data_container:
+            if parameter_name not in [self._user_field_name, self._passwd_field_name]:
+                data_container[ parameter_name ][0] = 1
+        
+        #   Ok, now we start with the real bruteforcing!
         for combination in combinations:
             data_container[ self._user_field_name ][0] = combination[0]
             data_container[ self._passwd_field_name ][0] = combination[1]
