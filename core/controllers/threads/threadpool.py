@@ -39,7 +39,7 @@ import core.controllers.outputManager as om
 import traceback
 import time
 
-DEBUG = False
+DEBUG = True
 
 class NoResultsPending(Exception):
     """All work requests have been processed."""
@@ -171,14 +171,17 @@ class ThreadPoolImplementation:
         thread pool blocks when queue is full and it tries to put more
         work requests in it.
         """
-        #   TODO: Fix this
-        #   If I put q_size like this, the framework dead-locks!!
+        # There are some problems with the q_size. Lets analyze it:
         #
-        #self.requestsQueue = Queue.Queue(q_size)
+        #   - qsize == 10
+        #   - We have 10 queued work requests
+        #   - One of the work requests says "Hey, lets create a new thread"
+        #   - That startFunction() will lock until its able to input the work request in the queue
+        #   - The queue is full, no new requests can come in.
+        #   - Dead-locks occur.
         #
-        #   But it would be awesome to have it like this, mostly because of memory consumption
-        #   problems.
-
+        #   In most cases, having a q_size of 150 is enough to avoid this situation, and at the same
+        #   time save some memory. The q_size is set in threadManager.py.
         self.requestsQueue = Queue.Queue()
         self.resultsQueue = Queue.Queue()
         if DEBUG:
@@ -219,8 +222,8 @@ class ThreadPoolImplementation:
                     raise NoResultsPending
                 
                 if DEBUG:
-                    msg = 'The object calling poll() still owns ' + str(len(owned_work_requests))
-                    msg += ' work requests.'
+                    msg = 'The object calling poll("'+ str(ownerObj) +'") still owns '
+                    msg += str(len(owned_work_requests)) + ' work requests.'
                     om.out.debug( msg )
                 
                 #   Are there still workers to process remaining requests?
@@ -237,6 +240,7 @@ class ThreadPoolImplementation:
                     del self.workRequests[request.requestID]
 
                     # Raised here so I can handle it in the main thread...
+                    # TODO: Remove this. No part of the code handles errors from tm.join()
                     if isinstance( result, Exception ):
                         raise result
                     

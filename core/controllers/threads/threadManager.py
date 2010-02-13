@@ -57,7 +57,7 @@ class threadManager:
         #       self._tm.startFunction( target=self._do_request, args=(url,) )
         #
         if self._maxThreads:
-            self._threadPool = ThreadPool( self._maxThreads, q_size = self._maxThreads * 3)
+            self._threadPool = ThreadPool( self._maxThreads, q_size = 200)
         else:
             # if I want to use the restrict argument of startFunction, the thread pool 
             # MUST have some threads
