@@ -103,6 +103,10 @@ class webSpider(baseDiscoveryPlugin):
                     if to_send.getType(parameter_name) in ['checkbox', 'file', 'radio', 'select']:
                         continue
                 
+                # Or with fields that already have a value set (hidden fields like __VIEWSTATE)
+                if to_send[parameter_name][0] != '':
+                    continue
+                
                 #
                 # Set all the other fields...
                 #                
