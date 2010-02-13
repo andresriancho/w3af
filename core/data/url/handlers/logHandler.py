@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import urllib2
+import urlparse
 
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
@@ -95,22 +96,77 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             err.id = self.inc_counter()
             raise err
     
-    old_http_error_302 = urllib2.HTTPRedirectHandler.http_error_302
+    inf_msg = "The HTTP server returned a redirect error that would " \
+              "lead to an infinite loop.\n" \
+              "The last 30x error message was:\n"
+              
+    # Implementation note: To avoid the server sending us into an
+    # infinite loop, the request object needs to track what URLs we
+    # have already seen.  Do this by adding a handler-specific
+    # attribute to the Request object.
+    def original_http_error_302(self, req, fp, code, msg, headers):
+        # Some servers (incorrectly) return multiple Location headers
+        # (so probably same goes for URI).  Use first header.
+        if 'location' in headers:
+            newurl = headers.getheaders('location')[0]
+        elif 'uri' in headers:
+            newurl = headers.getheaders('uri')[0]
+        else:
+            return
+        newurl = urlparse.urljoin(req.get_full_url(), newurl)
+        
+        #
+        #   The whole reason of overriding this method was to fix a bug in the urllib2
+        #   handler where you might end up being redirected to some "strange" location
+        #   if for some reason the value of "location" is C:\boot.ini, and you urlparse.urljoin
+        #   the current URL with that one, you end up with C:\boot.ini . When the urllib2
+        #   library opens that, it will open a local file. What I did to fix it, is to verify that
+        #   the protocol of the newurl is http or https.
+        #
+        correct_protocol = newurl.startswith('http://')  or newurl.startswith('https://') 
+        if not correct_protocol:
+            return
+        
+        # XXX Probably want to forget about the state of the current
+        # request, although that might interact poorly with other
+        # handlers that also use handler-specific request attributes
+        new = self.redirect_request(req, fp, code, msg, headers, newurl)
+        if new is None:
+            return
 
-    def mod_http_error_302(self, req, fp, code, msg, headers):
+        # loop detection
+        # .redirect_dict has a key url if url was previously visited.
+        if hasattr(req, 'redirect_dict'):
+            visited = new.redirect_dict = req.redirect_dict
+            if (visited.get(newurl, 0) >= self.max_repeats or
+                len(visited) >= self.max_redirections):
+                raise HTTPError(req.get_full_url(), code,
+                                self.inf_msg + msg, headers, fp)
+        else:
+            visited = new.redirect_dict = req.redirect_dict = {}
+        visited[newurl] = visited.get(newurl, 0) + 1
+
+        # Don't close the fp until we are sure that we won't use it
+        # with HTTPError.
+        fp.read()
+        fp.close()
+
+        return self.parent.open(new)
+
+    def http_error_302(self, req, fp, code, msg, headers):
         '''
         This is a http_error_302 wrapper to add an id attr to loop errors.
         '''
         id_for_error = self._get_counter()
         try:
-            return self.old_http_error_302(req, fp, code, msg, headers)
+            return self.original_http_error_302(req, fp, code, msg, headers)
         except urllib2.HTTPError, e:
             #om.out.debug('The remote web application generated a redirect loop when requesting: ' + \
             #e.geturl() )
             e.id = id_for_error
             raise e
         
-    http_error_301 = http_error_303 = http_error_307 = http_error_302 = mod_http_error_302
+    http_error_301 = http_error_303 = http_error_307 = http_error_302 = http_error_302
     
     def http_request(self, request):
         '''
