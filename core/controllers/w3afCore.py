@@ -468,6 +468,14 @@ class w3afCore:
                         om.out.error( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
                         om.out.error( 'Error description: "' + str(e) + '". See debug output for more information.')
                         om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                    else:
+                        #
+                        #   NOTE: I need to perform this test here in order to avoid some wierd
+                        #   thread locking that happens when the webspider calls is_404, and 
+                        #   the function locks in order to calculate the 
+                        #
+                        from core.controllers.coreHelpers.fingerprint_404 import is_404
+                        is_404(response)
                 
                 # Load the target URLs to the KB
                 self._updateURLsInKb( self._fuzzableRequestList )
