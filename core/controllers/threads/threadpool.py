@@ -39,7 +39,7 @@ import core.controllers.outputManager as om
 import traceback
 import time
 
-DEBUG = True
+DEBUG = False
 
 class NoResultsPending(Exception):
     """All work requests have been processed."""
