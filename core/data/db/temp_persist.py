@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from __future__ import with_statement
-import shelve
+import sqlite3
+
 import threading
 import os
 import sys
+
 from random import choice
 import string
 
@@ -40,34 +42,47 @@ except:
         return '/tmp/'
 
 
-class temp_shelve(object):
+class disk_list(object):
     '''
-    It's a shelve wrapper which has the following features:
+    A disk_list is a sqlite3 wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
         - Is thread safe
+        - **NEW** Allows the usage of "for ... in" by the means of an iterator object.
         - Deletes the file when the temp_shelve object is deleted
+    
+    I had to replace the old disk_list because the old one did not support iteration, and the
+    only way of adding iteration to that object was doing something like this:
+    
+    def __iter__(self):
+        return self._shelve.keys()
+        
+    Which in most cases would be stupid, because it would have to retrieve all the values
+    saved on disk to memory, and then perform iteration over that list. Another problem is that
+    this iteration was performed tons of times, thus slowing down the whole process with many
+    disk reads of tens and maybe hundreds of MB's.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
         '''
-        Create the shelve, and the thread lock.
+        Create the sqlite3 database and the thread lock.
         
         @return: None
         '''
         # Init some attributes
-        self._shelve = None
+        self._conn = None
         self._filename = None
+        self._current_index = 0
         
         # Create the lock
-        self._shelve_lock = threading.RLock()
+        self._db_lock = threading.RLock()
         
         fail_count = 0
         while True:
             # Get the temp filename to use
             tempdir = get_temp_dir()
-            filename = ''.join([choice(string.letters) for i in range(12)]) + '.w3af.temp_shelve'
+            filename = ''.join([choice(string.letters) for i in range(12)]) + '.w3af.temp_db'
             self._filename = os.path.join(tempdir, filename)
             
             # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
@@ -75,14 +90,17 @@ class temp_shelve(object):
                 self._filename = self._filename.decode( "MBCS" ).encode("utf-8" )
 
             try:
-                # Create the shelve
-                self._shelve = shelve.open(self._filename, flag='c')
+                # Create the database
+                self._conn = sqlite3.connect(self._filename, check_same_thread=False)
+                # Create table
+                self._conn.execute('''create table data (index_ real, information text)''')
+
             except Exception,  e:
                 self._filename = None
                 
                 fail_count += 1
                 if fail_count == 5:
-                    raise Exception('Failed to create shelve file. Original exception: ' + str(e))
+                    raise Exception('Failed to create databse file. Original exception: ' + str(e))
             else:
                 break
                 
@@ -96,88 +114,62 @@ class temp_shelve(object):
                 os.remove(self._filename)
             except Exception:
                 pass
-        
-    def __repr__(self):
-        return repr(self)
     
-    def keys(self):
-        return self._shelve.keys()
+    def __del__(self):
+        try:
+            self._conn.close()
+            os.remove(self._filename)
+        except:
+            pass
     
     def __contains__(self, value):
-        return value in self._shelve
+        t = (value, )
+        cursor = self._conn.execute('select count(*) from data where information=?', t)
+        return cursor.fetchone()[0]
     
-    def __setitem__(self, key, value):
-        # thread safe here!
-        with self._shelve_lock:
-            self._shelve[ key ] = value
-    
-    def __getitem__(self, key):
-        return self._shelve[ key ]
-        
-    def __len__(self):
-        return len(self._shelve)
-        
-
-class disk_list(object):
-    '''
-    This class represents a list that's going to be persisted in disk.
-    '''
-    def __init__(self):
-        self._temp_shelve = temp_shelve()
-
     def append(self, value):
+        # thread safe here!
+        with self._db_lock:
+            t = (self._current_index, value)
+            self._conn.execute("insert into data values (?, ?)", t)
+            self._current_index += 1
+    
+    def __iter__(self):
         
-        if isinstance(value, unicode):
-            value = value.encode()
+        class my_cursor:
+            def __init__(self, cursor):
+                self._cursor = cursor
             
-        self._temp_shelve[value] = 1
-        return None
+            def next(self):
+                r = self._cursor.next()
+                return r[0]
         
-    def __repr__(self):
-        return repr(self._temp_shelve.keys())
-        
-    def __contains__(self, value):
-        if isinstance(value, unicode):
-            value = value.encode()
-        
-        return value in self._temp_shelve
+        cursor = self._conn.execute('select information from data')
+        mc = my_cursor(cursor)
+        return mc
         
     def __len__(self):
-        return len(self._temp_shelve.keys())
-
-
+        cursor = self._conn.execute('select count(*) from data')
+        return cursor.fetchone()[0]
+        
 if __name__ == '__main__':
-    tshelve = temp_shelve()
-    import time
-    time.sleep(4)
-    print 'Testing temp_shelve:'
-    print '1- Loading...'
-    for i in xrange(10000):
-        tshelve[ str(i) ] = i
-    assert len(tshelve) == 10000
-    
-    print '2- Retrieving...'
-    for i in xrange(10000):
-        assert i == tshelve[ str(i) ]
-    
-    print 'Done!', 
-    print 'Please verify manually that the temp_shelve file inside the tempdir was removed.'
+    def create_string():
+        strr = ''
+        for i in xrange(300):
+            strr += choice(string.letters)
+        return strr
     
     print ''
     print 'Testing disk_list:'
     dlist = disk_list()
     
     print '1- Loading items...'
-    for i in xrange(1000):
-        dlist.append(str(i))
-        '' in dlist
+    for i in xrange(5000):
+        r = create_string()
+        dlist.append( r )
     
     print '2- Assert statements...'
-    assert len(dlist) == 1000
-    assert '5' in dlist
-    assert not '5555' in dlist
-    try:
-        unicode('a') in dlist
-    except:
-        print 'Exception raised (ok).'
+    assert len(dlist) == 5000
+    assert r in dlist
+    assert not 'abc' in dlist
     print 'Done!'
