@@ -140,7 +140,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             visited = new.redirect_dict = req.redirect_dict
             if (visited.get(newurl, 0) >= self.max_repeats or
                 len(visited) >= self.max_redirections):
-                raise HTTPError(req.get_full_url(), code,
+                raise urllib2.HTTPError(req.get_full_url(), code,
                                 self.inf_msg + msg, headers, fp)
         else:
             visited = new.redirect_dict = req.redirect_dict = {}
