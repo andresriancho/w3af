@@ -75,7 +75,7 @@ class allowedMethods(baseDiscoveryPlugin):
 
  
         # User configured variables
-        self._exec_one_time = False
+        self._exec_one_time = True
         self._report_dav_only = True
         
     def discover(self, fuzzableRequest ):
