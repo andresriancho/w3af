@@ -29,6 +29,8 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
+from core.controllers.misc.is_source_file import is_source_file
+
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -53,6 +55,7 @@ class localFileInclude(baseAuditPlugin):
         # Internal variables
         self._file_compiled_regex = []
         self._error_compiled_regex = []
+        self._open_basedir = False
 
     def audit(self, freq ):
         '''
@@ -63,7 +66,12 @@ class localFileInclude(baseAuditPlugin):
         om.out.debug( 'localFileInclude plugin is testing: ' + freq.getURL() )
         
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
-        local_files = self._get_local_file_list(freq.getURL())
+        
+        #   What payloads do I want to send to the remote end?
+        local_files = []
+        local_files.append( urlParser.getFileName( freq.getURL() ) )
+        if not self._open_basedir:
+            local_files.extend( self._get_local_file_list(freq.getURL()) )
         
         mutants = createMutants( freq , local_files, oResponse=oResponse )
             
@@ -141,10 +149,25 @@ class localFileInclude(baseAuditPlugin):
         with self._plugin_lock:
             
             #
+            #   I analyze the response searching for a specific PHP error string that tells me
+            #   that open_basedir is enabled, and our request triggered the restriction. If
+            #   open_basedir is in use, it makes no sense to keep trying to read "/etc/passwd",
+            #   that is why this variable is used to determine which tests to send if it was possible
+            #   to detect the usage of this security feature.
+            #
+            if not self._open_basedir:
+                if 'open_basedir restriction in effect' in response\
+                and 'open_basedir restriction in effect' not in mutant.getOriginalResponseBody():
+                    self._open_basedir = True
+            
+            #
             #   I will only report the vulnerability once.
             #
             if self._hasNoBug( 'localFileInclude' , 'localFileInclude' , mutant.getURL() , mutant.getVar() ):
                 
+                #
+                #   Identify the vulnerability
+                #
                 file_content_list = self._find_file( response )
                 for file_pattern_regex, file_content in file_content_list:
                     if not file_pattern_regex.search( mutant.getOriginalResponseBody() ):
@@ -158,7 +181,30 @@ class localFileInclude(baseAuditPlugin):
                         kb.kb.append( self, 'localFileInclude', v )
                         return
                 
-                # Check for interesting errors
+                #
+                #   If the vulnerability could not be identified by matching strings that commonly
+                #   appear in "/etc/passwd", then I'll check one more thing...
+                #   (note that this is run if no vulns were identified)
+                #
+                #   http://host.tld/show_user.php?id=show_user.php
+                if mutant.getModValue() == urlParser.getFileName( mutant.getURL() ):
+                    match, lang = is_source_file( response.getBody() )
+                    if match:
+                        #   We were able to read the source code of the file that is vulnerable to
+                        #   local file read
+                        v = vuln.vuln( mutant )
+                        v.setId( response.id )
+                        v.setName( 'Local file read vulnerability' )
+                        v.setSeverity(severity.MEDIUM)
+                        msg = 'An arbitrary local file read vulnerability was found at: '
+                        msg += mutant.foundAt()
+                        v.setDesc( msg )
+                        kb.kb.append( self, 'localFileInclude', v )
+                        return
+                        
+                #
+                #   Check for interesting errors (note that this is run if no vulns were identified)
+                #
                 for regex in self.get_include_errors():
                     
                     match = regex.search( response.getBody() )
