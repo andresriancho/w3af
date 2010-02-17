@@ -80,7 +80,15 @@ class urlOpenerSettings( configurable ):
 
         # Some internal variables
         self.needUpdate = True
-        self.HeaderList = [('User-Agent','w3af.sourceforge.net')]        
+        
+        #
+        #   I've found some websites that check the user-agent string, and don't allow you to access
+        #   if you don't have IE (mostly ASP.NET applications do this). So now we use the following
+        #   user-agent string in w3af:
+        user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0;'
+        user_agent += ' w3af.sf.net)'
+        #   which basically is the UA for IE8 running in Windows 7, plus our website :)
+        self.HeaderList = [('User-Agent', user_agent)]
         
         # By default, dont mangle any request/responses
         self._manglePlugins = []
@@ -89,7 +97,7 @@ class urlOpenerSettings( configurable ):
         if cf.cf.getData('timeout') == None:
             # This is the first time we are executed...
         
-            cf.cf.save('timeout', 10 )
+            cf.cf.save('timeout', 15 )
             self._socket.setdefaulttimeout(cf.cf.getData('timeout'))
             cf.cf.save('headersFile', '' )
             cf.cf.save('cookieJarFile', '' )
