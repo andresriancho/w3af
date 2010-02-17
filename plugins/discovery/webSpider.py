@@ -34,6 +34,7 @@ import core.data.kb.config as cf
 from core.data.fuzzer.formFiller import smartFill
 import core.data.dc.form as form
 import core.data.request.httpPostDataRequest as httpPostDataRequest
+from core.data.request.variant_identification import are_variants
 
 from core.data.db.temp_persist import disk_list
 
@@ -44,6 +45,7 @@ from core.data.options.optionList import optionList
 import re
 
 IS_EQUAL_RATIO = 0.90
+MAX_VARIANTS = 5
 
 
 class webSpider(baseDiscoveryPlugin):
@@ -103,15 +105,19 @@ class webSpider(baseDiscoveryPlugin):
                     if to_send.getType(parameter_name) in ['checkbox', 'file', 'radio', 'select']:
                         continue
                 
-                # Or with fields that already have a value set (hidden fields like __VIEWSTATE)
-                if to_send[parameter_name][0] != '':
-                    continue
-                
                 #
-                # Set all the other fields...
+                #   Set all the other fields, except from the ones that have a value set (example:
+                #   hidden fields like __VIEWSTATE).
                 #                
                 for element_index in xrange(len(to_send[parameter_name])):
+                    
+                    #   should I ignore it because it already has a value?
+                    if to_send[parameter_name][element_index] != '':
+                        continue
+                    
+                    #   smartFill it!
                     to_send[ parameter_name ][element_index] = smartFill( parameter_name )
+                    
             fuzzableRequest.setDc( to_send )
 
         self._fuzzableRequests = []
@@ -179,7 +185,7 @@ class webSpider(baseDiscoveryPlugin):
                     # then work with the regex references and DO NOT report broken links
                     for ref in references:
                         
-                        if ref not in self._already_crawled:
+                        if self._need_more_variants(ref):
                             
                             self._already_crawled.append(ref)
                             
@@ -191,7 +197,39 @@ class webSpider(baseDiscoveryPlugin):
         self._tm.join( self )
         
         return self._fuzzableRequests
+    
+    
+    def _need_more_variants(self, new_reference):
+        '''
+        @new_reference: The new URL that we want to see if its a variant of at most MAX_VARIANTS
+        references stored in self._already_crawled.
         
+        @return: True if I need more variants of ref.
+        
+        Basically, the idea is to crawl the whole website, but if we are crawling a site like
+        youtube.com that has A LOT of links with the form: 
+            - http://www.youtube.com/watch?v=xwLNu5MHXFs
+            - http://www.youtube.com/watch?v=JEzjwifH4ts
+            - ...
+            - http://www.youtube.com/watch?v=something_here
+        
+        Then we don't actually want to follow all the links to all the videos! So we are going
+        to follow a decent number of variant URLs (in this case, video URLs) to see if we can
+        find something interesting in those links, but after a fixed number of variants, we will
+        start ignoring all those variants.
+        '''
+        number_of_variants = 0
+        for reference in self._already_crawled:
+            if are_variants(reference, new_reference):
+                number_of_variants += 1
+                
+        if number_of_variants > MAX_VARIANTS:
+            msg = 'Ignoring new reference "' + new_reference + '" (it is simply a variant).'
+            om.out.debug( msg )
+            return False
+        else:
+            return True
+    
     def _verify_reference( self, reference, original_request, originalURL, possibly_broken ):
         '''
         This method GET's every new link and parses it in order to get new links and forms.

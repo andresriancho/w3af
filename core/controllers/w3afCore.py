@@ -562,13 +562,13 @@ class w3afCore:
                     #
                     #   TODO: Is the previous statement completely true?
                     #
-                    filtered_fuzzable_requests = []
+                    '''filtered_fuzzable_requests = []
                     for fr_original in self._fuzzableRequestList:
                         
                         different_from_all = True
                         
                         for fr_filtered in filtered_fuzzable_requests:
-                            if fr_filtered.loose_eq( fr_original ):
+                            if fr_filtered.is_variant_of( fr_original ):
                                 different_from_all = False
                                 break
                         
@@ -576,6 +576,7 @@ class w3afCore:
                             filtered_fuzzable_requests.append( fr_original )
                     
                     self._fuzzableRequestList = filtered_fuzzable_requests
+                    '''
                     
                     #   Now I simply print the list that I have after the filter.
                     tmp_fr_list = []

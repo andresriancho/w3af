@@ -28,6 +28,7 @@ import core.data.request.httpPostDataRequest as httpPostDataRequest
 import core.data.request.httpQsRequest as httpQsRequest
 import core.data.request.wsPostDataRequest as wsPostDataRequest
 import core.data.request.jsonPostDataRequest as jsonPostDataRequest
+import core.data.request.xmlrpcRequest as xmlrpcRequest
 
 from core.data.dc.cookie import cookie as cookie
 

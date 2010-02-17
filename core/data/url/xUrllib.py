@@ -655,7 +655,7 @@ class xUrllib:
             
             for grep_plugin in self._grepPlugins:
                 #
-                #   For debugging, do not remove, only comment out.
+                #   For debugging, do not remove, only comment out if needed.
                 #
                 self._grep_worker( grep_plugin, fuzzReq, response )
                 

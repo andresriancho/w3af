@@ -156,28 +156,22 @@ class fuzzableRequest:
         else:
             return False
             
-    def loose_eq(self, other):
+    def is_variant_of(self, other):
         '''
-        Two requests are loosely equal if:
+        Two requests are loosely equal (or variants) if:
             - They have the same URL
-            - They have the same method
-            - They have the same parameters
-            - The values for each parameter has the same type (int / string)
+            - They have the same HTTP method
+            - They have the same parameter names
+            - The values for each parameter have the same type (int / string)
             
-        @return: True if self and other are loosely equal.
+        @return: True if self and other are variants.
         '''
         if self._uri == other._uri and\
         self._method == other._method and\
         self._dc.keys() == other._dc.keys():
-            
-            #
-            #   TODO: Please see comment in w3afCore.
-            #
-            if len(self._dc) > 1:
-                return False
                 
             #
-            #   Ok, so it has the same URI, method, dc and more than one parameter.
+            #   Ok, so it has the same URI, method, dc:
             #   I need to work now :(
             #
             
@@ -191,15 +185,15 @@ class fuzzableRequest:
                         #   I do it in a try, because "other" might not have that many repeated
                         #   parameters, and index could be out of bounds.
                         value_self = self._dc[param_name][index]
-                        value_other = self._dc[param_name][index]
-                    except Exception, e:
+                        value_other = other._dc[param_name][index]
+                    except IndexError, e:
                         return False
                     else:
                         if value_other.isdigit() and not value_self.isdigit():
                             return False
                         elif value_self.isdigit() and not value_other.isdigit():
                             return False
-                
+
             return True
         else:
             return False
