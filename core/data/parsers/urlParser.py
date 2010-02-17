@@ -206,36 +206,20 @@ def getPort( url ):
             
 def urlJoin( baseurl , relative ):
     '''
-    Construct a full (``absolute'') URL by combining a ``base URL'' (base) with a ``relative URL'' (url). 
-    Informally, this uses components of the base URL, in particular the addressing scheme, the network location and (part of) the path, 
-    to provide missing components in the relative URL.
+    Construct a full (''absolute'') URL by combining a ''base URL'' (base) with a ``relative URL'' (url). 
+    Informally, this uses components of the base URL, in particular the addressing scheme,
+    the network location and (part of) the path, to provide missing components in the relative URL.
 
     Example:
-    urljoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
-    yields the string
-    'http://www.cwi.nl/%7Eguido/FAQ.html'
-    For more information read RFC 1808 espeally section 5
+        >>> urljoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
+        'http://www.cwi.nl/%7Eguido/FAQ.html'
+    For more information read RFC 1808 espeally section 5.
+    
     @param baseurl: The base url to join
     @param relative: The relative url to add to the base url
+    @return: The joined URL.
     '''
-    if relative.find('//') == 0:
-        # This special case had to be generated cause of some pykto tests
-        scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
-        lastSlash = path.rfind( '/' )
-        if lastSlash != 0:
-            # I have more than one /
-            path = path[: lastSlash]
-
-        relative = relative[1:]
-        # TODO add params?!
-        response =  scheme + '://' + domain + path + relative
-    elif len(relative)>0 and relative[0] == '?':
-        scheme, domain, path, params, qs, fragment = _uparse.urlparse( baseurl )
-        # TODO add params?!
-        response =  scheme + '://' + domain + path + relative
-    else:
-        response = _uparse.urljoin( baseurl, relative )
-
+    response = _uparse.urljoin( baseurl, relative )
     response = normalizeURL(response)
     return response
 
