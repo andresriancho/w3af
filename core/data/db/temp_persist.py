@@ -116,16 +116,18 @@ class disk_list(object):
                 pass
     
     def __del__(self):
-        try:
-            self._conn.close()
-            os.remove(self._filename)
-        except:
-            pass
+        with self._db_lock:
+            try:
+                self._conn.close()
+                os.remove(self._filename)
+            except:
+                pass
     
     def __contains__(self, value):
-        t = (value, )
-        cursor = self._conn.execute('select count(*) from data where information=?', t)
-        return cursor.fetchone()[0]
+        with self._db_lock:
+            t = (value, )
+            cursor = self._conn.execute('select count(*) from data where information=?', t)
+            return cursor.fetchone()[0]
     
     def append(self, value):
         # thread safe here!
@@ -135,7 +137,7 @@ class disk_list(object):
             self._current_index += 1
     
     def __iter__(self):
-        
+        #   TODO: How do I make the __iter__ thread safe?
         class my_cursor:
             def __init__(self, cursor):
                 self._cursor = cursor
@@ -149,8 +151,9 @@ class disk_list(object):
         return mc
         
     def __len__(self):
-        cursor = self._conn.execute('select count(*) from data')
-        return cursor.fetchone()[0]
+        with self._db_lock:
+            cursor = self._conn.execute('select count(*) from data')
+            return cursor.fetchone()[0]
         
 if __name__ == '__main__':
     def create_string():
