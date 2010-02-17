@@ -176,6 +176,7 @@ class sqli(baseAuditPlugin):
             errors.append( ('ADODB\\.Field \\(0x800A0BCD\\)<br>', dbms.MSSQL ) )
             errors.append( ("Procedure '[^']+' requires parameter '[^']+'", dbms.MSSQL ))
             errors.append( ("ADODB\\.Recordset'", dbms.MSSQL ))
+            errors.append( ("Unclosed quotation mark before the character string", dbms.MSSQL ))
             
             # DB2
             errors.append( ('SQLCODE', dbms.DB2 ) )
@@ -205,6 +206,7 @@ class sqli(baseAuditPlugin):
             
             # MYSQL
             errors.append( ('supplied argument is not a valid MySQL', dbms.MYSQL ) )
+            errors.append( ('Column count doesn\'t match value count at row', dbms.MYSQL ) )
             errors.append( ('mysql_fetch_array\\(\\)', dbms.MYSQL ) )
             errors.append( ('mysql_', dbms.MYSQL ) )
             errors.append( ('on MySQL result index', dbms.MYSQL ) )
@@ -220,6 +222,7 @@ class sqli(baseAuditPlugin):
             # Informix
             errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
             errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
+            errors.append( ('An illegal character has been found in the statement', dbms.INFORMIX ))
             
             errors.append( ('<b>Warning</b>:  ibase_', dbms.INTERBASE ))
             errors.append( ('Dynamic SQL Error', dbms.INTERBASE ))
@@ -231,6 +234,7 @@ class sqli(baseAuditPlugin):
             
             # Java
             errors.append( ('java\\.sql\\.SQLException', dbms.JAVA ))
+            errors.append( ('Unexpected end of command in statement', dbms.JAVA ))
 
             # Coldfusion
             errors.append( ('\\[Macromedia\\]\\[SQLServer JDBC Driver\\]', dbms.MSSQL ))
