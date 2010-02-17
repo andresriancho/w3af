@@ -30,8 +30,6 @@ TYPES_OBJ = {
     core.data.kb.info.info: "info",
 }
 
-import cgi
-
 
 class KBTree(gtk.TreeView):
     '''Show the Knowledge Base in a tree.
@@ -205,11 +203,6 @@ class KBTree(gtk.TreeView):
         else:
             name = repr(obj)
             
-        # This fixes bug #2382892 - "markup error in GUI"
-        # GtkWarning: Failed to set text from markup due to error parsing markup:
-        # Unknown tag 'script' on line 1 char 57
-        name = cgi.escape( name )
-        
         return name
         
     def _updateTree(self, treestore, treeholder):
