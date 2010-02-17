@@ -92,7 +92,7 @@ class getMails(baseGrepPlugin):
             mail_address = mail_address.lower()
 
             email_map = {}
-            for info_obj in kb.kb.getData( 'getMails', 'mails'):
+            for info_obj in kb.kb.getData( 'mails', 'mails'):
                 mail_string = info_obj['mail']
                 email_map[ mail_string ] = info_obj
 
@@ -112,7 +112,6 @@ class getMails(baseGrepPlugin):
                 i.addToHighlight( mail_address )
                 
                 kb.kb.append( 'mails', kb_key, i )
-                kb.kb.append( self, 'mails', i )
                 continue
             
             # Get the corresponding info object.
