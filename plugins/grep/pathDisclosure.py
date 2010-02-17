@@ -77,7 +77,13 @@ class pathDisclosure(baseGrepPlugin):
             
             html_string = response.getBody()
             for path_disc_regex in self._path_disc_regex_list:
+                
                 match_list = path_disc_regex.findall( html_string  )
+                filtered_match_list = []
+                
+                #   Sort by the longest match, this is needed for filtering out some false positives
+                #   please read the note below.
+                match_list.sort(self._longest)
                 
                 for match in match_list:
                     
@@ -88,8 +94,24 @@ class pathDisclosure(baseGrepPlugin):
                         # Check for dups
                         if (realurl, match) in self._already_added:
                             continue
+                        
+                        #   There is a rare bug also, which is triggered in cases like this one:
+                        #
+                        #   >>> import re
+                        #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
+                        #   ['/var/www/foobar/htdocs/article.php']
+                        #   >>> re.findall('/htdocs/.*','/var/www/foobar/htdocs/article.php')
+                        #   ['/htdocs/article.php']
+                        #   >>> 
+                        #
+                        #   What I need to do here, is to keep the longest match.
+                        for realurl_added, match_added in self._already_added:
+                            if match_added.endswith( match ):
+                                break
                         else:
-                            # It's a new one, report!
+                        
+                            #   Note to self: I get here when "break" is NOT executed.
+                            #   It's a new one, report!
                             self._already_added.append( (realurl, match) )
                             
                             v = vuln.vuln()
@@ -105,6 +127,14 @@ class pathDisclosure(baseGrepPlugin):
                             kb.kb.append( self, 'pathDisclosure', v )
         
         self._update_KB_path_list()
+    
+    def _longest(self, a, b):
+        '''
+        @parameter a: A string.
+        @parameter a: Another string.
+        @return: The longest string.
+        '''
+        return cmp(len(a), len(b))
     
     def _attr_value(self, path_disclosure_string, response_body ):
         '''
