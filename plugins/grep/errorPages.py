@@ -95,6 +95,7 @@ class errorPages(baseGrepPlugin):
         # PHP
         mesg.append('<b>Warning</b>: ')
         mesg.append('No row with the given identifier')
+        mesg.append('open_basedir restriction in effect')
         mesg.append("eval()'d code</b> on line <b>")
         mesg.append("Cannot execute a blank command in")
         mesg.append("Fatal error</b>:  preg_replace")
