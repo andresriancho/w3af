@@ -1,5 +1,6 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+import core.controllers.outputManager as om
 
 #TODO: Provide support for downloading
 class firefox_stealer(base_payload):
@@ -44,5 +45,5 @@ class firefox_stealer(base_payload):
 
         result = [p for p in result if p != '']
         if result == [ ]:
-            console('Server is configured correctly, cant steal firefox information.')
+            om.out.console('Server is configured correctly, cant steal firefox information.')
         return result

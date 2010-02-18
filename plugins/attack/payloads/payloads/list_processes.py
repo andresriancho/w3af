@@ -1,5 +1,6 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+import core.controllers.outputManager as om
 
 class list_processes(base_payload):
     '''
@@ -31,7 +32,7 @@ class list_processes(base_payload):
             #   "progress bar"    
             k -= 1
             if k == 0:
-                console('.', newLine=False)
+                om.out.console('.', newLine=False)
                 k=400
             #   end "progress bar"
 
@@ -47,9 +48,9 @@ class list_processes(base_payload):
                 msg = str(i).ljust(7) + parse_proc_name(status_file).ljust(20)
                 msg += parse_proc_state(status_file).ljust(20) + cmd.ljust(30)
                 result.append( msg )
-                console('+', newLine=False)
+                om.out.console('+', newLine=False)
 
-        console('')
+        om.out.console('')
         result = [p for p in result if p != '']
         if result == [ ]:
             result.append('Cant list proccesses.')
