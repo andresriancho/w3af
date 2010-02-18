@@ -59,6 +59,12 @@ class documentParser:
         '''
         document = httpResponse.getBody()
         
+        #   With the objective of avoiding this bug:
+        #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
+        #   I perform this safety check:
+        if document == '':
+            return False
+            
         header_match = self._getContentType(httpResponse) == 'application/pdf'
         contentMatch = document.startswith('%PDF-') and document.endswith('%%EOF')
         
