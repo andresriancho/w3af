@@ -60,7 +60,15 @@ class pdfParser(abstractParser):
         self.findEmails( content_text )
         
     def getPDFContent( self, documentString ):
+        #   With the objective of avoiding this bug:
+        #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
+        #   I perform this safety check:
+        if documentString == '':
+            return ''
+        
+        #   Perform some real work:
         content = ""
+        
         # Load PDF into pyPDF
         pdf = pyPdf.PdfFileReader( StringIO.StringIO(documentString) )
         try:
