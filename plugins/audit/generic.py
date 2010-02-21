@@ -49,8 +49,11 @@ class generic(baseAuditPlugin):
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-        # User configured variables
-        self._diff_ratio = 0.35
+        #   Internal variables
+        self._already_reported = []
+        
+        #   User configured variables
+        self._diff_ratio = 0.30
 
     def audit(self, freq ):
         '''
@@ -65,6 +68,13 @@ class generic(baseAuditPlugin):
         mutants = createMutants( freq , ['', ] , oResponse=oResponse )
         
         for m in mutants:
+            
+            #   First I check that the current modified parameter in the mutant doesn't have
+            #   an already reported vulnerability. I don't want to report vulnerabilities more
+            #   than once.
+            if (m.getURL(), m.getVar()) in self._already_reported:
+                continue
+            
             # Now, we request the limit (something that doesn't exist)
             # If http://localhost/a.php?b=1 ; then I should request b=12938795  (random number)
             # If http://localhost/a.php?b=abc ; then I should request b=hnv98yks (random alnum)
@@ -125,6 +135,7 @@ class generic(baseAuditPlugin):
                 v.setName( 'Unidentified vulnerability' )
                 v.setDesc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'generic', v )
+                self._already_reported.append( (mutant.getURL(), mutant.getVar()) )
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
@@ -134,6 +145,7 @@ class generic(baseAuditPlugin):
                 msg += mutant.foundAt()
                 i.setDesc( msg )
                 kb.kb.append( self, 'generic', i )
+                self._already_reported.append( (mutant.getURL(), mutant.getVar()) )
     
     def _get_limit_response( self, m ):
         '''
