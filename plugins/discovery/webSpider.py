@@ -333,7 +333,7 @@ class webSpider(baseDiscoveryPlugin):
             for broken, where in self._brokenLinks:
                 if (broken, where) not in reported:
                     reported.append( (broken, where) )
-                    om.out.information('- ' + broken + ' [ ' + where + ' ]')
+                    om.out.information('- ' + broken + ' [ referenced from: ' + where + ' ]')
     
     def _is_forward( self, reference ):
         '''
