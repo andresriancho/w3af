@@ -119,8 +119,6 @@ search404 = False
 
 [grep.oracle]
 
-[grep.newline]
-mixedOnly = True
 
 [grep.httpInBody]
 

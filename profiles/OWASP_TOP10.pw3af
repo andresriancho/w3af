@@ -29,8 +29,6 @@ execOneTime = False
 
 [audit.phishingVector]
 
-[grep.newline]
-mixedOnly = True
 
 [grep.pathDisclosure]
 
