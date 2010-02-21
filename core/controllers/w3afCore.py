@@ -1026,8 +1026,12 @@ class w3afCore:
         
         @parameter pluginNames: A list with the names of the Plugins that will be runned.
         @parameter pluginType: The type of the plugin.
-        @return: None
+        
+        @return: A list of plugins that are unknown to the framework. This is mainly used to have
+        some error handling related to old profiles, that might reference deprecated plugins.
         '''
+        unknown_plugins = []
+        
         # Validate the input...
         pluginNames = list( set( pluginNames ) )    # bleh !
         pList = self.getPluginList(  pluginType  )
@@ -1035,7 +1039,7 @@ class w3afCore:
             if p not in pList \
             and p.replace('!','') not in pList\
             and p != 'all':
-                raise w3afException('Unknown plugin selected ("'+ p +'")')
+                unknown_plugins.append( p )
         
         setMap = {'discovery':self._setDiscoveryPlugins, 'audit':self._setAuditPlugins, \
         'grep':self._setGrepPlugins, 'evasion':self._setEvasionPlugins, 'output':self._setOutputPlugins,  \
@@ -1043,6 +1047,8 @@ class w3afCore:
         
         func = setMap[ pluginType ]
         func( pluginNames )
+        
+        return unknown_plugins
     
     def reloadModifiedPlugin(self,  pluginType,  pluginName):
         '''
@@ -1298,12 +1304,16 @@ class w3afCore:
             # It exists, work with it!
             for pluginType in self._plugins.keys():
                 pluginNames = profileInstance.getEnabledPlugins( pluginType )
-                self.setPlugins( pluginNames, pluginType )
-                '''
-                def setPluginOptions(self, pluginType, pluginName, PluginsOptions ):
-                    @parameter PluginsOptions: An option list with the options for a plugin. For example:\
-                    { 'script':'AAAA', 'timeout': 10 }
-                '''
+                
+                # Handle errors that might have been triggered from a possibly invalid profile
+                unknown_plugins = self.setPlugins( pluginNames, pluginType )
+                if unknown_plugins:
+                    om.out.error('The profile references the following missing plugins:')
+                    for unknown_plugin_name in unknown_plugins:
+                        om.out.error('- ' + unknown_plugin_name)
+                    
+                # Now we set the plugin options, which can also trigger errors with "outdated"
+                # profiles that users could have in their ~/.w3af/ directory.
                 for pluginName in profileInstance.getEnabledPlugins( pluginType ):
                     pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
                     try:
@@ -1312,11 +1322,12 @@ class w3afCore:
                     except Exception, e:
                         # This is because of an invalid plugin, or something like that...
                         # Added as a part of the fix of bug #1937272
-                        msg = 'The profile you are trying to load seems to be corrupt, or one of'
-                        msg += ' the enabled plugins has a bug. If your profile is ok, please report'
-                        msg += ' this as a bug to the w3af sourceforge page: Exception while setting '
-                        msg += pluginName +' plugin options: "' + str(e) + '"'
-                        raise w3afException( msg )
+                        msg = 'The profile you are trying to load seems to be outdated, one of'
+                        msg += ' the enabled plugins has a bug or an plugin option that was valid'
+                        msg += ' when you created the profile was now removed from the framework.'
+                        msg += ' The plugin that triggered this exception is "' + pluginName + '",'
+                        msg += ' and the original exception is: "' + str(e) +'".'
+                        om.out.error( msg )
                     
             # Set the target settings of the profile to the core
             self.target.setOptions( profileInstance.getTarget() )
