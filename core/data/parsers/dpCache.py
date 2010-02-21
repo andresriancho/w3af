@@ -26,7 +26,7 @@ from core.controllers.w3afException import w3afException
 import core.data.parsers.documentParser as documentParser
 from core.controllers.misc.lru import LRU
 
-import md5
+import hashlib
 import threading
 
 
@@ -42,7 +42,7 @@ class dpCache:
         
     def getDocumentParserFor( self, httpResponse, normalizeMarkup=True ):
         res = None
-        hash = md5.new( httpResponse.getBody() ).hexdigest()
+        hash = hashlib.md5( httpResponse.getBody() ).hexdigest()
         
         with self._LRULock:
             if hash in self._cache:
