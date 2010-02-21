@@ -102,48 +102,40 @@ class abstractParser:
         #
         def find_relative( doc ):
             res = []
-            # TODO: Also matches //foo/bar.txt , which is bad
+            
+            # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
             # I'm removing those matches manually below
-            regex = '[A-Z0-9a-z%_\-~\./]+([\/][A-Z0-9a-z%_\-~\.]+)+'
-            regex += '\.[A-Za-z0-9]{1,5}(((\?)([a-zA-Z0-9]*=\w*))'
-            regex += '{1}((&)([a-zA-Z0-9]*=\w*))*)?'
+            regex = '((:?[/]{1,2}[A-Z0-9a-z%_\-~\.]+)+\.[A-Za-z0-9]{2,4}(((\?)([a-zA-Z0-9]*=\w*)){1}((&)([a-zA-Z0-9]*=\w*))*)?)'
             relative_regex = re.compile( regex )
             
-            while True:
-                regex_match = relative_regex.search( doc )
-                if not regex_match:
-                    break
-                else:
-                    s, e = regex_match.span()
-                    match_string = doc[s:e]
+            for match_tuple in relative_regex.findall(doc):
+                
+                match_string = match_tuple[0]
+                
+                #
+                #   And now I filter out some of the common false positives
+                #
+                if match_string.startswith('//'):
+                    continue
                     
-                    #
-                    #   And now I filter out some of the common false positives
-                    #
-                    if match_string.startswith('//'):
-                        doc = doc[e:]
-                        continue
-                        
-                    if re.match('HTTP/\d\.\d', match_string):
-                        doc = doc[e:]
-                        continue
+                if match_string.startswith('://'):
+                    continue
+
+                if re.match('HTTP/\d\.\d', match_string):
+                    continue
+                
+                # Matches "PHP/5.2.4-2ubuntu5.7" , "Apache/2.2.8", and "mod_python/3.3.1"
+                if re.match('.*?/\d\.\d\.\d', match_string):
+                    continue
+                #
+                #   Filter finished.
+                #
                     
-                    # Matches "PHP/5.2.4-2ubuntu5.7" , "Apache/2.2.8", and "mod_python/3.3.1"
-                    if re.match('.*?/\d\.\d\.\d', match_string):
-                        doc = doc[e:]
-                        continue
-                    #
-                    #   Filter finished.
-                    #
-                    
-                    domainPath = urlParser.getDomainPath(httpResponse.getURL())
-                    url = urlParser.urlJoin( domainPath , match_string )
-                    url = self._decode_URL(url, self._encoding)
-                    res.append( url )
-                    
-                    # continue
-                    doc = doc[e:]
-                    
+                domainPath = urlParser.getDomainPath(httpResponse.getURL())
+                url = urlParser.urlJoin( domainPath , match_string )
+                url = self._decode_URL(url, self._encoding)
+                res.append( url )
+            
             return res
         
         relative_URLs = find_relative( httpResponse.getBody() )
