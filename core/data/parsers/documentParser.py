@@ -66,7 +66,10 @@ class documentParser:
             return False
             
         header_match = self._getContentType(httpResponse) == 'application/pdf'
-        contentMatch = document.startswith('%PDF-') and document.endswith('%%EOF')
+        #   Some PDF files don't end with %%EOF, they end with
+        #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n. 
+        #   So... just to be sure I search in the last 12 characters.
+        contentMatch = document.startswith('%PDF-') and '%%EOF' in a[-12:]
         
         if header_match or contentMatch:
             try:
