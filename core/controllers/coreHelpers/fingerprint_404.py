@@ -129,7 +129,7 @@ class fingerprint_404:
                 self._already_analyzed = True
 
         
-        # self._404_body was already cleaned inside self._generate404
+        # self._404_body was already cleaned inside self._generate_404_knowledge
         # so we need to clean this one.
         html_body = self._get_clean_body( http_response )
         
@@ -234,7 +234,7 @@ class fingerprint_404:
         except w3afMustStopException, mse:
             # Someone else will raise this exception and handle it as expected
             # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException found by _generate404, someone else will handle it.')
+            raise w3afException('w3afMustStopException found by _send_404, someone else will handle it.')
         except Exception, e:
             raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
         
