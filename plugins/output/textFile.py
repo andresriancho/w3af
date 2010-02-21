@@ -33,6 +33,7 @@ import core.data.constants.severity as severity
 
 import sys
 import time
+import os
 
 
 class textFile(baseOutputPlugin):
@@ -68,8 +69,12 @@ class textFile(baseOutputPlugin):
         try:
             #self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )
             self._file = open( self._file_name, "w")
+        except IOError, io:
+            msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
+            msg += ': "' + io.strerror + '".'
+            raise w3afException( msg )
         except Exception, e:
-            msg = 'Cant open report file "' + self._http_file_name + '" for output. Exception: "'
+            msg = 'Can\'t open report file "' + self._file_name + '" for writing. Exception: "'
             msg += str(e) + '".'
             raise w3afException( msg )
             
@@ -77,8 +82,12 @@ class textFile(baseOutputPlugin):
             # Images aren't ascii, so this file that logs every request/response, will be binary
             #self._http = codecs.open( self._http_file_name, "wb", "utf-8", 'replace' )
             self._http = open( self._http_file_name, "wb" )
+        except IOError, io:
+            msg = 'Can\'t open report file "' + os.path.abspath(self._http_file_name) + '" for writing'
+            msg += ': "' + io.strerror + '".'
+            raise w3afException( msg )
         except Exception, e:
-            msg = 'Cant open report file "' + self._http_file_name + '" for output. Exception: "'
+            msg = 'Can\'t open report file "' + self._http_file_name + '" for writing. Exception: "'
             msg += str(e) + '".'
             raise w3afException( msg )
         
@@ -312,6 +321,8 @@ class textFile(baseOutputPlugin):
         self._file_name = OptionList['fileName'].getValue()
         self._http_file_name = OptionList['httpFileName'].getValue()
         self._show_caller = OptionList['showCaller'].getValue()
+        
+        self._init()
     
     def getOptions( self ):
         '''

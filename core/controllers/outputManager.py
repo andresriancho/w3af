@@ -20,10 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import os,sys
-from core.controllers.misc.factory import factory
+import os
+
 # severity constants for vuln messages
 import core.data.constants.severity as severity
+
+from core.controllers.misc.factory import factory
+from core.controllers.w3afException import w3afException
+
 
 class outputManager:
     '''
@@ -61,11 +65,17 @@ class outputManager:
                 self._outputPluginList.append( plugin )
         
         else:
-                plugin = factory( 'plugins.output.' + OutputPluginName )
-                if OutputPluginName in self._pluginsOptions.keys():
-                    plugin.setOptions( self._pluginsOptions[OutputPluginName] )
+            plugin = factory( 'plugins.output.' + OutputPluginName )
+            if OutputPluginName in self._pluginsOptions.keys():
+                plugin.setOptions( self._pluginsOptions[OutputPluginName] )
 
-                    # Append the plugin to the list
+            #   Append the plugin to the list, the console/gtkOutput must be first!
+            #
+            #   The reason because the console/gtkOutput plugin should be first is that
+            #   its the only plugin that can "never" fail.
+            if OutputPluginName in ['console', 'gtkOutput']:
+                self._outputPluginList.insert(0, plugin )
+            else:
                 self._outputPluginList.append( plugin )
     
     def endOutputPlugins( self ):
@@ -86,7 +96,7 @@ class outputManager:
             'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
         '''
         for oPlugin in self._outputPluginList:
-          oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
+            oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
     
     def debug(self, message, newLine = True ):
         '''
@@ -101,7 +111,12 @@ class outputManager:
                 pass
             else:
                 for oPlugin in self._outputPluginList:
-                    oPlugin.debug( message, newLine )
+                    try:
+                        oPlugin.debug( message, newLine )
+                    except w3afException, w3:
+                        #   The plugin has some kind of error, I'll remove it from the list
+                        self._outputPluginList.remove(oPlugin)
+                        raise w3
     
     def information(self, message, newLine = True ):
         '''
@@ -116,7 +131,13 @@ class outputManager:
                 pass
             else:
                 for oPlugin in self._outputPluginList:
-                    oPlugin.information( message, newLine )
+                    try:
+                        oPlugin.information( message, newLine )
+                    except w3afException, w3:
+                        #   The plugin has some kind of error, I'll remove it from the list
+                        self._outputPluginList.remove(oPlugin)
+                        raise w3
+
             
     def error(self, message, newLine = True ):
         '''
@@ -131,7 +152,13 @@ class outputManager:
                 pass
             else:
                 for oPlugin in self._outputPluginList:
-                    oPlugin.error( message, newLine )
+                    try:
+                        oPlugin.error( message, newLine )
+                    except w3afException, w3:
+                        #   The plugin has some kind of error, I'll remove it from the list
+                        self._outputPluginList.remove(oPlugin)
+                        raise w3
+
 
     def logHttp( self, request, response ):
         '''
@@ -141,7 +168,12 @@ class outputManager:
         @parameter response: A httpResponse object
         '''
         for oPlugin in self._outputPluginList:
-            oPlugin.logHttp( request, response )
+            try:
+                oPlugin.logHttp( request, response )
+            except w3afException, w3:
+                #   The plugin has some kind of error, I'll remove it from the list
+                self._outputPluginList.remove(oPlugin)
+                raise w3
             
     def vulnerability(self, message, newLine = True, severity=severity.MEDIUM ):
         '''
@@ -156,7 +188,13 @@ class outputManager:
                 pass
             else:
                 for oPlugin in self._outputPluginList:
-                    oPlugin.vulnerability( message, newLine, severity=severity )
+                    try:
+                        oPlugin.error( message, newLine, severity=severity )
+                    except w3afException, w3:
+                        #   The plugin has some kind of error, I'll remove it from the list
+                        self._outputPluginList.remove(oPlugin)
+                        raise w3
+
 
     def console( self, message, newLine = True ):
         '''
@@ -169,7 +207,13 @@ class outputManager:
                 pass
             else:
                 for oPlugin in self._outputPluginList:
-                    oPlugin.console( message, newLine )
+                    try:
+                        oPlugin.console( message, newLine )
+                    except w3afException, w3:
+                        #   The plugin has some kind of error, I'll remove it from the list
+                        self._outputPluginList.remove(oPlugin)
+                        raise w3
+
     
     def echo( self, onOff ):
         '''

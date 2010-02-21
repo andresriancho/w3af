@@ -71,6 +71,10 @@ class htmlFile(baseOutputPlugin):
         try:
             #self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )            
             self._file = open( self._file_name, "w" )
+        except IOError, io:
+            msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
+            msg += ': "' + io.strerror + '".'
+            raise w3afException( msg )
         except Exception, e:
             msg = 'Cant open report file ' + self._file_name + ' for output.'
             msg += ' Exception: "' + str(e) + '".'

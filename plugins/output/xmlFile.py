@@ -37,6 +37,8 @@ import xml.dom.minidom
 
 # time
 import time
+import os
+
 
 class xmlFile(baseOutputPlugin):
     '''
@@ -74,6 +76,10 @@ class xmlFile(baseOutputPlugin):
         self._initialized = True 
         try:
             self._file = open( self._file_name, "w" )
+        except IOError, io:
+            msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
+            msg += ': "' + io.strerror + '".'
+            raise w3afException( msg )
         except Exception, e:
             msg = 'Cant open report file ' + self._file_name + ' for output.'
             msg += ' Exception: "' + str(e) + '".'

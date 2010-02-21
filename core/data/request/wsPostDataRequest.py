@@ -26,6 +26,7 @@ from core.data.request.httpPostDataRequest import httpPostDataRequest
 import core.data.dc.dataContainer as dc
 import cgi
 
+
 class wsPostDataRequest(httpPostDataRequest):
     '''
     This class represents a fuzzable request for a webservice method call. 
