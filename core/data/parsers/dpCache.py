@@ -26,7 +26,7 @@ from core.controllers.w3afException import w3afException
 import core.data.parsers.documentParser as documentParser
 from core.controllers.misc.lru import LRU
 
-import hashlib
+import zlib
 import threading
 
 
@@ -42,7 +42,23 @@ class dpCache:
         
     def getDocumentParserFor( self, httpResponse, normalizeMarkup=True ):
         res = None
-        hash = hashlib.md5( httpResponse.getBody() ).hexdigest()
+        
+        #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with
+        #   python's built-in hash() function, but I think that its too weak to actually use it for
+        #   anything, but... damn its fast!
+        #
+        #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import zlib; s="aaa"*1234' 'zlib.crc32(s)'
+        #   100000 loops, best of 3: 6.03 usec per loop
+        #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import zlib; s="aaa"*1234' 'zlib.adler32(s)'
+        #   100000 loops, best of 3: 3.87 usec per loop
+        #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import hashlib; s="aaa"*1234' 'hashlib.sha1(s).hexdigest()'
+        #   100000 loops, best of 3: 16.6 usec per loop
+        #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import hashlib; s="aaa"*1234' 'hashlib.md5(s).hexdigest()'
+        #   100000 loops, best of 3: 12.9 usec per loop
+        #   dz0@laptop:~/w3af/trunk$ python -m timeit -n 100000 -s 'import hashlib; s="aaa"*1234' 'hash(s)'
+        #   100000 loops, best of 3: 0.117 usec per loop
+
+        hash = zlib.adler32( httpResponse.getBody() )
         
         with self._LRULock:
             if hash in self._cache:
