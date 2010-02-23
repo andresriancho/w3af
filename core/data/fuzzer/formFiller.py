@@ -46,9 +46,9 @@ parameter_name_knowledge = {
     'Manager':['position','jon','cargo','posição','unternehmung','position'],
     
     '90210':['postal','zip','postleitzahl','plz','postais'],
-    '3419':['pin','id'],
+    '3419':['pin','id', 'suffix'],
     '22':['floor','age','piso','edad','stock','alter', 'port', 'puerto'],
-    '555':['area', 'prefijo'],
+    '555':['area', 'prefijo','prefix'],
     '55550178':['phone','fax','code','number','telefono','numero','número','código','codigo','telefon',
                         'tel','code','nummer', 'call', 'llamar', 'passport', 'pasaporte'],
     '987654320': ['ssn', 'social'], 
@@ -59,8 +59,8 @@ parameter_name_knowledge = {
     '1982':['year','birthyear','año','ano','jahr', 'since', 'desde'], 
     
     'Hello World':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data',
-                             'payload', 'answer', 'respuesta', 'prefix', 'suffix', 'description', 'descripcion', 
-                             'message', 'mensaje', 'excerpt'], 
+                             'payload', 'answer', 'respuesta', 'description', 'descripcion', 
+                             'message', 'mensaje', 'excerpt', 'comment', 'comentario'], 
                              
     'Spam or Eggs?':['question', 'pregunta'], 
     
