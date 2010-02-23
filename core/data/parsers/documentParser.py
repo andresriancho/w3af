@@ -34,6 +34,7 @@ except ImportError:
 import StringIO
 import re
 
+
 class documentParser:
     '''
     This class is a document parser.
@@ -47,7 +48,7 @@ class documentParser:
             self._parser = pdfParser.pdfParser( httpResponse )
         elif self._isSWF( httpResponse ):
             self._parser = swfParser.swfParser( httpResponse )
-        elif self._isHTMLorText( httpResponse ):
+        elif httpResponse.is_text_or_html():
             self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
         else:
             raise w3afException('There is no parser for "' + httpResponse.getURL() + '".')
@@ -64,35 +65,35 @@ class documentParser:
         #   I perform this safety check:
         if document == '':
             return False
-            
-        header_match = self._getContentType(httpResponse) == 'application/pdf'
-        #   Some PDF files don't end with %%EOF, they end with
-        #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n. 
-        #   So... just to be sure I search in the last 12 characters.
-        contentMatch = document.startswith('%PDF-') and '%%EOF' in a[-12:]
         
-        if header_match or contentMatch:
-            try:
-                pyPdf.PdfFileReader( StringIO.StringIO(document) )
-            except Exception:
-                return False
-            else:
-                return True
-        else:
-            return False
+        if httpResponse.getContentType() in ['application/x-pdf', 'application/pdf']:
+            #   Some PDF files don't end with %%EOF, they end with
+            #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n. 
+            #   So... just to be sure I search in the last 12 characters.
+            if document.startswith('%PDF-') and '%%EOF' in a[-12:]:
+                try:
+                    pyPdf.PdfFileReader( StringIO.StringIO(document) )
+                except Exception:
+                    return False
+                else:
+                    return True
+        
+        return False
     
     def _isSWF(self, httpResponse):
         '''
         @return: True if the httpResponse contains a SWF file.
         '''
-        body = httpResponse.getBody()
-        
-        if len(body) > 5:
-            magic = body[:3]
+        if httpResponse.getContentType() == 'application/x-shockwave-flash':
             
-            # TODO: Add more checks here?
-            if magic in ['FWS', 'CWS']:
-                return True
+            body = httpResponse.getBody()
+        
+            if len(body) > 5:
+                magic = body[:3]
+            
+                # TODO: Add more checks here?
+                if magic in ['FWS', 'CWS']:
+                    return True
         
         return False
     
@@ -101,38 +102,16 @@ class documentParser:
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a WML document.
         '''
-        document = httpResponse.getBody()
+        if httpResponse.getContentType() == 'text/vnd.wap.wml':
         
-        header_match = self._getContentType(httpResponse) == 'text/vnd.wap.wml'
-        contentMatch = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)
+            document = httpResponse.getBody()
+            content_match = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)
         
-        if header_match or contentMatch:
-            return True
-        else:
-            return False
-    
-    def _isHTMLorText( self, httpResponse ):
-        '''
-        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
-        @return: True if the document parameter is a string that contains a HTML or Text document.
-        '''
-        header_match = 'text' in self._getContentType(httpResponse)
-        header_match |= 'html' in self._getContentType(httpResponse)
+            if content_match:
+                return True
         
-        if header_match:
-            return True
-        else:
-            return False
-    
-    def _getContentType(self, httpResponse):
-        '''
-        @return: The value of the content-type header; '' if not found.
-        '''
-        for i in httpResponse.getHeaders():
-            if i.lower() == 'content-type':
-                return httpResponse.getHeaders()[i]
-        return ''
-    
+        return False
+        
     def getForms( self ):
         '''
         @return: A list of forms.
