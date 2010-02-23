@@ -305,7 +305,13 @@ class textFile(baseOutputPlugin):
         self._file.flush() is called every self._flush_number
         '''
         if self._flush_counter % self._flush_number == 0:
-            self._file.flush()
+            #   TODO: Remove this if I discover that it wasn't really needed.
+            #   I just commented this because after some profiling I found that
+            #   the file flushing takes some considerable time that I want to use for
+            #   some other more interesting things :)
+            #
+            #self._file.flush()
+            pass
             
     def setOptions( self, OptionList ):
         '''
