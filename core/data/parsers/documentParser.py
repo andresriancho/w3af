@@ -70,7 +70,7 @@ class documentParser:
             #   Some PDF files don't end with %%EOF, they end with
             #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n. 
             #   So... just to be sure I search in the last 12 characters.
-            if document.startswith('%PDF-') and '%%EOF' in a[-12:]:
+            if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
                 try:
                     pyPdf.PdfFileReader( StringIO.StringIO(document) )
                 except Exception:
