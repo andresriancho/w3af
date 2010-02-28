@@ -223,12 +223,12 @@ class webSpider(baseDiscoveryPlugin):
             if are_variants(reference, new_reference):
                 number_of_variants += 1
                 
-        if number_of_variants > MAX_VARIANTS:
-            msg = 'Ignoring new reference "' + new_reference + '" (it is simply a variant).'
-            om.out.debug( msg )
-            return False
-        else:
-            return True
+            if number_of_variants > MAX_VARIANTS:
+                msg = 'Ignoring new reference "' + new_reference + '" (it is simply a variant).'
+                om.out.debug( msg )
+                return False
+            
+        return True
     
     def _verify_reference( self, reference, original_request, originalURL, possibly_broken ):
         '''
