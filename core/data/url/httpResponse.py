@@ -216,11 +216,13 @@ class httpResponse:
         '''
         @return: True if this response is text or html
         '''
-        if self._content_type.lower().count('txt') or self._content_type.lower().count('html'):
-            return True
-        else:
-            return False
+        magic_words = ['txt', 'text', 'html']
+        for mw in magic_words:
+           if self._content_type.lower().count(mw):
+               return True
 
+        return False
+    
     def is_pdf( self ):
         '''
         @return: True if this response is a PDF file
