@@ -71,6 +71,7 @@ parameter_name_knowledge = {
     '1':['debug', 'is_admin', 'admin', 'verbose'], 
     
     '127.0.0.1':['ip', 'ipaddress', 'host', 'server', 'servidor'], 
+    '255.255.255.0':['netmask', 'mask', 'mascara'], 
     'w3af.sf.net':['domain', 'dominio']
     
     }
