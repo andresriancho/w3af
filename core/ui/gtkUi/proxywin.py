@@ -82,8 +82,10 @@ class ProxiedRequests(entries.RememberingWindow):
         ])
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('Active', gtk.STOCK_EXECUTE,  _('_Activate'), None, _('Activate/Deactivate the Proxy'), self._toggle_active, True),
-            ('TrapReq', gtk.STOCK_JUMP_TO, _('_Trap Requests'), None, _('Trap the requests or not'), self._toggle_trap, True),
+            ('Active', gtk.STOCK_EXECUTE,  _('_Activate'), None, _('Activate/Deactivate the Proxy'),
+                self._toggle_active, True),
+            ('TrapReq', gtk.STOCK_JUMP_TO, _('_Trap Requests'), None, _('Trap the requests or not'),
+                self._toggle_trap, False),
         ])
 
         # Finish the toolbar
