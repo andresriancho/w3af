@@ -229,7 +229,7 @@ class localproxy(proxy):
         self._methodsToTrap = []
         self._whatToTrap = re.compile('.*')
         self._whatNotToTrap = re.compile('.*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$')
-        self._trap = True
+        self._trap = False
         self._fixContentLength = True
 
     def getTrappedRequest(self):
