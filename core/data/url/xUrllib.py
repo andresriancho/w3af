@@ -237,8 +237,8 @@ class xUrllib:
         When something like that happens, this library allows the user to send the request by specifying two parameters
         for the sendRawRequest method:
         
-        @parameter head: The postdata, if any. If set to '' or None, no postdata is sent.
-        @parameter postdata: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
+        @parameter head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
+        @parameter postdata: The postdata, if any. If set to '' or None, no postdata is sent.
         @parameter fixContentLength: Indicates if the content length has to be fixed or not.
         
         @return: An httpResponse object.
