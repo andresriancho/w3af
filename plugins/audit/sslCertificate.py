@@ -142,8 +142,7 @@ class sslCertificate(baseAuditPlugin):
             kb.kb.append( self, 'expired', i )
 
         # Check for SSL version
-        # TODO why not '... < 3:'?
-        if cert.get_version() < 2:
+        if cert.get_version() < 3:
             i = info.info()
             i.setName('Insecure SSL version' )
             desc = 'The certificate is using an old version of SSL (' + str(cert.get_version())
