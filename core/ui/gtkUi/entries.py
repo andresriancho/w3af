@@ -667,6 +667,7 @@ class Searchable(object):
         self.key_g = gtk.gdk.keyval_from_name("g")
         self.key_G = gtk.gdk.keyval_from_name("G")
         self.key_F3 = gtk.gdk.keyval_from_name("F3")
+        self.key_Esc = gtk.gdk.keyval_from_name("Escape")
 
         # signals
         self.connect("key-press-event", self._key)
@@ -700,6 +701,9 @@ class Searchable(object):
                 self._find(None, "previous")
             else:
                 self._find(None, "next")
+        # Esc
+        if event.keyval == self.key_Esc:
+            self._close(None, None)
         return False
 
     def _populate_popup(self, textview, menu):
