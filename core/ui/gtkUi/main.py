@@ -101,6 +101,7 @@ ui_menu = """
       <menuitem action="SaveAs"/>
       <menuitem action="Revert"/>
       <menuitem action="Delete"/>
+      <menuitem action="Quit"/>
     </menu>
     <menu action="EditMenuScan">
       <menuitem action="EditPlugin"/>
@@ -305,6 +306,7 @@ class MainApp(object):
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
+            ('Quit', gtk.STOCK_QUIT, _('_Quit'), None, _('Exit the program'), lambda w: self.quit(None, None)),
             ('New', gtk.STOCK_NEW, _('_New'), None, _('Create a new profile'), lambda w: self.profileAction("new")),
             ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profileAction("save")),
             ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profileAction("saveAs")),
@@ -321,12 +323,12 @@ class MainApp(object):
             ('Miscellaneous', None, _('_Miscellaneous'), None, _('Miscellaneous configuration'), self.menu_config_misc),
             ('ConfigurationMenu', None, _('_Configuration')),
             
-            ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), None, _('Generate manual HTTP request'), self._manual_request),
-            ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), None, _('Generate fuzzy HTTP requests'), self._fuzzy_request),
-            ('EncodeDecode', gtk.STOCK_CONVERT, _('_Encode/Decode'), None, _('Encodes and Decodes in different ways'), self._encode_decode),
+            ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), '<Control>m', _('Generate manual HTTP request'), self._manual_request),
+            ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), '<Control>u', _('Generate fuzzy HTTP requests'), self._fuzzy_request),
+            ('EncodeDecode', gtk.STOCK_CONVERT, _('Enc_ode/Decode'), '<Control>o', _('Encodes and Decodes in different ways'), self._encode_decode),
             ('ExportRequest', gtk.STOCK_COPY, _('_Export Request'), '<Control>e', _('Export HTTP request'), self._export_request),
-            ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), None, _('Compare different requests and responses'), self._compare),
-            ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), None, _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
+            ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), '<Control>r', _('Compare different requests and responses'), self._compare),
+            ('Proxy', gtk.STOCK_CONNECT, _('_Proxy'), '<Control>p', _('Proxies the HTTP requests, allowing their modification'), self._proxy_tool),
             ('ToolsMenu', None, _('_Tools')),
 
             ('Wizards', gtk.STOCK_SORT_ASCENDING, _('_Wizards'), None, _('Point & Click Penetration Test'), self._wizards),
