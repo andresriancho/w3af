@@ -242,7 +242,10 @@ class ghdb(baseDiscoveryPlugin):
         @return: No value is returned.
         ''' 
         self._key = optionsMap['key'].getValue()           
-        self._update_ghdb = optionsMap['updateGHDB'].getValue()
+        # The ghdb is not online anymore, updating may brake this plugin.
+        # http://johnny.ihackstuff.com/HFC/Home.html
+        #
+        #self._update_ghdb = optionsMap['updateGHDB'].getValue()
         self._result_limit = optionsMap['resultLimit'].getValue()
             
     def getPluginDeps( self ):
