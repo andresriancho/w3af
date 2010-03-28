@@ -9,11 +9,10 @@ fuzzableHeaders =
 fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
-maxDepth = 25
+maxDiscoveryTime = 120
 
 nonTargets = 
 localAddress = 127.0.0.1
-maxDiscoveryLoops = 500
 
 [target]
 target = 

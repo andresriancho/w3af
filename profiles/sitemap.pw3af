@@ -9,7 +9,6 @@ name = sitemap
 [misc-settings]
 exportFuzzableRequests = 
 maxThreads = 15
-maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
@@ -17,7 +16,7 @@ fuzzableHeaders =
 fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
-maxDepth = 25
+maxDiscoveryTime = 120
 
 
 fuzzFormComboValues = tmb

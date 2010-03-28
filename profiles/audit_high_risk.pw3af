@@ -26,8 +26,7 @@ fuzzableHeaders =
 fuzzCookie = False
 fuzzFileName = False
 fuzzFileContent = True
-maxDiscoveryLoops = 500
-maxDepth = 25
+maxDiscoveryTime = 120
 
 
 nonTargets = 

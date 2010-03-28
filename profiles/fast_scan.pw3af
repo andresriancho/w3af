@@ -6,7 +6,6 @@ description = Perform a fast scan of the target site, using only a few discovery
 
 [misc-settings]
 maxThreads = 15
-maxDiscoveryLoops = 500
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
@@ -15,7 +14,7 @@ showProgressBar = True
 fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
-maxDepth = 10
+maxDiscoveryTime = 60
 
 localAddress = 127.0.0.1
 nonTargets = 

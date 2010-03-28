@@ -190,7 +190,7 @@ class miscSettings(configurable):
         cf.cf.save('fuzzFCExt', optionsMap['fuzzFCExt'].getValue() )
         cf.cf.save('fuzzFormComboValues', optionsMap['fuzzFormComboValues'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )
-        cf.cf.save('maxDepth', optionsMap['maxDepth'].getValue() )
+        cf.cf.save('maxDiscoveryTime', optionsMap['maxDiscoveryTime'].getValue() )
         
         if optionsMap['maxThreads'].getValue()  > 100:
             raise w3afException('The maximum valid number of threads is 100.')
@@ -199,7 +199,6 @@ class miscSettings(configurable):
         tm.setMaxThreads( max_threads )
         
         cf.cf.save('fuzzableHeaders', optionsMap['fuzzableHeaders'].getValue() )
-        cf.cf.save('maxDiscoveryLoops', optionsMap['maxDiscoveryLoops'].getValue() )
         cf.cf.save('interface', optionsMap['interface'].getValue() )
         cf.cf.save('localAddress', optionsMap['localAddress'].getValue() )
         cf.cf.save('demo', optionsMap['demo'].getValue()  )

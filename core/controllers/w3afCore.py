@@ -745,14 +745,27 @@ class w3afCore:
             fuzzableRequestList = []
             
             for plugin in self._plugins['discovery']:
+                
+                #
+                #   I use the self._time_limit_reported variable to break out of two loops
+                #
+                if self._time_limit_reported:
+                    break
+                    
                 for fr in toWalk:
 
+                    #
+                    #   Time exceeded?
+                    #
                     if self.get_discovery_time() > cf.cf.getData('maxDiscoveryTime'):
                         if not self._time_limit_reported:
+                            #   I use the self._time_limit_reported variable to break out of two loops
                             self._time_limit_reported = True
                             om.out.information('Maximum discovery time limit hit.')
                         
-                        return []
+                        #   Replaced the return [] with this break, so I don't loose all the
+                        #   gathered knowledge.
+                        break
                         
                     else:
                         self._setRunningPlugin( plugin.getName() )
@@ -786,7 +799,7 @@ class w3afCore:
             #end-for
             
             ##
-            ##  The search has finished, now i'll some mangling with the requests
+            ##  The search has finished, now i'll perform some mangling with the requests
             ##
             newFR = []
             tmp_sort = []
