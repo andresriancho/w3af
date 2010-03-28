@@ -701,9 +701,6 @@ class w3afCore:
         self._urls = []
         self._set_phase('discovery')
         
-        for fr in toWalk:
-            fr.iterationNumber = 0
-        
         result = []
         try:
             result = self._discoverWorker( toWalk )
@@ -781,7 +778,6 @@ class w3afCore:
                                     fuzzableRequestList.append( (i, plugin.getName()) )
                                     
                         om.out.debug('Ending plugin: ' + plugin.getName() )
-                    #end-if fr.iterationNumber > cf.cf.getData('maxDepth'):
                     
                     # We finished one loop, inc!
                     self.progress.inc()
@@ -798,9 +794,6 @@ class w3afCore:
                 # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
                 # so i'll remove fragments here
                 iFr.setURL( urlParser.removeFragment( iFr.getURL() ) )
-                
-                # Increment the iterationNumber !
-                iFr.iterationNumber = fr.iterationNumber + 1
                 
                 if iFr not in self._alreadyWalked and urlParser.baseUrl( iFr.getURL() ) in cf.cf.getData('baseURLs'):
                     # Found a new fuzzable request
