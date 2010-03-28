@@ -1,5 +1,5 @@
 '''
-BingSpider.py
+bing_spider.py
 
 Copyright 2006 Andres Riancho
 
@@ -35,7 +35,7 @@ from core.controllers.misc.is_private_site import is_private_site
 from core.data.searchEngines.bing import bing as bing
 import core.data.parsers.urlParser as urlParser
 
-class BingSpider(baseDiscoveryPlugin):
+class bing_spider(baseDiscoveryPlugin):
     '''
     Search Bing to get a list of new URLs
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -58,7 +58,7 @@ class BingSpider(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
 
-        # I will only run this one time. All calls to BingSpider return the same url's
+        # I will only run this one time. All calls to bing_spider return the same url's
         self._run = False
         bingSE = bing(self._urlOpener)
         domain = urlParser.getDomain(fuzzableRequest.getURL())
@@ -91,7 +91,7 @@ class BingSpider(baseDiscoveryPlugin):
         except w3afException, w3:
             om.out.error('Exception while requesting ' + url + ' ' + str(w3))
         except URLError, url_err:
-            om.out.debug('URL Error while fetching page in BingSpider, error: ' + str(url_err))
+            om.out.debug('URL Error while fetching page in bing_spider, error: ' + str(url_err))
         else:
             fuzzReqs = self._createFuzzableRequests(response)
             self._fuzzableRequests.extend(fuzzReqs)
