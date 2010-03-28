@@ -56,10 +56,10 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFCExt', 'txt' )
             cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('autoDependencies', True )
-            cf.cf.save('maxDepth', 25 )
+            cf.cf.save('maxDiscoveryTime', 120 )
             cf.cf.save('maxThreads', 15 )
             cf.cf.save('fuzzableHeaders', [] )
-            cf.cf.save('maxDiscoveryLoops', 500 )
+
             
             #
             #
@@ -109,12 +109,12 @@ class miscSettings(configurable):
         o5 = option('fuzzableHeaders', cf.cf.getData('fuzzableHeaders'), d5, 'list',
                             tabid='Fuzzer parameters')
 
-        d15 = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
-        h15 = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
-        h15 += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
-        h15 += ' values), t (top values), b (bottom values)'
-        o15 = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), d15, 'string',
-                            help=h15, tabid='Fuzzer parameters')
+        d14 = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
+        h14 = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
+        h14 += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
+        h14 += ' values), t (top values), b (bottom values)'
+        o14 = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), d14, 'string',
+                            help=h14, tabid='Fuzzer parameters')
 
         ######## Core parameters ########
         d6 = 'Automatic dependency enabling for plugins'
@@ -123,11 +123,11 @@ class miscSettings(configurable):
         o6 = option('autoDependencies', cf.cf.getData('autoDependencies'), d6, 'boolean',
                             help=h6, tabid='Core settings')
 
-        d7 = 'Maximum depth of the discovery phase'
-        h7 = 'For example, if set to 10, the webSpider plugin will only follow 10 link levels while'
-        h7 += ' spidering the site. This applies to the whole discovery phase; not only to'
-        h7 += ' the webSpider.'
-        o7 = option('maxDepth', cf.cf.getData('maxDepth'), d7, 'integer', help=h7,
+        d7 = 'Maximum discovery time (minutes)'
+        h7 = 'Many users tend to enable numerous plugins without actually knowing what they are'
+        h7 += ' and the potential time they will take to run. By using this parameter, users will'
+        h7 += ' be able to set the maximum amount of time the discovery phase will run.'
+        o7 = option('maxDiscoveryTime', cf.cf.getData('maxDiscoveryTime'), d7, 'integer', help=h7,
                             tabid='Core settings')
         
         d8 = 'Maximum number of threads that the w3af process will spawn.'
@@ -136,28 +136,24 @@ class miscSettings(configurable):
         o8 = option('maxThreads', cf.cf.getData('maxThreads'), d8, 'integer',
                             tabid='Core settings', help=h8)
         
-        d9 = 'Maximum number of times the discovery function is called'
-        o9 = option('maxDiscoveryLoops', cf.cf.getData('maxDiscoveryLoops'), d9, 'integer', 
-                            tabid='Core settings')
-        
         ######## Network parameters ########
-        d10 = 'Local interface name to use when sniffing, doing reverse connections, etc.'
-        o10 = option('interface', cf.cf.getData('interface'), d10, 'string', tabid='Network settings')
+        d9 = 'Local interface name to use when sniffing, doing reverse connections, etc.'
+        o9 = option('interface', cf.cf.getData('interface'), d9, 'string', tabid='Network settings')
 
-        d11 = 'Local IP address to use when doing reverse connections'
-        o11 = option('localAddress', cf.cf.getData('localAddress'), d11, 'string',
+        d10 = 'Local IP address to use when doing reverse connections'
+        o10 = option('localAddress', cf.cf.getData('localAddress'), d10, 'string',
                                 tabid='Network settings')
         
         ######### Misc ###########
-        d12 = 'Enable this when you are doing a demo in a conference'
-        o12 = option('demo', cf.cf.getData('demo'), d12, 'boolean', tabid='Misc settings')
+        d11 = 'Enable this when you are doing a demo in a conference'
+        o11 = option('demo', cf.cf.getData('demo'), d11, 'boolean', tabid='Misc settings')
         
-        d13 = 'A comma separated list of URLs that w3af should completely ignore'
-        h13 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
-        o13 = option('nonTargets', cf.cf.getData('nonTargets'), d13, 'list', tabid='Misc settings')
+        d12 = 'A comma separated list of URLs that w3af should completely ignore'
+        h12 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
+        o12 = option('nonTargets', cf.cf.getData('nonTargets'), d12, 'list', tabid='Misc settings')
         
-        d14 = 'Export all discovered fuzzable requests to the given file (CSV)'
-        o14 = option('exportFuzzableRequests', cf.cf.getData('exportFuzzableRequests'), d14,
+        d13 = 'Export all discovered fuzzable requests to the given file (CSV)'
+        o13 = option('exportFuzzableRequests', cf.cf.getData('exportFuzzableRequests'), d13,
                             'string', tabid='Export fuzzable Requests')
         
         ol = optionList()
@@ -175,7 +171,6 @@ class miscSettings(configurable):
         ol.add(o12)
         ol.add(o13)
         ol.add(o14)
-        ol.add(o15)
         return ol
     
     def getDesc( self ):

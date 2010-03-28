@@ -46,6 +46,7 @@ import traceback
 import copy
 import Queue
 import re
+import time
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -353,8 +354,9 @@ class w3afCore:
         res = []
         discovered_fr_list = []
         
-        # this is an identifier to know what call number of _discoverWorker we are working on
-        self._count = 0
+        # this will help identify the total discovery time
+        self._discovery_start_time_epoch = time.time()
+        self._time_limit_reported = False
         
         while go:
             discovered_fr_list = self._discover( tmp_list )
@@ -724,18 +726,23 @@ class w3afCore:
             except Exception, e:
                 om.out.error('The plugin "'+ p.getName() + '" raised an exception in the end() method: ' + str(e) )
     
+    def get_discovery_time(self):
+        '''
+        @return: The time between now and the start of the discovery phase. In minutes.
+        '''
+        now = time.time()
+        diff = now - self._discovery_start_time_epoch
+        return diff / 60
+    
     def _discoverWorker(self, toWalk):
         om.out.debug('Called _discoverWorker()' )
         
-        while len( toWalk ) and self._count < cf.cf.getData('maxDiscoveryLoops'):
+        while len( toWalk ):
             
             # Progress stuff, do this inside the while loop, because the toWalk variable changes
             # in each loop
             amount_of_tests = len(self._plugins['discovery']) * len(toWalk)
             self.progress.set_total_amount( amount_of_tests )
-        
-            # This variable is for LOOP evasion
-            self._count += 1
             
             plugins_to_remove_list = []
             fuzzableRequestList = []
@@ -743,8 +750,13 @@ class w3afCore:
             for plugin in self._plugins['discovery']:
                 for fr in toWalk:
 
-                    if fr.iterationNumber > cf.cf.getData('maxDepth'):
-                        om.out.debug('Avoiding discovery loop in fuzzableRequest: ' + str(fr) )
+                    if self.get_discovery_time() > cf.cf.getData('maxDiscoveryTime'):
+                        if not self._time_limit_reported:
+                            self._time_limit_reported = True
+                            om.out.information('Maximum discovery time limit hit.')
+                        
+                        return []
+                        
                     else:
                         self._setRunningPlugin( plugin.getName() )
                         self._setCurrentFuzzableRequest( fr )
