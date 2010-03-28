@@ -1,4 +1,4 @@
-# This scripts tests the MSNSpider plugin
+# This scripts tests the Bing Spider plugin
 
 plugins
 output console,textFile
@@ -10,8 +10,8 @@ output config console
 set verbose True
 back
 
-discovery BingSpider
-discovery config BingSpider
+discovery bing_spider
+discovery config bing_spider
 set resultLimit 10
 back
 back
