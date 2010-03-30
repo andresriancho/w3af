@@ -56,23 +56,19 @@ class spiderMan(baseDiscoveryPlugin):
         # Internal variables
         self._run = True
         self._fuzzableRequests = []
-        self.createFuzzableRequests = self._createFuzzableRequests
-        self.extendFuzzableRequests = self._fuzzableRequests.extend
 
         # User configured parameters
         self._listenAddress = '127.0.0.1'
         self._listenPort = w3afPorts.SPIDERMAN
 
-    def append_fuzzable_request(self, command, path, postData, headers):
+    def append_fuzzable_request(self, freq):
         '''
-        Create a fuzzable request object and append it to the self._fuzzableRequests list.
-        After creating it, report it to the log.
+        Get a fuzzable request. Save it. Log it.
         
         This method is called from the proxyHandler.
         
         @return: None.
         '''
-        freq = createFuzzableRequestRaw( command, path, postData, headers )
         self._fuzzableRequests.append(freq)
 
         if len(self._fuzzableRequests) == 1:
@@ -209,7 +205,10 @@ class proxyHandler(w3afProxyHandler):
             postData = self._getPostData()
             headers = self._getHeadersDict()
             om.out.debug("[spiderMan] Handling request: " + self.command + ' ' + self.path)
-            self._spiderMan.append_fuzzable_request( self.command, self.path, postData, headers )
+            
+            #   Send this information to the plugin so it can send it to the core
+            freq = self._createFuzzableRequest()
+            self._spiderMan.append_fuzzable_request( freq )
             
             if urlParser.getDomain( self.path ) == self.server.w3afLayer.targetDomain:
                 grep = True

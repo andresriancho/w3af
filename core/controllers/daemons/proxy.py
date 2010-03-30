@@ -27,6 +27,8 @@ from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import uri2url, getQueryString
 
+from core.data.request.fuzzableRequest import fuzzableRequest
+
 from OpenSSL import SSL
 
 import traceback
@@ -203,6 +205,36 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             ### FIXME: Maybe I should perform some more detailed error handling...
             om.out.debug('An exception ocurred in w3afProxyHandler.handle_one_request() :' + str(e) )
 
+    def _createFuzzableRequest(self):
+        '''
+        Based on the attributes, return a fuzzable request object.
+        
+        Important variables used here:
+            - self.headers : Stores the headers for the request
+            - self.rfile : A file like object that stores the postdata
+            - self.path : Stores the URL that was requested by the browser
+        '''
+        # See HTTPWrapperClass
+        if hasattr(self.server, 'chainedHandler'):
+            basePath = "https://" + self.server.chainedHandler.path
+            path = basePath + self.path
+        else:
+            path = self.path
+
+        fuzzReq = fuzzableRequest()
+        fuzzReq.setURI(path)
+        fuzzReq.setHeaders(self.headers.dict)
+        fuzzReq.setMethod(self.command)
+
+        # get the postdata (if any)
+        if self.headers.dict.has_key('content-length'):
+            # most likely a POST request
+            cl = int( self.headers['content-length'] )
+            postData = self.rfile.read( cl )
+            fuzzReq.setData(postData)
+
+        return fuzzReq
+        
     def doAll( self ):
         '''
         This method handles EVERY request that were send by the browser.
