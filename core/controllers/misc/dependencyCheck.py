@@ -64,7 +64,7 @@ def dependencyCheck():
         try:
             import google as pygoogle
         except Exception, e:
-            print 'You have to install pygoogle lib. Please read the users guide.'
+            print 'You have to install pygoogle and fpconst libs. Please read the users guide.'
             print 'Error: ' + str(e)
             sys.exit( 1 )
 
