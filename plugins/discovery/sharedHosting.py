@@ -35,7 +35,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.searchEngines.msn import msn as msn
+from core.data.searchEngines.bing import bing as bing
 from core.controllers.misc.is_private_site import is_private_site
 
 import socket
@@ -43,7 +43,7 @@ import socket
 
 class sharedHosting(baseDiscoveryPlugin):
     '''
-    Use MSN search to determine if the website is in a shared hosting.
+    Use Bing search to determine if the website is in a shared hosting.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
@@ -65,7 +65,7 @@ class sharedHosting(baseDiscoveryPlugin):
             # I will only run this one time. All calls to sharedHosting return the same url's
             self._run = False
             
-            msn_wrapper = msn( self._urlOpener )
+            bing_wrapper = bing( self._urlOpener )
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
             if is_private_site( domain ):
@@ -85,7 +85,7 @@ class sharedHosting(baseDiscoveryPlugin):
                 
                 # This is the best way to search, one by one!
                 for ip_address in ip_address_list:
-                    results = msn_wrapper.getNResults('ip:'+ ip_address, self._result_limit )
+                    results = bing_wrapper.getNResults('ip:'+ ip_address, self._result_limit )
                     
                     results = [ urlParser.baseUrl( r.URL ) for r in results ]
                     results = list( set( results ) )
@@ -134,7 +134,7 @@ class sharedHosting(baseDiscoveryPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d2 = 'Fetch the first "resultLimit" results from the MSN search'
+        d2 = 'Fetch the first "resultLimit" results from the bing search'
         o2 = option('resultLimit', self._result_limit, d2, 'integer')
 
         ol = optionList()
@@ -164,11 +164,11 @@ class sharedHosting(baseDiscoveryPlugin):
         '''
         return '''
         This plugin tries to find out if the web application under test is stored in a shared hosting.
-        The procedure is pretty simple, using MSN search engine, the plugin searches for "ip:1.2.3.4"
+        The procedure is pretty simple, using bing search engine, the plugin searches for "ip:1.2.3.4"
         where 1.2.3.4 is the IP address of the webserver.
         
         One configurable option exists:
             - resultLimit
             
-        Fetch the first "resultLimit" results from the "ip:" MSN search.
+        Fetch the first "resultLimit" results from the "ip:" bing search.
         '''
