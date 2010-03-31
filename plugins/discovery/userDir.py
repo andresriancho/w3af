@@ -362,7 +362,7 @@ class userDir(baseDiscoveryPlugin):
             return []
         else:
             # This is the correct return value for this method.
-            return ['discovery.fingerMSN', 'discovery.fingerGoogle', 'discovery.fingerPKS' ]
+            return ['discovery.fingerBing', 'discovery.fingerGoogle', 'discovery.fingerPKS' ]
     
     def getLongDesc( self ):
         '''
