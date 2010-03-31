@@ -155,14 +155,25 @@ def normalizeURL( url ):
     net_location = getNetLocation( url )
     protocol = getProtocol( url )
     if ':' in net_location:
-        host,  port = net_location.split(':')
-        if protocol.lower() == 'http' and port == '80':
-            net_location = host
-        elif protocol.lower() == 'https' and port == '443':
-            net_location = host
+
+        split_net_location = net_location.split(':')
+        if len(split_net_location) == 2 and split_net_location[1].isdigit():
+            host = split_net_location[0]
+            port = split_net_location[1]
+
+            if protocol.lower() == 'http' and port == '80':
+                net_location = host
+            elif protocol.lower() == 'https' and port == '443':
+                net_location = host
+            else:
+                # The net location has a specific port definition
+                net_location = host + ':' + port
         else:
-            # The net location has a specific port definition
+            # This "URL" is broken, do my best:
+            host = split_net_location[0]
+            port = '80'
             net_location = host + ':' + port
+            
     else:
         # The net location has no port definition
         host = net_location
