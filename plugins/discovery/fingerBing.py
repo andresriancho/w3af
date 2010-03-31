@@ -115,6 +115,7 @@ class fingerBing(baseDiscoveryPlugin):
                         i.setDesc( msg )
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
+                        i['url_list'] = [page.URL, ]
                         kb.kb.append( 'mails', 'mails', i )
                         kb.kb.append( 'fingerBing', 'mails', i )
 

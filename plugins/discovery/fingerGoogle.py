@@ -159,6 +159,7 @@ class fingerGoogle(baseDiscoveryPlugin):
                     i.setDesc( msg )
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
+                    i['url_list'] = [response.getURI(), ]
                     kb.kb.append( 'mails', 'mails', i )
                     kb.kb.append( self, 'mails', i )
     
