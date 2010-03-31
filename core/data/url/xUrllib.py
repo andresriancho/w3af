@@ -697,7 +697,7 @@ class xUrllib:
         except Exception, e:
             msg = 'Error in grep plugin, "' + grep_plugin.getName() + '" raised the exception: '
             msg += str(e) + '. Please report this bug to the w3af sourceforge project page '
-            msg += '[ http://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 ] '
+            msg += '[ https://sourceforge.net/apps/trac/w3af/newticket ] '
             msg += '\nException: ' + str(traceback.format_exc(1))
             om.out.error( msg )
             om.out.error( str(traceback.format_exc()) )
