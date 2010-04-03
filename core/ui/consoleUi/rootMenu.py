@@ -52,7 +52,10 @@ class rootMenu(menu):
     def __init__(self, name, console, core, parent=None):
         menu.__init__(self, name, console, core, parent)
         self._loadHelp( 'root' )
-
+        
+        #   At first, there is no scan thread
+        self._scan_thread = None
+        
         mapDict(self.addChild, {
             'plugins': pluginsMenu,
             'target' : (configMenu, self._w3af.target),
@@ -77,7 +80,8 @@ class rootMenu(menu):
             msg += ' the scan output in the console.'
             print msg
         
-        threading.Thread(target=self._real_start).start()
+        self._scan_thread = threading.Thread(target=self._real_start)
+        self._scan_thread.start()
         try:
             # let the core start
             time.sleep(1)
@@ -166,3 +170,13 @@ class rootMenu(menu):
         Show the w3af version and exit
         '''
         om.out.console( get_w3af_version() )
+
+    def join(self):
+        '''
+        Wait for the scan to properly finish.
+        '''
+        if self._scan_thread:
+            self._scan_thread.join()
+            #   After the scan finishes, there is no scan thread
+            self._scan_thread = None
+            
