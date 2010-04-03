@@ -112,24 +112,25 @@ class getMails(baseGrepPlugin):
                 i.addToHighlight( mail_address )
                 
                 kb.kb.append( 'mails', kb_key, i )
-                continue
             
-            # Get the corresponding info object.
-            i = email_map[ mail_address ]
-            # And work
-            if response.getURL() not in i['url_list']:
-                # This email was already found in some other URL
-                # I'm just going to modify the url_list and the description message
-                # of the information object.
-                id_list_of_info = i.getId()
-                id_list_of_info.append( response.id )
-                i.setId( id_list_of_info )
-                i.setURL('')
-                desc = i.getDesc()
-                desc += '\n- ' + response.getURL() 
-                desc += ' - In request with id: '+ str(response.id)
-                i.setDesc( desc )
-                i['url_list'].append( response.getURL() )
+            else:
+            
+                # Get the corresponding info object.
+                i = email_map[ mail_address ]
+                # And work
+                if response.getURL() not in i['url_list']:
+                    # This email was already found in some other URL
+                    # I'm just going to modify the url_list and the description message
+                    # of the information object.
+                    id_list_of_info = i.getId()
+                    id_list_of_info.append( response.id )
+                    i.setId( id_list_of_info )
+                    i.setURL('')
+                    desc = i.getDesc()
+                    desc += '\n- ' + response.getURL() 
+                    desc += ' - In request with id: '+ str(response.id)
+                    i.setDesc( desc )
+                    i['url_list'].append( response.getURL() )
         
     def setOptions( self, optionsMap ):
         self._only_target_domain = optionsMap['onlyTargetDomain'].getValue()
