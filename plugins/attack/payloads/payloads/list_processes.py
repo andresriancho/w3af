@@ -1,14 +1,15 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
 import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
 
 class list_processes(base_payload):
     '''
     This payload shows current proccesses on the system.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
-
+        table = []
         def parse_proc_name ( status_file ):
             name = re.search('(?<=Name:\t)(.*)', status_file)
             if name:
@@ -27,6 +28,8 @@ class list_processes(base_payload):
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
 
         k=400
+       
+        
         for i in xrange(1, int(max_pid)):
 
             #   "progress bar"    
@@ -37,21 +40,30 @@ class list_processes(base_payload):
             #   end "progress bar"
 
             status_file = self.shell.read('/proc/'+str(i)+'/status')
+            name = parse_proc_name(status_file)
+            state = parse_proc_state(status_file)
 
             if status_file:
-
                 cmd = self.shell.read('/proc/'+str(i)+'/cmdline')
+                if kb.kb:
+                    kb.kb.append(name, [i, name, state, cmd])
                 if not cmd:
                     cmd = '[kernel process]'
                 cmd = cmd.replace('\x00',' ')
-
-                msg = str(i).ljust(7) + parse_proc_name(status_file).ljust(20)
-                msg += parse_proc_state(status_file).ljust(20) + cmd.ljust(30)
-                result.append( msg )
+                result.append([i, name, state, cmd])
                 om.out.console('+', newLine=False)
 
         om.out.console('')
         result = [p for p in result if p != '']
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
+        for line in result:
+            msg = str(line[0]).ljust(7) + line[1].ljust(20)
+            msg += line[2].ljust(20) + line[3].ljust(30)
+            result.append( msg )
+        om.out.console('')
         if result == [ ]:
             result.append('Cant list proccesses.')
         return result

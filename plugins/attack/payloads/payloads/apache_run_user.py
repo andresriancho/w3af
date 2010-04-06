@@ -4,7 +4,7 @@ from plugins.attack.payloads.base_payload import base_payload
 class apache_run_user(base_payload):
     '''
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         users = []
 
@@ -27,6 +27,10 @@ class apache_run_user(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache Run User not found.')
         return result

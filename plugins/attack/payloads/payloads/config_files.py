@@ -6,7 +6,7 @@ class config_files(base_payload):
     This payload uses "users_folders" payload to find ".rc" and other configuration files, 
     some of them may contain sensitive information.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         config_files = []
 
@@ -53,6 +53,10 @@ class config_files(base_payload):
 
         #result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Configuration files not found.')
         return result

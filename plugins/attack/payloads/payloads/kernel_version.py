@@ -5,7 +5,7 @@ class kernel_version(base_payload):
     '''
     This payload shows Kernel version
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         paths = []
 
@@ -33,6 +33,10 @@ class kernel_version(base_payload):
             if len(version) > len(longest):
                 longest = version
         result.append(longest)
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Cant identify Kernel Version.')
         return result

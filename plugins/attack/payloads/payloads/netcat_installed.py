@@ -5,7 +5,7 @@ class netcat_installed(base_payload):
     '''
     This payload verifies if Netcat is installed and supports "-e"
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         files = []
 
@@ -23,4 +23,8 @@ class netcat_installed(base_payload):
                     support = 'with -e Support !'
 
         result.append(installed+' '+support)
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         return result

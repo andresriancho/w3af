@@ -6,7 +6,7 @@ class running_honeypot(base_payload):
     '''
     This payload check if the server is a Honeypot or is running one.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         files = []
@@ -45,4 +45,8 @@ class running_honeypot(base_payload):
         
         result.append(running_honeypot+'. '+is_a_honeypot)
 
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         return result

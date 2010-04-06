@@ -7,7 +7,7 @@ class udp(base_payload):
     '''
     This payload shows UDP socket information
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         table = []
 
@@ -73,6 +73,10 @@ class udp(base_payload):
             new.append(list[7])
             new.append(list[11])
             result.append(str(" ".join(new)))
+            return result
+
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('UDP socket information not found.')
         return result

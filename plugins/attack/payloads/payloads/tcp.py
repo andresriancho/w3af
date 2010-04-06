@@ -9,7 +9,7 @@ class tcp(base_payload):
     '''
     This payload shows TCP socket information
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         table = []
 
@@ -75,6 +75,10 @@ class tcp(base_payload):
             new.append(list[7])
             new.append(list[11])
             result.append(str(" ".join(new)))
+            return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('TCP socket information not found.')
         return result

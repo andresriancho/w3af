@@ -4,7 +4,7 @@ from plugins.attack.payloads.base_payload import base_payload
 class apache_run_group(base_payload):
     '''
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         groups = []
 
@@ -23,9 +23,12 @@ class apache_run_group(base_payload):
 
         for group in groups:
             result.append(group)
-
         result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache Run Group not found.')
         return result

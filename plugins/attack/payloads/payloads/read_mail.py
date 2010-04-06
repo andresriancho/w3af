@@ -5,7 +5,7 @@ class read_mail(base_payload):
     '''
     This payload shows local mails stored on /var/mail/
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         directory = []
 
@@ -21,6 +21,10 @@ class read_mail(base_payload):
                     result.append(direct+user)
 
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
-            result.append('No mail stored found.')
+            result.append('No stored mail found.')
         return result

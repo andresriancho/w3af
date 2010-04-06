@@ -5,7 +5,7 @@ class log_reader(base_payload):
     '''
     This payload finds different readable logs on the filesystem.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         logs = []
 
@@ -18,6 +18,7 @@ class log_reader(base_payload):
         logs.append('/var/log/Xorg.0.log')
         logs.append('/var/log/dpkg.log')
         logs.append('/var/log/auth.log')
+        logs.append('/var/logauth.log')
         logs.append('/var/log/daemon.log')
         logs.append('/var/log/messages.log')
         logs.append('/var/log/aptitude')
@@ -101,5 +102,11 @@ class log_reader(base_payload):
             result.append(log)
 
         result = [log for log in logs if readable(log)]
+        return result
+
+    def run_read(self):
+        result = self.api_read()
+        if result == [ ]:
+            result.append('No logs found.')
         return result
 

@@ -5,7 +5,7 @@ class users_name(base_payload):
     '''
     This payload shows users name
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         users = []
 
@@ -20,6 +20,10 @@ class users_name(base_payload):
         if passwd:
             for user in parse_users_name(passwd):
                 result.append(str(user))
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Users name not found.')
         return result

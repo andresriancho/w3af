@@ -5,7 +5,7 @@ class apache_ssl(base_payload):
     '''
     This payload shows Apache distributed configuration files (.htaccess & .htpasswd)
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         def parse_ssl_cert (apache_config):
@@ -29,7 +29,10 @@ class apache_ssl(base_payload):
                 result.append(read(parse_ssl_cert(self.shell.read(file))))
             if parse_ssl_key(self.shell.read(file)) != '':
                 result.append(read(parse_ssl_key(self.shell.read(file))))
-        
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache SSL configuration files not found.')
         return result

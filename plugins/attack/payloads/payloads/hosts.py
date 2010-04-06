@@ -5,7 +5,7 @@ class hosts(base_payload):
     '''
     This payload shows the hosts allow and deny files.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         allow = []
         deny = []
@@ -33,6 +33,10 @@ class hosts(base_payload):
         result.append(self.shell.read('/etc/hosts.deny'))
 
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Hosts files not found.')
         return result

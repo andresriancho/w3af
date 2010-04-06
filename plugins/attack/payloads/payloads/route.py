@@ -5,7 +5,7 @@ class route(base_payload):
     '''
     This payload shows the IP Routing Table.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         list = []
 
@@ -40,6 +40,10 @@ class route(base_payload):
                 str(dec_to_dotted_quad(int(line[2], 16))).ljust(20)+\
                 str(dec_to_dotted_quad(int(line[7], 16))).ljust(20)
                 result.append(new)
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Route information not found.')
         return result

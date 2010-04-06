@@ -6,7 +6,7 @@ class root_login_allowed(base_payload):
     '''
     This payload checks if root user is allowed to login on console.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         def parse_securetty( securetty ):
@@ -39,7 +39,11 @@ class root_login_allowed(base_payload):
                 result.append('Root user is allowed to login on CONSOLE. '+ssh_string)
             else:
                 result.append('Root user is not allowed to login on CONSOLE. '+ssh_string)
-        else:
-            result.append('A SSH Bruteforce attack MIGHT be posible.')
-        
+
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
+        if result == [ ]:
+            result.append('Cant check if root login is allowed.')
         return result

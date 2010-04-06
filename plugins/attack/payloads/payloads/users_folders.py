@@ -5,7 +5,7 @@ class users_folders(base_payload):
     '''
     This payload shows folders assosiated with every user on the system.
     '''
-    def run_read(self):
+    def api_read(self):
                 
         result = []
         users = []
@@ -21,8 +21,11 @@ class users_folders(base_payload):
         if passwd:
             for user in parse_users_folders(passwd):
                 result.append('/'+str(user)+'/')
-           
+        
+        return result
+
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Users folders not found.')
-        
         return result

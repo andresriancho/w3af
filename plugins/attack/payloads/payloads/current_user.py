@@ -6,7 +6,7 @@ class current_user(base_payload):
     '''
     This payload shows current user on the system.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         def default_home( self_environ ):
@@ -17,4 +17,10 @@ class current_user(base_payload):
                 return ''
 
         result.append(default_home( self.shell.read('/proc/self/environ')) )
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
+        if result == [ ]:
+            result.append('Current user not found.')
         return result

@@ -5,7 +5,7 @@ class mysql_config_directory(base_payload):
     '''
     This payload finds MySQL configuration directory.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         paths = []
 
@@ -39,6 +39,10 @@ class mysql_config_directory(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('MySQL configuration directory not found.')
         return result

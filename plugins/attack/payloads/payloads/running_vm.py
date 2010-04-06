@@ -5,7 +5,7 @@ class running_vm(base_payload):
     '''
     This payload check if the Server is running through a VM
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         files = []
 
@@ -77,4 +77,8 @@ class running_vm(base_payload):
 
         result = [p for p in result if p != '']
         
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         return result

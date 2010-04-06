@@ -5,7 +5,7 @@ class dhcp_config_files(base_payload):
     '''
     This payload shows DHCP Server configuration files
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         files = []
 
@@ -22,6 +22,10 @@ class dhcp_config_files(base_payload):
                 result.append(self.shell.read(file))
 
         result = [p for p in result if p != '']
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('DHCP configuration files not found.')
         return result

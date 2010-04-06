@@ -6,7 +6,7 @@ class apache_root_directory(base_payload):
     '''
     This payload finds Apache Root Directories where websites are hosted.
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         def parse_etc_passwd(etc_passwd, user):
@@ -41,6 +41,10 @@ class apache_root_directory(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache root directory not found.')
         return result

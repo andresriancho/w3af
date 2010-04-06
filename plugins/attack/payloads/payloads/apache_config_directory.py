@@ -5,7 +5,7 @@ class apache_config_directory(base_payload):
     '''
     This payload finds Apache Config Directory
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
         paths = []
 
@@ -52,13 +52,15 @@ class apache_config_directory(base_payload):
         paths.append('/usr/pkg/etc/httpd/')
         paths.append('/usr/local/etc/apache22/')
 
-
         for path in paths:
             if check_apache_config_dir(path):
                 result.append(path)
 
         result = list(set(result))
         result = [p for p in result if p != '']
+    
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache configuration directory not found.')
         return result

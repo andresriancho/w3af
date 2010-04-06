@@ -5,7 +5,7 @@ class apache_version(base_payload):
     '''
     This payload shows Apache distributed configuration files (.htaccess & .htpasswd)
     '''
-    def run_read(self):
+    def api_read(self):
         result = []
 
         def parse_apache_binary (binary):
@@ -28,6 +28,10 @@ class apache_version(base_payload):
 
         result = list(set(result))
         result = [p for p in result if p != '']
+        return result
+        
+    def run_read(self):
+        result = self.api_read()
         if result == [ ]:
             result.append('Apache version not found.')
         return result
