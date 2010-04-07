@@ -267,7 +267,7 @@ class importResults(baseDiscoveryPlugin):
         The plugin reads from different input files and directories and creates the fuzzable requests
         that are needed by the audit plugins.
         
-        Three configurable parameter exists:
+        Three configurable parameter exist:
             - input_csv
             - input_burp
             - input_webscarab
