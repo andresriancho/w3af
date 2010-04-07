@@ -1,11 +1,12 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
-
+#TODO: TEST
 class apache_run_user(base_payload):
     '''
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['apache_run_user'] = []
         users = []
 
         def parse_user_envvars (envvars_file):
@@ -21,16 +22,24 @@ class apache_run_user(base_payload):
                 users.append(parse_user_envvars(self.shell.read(dir+'envvars')))
 
         #TODO: ROOT users.append(parse_user_envvars(open('/proc/PIDAPACHE/environ').read()))
-
+        users = list(set(users))
+        users = [p for p in users if p != '']
+        
         for user in users:
-            result.append(user)
+            result['apache_run_user'].append(user)
 
-        result = list(set(result))
-        result = [p for p in result if p != '']
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title())
+            for elem in v:
+                result.append(elem)
+        
+        
         if result == [ ]:
             result.append('Apache Run User not found.')
         return result

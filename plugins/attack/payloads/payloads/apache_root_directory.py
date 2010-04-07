@@ -1,13 +1,13 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
 import core.data.kb.knowledgeBase as kb
-
+#TODO: TEST
 class apache_root_directory(base_payload):
     '''
     This payload finds Apache Root Directories where websites are hosted.
     '''
     def api_read(self):
-        result = []
+        result = {}
 
         def parse_etc_passwd(etc_passwd, user):
             root = re.search('(?<='+user+':/)(.*?)\:', etc_passwd)
@@ -23,28 +23,39 @@ class apache_root_directory(base_payload):
             else:
                 return ''
 
-        users = self.exec_payload('apache_run_user')
+        users = self.exec_payload('apache_run_user')['apache_run_user'].values()
         if users:
             passwd = self.shell.read('/etc/passwd')
             for user in users:
                 result.append('/'+parse_etc_passwd(passwd,  user)+'/')
-
-        apache_config_files = self.exec_payload('apache_config_files')
+        
+        directory = []
+        apache_config_files = self.exec_payload('apache_config_files')['apache_config_files'].values()
         if apache_config_files:
             for file in apache_config_files:
                 file_content = self.shell.read(file)
                 if parse_config_file(file_content) != '':
-                    result.append(parse_config_file(file_content)+'/')
+                    directory.append(parse_config_file(file_content)+'/')
 
         if kb.kb.getData('pathdisclosure', 'webroot'):
-            result.append(kb.kb.getData('pathdisclosure', 'webroot'))
+            directory.append(kb.kb.getData('pathdisclosure', 'webroot'))
+        
+        directory = list(set(directory))
+        directory= [p for p in directory if p != '']
+        
+        result['apache_root_directory'] = directory
 
-        result = list(set(result))
-        result = [p for p in result if p != '']
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title())
+            for elem in v:
+                result.append(elem)
+        
         if result == [ ]:
             result.append('Apache root directory not found.')
         return result

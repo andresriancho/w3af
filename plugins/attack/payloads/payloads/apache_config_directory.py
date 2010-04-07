@@ -3,10 +3,11 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class apache_config_directory(base_payload):
     '''
-    This payload finds Apache Config Directory
+    This payload finds the Apache Config Directory
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['apache_directory'] = []
         paths = []
 
         def parse_apache2_init( apache_file_read ):
@@ -54,13 +55,20 @@ class apache_config_directory(base_payload):
 
         for path in paths:
             if check_apache_config_dir(path):
-                result.append(path)
+                result['apache_directory'] .append(path)
 
-        result = list(set(result))
-        result = [p for p in result if p != '']
+        return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title())
+            for directory in v:
+                result.append(directory)
+        
         if result == [ ]:
             result.append('Apache configuration directory not found.')
         return result

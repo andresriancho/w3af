@@ -6,21 +6,23 @@ class hostname(base_payload):
     This payload shows the server hostname
     '''
     def api_read(self):
-        result = []
+        result = {}
+        
         values = []
         values.append(self.shell.read('/etc/hostname')[:-1])
         values.append(self.shell.read('/proc/sys/kernel/hostname')[:-1])
 
         for v in values:
-            if not v in result:
-               result.append(v)
-        
-        result = list(set(result))
-        result = [p for p in result if p != '']
+            result.update({'Hostname':v})
+
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for k, v in hashmap.iteritems():
+            result.append(k+': '+v)
+        
         if result == [ ]:
             result.append('Hostname not found.')
         return result

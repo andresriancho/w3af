@@ -6,7 +6,7 @@ class filesystem(base_payload):
     This payload shows filesystem info.
     '''
     def api_read(self):
-        result = []
+        result = {}
         files = []
 
         files.append('/etc/fstab')
@@ -15,16 +15,21 @@ class filesystem(base_payload):
         files.append('/proc/mounts')
 
         for file in files:
-            if self.shell.read(file) != '':
-                result.append('-------------------------')
-                result.append('FILE => '+file)
-                result.append(self.shell.read(file))
-
-        result = [p for p in result if p != '']
+            content = self.shell.read(file)
+            if content:
+                result.update({file:content})
         return result
 
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('Filesystem')
+            for file, content in hashmap.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
         if result == [ ]:
             result.append('Filesystem configuration files not found.')
         return result

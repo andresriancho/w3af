@@ -9,7 +9,7 @@ class apache_config_files(base_payload):
     '''
     def api_read(self):
         result = {}
-        result['apache_config'] = []
+        result['apache_config'] = {}
         files = []
 
         files.append('apache2.conf')
@@ -28,14 +28,14 @@ class apache_config_files(base_payload):
                 for file in files:
                     content = self.shell.read(dir+file)
                     if content:
-                         result['apache_config'] .append({dir+file:content})
+                         result['apache_config'].update({dir+file:content})
+                         
                         #result.append(file_crawler.get_files(self, self.shell.read(dir+file)))
                 if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                     for profile in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                         profile_content = self.shell.read(dir+'sites-available/'+profile.lower())
                         if profile_content:
-                             result['apache_config'] .append({dir+'sites-available/'+profile.lower():profile_content})
-
+                             result['apache_config'].update({dir+'sites-available/'+profile.lower():profile_content})
 
         return result
         
@@ -45,8 +45,7 @@ class apache_config_files(base_payload):
         
         for k, v in hashmap.iteritems():
             k = k.replace('_', ' ')
-            k.title()
-            result.append(k)
+            result.append(k.title())
             for file, content in v.iteritems():
                 result.append('-------------------------')
                 result.append(file)

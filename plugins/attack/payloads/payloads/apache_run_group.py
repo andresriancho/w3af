@@ -1,11 +1,12 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
-
+#TODO: TEST
 class apache_run_group(base_payload):
     '''
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['apache_run_group'] = []
         groups = []
 
         def parse_group_envvars (envvars_file):
@@ -20,15 +21,24 @@ class apache_run_group(base_payload):
             for dir in apache_dir:
                 groups.append(parse_group_envvars(self.shell.read(dir+'envvars')))
         #group.append(parse_group_envvars(open('/proc/PIDAPACHE/environ').read()))
-
+        
+        groups = list(set(groups))
+        groups= [p for p in groups if p != '']
+        
         for group in groups:
-            result.append(group)
-        result = list(set(result))
-        result = [p for p in result if p != '']
+            result['apache_run_group'].append(group)
+            
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title())
+            for elem in v:
+                result.append(elem)
+        
         if result == [ ]:
             result.append('Apache Run Group not found.')
         return result

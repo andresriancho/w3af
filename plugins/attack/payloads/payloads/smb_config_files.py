@@ -6,7 +6,7 @@ class smb_config_files(base_payload):
     This payload shows SMB configuration files
     '''
     def api_read(self):
-        result = []
+        result = {}
         files = []
 
         files.append('/usr/local/samba/lib/smb.conf')
@@ -18,20 +18,24 @@ class smb_config_files(base_payload):
         files.append('/etc/samba/smbfstab')
         files.append('/etc/samba/smbpasswd')
         files.append('/usr/local/samba/private/smbpasswd')
-
         files.append('/usr/local/etc/dhcpd.conf')
 
         for file in files:
-            if self.shell.read(file) != '':
-                result.append('-------------------------')
-                result.append('FILE => '+file)
-                result.append(self.shell.read(file))
-
-        result = [p for p in result if p != '']
+            content = self.shell.read(file)
+            if content:
+                result.update({file:content})
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('SMB Config Files')
+            for file, content in hashmap.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
         if result == [ ]:
             result.append('SMB configuration files not found.')
         return result

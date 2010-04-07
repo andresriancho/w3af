@@ -6,7 +6,7 @@ class arp_cache(base_payload):
     This payload shows the ARP CACHE
     '''
     def api_read(self):
-        result = []
+        result = {}
         files = []
 
         files.append('/proc/net/arp')
@@ -14,14 +14,22 @@ class arp_cache(base_payload):
         files.append('/etc/ethers')
 
         for file in files:
-            if self.shell.read(file) != '':
-                result.append('-------------------------')
-                result.append('FILE => '+file)
-                result.append(self.shell.read(file))
+            content = self.shell.read(file)
+            if content != '':
+                result .update({file:content})
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('ARP Cache')
+            for file, content in hashmap.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
+        
         if result == [ ]:
             result.append('ARP Cache configuration files not found.')
         return result

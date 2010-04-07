@@ -6,7 +6,7 @@ class gcc_version(base_payload):
     This payload shows the current GCC Version
     '''
     def api_read(self):
-        result = []
+        result = {}
 
         def parse_gcc_version( proc_version ):
             gcc_version = re.search('(?<=gcc version ).*?\)', proc_version)
@@ -16,12 +16,19 @@ class gcc_version(base_payload):
                 return ''
         
         version = parse_gcc_version( self.shell.read('/proc/version'))
-        result.append(version)
-        result = [p for p in result if p != '']
+        if version:
+            result['gcc_version'] = version
+
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title()+': '+v)
+        
         if result == [ ]:
             result.append('GCC Version not found.')
         return result

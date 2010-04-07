@@ -6,7 +6,7 @@ class kernel_version(base_payload):
     This payload shows Kernel version
     '''
     def api_read(self):
-        result = []
+        result = {}
         paths = []
 
         def parse_proc_version ( proc_version ):
@@ -32,11 +32,18 @@ class kernel_version(base_payload):
         for version in paths:
             if len(version) > len(longest):
                 longest = version
-        result.append(longest)
+        if longest:
+            result['kernel_version'] = longest
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            result.append(k.title()+': '+v)
+
         if result == [ ]:
             result.append('Cant identify Kernel Version.')
         return result

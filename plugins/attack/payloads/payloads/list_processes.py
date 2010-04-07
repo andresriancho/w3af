@@ -8,7 +8,7 @@ class list_processes(base_payload):
     This payload shows current proccesses on the system.
     '''
     def api_read(self):
-        result = []
+        result = {}
         table = []
         def parse_proc_name ( status_file ):
             name = re.search('(?<=Name:\t)(.*)', status_file)
@@ -24,14 +24,14 @@ class list_processes(base_payload):
             else:
                 return ''
 
-        result.append('PID'.ljust(7)+'NAME'.ljust(20)+'STATUS'.ljust(20)+'CMD'.ljust(30))
+        #
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
 
         k=400
        
         
         for i in xrange(1, int(max_pid)):
-
+            result[str(i)] = {}
             #   "progress bar"    
             k -= 1
             if k == 0:
@@ -45,12 +45,14 @@ class list_processes(base_payload):
 
             if status_file:
                 cmd = self.shell.read('/proc/'+str(i)+'/cmdline')
-                if kb.kb:
-                    kb.kb.append(name, [i, name, state, cmd])
+                
+#TODO: VER KNOWDLEDGE BASE
+                #if kb.kb:
+                    #kb.kb.append(str(i), [str(i), name, state, cmd])
                 if not cmd:
                     cmd = '[kernel process]'
                 cmd = cmd.replace('\x00',' ')
-                result.append([i, name, state, cmd])
+                result[str(i)].update({'name':name, 'state':state, 'cmd':cmd})
                 om.out.console('+', newLine=False)
 
         om.out.console('')
@@ -59,11 +61,13 @@ class list_processes(base_payload):
     
     def run_read(self):
         result = self.api_read()
-        for line in result:
-            msg = str(line[0]).ljust(7) + line[1].ljust(20)
-            msg += line[2].ljust(20) + line[3].ljust(30)
-            result.append( msg )
-        om.out.console('')
+        if result:
+            result.append('PID'.ljust(7)+'NAME'.ljust(20)+'STATUS'.ljust(20)+'CMD'.ljust(30))
+            for line in result:
+                msg = str(line[0]).ljust(7) + line[1].ljust(20)
+                msg += line[2].ljust(20) + line[3].ljust(30)
+                result.append( msg )
+            om.out.console('')
         if result == [ ]:
             result.append('Cant list proccesses.')
         return result

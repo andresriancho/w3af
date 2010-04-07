@@ -6,7 +6,8 @@ class route(base_payload):
     This payload shows the IP Routing Table.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['route'] = []
         list = []
 
         def parse_route(net_route):
@@ -32,18 +33,26 @@ class route(base_payload):
             return '.'.join(q)
 
         list = parse_route(self.shell.read('/proc/net/route'))
-        result.append('Iface'.ljust(20)+'Destination'.ljust(20)+'Gateway'.ljust(20)+'Mask'.ljust(20))
         for line in list:
             if len(line) > 7 and 'Iface' not in line:
-                new = line[0][1:].ljust(20)+\
-                str(dec_to_dotted_quad(int(line[1], 16))).ljust(20)+\
-                str(dec_to_dotted_quad(int(line[2], 16))).ljust(20)+\
-                str(dec_to_dotted_quad(int(line[7], 16))).ljust(20)
-                result.append(new)
+                result['route'].append({'Iface':line[0][1:],\
+                                        'Destination':str(dec_to_dotted_quad(int(line[1], 16))), \
+                                        'Gateway':str(dec_to_dotted_quad(int(line[2], 16))), \
+                                        'Mask':str(dec_to_dotted_quad(int(line[7], 16)))})
+ 
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('Iface'.ljust(20)+'Destination'.ljust(20)+'Gateway'.ljust(20)+'Mask'.ljust(20))
+            for hashmaps in hashmap['route']:
+                    new = hashmaps['Iface'].ljust(20)+\
+                    hashmaps['Destination'].ljust(20)+\
+                    hashmaps['Gateway'].ljust(20)+\
+                    hashmaps['Mask'].ljust(20)
+                    result.append(new)
         if result == [ ]:
             result.append('Route information not found.')
         return result
