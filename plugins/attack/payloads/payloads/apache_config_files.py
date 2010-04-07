@@ -8,7 +8,8 @@ class apache_config_files(base_payload):
     This payload finds readable Apache configuration files
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['apache_config'] = []
         files = []
 
         files.append('apache2.conf')
@@ -25,19 +26,33 @@ class apache_config_files(base_payload):
         if apache_dir:
             for dir in apache_dir:
                 for file in files:
-                    if self.shell.read(dir+file) != '':
-                        result.append(dir+file)
+                    content = self.shell.read(dir+file)
+                    if content:
+                         result['apache_config'] .append({dir+file:content})
                         #result.append(file_crawler.get_files(self, self.shell.read(dir+file)))
                 if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                     for profile in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-                        result.append(dir+'sites-available/'+profile.lower())
+                        profile_content = self.shell.read(dir+'sites-available/'+profile.lower())
+                        if profile_content:
+                             result['apache_config'] .append({dir+'sites-available/'+profile.lower():profile_content})
 
-        result = [p for p in result if p != '']
-        result = list(set(result))
+
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for k, v in hashmap.iteritems():
+            k = k.replace('_', ' ')
+            k.title()
+            result.append(k)
+            for file, content in v.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
+        
         if result == []:
             result.append('Apache configuration files not found.')
         return result
