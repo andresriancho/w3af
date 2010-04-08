@@ -39,15 +39,22 @@ def is_payload( function_name ):
     '''
     return function_name in get_payload_list()
     
-def exec_payload(shell_obj, payload_name):
+def exec_payload(shell_obj, payload_name, use_api=False):
     '''
     Now I execute the payload, by providing the shell_obj.
     
     @parameter shell_obj: The shell object instance.
     @parameter payload_name: The name of the payload I want to run.
+    @use_api: Indicates if I need to use the API or not in this run. This is True when
+                    exec_payload is called from base_payload.exec_payload()
     @return: The payload result.
     '''
-    return get_payload_instance(payload_name, shell_obj).run()
+    payload_inst = get_payload_instance(payload_name, shell_obj)
+    if use_api:
+        result = payload_inst.run_api()
+    else:
+        result = payload_inst.run()
+    return result
     
 def runnable_payloads(shell_obj):
     '''

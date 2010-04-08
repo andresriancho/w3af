@@ -54,9 +54,9 @@ class base_payload(object):
         @parameter payload_name: The name of the payload I want to run.
         @return: The payload result.
         '''
-        return payload_handler.exec_payload(self.shell, payload_name)
-        
-    def run(self, *args):
+        return payload_handler.exec_payload(self.shell, payload_name, use_api=True)
+    
+    def run(self,  *args):
         '''
         @return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().
@@ -73,6 +73,25 @@ class base_payload(object):
             return self.run_exec( *args )
         else:
             return self.run_read( *args )
+    
+    def run_api(self, *args):
+        '''
+        @return: The result of running the payload using the most performant way. Basically, if
+        I can run commands using exec() I'll use that, if not I'll use read().
+        '''
+        #   Get the syscalls that this shell_obj implements
+        available_syscalls = dir(self.shell)
+        available_syscalls = [ x for x in available_syscalls if x in SYSCALL_LIST ]
+        
+        #   Get the different implementations of "run" that this payload has
+        run_options = dir(self)
+        run_options = [ x[:4] for x in run_options if x.startswith('api_')]
+
+        if 'exec' in run_options and 'exec' in available_syscalls:
+            return self.api_exec( *args )
+        else:
+            return self.api_read( *args )
+
 
     def require(self):
         '''
