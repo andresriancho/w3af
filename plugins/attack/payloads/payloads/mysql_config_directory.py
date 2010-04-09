@@ -6,7 +6,8 @@ class mysql_config_directory(base_payload):
     This payload finds MySQL configuration directory.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['directory'] = []
         paths = []
 
         def parse_mysql_init( mysql_init ):
@@ -29,20 +30,27 @@ class mysql_config_directory(base_payload):
         paths.append('/opt/local/etc/mysql5/')
         paths.append('/var/lib/mysql/')
 
-        folders = self.exec_payload('users_folders')
+        folders = self.exec_payload('users_name').values()
         for folder in folders:
             paths.append(folder)
 
         for path in paths:
             if check_mysql_config_dir(path):
-                result.append(path)
+                result['directory'].append(path)
 
-        result = list(set(result))
-        result = [p for p in result if p != '']
+        result['directory'] = list(set(result['directory']))
+        result['directory'] = [p for p in result['directory'] if p != '']
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append("MYSQL Config Directory")
+        
+        for directory in hashmap['directory']:
+            result.append(directory)
+        
         if result == [ ]:
             result.append('MySQL configuration directory not found.')
         return result

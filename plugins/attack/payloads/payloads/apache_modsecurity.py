@@ -7,7 +7,8 @@ class apache_modsecurity(base_payload):
     This payload shows ModSecurity version,rules and configuration files.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['files'] = {}
         modules = []
         files = []
 
@@ -31,17 +32,20 @@ class apache_modsecurity(base_payload):
                 return ''
 
         bin_location = []
-        apache_config_files = self.exec_payload('apache_config_files')
-        apache_config_dir = self.exec_payload('apache_config_directory')
-        for file in apache_config_files:
-            if re.search('security2_module', self.shell.read(file)) or re.search('security_module', self.shell.read(file)):
-                bin_location.append(parse_binary_location(self.shell.read(file)))
+        apache_config_files = self.exec_payload('apache_config_files')['apache_config']
+        apache_config_dir = self.exec_payload('apache_config_directory')['apache_directory']
+        if apache_config_files:
+            for file in apache_config_files:
+                if re.search('security2_module', self.shell.read(file)) or re.search('security_module', self.shell.read(file)):
+                    bin_location.append(parse_binary_location(self.shell.read(file)))
                 
         if bin_location == []:
-            for dir in apache_config_dir:
-                for module in modules:
-                    if self.shell.read(dir+module):
-                        bin_location.append(parse_binary_location(self.shell.read(dir+module)))
+            if apache_config_dir:
+                for dir in apache_config_dir:
+                    for module in modules:
+                        dirmodule = self.shell.read(dir+module)
+                        if dirmodule:
+                            bin_location.append(parse_binary_location(dirmodule))
 
         bin=[]
         for location in bin_location:
@@ -51,11 +55,13 @@ class apache_modsecurity(base_payload):
                 bin.append('/usr/local/'+location)
                 bin.append('/usr/lib/'+location)
                 for item in bin:
-                    if self.shell.read(item):
-                        result.append('ModSecurity Version => '+parse_version(self.shell.read(item)))
+                    version_item = parse_version(self.shell.read(item))
+                    if version_item:
+                        result['version'] = version_item
             else:
-                if self.shell.read(location):
-                    result.append('ModSecurity Version => '+parse_version(self.shell.read(location)))
+                version_location = parse_version(self.shell.read(location))
+                if version_location:
+                    result['version'] = version_location
 
 
         files.append(dir+'conf/mod_security.conf')
@@ -67,16 +73,24 @@ class apache_modsecurity(base_payload):
         files.append(dir+'mods-available/mod-security.conf')
 
         for file in files:
-            if self.shell.read(file):
-                result.append('-------------------------')
-                result.append('FILE => '+file)
-                result.append(self.shell.read(file))
+            file_content = self.shell.read(file)
+            if file_content:
+                result['files'].update({file:file_content})
 
-        result = [p for p in result if p != '']
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap['version']:
+            result.append('ModSecurity Version: ' + hashmap['version'])
+            
+        for file, content in hashmap['files'].iteritems():
+            result.append('-------------------------')
+            result.append(file)
+            result.append('-------------------------')
+            result.append(content)
+  
         if result == [ ]:
             result.append('ModSecurity configuration files not found.')
         return result

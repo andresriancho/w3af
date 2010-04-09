@@ -16,7 +16,8 @@ class apache_run_group(base_payload):
             else:
                 return ''
 
-        apache_dir = self.exec_payload('apache_config_directory')
+        apache_dir = self.exec_payload('apache_config_directory')['apache_directory']
+
         if apache_dir:
             for dir in apache_dir:
                 groups.append(parse_group_envvars(self.shell.read(dir+'envvars')))

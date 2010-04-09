@@ -6,7 +6,7 @@ class log_reader(base_payload):
     This payload finds different readable logs on the filesystem.
     '''
     def api_read(self):
-        result = []
+        result = {}
         logs = []
 
         logs.append('/var/log/kern.log')
@@ -56,6 +56,10 @@ class log_reader(base_payload):
         logs.append('/var/log/apache2/error_log')
         logs.append('/var/log/apache2/access_log')
         logs.append('/var/log/apache2/modsec_audit.log')
+        logs.append('/var/log/tomcat6/catalina.out')
+#TODO: APPEND DATE! 
+        logs.append('/var/log/tomcat6/localhost.')
+        logs.append('/var/log/tomcat6/catalina.')
 
 
         for i in xrange(10):
@@ -74,11 +78,6 @@ class log_reader(base_payload):
             logs.append('/var/log/messages.log.'+str(i)+ext)
             logs.append('/var/log/gdm/:0.log.'+str(i))
 
-        def readable(log):
-            if read(log):
-                return True
-            else:
-                return False
 
         def parse_apache_logs(config_file):
             error_log = re.search('(?<=ErrorLog )(.*?)\s', config_file)
@@ -92,20 +91,31 @@ class log_reader(base_payload):
             else:
                 return ''
 
-        config_file = self.exec_payload('apache_config_files')
+        config_file = self.exec_payload('apache_config_files')['apache_config']
         for config in config_file:
             apache_logs = parse_apache_logs(self.shell.read(config))
             for log in apache_logs:
-                result.append(log)
+                content = self.shell.read(log)
+                if content:
+                    result.update({log:content})
 
         for log in logs:
-            result.append(log)
-
-        result = [log for log in logs if readable(log)]
+            content = self.shell.read(log)
+            if content:
+                result.update({log:content})
         return result
 
+
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('Log Files')
+            for file, content in hashmap.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
         if result == [ ]:
             result.append('No logs found.')
         return result

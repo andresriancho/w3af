@@ -2,15 +2,13 @@ import re
 from plugins.attack.payloads.base_payload import base_payload
 
 #TODO:Read TCP and TCP6?
-#TODO:Support UDP
-
 
 class tcp(base_payload):
     '''
     This payload shows TCP socket information
     '''
     def api_read(self):
-        result = []
+        result = {}
         table = []
 
         def parse_tcp(net_tcp):
@@ -49,36 +47,36 @@ class tcp(base_payload):
         table = parse_tcp(self.shell.read('/proc/net/tcp'))
     
         for list in table:
-            new = []
-            list[0]=list[0].ljust(3)
             if list[1] != 'local_address':
                 ip = split_ip(list[1])
                 list[1] = str(dec_to_dotted_quad(int(ip[0], 16)))+':'+str(int(ip[1], 16))
-            list[1] = list[1].ljust(25)
-
+                
             if list[2] != 'rem_address':
                 ip = split_ip(list[2])
                 list[2] = str(dec_to_dotted_quad(int(ip[0] , 16)))+':'+str(int(ip[1], 16))
-            list[2] = list[2].ljust(25)
             
             if list[7] == 'tm->when':
                 list[7] = 'uid'
             
             if list[7] != 'uid':
                 list[7] = get_username(etc, list[7])
-            list[7] = list[7].ljust(10)
-          
-            new.append(list[0])
-            new.append(list[1])
-            new.append(list[2])
-            new.append(list[3])
-            new.append(list[7])
-            new.append(list[11])
-            result.append(str(" ".join(new)))
-            return result
+            
+            if list[0] != 'sl':
+                result[str(list[0].replace(':', ''))] = ({'local_address':list[1], 'rem_address':list[2], 'st':list[3],'uid':list[7], 'inode':list[11]})
+            
+        return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('TCP Socket Information')
+            result.append('sl'.ljust(3)+'local_address'.ljust(25)+'rem_address'.ljust(25)+\
+                          'st'.ljust(4)+'uid'.ljust(13)+'inode'.ljust(20))
+            for k, v in hashmap.iteritems():
+                result.append(k.ljust(3)+v['local_address'].ljust(25)+v['rem_address'].ljust(25)+\
+                              v['st'].ljust(4)+v['uid'].ljust(13)+v['inode'].ljust(20))
+
         if result == [ ]:
             result.append('TCP socket information not found.')
         return result

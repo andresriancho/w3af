@@ -6,7 +6,7 @@ class users_name(base_payload):
     This payload shows users name
     '''
     def api_read(self):
-        result = []
+        result = {}
         users = []
 
         def parse_users_name( etc_passwd ):
@@ -15,15 +15,26 @@ class users_name(base_payload):
                 return user
             else:
                 return ''
+                
+        def parse_users_folders( etc_passwd ):
+            user = re.findall('(?<=/)(.*?)\:', etc_passwd)
+            if user:
+                return user
+            else:
+                return ''
 
         passwd = self.shell.read('/etc/passwd')
         if passwd:
-            for user in parse_users_name(passwd):
-                result.append(str(user))
+            for i in xrange(len(parse_users_folders(passwd))):
+                result[str(parse_users_name(passwd)[i])] ='/'+str(parse_users_folders(passwd)[i])+'/'
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for user, folder in hashmap.iteritems():
+            result.append('User --> Folder')
+            result.append(user+' --> '+folder)
         if result == [ ]:
             result.append('Users name not found.')
         return result

@@ -6,25 +6,31 @@ class read_mail(base_payload):
     This payload shows local mails stored on /var/mail/
     '''
     def api_read(self):
-        result = []
+        result = {}
         directory = []
 
         directory.append('/var/mail/')
         directory.append('/var/spool/mail/')
 
-        users = self.exec_payload('users_name')
+        users = self.exec_payload('users_name').keys()
         for direct in directory:
             for user in users:
-                if self.shell.self.shell.read(direct+user) != '':
-                    result.append('-------------------------')
-                    result.append('FILE => '+file)
-                    result.append(direct+user)
+                content = self.shell.read(direct+user)
+                if content:
+                    result.update({direct+user:content})
 
-        result = [p for p in result if p != '']
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        if hashmap:
+            result.append('Stored Mail')
+            for file, content in hashmap.iteritems():
+                result.append('-------------------------')
+                result.append(file)
+                result.append('-------------------------')
+                result.append(content)
         if result == [ ]:
             result.append('No stored mail found.')
         return result
