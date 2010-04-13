@@ -4,23 +4,38 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class current_user(base_payload):
     '''
-    This payload shows current user on the system.
+    This payload shows current username & folder on the system.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['current'] = {}
 
-        def default_home( self_environ ):
+        def default_user( self_environ ):
             user = re.search('(?<=USER=)(.*?)\\x00', self_environ)
             if user:
                 return user.group(1)
             else:
                 return ''
-
-        result.append(default_home( self.shell.read('/proc/self/environ')) )
+        
+        def default_home( self_environ ):
+            user = re.search('(?<=HOME=)(.*?)\\x00', self_environ)
+            if user:
+                return user.group(1)+'/'
+            else:
+                return ''
+        
+        self_environ = self.shell.read('/proc/self/environ')
+        
+        result['current'] = ({'user':default_user(self_environ), 'home':default_home(self_environ)})
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        for k, v in hashmap.iteritems():
+            result.append(k+': '+v)
+        
         if result == [ ]:
             result.append('Current user not found.')
         return result

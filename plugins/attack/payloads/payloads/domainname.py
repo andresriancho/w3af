@@ -6,16 +6,21 @@ class domainname(base_payload):
     This payload shows server domain name.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        values = []
+        values.append(self.shell.read('/proc/sys/kernel/domainname')[:-1])
 
-        result.append(self.shell.read('/proc/sys/kernel/domainname')[:-1])
-        result = [p for p in result if p != '']
-        if result == [ ]:
-            result.append('Domainname not found.')
+        for v in values:
+            result.update({'Domainname':v})
+
         return result
 
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        for k, v in hashmap.iteritems():
+            result.append(k+': '+v)
+        
         if result == [ ]:
-            result.append('Server domain name not found.')
+            result.append('Domainname not found.')
         return result

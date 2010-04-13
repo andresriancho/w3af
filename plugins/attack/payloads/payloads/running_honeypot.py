@@ -7,7 +7,9 @@ class running_honeypot(base_payload):
     This payload check if the server is a Honeypot or is running one.
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['running_honeypot'] = False
+        result['is_a_honeypot'] = False
 
         files = []
         files.append('/var/log/nepenthes.log')
@@ -29,24 +31,33 @@ class running_honeypot(base_payload):
             else:
                 return ''
         
-        running_honeypot = 'Is NOT running Honeypots'
         for file in files:
             if self.shell.read(file):
-                running_honeypot = 'Is running Honeypots !!'
+                result['running_honeypot'] = True
         
-        is_a_honeypot = 'Is NOT a Honeypot'
+
         if parse_cpu_info(self.shell.read('/proc/cpuinfo')) == 'UML':
-            is_a_honeypot = 'Is a Honeypot !'
+            result['is_a_honeypot']  = True
         devices = self.shell.read('/proc/devices')
         if '60 cow' in devices or '90 ubd' in devices:
-            is_a_honeypot = 'Is a Honeypot !'
+            result['is_a_honeypot'] = True
         if 'nodev\thostfs' in self.shell.read('/proc/filesystems'):
-            is_a_honeypot = 'Is a Honeypot !'
+            result['is_a_honeypot'] = True
         
-        result.append(running_honeypot+'. '+is_a_honeypot)
-
         return result
         
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        if hashmap:
+                if hashmap['running_honeypot']:
+                   result.append('Is running a Honeypot !!')
+                else:
+                    result.append('Is NOT running a Honeypot')
+                if hashmap['is_a_honeypot']:
+                   result.append('Is a Honeypot !!!')
+                else:
+                    result.append('Is NOT a Honeypot.')
+
         return result

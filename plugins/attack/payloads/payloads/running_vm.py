@@ -6,7 +6,8 @@ class running_vm(base_payload):
     This payload check if the Server is running through a VM
     '''
     def api_read(self):
-        result = []
+        result = {}
+        result['running_vm'] = False
         files = []
 
         candidates = []
@@ -48,14 +49,14 @@ class running_vm(base_payload):
             else:
                 return ''
 
-        condition = 'Is not running through a VM'
+
         for candidate in candidates:
             file = self.shell.read('/sys/bus/pci/devices/'+candidate)
             pci_id = parse_pci_id(file)
             pci_subsys_id = parse_subsys_id(file)
             for pci_item in pci_list:
                 if pci_item in pci_id or pci_item in pci_subsys_id:
-                    condition = 'Its running through a VM!'
+                    result['running_vm'] = True
 
         files.append('/var/log/dmesg')
         files.append('/proc/interrupts')
@@ -66,19 +67,23 @@ class running_vm(base_payload):
             file_content = self.shell.read(file)
             if 'vmware' in file_content.lower() or 'qemu' in file_content.lower() \
                 or 'virtualbox' in file_content.lower() or 'bochs' in file_content.lower():
-                condition = 'Is running through a VM !'
+                result['running_vm'] = True
         
-        kernel_modules = self.exec_payload('list_kernel_modules')
-        if 'vmware' in kernel_modules.lower() or 'qemu' in kernel_modules.lower() \
-            or 'virtualbox' in kernel_modules.lower() or 'bochs' in kernel_modules.lower():
-            condition = 'Is running through a VM !'
-        
-        result.append(condition)
-
-        result = [p for p in result if p != '']
+        kernel_modules = self.exec_payload('list_kernel_modules').keys()
+        if 'vmware' in str(kernel_modules).lower() or 'qemu' in str(kernel_modules).lower() \
+            or 'virtualbox' in str(kernel_modules).lower() or 'bochs' in str(kernel_modules).lower():
+            result['running_vm'] = True
         
         return result
     
     def run_read(self):
-        result = self.api_read()
+        hashmap = self.api_read()
+        result = []
+        
+        if hashmap:
+                if hashmap['running_vm']:
+                   result.append('Is running through a VM !!')
+                else:
+                    result.append('Is NOT running through a VM')
+
         return result
