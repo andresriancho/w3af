@@ -41,7 +41,7 @@ class apache_htaccess(base_payload):
         return result
     
     def run_read(self):
-        result_list = self.api_read()
+        hashmap = self.api_read()
         result = []
         
         for k, v in hashmap.iteritems():

@@ -8,6 +8,7 @@ class apache_root_directory(base_payload):
     '''
     def api_read(self):
         result = {}
+        directory = []
 
         def parse_etc_passwd(etc_passwd, user):
             root = re.search('(?<='+user+':/)(.*?)\:', etc_passwd)
@@ -23,14 +24,14 @@ class apache_root_directory(base_payload):
             else:
                 return ''
 
-        users = self.exec_payload('apache_run_user')['apache_run_user'].values()
+        users = self.exec_payload('apache_run_user')['apache_run_user']
         if users:
             passwd = self.shell.read('/etc/passwd')
             for user in users:
-                result.append('/'+parse_etc_passwd(passwd,  user)+'/')
+                directory.append('/'+parse_etc_passwd(passwd,  user)+'/')
         
-        directory = []
-        apache_config_files = self.exec_payload('apache_config_files')['apache_config_files'].values()
+
+        apache_config_files = self.exec_payload('apache_config_files')['apache_config']
         if apache_config_files:
             for file in apache_config_files:
                 file_content = self.shell.read(file)
