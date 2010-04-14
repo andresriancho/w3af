@@ -97,13 +97,6 @@ class sitemapReader(baseDiscoveryPlugin):
         @parameter url: The URL to GET.
         @return: None, everything is saved to self._new_fuzzable_requests.
         '''
-    def _get_and_parse(self, url):
-        '''
-        GET and URL that was found in the robots.txt file, and parse it.
-        
-        @parameter url: The URL to GET.
-        @return: None, everything is saved to self._new_fuzzable_requests.
-        '''
         try:
             http_response = self._urlOpener.GET( url, useCache=True )
         except KeyboardInterrupt, k:
