@@ -18,7 +18,7 @@ class list_kernel_modules(base_payload):
 
         for module in parse_module_name(self.shell.read( '/proc/modules')):
             result[module] = {}
-            result[module].update({'size':module[1], 'used':module[2]})
+            result[module] = {'size':module[1], 'used':module[2]}
         return result
         
     def run_read(self):
