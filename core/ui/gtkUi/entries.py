@@ -379,6 +379,10 @@ class SemiStockButton(gtk.Button):
     '''
     def __init__(self, text, image, tooltip=None):
         super(SemiStockButton,self).__init__(stock=image)
+        # Icons in menus and buttons are not shown by default in GNOME 2.28
+        settings = self.get_settings()
+        settings.set_property('gtk-button-images', True)
+
         align = self.get_children()[0]
         box = align.get_children()[0]
         (self.image, self.label) = box.get_children()
