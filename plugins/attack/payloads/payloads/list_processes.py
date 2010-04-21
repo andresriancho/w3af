@@ -39,7 +39,7 @@ class list_processes(base_payload ):
             if not cmd:
                 cmd = '[kernel process]'
             cmd = cmd.replace('\x00',' ')
-            self.result[str(i)] = {'name':name, 'state':state, 'cmd':cmd}
+            self.result[i] = {'name':name, 'state':state, 'cmd':cmd}
             om.out.console('+', newLine=False)
             #TODO: VER APPEND KNOWDLEDGE BASE
         #if kb.kb:
@@ -49,7 +49,7 @@ class list_processes(base_payload ):
         self.result = {}
         self.k = 400
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
-        #max_pid = 400
+        #max_pid = 400 Uncomment to debug
         for pid in xrange(1, int(max_pid)):
             targs = (pid, )
             tm.startFunction( target=self._thread_read, args=targs, ownerObj=self )

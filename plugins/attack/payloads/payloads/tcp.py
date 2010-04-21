@@ -62,7 +62,7 @@ class tcp(base_payload):
                 list[7] = get_username(etc, list[7])
             
             if list[0] != 'sl':
-                result[str(list[0].replace(':', ''))] = ({'local_address':list[1], 'rem_address':list[2], 'st':list[3],'uid':list[7], 'inode':list[11]})
+                result[int(str(list[0].replace(':', '')))] = ({'local_address':list[1], 'rem_address':list[2], 'st':list[3],'uid':list[7], 'inode':list[11]})
             
         return result
         
@@ -74,7 +74,7 @@ class tcp(base_payload):
             result.append('sl'.ljust(3)+'local_address'.ljust(25)+'rem_address'.ljust(25)+\
                           'st'.ljust(4)+'uid'.ljust(13)+'inode'.ljust(20))
             for k, v in hashmap.iteritems():
-                result.append(k.ljust(3)+v['local_address'].ljust(25)+v['rem_address'].ljust(25)+\
+                result.append(str(k).ljust(3)+v['local_address'].ljust(25)+v['rem_address'].ljust(25)+\
                               v['st'].ljust(4)+v['uid'].ljust(13)+v['inode'].ljust(20))
 
         if result == [ ]:
