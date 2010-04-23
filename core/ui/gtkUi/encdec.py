@@ -21,13 +21,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import gtk, threading, gobject
-from . import entries
-import urllib, base64, sha, md5, random, cgi
-import core.data.parsers.encode_decode as encode_decode
+import gtk
+import threading
+import gobject
 import traceback
+import urllib
+import base64
+import sha
+import md5
+import random
+import cgi
+
+import core.data.parsers.encode_decode as encode_decode
 from core.controllers.w3afException import w3afException
+from . import entries
 
 class SimpleTextView(gtk.TextView):
     '''Simple abstraction of the text view.'''
@@ -41,7 +48,7 @@ class SimpleTextView(gtk.TextView):
         start, end = self.buffer.get_bounds()
         self.buffer.delete(start, end)
 
-    def _my_repr(self, str_in):
+    def _repr(self, str_in):
         '''
         @param str_in: The input parameter to "repr()"
         @return: The repr'ed string
@@ -65,12 +72,11 @@ class SimpleTextView(gtk.TextView):
         '''
         self.clear()
         iterl = self.buffer.get_end_iter()
-        
+
         if use_repr:
-            newtext = self._my_repr(newtext)
+            newtext = self._repr(newtext)
         else:
-            newtext = newtext
-        
+            newtext = str(newtext)
         self.buffer.insert(iterl, unicode(newtext))
 
     def getText(self):
@@ -80,20 +86,6 @@ class SimpleTextView(gtk.TextView):
         '''
         start, end = self.buffer.get_bounds()
         return self.buffer.get_text(start, end)
-#        text = self.buffer.get_text(start, end)
-#        print self.buffer
-#        print type(text)
-#
-#        parts = text.split("\\x")
-#        for i, part in enumerate(parts[1:]):
-#            try:
-#                carac = int(part[:2], 16)
-#            except ValueError:
-#                print "BAD String: %r" % text
-#                return ""
-#            parts[i+1] = chr(carac) + part[2:]
-#        return "".join(parts)
-
 
 class EncodeDecode(entries.RememberingWindow):
     '''Tool to encode and decode strings in different ways.
@@ -106,11 +98,9 @@ class EncodeDecode(entries.RememberingWindow):
             "Encode_and_Decode")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
-
-        # splitted panes
+        # Splitted panes
         vpan = entries.RememberingVPaned(w3af, "pane-encodedecode")
-
-        # upper pane
+        # Upper pane
         vbox = gtk.VBox()
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -118,8 +108,7 @@ class EncodeDecode(entries.RememberingWindow):
         self.paneup = SimpleTextView()
         sw.add(self.paneup)
         vbox.pack_start(sw, True, True, padding=5)
-
-        # middle buttons, left
+        # Middle buttons, left
         hbox = gtk.HBox()
         cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_enc:
@@ -130,8 +119,7 @@ class EncodeDecode(entries.RememberingWindow):
         b = entries.SemiStockButton("Encode", gtk.STOCK_GO_DOWN, _("Encode the upper text"))
         b.connect("clicked", self._encode, cb)
         hbox.pack_start(b, False, False)
-
-        # middle buttons, rigth
+        # Middle buttons, rigth
         cb = gtk.combo_box_new_text()
         for (lab, fnc) in _butNameFunc_dec:
             cb.append_text(lab)
@@ -143,8 +131,7 @@ class EncodeDecode(entries.RememberingWindow):
         hbox.pack_end(cb, False, False)
         vbox.pack_start(hbox, False, False, padding=5)
         vpan.pack1(vbox)
-
-        # lower pane
+        # Lower pane
         sw = gtk.ScrolledWindow()
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -164,14 +151,13 @@ class EncodeDecode(entries.RememberingWindow):
         '''
         # clear the output text, this will introduce a small blink
         out.setText(u"")
-
         # go busy
-        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(), gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
+                gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
         while gtk.events_pending():
             gtk.main_iteration()
-
         # threading game
         event = threading.Event()
         txt = inp.getText()
@@ -205,7 +191,7 @@ class EncodeDecode(entries.RememberingWindow):
         '''Decodes the lower text.'''
         opc = combo.get_active()
         func = _butNameFunc_dec[opc][1]
-        self._proc(self.panedn, self.paneup, func, use_repr=True)
+        self._proc(self.panedn, self.paneup, func)
         
 
 class ThreadedProc(threading.Thread):
