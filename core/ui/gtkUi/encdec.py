@@ -304,7 +304,6 @@ def html_unescape(t):
     '<script>'
     >>> 
     '''
-    print encode_decode.htmldecode(t)
     return encode_decode.htmldecode(t)
 
 def double_urlencode(t):
