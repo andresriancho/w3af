@@ -59,7 +59,6 @@ class list_processes(base_payload ):
     def run_read(self):
         hashmap= self.api_read()
         hashmap_keys = sorted(hashmap)
-        print hashmap
         result = []
         
         if hashmap:
