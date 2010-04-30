@@ -30,11 +30,10 @@ import base64
 import sha
 import md5
 import random
-import cgi
 
 import core.data.parsers.encode_decode as encode_decode
 from core.controllers.w3afException import w3afException
-from . import entries
+from core.ui.gtkUi import entries
 
 class SimpleTextView(gtk.TextView):
     '''Simple abstraction of the text view.'''
@@ -289,13 +288,21 @@ def urldecode(t):
     return urllib.unquote(t)
 
 def html_escape(t):
-    '''Encoder doing HTML escaping.
+    """Convert special HTML characters ('&', '<', '>', '"', "'") in string to HTML-safe sequences.
 
-    >>> cgi.escape('<script>')
-    '&lt;script&gt;'
+    >>> html_escape('<>"\'&')
+    '&lt;&gt;&quot;&#039;&amp;'
     >>> 
-    '''
-    return cgi.escape(t)
+    """
+    html_escape_table = {
+            "&": "&amp;",
+            '"': "&quot;",
+            "'": "&#039;",
+            ">": "&gt;",
+            "<": "&lt;",
+            }
+
+    return "".join(html_escape_table.get(c,c) for c in t)
 
 def html_unescape(t):
     '''Decoder doing HTML unescaping.
