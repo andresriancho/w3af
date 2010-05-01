@@ -500,7 +500,7 @@ def mssql_encode(t):
 
 _butNameFunc_enc = [
     (_("URL Encode"),                   urlencode),
-    (_("HTML Escape"),  		        html_escape),
+    (_("HTML Special Chars Escape"),    html_escape),
     (_("Double URL Encode"),            double_urlencode),
     (_("Base64 Encode"),                b64encode), 
     (_("SHA1 Hash"),                    sha_encode),
