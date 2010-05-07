@@ -237,6 +237,8 @@ class fileReaderShell(shell):
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    self._detected_file_not_found = False
+    self.application_file_not_found_error = None
 
     def help( self, command ):
         '''
@@ -302,6 +304,26 @@ class fileReaderShell(shell):
             self.help( command )
             return ''
     
+    def _init_read(self):
+        '''
+        This method requires a non existing file, in order to save the error message and prevent it
+        to leak as the content of a file to the uper layers.
+        
+        Example:
+            - Application behaviour:
+                1- (request) http://host.tld/read.php?file=/etc/passwd
+                1- (response) "root:x:0:0:root:/root:/bin/bash..."
+                
+                2- (request) http://host.tld/read.php?file=/tmp/do_not_exist
+                2- (response) "...The file doesn't exist, please try again...'"
+                
+            - Before implementing this check, the read method returned "The file doesn't exist, please try again"
+            as if it was the content of the "/tmp/do_not_exist" file.
+            
+            - Now, we handle that case and return an empty string.
+        '''
+        self.application_file_not_found_error = self.read('not_exist0.txt')
+    
     @read_debug
     def read( self, filename ):
         '''
@@ -309,6 +331,10 @@ class fileReaderShell(shell):
 
         @return: The file content.
         '''
+        if not self._detected_file_not_found:
+            self._detected_file_not_found = True
+            self._init_read()
+            
         # TODO: Review this hack
         filename = '../' * 15 + filename
 
@@ -338,6 +364,9 @@ class fileReaderShell(shell):
                 filtered = READ_DIRECTORY
             elif result.count('</a>]: failed to open stream:'):
                 filtered = FAILED_STREAM
+                
+        elif self.application_file_not_found_error != None and result.count( self.application_file_not_found_error ):
+            filtered = NO_SUCH_FILE
 
         #
         #   I want this function to return an empty string on errors. Not the error itself.
