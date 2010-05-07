@@ -23,7 +23,7 @@ class hosts(base_payload):
         hashmap = self.api_read()
         result = []
         if hashmap:
-            result.append('SSH Config Files')
+            result.append('Hosts Config Files')
             for file, content in hashmap.iteritems():
                 result.append('-------------------------')
                 result.append(file)

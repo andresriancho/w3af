@@ -36,7 +36,8 @@ class apache_modsecurity(base_payload):
         apache_config_dir = self.exec_payload('apache_config_directory')['apache_directory']
         if apache_config_files:
             for file in apache_config_files:
-                if re.search('security2_module', self.shell.read(file)) or re.search('security_module', self.shell.read(file)):
+                file_content =  self.shell.read(file)
+                if 'security2_module' in file_content or 'security_module' in file_content:
                     bin_location.append(parse_binary_location(self.shell.read(file)))
                 
         if bin_location == []:

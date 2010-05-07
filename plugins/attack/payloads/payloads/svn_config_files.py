@@ -42,21 +42,21 @@ class svn_config_files(base_payload):
                 for file_parsed in parent_path:
                     parent_path_content = self.shell.read(file_parsed)
                     if parent_path_content:
-                        self.result.update(file_parsed, parent_path_content)
+                        self.result.update({file_parsed:parent_path_content})
                     
             path = parse_path(file_content)
             if path:
                 for file_parsed in path:
                     path_content = self.shell.read(file_parsed)
                     if path_content:
-                        self.result.update(file_parsed, path_content)
+                        self.result.update({file_parsed:path_content})
                     
             auth = parse_auth_files(file_content)
             if auth:
                 for file_parsed in auth:
                     auth_content = self.shell.read(file_parsed)
                     if auth_content:
-                        self.result.update(file_parsed, auth_content)
+                        self.result.update({file_parsed:auth_content})
             if not only_parse:
                 self.result.update({file:file_content})
 

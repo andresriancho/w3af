@@ -44,6 +44,8 @@ class config_files(base_payload):
         config_files.append('/etc/mailname')
         config_files.append('/etc/aliases')
         config_files.append('/etc/pam.conf')
+        #TODO PUT IN APACHE
+        config_files.append('/etc/libapache2-mod-jk/workers.properties')
 
         for file in config_files:
             content = self.shell.read(file)

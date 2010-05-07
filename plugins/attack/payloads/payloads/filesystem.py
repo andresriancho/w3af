@@ -19,6 +19,22 @@ class filesystem(base_payload):
             if content:
                 result.update({file:content})
         return result
+    
+    def api_win_read(self):
+        result = {}
+        def parse_win_sysdrive(iis6_log):
+            sysdrive = re.findall('(?<=m_csSysDrive=)(.*)', iis6log, re.MULTILINE)
+            if sysdrive:
+                sysdrive = list(set(sysdrive))
+                return sysdrive
+            else:
+                return []
+        
+        iis6log = self.shell_read('/windows/iis6.log')
+        if iis6log:
+            result.update({'SysDrive':parse_win_sysdrive(iis6log)})
+        
+        return result
 
     def run_read(self):
         hashmap = self.api_read()

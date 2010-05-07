@@ -3,6 +3,8 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from plugins.attack.payloads.base_payload import base_payload
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
+#TODO: Not working?
+
 
 class list_processes(base_payload ):
     '''
@@ -56,6 +58,17 @@ class list_processes(base_payload ):
         tm.join( self )
         return self.result
     
+    def api_win_read(self):
+        self.result = {}
+        def parse_iis6_log(iis6_log):
+            processes = re.findall('(?<=OC_ABOUT_TO_COMMIT_QUEUE:[)(.*)', iis6_log, re.MULTILINE)
+            for proccess in processes:
+                proccess.split('] ')
+                self.result.update({process[0]:process[1]})
+        
+        parse_iis6_log(self.shell_read('/windows/iis6.log'))
+        return self.result
+        
     def run_read(self):
         hashmap= self.api_read()
         hashmap_keys = sorted(hashmap)

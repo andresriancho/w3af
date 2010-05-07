@@ -33,7 +33,7 @@ class current_user(base_payload):
         hashmap = self.api_read()
         result = []
         
-        for k, v in hashmap.iteritems():
+        for k, v in hashmap['current'].iteritems():
             result.append(k+': '+v)
         
         if result == [ ]:

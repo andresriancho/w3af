@@ -32,8 +32,9 @@ class users_name(base_payload):
     def run_read(self):
         hashmap = self.api_read()
         result = []
-        for user, folder in hashmap.iteritems():
+        if result:
             result.append('User --> Folder')
+        for user, folder in hashmap.iteritems():
             result.append(user+' --> '+folder)
         if result == [ ]:
             result.append('Users name not found.')
