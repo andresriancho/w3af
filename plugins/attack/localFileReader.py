@@ -237,8 +237,8 @@ class fileReaderShell(shell):
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    self._detected_file_not_found = False
-    self.application_file_not_found_error = None
+    _detected_file_not_found = False
+    _application_file_not_found_error = None
 
     def help( self, command ):
         '''
@@ -322,7 +322,7 @@ class fileReaderShell(shell):
             
             - Now, we handle that case and return an empty string.
         '''
-        self.application_file_not_found_error = self.read('not_exist0.txt')
+        self._application_file_not_found_error = self.read('not_exist0.txt')
     
     @read_debug
     def read( self, filename ):
@@ -365,7 +365,7 @@ class fileReaderShell(shell):
             elif result.count('</a>]: failed to open stream:'):
                 filtered = FAILED_STREAM
                 
-        elif self.application_file_not_found_error != None and result.count( self.application_file_not_found_error ):
+        elif self._application_file_not_found_error != None and result.count( self._application_file_not_found_error ):
             filtered = NO_SUCH_FILE
 
         #
