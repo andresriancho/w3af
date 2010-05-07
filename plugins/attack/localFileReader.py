@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.misc.levenshtein import relative_distance
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -347,9 +348,11 @@ class fileReaderShell(shell):
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
-            return self._filter_errors( self._cut( response.getBody() ) )
+            cutted_response = self._cut( response.getBody() )
+            filtered_response = self._filter_errors( cutted_response, filename )
+            return filtered_response
                 
-    def _filter_errors( self, result ):
+    def _filter_errors( self, result,  filename ):
         '''
         Filter out ugly php errors and print a simple "Permission denied" or "File not found"
         '''
@@ -365,8 +368,18 @@ class fileReaderShell(shell):
             elif result.count('</a>]: failed to open stream:'):
                 filtered = FAILED_STREAM
                 
-        elif self._application_file_not_found_error != None and result.count( self._application_file_not_found_error ):
-            filtered = NO_SUCH_FILE
+        elif self._application_file_not_found_error != None:
+            #   The application file not found error string that I have has the "not_exist0.txt"
+            #   string in it, so I'm going to remove that string from it.
+            app_error = self._application_file_not_found_error.replace("not_exist0.txt",  '')
+            
+            #   The result string has the file I requested inside, so I'm going to remove it.
+            trimmed_result = result.replace( filename,  '')
+            
+            #   Now I compare both strings, if they are VERY similar, then filename is a non 
+            #   existing file.
+            if relative_distance( app_error,  trimmed_result ) > 0.9:
+                filtered = NO_SUCH_FILE
 
         #
         #   I want this function to return an empty string on errors. Not the error itself.
