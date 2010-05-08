@@ -19,10 +19,65 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import urlparse as _uparse
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afException
 
+def urlbuild(scheme, domain, path='/', params=None, qs=None, fragment=None):
+    '''
+    Build URL from fragments
+    '''
+    res = scheme + '://' + domain + path
+    if params:
+        res += ';' + params
+    if qs:
+        res += '?' + qs
+    if fragment:
+        res += '#' + fragment
+    return res
+
+def checkVersionSintax(version):
+    '''
+    @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
+    '''
+    supportedVersions = ['1.0', '1.1']
+    splittedVersion = version.split('/')
+
+    if len(splittedVersion) != 2:
+        msg = 'The HTTP request has an invalid version token: "' + version +'"'
+        raise w3afException(msg)
+    elif len(splittedVersion) == 2:
+        if splittedVersion[0].lower() != 'http':
+            msg = 'The HTTP request has an invalid HTTP token in the version specification: "'
+            msg += version + '"'
+            raise w3afException(msg)
+        if splittedVersion[1] not in supportedVersions:
+            raise w3afException('HTTP request version "' + version + '" is unsupported')
+    return True
+
+def checkURISintax(uri, host=None):
+    '''
+    @return: True if the sintax of the URI section of HTTP is valid; else raise an exception.
+    '''
+    res = uri
+    supportedSchemes = ['http', 'https']
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse(uri)
+
+    if not scheme:
+        scheme = 'http'
+    if not domain:
+        domain = host
+    if not path:
+        path = '/'
+
+    if scheme not in supportedSchemes or not domain:
+        msg = 'You have to specify the complete URI, including the protocol and the host.'
+        msg += ' Invalid URI: ' + uri
+        raise w3afException(msg)
+
+    res = urlbuild(scheme, domain, path, params, qs, fragment)
+    return res
 
 def httpRequestParser(head, postdata):
     '''
@@ -34,74 +89,26 @@ def httpRequestParser(head, postdata):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def checkVersionSintax( version ):
-        '''
-        @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
-        '''
-        splittedVersion = version.split('/')
-        if len(splittedVersion) != 2:
-            # Invalid!
-            msg = 'The HTTP request has an invalid version token: "' + version +'"'
-            raise w3afException( msg )
-        elif len(splittedVersion) == 2:
-            if splittedVersion[0].lower() != 'http':
-                msg = 'The HTTP request has an invalid HTTP token in the version specification: "'
-                msg += version + '"'
-                raise w3afException( msg )
-            if splittedVersion[1] not in ['1.0', '1.1']:
-                raise w3afException('HTTP request version "' + version + '" is unsupported')
-        return True
-    
-    def checkURISintax( uri ):
-        '''
-        @return: True if the sintax of the URI section of HTTP is valid; else raise an exception.
-        '''
-        if uri.startswith('http://') and len(uri) != len('http://'):
-            return True
-        elif uri.startswith('https://') and len(uri) != len('https://'):
-            return True
-        else:
-            msg = 'You have to specify the complete URI, including the protocol and the host.'
-            msg += ' Invalid URI: ' + uri
-            raise w3afException( msg )
-    
-    # parse the request head
+    # Parse the request head
     splittedHead = head.split('\n')
-    splittedHead = [ h.strip() for h in splittedHead if h ]
-    
+    splittedHead = [h.strip() for h in splittedHead if h]
     # Get method, uri, version
     metUriVer = splittedHead[0]
     firstLine = metUriVer.split(' ')
     if len(firstLine) == 3:
-        # Ok, we have something like "GET / HTTP/1.0"
-        # Or something like "GET /hello+world.html HTTP/1.0"
-        # This is the best case for us!
+        # Ok, we have something like "GET /foo HTTP/1.0". This is the best case for us!
         method, uri, version = firstLine
-        checkURISintax(uri)
-        checkVersionSintax(version)
     elif len(firstLine) < 3:
-        # Invalid!
         msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
         msg += metUriVer +'".'
-        raise w3afException( msg )
+        raise w3afException(msg)
     elif len(firstLine) > 3:
-        # This is mostly because the user sent something like this:
         # GET /hello world.html HTTP/1.0
-        # Note that the correct sintax is:
-        # GET /hello+world.html HTTP/1.0
-        # or
-        # GET /hello%20world.html HTTP/1.0
         # Mostly because we are permissive... we are going to try to send the request...
         method = firstLine[0]
         version = firstLine[-1]
-        checkVersionSintax(version)
-        
-        # If we get here, it means that we may send the request after all...
-        # FIXME: Should I encode here?
-        # FIXME: Should the uri be http://host + uri ?
         uri = ' '.join( firstLine[1:-1] )
-        checkURISintax(uri)
-        
+    checkVersionSintax(version)
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
     headers = splittedHead[1:]
@@ -109,12 +116,16 @@ def httpRequestParser(head, postdata):
     for header in headers:
         oneSplittedHeader = header.split(':')
         if len(oneSplittedHeader) == 2:
-            headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
+            headersDict[oneSplittedHeader[0].strip()] = oneSplittedHeader[1].strip()
         elif len(oneSplittedHeader) == 1:
             raise w3afException('The HTTP request has an invalid header: "' + header + '"')
         elif len(oneSplittedHeader) > 2:
             headerValue = ' '.join(oneSplittedHeader[1:]).strip()
-            headersDict[ oneSplittedHeader[0].strip() ] = headerValue
-    
-    fuzzReq = createFuzzableRequestRaw(method, uri, postdata, headersDict )
+            headersDict[oneSplittedHeader[0].strip()] = headerValue
+    host = ''
+    for headerName in headersDict:
+        if headerName.lower() == 'host':
+            host = headersDict[headerName]
+    uri = checkURISintax(uri, host)
+    fuzzReq = createFuzzableRequestRaw(method, uri, postdata, headersDict)
     return fuzzReq
