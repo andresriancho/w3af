@@ -19,32 +19,28 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.parsers.dpCache as dpCache
-
-import core.data.parsers.urlParser as urlParser
-import core.data.parsers.wsdlParser as wsdlParser
-
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-import core.data.request.httpQsRequest as httpQsRequest
-import core.data.request.wsPostDataRequest as wsPostDataRequest
-import core.data.request.jsonPostDataRequest as jsonPostDataRequest
-import core.data.request.xmlrpcRequest as xmlrpcRequest
-
-from core.data.dc.cookie import cookie as cookie
-
+from StringIO import StringIO
 # used to parse multipart posts
 import cgi
-
 # for json
 try:
     from extlib.jsonpy import json as json
 except:
     import json
 
+import core.data.parsers.dpCache as dpCache
+import core.data.parsers.urlParser as urlParser
+import core.data.parsers.wsdlParser as wsdlParser
+import core.data.request.httpPostDataRequest as httpPostDataRequest
+import core.data.request.httpQsRequest as httpQsRequest
+import core.data.request.wsPostDataRequest as wsPostDataRequest
+import core.data.request.jsonPostDataRequest as jsonPostDataRequest
+import core.data.request.xmlrpcRequest as xmlrpcRequest
+from core.data.dc.cookie import cookie as cookie
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-
+from core.data.dc.queryString import queryString
 
 def createFuzzableRequests( httpResponse, request=None, add_self=True ):
     '''
@@ -142,7 +138,7 @@ def createFuzzableRequests( httpResponse, request=None, add_self=True ):
                 res.append(r)
     return res
 
-def createFuzzableRequestRaw( method, url, postData, headers ):
+def createFuzzableRequestRaw(method, url, postData, headers):
     '''
     Creates a fuzzable request based on a query sent FROM the browser. This is used in
     plugins like spiderMan.
@@ -152,101 +148,97 @@ def createFuzzableRequestRaw( method, url, postData, headers ):
     @parameter postData: A string that represents the postdata, if its a GET request, set to None.
     @parameter headers: A dict that holds the headers
     '''
-    if not (postData and len( postData )):
-        #
-        # Just a query string request ! no postdata
-        #
+    #
+    # Just a query string request ! no postdata
+    #
+    if not postData:
         qsr = httpQsRequest.httpQsRequest()
-        qsr.setURL( url )
-        qsr.setMethod( method )
-        qsr.setHeaders( headers )
-        dc = urlParser.getQueryString( url )
-        qsr.setDc( dc )
+        qsr.setURL(url)
+        qsr.setMethod(method)
+        qsr.setHeaders(headers)
+        dc = urlParser.getQueryString(url)
+        qsr.setDc(dc)
         return qsr
-        
+    #
+    # Seems to be something that has post data
+    #
+    pdr = httpPostDataRequest.httpPostDataRequest()
+    pdr.setURL(url)
+    pdr.setMethod(method)
+    for header_name in headers.keys():
+        if header_name.lower() == 'content-length':
+            del headers[header_name]
+    pdr.setHeaders(headers)
+    #
+    #   Parse the content
+    #   Case #1, multipart form data
+    #
+    if 'content-type' in headers.keys() and headers['content-type'].startswith('multipart/form-data'):
+        tmp, pdict = cgi.parse_header(headers['content-type'])
+        try:
+            dc = cgi.parse_multipart(StringIO(postData), pdict)
+        except:
+            om.out.debug('Multipart form data is invalid, the browser sent something wierd.')
+        else:
+            resultDc = queryString()
+            for i in dc.keys():
+                resultDc[i] = dc[i]
+            # We process multipart requests as x-www-form-urlencoded
+            # TODO We need native support of multipart requests!
+            headers['content-type'] = 'application/x-www-form-urlencoded'
+            pdr.setDc(resultDc)
+            pdr.setHeaders(headers)
+            return pdr
+    #
+    #   Case #2, JSON request
+    #
+    try:
+        dc = json.read(postData)
+    except:
+        pass
     else:
-        #
-        # Seems to be something that has post data
-        #
-        pdr = httpPostDataRequest.httpPostDataRequest()
-        pdr.setURL( url )
-        pdr.setMethod( method )
+        # It's json! welcome to the party dude!
+        pdr = jsonPostDataRequest.jsonPostDataRequest()
+        pdr.setURL(url)
+        pdr.setMethod(method)
+        pdr.setHeaders(headers)
+        pdr.setDc(dc)
+        return pdr
+    #
+    #   Case #3, XMLRPC request
+    #
+    postDataLower = postData.lower()
+    stopWords = [
+            '<methodcall>',
+            '<methodname>',
+            '<params>',
+            '</methodcall>',
+            '</methodname>',
+            '</params>'
+            ]
+    allStopWords = True
+    for word in stopWords:
+        if word not in postDataLower:
+            allStopWords = False
+    if allStopWords:
+        xmlrpc_request = xmlrpcRequest.xmlrpcRequest(postData)
+        xmlrpc_request.setURL( url )
+        xmlrpc_request.setMethod( method )
+        xmlrpc_request.setHeaders( headers )
+        return xmlrpc_request
+    #
+    #   Case #4, the "default".
+    #
+    # NOT a JSON or XMLRPC request!, let's try the simple url encoded post data...
+    #
+    try:
+        dc = urlParser.getQueryString( 'http://w3af/?' + postData )
+        pdr.setDc( dc )
+    except:
+        om.out.debug('Failed to create a data container that can store this data: "' + postData + '".')
+    else:
+        return pdr
 
-        for header_name in headers.keys():
-            if header_name.lower() == 'content-length':
-                del headers[header_name]
-
-        pdr.setHeaders( headers )
-        
-        #
-        #   Parse the content
-        #
-        
-        #
-        #   Case #1, multipart form data
-        #
-        if 'content-Type' in headers.keys() and headers['content-Type'] == 'multipart/form-data':
-            try:
-                dc = cgi.parse_multipart( postData, headers )
-            except:
-                om.out.debug('Multipart form data is invalid, the browser sent something wierd.')
-            else:
-                for i in dc.keys():
-                    dc = dc[ i ][0]
-                pdr.setDc( dc )
-                return pdr
-                
-        #
-        #   Case #2, JSON request
-        #
-        try:
-            dc = json.read( postData )
-        except:
-            pass
-        else:
-            # It's json! welcome to the party dude!
-            pdr = jsonPostDataRequest.jsonPostDataRequest()
-            pdr.setURL( url )
-            pdr.setMethod( method )
-            pdr.setHeaders( headers )
-            pdr.setDc( dc )
-            return pdr
-
-        #
-        #   Case #3, XMLRPC request
-        #
-        postData_lower = postData.lower()
-        if '<methodcall>' in postData_lower and\
-        '<methodname>' in postData_lower and\
-        '<params>' in postData_lower and\
-        '</methodcall>' in postData_lower and\
-        '</methodname>' in postData_lower and\
-        '</params>' in postData_lower:
-            #
-            #   XMLRPC!
-            #
-            xmlrpc_request = xmlrpcRequest.xmlrpcRequest(postData)
-            xmlrpc_request.setURL( url )
-            xmlrpc_request.setMethod( method )
-            xmlrpc_request.setHeaders( headers )
-            return xmlrpc_request
-
-        #
-        #   Case #4, the "default".
-        #
-        #
-        # NOT a JSON or XMLRPC request!, let's try the simple url encoded post data...
-        #
-        try:
-            dc = urlParser.getQueryString( 'http://w3af/?' + postData )
-            pdr.setDc( dc )
-        except:
-            om.out.debug('Failed to create a data container that can store this data: "' + postData + '".')
-        else:
-            return pdr
-        
-    
-    
 def _createCookie( httpResponse ):
     '''
     Create a cookie object based on a HTTP response.
