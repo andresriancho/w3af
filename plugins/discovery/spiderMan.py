@@ -76,7 +76,7 @@ class spiderMan(baseDiscoveryPlugin):
         
         om.out.information( str(freq) )
 
-    def ext_fuzzable_requests(self, response):                 
+    def ext_fuzzable_requests(self, response):
         self._fuzzableRequests.extend(self._createFuzzableRequests(response))
 
     def stopProxy(self):
@@ -201,19 +201,14 @@ class proxyHandler(w3afProxyHandler):
             self._sendEnd()
             self._spiderMan.stopProxy()
         else:
-
-            postData = self._getPostData()
-            headers = self._getHeadersDict()
             om.out.debug("[spiderMan] Handling request: " + self.command + ' ' + self.path)
-            
             #   Send this information to the plugin so it can send it to the core
             freq = self._createFuzzableRequest()
             self._spiderMan.append_fuzzable_request( freq )
             
+            grep = False
             if urlParser.getDomain( self.path ) == self.server.w3afLayer.targetDomain:
                 grep = True
-            else:
-                grep = False
                 
             try:
                 response = self._sendToServer(grep=grep)
@@ -229,40 +224,10 @@ class proxyHandler(w3afProxyHandler):
                         msg += str(response.getHeaders()[h]) + '".\nw3af will use it during the'
                         msg += ' rest of the process in order to maintain the session.'
                         om.out.information( msg )
-                        
                 self._sendToBrowser(response)
-                
             return self._spiderMan._fuzzableRequests
 
     do_GET = do_POST = do_HEAD = doAll
-
-
-    def _getHeadersDict(self):
-        '''
-        @return: Request headers as dictionary
-        '''
-        headers = {}
-        for header in self.headers.keys():
-            headers[header] = self.headers.getheader(header)
-
-        return headers
-
-    def _getPostData(self):
-        '''
-        @return: Post data preserving rfile
-        '''
-        postData = ''
-        try:
-            length = int(self.headers.getheader('content-length'))
-        except:
-            pass
-        else:
-            # rfile is not seekable, so a little trick
-            postData = self.rfile.read(length)
-            rfile = cStringIO.StringIO(postData)
-            self.rfile = rfile
-        
-        return postData
 
     def _sendEnd( self ):
         '''
