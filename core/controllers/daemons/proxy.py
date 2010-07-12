@@ -20,24 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import cStringIO
+import traceback
+import time
+import socket
+import select
+import httplib
+import SocketServer
+from OpenSSL import SSL
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
-
 from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import uri2url, getQueryString
-
 from core.data.request.fuzzableRequest import fuzzableRequest
-
-from OpenSSL import SSL
-
-import traceback
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer 
-
-import time
-import socket, select
-import httplib
 
 class proxy(w3afThread):
     '''
@@ -205,6 +203,21 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             ### FIXME: Maybe I should perform some more detailed error handling...
             om.out.debug('An exception ocurred in w3afProxyHandler.handle_one_request() :' + str(e) )
 
+    def _getPostData(self):
+        '''
+        @return: Post data preserving rfile
+        '''
+        postData = None
+        if self.headers.dict.has_key('content-length'):
+            cl = int(self.headers['content-length'])
+            postData = self.rfile.read(cl)
+            # rfile is not seekable, so a little trick
+            if not hasattr(self.rfile, 'reset'):
+                rfile = cStringIO.StringIO(postData)
+                self.rfile = rfile
+            self.rfile.reset()
+        return postData
+
     def _createFuzzableRequest(self):
         '''
         Based on the attributes, return a fuzzable request object.
@@ -225,16 +238,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         fuzzReq.setURI(path)
         fuzzReq.setHeaders(self.headers.dict)
         fuzzReq.setMethod(self.command)
-
-        # get the postdata (if any)
-        if self.headers.dict.has_key('content-length'):
-            # most likely a POST request
-            cl = int( self.headers['content-length'] )
-            postData = self.rfile.read( cl )
+        postData = self._getPostData()
+        if postData:
             fuzzReq.setData(postData)
-
         return fuzzReq
-        
+
     def doAll( self ):
         '''
         This method handles EVERY request that were send by the browser.
@@ -274,8 +282,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         # Do the request to the remote server
         if self.headers.dict.has_key('content-length'):
             # most likely a POST request
-            cl = int( self.headers['content-length'] )
-            postData = self.rfile.read( cl )
+            postData = self._getPostData()
+
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
                 res = httpCommandMethod( path, data=postData, headers=self.headers )
