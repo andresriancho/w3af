@@ -34,7 +34,6 @@ import core.controllers.outputManager as om
 ui_proxy_menu = """
 <ui>
   <toolbar name="Toolbar">
-    <toolitem action="Active"/>
     <toolitem action="TrapReq"/>
     <separator name="sep1"/>
     <toolitem action="Drop"/>
@@ -68,7 +67,6 @@ class ProxiedRequests(entries.RememberingWindow):
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
         self.def_padding = 5
-
         # Toolbar elements
         self._uimanager = gtk.UIManager()
         accelgroup = self._uimanager.get_accel_group()
@@ -82,22 +80,18 @@ class ProxiedRequests(entries.RememberingWindow):
         ])
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('Active', gtk.STOCK_EXECUTE,  _('_Activate'), None, _('Activate/Deactivate the Proxy'),
-                self._toggle_active, True),
             ('TrapReq', gtk.STOCK_JUMP_TO, _('_Trap Requests'), None, _('Trap the requests or not'),
                 self._toggle_trap, False),
         ])
-
         # Finish the toolbar
         self._uimanager.insert_action_group(actiongroup, 0)
         self._uimanager.add_ui_from_string(ui_proxy_menu)
         toolbar = self._uimanager.get_widget('/Toolbar')
-        self.bt_drop = toolbar.get_nth_item(3)
-        self.bt_send = toolbar.get_nth_item(4)
-        self.bt_next = toolbar.get_nth_item(5)
+        self.bt_drop = toolbar.get_nth_item(2)
+        self.bt_send = toolbar.get_nth_item(3)
+        self.bt_next = toolbar.get_nth_item(4)
         self.bt_next.set_sensitive(False)
-        separat = toolbar.get_nth_item(6)
-        #assert toolbar.get_n_items() == 4
+        separat = toolbar.get_nth_item(5)
         separat.set_draw(False)
         separat.set_expand(True)
         self.vbox.pack_start(toolbar, False)
@@ -108,7 +102,6 @@ class ProxiedRequests(entries.RememberingWindow):
                 [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
                 editableRequest=True)
         self.reqresp.set_sensitive(False)
-
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)
         vbox.show()
@@ -178,9 +171,9 @@ class ProxiedRequests(entries.RememberingWindow):
         # buttons and config panel
         buttonsArea = gtk.HBox()
         buttonsArea.show()
-        saveBtn = gtk.Button(_("Save configuration"))
+        saveBtn = gtk.Button(_("_Apply"))
         saveBtn.show()
-        rvrtBtn = gtk.Button(_("Revert to previous configuration"))
+        rvrtBtn = gtk.Button(_("_Reset"))
         buttonsArea.pack_start(rvrtBtn, False, False, padding=self.def_padding)
         buttonsArea.pack_start(saveBtn, False, False, padding=self.def_padding)
         rvrtBtn.show()
@@ -199,7 +192,13 @@ class ProxiedRequests(entries.RememberingWindow):
         self.like_initial = like_initial
 
     def reloadOptions(self):
-        """Shutdown/Restart if needed."""
+        """Reload options.
+        1. Stop proxy
+        2. Try to start proxy with new params
+        3. If can't => alert
+        4. If everything is ok then start proxy
+        5. Set Trap options
+        """
         new_ipport = self.proxyoptions.ipport.getValue()
         if new_ipport != self._previous_ipport:
             self.w3af.mainwin.sb(_("Stopping local proxy"))
@@ -210,21 +209,21 @@ class ProxiedRequests(entries.RememberingWindow):
             except w3afProxyException:
                 self.w3af.mainwin.sb(_("Failed to start local proxy"))
                 return
-        # rest of config
+        # Test of config
         try:
             self.proxy.setWhatToTrap(self.proxyoptions.trap.getValue())
             self.proxy.setWhatNotToTrap(self.proxyoptions.notrap.getValue())
             self.proxy.setMethodsToTrap(self.proxyoptions.methodtrap.getValue())
             self.proxy.setFixContentLength(self.proxyoptions.fixlength.getValue())
         except w3afException, w3:
-            msg = _("Invalid configuration!\n" + str(w3))
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-            opt = dlg.run()
-            dlg.destroy()
+            self.showAlert(_("Invalid configuration!\n" + str(w3)))
+
         self._previous_ipport = new_ipport
-        toolbar = self._uimanager.get_widget('/Toolbar')
-        activeAction = toolbar.get_nth_item(0)
-        activeAction.set_active(True)
+
+    def showAlert(self, msg):
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+        opt = dlg.run()
+        dlg.destroy()
 
     def _startProxy(self, ip=None, port=None, silent=False):
         """Starts the proxy."""
@@ -232,15 +231,11 @@ class ProxiedRequests(entries.RememberingWindow):
             ipport = self.proxyoptions.ipport.getValue()
             ip, port = ipport.split(":")
         self.w3af.mainwin.sb(_("Starting local proxy"))
-
         try:
             self.proxy = localproxy.localproxy(ip, int(port))
         except w3afProxyException, w3:
             if not silent:
-                msg = _(str(w3))
-                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
-                opt = dlg.run()
-                dlg.destroy()
+                self.showAlert(_(str(w3)))
             raise w3
         else:
             self.proxy.start2()
@@ -289,7 +284,7 @@ class ProxiedRequests(entries.RememberingWindow):
             self.fuzzable = None
             self.reqresp.response.set_sensitive(True)
             self.reqresp.response.showObject(httpResp)
-            self.reqresp.nb.next_page()
+            self.reqresp.focusResponse()
             self.bt_drop.set_sensitive(False)
             self.bt_send.set_sensitive(False)
 
@@ -307,7 +302,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.reqresp.response.clearPanes()
         self.reqresp.response.set_sensitive(False)
         self.bt_next.set_sensitive(False)
-        self.reqresp.nb.prev_page()
+        self.reqresp.focusRequest()
         self.waitingRequests = True
 
     def _close(self):
@@ -321,19 +316,6 @@ class ProxiedRequests(entries.RememberingWindow):
             return False
         self.proxy.stop()
         return True
-
-    def _toggle_active(self, widget):
-        """Start/stops the proxy."""
-        proxyactive = widget.get_active()
-        if proxyactive:
-            if not self.proxy.isRunning():
-                try:
-                    self._startProxy()
-                except w3afProxyException:
-                    self.w3af.mainwin.sb(_("Failed to start local proxy"))
-        else:
-            self.w3af.mainwin.sb(_("Stopping local proxy"))
-            self.proxy.stop()
 
     def _toggle_trap(self, widget):
         """Toggle the trap flag."""
