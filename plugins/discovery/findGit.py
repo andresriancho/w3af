@@ -49,6 +49,7 @@ class findGit(baseDiscoveryPlugin):
         # Internal variables
         self._analyzed_dirs = []
         self._fuzzable_requests_to_return = []
+        self._compile_gitRE()
 
     def discover(self, fuzzableRequest ):
         '''
@@ -62,7 +63,7 @@ class findGit(baseDiscoveryPlugin):
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.append( domain_path )
 
-            for git_info in self._get_git_patterns():
+            for git_info in self.res:
                 git_url = urlParser.urlJoin(domain_path, git_info[0])
                 targs = (git_url,git_info)
                 self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         
@@ -85,8 +86,8 @@ class findGit(baseDiscoveryPlugin):
         else:
             if not is_404(response):
                 # Check pattern
-                pattern = re.compile(git_info[1])
-		print git_info[1]
+                #pattern = re.compile(git_info[1])
+                pattern = git_info[1]
                 f = StringIO.StringIO(response.getBody())
                 for line in f:
                     if pattern.match(line):
@@ -103,19 +104,17 @@ class findGit(baseDiscoveryPlugin):
                         fuzzable_requests = self._createFuzzableRequests( response )
                         self._fuzzable_requests_to_return.extend( fuzzable_requests )
                     
-    
-    def _get_git_patterns( self ):
-        '''
-        @return: A list of files used in git and predictable pattherns in them
-        '''
+    def _compile_gitRE( self ):
         res = []
         
-        res.append( ['.git/info/refs','^[a-f0-9]{40}\s+refs/'])
-        res.append( ['.git/objects/info/packs','^P pack-[a-f0-9]{40}\.pack'])
-        res.append( ['.git/packed-refs','^[a-f0-9]{40} refs/'])
-        res.append( ['.git/refs/heads/master','^[a-f0-9]{40}'])
-        res.append( ['.git/HEAD','^ref: refs/'])
-        return res
+        res.append( ['.git/info/refs',re.compile('^[a-f0-9]{40}\s+refs/')])
+        res.append( ['.git/objects/info/packs',re.compile('^P pack-[a-f0-9]{40}\.pack')])
+        res.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
+        res.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
+        res.append( ['.git/HEAD',re.compile('^ref: refs/')])
+        self.res = res
+
+
 
     def getOptions( self ):
         '''
