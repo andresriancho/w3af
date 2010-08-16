@@ -24,14 +24,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.urlParser import *
 
 try:
-    import extlib.BeautifulSoup as BeautifulSoup
-    om.out.debug('htmlParser is using the bundled BeautifulSoup library')
-except:
+    from lxml import etree
+except ImportError:
     try:
-        import BeautifulSoup
-        om.out.debug('htmlParser is using the systems BeautifulSoup library')
-    except:
-        raise w3afException('You have to install BeautifulSoup lib.')
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
 
 import copy
 import re
@@ -55,7 +66,7 @@ class httpResponse:
         # A nice and comfortable default
         self._charset = 'utf-8'
         self._content_type = ''
-        self._soup = None
+        self._dom = None
         
         # Set the URL variables
         # The URL that we really GET'ed
@@ -92,22 +103,29 @@ class httpResponse:
     def getCode( self ): return self._code
     def getBody( self ): return self._body
     
-    def getSoup( self ):
+    def getDOM( self ):
         '''
         I don't want to calculate the soup for all responses, only for those which are needed.
         This method will first calculate the soup, and then save it for other calls to this method.
         
         @return: The soup, or None if the HTML normalization failed.
         '''
-        if self._soup == None:
+        if self._dom == None:
             try:
-                self._soup = BeautifulSoup.BeautifulSoup( self._body )
+                parser = etree.XMLParser(recover=True)
+                self._dom = etree.fromstring( self._body, parser )
             except Exception, e:
                 print e
                 msg = 'The HTTP body for "' + self.getURL() + '" could NOT be'
-                msg += ' normalized by BeautifulSoup.'
+                msg += ' parsed by libxml2.'
                 om.out.debug( msg )
-        return self._soup
+        return self._dom
+    
+    def getNormalizedBody(self):
+        '''
+        @return: A normalized body
+        '''
+        return etree.tostring( self._dom )
     
     def getHeaders( self ): return self._headers
     def getLowerCaseHeaders( self ):

@@ -55,27 +55,30 @@ class feeds(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        soup = response.getSoup()
+        dom = response.getDOM()
         
-        # In some strange cases, BeautifulSoup can fail to normalize the document
-        if soup != None:
+        # In some strange cases, we fail to normalize the document
+        if dom != None:
             
             for tag_name, attr_name, feed_type in self._rss_tag_attr:
                 
-                # Find all tags with tag_name that have attr_name set
-                element_list = soup.findAll( tag_name, attr_name=True )
+                # Find all tags with tag_name
+                element_list = dom.findall( tag_name )
             
                 for element in element_list:
-                    version = element.attrMap[attr_name]
-                    i = info.info()
-                    i.setName(feed_type +' feed')
-                    i.setURL( response.getURL() )
-                    msg = 'The URL: "' + i.getURL() + '" is a ' + feed_type + ' version "' 
-                    msg += version + '" feed.'
-                    i.setDesc( msg )
-                    i.setId( response.id )
-                    i.addToHighlight( feed_type )
-                    kb.kb.append( self, 'feeds', i )
+                    
+                    if attr_name in element.attrib:
+                        
+                        version = element.attrib[attr_name]                        
+                        i = info.info()
+                        i.setName(feed_type +' feed')
+                        i.setURL( response.getURL() )
+                        msg = 'The URL: "' + i.getURL() + '" is a ' + feed_type + ' version "' 
+                        msg += version + '" feed.'
+                        i.setDesc( msg )
+                        i.setId( response.id )
+                        i.addToHighlight( feed_type )
+                        kb.kb.append( self, 'feeds', i )
     
     def setOptions( self, OptionList ):
         pass

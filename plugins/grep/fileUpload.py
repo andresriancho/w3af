@@ -53,24 +53,26 @@ class fileUpload(baseGrepPlugin):
         '''
         if response.is_text_or_html():
             
-            soup = response.getSoup()
+            dom = response.getDOM()
             
-            # In some strange cases, BeautifulSoup can fail to normalize the document
-            if soup != None:
+            # In some strange cases, we fail to normalize the document
+            if dom != None:
                 
-                # Find all input tags with a type file attribute
-                element_list = soup.findAll( 'input', attrs={'type': 'file'} )
+                # Find all input tags
+                element_list = dom.findall( 'input' )
             
                 for element in element_list:
-                    i = info.info()
-                    i.setName('File upload form')
-                    i.setURL( response.getURL() )
-                    i.setId( response.id )
-                    msg = 'The URL: "' + response.getURL() + '" has form '
-                    msg += 'with file upload capabilities.'
-                    i.setDesc( msg )
-                    i.addToHighlight( tag.group(0) )
-                    kb.kb.append( self , 'fileUpload' , i ) 
+                    
+                    if 'type' in element.attrib and element.attrib['type'].lower() == 'file':
+                        i = info.info()
+                        i.setName('File upload form')
+                        i.setURL( response.getURL() )
+                        i.setId( response.id )
+                        msg = 'The URL: "' + response.getURL() + '" has form '
+                        msg += 'with file upload capabilities.'
+                        i.setDesc( msg )
+                        i.addToHighlight( tag.group(0) )
+                        kb.kb.append( self , 'fileUpload' , i ) 
     
     def setOptions( self, OptionList ):
         pass

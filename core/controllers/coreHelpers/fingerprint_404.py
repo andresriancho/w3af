@@ -90,8 +90,9 @@ class fingerprint_404:
         
         @parameter http_response: The HTTP response which we want to know if it is a 404 or not.
         '''
+
         #   This is here for testing.
-        #return False
+        return False
         
         #
         #   First we handle the user configured exceptions:

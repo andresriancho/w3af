@@ -68,14 +68,14 @@ class ajax(baseGrepPlugin):
             # Don't repeat URLs
             self._already_inspected.append( response.getURL() )
             
-            soup = response.getSoup()
-            # In some strange cases, BeautifulSoup can fail to normalize the document
-            if soup != None:
+            dom = response.getDOM()
+            # In some strange cases, we fail to normalize the document
+            if dom != None:
                 
-                script_elements = soup.findAll('script')
+                script_elements = soup.findall('script')
                 for element in script_elements:
                     # returns the text between <script> and </script>
-                    script_content = element.string
+                    script_content = element.text
                     
                     res = self._ajax_regex_re.search( script_content )
                     if res:

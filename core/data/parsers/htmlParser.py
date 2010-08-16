@@ -63,8 +63,9 @@ class htmlParser(sgmlParser):
         HTMLDocument = httpResponse.getBody()
         
         if self._normalizeMarkup:
-            if httpResponse.getSoup() != None:
-                HTMLDocument = str( httpResponse.getSoup() )
+            # In some cases, the parsing library could fail.
+            if httpResponse.getDOM() != None:
+                HTMLDocument = str( httpResponse.getDOM() )
 
         # Now we are ready to work
         self._parse ( HTMLDocument )

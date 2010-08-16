@@ -64,15 +64,15 @@ class objects(baseGrepPlugin):
 
         if response.is_text_or_html() and response.getURL() not in self._already_added_object:
             
-            soup = response.getSoup()
+            dom = response.getDOM()
 
-            # In some strange cases, BeautifulSoup can fail to normalize the document
-            if soup != None:
+            # In some strange cases, we fail to normalize the document
+            if dom != None:
             
                 for tag_name in self._tag_names:
                     
                     # Find all input tags with a type file attribute
-                    element_list = soup.findAll( tag_name )
+                    element_list = dom.findall( tag_name )
                     
                     if element_list:
                         i = info.info()

@@ -44,22 +44,22 @@ class html(basePpPlugin):
 
         if response.is_text_or_html():
             
-            soup = response.getSoup()
+            dom = response.getDOM()
 
-            # In some strange cases, BeautifulSoup can fail to normalize the document
-            if soup != None:
+            # In some strange cases, we fail to normalize the document
+            if dom != None:
 
-                title_elements = soup.findAll('title')
+                title_elements = dom.findall('title')
                 title_words = []
                 for element in title_elements:
-                    title_words.extend( element.string.split(' ') )
+                    title_words.extend( element.text.split(' ') )
                 title_words = [ w.strip() for w in title_words if len(w) > 3 ]
                 
-                all_strings_list = [tag.string for tag in soup.findAll()]
+                all_strings_list = [tag.text for tag in dom.iter()]
                 all_words = []
                 for a_string in all_strings_list:
                     if a_string != None:
-                        all_words.extend( a_string.string.split(' ') )
+                        all_words.extend( a_string.split(' ') )
                 all_words = [ w.strip() for w in all_words if len(w) > 3 ]
 
                 for word in title_words:
