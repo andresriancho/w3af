@@ -43,10 +43,14 @@ class wmlParser(sgmlParser):
         
         sgmlParser.__init__(self, httpResponse, verbose)
         
-    def _preParse( self, WMLDocument ):
+    def _preParse( self, httpResponse ):
+        '''
+        @parameter httpResponse: The HTTP response document that contains the WML
+        document inside its body.
+        '''
         assert self._baseUrl != '', 'The base URL must be setted.'
         # Now we are ready to work
-        self._parse ( WMLDocument )
+        self._parse ( httpResponse.getBody() )
         
     def unknown_endtag(self, tag):         
         '''

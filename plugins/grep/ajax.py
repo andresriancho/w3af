@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 from core.data.getResponseType import *
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -50,11 +51,9 @@ class ajax(baseGrepPlugin):
         self._already_inspected = disk_list()
         
         # Create the regular expression to search for AJAX
-        regex_string = '< *?script.*?>.*?'
-        regex_string += '(XMLHttpRequest|eval\(\)|ActiveXObject\("Msxml2.XMLHTTP"\)|'
-        regex_string += 'ActiveXObject\("Microsoft.XMLHTTP"\))'
-        regex_string += '.*?</ *?script *?>'
-        self._script_re = re.compile( regex_string, re.IGNORECASE | re.DOTALL )
+        ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
+        ajax_regex_string += 'ActiveXObject|Microsoft\.XMLHTTP)'
+        self._ajax_regex_re = re.compile( ajax_regex_string, re.IGNORECASE )
 
     def grep(self, request, response):
         '''
@@ -69,15 +68,24 @@ class ajax(baseGrepPlugin):
             # Don't repeat URLs
             self._already_inspected.append( response.getURL() )
             
-            res = self._script_re.search( response.getBody() )
-            if res:
-                i = info.info()
-                i.setName('Ajax code')
-                i.setURL( response.getURL() )
-                i.setDesc( 'The URL: "' + i.getURL() + '" has a ajax code.'  )
-                i.setId( response.id )
-                i.addToHighlight( res.group(0) )
-                kb.kb.append( self, 'ajax', i )
+            soup = response.getSoup()
+            # In some strange cases, BeautifulSoup can fail to normalize the document
+            if soup != None:
+                
+                script_elements = soup.findAll('script')
+                for element in script_elements:
+                    # returns the text between <script> and </script>
+                    script_content = element.string
+                    
+                    res = self._ajax_regex_re.search( script_content )
+                    if res:
+                        i = info.info()
+                        i.setName('AJAX code')
+                        i.setURL( response.getURL() )
+                        i.setDesc( 'The URL: "' + i.getURL() + '" has a AJAX code.'  )
+                        i.setId( response.id )
+                        i.addToHighlight( res.group(0) )
+                        kb.kb.append( self, 'ajax', i )
     
     def setOptions( self, OptionList ):
         pass

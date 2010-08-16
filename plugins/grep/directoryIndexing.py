@@ -110,7 +110,6 @@ class directoryIndexing(baseGrepPlugin):
         dir_indexing_regexes.append("Parent Directory</a>")
         dir_indexing_regexes.append("Directory Listing for")
         dir_indexing_regexes.append("<TITLE>Folder Listing.")
-        dir_indexing_regexes.append("<TITLE>Folder Listing.")
         dir_indexing_regexes.append('<table summary="Directory Listing" ')
         dir_indexing_regexes.append("- Browsing directory ")
         dir_indexing_regexes.append('">\\[To Parent Directory\\]</a><br><br>') # IIS 6.0 and 7.0

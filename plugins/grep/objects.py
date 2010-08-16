@@ -45,8 +45,11 @@ class objects(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._object = re.compile(r'< *object([^>]*)>', re.IGNORECASE)
-        self._applet = re.compile(r'< *applet([^>]*)>', re.IGNORECASE)
+        
+        self._tag_names = []
+        self._tag_names.append('object')
+        self._tag_names.append('applet')
+        
         self._already_added_object = disk_list()
         self._already_added_applet = disk_list()
 
@@ -60,32 +63,27 @@ class objects(baseGrepPlugin):
         '''
 
         if response.is_text_or_html() and response.getURL() not in self._already_added_object:
-            res = self._object.findall( response.getBody() )
-            if res:
-                i = info.info()
-                i.setName('Object tag')
-                i.setURL( response.getURL() )
-                i.setId( response.id )
-                i.setDesc( 'The URL: "' + i.getURL() + '" has an object tag.' )          
-                for finding in res:
-                    i.addToHighlight( finding )
+            
+            soup = response.getSoup()
 
-                kb.kb.append( self, 'object', i )
-                self._already_added_object.append( response.getURL() )
-        
-        if response.getURL() not in self._already_added_applet:
-            res = self._applet.findall( response.getBody() )
-            if res:
-                i = info.info()
-                i.setName('Applet tag')
-                i.setURL( response.getURL() )
-                i.setId( response.id )
-                i.setDesc( 'The URL: "' + i.getURL() + '" has an applet tag.' )          
-                for finding in res:
-                    i.addToHighlight( finding )
+            # In some strange cases, BeautifulSoup can fail to normalize the document
+            if soup != None:
+            
+                for tag_name in self._tag_names:
+                    
+                    # Find all input tags with a type file attribute
+                    element_list = soup.findAll( tag_name )
+                    
+                    if element_list:
+                        i = info.info()
+                        i.setName(tag_name.title() + ' tag')
+                        i.setURL( response.getURL() )
+                        i.setId( response.id )
+                        i.setDesc( 'The URL: "' + i.getURL() + '" has an '+ tag_name + ' tag.' )          
+                        i.addToHighlight( tag_name )
 
-                kb.kb.append( self, 'applet', i )
-                self._already_added_applet.append( response.getURL() )
+                        kb.kb.append( self, tag_name, i )
+                        self._already_added_object.append( response.getURL() )
     
     def setOptions( self, OptionList ):
         pass

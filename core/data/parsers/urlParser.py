@@ -20,15 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
 from core.data.dc.queryString import queryString
+import core.data.kb.config as cf
+
+from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+from core.controllers.misc.is_ip_address import is_ip_address
+
 import urlparse as _uparse
 import urllib
 import cgi
 import socket
 import re
-import core.data.kb.config as cf
 import string
 
 '''
@@ -335,23 +338,8 @@ def getRootDomain( input ):
     
     # def to split URI into its parts, returned as URI object
     def decomposeURI(aURI):
-    
-        # http://www.faqs.org/rfcs/rfc2396.html
-        uriDef = "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?"
-        #          12            3  4          5       6  7        8 9
-        myRegEp = re.compile(uriDef)
         
-        #m = myRegEp.exec(aURI)
-        m = myRegEp.match(aURI)
-        if (not m):
-            return False
-        
-        scheme = ("",m.group(2))[bool(m.group(2))]
-        authority =  ("",m.group(4))[bool(m.group(4))]
-        path = ("",m.group(5))[bool(m.group(5))]
-        query = ""
-        fragment =  ("",m.group(9))[bool(m.group(9))]
-        
+        authority = getDomain(aURI)
         s = splitAuthority(authority)
         subdomain = s[0]
         baseAuthority = s[1]
@@ -367,7 +355,7 @@ def getRootDomain( input ):
         
     domain = getNetLocation( url )
     
-    if re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?', domain ):
+    if is_ip_address(domain):
         # An IP address has no "root domain" 
         return domain
     else:

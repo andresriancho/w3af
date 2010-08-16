@@ -69,8 +69,8 @@ class httpInBody (baseGrepPlugin):
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
-            if 'HTTP' in response:
-                
+            if 'HTTP/1' in response:
+
                 # Now, remove tags
                 body_without_tags = self._re_removeTags.sub('', response.getBody() )
                 

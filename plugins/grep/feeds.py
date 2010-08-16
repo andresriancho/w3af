@@ -42,20 +42,11 @@ class feeds(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._compiledRegex = []
-        
-    def _get_feeds( self ):
-        if not self._compiledRegex:
-            # rss 0.9, rss 2.0
-            self._compiledRegex.append( (re.compile('<rss version="(.*?)">', re.IGNORECASE), 'RSS') )
-            # rss 1.0
-            self._compiledRegex.append( (re.compile('xmlns="http://purl.org/rss/(.*?)/"', re.IGNORECASE), 'RSS') )
-            # OPML
-            self._compiledRegex.append( (re.compile('<feed version="(.*?)"', re.IGNORECASE), 'OPML') )
-            self._compiledRegex.append( (re.compile('<opml version="(.*?)">', re.IGNORECASE), 'OPML') )
-            
-        return self._compiledRegex
-        
+        self._rss_tag_attr = [ ('rss', 'version', 'RSS') ,     #   <rss version="...">
+                                        ('feed', 'version', 'OPML') ,   #   <feed version="..."
+                                        ('opml', 'version', 'OPML')     #   <opml version="...">
+                                        ]
+                
     def grep(self, request, response):
         '''
         Plugin entry point, find feeds.
@@ -64,21 +55,23 @@ class feeds(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-
-        # Performance enhancement
-        # (this was the longer string I could find that intersecter all the feed strings)
-        if '="' in response.getBody():
-
-            # Now do the real work
-            for regex, feed_type in self._get_feeds():
-                match = regex.search( response.getBody() )
-                if match:
-                    match_string = match.group(0)
+        soup = response.getSoup()
+        
+        # In some strange cases, BeautifulSoup can fail to normalize the document
+        if soup != None:
+            
+            for tag_name, attr_name, feed_type in self._rss_tag_attr:
+                
+                # Find all tags with tag_name that have attr_name set
+                element_list = soup.findAll( tag_name, attr_name=True )
+            
+                for element in element_list:
+                    version = element.attrMap[attr_name]
                     i = info.info()
                     i.setName(feed_type +' feed')
                     i.setURL( response.getURL() )
                     msg = 'The URL: "' + i.getURL() + '" is a ' + feed_type + ' version "' 
-                    msg += match_string + '" feed.'
+                    msg += version + '" feed.'
                     i.setDesc( msg )
                     i.setId( response.id )
                     i.addToHighlight( feed_type )

@@ -75,7 +75,7 @@ class sgmlParser(abstractParser, SGMLParser):
         self._regex_url_parse( httpResponse )
         
         # Now we are ready to work
-        self._preParse( httpResponse.getBody() )
+        self._preParse( httpResponse )
         
     def _preParse(self, document):
         '''

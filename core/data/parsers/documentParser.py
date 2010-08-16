@@ -58,15 +58,15 @@ class documentParser:
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a PDF document.
         '''
-        document = httpResponse.getBody()
-        
-        #   With the objective of avoiding this bug:
-        #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
-        #   I perform this safety check:
-        if document == '':
-            return False
-        
         if httpResponse.getContentType() in ['application/x-pdf', 'application/pdf']:
+            document = httpResponse.getBody()
+            
+            #   With the objective of avoiding this bug:
+            #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
+            #   I perform this safety check:
+            if document == '':
+                return False
+        
             #   Some PDF files don't end with %%EOF, they end with
             #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n. 
             #   So... just to be sure I search in the last 12 characters.

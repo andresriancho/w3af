@@ -107,7 +107,7 @@ class wsdlGreper(baseGrepPlugin):
         res.append( '/s:sequence' )
         res.append( 'wsdl:' )
         res.append( 'soapAction=' )
-        # This aint wsdl... but well...
+        # This isn't WSDL... but well...
         res.append( 'xmlns="urn:uddi"' )
         res.append( '<p>Hi there, this is an AXIS service!</p>' )
                 

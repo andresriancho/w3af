@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
 
-import sgmllib
 
 class html(basePpPlugin):
     '''
@@ -41,77 +40,39 @@ class html(basePpPlugin):
         @parameter body: In most common cases, an html. Could be almost anything.
         @return: A map of strings:repetitions.
         '''
+        data = {}
+
         if response.is_text_or_html():
-            sp = simpleParser()
-            try:
-                sp.parse( response.getBody() )
-            except:
-                # If this plugin couldnt parse the document, return None. This will indicate passwordProfiling.py to
-                # continue to the next pp plugin.
-                return None
-            else:
-                data = sp.getData()
-                
-                # I think that titles have more password material that normal data:
-                titles = sp.getTitles()
-                for t in titles.keys():
-                    titles[ t ] *= 5
-                
-                # join both maps
-                for word in titles:
-                    if word in data:
-                        data[word] += titles[word]
-               
-                return data
-    
-class simpleParser(sgmllib.SGMLParser):
-    "A simple parser class."
-
-    def parse(self, s):
-        "Parse the given string 's'."
-        self.feed(s)
-        self.close()
-
-    def __init__(self, verbose=0):
-        sgmllib.SGMLParser.__init__(self, verbose)
-        self._data = []
-        self._titles = []
-        self._inTitle = False
-
-    def handle_data(self, data):
-        "Handle the textual 'data'."
-        if self._inTitle:
-            self._titles.append( data )
-        else:
-            self._data.append(data)
-        
-    def start_title( self, data):
-        "Handle titles."
-        self._inTitle = True
-        
-    def end_title( self ):
-        "Handle titles."
-        self._inTitle = False
-
-    def _parseStrings( self, stringList ):
-        res = {}
-        for d in stringList:
-            d = d.replace('>', ' ')
-            d = d.replace('<', ' ')
-            splitted = d.split(' ')
-            for chunk in splitted:
-                if chunk.isalnum() and len(chunk) >= 4:
-                    if chunk in res.keys():
-                        res[ chunk ] += 1
-                    else:
-                        res[ chunk ] = 1
-        return res
-        
-    def getData(self):
-        "Return a map of string:repetitions"
-        return self._parseStrings( self._data )
-        
-    def getTitles( self ):
-        "Return a map of string:repetitions"
-        return self._parseStrings( self._titles )
             
+            soup = response.getSoup()
+
+            # In some strange cases, BeautifulSoup can fail to normalize the document
+            if soup != None:
+
+                title_elements = soup.findAll('title')
+                title_words = []
+                for element in title_elements:
+                    title_words.extend( element.string.split(' ') )
+                title_words = [ w.strip() for w in title_words if len(w) > 3 ]
+                
+                all_strings_list = [tag.string for tag in soup.findAll()]
+                all_words = []
+                for a_string in all_strings_list:
+                    if a_string != None:
+                        all_words.extend( a_string.string.split(' ') )
+                all_words = [ w.strip() for w in all_words if len(w) > 3 ]
+
+                for word in title_words:
+                    if word in data:
+                        data[ word ] += 5
+                    else:
+                        data[ word ] = 5
+                
+                for word in all_words:
+                    if word in data:
+                        data[ word ] += 1
+                    else:
+                        data[ word ] = 1
+            
+            return data
+    

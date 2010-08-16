@@ -43,17 +43,6 @@ class fileUpload(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
-        # FIXME: This method sucks, I should do something like
-        # input_elems = html_parser.get_elements_of_type('input')
-        # for input in input_elems:
-        # ...
-        # ...
-        # The bad thing about this is that I have to store all the
-        # response in memory, and right now I only store the parsed
-        # information.
-        self._input = re.compile('< *input(.*?)>', re.IGNORECASE)
-        self._file = re.compile('type= *"file"?', re.IGNORECASE)
-
     def grep(self, request, response):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
@@ -63,9 +52,16 @@ class fileUpload(baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html():
-            for input_tag in self._input.findall( response.getBody() ):
-                tag = self._file.search( input_tag )
-                if tag:
+            
+            soup = response.getSoup()
+            
+            # In some strange cases, BeautifulSoup can fail to normalize the document
+            if soup != None:
+                
+                # Find all input tags with a type file attribute
+                element_list = soup.findAll( 'input', attrs={'type': 'file'} )
+            
+                for element in element_list:
                     i = info.info()
                     i.setName('File upload form')
                     i.setURL( response.getURL() )
