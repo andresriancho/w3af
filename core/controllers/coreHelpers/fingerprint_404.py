@@ -92,7 +92,7 @@ class fingerprint_404:
         '''
 
         #   This is here for testing.
-        return False
+        #return False
         
         #
         #   First we handle the user configured exceptions:
