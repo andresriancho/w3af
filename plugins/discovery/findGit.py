@@ -37,9 +37,10 @@ import core.data.constants.severity as severity
 import re
 import StringIO
 
+
 class findGit(baseDiscoveryPlugin):
     '''
-    Finds GIT repo
+    Find GIT repositories
     @author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     '''
 
@@ -63,9 +64,9 @@ class findGit(baseDiscoveryPlugin):
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.append( domain_path )
 
-            for git_info in self.res:
-                git_url = urlParser.urlJoin(domain_path, git_info[0])
-                targs = (git_url,git_info)
+            for url, regular_expression in self._compiled_git_info:
+                git_url = urlParser.urlJoin(domain_path, url)
+                targs = (git_url, regular_expression)
                 self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         
             
             # Wait for all threads to finish
@@ -73,7 +74,7 @@ class findGit(baseDiscoveryPlugin):
                 
             return self._fuzzable_requests_to_return
     
-    def _check_if_exists(self, git_url, git_info):
+    def _check_if_exists(self, git_url, regular_expression):
         '''
         Check if the file exists.
         
@@ -86,18 +87,16 @@ class findGit(baseDiscoveryPlugin):
         else:
             if not is_404(response):
                 # Check pattern
-                #pattern = re.compile(git_info[1])
-                pattern = git_info[1]
                 f = StringIO.StringIO(response.getBody())
                 for line in f:
-                    if pattern.match(line):
+                    if regular_expression.match(line):
                         v = vuln.vuln()
                         v.setId( response.id )
-                        v.setName( 'Possible git repo found' )
+                        v.setName( 'Possible Git repository found' )
                         v.setSeverity(severity.LOW)
                         v.setURL( response.getURL() )
-                        msg = 'A git repo file was found at: "' + v.getURL() + '" ; this could'
-                        msg += ' indicate that a git repo is accessible.'
+                        msg = 'A Git repository file was found at: "' + v.getURL() + '" ; this could'
+                        msg += ' indicate that a Git repo is accessible.'
                         v.setDesc( msg )
                         kb.kb.append( self, 'GIT', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
@@ -112,7 +111,8 @@ class findGit(baseDiscoveryPlugin):
         res.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
         res.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
         res.append( ['.git/HEAD',re.compile('^ref: refs/')])
-        self.res = res
+
+        self._compiled_git_info = res
 
 
 
@@ -145,7 +145,7 @@ class findGit(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-	This plugin search for evidence of git metadata in a directory. 
+    	This plugin search for evidence of git metadata in a directory. 
         For example, if the input is:
             - http://host.tld/w3af/index.php
             
