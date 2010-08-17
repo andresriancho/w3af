@@ -24,6 +24,27 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
+
 from core.data.parsers.sgmlParser import sgmlParser
 import core.data.parsers.urlParser as urlParser
 
@@ -65,7 +86,7 @@ class htmlParser(sgmlParser):
         if self._normalizeMarkup:
             # In some cases, the parsing library could fail.
             if httpResponse.getDOM() != None:
-                HTMLDocument = str( httpResponse.getDOM() )
+                HTMLDocument = etree.tostring( httpResponse.getDOM() )
 
         # Now we are ready to work
         self._parse ( HTMLDocument )
