@@ -1,4 +1,4 @@
-#import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledgeBase as kb
 import re
 
 files = []

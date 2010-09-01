@@ -32,7 +32,7 @@ class users_name(base_payload):
     def run_read(self):
         hashmap = self.api_read()
         result = []
-        if result:
+        if hashmap:
             result.append('User --> Folder')
         for user, folder in hashmap.iteritems():
             result.append(user+' --> '+folder)

@@ -21,6 +21,7 @@ class apache_config_files(base_payload):
         files.append('sites-available/default')
         files.append('sites-available/default-ssl')
         files.append('conf.d/subversion.conf')
+        files.append('workers.properties')
 
         apache_dir = self.exec_payload('apache_config_directory')['apache_directory']
         if apache_dir:

@@ -1,6 +1,6 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
-
+#Days,Hours,Mins,Secs !
 class uptime(base_payload):
     '''
     This payload shows server Uptime.

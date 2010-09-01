@@ -44,10 +44,9 @@ class apache_htaccess(base_payload):
         hashmap = self.api_read()
         result = []
         
-        for k, v in hashmap.iteritems():
-            k = k.replace('_', ' ')
-            result.append(k.title())
-            for file, content in v.iteritems():
+        if hashmap:
+            result.append('Apache Htaccess Files')
+            for file, content in hashmap['htaccess_files'].iteritems():
                 result.append('-------------------------')
                 result.append(file)
                 result.append('-------------------------')
