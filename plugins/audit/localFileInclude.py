@@ -115,6 +115,7 @@ class localFileInclude(baseAuditPlugin):
             local_files.append("../" * 15 + "boot.ini\0")
             local_files.append("../" * 15 + "boot.ini\0.html")
             local_files.append("C:\\boot.ini")
+            local_files.append("C:\Windows\explorer.exe")
             local_files.append("C:\\boot.ini\0")
             local_files.append("C:\\boot.ini\0.html")
             local_files.append("%SYSTEMROOT%\\win.ini")
@@ -249,6 +250,9 @@ class localFileInclude(baseAuditPlugin):
             file_patterns.append("root:!:x:0:0:")
             file_patterns.append("daemon:!:x:1:1:")
             file_patterns.append(":usr/bin/ksh") 
+
+            # Explorer
+            file_patterns.append("^MZ")
 
             # boot.ini
             file_patterns.append("\\[boot loader\\]")
