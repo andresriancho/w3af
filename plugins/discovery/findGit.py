@@ -64,17 +64,32 @@ class findGit(baseDiscoveryPlugin):
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.append( domain_path )
 
-            for url, regular_expression in self._compiled_git_info:
-                git_url = urlParser.urlJoin(domain_path, url)
-                targs = (git_url, regular_expression)
-                self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         
-            
-            # Wait for all threads to finish
-            self._tm.join( self )
+            #
+            #   First we check if the .git/HEAD file exists
+            #
+            url, regular_expression = self._compiled_git_info[0]
+            git_url = urlParser.urlJoin(domain_path, url)
+            try:
+                response = self._urlOpener.GET( git_url, useCache=True )
+            except w3afException:
+                om.out.debug('Failed to GET git file: "' + git_url + '"')
+            else:
+                if not is_404(response):
+                    #
+                    #   It looks like we have a GIT repository!
+                    #
+                    for url, regular_expression in self._compiled_git_info:
+                        git_url = urlParser.urlJoin(domain_path, url)
+                        targs = (domain_path, git_url, regular_expression)
+                        # Note: The .git/HEAD request is only sent once. We use the cache.
+                        self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         
+                    
+                    # Wait for all threads to finish
+                    self._tm.join( self )
                 
             return self._fuzzable_requests_to_return
     
-    def _check_if_exists(self, git_url, regular_expression):
+    def _check_if_exists(self, domain_path, git_url, regular_expression):
         '''
         Check if the file exists.
         
@@ -96,7 +111,9 @@ class findGit(baseDiscoveryPlugin):
                         v.setSeverity(severity.LOW)
                         v.setURL( response.getURL() )
                         msg = 'A Git repository file was found at: "' + v.getURL() + '" ; this could'
-                        msg += ' indicate that a Git repo is accessible.'
+                        msg += ' indicate that a Git repo is accessible. You might be able to download'
+                        msg += ' the Web application source code by running'
+                        msg += ' "git clone ' + domain_path + '"'
                         v.setDesc( msg )
                         kb.kb.append( self, 'GIT', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
@@ -104,17 +121,21 @@ class findGit(baseDiscoveryPlugin):
                         self._fuzzable_requests_to_return.extend( fuzzable_requests )
                     
     def _compile_gitRE( self ):
-        res = []
-        
-        res.append( ['.git/info/refs',re.compile('^[a-f0-9]{40}\s+refs/')])
-        res.append( ['.git/objects/info/packs',re.compile('^P pack-[a-f0-9]{40}\.pack')])
-        res.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
-        res.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
-        res.append( ['.git/HEAD',re.compile('^ref: refs/')])
+        '''
+        Compile the GIT regular expressions. This is done at the beginning,
+        in order to save CPU power.
 
-        self._compiled_git_info = res
-
-
+        @return: None, the result is saved in "self._compiled_git_info".
+        '''
+        self._compiled_git_info = []
+        #
+        # don't change the order! the first element is used in a different way
+        #
+        self._compiled_git_info.append( ['.git/HEAD',re.compile('^ref: refs/')])
+        self._compiled_git_info.append( ['.git/info/refs',re.compile('^[a-f0-9]{40}\s+refs/')])
+        self._compiled_git_info.append( ['.git/objects/info/packs',re.compile('^P pack-[a-f0-9]{40}\.pack')])
+        self._compiled_git_info.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
+        self._compiled_git_info.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
 
     def getOptions( self ):
         '''
@@ -145,11 +166,14 @@ class findGit(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-    	This plugin search for evidence of git metadata in a directory. 
+    	This plugin search for evidence of Git metadata in a directory. 
         For example, if the input is:
             - http://host.tld/w3af/index.php
             
-        The plugin will perform these requests:
+        The plugin will perform a request to:
+            - http://host.tld/w3af/.git/HEAD
+
+        And then, if the response was not a 404:
             - http://host.tld/w3af/.git/info/refs
             - http://host.tld/w3af/.git/packed-refs
             - http://host.tld/w3af/.git/objects/info/packs
