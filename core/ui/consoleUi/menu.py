@@ -258,4 +258,9 @@ class menu:
         else:
             return []
 
-           
+    def join(self):
+        '''
+        This is a abstract method to emulate the join
+        method on a thread, by default DO NOTHING
+        '''
+        pass
