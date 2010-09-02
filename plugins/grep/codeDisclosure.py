@@ -36,8 +36,6 @@ from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
 from core.data.db.temp_persist import disk_list
 
-import re
-
 
 class codeDisclosure(baseGrepPlugin):
     '''
