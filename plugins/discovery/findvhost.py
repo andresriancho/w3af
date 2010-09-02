@@ -160,16 +160,35 @@ class findvhost(baseDiscoveryPlugin):
                     dist_a = relative_distance( vhost_response.getBody(), base_response.getBody() )
                     dist_b = relative_distance( vhost_response.getBody(), 
                                                             self._non_existant_response.getBody() )
+
+                    # If they are *really* different (not just different by some chars)
                     if  dist_a  < 0.35 and dist_b < 0.35:
-                        # If they are *really* different (not just different by some chars) I may 
+
+                        # and the domain can't just be resolved using a DNS query to
+                        # our regular DNS server
+                        report = True
+                        if self._can_resolve_domain_names:
+                            try:
+                                socket.gethostbyname( domain )
+                            except:
+                                # aha! The HTML is linking to a domain that's
+                                # hosted in the same server, and the domain name
+                                # can NOT be resolved!
+                                report = True
+                            else:
+                                report = False
+
                         # have found something interesting!
-                        res.append( (domain, vhost_response.id) )
+                        if report:
+                            res.append( (domain, vhost_response.id) )
 
             #
             # Second section, find hosts using failed DNS resolutions
             #
             if self._can_resolve_domain_names:
                 try:
+                    # raises exception when it's not found
+                    # socket.gaierror: (-5, 'No address associated with hostname')
                     socket.gethostbyname( domain )
                 except:
                     i = info.info()
