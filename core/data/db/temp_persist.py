@@ -92,6 +92,7 @@ class disk_list(object):
             try:
                 # Create the database
                 self._conn = sqlite3.connect(self._filename, check_same_thread=False)
+                self._conn.text_factory = str
                 # Create table
                 self._conn.execute('''create table data (index_ real, information text)''')
 
