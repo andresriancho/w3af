@@ -17,7 +17,7 @@ grep privateIP
 back
 
 target
-set target http://localhost/w3af/grep/private_ip.html
+set target http://moth/w3af/grep/private_ip.html
 back
 
 start

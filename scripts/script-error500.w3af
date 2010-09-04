@@ -19,7 +19,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/grep/error_500/500.php?id=1
+set target http://moth/w3af/grep/error_500/500.php?id=1
 back
 
 start

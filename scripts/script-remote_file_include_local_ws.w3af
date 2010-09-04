@@ -14,7 +14,7 @@ back
 back
 
 target
-set target http://localhost/w3af/audit/remoteFileInclusion/vulnerable.php?file=f0as9
+set target http://moth/w3af/audit/remoteFileInclusion/vulnerable.php?file=f0as9
 back
 
 start

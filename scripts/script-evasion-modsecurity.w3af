@@ -26,7 +26,7 @@ evasion
 back
 
 target
-set target http://localhost/w3af/xss-forms/test-forms.html
+set target http://moth/w3af/xss-forms/test-forms.html
 #set target http://172.16.1.132/index.asp?q=holaMundo
 back
 

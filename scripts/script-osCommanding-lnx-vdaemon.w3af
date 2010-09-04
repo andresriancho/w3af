@@ -23,7 +23,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/osCommanding/vulnerable.php?command=list
+set target http://moth/w3af/osCommanding/vulnerable.php?command=list
 back
 start
 exploit

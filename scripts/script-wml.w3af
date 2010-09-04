@@ -19,7 +19,7 @@ back
 audit sqli
 back
 target
-set target http://localhost/w3af/core/wml_parser/index.html
+set target http://moth/w3af/core/wml_parser/index.html
 back
 start
 

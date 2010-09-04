@@ -13,7 +13,7 @@ back
 grep directoryIndexing
 back
 target
-set target http://localhost/w3af/grep/directory_indexing/
+set target http://moth/w3af/grep/directory_indexing/
 back
 start
 

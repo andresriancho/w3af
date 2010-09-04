@@ -18,7 +18,7 @@ grep lang
 back
 
 target
-set target http://localhost/w3af/grep/lang/es.html
+set target http://moth/w3af/grep/lang/es.html
 back
 
 start

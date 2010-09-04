@@ -11,7 +11,7 @@ back
 back
 
 target
-set target http://localhost/w3af/audit/local_file_inclusion/false_positive.php?file=index
+set target http://moth/w3af/audit/local_file_inclusion/false_positive.php?file=index
 back
 
 start

@@ -14,7 +14,7 @@ audit generic
 back
 
 target
-set target http://localhost/w3af/xss/test-xss.php?a=099&b=whoami
+set target http://moth/w3af/xss/test-xss.php?a=099&b=whoami
 back
 
 start

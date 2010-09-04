@@ -27,6 +27,6 @@ audit
 
 back
 target
-set target http://localhost/w3af/xss/test
+set target http://moth/w3af/xss/test
 back
 start

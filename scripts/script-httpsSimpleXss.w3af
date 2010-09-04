@@ -21,7 +21,7 @@ audit
 back
 
 target
-set target https://localhost/w3af/xss/test-xss.php?a=f0as9
+set target https://moth/w3af/xss/test-xss.php?a=f0as9
 back
 
 start

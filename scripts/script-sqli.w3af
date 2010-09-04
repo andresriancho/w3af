@@ -14,7 +14,7 @@ audit sqli
 back
 
 target
-set target http://localhost/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres
+set target http://moth/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres
 back
 
 start

@@ -11,7 +11,7 @@ discovery pykto,serverHeader
 back
 
 target
-set target http://localhost/w3af/
+set target http://moth/w3af/
 back
 
 start

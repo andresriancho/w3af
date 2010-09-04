@@ -16,7 +16,7 @@ set verbose False
 back
 back
 target
-set target http://localhost/w3af/basicAuthBrute/
+set target http://moth/w3af/basicAuthBrute/
 back
 start
 exit

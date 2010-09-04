@@ -13,7 +13,7 @@ back
 
 back
 target
-set target http://localhost/w3af/sqli/sqli-falsepositive.php?tabla=agenda
+set target http://moth/w3af/sqli/sqli-falsepositive.php?tabla=agenda
 back
 start
 

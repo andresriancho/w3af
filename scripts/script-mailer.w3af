@@ -19,7 +19,7 @@ discovery
 
 back
 target
-set target http://localhost/w3af/mailer/
+set target http://moth/w3af/mailer/
 back
 start
 exit

@@ -14,7 +14,7 @@ audit fileUpload
 back
 
 target
-set target http://localhost/w3af/audit/file_upload/
+set target http://moth/w3af/audit/file_upload/
 back
 
 start

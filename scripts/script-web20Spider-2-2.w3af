@@ -15,7 +15,7 @@ discovery
 back
 
 target
-set target http://localhost/w3af/web20Spider/2-2.html
+set target http://moth/w3af/web20Spider/2-2.html
 back
 
 start

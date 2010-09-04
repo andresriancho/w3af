@@ -14,7 +14,7 @@ grep creditCards
 back
 
 target
-set target http://localhost/w3af/grep/index.html
+set target http://moth/w3af/grep/index.html
 back
 
 start

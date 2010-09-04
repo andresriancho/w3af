@@ -14,7 +14,7 @@ audit generic
 back
 
 target
-set target http://localhost/w3af/audit/sql_injection/select/sql_injection_integer.php?id=1
+set target http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php?id=1
 back
 
 start

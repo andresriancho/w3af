@@ -19,7 +19,7 @@ audit globalRedirect
 back
 
 target
-set target http://localhost/w3af/audit/global_redirect/
+set target http://moth/w3af/audit/global_redirect/
 back
 
 start

@@ -17,7 +17,7 @@ back
 back
 
 target
-set target http://localhost/w3af/core/maxFileSize/maxFileSize.tgz
+set target http://moth/w3af/core/maxFileSize/maxFileSize.tgz
 back
 
 start

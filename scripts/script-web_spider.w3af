@@ -17,7 +17,7 @@ back
 back
 
 target
-set target http://localhost/w3af/discovery/web_spider/follow_links/1.html
+set target http://moth/w3af/discovery/web_spider/follow_links/1.html
 back
 
 start

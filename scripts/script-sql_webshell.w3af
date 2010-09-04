@@ -21,7 +21,7 @@ grep pathDisclosure
 
 back
 target
-set target http://localhost/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres , http://localhost/writable/
+set target http://moth/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres , http://moth/writable/
 back
 
 start

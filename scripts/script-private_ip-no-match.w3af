@@ -19,7 +19,7 @@ grep privateIP
 back
 
 target
-set target http://localhost/w3af/audit/xss/simple_xss.php?text=10.10.1.2
+set target http://moth/w3af/audit/xss/simple_xss.php?text=10.10.1.2
 back
 
 start

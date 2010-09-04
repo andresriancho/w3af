@@ -14,7 +14,7 @@ audit unSSL
 back
 
 target
-set target https://localhost/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres
+set target https://moth/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres
 back
 
 start

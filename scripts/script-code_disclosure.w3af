@@ -14,7 +14,7 @@ grep codeDisclosure
 grep
 back
 target
-set target http://localhost/w3af/grep/code_disclosure/cd.html, http://localhost/w3af/grep/code_disclosure/not_cd.html
+set target http://moth/w3af/grep/code_disclosure/cd.html, http://moth/w3af/grep/code_disclosure/not_cd.html
 back
 start
 

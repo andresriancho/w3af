@@ -21,7 +21,7 @@ back
 back
 
 target
-set target http://localhost/w3af/core/cookieFuzzing/cf.php
+set target http://moth/w3af/core/cookieFuzzing/cf.php
 back
 
 start

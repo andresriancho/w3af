@@ -13,7 +13,7 @@ discovery findvhost
 back
 
 target
-set target http://localhost/w3af/discovery/find_vhost/internal_domain.html
+set target http://moth/w3af/discovery/find_vhost/internal_domain.html
 back
 
 start

@@ -14,7 +14,7 @@ set verbose True
 back
 back
 target
-set target http://localhost/w3af/remoteFileInclusion/vulnerable.php?file=f0as9
+set target http://moth/w3af/remoteFileInclusion/vulnerable.php?file=f0as9
 back
 start
 exploit

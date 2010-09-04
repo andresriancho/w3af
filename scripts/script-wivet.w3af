@@ -19,7 +19,7 @@ back
 back
 
 target
-set target http://localhost/wivet/
+set target http://moth/wivet/
 back
 
 start

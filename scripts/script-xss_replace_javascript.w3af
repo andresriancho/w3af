@@ -19,7 +19,7 @@ audit xss
 back
 
 target
-set target http://localhost/w3af/audit/xss/simple_xss_no_js.php?text=1
+set target http://moth/w3af/audit/xss/simple_xss_no_js.php?text=1
 back
 start
 

@@ -18,7 +18,7 @@ grep strangeHTTPCode
 back
 
 target
-set target http://localhost/w3af/grep/strange_http_code/
+set target http://moth/w3af/grep/strange_http_code/
 back
 
 start

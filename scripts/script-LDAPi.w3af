@@ -8,7 +8,7 @@ set verbose False
 back
 back
 target
-set target http://localhost/w3af/audit/LDAP/simple_ldap.php?i=1
+set target http://moth/w3af/audit/LDAP/simple_ldap.php?i=1
 back
 start
 

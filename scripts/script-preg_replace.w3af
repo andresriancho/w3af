@@ -21,7 +21,7 @@ back
 back
 
 target
-set target http://localhost/w3af/audit/preg_replace/
+set target http://moth/w3af/audit/preg_replace/
 back
 start
 

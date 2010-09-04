@@ -13,7 +13,7 @@ discovery findBackdoor
 back
 
 target
-set target http://localhost/w3af/discovery/find_backdoor/
+set target http://moth/w3af/discovery/find_backdoor/
 back
 
 start

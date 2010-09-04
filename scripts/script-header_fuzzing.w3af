@@ -19,7 +19,7 @@ audit xss
 back
 
 target
-set target http://localhost/w3af/core/header_fuzzing/index.php
+set target http://moth/w3af/core/header_fuzzing/index.php
 back
 
 start

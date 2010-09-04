@@ -13,7 +13,7 @@ discovery dnsWildcard
 
 back
 target
-#set target http://localhost/w3af/
+#set target http://moth/w3af/
 #set target http://google.com.ar/
 set target http://ipaddress.com.ar/
 back

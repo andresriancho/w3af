@@ -26,7 +26,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/audit/xss/simple_xss.php?text=1
+set target http://moth/w3af/audit/xss/simple_xss.php?text=1
 back
 start
 

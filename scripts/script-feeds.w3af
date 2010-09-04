@@ -15,7 +15,7 @@ grep feeds
 back
 
 target
-set target http://localhost/w3af/grep/feeds.html
+set target http://moth/w3af/grep/feeds.html
 back
 
 start

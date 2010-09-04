@@ -17,7 +17,7 @@ back
 
 target
 # It is not working on Apache
-set target http://localhost/w3af/audit/xss/simple_xss.php?text=1
+set target http://moth/w3af/audit/xss/simple_xss.php?text=1
 back
 
 start

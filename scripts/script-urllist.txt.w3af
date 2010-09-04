@@ -12,7 +12,7 @@ discovery urllist_txt
 back
 
 target
-set target http://localhost/
+set target http://moth/
 back
 
 start

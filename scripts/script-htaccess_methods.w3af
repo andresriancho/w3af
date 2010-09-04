@@ -16,7 +16,7 @@ grep httpAuthDetect
 back
 
 target
-set target http://localhost/w3af/bruteforce/basicAuthBrute/impossible_guess/
+set target http://moth/w3af/bruteforce/basicAuthBrute/impossible_guess/
 back
 
 start

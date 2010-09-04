@@ -14,14 +14,14 @@ audit xss
 back
 
 target
-set target http://localhost/w3af/audit/xss/simple_xss.php?text=1
+set target http://moth/w3af/audit/xss/simple_xss.php?text=1
 back
 
 start
 
 exploit
 exploit config xssBeef
-set beefURL http://localhost/beef/
+set beefURL http://moth/beef/
 set beefPasswd BeEFConfigPass
 view
 back

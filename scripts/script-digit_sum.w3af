@@ -13,7 +13,7 @@ discovery digitSum
 back
 
 target
-set target http://localhost/w3af/discovery/digitSum/index1.php?id=22, http://localhost/w3af/discovery/digitSum/index-3-1.html
+set target http://moth/w3af/discovery/digitSum/index1.php?id=22, http://moth/w3af/discovery/digitSum/index-3-1.html
 back
 
 start

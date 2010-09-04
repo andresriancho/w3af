@@ -14,7 +14,7 @@ audit dav
 back
 
 target
-set target http://localhost/w3af/audit/dav/
+set target http://moth/w3af/audit/dav/
 back
 
 start

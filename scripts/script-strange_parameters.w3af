@@ -14,7 +14,7 @@ grep strangeParameters
 back
 
 target
-set target http://localhost/w3af/grep/strange_parameters/
+set target http://moth/w3af/grep/strange_parameters/
 back
 
 start

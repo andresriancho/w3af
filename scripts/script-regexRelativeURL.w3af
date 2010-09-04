@@ -19,7 +19,7 @@ back
 back
 
 target
-set target http://localhost/w3af/webSpider/relativeRegex.html
+set target http://moth/w3af/webSpider/relativeRegex.html
 back
 
 start

@@ -14,7 +14,7 @@ discovery halberd
 back
 
 target
-set target http://localhost/
+set target http://moth/
 back
 
 start

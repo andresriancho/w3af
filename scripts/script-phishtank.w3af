@@ -15,7 +15,7 @@ discovery phishtank
 back
 target
 # not in phishtank
-#set target http://localhost/w3af/detectPhishing/
+#set target http://moth/w3af/detectPhishing/
 
 # in phishtank
 set target http://www.smithvilleacademy.com/www.halifax.co.uk/FormsLogin.aspsource=halifaxcouk/Index.PHP/

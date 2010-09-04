@@ -18,11 +18,11 @@ back
 back
 
 target
-set target http://localhost/w3af/core/htmlParser/urlRegex.html
+set target http://moth/w3af/core/htmlParser/urlRegex.html
 back
 
 start
 
-assert 'http://localhost/w3af/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','urlList')
+assert 'http://moth/w3af/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','urlList')
 
 exit

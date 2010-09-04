@@ -15,7 +15,7 @@ grep errorPages
 back
 
 target
-set target http://localhost/w3af/grep/error_pages/error_page.html
+set target http://moth/w3af/grep/error_pages/error_page.html
 back
 
 start

@@ -13,7 +13,7 @@ set verbose False
 back
 back
 target
-set target http://localhost/w3af/core/htmlParser/simple_form.html
+set target http://moth/w3af/core/htmlParser/simple_form.html
 back
 start
 exit

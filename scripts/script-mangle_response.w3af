@@ -19,7 +19,7 @@ audit sqli
 back
 
 target
-set target http://localhost/w3af/mangle/sed/
+set target http://moth/w3af/mangle/sed/
 back
 
 start

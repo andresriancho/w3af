@@ -16,7 +16,7 @@ back
 back
 
 target
-set target http://localhost/w3af/audit/local_file_inclusion/index.html
+set target http://moth/w3af/audit/local_file_inclusion/index.html
 back
 
 start

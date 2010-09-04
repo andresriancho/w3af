@@ -15,7 +15,7 @@ audit xst
 back
 
 target
-set target http://localhost/w3af/audit/xss/index.html
+set target http://moth/w3af/audit/xss/index.html
 back
 start
 

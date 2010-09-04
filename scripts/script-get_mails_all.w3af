@@ -25,7 +25,7 @@ back
 back
 
 target
-set target http://localhost/w3af/grep/get_mails/index.html
+set target http://moth/w3af/grep/get_mails/index.html
 back
 
 start

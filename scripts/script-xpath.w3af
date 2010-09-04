@@ -11,7 +11,7 @@ back
 back
 
 target
-set target http://localhost/w3af/audit/xpath/xpath.php?i=a
+set target http://moth/w3af/audit/xpath/xpath.php?i=a
 back
 start
 

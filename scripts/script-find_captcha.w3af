@@ -13,7 +13,7 @@ discovery findCaptchas
 
 back
 target
-set target http://localhost/w3af/discovery/find_captcha/index.php
+set target http://moth/w3af/discovery/find_captcha/index.php
 back
 
 start

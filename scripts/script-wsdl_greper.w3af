@@ -17,7 +17,7 @@ back
 back
 
 target
-set target http://localhost/w3af/grep/wsdl_greper/index.html
+set target http://moth/w3af/grep/wsdl_greper/index.html
 back
 
 start

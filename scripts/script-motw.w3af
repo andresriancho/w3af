@@ -18,7 +18,7 @@ back
 back
 
 target
-set target http://localhost/w3af/grep/motw/valid_MOTW.html , http://localhost/w3af/grep/motw/invalid_MOTW.html
+set target http://moth/w3af/grep/motw/valid_MOTW.html , http://moth/w3af/grep/motw/invalid_MOTW.html
 back
 
 start

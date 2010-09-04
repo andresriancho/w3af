@@ -18,7 +18,7 @@ back
 back
 
 target
-set target http://localhost/w3af/discovery/web_spider/follow_links/1.html
+set target http://moth/w3af/discovery/web_spider/follow_links/1.html
 back
 
 misc-settings
@@ -26,7 +26,7 @@ misc-settings
 # If this line ain't here, 2.html is requested and 3.html
 # and 4.html are also found; this is the expected behaviour
 
-set nonTargets http://localhost/w3af/discovery/web_spider/follow_links/2.html
+set nonTargets http://moth/w3af/discovery/web_spider/follow_links/2.html
 back
 
 start

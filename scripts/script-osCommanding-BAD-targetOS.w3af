@@ -19,7 +19,7 @@ audit
 back
 
 target
-set target http://localhost/w3af/osCommanding/vulnerable.php?command=f0as9
+set target http://moth/w3af/osCommanding/vulnerable.php?command=f0as9
 set targetOS windows
 back
 start

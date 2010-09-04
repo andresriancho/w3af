@@ -19,7 +19,7 @@ back
 back
 
 target
-set target http://localhost/w3af/grep/http_in_body/index.html
+set target http://moth/w3af/grep/http_in_body/index.html
 back
 
 start

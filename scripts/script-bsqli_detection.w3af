@@ -14,7 +14,7 @@ back
 
 back
 target
-set target http://localhost/w3af/audit/blind_sql_injection/bsqli_integer.php?id=1, http://localhost/w3af/audit/blind_sql_injection/bsqli_string.php?email=acho@cybsec.com, http://localhost/w3af/audit/blind_sql_injection/bsqli_string_rnd.php?email=acho@cybsec.com
+set target http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php?id=1, http://moth/w3af/audit/blind_sql_injection/bsqli_string.php?email=acho@cybsec.com, http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php?email=acho@cybsec.com
 back
 start
 

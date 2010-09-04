@@ -15,7 +15,7 @@ audit sqli, xss
 back
 
 target
-set target http://localhost/w3af/core/repeated_parameter_names/repeated_parameter_names.php?id=1&id=3
+set target http://moth/w3af/core/repeated_parameter_names/repeated_parameter_names.php?id=1&id=3
 back
 
 

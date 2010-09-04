@@ -8,15 +8,14 @@ set fileName output-w3af.txt
 set verbose True
 back
 
-discovery webSpider
-discovery config webSpider
-set onlyForward True
+output config console
+set verbose True
 back
 
 back
 
 target
-set target http://moth/w3af/audit/local_file_inclusion/index.html
+set target http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt
 back
 
 start
@@ -26,8 +25,7 @@ assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
 exploit
 exploit localFileReader
 interact 0
-list
-list -r 2
-endInteraction
 
-exit
+payload hosts
+
+

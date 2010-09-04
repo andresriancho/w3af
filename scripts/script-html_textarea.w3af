@@ -14,7 +14,7 @@ back
 back
 
 target
-set target http://localhost/w3af/core/htmlParser/textarea.html
+set target http://moth/w3af/core/htmlParser/textarea.html
 back
 
 

@@ -10,7 +10,7 @@ set verbose True
 back
 back
 target
-set target http://localhost/w3af/xsrf/xsrf.php?abc=2
+set target http://moth/w3af/xsrf/xsrf.php?abc=2
 back
 start
 

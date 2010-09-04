@@ -17,7 +17,7 @@ audit osCommanding
 back
 
 target
-set target http://localhost/w3af/audit/os_commanding/simple_osc.php?cmd=ls
+set target http://moth/w3af/audit/os_commanding/simple_osc.php?cmd=ls
 set targetOS windows
 back
 start

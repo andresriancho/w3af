@@ -19,7 +19,7 @@ grep dotNetEventValidation
 back
 
 target
-set target http://localhost/w3af/grep/event_validation/event_validation.html
+set target http://moth/w3af/grep/event_validation/event_validation.html
 back
 
 start

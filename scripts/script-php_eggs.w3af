@@ -14,7 +14,7 @@ discovery phpEggs
 back
 
 target
-set target http://localhost/w3af/audit/xss/no_tag_xss.php
+set target http://moth/w3af/audit/xss/no_tag_xss.php
 back
 
 start

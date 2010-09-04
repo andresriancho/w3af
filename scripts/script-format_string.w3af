@@ -13,7 +13,7 @@ audit formatString
 back
 
 target
-set target http://localhost/cgi-bin/formatString.cgi
+set target http://moth/cgi-bin/formatString.cgi
 back
 
 start

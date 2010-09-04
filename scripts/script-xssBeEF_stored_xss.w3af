@@ -14,14 +14,14 @@ audit xss
 back
 
 target
-set target http://localhost/w3af/audit/xss/stored/writer.php?a=abc , http://localhost/w3af/audit/xss/stored/reader.php
+set target http://moth/w3af/audit/xss/stored/writer.php?a=abc , http://moth/w3af/audit/xss/stored/reader.php
 back
 
 start
 
 exploit
 exploit config xssBeef
-set beefURL http://localhost/beef/
+set beefURL http://moth/beef/
 set beefPasswd BeEFConfigPass
 view
 back

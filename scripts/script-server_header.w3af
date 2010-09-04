@@ -13,7 +13,7 @@ discovery serverHeader
 back
 
 target
-set target http://localhost/w3af/audit/xss/index.php
+set target http://moth/w3af/audit/xss/index.php
 back
 
 start

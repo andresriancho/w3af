@@ -14,7 +14,7 @@ back
 
 target
 # Test it with that little bank... ;)
-set target http://localhost/
+set target http://moth/
 back
 
 start

@@ -14,7 +14,7 @@ grep domXss
 back
 
 target
-set target http://localhost/w3af/grep/dom_xss.html
+set target http://moth/w3af/grep/dom_xss.html
 back
 
 start

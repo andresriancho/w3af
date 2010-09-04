@@ -14,7 +14,7 @@ audit buffOverflow
 back
 
 target
-set target http://localhost/cgi-bin/buffOverflow.cgi
+set target http://moth/cgi-bin/buffOverflow.cgi
 back
 
 start
