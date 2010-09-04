@@ -153,6 +153,7 @@ class abstractParser:
             return [ i for i in self._emails if domain in i.split('@')[1] ]
         else:
             return self._emails
+            
     def getForms( self ):
         '''
         @return: A list of forms.
