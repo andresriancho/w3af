@@ -26,6 +26,7 @@ exploit
 exploit localFileReader
 interact 0
 
-payload hosts
+payload kernel_version
+
 
 

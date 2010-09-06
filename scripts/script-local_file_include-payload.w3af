@@ -22,6 +22,6 @@ exploit
 exploit localFileReader
 interact 0
 
-payload list_processes
+payload cpu_info
 
 

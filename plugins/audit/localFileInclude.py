@@ -199,6 +199,18 @@ class localFileInclude(baseAuditPlugin):
                         msg = 'An arbitrary local file read vulnerability was found at: '
                         msg += mutant.foundAt()
                         v.setDesc( msg )
+                        
+                        #
+                        #   Set which part of the source code to match
+                        #
+                        match_source_code = match.group(0)
+                        if '?>' in match_source_code:
+                            v['file_pattern'] = '?>'
+                        elif '%>' in match_source_code:
+                            v['file_pattern'] = '%>'
+                        else:
+                            v['file_pattern'] = match_source_code[:-4]
+                        
                         kb.kb.append( self, 'localFileInclude', v )
                         return
                         

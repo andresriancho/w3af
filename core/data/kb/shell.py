@@ -26,8 +26,12 @@ from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import *
 
+import plugins.attack.payloads.payload_handler as payload_handler
+
 # python stuff
 import time
+import os
+
 
 class shell(vuln, exploitResult, commonAttackMethods):
     '''
@@ -149,22 +153,33 @@ class shell(vuln, exploitResult, commonAttackMethods):
         '''
         raise w3afException('You should implement the _rexec method of classes that inherit from "shell"')
     
-    def readFile( self, filename ):
+    def _payload(self, payload_name):
         '''
-        @return: The contents of a file passed as parameter
+        Run a payload by name.
+        
+        @parameter payload_name: The name of the payload I want to run.
         '''
-        if self._rOS == 'windows':
-            return self.rexec('type ' + filename )
+        result_str = ''
+        
+        if payload_name in payload_handler.runnable_payloads(self):
+            om.out.debug( 'The payload can be run. Starting execution.' )
+            result = payload_handler.exec_payload( self,  payload_name)
+            result_str = '\n'.join(result)
         else:
-            return self.rexec('cat ' + filename )
+            result_str = 'The payload could not be run.'
+            
+        return result_str
     
-    def removeFile( self, filename ):
-        om.out.debug('Removing file: "' + filename + '".')
-        if self._rOS == 'windows':
-            return self.rexec('del ' + filename )
-        else:
-            return self.rexec('rm ' + filename )
-    
+    def _print_runnable_payloads(self):
+        '''
+        Print the payloads that can be run using this exploit.
+        
+        @return: A list with all runnable payloads.
+        '''
+        payloads = payload_handler.runnable_payloads( self )
+        payloads.sort()
+        return '\n'.join( payloads )
+        
     def end( self ):
         '''
         This method is called when the shell is not going to be used anymore. It should be used to remove the

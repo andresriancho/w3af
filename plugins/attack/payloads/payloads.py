@@ -1,7 +1,7 @@
 '''
-getShell.py
+payloads.py
 
-Copyright 2006 Andres Riancho
+Copyright 2009 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -24,6 +24,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
 import os,time
 import os.path
 import urllib
@@ -31,6 +32,7 @@ import urllib
 SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
 # 15825b40c6dace2a
 # 7cf5d4ab8ed434d5
+
 
 def get_webshells( extension, forceExtension=False ):
     '''
