@@ -30,7 +30,9 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
+from core.data.db.temp_persist import disk_list
+
+from lxml import etree
 
 
 class fileUpload(baseGrepPlugin):
@@ -42,6 +44,9 @@ class fileUpload(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        # Internal variables
+        self._already_inspected = disk_list()
 
     def grep(self, request, response):
         '''
@@ -51,28 +56,30 @@ class fileUpload(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html():
+        url = response.getURL()
+        
+        if response.is_text_or_html() and not url in self._already_inspected:
             
+            self._already_inspected.append( url )            
             dom = response.getDOM()
             
             # In some strange cases, we fail to normalize the document
-            if dom != None:
-                
+            if dom is not None:                
                 # Find all input tags
                 element_list = dom.findall( 'input' )
-            
+
                 for element in element_list:
                     
-                    if 'type' in element.attrib and element.attrib['type'].lower() == 'file':
+                    if element.attrib.get('type', '').lower() == 'file':
                         i = info.info()
                         i.setName('File upload form')
                         i.setURL( response.getURL() )
                         i.setId( response.id )
-                        msg = 'The URL: "' + response.getURL() + '" has form '
-                        msg += 'with file upload capabilities.'
-                        i.setDesc( msg )
-                        i.addToHighlight( tag.group(0) )
-                        kb.kb.append( self , 'fileUpload' , i ) 
+                        msg = 'The URL: "%s" has form with file upload capabilities.'
+                        i.setDesc( msg  % url )
+                        to_highlight = etree.tostring( element )
+                        i.addToHighlight( to_highlight )
+                        kb.kb.append( self, 'fileUpload', i )
     
     def setOptions( self, OptionList ):
         pass
