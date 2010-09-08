@@ -63,29 +63,33 @@ class ajax(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.is_text_or_html() and response.getURL() not in self._already_inspected:
+        url = response.getURL()
+        if response.is_text_or_html() and url not in self._already_inspected:
             
             # Don't repeat URLs
-            self._already_inspected.append( response.getURL() )
+            self._already_inspected.append(url)
             
             dom = response.getDOM()
             # In some strange cases, we fail to normalize the document
-            if dom != None:
-                
-                script_elements = soup.findall('script')
+            if dom is not None:
+
+                script_elements = dom.findall('.//script')
                 for element in script_elements:
                     # returns the text between <script> and </script>
                     script_content = element.text
-                    
-                    res = self._ajax_regex_re.search( script_content )
+
+                    res = self._ajax_regex_re.search(script_content)
                     if res:
                         i = info.info()
                         i.setName('AJAX code')
-                        i.setURL( response.getURL() )
-                        i.setDesc( 'The URL: "' + i.getURL() + '" has a AJAX code.'  )
-                        i.setId( response.id )
-                        i.addToHighlight( res.group(0) )
-                        kb.kb.append( self, 'ajax', i )
+                        i.setURL(url)
+                        i.setDesc('The URL: "%s" has an AJAX code.' % url)
+                        i.setId(response.id)
+                        i.addToHighlight(res.group(0))
+                        kb.kb.append(self, 'ajax', i)
+
+
+
     
     def setOptions( self, OptionList ):
         pass
