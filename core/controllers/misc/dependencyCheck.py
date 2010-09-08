@@ -114,3 +114,11 @@ def dependencyCheck():
         print msg
         sys.exit( 1 )
 
+    try:
+        from lxml import etree
+    except:
+        msg = 'You have to install python libxml2 wrapper. Debian based distributions: apt-get install python-lxml'
+        print msg
+        sys.exit( 1 )     
+
+

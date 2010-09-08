@@ -23,26 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # Common imports
 from core.data.parsers.urlParser import *
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    print("Failed to import ElementTree from any known place")
+from lxml import etree
 
 import copy
 import re
