@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -73,7 +71,7 @@ class ajax(baseGrepPlugin):
             # In some strange cases, we fail to normalize the document
             if dom is not None:
 
-                script_elements = dom.findall('.//script')
+                script_elements = dom.xpath('.//script')
                 for element in script_elements:
                     # returns the text between <script> and </script>
                     script_content = element.text
