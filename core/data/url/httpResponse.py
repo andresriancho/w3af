@@ -20,14 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-# Common imports
-from core.data.parsers.urlParser import *
-
-from lxml import etree
 
 import copy
 import re
-import string
+
+from lxml import etree
+
+import core.controllers.outputManager as om
+from core.data.parsers.urlParser import uri2url
+
 
 
 # Handle codecs
@@ -91,15 +92,15 @@ class httpResponse:
         
         @return: The soup, or None if the HTML normalization failed.
         '''
-        if self._dom == None:
+        if self._dom is None:
             try:
-                parser = etree.XMLParser(recover=True)
-                self._dom = etree.fromstring( self._body, parser )
+                parser = etree.HTMLParser(recover=True)
+                self._dom = etree.fromstring(self._body, parser)
             except Exception, e:
                 print e
-                msg = 'The HTTP body for "' + self.getURL() + '" could NOT be'
-                msg += ' parsed by libxml2.'
-                om.out.debug( msg )
+                msg = 'The HTTP body for "%s" could NOT be ' \
+                'parsed by libxml2.' % self.getURL()
+                om.out.debug(msg)
         return self._dom
     
     def getNormalizedBody(self):
@@ -247,10 +248,10 @@ class httpResponse:
                 #   Text or HTML?
                 magic_words = [ 'text', 'html', 'xml', 'txt']
                 for mw in magic_words:
-                   if self._content_type.lower().count(mw):
-                       self._is_text_or_html_response = True
-                       return
-                
+                    if self._content_type.lower().count(mw):
+                        self._is_text_or_html_response = True
+                        return
+
                 #   PDF?
                 if self._content_type.lower().count('pdf'):
                     self._is_pdf_response = True
