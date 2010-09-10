@@ -72,7 +72,7 @@ class formAutocomplete(baseGrepPlugin):
                         inf.setName('Auto-completable form')
                         inf.setURL(url)
                         inf.setId(response.id)
-                        msg = 'The URL: "%s" has <form> element with' \
+                        msg = 'The URL: "%s" has <form> element with ' \
                         'autocomplete capabilities.' % url
                         inf.setDesc(msg)
                         inf.addToHighlight(etree.tostring(form))
