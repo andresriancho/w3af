@@ -1,0 +1,24 @@
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+grep formAutocomplete
+back
+
+target
+set target http://moth/w3af/grep/form_autocomplete/
+back
+
+start
+
+assert len(kb.kb.getData('formAutocomplete','formAutocomplete')) == 1
+
+exit
