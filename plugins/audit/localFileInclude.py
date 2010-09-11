@@ -201,8 +201,10 @@ class localFileInclude(baseAuditPlugin):
                         v.setDesc( msg )
                         
                         #
-                        #   Set which part of the source code to match
+                        #    Set which part of the source code to match
                         #
+                        #    TODO: This doesn't work in all cases. Most specifically, it doesn't work
+                        #    when we perform a defineCut.
                         match_source_code = match.group(0)
                         if '?>' in match_source_code:
                             v['file_pattern'] = '?>'
