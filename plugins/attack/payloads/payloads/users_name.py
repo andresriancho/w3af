@@ -1,6 +1,7 @@
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
+
 class users_name(base_payload):
     '''
     This payload shows users name
@@ -13,18 +14,33 @@ class users_name(base_payload):
             for line in passwd.split('\n'):
                 if line.strip() != '':
                     splitted_line = line.split(':')
-                    user = splitted_line[0]
-                    directory = splitted_line[-1]
-                    result[user] = directory
+                    try:
+                        user = splitted_line[0]
+                        desc = splitted_line[-3]
+                        directory = splitted_line[-2]
+                        shell = splitted_line[-1]
+                    except:
+                        pass
+                    else:
+                        desc = desc.replace(',,,','')
+                        if not directory.endswith('/'):
+                            directory += '/'
+                        result[user] = (directory,shell,desc)
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('User --> Folder')
-        for user, folder in hashmap.iteritems():
-            result.append(user+' --> '+folder)
-        if result == [ ]:
-            result.append('Users name not found.')
-        return result
+        api_result = self.api_read()
+                
+        if not api_result:
+            return 'Users list not found.'
+        else:
+            rows = []
+            rows.append( ['User', 'Home directory', 'Shell', 'Description'] )
+            rows.append( [] )
+            for username in api_result:
+                home, shell, desc = api_result[username]
+                rows.append( [username, home, shell, desc] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return
