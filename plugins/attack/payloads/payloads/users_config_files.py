@@ -10,32 +10,36 @@ class users_config_files(base_payload):
     def api_read(self):
         result = {}
         user_config_files = []
-        folders = self.exec_payload('users').values()
-        for folder in folders:
-            user_config_files.append(folder+'.bashrc')
-            user_config_files.append(folder+'.bashrc~')
-            user_config_files.append(folder+'.bash_history')
-            user_config_files.append(folder+'.bash_profile')
-            user_config_files.append(folder+'.gtk-bookmarks')
-            user_config_files.append(folder+'.conkyrc')
-            user_config_files.append(folder+'.my.cnf')
-            user_config_files.append(folder+'.mysql_history.')
-            user_config_files.append(folder+'.ldaprc ')
-            user_config_files.append(folder+'.emacs')
-            user_config_files.append(folder+'.bash_logout')
-            user_config_files.append(folder+'.bash_login ')
-            user_config_files.append(folder+'.hushlogin')
-            user_config_files.append(folder+'.mail.rc')
-            user_config_files.append(folder+'.profile ')
-            user_config_files.append(folder+'.vimrc')
-            user_config_files.append(folder+'.gtkrc')
-            user_config_files.append(folder+'.kderc')
-            user_config_files.append(folder+'.netrc')
-            user_config_files.append(folder+'.rhosts')
-            user_config_files.append(folder+'.Xauthority')
-            user_config_files.append(folder+'.cshrc')
-            user_config_files.append(folder+'.login')
-            user_config_files.append(folder+'.joe_state')
+        
+        users_result = self.exec_payload('users')
+        
+        for user in users_result:
+            home = users_result[user]['home']
+
+            user_config_files.append(home+'.bashrc')
+            user_config_files.append(home+'.bashrc~')
+            user_config_files.append(home+'.bash_history')
+            user_config_files.append(home+'.bash_profile')
+            user_config_files.append(home+'.gtk-bookmarks')
+            user_config_files.append(home+'.conkyrc')
+            user_config_files.append(home+'.my.cnf')
+            user_config_files.append(home+'.mysql_history.')
+            user_config_files.append(home+'.ldaprc ')
+            user_config_files.append(home+'.emacs')
+            user_config_files.append(home+'.bash_logout')
+            user_config_files.append(home+'.bash_login ')
+            user_config_files.append(home+'.hushlogin')
+            user_config_files.append(home+'.mail.rc')
+            user_config_files.append(home+'.profile ')
+            user_config_files.append(home+'.vimrc')
+            user_config_files.append(home+'.gtkrc')
+            user_config_files.append(home+'.kderc')
+            user_config_files.append(home+'.netrc')
+            user_config_files.append(home+'.rhosts')
+            user_config_files.append(home+'.Xauthority')
+            user_config_files.append(home+'.cshrc')
+            user_config_files.append(home+'.login')
+            user_config_files.append(home+'.joe_state')
             
 
         #=======================================================================

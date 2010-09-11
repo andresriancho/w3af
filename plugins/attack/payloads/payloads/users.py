@@ -2,7 +2,7 @@ from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
 
-class users_name(base_payload):
+class users(base_payload):
     '''
     This payload shows users name
     '''
@@ -25,7 +25,8 @@ class users_name(base_payload):
                         desc = desc.replace(',,,','')
                         if not directory.endswith('/'):
                             directory += '/'
-                        result[user] = (directory,shell,desc)
+                        result[user] = {'home': directory, 'shell': shell, 'desc': desc}
+                        
         return result
     
     def run_read(self):
@@ -38,7 +39,9 @@ class users_name(base_payload):
             rows.append( ['User', 'Home directory', 'Shell', 'Description'] )
             rows.append( [] )
             for username in api_result:
-                home, shell, desc = api_result[username]
+                home = api_result[username]['home']
+                shell = api_result[username]['shell']
+                desc = api_result[username]['desc']
                 rows.append( [username, home, shell, desc] )
                     
             result_table = table( rows )
