@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class apache_ssl(base_payload):
     '''
@@ -24,35 +26,33 @@ class apache_ssl(base_payload):
             else:
                 return ''
 
-
         apache_files = self.exec_payload('apache_config_files')['apache_config']
         for file in apache_files:
             content = self.shell.read(file)
             if parse_ssl_cert(content) != '':
                 cert_content = self.shell.read(parse_ssl_cert(content))
                 if cert_content:
-                    result['apache_ssl_certificate'].update({parse_ssl_cert(content):cert_content})
+                    result['apache_ssl_certificate'][ parse_ssl_cert(content) ] = cert_content
+                    
             if parse_ssl_key(content) != '':
                 key_content = self.shell.read(parse_ssl_key(content))
                 if key_content:
-                    result['apache_ssl_key'].update({parse_ssl_key(content):key_content})
+                    result['apache_ssl_key'][ parse_ssl_key(content) ] = key_content
+                    
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
+        api_result = self.api_read()
         
-        for file, content in hashmap['apache_ssl_certificate'].iteritems():
-            result.append('-------------------------')
-            result.append(file)
-            result.append('-------------------------')
-            result.append(content)
-        for file, content in hashmap['apache_ssl_key'].iteritems():
-            result.append('-------------------------')
-            result.append(file)
-            result.append('-------------------------')
-            result.append(content)
-        
-        if result == [ ]:
-            result.append('Apache SSL configuration files not found.')
-        return result
+        if not api_result['apache_ssl_certificate'] and not api_result['apache_ssl_key']:
+            return 'Apache SSL key and Certificate not found.'
+        else:
+            rows = []
+            rows.append( ['Description', 'Value'] ) 
+            rows.append( [] )
+            for key_name in api_result:
+                for desc, value in api_result[key_name].iteritems():
+                    rows.append( [desc, value] )
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
