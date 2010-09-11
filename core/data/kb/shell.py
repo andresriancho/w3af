@@ -30,7 +30,6 @@ import plugins.attack.payloads.payload_handler as payload_handler
 
 # python stuff
 import time
-import os
 
 
 class shell(vuln, exploitResult, commonAttackMethods):

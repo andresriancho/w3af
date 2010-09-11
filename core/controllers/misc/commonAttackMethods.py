@@ -36,13 +36,20 @@ class commonAttackMethods:
     def _defineCut( self, body, expectedResult, exact=True ):
         '''
         Defines the section where the result of an attack will be.
-        For example, when doing a local File Include attack, the included file could
+        
+        For example, when doing a Local File Include attack, the included file could
         be in the middle of some HTML text, so a regex is created to cut the important
         part out of a simple html.
         
         @return: True if the cut could be defined
         '''
-        if body.count( expectedResult ):
+        if not body.count( expectedResult ):
+            # I won't be able to define the cut
+            return False
+        
+        else:
+
+            # I can do something...
             headerEnd = body.find( expectedResult )
             if exact:
                 footerStart = headerEnd + len( expectedResult )
@@ -50,6 +57,7 @@ class commonAttackMethods:
                     footerStart = -1
             else:
                 footerStart = body.find( '<', headerEnd )
+            
             self._header = body[:headerEnd]
             
             if footerStart == -1:
@@ -61,8 +69,6 @@ class commonAttackMethods:
             om.out.debug('Defined cut footer as: "' + self._footer + '"')
             
             return True
-        else:
-            return False
     
     def _cut( self, body ):
         '''
