@@ -163,8 +163,11 @@ class shell(vuln, exploitResult, commonAttackMethods):
         
         if payload_name in payload_handler.runnable_payloads(self):
             om.out.debug( 'The payload can be run. Starting execution.' )
-            result = payload_handler.exec_payload( self,  payload_name)
-            result_str = '\n'.join(result)
+            # TODO: The payloads are actually writing to om.out.console
+            # by themselves, so this is useless. In order for the
+            # result_str = ... to work, we would need a refactoring
+            # what usually gets here, are errors.
+            result_str = payload_handler.exec_payload( self,  payload_name)
         else:
             result_str = 'The payload could not be run.'
             

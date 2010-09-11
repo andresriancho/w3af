@@ -1,5 +1,5 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
 
 class users_name(base_payload):
     '''
@@ -7,26 +7,15 @@ class users_name(base_payload):
     '''
     def api_read(self):
         result = {}
-        users = []
-
-        def parse_users_name( etc_passwd ):
-            user = re.findall('^(.*?)\:', etc_passwd,  re.MULTILINE)
-            if user:
-                return user
-            else:
-                return ''
-                
-        def parse_users_folders( etc_passwd ):
-            user = re.findall('(?<=/)(.*?)\:', etc_passwd)
-            if user:
-                return user
-            else:
-                return ''
 
         passwd = self.shell.read('/etc/passwd')
         if passwd:
-            for i in xrange(len(parse_users_folders(passwd))):
-                result[str(parse_users_name(passwd)[i])] ='/'+str(parse_users_folders(passwd)[i])+'/'
+            for line in passwd.split('\n'):
+                if line.strip() != '':
+                    splitted_line = line.split(':')
+                    user = splitted_line[0]
+                    directory = splitted_line[-1]
+                    result[user] = directory
         return result
     
     def run_read(self):

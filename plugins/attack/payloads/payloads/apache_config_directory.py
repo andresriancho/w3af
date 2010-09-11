@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class apache_config_directory(base_payload):
     '''
@@ -56,19 +58,26 @@ class apache_config_directory(base_payload):
         for path in paths:
             if check_apache_config_dir(path):
                 result['apache_directory'].append(path)
-
+        
+        # uniq
+        result['apache_directory'] = list( set(result['apache_directory']))
+        
         return result
     
     def run_read(self):
         api_result = self.api_read()
-        result = []
-        
-        for k, v in api_result.iteritems():
-            k = k.replace('_', ' ')
-            result.append(k.title())
-            for directory in v:
-                result.append(directory)
-        
-        if result == []:
-            result.append('Apache configuration directory not found.')
-        return result
+                
+        if not api_result['apache_directory']:
+            return 'Apache configuration directory not found.'
+        else:
+            rows = []
+            rows.append( ['Apache directories',] )
+            rows.append( [] )
+            for key_name in api_result:
+                for path in api_result[key_name]:
+                    rows.append( [path,] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return
+

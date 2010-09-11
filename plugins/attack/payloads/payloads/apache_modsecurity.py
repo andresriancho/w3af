@@ -1,6 +1,7 @@
-#NOT FINISHED
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class apache_modsecurity(base_payload):
     '''
@@ -8,7 +9,9 @@ class apache_modsecurity(base_payload):
     '''
     def api_read(self):
         result = {}
-        result['files'] = {}
+        result['file'] = {}
+        result['version'] = {}
+        
         modules = []
         files = []
 
@@ -58,11 +61,11 @@ class apache_modsecurity(base_payload):
                 for item in bin:
                     version_item = parse_version(self.shell.read(item))
                     if version_item:
-                        result['version'] = version_item
+                        result['version'][ version_item ] = 'Yes'
             else:
                 version_location = parse_version(self.shell.read(location))
                 if version_location:
-                    result['version'] = version_location
+                    result['version'][ version_location ] = 'Yes'
 
 
         files.append(dir+'conf/mod_security.conf')
@@ -76,22 +79,22 @@ class apache_modsecurity(base_payload):
         for file in files:
             file_content = self.shell.read(file)
             if file_content:
-                result['files'].update({file:file_content})
+                result['file'][ file ] = file_content
 
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap['version']:
-            result.append('ModSecurity Version: ' + hashmap['version'])
-            
-        for file, content in hashmap['files'].iteritems():
-            result.append('-------------------------')
-            result.append(file)
-            result.append('-------------------------')
-            result.append(content)
-  
-        if result == [ ]:
-            result.append('ModSecurity configuration files not found.')
-        return result
+        api_result = self.api_read()
+
+        if not api_result['file'] and not api_result['version']:
+            return 'Apache mod_security configuration files not found.'
+        else:
+            rows = []
+            rows.append( ['Description','Value'] ) 
+            rows.append( [] )
+            for key_name in api_result:
+                for k, v in api_result[key_name].items():
+                    rows.append( [key_name, k] )
+            result_table = table( rows )
+            result_table.draw( 90 )               
+            return

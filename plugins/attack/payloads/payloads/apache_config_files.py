@@ -1,7 +1,8 @@
-import re
 import core.data.kb.knowledgeBase as kb
 import plugins.attack.payloads.misc.file_crawler as file_crawler
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class apache_config_files(base_payload):
     '''
@@ -29,31 +30,30 @@ class apache_config_files(base_payload):
                 for file in files:
                     content = self.shell.read(dir+file)
                     if content:
-                        result['apache_config'].update({dir+file:content})
+                        result['apache_config'][ dir+file ] = content
                 
                 #TODO: Add target domain name being scanned by w3af.
                 if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                     for profile in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
                         profile_content = self.shell.read(dir+'sites-available/'+profile.lower())
                         if profile_content:
-                            result['apache_config'].update({dir+'sites-available/'+profile.lower():profile_content})
+                            result['apache_config'][ dir+'sites-available/'+profile.lower() ] = profile_content
 
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
+        api_result = self.api_read()
         
-        for k, v in hashmap.iteritems():
-            k = k.replace('_', ' ')
-            result.append(k.title())
-            for file, content in v.iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-        
-        if result == []:
-            result.append('Apache configuration files not found.')
-        return result
+        if not api_result['apache_config']:
+            return 'Apache configuration files not found.'
+        else:
+            rows = []
+            rows.append( ['Apache configuration files'] ) 
+            rows.append( [] )
+            for key_name in api_result:
+                for filename, file_content in api_result[key_name].items():
+                    rows.append( [filename,] )
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
 

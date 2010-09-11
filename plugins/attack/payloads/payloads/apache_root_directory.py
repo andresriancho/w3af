@@ -1,8 +1,9 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
 import core.data.kb.knowledgeBase as kb
+from core.ui.consoleUi.tables import table
 
-#TODO: Perform more testing
+
 class apache_root_directory(base_payload):
     '''
     This payload finds Apache Root Directories where websites are hosted.
@@ -42,22 +43,27 @@ class apache_root_directory(base_payload):
         if kb.kb.getData('pathdisclosure', 'webroot'):
             directory.append(kb.kb.getData('pathdisclosure', 'webroot'))
         
+        # perform some normalization and filtering
+        directory= [p.replace('//','/') for p in directory if p != '']
         directory = list(set(directory))
-        directory= [p for p in directory if p != '']
         
         result['apache_root_directory'] = directory
 
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        for k, v in hashmap.iteritems():
-            k = k.replace('_', ' ')
-            result.append(k.title())
-            for elem in v:
-                result.append(elem)
+        api_result = self.api_read()
         
-        if result == [ ]:
-            result.append('Apache root directory not found.')
-        return result
+        if not api_result['apache_root_directory']:
+            return 'Apache root directory not found.'
+        else:
+            rows = []
+            rows.append( ['Apache root directories'] ) 
+            rows.append( [] )
+            for key_name in api_result:
+                for directory in api_result[key_name]:
+                    rows.append( [directory,] )
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
+

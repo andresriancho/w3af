@@ -25,12 +25,14 @@ def read_debug(fn):
     def new( self, filename ):
         #   Run the original function
         result = fn( self, filename )
+        no_newline_result = result.replace('\n','')
+        no_newline_result = no_newline_result.replace('\r','')
         
         #   Format the message
-        if len(result) > 25:
-            file_content = '"' + result[:25] + '...' + '"'
+        if len(no_newline_result) > 25:
+            file_content = '"' + no_newline_result[:25] + '...' + '"'
         else:
-            file_content = '"' + result[:25] + '"'
+            file_content = '"' + no_newline_result[:25] + '"'
             
         msg = 'read( "' + filename + '" , ' + file_content +') == ' + str(len(file_content)) + ' bytes.'
         
