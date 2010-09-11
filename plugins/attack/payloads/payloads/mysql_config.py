@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class mysql_config(base_payload):
     '''
@@ -16,22 +18,29 @@ class mysql_config(base_payload):
 
         for file in files:
             for directory in directory_list:
-                content = self.shell.read(directory+file)
+                
+                mysql_conf = directory+file
+                content = self.shell.read(mysql_conf)
+                
                 if content:
-                    result.update({directory+file:content})
+                    result[ mysql_conf ] = content
+
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('MYSQL Config Files')
-            for file, content in hashmap.iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-        if result == [ ]:
-            result.append('MySQL configuration files not found.')
-        return result
+        api_result = self.api_read()
         
+        if not api_result:
+            return 'MySQL configuration files not found.'
+        else:
+            rows = []
+            rows.append( ['MySQL configuration file', 'Content'] ) 
+            rows.append( [] )
+            for filename in api_result:
+                rows.append( [filename, api_result[filename] ] )
+                rows.append( [] )
+                              
+            result_table = table( rows[:-1] )
+            result_table.draw( 80 )                    
+            return
+

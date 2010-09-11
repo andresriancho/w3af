@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class log_reader(base_payload):
     '''
@@ -97,26 +99,28 @@ class log_reader(base_payload):
             for log in apache_logs:
                 content = self.shell.read(log)
                 if content:
-                    result.update({log:content})
+                    result[ log ] = content
 
         for log in logs:
             content = self.shell.read(log)
             if content:
-                result.update({log:content})
+                result[ log ] = content
+                
         return result
 
 
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('Log Files')
-            for file, content in hashmap.iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-        if result == [ ]:
-            result.append('No logs found.')
-        return result
-
+        api_result = self.api_read()
+        
+        if not api_result:
+            return 'No log files not found.'
+        else:
+            rows = []
+            rows.append( ['Log files'] ) 
+            rows.append( [] )
+            for filename in api_result:
+                rows.append( [filename,] )
+                
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

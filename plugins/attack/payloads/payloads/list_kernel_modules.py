@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class list_kernel_modules(base_payload):
     '''
@@ -8,26 +10,39 @@ class list_kernel_modules(base_payload):
     def api_read(self):
         result = {}
 
+        def parse_module_info ( modules_file ):
+            info = re.findall('(.*?)\s(\d{0,6}) \d\d? (.*?),? -?\s?Live', modules_file)
+            return info
 
-        def parse_module_name ( modules_file ):
-            name = re.findall('(.*?)\s(\d{0,6}) (\d.*?),? -?\s?Live', modules_file)
-            if name:
-                return name
-            else:
-                return ''
+        for info in parse_module_info(self.shell.read( '/proc/modules')):
+            name = info[0]
+            used = info[2]
+            
+            if used == '-':
+                used = ''
 
-        for module in parse_module_name(self.shell.read( '/proc/modules')):
-            result[module] = {}
-            result[module] = {'size':module[1], 'used':module[2]}
+            result[name] = {}
+            result[name] = { 'used':used }
+
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('Module'.ljust(28)+'Size'.ljust(7)+'Used by'.ljust(20))
-            for module, info in hashmap.iteritems():
-                result.append(module[0].ljust(28)+hashmap[module]['size'].ljust(7)+hashmap[module]['used'].ljust(20))
-        if result == [ ]:
-            result.append('Kernel modules information not found.')
-        return result
+        api_result = self.api_read()
+        
+        if not api_result:
+            return 'Failed to identify kernel modules.'
+        else:
+            rows = []
+            rows.append( ['Module', 'Used by'] ) 
+            rows.append( [] )
+            
+            modules = api_result.keys()
+            modules.sort()
+            
+            for module in modules:
+                used = api_result[module]['used']
+                rows.append( [module, used] )
+                              
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

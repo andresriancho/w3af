@@ -1,9 +1,9 @@
-import re
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from plugins.attack.payloads.base_payload import base_payload
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
-#TODO: Not working?
+import re
+from core.ui.consoleUi.tables import table
 
 
 class list_processes(base_payload ):
@@ -41,9 +41,10 @@ class list_processes(base_payload ):
             if not cmd:
                 cmd = '[kernel process]'
             cmd = cmd.replace('\x00',' ')
-            self.result[pid] = {'name':name, 'state':state, 'cmd':cmd}
+            self.result[ str(pid) ] = {'name':name, 'state':state, 'cmd':cmd}
             om.out.console('+', newLine=False)
-            #TODO: Check how to append to the KB
+        
+        #TODO: Check how to append to the KB
         #if kb.kb:
             #kb.kb.append(str(i), [str(i), name, state, cmd])
 
@@ -53,7 +54,7 @@ class list_processes(base_payload ):
         
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
         #   Remove comment to debug
-        #max_pid = 400
+        max_pid = 400
         
         for pid in xrange(1, int(max_pid)):
             targs = (pid, )
@@ -75,20 +76,25 @@ class list_processes(base_payload ):
         return self.result
         
     def run_read(self):
-        process_dict= self.api_read()
-        result = []
+        api_result = self.api_read()
         
-        if process_dict:
-            sorted_process_ids = sorted(process_dict)
-            result.append('PID'.ljust(7)+'NAME'.ljust(20)+'STATUS'.ljust(20)+'CMD'.ljust(30))
+        if not api_result:
+            return 'Failed to list proccesses.'
+        else:
+            rows = []
+            rows.append( ['PID', 'Name', 'Status', 'Cmd'] ) 
+            rows.append( [] )
             
-            for pid in sorted_process_ids:
-                pid_info = process_dict[pid]
-                msg = str(pid).ljust(7) + pid_info['name'].ljust(20)
-                msg += pid_info['state'].ljust(20) + pid_info['cmd'].ljust(30)
-                result.append( msg )
-            om.out.console('')
+            pids = api_result.keys()
+            pids.sort()
             
-        if result == [ ]:
-            result.append('Cant list proccesses.')
-        return result
+            for pid in pids:
+                name = api_result[pid]['name']
+                state = api_result[pid]['state']
+                cmd = api_result[pid]['cmd']
+                
+                rows.append( [pid, name, state, cmd] )
+                              
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

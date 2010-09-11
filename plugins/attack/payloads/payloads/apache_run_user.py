@@ -25,10 +25,7 @@ class apache_run_user(base_payload):
                 user = parse_user_envvars(self.shell.read(dir+'envvars'))
                 if user:
                     result['apache_run_user'].append(user)
-                
-                # TODO:
-                # ... parse_user_environ(open('/proc/PIDAPACHE/environ').read()            
-            
+                            
         return result
         
     def run_read(self):

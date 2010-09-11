@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class mysql_config_directory(base_payload):
     '''
@@ -30,7 +32,7 @@ class mysql_config_directory(base_payload):
         paths.append('/opt/local/etc/mysql5/')
         paths.append('/var/lib/mysql/')
 
-        folders = self.exec_payload('users').values()
+        folders = self.exec_payload('users')
         for folder in folders:
             paths.append(folder)
 
@@ -43,16 +45,17 @@ class mysql_config_directory(base_payload):
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append("MYSQL Config Directory")
+        api_result = self.api_read()
         
-        for directory in hashmap['directory']:
-            result.append(directory)
-        
-        if result == [ ]:
-            result.append('MySQL configuration directory not found.')
-        return result
-        
-
+        if not api_result:
+            return 'No MySQL configuration directories were found.'
+        else:
+            rows = []
+            rows.append( ['MySQL configuration directory'] ) 
+            rows.append( [] )
+            for directory in api_result['directory']:
+                rows.append( [directory,] )
+                
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

@@ -1,5 +1,6 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class os_fingerprint(base_payload):
     '''
@@ -8,7 +9,9 @@ class os_fingerprint(base_payload):
     def api_read(self):
         result = {}
 
-        if self.shell.read('/proc/sys/kernel/ostype')[:-1]  == 'Linux':
+        os_type = self.shell.read('/proc/sys/kernel/ostype')
+
+        if 'linux' in os_type.lower() or 'kernel' in os_type.lower():
             result['os'] = 'Linux'
         else:
             result['os'] = 'Windows'
@@ -16,10 +19,14 @@ class os_fingerprint(base_payload):
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('OS Detected: '+hashmap['os'])
-        if result == [ ]:
-            result.append('Can not detect OS')
-        return result
+        api_result = self.api_read()
+        
+        if not api_result['os']:
+            return 'Remote OS not identified.'
+        else:
+            rows = []
+            rows.append( ['Remote OS', api_result['os'] ] ) 
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
+

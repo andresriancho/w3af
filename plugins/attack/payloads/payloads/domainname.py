@@ -1,5 +1,6 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class domainname(base_payload):
     '''
@@ -7,20 +8,27 @@ class domainname(base_payload):
     '''
     def api_read(self):
         result = {}
-        values = []
-        values.append(self.shell.read('/proc/sys/kernel/domainname')[:-1])
-
-        for v in values:
-            result.update({'Domain name':v})
-
+        result['domain_name'] = ''
+        
+        domainname_content = self.shell.read('/proc/sys/kernel/domainname')[:-1]
+        if domainname_content: 
+            result['domain_name'] = domainname_content
+             
         return result
 
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        for k, v in hashmap.iteritems():
-            result.append(k+': '+v)
+        api_result = self.api_read()
+                
+        if not api_result:
+            return 'Domain name not found.'
+        else:
+            rows = []
+            rows.append( ['Domain name',] )
+            rows.append( [] )
+            for domain in api_result.values():
+                rows.append( [domain,] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return
         
-        if result == [ ]:
-            result.append('Domain name not found.')
-        return result

@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class cpu_info(base_payload):
     '''
@@ -51,13 +53,18 @@ class cpu_info(base_payload):
                 return ''
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
+        api_result = self.api_read()
+                
+        if not api_result:
+            return 'No CPU information found.'
+        else:
+            rows = []
+            rows.append( ['Description','Value'] )
+            rows.append( [] )
+            for name in api_result:
+                rows.append( [name, api_result[name] ] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return
         
-        for k, v in hashmap.iteritems():
-            k = k.replace('_', ' ')
-            result.append(k.title()+': '+v)
-        
-        if result == [ ]:
-            result.append('CPU Info not found.')
-        return result

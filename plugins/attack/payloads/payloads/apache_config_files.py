@@ -33,11 +33,24 @@ class apache_config_files(base_payload):
                         result['apache_config'][ dir+file ] = content
                 
                 #TODO: Add target domain name being scanned by w3af.
-                if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-                    for profile in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-                        profile_content = self.shell.read(dir+'sites-available/'+profile.lower())
-                        if profile_content:
-                            result['apache_config'][ dir+'sites-available/'+profile.lower() ] = profile_content
+                profiled_words_list = kb.kb.getData('passwordProfiling', 'passwordProfiling')
+                domain_name = self.exec_payload('domainname')['domain_name']
+                hostname = self.exec_payload('hostname')['hostname']
+                
+                extras = []
+                extras.append(domain_name)
+                extras.extend(hostname)
+                if profiled_words_list is not None:
+                    extras.extend(profiled_words_list)
+                extras = list(set(extras))
+                extras = [i for i in extras if i != '']
+                
+                for possible_domain in extras:
+                    site_configuration = dir + 'sites-enabled/' + possible_domain.lower()
+                    
+                    site_configuration_content = self.shell.read(site_configuration)
+                    if site_configuration_content:
+                        result['apache_config'][ site_configuration ] = site_configuration_content
 
         return result
         

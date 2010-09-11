@@ -1,5 +1,7 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class hostname(base_payload):
     '''
@@ -7,7 +9,7 @@ class hostname(base_payload):
     '''
     def api_read(self):
         result = {}
-        result['Hostname'] = []
+        result['hostname'] = []
         
         values = []
         values.append(self.shell.read('/etc/hostname')[:-1])
@@ -16,13 +18,14 @@ class hostname(base_payload):
         values = list(set(values))
         values= [p for p in values if p != '']
         
-        result['Hostname'] = values
+        result['hostname'] = values
         
         return result
     
     def api_win_read(self):
         result = {}
-        result['Hostname'] = []
+        result['hostname'] = []
+        
         def parse_iis6_log(iis6_log):
             root1 = re.findall('(?<=OC_COMPLETE_INSTALLATION:m_csMachineName=)(.*?) ', iis6_log, re.MULTILINE)
             root2 = re.findall('(?<=OC_QUEUE_FILE_OPS:m_csMachineName=)(.*?) ',  iis6_log, re.MULTILINE)
@@ -45,16 +48,21 @@ class hostname(base_payload):
         hostnames+=parse_certocm_log(self.shell.read('/windows/certocm.log'))
         hostnames = list(set(hostnames))
         hostnames= [p for p in hostnames if p != '']
-        result['Hostname'] = hostnames
+        result['hostname'] = hostnames
         return result
 
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        for hostname in hashmap['Hostname']:
-            result.append(hostname)
-        
-        if result == []:
-            result.append('Hostname not found.')
-        return result
-        
+        api_result = self.api_read()
+                
+        if not api_result['hostname']:
+            return 'Host name could not be identified.'
+        else:
+            rows = []
+            rows.append( ['Hostname',] )
+            rows.append( [] )
+            for hostname in api_result['hostname']:
+                rows.append( [hostname,] )
+                    
+            result_table = table( rows )
+            result_table.draw( 80 )
+            return

