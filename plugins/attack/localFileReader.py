@@ -246,7 +246,8 @@ class fileReaderShell(shell):
             om.out.console('')
             om.out.console('Available commands:')
             om.out.console('    help                            Display this information')
-            om.out.console('    cat                             Show the contents of a file')
+            om.out.console('    read                            Echoes the contents of a file.')
+            om.out.console('    download                        Downloads a file to the local filesystem.')
             om.out.console('    list                            List files that may be interesting.')
             om.out.console('                                    Type "help list" for detailed information.')
             om.out.console('    endInteraction                  Exit the shell session')
@@ -264,22 +265,29 @@ class fileReaderShell(shell):
             om.out.console('Examples:')
             om.out.console('    list -r 10')
             om.out.console('    list')
-        elif command == 'cat':
-            om.out.console('cat help:')
-            om.out.console('    The cat command echoes the content of a file to the console. The')
+        elif command == 'read':
+            om.out.console('read help:')
+            om.out.console('    The read command echoes the content of a file to the console. The')
             om.out.console('    command takes only one parameter: the full path of the file to ')
             om.out.console('    read.')
             om.out.console('')
             om.out.console('Examples:')
-            om.out.console('    cat /etc/passwd')
+            om.out.console('    read /etc/passwd')
+        elif command == 'download':
+            om.out.console('download help:')
+            om.out.console('    The download command reads a file in the remote system and saves')
+            om.out.console('    it to the local filesystem.')
+            om.out.console('')
+            om.out.console('Examples:')
+            om.out.console('    download /etc/passwd /tmp/passwd')
         return True
         
     def _rexec( self, command ):
         '''
         This method is called when a command is being sent to the remote server.
-        This is a NON-interactive shell. In this case, the only available command is "cat"
+        This is a NON-interactive shell.
 
-        @parameter command: The command to send ( cat is the only supported command. ).
+        @parameter command: The command to send
         @return: The result of the command.
         '''
 
@@ -293,6 +301,24 @@ class fileReaderShell(shell):
         elif cmd == 'read' and len(parameters) == 1:
             filename = parameters[0]
             return self.read( filename )
+        elif cmd == 'download' and len(parameters) == 2:
+            remote_filename = parameters[0]
+            local_filename = parameters[1]
+            
+            remote_content = self.read( remote_filename )
+            
+            if not remote_content:
+                return 'Remote file does not exist.'
+            else:
+                try:
+                    fh = file(local_filename, 'w')
+                except:
+                    return 'Failed to open local file for writing.'
+                else:
+                    fh.write(remote_content)
+                    fh.close()
+                    return 'Success.'
+                    
         elif cmd == 'payload' and len(parameters) == 1:
             filename = parameters[0]
             return self._payload( filename )
