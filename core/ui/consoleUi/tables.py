@@ -88,7 +88,7 @@ class table:
         minLengths = [max([max(map(len, row[i].split()+[''])) for row in self._rows if len(row)>0]) \
             for i in range(self._colsNum)]
         shifts = [w - mw for mw,w in zip(minLengths , self._widthes)]
-#        length = len(shifts)
+        #length = len(shifts)
         borrow = zip(self._colsRange, shifts)
         borrow.sort(lambda a,b: cmp(a[1], b[1]))
         delta = [0]*self._colsNum
@@ -131,7 +131,8 @@ class table:
         emptyLines = [' ' * w for w in self._widthes]
         maxHeight = max(map(len, columns))
         columns = [col + [er]*(maxHeight - len(col)) for (col, er) in zip(columns, emptyLines)]
-    #    width = sum(widthes) + (len(columns)-1)*3 + 4
+        
+        # width = sum(widthes) + (len(columns)-1)*3 + 4
         s = self._separator
         for rowNum in range(0, maxHeight):
             om.out.console(s + ' '
