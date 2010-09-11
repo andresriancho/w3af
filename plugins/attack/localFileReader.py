@@ -39,9 +39,6 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
-import re
-import os
-
 
 class localFileReader(baseAttackPlugin):
     '''
