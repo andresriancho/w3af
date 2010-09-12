@@ -20,14 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
-import os,time
 import os.path
-import urllib
+
 
 SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
 # 15825b40c6dace2a
