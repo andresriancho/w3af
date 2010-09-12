@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.kb.shell import shell as shell
+from core.data.kb.exec_shell import exec_shell as exec_shell
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
@@ -194,21 +194,19 @@ class davShell(baseAttackPlugin):
             - URL (only used in fastExploit)
         '''
         
-class davShellObj(shell):
+class davShellObj(exec_shell):
     def setExploitURL( self, eu ):
         self._exploit_url = eu
     
     def getExploitURL( self ):
         return self._exploit_url
         
-    def specific_user_input( self, command ):
+    def execute( self, command ):
         '''
-        This method is called when a user writes a command in the shell and hits enter.
-        
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
+        This method executes a command in the remote operating system by
+        exploiting the vulnerability.
 
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
         to_send = self.getExploitURL() + urllib.quote_plus( command )

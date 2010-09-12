@@ -38,8 +38,9 @@ from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
 
 # Advanced shell stuff
-from core.data.kb.shell import shell as shell
+from core.data.kb.exec_shell import exec_shell as exec_shell
 import plugins.attack.payloads.shell_handler as shell_handler
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 # Port definition
 import core.data.constants.w3afPorts as w3afPorts
@@ -348,13 +349,13 @@ class remoteFileIncludeShell(baseAttackPlugin):
             - generateOnlyOne
         '''
         
-class rfi_shell(shell):
+class rfi_shell(exec_shell):
     
     def __init__(self, vuln):
         '''
         Create the obj
         '''
-        shell.__init__(self, vuln)
+        exec_shell.__init__(self, vuln)
         
         self._exploit_dc = None
         self._web_server = None
@@ -381,7 +382,8 @@ class rfi_shell(shell):
         '''
         self._web_server = webserver_instance
     
-    def specific_user_input( self, command ):
+    @exec_debug
+    def execute( self, command ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         

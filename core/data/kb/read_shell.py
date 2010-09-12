@@ -28,6 +28,8 @@ import core.controllers.outputManager as om
 
 from core.data.kb.shell import shell
 
+from plugins.attack.payloads.decorators.download_decorator import download_debug
+
 
 class read_shell(shell):
     '''
@@ -54,6 +56,7 @@ class read_shell(shell):
         om.out.console('All the other commands are executed on the remote server.')
         return True
 
+    @download_debug
     def download(self, remote_filename, local_filename):
         '''
         This is a wrapper around "read" that will write the results
@@ -111,7 +114,7 @@ class read_shell(shell):
         #
         #    Call the shell subclass method if needed
         #
-        if hasattr( self, 'specific_user_input'):
+        elif hasattr( self, 'specific_user_input'):
             # forward to the plugin
             return self.specific_user_input( command )
 

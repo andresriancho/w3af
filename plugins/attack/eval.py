@@ -33,8 +33,10 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 # Advanced shell stuff
-from core.data.kb.shell import shell as shell
+from core.data.kb.exec_shell import exec_shell as exec_shell
+
 import plugins.attack.payloads.shell_handler as shell_handler
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
 class eval(baseAttackPlugin):
@@ -215,19 +217,18 @@ class eval(baseAttackPlugin):
             - generateOnlyOne
         '''
         
-class eval_shell(shell):
+class eval_shell(exec_shell):
     
     def setCode(self, code):
         self._shell_code = code
-    
-    def specific_user_input( self, command ):
-        '''
-        This method is called when a user writes a command in the shell and hits enter.
-        
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
 
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+    @exec_debug    
+    def execute( self, command ):
+        '''
+        This method executes a command in the remote operating system by
+        exploiting the vulnerability.
+
+        @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
         # Lets send the command.

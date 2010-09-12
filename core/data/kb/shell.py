@@ -120,12 +120,6 @@ class shell(vuln, exploitResult, commonAttackMethods):
             #
             return self._print_runnable_payloads()
 
-        #
-        #    Call the shell subclass method if needed
-        #
-        if hasattr( self, 'specific_user_input'):
-            # forward to the plugin
-            return self.specific_user_input( command )
 
     def end_interaction(self):
         '''
@@ -151,7 +145,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
         @parameter command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        pass
+        return 'Command not found.'
     
     def _payload(self, payload_name):
         '''

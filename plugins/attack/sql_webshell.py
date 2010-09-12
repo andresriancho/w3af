@@ -38,10 +38,12 @@ import core.data.kb.vuln as vuln
 from core.data.kb.shell import shell as shell
 
 import plugins.attack.payloads.shell_handler as shell_handler
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 
 import urllib
 
@@ -459,8 +461,9 @@ class sql_web_shell(shell):
     
     def getWebShellURL( self ):
         return self._webshell_url
-        
-    def specific_user_input( self, command ):
+    
+    @exec_debug
+    def execute( self, command ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         

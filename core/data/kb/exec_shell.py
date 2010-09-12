@@ -30,6 +30,9 @@ import core.controllers.outputManager as om
 from core.data.kb.shell import shell
 import time
 
+from plugins.attack.payloads.decorators.read_decorator import read_debug
+from plugins.attack.payloads.decorators.download_decorator import download_debug
+
 
 class exec_shell(shell):
     '''
@@ -55,6 +58,7 @@ class exec_shell(shell):
         om.out.console('All the other commands are executed on the remote server.')
         return True
 
+    @download_debug
     def download(self, remote_filename, local_filename):
         '''
         This is a wrapper around "read" that will write the results
@@ -108,7 +112,7 @@ class exec_shell(shell):
         #
         #    Here I get all the common methods like help, payloads, lsp, etc.
         #
-        super(shell, self).generic_user_input(command)
+        shell.generic_user_input(self, command)
 
         # Get the command and the parameters
         original_command = command
@@ -116,9 +120,16 @@ class exec_shell(shell):
         command = command.split(' ')[0]
         
         #
+        #    Read remote files
+        #
+        if command == 'read' and len(parameters) == 1:
+            filename = parameters[0]
+            return self.read( filename )
+
+        #
         #    Write remote files
         #
-        if command == 'write' and len(parameters) == 2:
+        elif command == 'write' and len(parameters) == 2:
             filename = parameters[0]
             content = parameters[1]
             return self.write( filename, content )
@@ -138,28 +149,49 @@ class exec_shell(shell):
         #
         #    Execute the command in the remote host 
         #
-        if command in ['e', 'exec', 'execute']:
-            self.execute( original_command )
+        elif command in ['e', 'exec', 'execute']:
+            return self.execute( ' '.join(parameters) )
         
         #
         #    Advanced exploitation
         #   
-        if command == 'start vdaemon':
-            self.start_vdaemon()
+        elif command == 'start vdaemon':
+            return self.start_vdaemon()
             
         elif command == 'start w3afAgent':
-            self.start_w3afAgent()
+            return self.start_w3afAgent()
                 
         #
         #    Call the shell subclass method if needed
         #
-        if hasattr( self, 'specific_user_input'):
+        elif hasattr( self, 'specific_user_input'):
             # forward to the plugin
             return self.specific_user_input( command )
+    
+    def get_unlink_command(self):
+        '''
+        @return: The command to be used to remove files in the remote operating system.
+        Examples:
+            - rm -rf %s
+            - del %s
+        The %s will be replaced by the file to be read.
+        '''
+        if self._rOS == 'windows':
+            return 'del %s'
+        else:
+            return 'rm -rf %s'
+
+    def unlink(self, filename):
+        '''
+        @param filename: The filename to unlink from the remote filesystem.
+        '''
+        unlink_command_format = self.get_unlink_command()
+        unlink_command = unlink_command_format % (filename,)
+        return self.execute( unlink_command )
 
     def get_read_command(self):
         '''
-        @return: The command to be used to read files in the current operating system.
+        @return: The command to be used to read files in the remote operating system.
         Examples:
             - cat %s
             - type %s
@@ -170,6 +202,16 @@ class exec_shell(shell):
         else:
             return 'cat %s'
 
+    @read_debug
+    def read(self, filename):
+        '''
+        Read a file in the remote server by running "cat" or "type" depending
+        on the identified OS.
+        '''
+        read_command_format = self.get_read_command()
+        read_command = read_command_format % (filename,)
+        return self.execute( read_command )
+        
     def start_w3afAgent(self):
         '''
         start a w3afAgent, to do this, I must transfer the agent client to the
@@ -215,20 +257,6 @@ class exec_shell(shell):
         or maybe some other, more complex, thing.
         '''
         return True
-
-    def specific_user_input( self, command ):
-        '''
-        This method is called when a user writes a command in the shell and hits enter.
-        
-        Recommendation: Overwrite this in your customized shells
-        
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
-
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
-        @return: The result of the command.
-        '''
-        pass
     
     def _payload(self, payload_name):
         '''

@@ -30,11 +30,12 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.kb.shell import shell as shell
+from core.data.kb.exec_shell import exec_shell as exec_shell
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 import plugins.attack.payloads.shell_handler as shell_handler
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
 import os.path
@@ -248,14 +249,15 @@ class fileUploadShell(baseAttackPlugin):
         No configurable parameters exist.
         '''
 
-class fuShell(shell):
+class fuShell(exec_shell):
     def setExploitURL( self, eu ):
         self._exploit = eu
     
     def getExploitURL( self ):
         return self._exploit
-        
-    def specific_user_input( self, command ):
+    
+    @exec_debug
+    def execute( self, command ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         
@@ -273,7 +275,7 @@ class fuShell(shell):
         om.out.debug('File upload shell is going to delete the webshell that was uploaded before.')
         file_to_del = urlParser.getFileName( self.getExploitURL() )
         try:
-            self.removeFile(file_to_del)
+            self.unlink(file_to_del)
         except w3afException, e:
             om.out.error('File upload shell cleanup failed with exception: ' + str(e) )
         else:

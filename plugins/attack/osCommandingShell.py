@@ -20,17 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import createRandAlpha
-import core.controllers.outputManager as om
+
+
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.fuzzer.fuzzer import createRandAlpha
 
-from core.data.kb.shell import shell as shell
+from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 from core.controllers.w3afException import w3afException
+import core.controllers.outputManager as om
+
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
 class osCommandingShell(baseAttackPlugin):
@@ -227,7 +231,7 @@ class osCommandingShell(baseAttackPlugin):
             - generateOnlyOne
         '''
 
-class osShell(shell):
+class osShell(exec_shell):
     def specific_user_input( self, command ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
@@ -240,9 +244,14 @@ class osShell(shell):
         '''
         pass
     
+    @exec_debug
     def execute(self, command):
         '''
-        Send a command to the remote server, where it's going to be executed.
+        This method executes a command in the remote operating system by
+        exploiting the vulnerability.
+
+        @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
+        @return: The result of the command.
         '''
         functionReference = getattr( self._urlOpener , self.getMethod() )
         exploitDc = self.getDc()
@@ -253,16 +262,7 @@ class osShell(shell):
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:
             return self._cut( response.getBody() )
-        
-    def read(self, filename):
-        '''
-        Read a file in the remote server by running "cat" or "type" depending
-        on the identified OS.
-        '''
-        read_command_format = self.get_read_command()
-        read_command = read_command_format % (filename,)
-        return self.execute( read_command )
-    
+            
     def end( self ):
         om.out.debug('osShell cleanup complete.')
         
