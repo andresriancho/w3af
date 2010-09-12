@@ -148,6 +148,8 @@ class findBackdoor(baseDiscoveryPlugin):
         res.extend( ['shell.jspx'])
         res.extend( ['browser.jsp','cmd_win32.jsp'])
         res.extend( ['CmdServlet','cmdServlet','servlet/CmdServlet','servlet/cmdServlet'])
+        res.extend( ['ListServlet','UpServlet'] )
+        res.extend( ['up_win32.jsp'] )
         
         # ASP
         res.extend( ['cmd.asp', 'cmdasp.aspx', 'cmdasp.asp', 'cmd-asp-5.1.asp', 'cmd.aspx'] )
@@ -158,7 +160,7 @@ class findBackdoor(baseDiscoveryPlugin):
         res.extend( ['shell.mspx','zehir4.mspx','rhtools.mspx','fso.mspx'])
         res.extend( ['kshell.asp','aspydrv.asp','kacak.asp'])
         res.extend( ['kshell.aspx','aspydrv.aspx','kacak.aspx'])
-        res.extend( ['kshell.mspx','aspydrv.mspx','kacak.mspx'])        
+        res.extend( ['kshell.mspx','aspydrv.mspx','kacak.mspx'])  
         
         # Other
         res.extend( ['cmd.cfm', 'cfexec.cfm'] )
@@ -167,7 +169,9 @@ class findBackdoor(baseDiscoveryPlugin):
         res.extend( ['cmd.do','cmd.nsf','cmd.d2w','cmd.GPL'])
         res.extend( ['cmd.show','cmd.py'])
         res.extend( ['cmd.c','exploit.c','0wn3d.c'])
-        res.extend( ['cmd.sh','cmd.js','shell.js'])
+        res.extend( ['cmd.sh','cmd.js','shell.js'])        
+        res.extend( ['list.sh','up.sh','nc.exe','netcat.exe','socat.exe'])
+        res.extend( ['cmd.pl'])
         return res
 
     def getOptions( self ):
