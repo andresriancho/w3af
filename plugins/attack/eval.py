@@ -34,7 +34,7 @@ from core.controllers.w3afException import w3afException
 
 # Advanced shell stuff
 from core.data.kb.shell import shell as shell
-import plugins.attack.payloads.payloads as payloads
+import plugins.attack.payloads.shell_handler as shell_handler
 
 
 class eval(baseAttackPlugin):
@@ -113,7 +113,7 @@ class eval(baseAttackPlugin):
         # Get the shells
         extension = urlParser.getExtension( vuln_obj.getURL() )
         # I get a list of tuples with code and extension to use
-        shell_code_list = payloads.get_shell_code( extension )
+        shell_code_list = shell_handler.get_shell_code( extension )
         
         for code, real_extension in shell_code_list:
             # Prepare for exploitation...
@@ -126,7 +126,7 @@ class eval(baseAttackPlugin):
             except Exception:
                 continue
             else:
-                cut_result = self._defineCut( http_res.getBody(), payloads.SHELL_IDENTIFIER, exact=True )
+                cut_result = self._defineCut( http_res.getBody(), shell_handler.SHELL_IDENTIFIER, exact=True )
                 if cut_result:
                     self._shell_code = code
                     return True

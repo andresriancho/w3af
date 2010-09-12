@@ -39,7 +39,7 @@ from core.controllers.misc.get_local_ip import get_local_ip
 
 # Advanced shell stuff
 from core.data.kb.shell import shell as shell
-import plugins.attack.payloads.payloads as payloads
+import plugins.attack.payloads.shell_handler as shell_handler
 
 # Port definition
 import core.data.constants.w3afPorts as w3afPorts
@@ -183,7 +183,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         extension = urlParser.getExtension( vuln.getURL() )
         
         # I get a list of tuples with file_content and extension to use
-        shell_list = payloads.get_webshells( extension )
+        shell_list = shell_handler.get_webshells( extension )
         
         for file_content, real_extension in shell_list:
             if extension == '':
@@ -204,7 +204,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                 successfully_exploited = False
             else:
                 successfully_exploited = self._defineCut( http_res.getBody(), \
-                                                        payloads.SHELL_IDENTIFIER, exact=True )
+                                                        shell_handler.SHELL_IDENTIFIER, exact=True )
 
             if successfully_exploited:
                 self._exploit_dc = data_container

