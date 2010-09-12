@@ -5,7 +5,7 @@ audit localFileInclude
 output console,textFile
 output config textFile
 set fileName output-w3af.txt
-set verbose True
+#set verbose True
 back
 
 output config console
@@ -26,7 +26,10 @@ exploit
 exploit localFileReader
 interact 0
 
-payload kernel_version
+payload tcp
+
+
+
 
 
 

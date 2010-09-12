@@ -26,7 +26,14 @@ assert len(kb.kb.getData('eval','eval')) == 1
 exploit
 exploit eval
 interact 0
-ls
+execute ls
+read /etc/passwd
+
+payload uptime
+payload users
+payload tcp
+payload interesting_files
+
 endInteraction
 
 assert len(kb.kb.getData('eval','shell')) == 1

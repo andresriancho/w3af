@@ -29,7 +29,12 @@ back
 
 exploit remoteFileIncludeShell
 interact 0
-ls
+
+execute ls
+read /etc/passwd
+payload uptime
+payload tcp
+
 endInteraction
 
 assert len( kb.kb.getData('remoteFileIncludeShell', 'shell') ) == 1

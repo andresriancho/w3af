@@ -26,8 +26,10 @@ assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
 exploit
 exploit localFileReader
 interact 0
+
 list
 list -r 2
+
 endInteraction
 
 exit
