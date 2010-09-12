@@ -1,7 +1,10 @@
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from plugins.attack.payloads.base_payload import base_payload
 import core.controllers.outputManager as om
-#Rootkit Hunter Shell Script by Michael Boelen
+from core.ui.consoleUi.tables import table
+
+#    Rootkit information taken from:
+#    Rootkit Hunter Shell Script by Michael Boelen
 
 
 class rootkit_hunter(base_payload ):
@@ -9,65 +12,61 @@ class rootkit_hunter(base_payload ):
     This payload checks for current rootkits, trojans, backdoors and local exploits installed on system.
     '''
     def _thread_read( self, file):
-    #   "progress bar"  
+        #   "progress bar"  
         self.k -= 1
         if self.k == 0:
             om.out.console('.', newLine=False)
             self.k=400
         #   end "progress bar"
+        
         content = self.shell.read(file)
         if content:
-            self.result['files'].update({file:content})
+            self.result['backdoor_files'].append( file )
+        
         return self.result
     
-    def _thread_read_modules( self, module):
-        if module in self.kernel_modules:
-            print module
-            self.result['bad_kernel_modules'].append(module)
-        return self.result
-
     def api_read(self):
         files = []
         self.result = {}
         self.result['bad_kernel_modules'] = []
-        self.result['files'] = {}
+        self.result['backdoor_files'] = []
         self.k = 400
         
-        # AjaKit Rootkit')
+        # AjaKit Rootkit
         files.append('/dev/tux/.addr')
         files.append('/dev/tux/.proc')
         files.append('/dev/tux/.file')
         files.append('/lib/.libgh-gh/cleaner')
         files.append('/lib/.libgh-gh/Patch/patch')
-        files.append('/lib/.libgh-gh/sb0k"')
+        files.append('/lib/.libgh-gh/sb0k')
         files.append('/dev/tux')
-        files.append('/lib/.libgh-gh"')
+        files.append('/lib/.libgh-gh')
 
-        # aPa Kit Rootkit')
-        files.append('/usr/share/.aPa"')
+        # aPa Kit Rootkit
+        files.append('/usr/share/.aPa')
 
-        # Apache Worm')
-        files.append('/bin/.log"')
+        # Apache Worm
+        files.append('/bin/.log')
 
-        # Ambient (ark) Rootkit')
+        # Ambient (ark) Rootkit
         files.append('/usr/lib/.ark?')
         files.append('/dev/ptyxx/.log')
         files.append('/dev/ptyxx/.file')
         files.append('/dev/ptyxx/.proc')
-        files.append('/dev/ptyxx/.addr"')
-        files.append('/dev/ptyxx"')
+        files.append('/dev/ptyxx/.addr')
+        files.append('/dev/ptyxx')
         
 
 
-        # Balaur Rootkit 2.0 (LRK5 based)')
-        files.append('/usr/lib/liblog.o"')
+        # Balaur Rootkit 2.0 (LRK5 based)
+        files.append('/usr/lib/liblog.o')
         files.append('/usr/lib/.kinetic')
         files.append('/usr/lib/.egcs')
-        files.append('/usr/lib/.wormie"')
+        files.append('/usr/lib/.wormie')
         
 
 
-        # Beastkit Rootkit')
+        # Beastkit Rootkit
         files.append('/usr/sbin/arobia')
         files.append('/usr/sbin/idrun')
         files.append('/usr/lib/elm/arobia/elm')
@@ -76,19 +75,17 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/elm/arobia/elm/sc')
         files.append('/usr/lib/elm/arobia/elm/sd.pp')
         files.append('/usr/lib/elm/arobia/elm/sdco')
-        files.append('/usr/lib/elm/arobia/elm/srsd"')
-        files.append('/lib/ldd.so/bktools"')
+        files.append('/usr/lib/elm/arobia/elm/srsd')
+        files.append('/lib/ldd.so/bktools')
         
 
 
-        # beX2 Rootkit')
+        # beX2 Rootkit
         files.append('/usr/info/termcap.info-5.gz')
-        files.append('/usr/bin/sshd2"')
-        files.append('/usr/include/bex"')
+        files.append('/usr/bin/sshd2')
+        files.append('/usr/include/bex')
         
-
-
-        # BOBkit Rootkit')
+        # BOBkit Rootkit
         files.append('/usr/sbin/ntpsx')
         files.append('/usr/sbin/.../bkit-ava')
         files.append('/usr/sbin/.../bkit-d')
@@ -115,7 +112,7 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/.../pstree')
         files.append('/usr/lib/.../slocate')
         files.append('/usr/lib/.../du')
-        files.append('/usr/lib/.../top"')
+        files.append('/usr/lib/.../top')
         files.append('/usr/sbin/...')
         files.append('/usr/include/...')
         files.append('/usr/include/.../.tmp')
@@ -123,10 +120,10 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/.../.ssh')
         files.append('/usr/lib/.../bkit-ssh')
         files.append('/usr/lib/.bkit-')
-        files.append('/tmp/.bkp"')
+        files.append('/tmp/.bkp')
         
 
-        # Boxer-0.99b3')
+        # Boxer-0.99b3
 
         # cb Rootkit (w00tkit by ZeeN) ')
         # The '%' character represents a space.')
@@ -161,21 +158,21 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/bin/.zeen/..%/curatare/chattr')
         files.append('/usr/bin/.zeen/..%/curatare/ps')
         files.append('/usr/bin/.zeen/..%/curatare/pstree')
-        files.append('/usr/bin/.system/..%/.x/xC.o"')
+        files.append('/usr/bin/.system/..%/.x/xC.o')
         files.append('/usr/bin/.zeen')
         files.append('/usr/bin/.zeen/..%/curatare')
         files.append('/usr/bin/.zeen/..%/scan')
-        files.append('/usr/bin/.system/..%"')
+        files.append('/usr/bin/.system/..%')
         
 
 
-        # CiNIK Worm (Slapper.B variant)')
-        files.append('/tmp/.cinik"')
-        files.append('/tmp/.font-unix/.cinik"')
+        # CiNIK Worm (Slapper.B variant)
+        files.append('/tmp/.cinik')
+        files.append('/tmp/.font-unix/.cinik')
         
 
 
-        # CX Rootkit')
+        # CX Rootkit
         files.append('/usr/lib/ldlibso')
         files.append('/usr/lib/configlibso')
         files.append('/usr/lib/shklibso')
@@ -183,19 +180,19 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/ldlibstrings.so')
         files.append('/usr/lib/ldlibdu.so')
         files.append('/usr/lib/ldlibns.so')
-        files.append('/usr/include/db"')
-        files.append('/usr/include/cxk"')
+        files.append('/usr/include/db')
+        files.append('/usr/include/cxk')
         
 
 
-        # Danny-Boy's Abuse Kit')
+        # Danny-Boy's Abuse Kit
         files.append('/dev/mdev')
-        files.append('/usr/lib/libX.a"')
+        files.append('/usr/lib/libX.a')
         
         
 
 
-        # Devil Rootkit')
+        # Devil Rootkit
         files.append('/var/lib/games/.src')
         files.append('/dev/dsx')
         files.append('/dev/caca')
@@ -221,12 +218,12 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/doc/tar/.../.dracusor/getbnc')
         files.append('/usr/doc/tar/.../.dracusor/getemech')
         files.append('/usr/doc/tar/.../.dracusor/localroot.sh')
-        files.append('/usr/doc/tar/.../.dracusor/stuff/old/sense"')
-        files.append('/usr/doc/tar/.../.dracusor"')
+        files.append('/usr/doc/tar/.../.dracusor/stuff/old/sense')
+        files.append('/usr/doc/tar/.../.dracusor')
         
 
 
-        # Dica-Kit (T0rn variant) Rootkit')
+        # Dica-Kit (T0rn variant) Rootkit
         files.append('/lib/.sso')
         files.append('/lib/.so')
         files.append('/var/run/...dica/clean')
@@ -245,14 +242,14 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/bin/.etc')
         files.append('/etc/sshd_config')
         files.append('/etc/ssh_host_key')
-        files.append('/etc/ssh_random_seed"')
+        files.append('/etc/ssh_random_seed')
         files.append('/var/run/...dica')
         files.append('/var/run/...dica/mh')
-        files.append('/var/run/...dica/scan"')
+        files.append('/var/run/...dica/scan')
         
 
 
-        # Dreams Rootkit')
+        # Dreams Rootkit
         files.append('/dev/ttyoa')
         files.append('/dev/ttyof')
         files.append('/dev/ttyop')
@@ -279,25 +276,25 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/include/icekey.h')
         files.append('/usr/include/iceconf.h" ')
         files.append('/dev/ida/.hpd')
-        files.append('/usr/lib/libshtift"')
+        files.append('/usr/lib/libshtift')
         
 
 
-        # Duarawkz Rootkit')
-        files.append('/usr/bin/duarawkz/loginpass"')
-        files.append('/usr/bin/duarawkz"')
+        # Duarawkz Rootkit
+        files.append('/usr/bin/duarawkz/loginpass')
+        files.append('/usr/bin/duarawkz')
         
 
 
         # ENYE LKM v1.1, v1.2')
-        # Installer default.')
+        # Installer default.
         files.append('/etc/.enyelkmHIDE^IT.ko')
-        files.append('/etc/.enyelkmOCULTAR.ko"')
+        files.append('/etc/.enyelkmOCULTAR.ko')
         
         
 
 
-        # Flea Linux Rootkit')
+        # Flea Linux Rootkit
         files.append('/etc/ld.so.hash')
         files.append('/lib/security/.config/ssh/sshd_config')
         files.append('/lib/security/.config/ssh/ssh_host_key')
@@ -308,15 +305,15 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/ldlibps.so')
         files.append('/usr/lib/ldlibpst.so')
         files.append('/usr/lib/ldlibdu.so')
-        files.append('/usr/lib/ldlibct.so"')
+        files.append('/usr/lib/ldlibct.so')
         files.append('/lib/security/.config/ssh')
         files.append('/dev/..0')
-        files.append('/dev/..0/backup"')
+        files.append('/dev/..0/backup')
         
 
 
-        # FreeBSD Rootkit (FBRK) catering to versions and compile-time defaults used by: ')
-        # 1.0 (1997, Method), 1.2 (1997, Method), "ImperialS-FBRK 1.0" (2001, Nyo)')
+        # FreeBSD Rootkit (FBRK) catering to versions and compile-time defaults used by: 
+        # 1.0 (1997, Method), 1.2 (1997, Method), "ImperialS-FBRK 1.0" (2001, Nyo)
         files.append('/dev/ptyp')
         files.append('/dev/ptyq')
         files.append('/dev/ptyr')
@@ -341,23 +338,23 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/.fx/adore/ava/ava')
         files.append('/usr/lib/.fx/adore/adore/adore.ko')
         files.append('/bin/sysback')
-        files.append('/usr/local/bin/sysback"')
+        files.append('/usr/local/bin/sysback')
         files.append('/dev/fd/.88')
         files.append('/dev/fd/.99')
         files.append('/usr/lib/.fx')
-        files.append('/usr/lib/.fx/adore"')
+        files.append('/usr/lib/.fx/adore')
         
 
 
-        # Fu Rootkit')
+        # Fu Rootkit
         files.append('/sbin/xc')
         files.append('/usr/include/ivtype.h')
-        files.append('/bin/.lib"')
+        files.append('/bin/.lib')
         
         
 
 
-        # Fuckit Rootkit')
+        # Fuckit Rootkit
         files.append('/lib/libproc.so.2.0.7')
         files.append('/dev/proc/.bash_profile')
         files.append('/dev/proc/.bashrc')
@@ -371,26 +368,26 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/proc/fuckit/config/progs')
         files.append('/dev/proc/fuckit/system-bins/init')
         files.append('/usr/lib/libcps.a')
-        files.append('/usr/lib/libtty.a"')
+        files.append('/usr/lib/libtty.a')
         files.append('/dev/proc')
         files.append('/dev/proc/fuckit')
         files.append('/dev/proc/fuckit/system-bins')
-        files.append('/dev/proc/toolz"')
+        files.append('/dev/proc/toolz')
         
 
 
-        # GasKit Rootkit')
-        files.append('/dev/dev/gaskit/sshd/sshdd"')
+        # GasKit Rootkit
+        files.append('/dev/dev/gaskit/sshd/sshdd')
         files.append('/dev/dev')
         files.append('/dev/dev/gaskit')
-        files.append('/dev/dev/gaskit/sshd"')
+        files.append('/dev/dev/gaskit/sshd')
         
-        # HjC Kit Rootkit')
+        # HjC Kit Rootkit
         
-        files.append('/dev/.hijackerz"')
+        files.append('/dev/.hijackerz')
         
 
-        # ignoKit Rootkit')
+        # ignoKit Rootkit
         files.append('/lib/defs/p')
         files.append('/lib/defs/q')
         files.append('/lib/defs/r')
@@ -402,9 +399,9 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/defs/s')
         files.append('/usr/lib/defs/t')
         files.append('/usr/lib/.libigno/pkunsec')
-        files.append('/usr/lib/.libigno/.igno/psybnc/psybnc"')
+        files.append('/usr/lib/.libigno/.igno/psybnc/psybnc')
         files.append('/usr/lib/.libigno')
-        files.append('/usr/lib/.libigno/.igno"')
+        files.append('/usr/lib/.libigno/.igno')
         
         # iLLogiC Rootkit (SunOS Rootkit variant)')
         files.append('/dev/kmod')
@@ -439,14 +436,14 @@ class rootkit_hunter(base_payload ):
         files.append('/lib/security/.config/bin/netstat')
         files.append('/lib/security/.config/bin/su')
         files.append('/lib/security/.config/bin/ping')
-        files.append('/lib/security/.config/bin/passwd"')
+        files.append('/lib/security/.config/bin/passwd')
         files.append('/lib/security/.config')
         files.append('/lib/security/.config/ssh')
         files.append('/lib/security/.config/bin')
         files.append('/lib/security/.config/backup')
         files.append('/root/%%%/.dir')
         files.append('/root/%%%/.dir/mass-scan')
-        files.append('/root/%%%/.dir/flood"')
+        files.append('/root/%%%/.dir/flood')
         
 
         # Irix Rootkit (for Irix 6.x)')
@@ -454,25 +451,25 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/pts/01')
         files.append('/dev/pts/01/backup')
         files.append('/dev/pts/01/etc')
-        files.append('/dev/pts/01/tmp"')
+        files.append('/dev/pts/01/tmp')
         
         # Kitko Rootkit')
         
-        files.append('/usr/src/redhat/SRPMS/..."')
+        files.append('/usr/src/redhat/SRPMS/...')
         
 
 
         # Knark Rootkit')
-        files.append('/proc/knark/pids"')
-        files.append('/proc/knark"')
+        files.append('/proc/knark/pids')
+        files.append('/proc/knark')
         
 
 
         # ld-linuxv.so (LD_PRELOAD shared library rootkit)')
-        files.append('/lib/ld-linuxv.so.1"')
+        files.append('/lib/ld-linuxv.so.1')
         files.append('/var/opt/_so_cache')
         files.append('/var/opt/_so_cache/ld')
-        files.append('/var/opt/_so_cache/lc"')
+        files.append('/var/opt/_so_cache/lc')
         
 
         # Lion Worm')
@@ -495,7 +492,7 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/.lib/lib/lib/dev/.1addr')
         files.append('/dev/.lib/lib/lib/dev/.1logz')
         files.append('/dev/.lib/lib/lib/dev/.1proc')
-        files.append('/dev/.lib/lib/lib/dev/.1file"')
+        files.append('/dev/.lib/lib/lib/dev/.1file')
         
         
 
@@ -533,8 +530,8 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/libmen.oo/.LJK2/modules/README.modules')
         files.append('/usr/lib/libmen.oo/.LJK2/modules/RK1hidem.c')
         files.append('/usr/lib/libmen.oo/.LJK2/modules/RK1phide')
-        files.append('/usr/lib/libmen.oo/.LJK2/sshconfig/RK1ssh"')
-        files.append('/usr/lib/libmen.oo/.LJK2"')
+        files.append('/usr/lib/libmen.oo/.LJK2/sshconfig/RK1ssh')
+        files.append('/usr/lib/libmen.oo/.LJK2')
         
 
 
@@ -542,9 +539,9 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/ida/.inet/pid')
         files.append('/dev/ida/.inet/ssh_host_key')
         files.append('/dev/ida/.inet/ssh_random_seed')
-        files.append('/dev/ida/.inet/tcp.log"')
+        files.append('/dev/ida/.inet/tcp.log')
         files.append('/dev/ida/.inet')
-        files.append('/var/spool/cron/.sh"')
+        files.append('/var/spool/cron/.sh')
         
 
 
@@ -555,8 +552,8 @@ class rootkit_hunter(base_payload ):
         files.append('/sbin/init__mood-nt-_-_cthulhu')
         files.append('/_cthulhu/mood-nt.init')
         files.append('/_cthulhu/mood-nt.conf')
-        files.append('/_cthulhu/mood-nt.sniff"')
-        files.append('/_cthulhu"')
+        files.append('/_cthulhu/mood-nt.sniff')
+        files.append('/_cthulhu')
         
 
 
@@ -564,45 +561,45 @@ class rootkit_hunter(base_payload ):
         files.append('/var/lock/subsys/...datafile.../...net...')
         files.append('/var/lock/subsys/...datafile.../...port...')
         files.append('/var/lock/subsys/...datafile.../...ps...')
-        files.append('/var/lock/subsys/...datafile.../...file..."')
+        files.append('/var/lock/subsys/...datafile.../...file...')
         files.append('/tmp/waza')
         files.append('/var/lock/subsys/...datafile...')
-        files.append('/usr/sbin/es"')
+        files.append('/usr/sbin/es')
         
 
 
         # Ohhara Rootkit')
-        files.append('/var/lock/subsys/...datafile.../...datafile.../in.smbd.log"')
+        files.append('/var/lock/subsys/...datafile.../...datafile.../in.smbd.log')
         files.append('/var/lock/subsys/...datafile...')
         files.append('/var/lock/subsys/...datafile.../...datafile...')
         files.append('/var/lock/subsys/...datafile.../...datafile.../bin')
         files.append('/var/lock/subsys/...datafile.../...datafile.../usr/bin')
         files.append('/var/lock/subsys/...datafile.../...datafile.../usr/sbin')
-        files.append('/var/lock/subsys/...datafile.../...datafile.../lib/security"')
+        files.append('/var/lock/subsys/...datafile.../...datafile.../lib/security')
         
         # Optic Kit (Tux variant) Rootkit')
         
         files.append('/dev/tux')
         files.append('/usr/bin/xchk')
         files.append('/usr/bin/xsf')
-        files.append('/usr/bin/ssh2d"')
+        files.append('/usr/bin/ssh2d')
         
 
 
         # OSX Rootkit 0.2.1')
         files.append('/dev/.rk/nc')
         files.append('/dev/.rk/diepu')
-        files.append('/dev/.rk/backd"')
+        files.append('/dev/.rk/backd')
         files.append('/dev/.rk')
         files.append('/users/LDAP-daemon')
         files.append('/tmp/.work')
-        files.append('/Library/StartupItems/opener"')
+        files.append('/Library/StartupItems/opener')
         
 
 
         # Oz Rootkit')
-        files.append('/dev/.oz/.nap/rkit/terror"')
-        files.append('/dev/.oz"')
+        files.append('/dev/.oz/.nap/rkit/terror')
+        files.append('/dev/.oz')
         
 
 
@@ -612,9 +609,9 @@ class rootkit_hunter(base_payload ):
         files.append('/bin/host.ph1')
         files.append('/usr/share/.home.ph1/phalanx')
         files.append('/usr/share/.home.ph1/cb')
-        files.append('/usr/share/.home.ph1/kebab"')
+        files.append('/usr/share/.home.ph1/kebab')
         files.append('/usr/share/.home.ph1')
-        files.append('/usr/share/.home.ph1/tty"')
+        files.append('/usr/share/.home.ph1/tty')
         
 
 
@@ -629,10 +626,10 @@ class rootkit_hunter(base_payload ):
         files.append('/etc/lolzz.p2/sshgrab.py')
         files.append('/etc/cron.d/zupzzplaceholder')
         files.append('/usr/lib/zupzz.p2/.p-2.3d')
-        files.append('/usr/lib/zupzz.p2/.p2rc"')
+        files.append('/usr/lib/zupzz.p2/.p2rc')
         files.append('/etc/khubd.p2')
         files.append('/etc/lolzz.p2')
-        files.append('/usr/lib/zupzz.p2"')
+        files.append('/usr/lib/zupzz.p2')
         
 
         # Portacelo Rootkit')
@@ -647,7 +644,7 @@ class rootkit_hunter(base_payload ):
         files.append('/var/lib/.../ssshrc')
         files.append('/var/lib/.../sssh_equiv')
         files.append('/var/lib/.../sssh_known_hosts')
-        files.append('/var/lib/.../sssh_pid ~/.sssh/known_hosts"')
+        files.append('/var/lib/.../sssh_pid ~/.sssh/known_hosts')
         
         
 
@@ -657,10 +654,10 @@ class rootkit_hunter(base_payload ):
         files.append('/var/log/tk02/.scris')
         files.append('/bin/.../sshd/sbin/sshd1')
         files.append('/bin/.../hate/sk')
-        files.append('/bin/.../see_all"')
+        files.append('/bin/.../see_all')
         files.append('/var/log/tk02')
         files.append('/var/log/tk02/old')
-        files.append('/bin/..."')
+        files.append('/bin/...')
         
 
 
@@ -676,7 +673,7 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/bin/vadim')
         files.append('/usr/bin/slice')
         files.append('/usr/bin/cleaner')
-        files.append('/usr/include/rpcsvc/du"')
+        files.append('/usr/include/rpcsvc/du')
         
         
 
@@ -687,9 +684,9 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/bin/chsh2')
         files.append('/usr/bin/slice2')
         files.append('/usr/src/linux/arch/alpha/lib/.lib/.1proc')
-        files.append('/etc/rc.d/arch/alpha/lib/.lib/.1addr"')
+        files.append('/etc/rc.d/arch/alpha/lib/.lib/.1addr')
         files.append('/etc/rc.d/rsha')
-        files.append('/etc/rc.d/arch/alpha/lib/.lib"')
+        files.append('/etc/rc.d/arch/alpha/lib/.lib')
         
 
 
@@ -699,16 +696,16 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/man/man5/..%/.dir/see')
         files.append('/usr/man/man5/..%/.dir/nscd')
         files.append('/usr/man/man5/..%/.dir/alpd')
-        files.append('/etc/rc.d/rc.local%"')
+        files.append('/etc/rc.d/rc.local%')
         files.append('/usr/man/man5/..%/.dir')
         files.append('/usr/man/man5/..%/.dir/scannah')
-        files.append('/etc/rc.d/rc0.d/..%/.dir"')
+        files.append('/etc/rc.d/rc0.d/..%/.dir')
         
 
 
         # Scalper (FreeBSD.Scalper.Worm) Worm')
         files.append('/tmp/.a')
-        files.append('/tmp/.uua"')
+        files.append('/tmp/.uua')
         
         
 
@@ -732,10 +729,10 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/include/log.h')
         files.append('/usr/include/proc.h')
         files.append('/usr/sbin/xntps')
-        files.append('/dev/srd0"')
+        files.append('/dev/srd0')
         files.append('/lib/ldd.so')
         files.append('/lib/security/.config')
-        files.append('/lib/security/.config/ssh"')
+        files.append('/lib/security/.config/ssh')
         
 
 
@@ -758,11 +755,11 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/libsh/hide')
         files.append('/usr/lib/libsh/.sniff/shsniff')
         files.append('/usr/lib/libsh/.sniff/shp')
-        files.append('/dev/srd0"')
+        files.append('/dev/srd0')
         files.append('/lib/libsh.so')
         files.append('/usr/lib/libsh')
         files.append('/usr/lib/libsh/utilz')
-        files.append('/usr/lib/libsh/.backup"')
+        files.append('/usr/lib/libsh/.backup')
         
 
 
@@ -778,10 +775,10 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/ld/.X')
         files.append('/usr/man/man1/...')
         files.append('/usr/man/man1/.../.m')
-        files.append('/usr/man/man1/.../.w"')
+        files.append('/usr/man/man1/.../.w')
         files.append('/usr/lib/sn')
         files.append('/usr/lib/man1/...')
-        files.append('/dev/.haos"')
+        files.append('/dev/.haos')
         
 
 
@@ -793,14 +790,14 @@ class rootkit_hunter(base_payload ):
         files.append('/tmp/.unlock')
         files.append('/tmp/update')
         files.append('/tmp/.cinik')
-        files.append('/tmp/.b"')
+        files.append('/tmp/.b')
         
         
 
 
         # Sneakin Rootkit')
         
-        files.append('/tmp/.X11-unix/.../rk"')
+        files.append('/tmp/.X11-unix/.../rk')
         
 
 
@@ -821,8 +818,8 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/man/tmp/update.tgz')
         files.append('/var/lib/rpm/db.rpm')
         files.append('/var/cache/man/.cat')
-        files.append('/var/spool/lpd/remote/.lpq"')
-        files.append('/usr/share/..."')
+        files.append('/var/spool/lpd/remote/.lpq')
+        files.append('/usr/share/...')
 
 
         # Suckit Rootkit')
@@ -836,11 +833,11 @@ class rootkit_hunter(base_payload ):
         files.append('/etc/rc.d/rc3.d/S23kmdac')
         files.append('/etc/rc.d/rc4.d/S23kmdac')
         files.append('/etc/rc.d/rc5.d/S23kmdac')
-        files.append('/etc/rc.d/rc6.d/S23kmdac"')
+        files.append('/etc/rc.d/rc6.d/S23kmdac')
         files.append('/dev/sdhu0/tehdrakg')
         files.append('/etc/.MG')
         files.append('/usr/share/locale/sk/.sk12')
-        files.append('/usr/lib/perl5/site_perl/i386-linux/auto/TimeDate/.packlist"')
+        files.append('/usr/lib/perl5/site_perl/i386-linux/auto/TimeDate/.packlist')
         
 
 
@@ -876,11 +873,11 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/bin/sun3')
         files.append('/usr/bin/sun3x')
         files.append('/usr/bin/lso')
-        files.append('/usr/bin/u370"')
+        files.append('/usr/bin/u370')
         files.append('/dev/pts/01')
         files.append('/dev/prom')
         files.append('/usr/lib/vold/nsdap')
-        files.append('/.pat"')
+        files.append('/.pat')
         
 
 
@@ -895,7 +892,7 @@ class rootkit_hunter(base_payload ):
         files.append('/lib/security/.config/sn')
         files.append('/lib/security/.config/lpsched')
         files.append('/dev/kmod')
-        files.append('/dev/dos"')
+        files.append('/dev/dos')
         
         
 
@@ -904,13 +901,13 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/man/.sman/sk/backsh')
         files.append('/usr/man/.sman/sk/izbtrag')
         files.append('/usr/man/.sman/sk/sksniff')
-        files.append('/var/www/cgi-bin/cgiback.cgi"')
-        files.append('/usr/man/.sman/sk"')
+        files.append('/var/www/cgi-bin/cgiback.cgi')
+        files.append('/usr/man/.sman/sk')
         
 
 
         # Telnet Backdoor')
-        files.append('/usr/lib/.tbd"')
+        files.append('/usr/lib/.tbd')
         
         
 
@@ -924,10 +921,10 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/ptyp')
         files.append('/dev/ptyq')
         files.append('/dev/hda06')
-        files.append('/usr/info/libc1.so"')
+        files.append('/usr/info/libc1.so')
         files.append('/usr/man/man3/...')
         files.append('/usr/man/man3/.../lsniff')
-        files.append('/usr/man/man3/.../TeLeKiT"')
+        files.append('/usr/man/man3/.../TeLeKiT')
         
 
 
@@ -959,7 +956,7 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/src/.puta/.1file')
         files.append('/usr/src/.puta/.1proc')
         files.append('/usr/src/.puta/.1logz')
-        files.append('/usr/info/.t0rn"')
+        files.append('/usr/info/.t0rn')
         files.append('/dev/.lib')
         files.append('/dev/.lib/lib')
         files.append('/dev/.lib/lib/lib')
@@ -969,7 +966,7 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/man/man1/man1')
         files.append('/usr/man/man1/man1/lib')
         files.append('/usr/man/man1/man1/lib/.lib')
-        files.append('/usr/man/man1/man1/lib/.lib/.backup"')
+        files.append('/usr/man/man1/man1/lib/.lib/.backup')
         
 
 
@@ -988,7 +985,7 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/.ttpy/topk')
         files.append('/dev/.ttpy/wold')
         files.append('/dev/.ttpy/whoold')
-        files.append('/dev/.ttpy/backdoors"')
+        files.append('/dev/.ttpy/backdoors')
         
         
 
@@ -998,7 +995,7 @@ class rootkit_hunter(base_payload ):
         files.append('/bin/.ps')
         files.append('/bin/.netstat')
         files.append('/usr/bin/.nop')
-        files.append('/usr/bin/.who"')
+        files.append('/usr/bin/.who')
         
         
 
@@ -1036,10 +1033,10 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/tux/backup/tcpd')
         files.append('/dev/tux/backup/top')
         files.append('/dev/tux/backup/updatedb')
-        files.append('/dev/tux/backup/vdir"')
+        files.append('/dev/tux/backup/vdir')
         files.append('/dev/tux')
         files.append('/dev/tux/ssh2')
-        files.append('/dev/tux/backup"')
+        files.append('/dev/tux/backup')
         
 
 
@@ -1072,11 +1069,11 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/man/man1/xxxxxxbin/ping')
         files.append('/usr/man/man1/xxxxxxbin/strings')
         files.append('/usr/man/man1/xxxxxxbin/bash')
-        files.append('/tmp/conf.inv"')
+        files.append('/tmp/conf.inv')
         files.append('/dev/prom')
         files.append('/dev/pts/01')
         files.append('/dev/pts/01/bin')
-        files.append('/usr/man/man1/xxxxxxbin"')
+        files.append('/usr/man/man1/xxxxxxbin')
         
         # Also-see: /usr/lib/lpset (esniff), /var/lp/lpacct/ (files), /usr/lib/bnclp, /usr/lib/lpsys (identd),')
         # Also-see: /usr/lib/lptd (backdoor?), /sbin/rc2 and /sbin/rc3 containing string "/usr/lib/lpstart",')
@@ -1087,7 +1084,7 @@ class rootkit_hunter(base_payload ):
         # VcKit Rootkit')
         
         files.append('/usr/include/linux/modules/lib.so')
-        files.append('/usr/include/linux/modules/lib.so/bin"')
+        files.append('/usr/include/linux/modules/lib.so/bin')
         
         # Volc Rootkit')
         # Omit listing system binaries that should be picked up by changed hashes.')
@@ -1098,17 +1095,17 @@ class rootkit_hunter(base_payload ):
         files.append('/etc/rc.d/rc2.d/S25sysconf')
         files.append('/etc/rc.d/rc3.d/S25sysconf')
         files.append('/etc/rc.d/rc4.d/S25sysconf')
-        files.append('/etc/rc.d/rc5.d/S25sysconf"')
+        files.append('/etc/rc.d/rc5.d/S25sysconf')
         files.append('/var/spool/.recent')
         files.append('/var/spool/.recent/.files')
         files.append('/usr/lib/volc')
-        files.append('/usr/lib/volc/backup"')
+        files.append('/usr/lib/volc/backup')
         
 
 
         # weaponX 0.1')
-        files.append('/System/Library/Extensions/WeaponX.kext"')
-        files.append('/tmp/..."')
+        files.append('/System/Library/Extensions/WeaponX.kext')
+        files.append('/tmp/...')
         
 
 
@@ -1129,8 +1126,8 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/local/httpd/cgi-bin/becys.cgi')
         files.append('/usr/local/apache/cgi-bin/becys.cgi')
         files.append('/www/httpd/cgi-bin/becys.cgi')
-        files.append('/www/cgi-bin/becys.cgi"')
-        files.append('/dev/ida/.inet"')
+        files.append('/www/cgi-bin/becys.cgi')
+        files.append('/dev/ida/.inet')
         
 
 
@@ -1139,11 +1136,11 @@ class rootkit_hunter(base_payload ):
         files.append('/usr/lib/libX.a/bin/rps')
         files.append('/usr/bin/srload')
         files.append('/usr/lib/libX.a/bin/sparcv7/rps')
-        files.append('/usr/sbin/modcheck"')
+        files.append('/usr/sbin/modcheck')
         files.append('/usr/lib/libX.a')
         files.append('/usr/lib/libX.a/bin')
         files.append('/usr/lib/libX.a/bin/sparcv7')
-        files.append('/usr/share/man..."')
+        files.append('/usr/share/man...')
         
 
 
@@ -1152,30 +1149,30 @@ class rootkit_hunter(base_payload ):
         files.append('/dev/ttyf')
         files.append('/dev/ttyp')
         files.append('/dev/ttyn')
-        files.append('/rk/tulz"')
+        files.append('/rk/tulz')
         files.append('/rk')
-        files.append('/dev/rd/s"')
+        files.append('/dev/rd/s')
         
         # ZK Rootkit')
         files.append('/usr/share/.zk/zk')
         files.append('/usr/X11R6/.zk/xfs')
         files.append('/usr/X11R6/.zk/echo')
         files.append('/etc/1ssue.net')
-        files.append('/etc/sysconfig/console/load.zk"')
+        files.append('/etc/sysconfig/console/load.zk')
         files.append('/usr/share/.zk')
-        files.append('/usr/X11R6/.zk"')
+        files.append('/usr/X11R6/.zk')
         
 
 
         # Miscellaneous login backdoors')
-        files.append('/sbin/.login"')
+        files.append('/sbin/.login')
         files.append('/bin/.login')
 
 
 
         # Suspicious directories')
         files.append('/usr/X11R6/bin/.,/copy')
-        files.append('/dev/rd/cdb"')
+        files.append('/dev/rd/cdb')
 
         # Known bad Linux kernel modules')
         bad_kernel_modules = []
@@ -1208,31 +1205,27 @@ class rootkit_hunter(base_payload ):
                 tm.startFunction( target=self._thread_read, args=targs, ownerObj=self )
         tm.join( self )
         
-        self.kernel_modules = self.exec_payload('list_kernel_modules')
+        kernel_modules = self.exec_payload('list_kernel_modules')
         for module in bad_kernel_modules:
-                targs = (module, )
-                tm.startFunction( target=self._thread_read_modules, args=targs, ownerObj=self )
-        tm.join( self )
+            if module in kernel_modules:
+                self.result['bad_kernel_modules'].append(module)
+
         return self.result
     
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            for file, content in hashmap['files'].iteritems():
-                result.append('Rootkit Hunter Files Found')
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-                
-            if hashmap['bad_kernel_modules']:
-                for module in hashmap['bad_kernel_modules']:
-                    result.append('-------------------------')
-                    result.append('Bad Kernel Modules Found')
-                    result.append('-------------------------')
-                    result.append(module)
-                
-        if result == [ ]:
-            result.append('Rootkit Hunter files not found.')
-        return result
+        api_result = self.api_read()
+        
+        if not api_result:
+            return 'Rootkit hunter failed to run.'
+        else:
+            rows = []
+            rows.append( ['Description', 'Value'] ) 
+            rows.append( [] )
+            for key in api_result:
+                for value in api_result[key]:
+                    rows.append( [key, value] )
+                              
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
+
