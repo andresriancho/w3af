@@ -1,6 +1,8 @@
 import re
 import core.data.kb.knowledgeBase as kb
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class running_honeypot(base_payload):
     '''
@@ -47,17 +49,23 @@ class running_honeypot(base_payload):
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
+        api_result = self.api_read()
         
-        if hashmap:
-                if hashmap['running_honeypot']:
-                   result.append('Is running a Honeypot !!')
-                else:
-                    result.append('Is NOT running a Honeypot')
-                if hashmap['is_a_honeypot']:
-                   result.append('Is a Honeypot !!!')
-                else:
-                    result.append('Is NOT a Honeypot.')
-
-        return result
+        if not api_result:
+            msg = 'Failed to verify if the remote host is running a honeypot.'
+            return msg
+        else:
+            
+            rows = []
+            rows.append( ['Honeypot',] ) 
+            rows.append( [] )
+            if api_result['running_honeypot']:
+                rows.append( [ 'Is running a Honeypot!',] )
+            if api_result['is_a_honeypot']:
+                rows.append( ['Is a Honeypot!',] )
+            if not api_result['running_honeypot'] and not api_result['is_a_honeypot']:
+                rows.append( ['No honeypot detected.',] )
+                
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
