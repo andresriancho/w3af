@@ -145,9 +145,15 @@ class rfiProxy(baseAttackPlugin, w3afThread):
                 pass
             self._running = False
         
-    def rexec( self, command ):
+    def specific_user_input( self, command ):
         '''
-        The only command available is stop, it will stop the web and proxy server.
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        Before calling this method, the framework calls the generic_user_input method
+        from the shell class.
+
+        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @return: The result of the command.
         '''
         if command != 'stop' and command != 'exit':
             message = 'Available commands:\n'
@@ -304,8 +310,14 @@ class proxy_rfi_shell(shell):
     def __init__(self, proxy_url):
         self._proxy_url = proxy_url
     
-    def _rexec( self, command ):
-        msg = 'This is a placeholder. You should use your browser to interact with this plugin.'
+    def generic_user_input( self, command ):
+        '''
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @return: The result of the command.
+        '''
+        msg = 'This is a place holder. You should use your browser to interact with this plugin.'
         return msg
     
     def end( self ):

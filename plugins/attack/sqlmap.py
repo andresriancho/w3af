@@ -157,7 +157,7 @@ class sqlmap(baseAttackPlugin):
         '''
         Exploits a [blind] sql injections vulns that was found and stored in the kb.
 
-        @return: True if the shell is working and the user can start calling rexec
+        @return: True if the shell is working and the user can start calling specific_user_input
         '''
         if not self.canExploit():
             return []
@@ -360,11 +360,14 @@ class sqlShellObj(shell):
         '''
         self._goodSamaritan = good_samaritan
     
-    def rexec( self, command ):
+    def specific_user_input( self, command ):
         '''
-        This method is called when a command is being sent to the remote server.
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        Before calling this method, the framework calls the generic_user_input method
+        from the shell class.
 
-        @parameter command: The command to send ( users, dbs, etc ).
+        @parameter command: The command to handle ( ie. "dbs", "users", etc ).
         @return: The result of the command.
         '''
         if not self._driver:

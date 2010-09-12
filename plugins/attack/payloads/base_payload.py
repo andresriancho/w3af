@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import plugins.attack.payloads.payload_handler as payload_handler
 
-SYSCALL_LIST = ['read', 'write', 'exec']
+SYSCALL_LIST = ['read', 'write', 'execute', 'unlink']
 
 
 class base_payload(object):

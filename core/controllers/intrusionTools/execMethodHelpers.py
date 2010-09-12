@@ -21,8 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import *
-from core.data.fuzzer.fuzzer import *
+from core.controllers.w3afException import w3afException
+from core.data.fuzzer.fuzzer import createRandAlNum
+
 
 def osDetectionExec( execMethod ):
     '''
@@ -56,7 +57,7 @@ def getRemoteTempFile( execMethod ):
     '''
     @return: The name of a file in the remote file system that the user that I'm executing commands with
     can write, read and execute. The normal responses for this are files in /tmp/ or %TEMP% depending
-    on the remote Os.
+    on the remote OS.
     '''
     os = osDetectionExec( execMethod )
     if  os == 'windows':

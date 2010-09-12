@@ -150,7 +150,7 @@ class sql_webshell(baseAttackPlugin):
         '''
         Exploits a [blind] sql injections vulns that was found and stored in the kb.
 
-        @return: True if the shell is working and the user can start calling rexec
+        @return: True if the shell is working and the user can start calling specific_user_input
         '''
         if not self.canExploit():
             return []
@@ -460,12 +460,14 @@ class sql_web_shell(shell):
     def getWebShellURL( self ):
         return self._webshell_url
         
-    def _rexec( self, command ):
+    def specific_user_input( self, command ):
         '''
-        This method is called when a command is being sent to the remote server.
-        This is a NON-interactive shell.
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        Before calling this method, the framework calls the generic_user_input method
+        from the shell class.
 
-        @parameter command: The command to send ( ie. "ls", "whoami", etc ).
+        @parameter command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
         to_send = self.getWebShellURL() + urllib.quote_plus( command )

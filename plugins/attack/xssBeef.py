@@ -89,7 +89,7 @@ class xssBeef(baseAttackPlugin):
         '''
         Exploits a XSS vuln that was found and stored in the kb.
 
-        @return: True if the shell is working and the user can start calling rexec
+        @return: True if the shell is working and the user can start calling specific_user_input
         '''
         om.out.console( 'Browser Exploitation Framework - by Wade Alcorn http://www.bindshell.net' )
         xss_vulns = kb.kb.getData( 'xss' , 'xss' )
@@ -193,12 +193,6 @@ class xssBeef(baseAttackPlugin):
                 else:
                     return False
     
-    def rexec( self, command ):
-        '''
-        Nothing to do here.
-        '''
-        return self._message + ' \nType exit to continue using w3af.'
-        
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -267,7 +261,16 @@ class xssBeef(baseAttackPlugin):
         '''
         
 class xssShell(shell):
-    def _rexec( self, command ):
+    def specific_user_input( self, command ):
+        '''
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        Before calling this method, the framework calls the generic_user_input method
+        from the shell class.
+
+        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @return: The result of the command.
+        '''
         msg = 'TODO: Code some commands here. For now, just execute endInteraction'
         msg += ' (this won\'t close BeEF)'
         return msg

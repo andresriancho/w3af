@@ -30,12 +30,11 @@ from core.controllers.misc.levenshtein import relative_distance
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.constants.common_directories import get_common_directories
-from core.data.kb.shell import shell as shell
+from core.data.kb.read_shell import read_shell as read_shell
 
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
-from core.data.fuzzer.fuzzer import createRandAlNum
+
 
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -229,7 +228,7 @@ NO_SUCH_FILE =  'No such file or directory.'
 READ_DIRECTORY = 'Cannot cat a directory.'
 FAILED_STREAM = 'Failed to open stream.'
 
-class fileReaderShell(shell):
+class fileReaderShell(read_shell):
     '''
     A shell object to exploit local file include and local file read vulns.
 
@@ -282,52 +281,6 @@ class fileReaderShell(shell):
             om.out.console('    download /etc/passwd /tmp/passwd')
         return True
         
-    def _rexec( self, command ):
-        '''
-        This method is called when a command is being sent to the remote server.
-        This is a NON-interactive shell.
-
-        @parameter command: The command to send
-        @return: The result of the command.
-        '''
-
-        # Get the command and the parameters
-        cmd = command.split(' ')[0]
-        parameters = command.split(' ')[1:]
-
-        # Select the correct handler
-        if cmd == 'list':
-            return self._list( parameters )
-        elif cmd == 'read' and len(parameters) == 1:
-            filename = parameters[0]
-            return self.read( filename )
-        elif cmd == 'download' and len(parameters) == 2:
-            remote_filename = parameters[0]
-            local_filename = parameters[1]
-            
-            remote_content = self.read( remote_filename )
-            
-            if not remote_content:
-                return 'Remote file does not exist.'
-            else:
-                try:
-                    fh = file(local_filename, 'w')
-                except:
-                    return 'Failed to open local file for writing.'
-                else:
-                    fh.write(remote_content)
-                    fh.close()
-                    return 'Success.'
-                    
-        elif cmd == 'payload' and len(parameters) == 1:
-            filename = parameters[0]
-            return self._payload( filename )
-        elif cmd == 'lsp':
-            return self._print_runnable_payloads()
-        else:
-            self.help( command )
-            return ''
-    
     def _init_read(self):
         '''
         This method requires a non existing file, in order to save the error message and prevent it
@@ -411,38 +364,6 @@ class fileReaderShell(shell):
             return ''
         
         return result
-    
-    def end( self ):
-        '''
-        Cleanup. In this case, do nothing.
-        '''
-        om.out.debug('fileReaderShell cleanup complete.')
-        
-    def _identifyOs( self ):
-        '''
-        Identify the remote operating system and get some remote variables to show to the user.
-        '''
-        res = self.read('/etc/passwd')
-        if 'root:' in res:
-            self._rOS = '*nix'
-        else:
-            self._rOS = 'windows'
-
-        # This can't be determined
-        self._rSystem = ''
-        self._rSystemName = 'linux'
-        self._rUser = 'file-reader'
-    
-    def __repr__( self ):
-        '''
-        @return: A string representation of this shell.
-        '''
-        if not self._rOS:
-            self._identifyOs()
-
-        return '<shell object (rsystem: "'+self._rOS+'")>'
-        
-    __str__ = __repr__
     
     def getName( self ):
         '''
