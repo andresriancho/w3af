@@ -1,15 +1,14 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
 
-#TODO:Read TCP and TCP6?
 
 class udp(base_payload):
     '''
-    This payload shows UDP socket information
+    This payload shows udp socket information
     '''
     def api_read(self):
         result = {}
-        table = []
 
         def parse_udp(net_udp):
             new = []
@@ -44,40 +43,53 @@ class udp(base_payload):
             return '.'.join(q)
         
         etc = self.shell.read('/etc/passwd')
-        table = parse_udp(self.shell.read('/proc/net/udp'))
+        #TODO: Read UDP and udp6?
+        parsed_info = parse_udp(self.shell.read('/proc/net/udp'))
     
-        for list in table:
-            if list[1] != 'local_address':
-                ip = split_ip(list[1])
-                list[1] = str(dec_to_dotted_quad(int(ip[0], 16)))+':'+str(int(ip[1], 16))
+        for parsed_line in parsed_info:
+            try:
+                if parsed_line[1] != 'local_address':
+                    ip = split_ip(parsed_line[1])
+                    parsed_line[1] = str(dec_to_dotted_quad(int(ip[0], 16)))+':'+str(int(ip[1], 16))
+                    
+                if parsed_line[2] != 'rem_address':
+                    ip = split_ip(parsed_line[2])
+                    parsed_line[2] = str(dec_to_dotted_quad(int(ip[0] , 16)))+':'+str(int(ip[1], 16))
                 
-            if list[2] != 'rem_address':
-                ip = split_ip(list[2])
-                list[2] = str(dec_to_dotted_quad(int(ip[0] , 16)))+':'+str(int(ip[1], 16))
-            
-            if list[7] == 'tm->when':
-                list[7] = 'uid'
-            
-            if list[7] != 'uid':
-                list[7] = get_username(etc, list[7])
-            
-            if list[0] != 'sl':
-                result[int(str(list[0].replace(':', '')))] = ({'local_address':list[1], 'rem_address':list[2], 'st':list[3],'uid':list[7], 'inode':list[11]})
+                if parsed_line[7] == 'tm->when':
+                    parsed_line[7] = 'uid'
+                
+                if parsed_line[7] != 'uid':
+                    parsed_line[7] = get_username(etc, parsed_line[7])
+                
+                if parsed_line[0] != 'sl':
+                    key = str(parsed_line[0].replace(':', ''))
+                    result[ key ] = {'local_address':parsed_line[1], 'rem_address':parsed_line[2],\
+                                     'st':parsed_line[3],'uid':parsed_line[7], 'inode':parsed_line[11] }
+            except:
+                pass
             
         return result
-
+        
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('TCP Socket Information')
-            result.append('sl'.ljust(3)+'local_address'.ljust(25)+'rem_address'.ljust(25)+\
-                          'st'.ljust(4)+'uid'.ljust(13)+'inode'.ljust(20))
-            for k, v in hashmap.iteritems():
-                result.append(str(k).ljust(3)+v['local_address'].ljust(25)+v['rem_address'].ljust(25)+\
-                              v['st'].ljust(4)+v['uid'].ljust(13)+v['inode'].ljust(20))
-
-        if result == [ ]:
-            result.append('UDP socket information not found.')
-        return result
-
+        api_result = self.api_read()
+        
+        if not api_result:
+            return 'No UDP information was identified.'
+        else:
+            rows = []
+            rows.append( ['Id', 'Local Address', 'Remote Address', 'Status', 'User', 'Inode'] ) 
+            rows.append( [] )
+            
+            for key in api_result:
+                local_address = api_result[key]['local_address']
+                rem_address = api_result[key]['rem_address']
+                st = api_result[key]['st']
+                uid = api_result[key]['uid']
+                inode = api_result[key]['inode']
+                
+                rows.append( [key, local_address, rem_address, st, uid, inode] )
+                
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return

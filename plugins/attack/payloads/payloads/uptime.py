@@ -1,6 +1,7 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
-#Days,Hours,Mins,Secs !
+from core.ui.consoleUi.tables import table
+
+
 class uptime(base_payload):
     '''
     This payload shows server Uptime.
@@ -10,29 +11,31 @@ class uptime(base_payload):
 
         uptime = self.shell.read('/proc/uptime')
         uptime = uptime.split(' ')
+        
         uptime[0] = int(float(uptime[0]))
         mins, secs = divmod(int(uptime[0]), 60)
         hours, mins = divmod(mins, 60)
-        result['uptime'] = [hours, mins, secs]
+        result['uptime'] = { 'hours': str(hours), 'minutes': str(mins), 'seconds': str(secs)}
+        
         uptime[1] = int(float(uptime[1]))
         mins, secs = divmod(int(uptime[1]), 60)
         hours, mins = divmod(mins, 60)
-        result['idletime'] = [hours, mins, secs]
+        result['idletime'] = { 'hours': str(hours), 'minutes': str(mins), 'seconds': str(secs)}
+        
         return result
         
     def run_read(self):
-        hashmap = self.api_read()
-        result = []
-        if hashmap['uptime']:
-            hours = hashmap['uptime'][0]
-            mins = hashmap['uptime'][1]
-            secs = hashmap['uptime'][2]
-            result.append('Uptime: %02d:%02d:%02d' % (hours, mins, secs))
-        if hashmap['idletime']:
-            hours = hashmap['idletime'][0]
-            mins = hashmap['idletime'][1]
-            secs = hashmap['idletime'][2]
-            result.append('Idletime: %02d:%02d:%02d' % (hours, mins, secs))
-        if result == [ ]:
-            result.append('Uptime information not found.')
-        return result
+        api_result = self.api_read()
+                
+        rows = []
+        rows.append( ['Description', 'Hours', 'Minutes', 'Seconds'] )
+        rows.append( [] )
+        for key in api_result:
+            hours = api_result[key]['hours']
+            minutes = api_result[key]['minutes']
+            seconds = api_result[key]['seconds']
+            rows.append( [key, hours, minutes, seconds] )
+                
+        result_table = table( rows )
+        result_table.draw( 80 )
+        return
