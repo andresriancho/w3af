@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
+from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
 import core.data.parsers.urlParser as urlParser
 
 import plugins.attack.payloads.payload_handler as payload_handler
@@ -44,6 +45,9 @@ class exec_shell(shell):
 
     def __init__(self, v):
         shell.__init__(self, v)
+        
+        # For writing files to the remote server
+        self._transfer_handler = None
 
     def help( self, command ):
         '''
@@ -101,6 +105,33 @@ class exec_shell(shell):
             fh.close()
             self.write( remote_filename, file_content )
             return 'Success.'
+
+    def write(self, remote_filename, file_content):
+        '''
+        Write a the contents of the parameter "file_content" to the "remote_filename"
+        file in the remote filesystem.
+        
+        @param remote_filename: The filename where to write the file_content
+        @param file_content: The string to write in the remote file
+        
+        @return: The message to show to the user.
+        '''
+        if not self._transfer_handler:
+            # Get the fastest transfer method
+            ptf = payloadTransferFactory( self.execute )
+            self._transfer_handler = ptf.getTransferHandler()
+
+        if not self._transfer_handler.canTransfer():
+            return 'Failed to transfer, the transfer handler failed.'
+        else:
+            estimatedTime = self._transfer_handler.estimateTransferTime( len(file_content) )
+            om.out.debug('The file transfer will take "' + str(estimatedTime) + '" seconds.')
+            
+            self._transfer_handler.transfer( file_content, remote_filename )
+            om.out.debug('Finished file transfer.')
+            
+            return 'File upload was successful.'
+
         
     def generic_user_input( self, command ):
         '''
@@ -257,27 +288,7 @@ class exec_shell(shell):
         or maybe some other, more complex, thing.
         '''
         return True
-    
-    def _payload(self, payload_name):
-        '''
-        Run a payload by name.
         
-        @parameter payload_name: The name of the payload I want to run.
-        '''
-        result_str = ''
-        
-        if payload_name in payload_handler.runnable_payloads(self):
-            om.out.debug( 'The payload can be run. Starting execution.' )
-            # TODO: The payloads are actually writing to om.out.console
-            # by themselves, so this is useless. In order for the
-            # result_str = ... to work, we would need a refactoring
-            # what usually gets here, are errors.
-            result_str = payload_handler.exec_payload( self,  payload_name)
-        else:
-            result_str = 'The payload could not be run.'
-            
-        return result_str
-    
     def _print_runnable_payloads(self):
         '''
         Print the payloads that can be run using this exploit.

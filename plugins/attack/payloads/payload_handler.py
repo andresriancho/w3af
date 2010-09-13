@@ -26,6 +26,7 @@ import sys
 
 PAYLOAD_PATH= os.path.join('plugins','attack','payloads','payloads')
 
+
 def payload_to_file( payload_name ):
     '''
     @parameter payload_name: The name of the payload.

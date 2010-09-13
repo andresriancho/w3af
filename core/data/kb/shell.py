@@ -104,7 +104,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
         #    Commands that are common to all shells:
         #
         if command.strip() == 'help':
-            self.help( command )
+            return self.help( command )
             
         elif command == 'payload' and len(parameters) == 1:
             #
