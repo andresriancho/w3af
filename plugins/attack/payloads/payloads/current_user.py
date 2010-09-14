@@ -7,7 +7,7 @@ class current_user(base_payload):
     '''
     This payload shows current username & folder on the system.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['current'] = {}
 
@@ -31,8 +31,8 @@ class current_user(base_payload):
         
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
                 
         if not api_result['current']:
             return 'Current user not found.'

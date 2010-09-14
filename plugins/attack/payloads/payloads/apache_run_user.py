@@ -7,7 +7,7 @@ class apache_run_user(base_payload):
     '''
     Get apache process user.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['apache_run_user'] = []
 
@@ -28,8 +28,8 @@ class apache_run_user(base_payload):
                             
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['apache_run_user']:
             return 'Apache run user not found.'

@@ -25,7 +25,7 @@ class rootkit_hunter(base_payload ):
         
         return self.result
     
-    def api_read(self):
+    def api_read(self, parameters):
         files = []
         self.result = {}
         self.result['bad_kernel_modules'] = []
@@ -1212,8 +1212,8 @@ class rootkit_hunter(base_payload ):
 
         return self.result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'Rootkit hunter failed to run.'

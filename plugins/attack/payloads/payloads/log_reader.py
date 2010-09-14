@@ -7,7 +7,7 @@ class log_reader(base_payload):
     '''
     This payload finds different readable logs on the filesystem.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         logs = []
 
@@ -109,8 +109,8 @@ class log_reader(base_payload):
         return result
 
 
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'No log files not found.'

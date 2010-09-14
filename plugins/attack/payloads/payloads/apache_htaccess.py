@@ -7,7 +7,7 @@ class apache_htaccess(base_payload):
     '''
     This payload shows Apache distributed configuration files (.htaccess & .htpasswd)
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['htaccess_files'] = {}
 
@@ -42,8 +42,8 @@ class apache_htaccess(base_payload):
         
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
 
         if not api_result['htaccess_files']:
             return 'Apache htaccess files not found.'

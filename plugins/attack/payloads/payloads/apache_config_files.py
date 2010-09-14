@@ -8,7 +8,7 @@ class apache_config_files(base_payload):
     '''
     This payload finds readable Apache configuration files
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['apache_config'] = {}
         files = []
@@ -54,8 +54,8 @@ class apache_config_files(base_payload):
 
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['apache_config']:
             return 'Apache configuration files not found.'

@@ -7,7 +7,7 @@ class filesystem(base_payload):
     '''
     This payload shows filesystem info.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         files = []
 
@@ -39,8 +39,8 @@ class filesystem(base_payload):
         
         return result
 
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'Filesystem configuration files not found.'

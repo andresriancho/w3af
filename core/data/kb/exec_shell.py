@@ -143,8 +143,10 @@ class exec_shell(shell):
         #
         #    Here I get all the common methods like help, payloads, lsp, etc.
         #
-        shell.generic_user_input(self, command)
-
+        base_klass_result = shell.generic_user_input(self, command)
+        if base_klass_result is not None:
+            return base_klass_result
+        
         # Get the command and the parameters
         original_command = command
         parameters = command.split(' ')[1:]

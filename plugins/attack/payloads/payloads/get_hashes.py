@@ -6,7 +6,7 @@ class get_hashes(base_payload):
     '''
     Get the hashes from the /etc/shadow and /etc/passwd files (if any). 
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
 
         passwd = self.shell.read('/etc/passwd')
@@ -34,8 +34,8 @@ class get_hashes(base_payload):
 
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
                 
         if not api_result:
             return 'No hashes were found.'

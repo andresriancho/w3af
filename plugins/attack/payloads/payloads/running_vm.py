@@ -7,7 +7,7 @@ class running_vm(base_payload):
     '''
     This payload check if the Server is running through a VM
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['running_vm'] = False
         files = []
@@ -83,8 +83,8 @@ class running_vm(base_payload):
         iis6log_content = self.shell.read('/windows/iis6.log')
         #if 'VMWare'
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
 
         rows = []
         rows.append( ['Running inside Virtual Machine',] ) 

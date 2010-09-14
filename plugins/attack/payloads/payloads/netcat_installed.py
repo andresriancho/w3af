@@ -7,7 +7,7 @@ class netcat_installed(base_payload):
     '''
     This payload verifies if Netcat is installed and supports "-e filename" (program to exec after connect)
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         
         files = []
         files.append('/bin/netcat')
@@ -32,8 +32,8 @@ class netcat_installed(base_payload):
 
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         rows = []
         rows.append( ['Description', 'Value'] ) 

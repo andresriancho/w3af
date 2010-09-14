@@ -6,7 +6,7 @@ class uptime(base_payload):
     '''
     This payload shows server Uptime.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
 
         uptime = self.shell.read('/proc/uptime')
@@ -24,8 +24,8 @@ class uptime(base_payload):
         
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
                 
         rows = []
         rows.append( ['Description', 'Hours', 'Minutes', 'Seconds'] )

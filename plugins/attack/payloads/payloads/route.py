@@ -7,7 +7,7 @@ class route(base_payload):
     '''
     This payload shows the IP Routing Table.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['route'] = []
         list = []
@@ -44,8 +44,8 @@ class route(base_payload):
  
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['route']:
             return 'Remote host routes could not be retrieved.'

@@ -7,7 +7,7 @@ class smb_config_files(base_payload):
     '''
     This payload shows SMB configuration files
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         files = []
 
@@ -28,8 +28,8 @@ class smb_config_files(base_payload):
                 result[ file ] = content
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'No SMB configuration files were identified.'

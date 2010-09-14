@@ -7,7 +7,7 @@ class apache_run_group(base_payload):
     '''
     Get apache process group.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['apache_run_group'] = []
 
@@ -31,8 +31,8 @@ class apache_run_group(base_payload):
             
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['apache_run_group']:
             return 'Apache run group not found.'

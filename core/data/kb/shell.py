@@ -106,12 +106,12 @@ class shell(vuln, exploitResult, commonAttackMethods):
         if command.strip() == 'help':
             return self.help( command )
             
-        elif command == 'payload' and len(parameters) == 1:
+        elif command == 'payload':
             #
             #    Run the payload
             #
             payload_name = parameters[0]
-            return self._payload( payload_name )
+            return self._payload( payload_name, parameters[1:] )
         
         elif command == 'lsp':
             #
@@ -145,13 +145,14 @@ class shell(vuln, exploitResult, commonAttackMethods):
         @parameter command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        return 'Command not found.'
+        pass
     
-    def _payload(self, payload_name):
+    def _payload(self, payload_name, parameters):
         '''
         Run a payload by name.
         
-        @parameter payload_name: The name of the payload I want to run.
+        @param payload_name: The name of the payload I want to run.
+        @param parameters: The parameters as sent by the user.
         '''
         result_str = ''
         
@@ -161,7 +162,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
             # by themselves, so this is useless. In order for the
             # result_str = ... to work, we would need a refactoring
             # what usually gets here, are errors.
-            result_str = payload_handler.exec_payload( self,  payload_name)
+            result_str = payload_handler.exec_payload( self, payload_name, parameters)
         else:
             result_str = 'The payload could not be run.'
             

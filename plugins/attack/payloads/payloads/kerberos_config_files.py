@@ -7,7 +7,7 @@ class kerberos_config_files(base_payload):
     '''
     This payload shows Kerberos configuration files
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         files = []
 
@@ -22,8 +22,8 @@ class kerberos_config_files(base_payload):
                 
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'Kerberos config files not found.'

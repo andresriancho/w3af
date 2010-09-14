@@ -7,7 +7,7 @@ class read_mail(base_payload):
     '''
     This payload shows local mails stored on /var/mail/
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         directory_list = []
 
@@ -23,8 +23,8 @@ class read_mail(base_payload):
 
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result:
             return 'No email files could be read.'

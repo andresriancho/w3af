@@ -56,7 +56,7 @@ class base_payload(object):
         '''
         return payload_handler.exec_payload(self.shell, payload_name, use_api=True)
     
-    def run(self,  *args):
+    def run(self, *args):
         '''
         @return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().

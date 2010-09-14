@@ -6,7 +6,7 @@ class os_fingerprint(base_payload):
     '''
     This payload detect OS.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
 
         os_type = self.shell.read('/proc/sys/kernel/ostype')
@@ -18,8 +18,8 @@ class os_fingerprint(base_payload):
 
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['os']:
             return 'Remote OS not identified.'

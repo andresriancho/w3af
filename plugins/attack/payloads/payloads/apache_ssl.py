@@ -7,7 +7,7 @@ class apache_ssl(base_payload):
     '''
     This payload shows Apache SSL Certificate & Key
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['apache_ssl_certificate'] = {}
         result['apache_ssl_key'] = {}
@@ -41,8 +41,8 @@ class apache_ssl(base_payload):
                     
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
         
         if not api_result['apache_ssl_certificate'] and not api_result['apache_ssl_key']:
             return 'Apache SSL key and Certificate not found.'

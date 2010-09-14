@@ -7,7 +7,7 @@ class spider(base_payload):
     '''
     This payload spiders through known readdable files to find more of them.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         files = []
         self.result = []
         
@@ -38,7 +38,7 @@ class spider(base_payload):
         
         return self.result
 
-    def run_read(self):
+    def run_read(self, parameters):
         hashmap = self.api_read()
         result = []
         if hashmap:

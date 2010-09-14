@@ -7,7 +7,7 @@ class users_config_files(base_payload):
     This payload uses "users_folders" payload to find ".rc" and other configuration files, 
     some of them may contain sensitive information.
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         user_config_files = []
         
@@ -60,8 +60,8 @@ class users_config_files(base_payload):
                 result[ file ] = content
         return result
         
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
                 
         if not api_result:
             return 'No user configuration files found.'

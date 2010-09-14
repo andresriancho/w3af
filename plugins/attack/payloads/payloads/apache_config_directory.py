@@ -7,7 +7,7 @@ class apache_config_directory(base_payload):
     '''
     This payload finds the Apache Config Directory
     '''
-    def api_read(self):
+    def api_read(self, parameters):
         result = {}
         result['apache_directory'] = []
         paths = []
@@ -64,8 +64,8 @@ class apache_config_directory(base_payload):
         
         return result
     
-    def run_read(self):
-        api_result = self.api_read()
+    def run_read(self, parameters):
+        api_result = self.api_read( parameters )
                 
         if not api_result['apache_directory']:
             return 'Apache configuration directory not found.'
