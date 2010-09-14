@@ -45,7 +45,6 @@ from core.controllers.targetSettings import targetSettings as targetSettings
 import traceback
 import copy
 import Queue
-import re
 import time
 
 import core.data.kb.knowledgeBase as kb
