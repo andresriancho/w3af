@@ -63,10 +63,11 @@ def getQueryString( url, ignoreExceptions=True ):
     '''
     parsedQs = None
     result = queryString()
+    
     if hasQueryString( url ):
         scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
         try:
-            parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=True)
+            parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=False)
         except Exception, e:
             if not ignoreExceptions:
                 raise w3afException('Strange things found when parsing query string: "' + qs + '"')
@@ -80,7 +81,8 @@ def getQueryString( url, ignoreExceptions=True ):
             #   But with that, we fail to handle web applications that use "duplicated parameter
             #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
             #
-            #   (please note the lack of [0]) , and that if the value isn't a list... I create an artificial list
+            #   (please note the lack of [0]) , and that if the value isn't a list... 
+            #    I create an artificial list
             for i in parsedQs.keys():
                 if isinstance( parsedQs[ i ], list ):
                     result[ i ] = parsedQs[ i ]
@@ -410,7 +412,7 @@ def getExtension( url ):
     else:
         return extension
 
-def allButScheme( url):
+def allButScheme( url ):
     '''
     @parameter url: The url to parse.
     @return: Returns the domain name and the path for the url.
@@ -418,7 +420,7 @@ def allButScheme( url):
     scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     return domain+ path[:path.rfind('/')+1]
 
-def getPath( url):
+def getPath( url ):
     '''
     @parameter url: The url to parse.
     @return: Returns the path for the url:
