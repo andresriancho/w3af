@@ -53,7 +53,7 @@ class running_vm(base_payload):
 
 
         for candidate in candidates:
-            file = self.shell.read('/sys/bus/pci/devices/'+candidate)
+            file = self.shell.read('/sys/bus/pci/devices/'+candidate+'/uevent')
             pci_id = parse_pci_id(file)
             pci_subsys_id = parse_subsys_id(file)
             for pci_item in pci_list:
