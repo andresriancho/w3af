@@ -25,9 +25,9 @@ from lxml import etree
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.controllers.outputManager as om
 from core.data.db.temp_persist import disk_list
+import core.data.kb.knowledgeBase as kb
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.kb.knowledgeBase import kb
 from core.data.kb.info import info
 
 # Find all form elements that don't include the'autocomplete' attribute;
@@ -84,7 +84,7 @@ class formAutocomplete(baseGrepPlugin):
                         form_str = etree.tostring(form)
                         to_highlight = form_str[:(form_str).find('>') + 1]
                         inf.addToHighlight(to_highlight)
-                        kb.append(self, 'formAutocomplete', inf)
+                        kb.kb.append(self, 'formAutocomplete', inf)
                         # Also send 'msg' to console
                         om.out.information(msg)
                         # Enough with one input
