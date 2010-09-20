@@ -23,13 +23,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import core.controllers.outputManager as om
 from core.data.db.temp_persist import disk_list
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.kb.knowledgeBase import kb
 from core.data.kb.info import info
 
-AUTOCOMPLETE_FORMS_XPATH = "//form[not(@autocomplete) or @autocomplete='on']"
+# Find all form elements that don't include the'autocomplete' attribute;
+# otherwise (if included) not equals 'off'
+AUTOCOMPLETE_FORMS_XPATH = "//form[not(@autocomplete) or " \
+"translate(@autocomplete,'OF','of')!='off']"
+# Find all input elements which type's lower-case value 
+# equals-case-sensitive 'password'
 PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 
 class formAutocomplete(baseGrepPlugin):
@@ -62,10 +68,10 @@ class formAutocomplete(baseGrepPlugin):
             dom = response.getDOM()
 
             if dom is not None:
-                
+
                 # Loop through "auto-completable" forms
                 for form in dom.xpath(AUTOCOMPLETE_FORMS_XPATH):
-                
+
                     # Test existance of password-type inputs
                     if form.xpath(PWD_INPUT_XPATH):
                         inf = info()
@@ -75,10 +81,18 @@ class formAutocomplete(baseGrepPlugin):
                         msg = 'The URL: "%s" has <form> element with ' \
                         'autocomplete capabilities.' % url
                         inf.setDesc(msg)
-                        inf.addToHighlight(etree.tostring(form))
+                        form_str = etree.tostring(form)
+                        to_highlight = form_str[:(form_str).find('>') + 1]
+                        inf.addToHighlight(to_highlight)
                         kb.append(self, 'formAutocomplete', inf)
+                        # Also send 'msg' to console
+                        om.out.information(msg)
                         # Enough with one input
                         break
+
+
+    def setOptions(self, OptionList):
+        pass
 
     def getOptions(self):
         '''
@@ -91,10 +105,8 @@ class formAutocomplete(baseGrepPlugin):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return '''
-        This plugin greps every page for autocomplete-able forms containing
-        password-type inputs.
-        '''
+        return "This plugin greps every page for autocomplete-able forms " \
+        "containing password-type inputs."
 
     def getPluginDeps(self):
         '''
