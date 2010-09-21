@@ -23,7 +23,7 @@ class users_config_files(base_payload):
             user_config_files.append(home+'.gtk-bookmarks')
             user_config_files.append(home+'.conkyrc')
             user_config_files.append(home+'.my.cnf')
-            user_config_files.append(home+'.mysql_history.')
+            user_config_files.append(home+'.mysql_history')
             user_config_files.append(home+'.ldaprc ')
             user_config_files.append(home+'.emacs')
             user_config_files.append(home+'.bash_logout')
