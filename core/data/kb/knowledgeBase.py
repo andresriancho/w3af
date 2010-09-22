@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import os,sys
+import os
+import sys
 from core.controllers.w3afException import w3afException
 import threading
 import core.data.kb.vuln as vuln
@@ -142,5 +143,12 @@ class knowledgeBase:
         
     def dump(self):
         return self._kb
+    
+    def cleanup(self):
+        '''
+        Cleanup internal data.
+        '''
+        with self._kb_lock:
+            self._kb.clear()
         
 kb = knowledgeBase()
