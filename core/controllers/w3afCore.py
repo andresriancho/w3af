@@ -613,7 +613,7 @@ class w3afCore:
         @return: None
         '''
         # Clean all data that is stored in the kb
-        reload(kb)
+        kb.kb.cleanup()
 
         # Zero internal variables from the core
         self._initializeInternalVariables()
