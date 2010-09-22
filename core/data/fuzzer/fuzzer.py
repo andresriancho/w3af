@@ -38,9 +38,9 @@ from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import cookie as cookie
 from core.data.dc.dataContainer import dataContainer as dc
 try:
-    from extlib.jsonpy import json as json
+    import extlib.simplejson as json
 except:
-    import json
+    import simplejson as json
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import httpQsRequest
 
@@ -210,7 +210,7 @@ def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , 
     
     # Now, fuzz the parsed JSON data...
     postdata = freq.getData()
-    jsonPostData = json.read( postdata )
+    jsonPostData = json.loads( postdata )
     return _makeMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append, jsonPostData )
 
 def isJSON( freq ):
@@ -222,7 +222,7 @@ def isJSON( freq ):
         # We have something that's not URL encoded in the postdata, it could be something
         # like JSON, XML, or multipart encoding. Let's try with JSON
         try:
-            jsonPostData = json.read( postdata )
+            jsonPostData = json.loads( postdata )
         except:
             # It's not json, maybe XML or multipart, I don't really care ( at least not in this section of the code )
             return False

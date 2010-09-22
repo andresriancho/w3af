@@ -97,7 +97,6 @@ class httpResponse:
                 parser = etree.HTMLParser(recover=True)
                 self._dom = etree.fromstring(self._body, parser)
             except Exception, e:
-                print e
                 msg = 'The HTTP body for "%s" could NOT be ' \
                 'parsed by libxml2.' % self.getURL()
                 om.out.debug(msg)
@@ -107,7 +106,10 @@ class httpResponse:
         '''
         @return: A normalized body
         '''
-        return etree.tostring( self._dom )
+        if self._dom is not None:
+            return etree.tostring( self._dom )
+        
+        return None
     
     def getHeaders( self ): return self._headers
     def getLowerCaseHeaders( self ):
@@ -222,7 +224,6 @@ class httpResponse:
                     msg = 'Charset LookupError: unknown charset: ' + charset
                     msg += '; ignored and set to default: ' + self._charset
                     om.out.debug( msg )
-                    
                     # Use the default
                     unicode_str = body.decode(self._charset, 'returnEscapedChar')
                

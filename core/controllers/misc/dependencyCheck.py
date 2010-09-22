@@ -95,15 +95,6 @@ def dependencyCheck():
         except:
             print 'You have to install pyPdf lib. Debian based distributions: apt-get install python-pypdf'
             sys.exit( 1 )
-    
-    try:
-        from extlib.jsonpy import json as json
-    except:
-        try:
-            import json
-        except:
-            print 'You have to install python-json lib. Debian based distributions: apt-get install python-json'
-            sys.exit( 1 )
             
     try:
         from OpenSSL import SSL

@@ -60,7 +60,6 @@ class ghdb(baseDiscoveryPlugin):
         self._fuzzableRequests = []
         
         # User configured variables
-        self._key = ''
         self._result_limit = 300
         self._update_ghdb = False
         
@@ -134,10 +133,10 @@ class ghdb(baseDiscoveryPlugin):
         
         return self._fuzzableRequests
     
-    def _classic_worker( self, gh, search ):
+    def _classic_worker(self, gh, search):
         
         # Init some variables
-        google_se = google( self._urlOpener, self._key )
+        google_se = google(self._urlOpener)
         
         google_list = google_se.getNResults( search, 9 )
         
@@ -210,14 +209,7 @@ class ghdb(baseDiscoveryPlugin):
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Google API License key'
-        h1 = 'To use this plugin you have to own your own google API license key OR you can'
-        h1 += ' directly use the search engine using clasic HTTP. If this parameter is left'
-        h1 += ' blank, the search engine will be used, otherwise the google webservice will'
-        h1 += ' be used.Go to http://www.google.com/apis/ to get more information.'
-        o1 = option('key', self._key, d1, 'string', help=h1)
-        
+        '''        
         d2 = 'Fetch the first "resultLimit" results from the Google search'
         o2 = option('resultLimit', self._result_limit, d2, 'integer')
         
@@ -228,7 +220,6 @@ class ghdb(baseDiscoveryPlugin):
         #o3 = option('updateGHDB', self._update_ghdb, d3, 'boolean')
         
         ol = optionList()
-        ol.add(o1)
         ol.add(o2)
         #ol.add(o3)
         return ol
@@ -241,7 +232,6 @@ class ghdb(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._key = optionsMap['key'].getValue()           
         # The ghdb is not online anymore, updating may brake this plugin.
         # http://johnny.ihackstuff.com/HFC/Home.html
         #
@@ -265,7 +255,6 @@ class ghdb(baseDiscoveryPlugin):
         Three configurable parameters exist:
             - resultLimit
             - updateGHDB
-            - key
         
         Using the google hack database released by jhonny, this plugin searches google for possible
         vulnerabilities in the domain being tested.

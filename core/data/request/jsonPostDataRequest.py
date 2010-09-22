@@ -25,9 +25,9 @@ import core.controllers.outputManager as om
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 import core.data.dc.dataContainer as dc
 try:
-    from extlib.jsonpy import json as json
+    import extlib.simplejson as json
 except:
-    import json
+    import simplejson as json
 
 class jsonPostDataRequest(httpPostDataRequest):
     '''
@@ -43,7 +43,7 @@ class jsonPostDataRequest(httpPostDataRequest):
         '''
         @return: A string that represents the JSON data saved in the dc.
         '''
-        res = json.write(self._dc)
+        res = json.dumps(self._dc)
         return res
         
     def __str__( self ):
@@ -54,7 +54,7 @@ class jsonPostDataRequest(httpPostDataRequest):
         strRes += self._url
         strRes += ' | Method: ' + self._method
         strRes += ' | JSON: ('
-        strRes += json.write(self._dc)
+        strRes += json.dumps(self._dc)
         strRes += ')'
         return strRes
     

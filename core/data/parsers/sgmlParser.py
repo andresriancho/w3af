@@ -234,7 +234,7 @@ class sgmlParser(abstractParser, SGMLParser):
         '''
         This method parses the document.
         
-        @parameter s: The document to parse.
+        @parameter s: The document to parse (as a string)
         '''
         try:
             self.findEmails( s )

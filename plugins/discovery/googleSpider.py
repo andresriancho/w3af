@@ -51,7 +51,6 @@ class googleSpider(baseDiscoveryPlugin):
         self._fuzzableRequests = []
         
         # User variables
-        self._key = ''
         self._result_limit = 300
         
     def discover(self, fuzzableRequest ):
@@ -66,7 +65,7 @@ class googleSpider(baseDiscoveryPlugin):
             # I will only run this one time. All calls to googleSpider return the same url's
             self._run = False
             
-            google_se = google( self._urlOpener, self._key )
+            google_se = google(self._urlOpener)
             
             domain = urlParser.getDomain( fuzzableRequest.getURL() )
             if is_private_site( domain ):
@@ -110,19 +109,11 @@ class googleSpider(baseDiscoveryPlugin):
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Google API License key'
-        h1 = 'To use this plugin you have to own your own google API license key OR you can'
-        h1 += ' directly use the search engine using clasic HTTP. If this parameter is left blank,'
-        h1 += ' the search engine will be used, otherwise the google webservice will be used.'
-        h1 += ' Go to http://www.google.com/apis/ to get more information.'
-        o1 = option('key', self._key, d1, 'string', help=h1)
-        
+        '''        
         d2 = 'Fetch the first "resultLimit" results from the Google search'
         o2 = option('resultLimit', self._result_limit, d2, 'integer')
 
         ol = optionList()
-        ol.add(o1)
         ol.add(o2)
         return ol
 
@@ -134,7 +125,6 @@ class googleSpider(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._key = optionsMap['key'].getValue()
         self._result_limit = optionsMap['resultLimit'].getValue()
 
     def getPluginDeps( self ):
@@ -154,7 +144,4 @@ class googleSpider(baseDiscoveryPlugin):
         
         Two configurable parameters exist:
             - resultLimit
-            - key
-        
-        Valid google API licenses are only the *old ones*.
         '''

@@ -24,9 +24,9 @@ from StringIO import StringIO
 import cgi
 # for json
 try:
-    from extlib.jsonpy import json as json
+    import extlib.simplejson as json
 except:
-    import json
+    import simplejson as json
 
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
@@ -193,7 +193,7 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     #   Case #2, JSON request
     #
     try:
-        dc = json.read(postData)
+        dc = json.loads(postData)
     except:
         pass
     else:
