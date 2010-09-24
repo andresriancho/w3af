@@ -34,7 +34,7 @@ import core.data.constants.severity as severity
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_lt
 
 
 class domain_dot(baseDiscoveryPlugin):
@@ -82,25 +82,26 @@ class domain_dot(baseDiscoveryPlugin):
             else:
                 self._analyze_response( original_response, response )
 
-    def _analyze_response(self, original_response, response):
+    def _analyze_response(self, original_resp, resp):
         '''
-        @parameter response: The httpResponse object that holds the ORIGINAL response.
-        @parameter response: The httpResponse object that holds the content of the response to analyze.
+        @parameter original_resp: The httpResponse object that holds the ORIGINAL response.
+        @parameter resp: The httpResponse object that holds the content of the response to analyze.
         '''
-        if relative_distance( original_response.getBody(), response.getBody() ) < 0.7:
-            i = info.info( response )
-            i.setId( [original_response.id, response.id] )
-            i.setName( 'Responses differ' )
-            msg = '[Manual verification required] The response body for a request with a trailing'
-            msg += ' dot in the domain, and the response body without a trailing dot in the domain'
-            msg += ' differ. This could indicate a misconfiguration in the virtual host settings.'
-            msg += ' In some cases, this misconfiguration permits the attacker to read the source'
-            msg += ' code of the web application.'
-            i.setDesc( msg )
+        if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
+            i = info.info(resp)
+            i.setId([original_resp.id, resp.id])
+            i.setName('Responses differ')
+            msg = '[Manual verification required] The response body for a ' \
+            'request with a trailing dot in the domain, and the response ' \
+            'body without a trailing dot in the domain differ. This could ' \
+            'indicate a misconfiguration in the virtual host settings. In ' \
+            'some cases, this misconfiguration permits the attacker to read ' \
+            'the source code of the web application.'
+            i.setDesc(msg)
             
-            om.out.information( i.getDesc() )
+            om.out.information(msg)
             
-            kb.kb.append( self, 'domain_dot', i )
+            kb.kb.append(self, 'domain_dot', i)
                 
     def getOptions( self ):
         '''

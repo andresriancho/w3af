@@ -29,7 +29,7 @@ import core.data.parsers.urlParser as urlParser
 
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
 
 from core.controllers.threads.threadManager import threadManagerObj as tm
@@ -142,11 +142,10 @@ class fingerprint_404:
         #
         for body_404_db in self._404_bodies:
             
-            ratio = relative_distance( body_404_db, html_body )
-            if ratio > IS_EQUAL_RATIO:
-                msg = '"' + http_response.getURL() + '" is a 404. [' + str(ratio) + ' > '
-                msg += str(IS_EQUAL_RATIO) +']'
-                om.out.debug( msg )
+            if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
+                msg = '"%s" is a 404. [similarity_index > %s]' % \
+                    (http_response.getURL(), IS_EQUAL_RATIO)
+                om.out.debug(msg)
                 self._is_404_LRU[ http_response.id ] = True
                 return True
             else:
@@ -158,9 +157,9 @@ class fingerprint_404:
             #
             #   I get here when the for ends and no 404 is matched.
             #
-            msg = '"' + http_response.getURL() + '" is NOT a 404. [' + str(ratio) + ' < '
-            msg += str(IS_EQUAL_RATIO) + ']'
-            om.out.debug( msg )
+            msg = '"%s" is NOT a 404. [similarity_index < %s]' % \
+            (http_response.getURL(), IS_EQUAL_RATIO)
+            om.out.debug(msg)
             self._is_404_LRU[ http_response.id ] = False
             return False
             
@@ -207,8 +206,7 @@ class fingerprint_404:
         for i in self._response_body_list:
             for j in self._response_body_list:
                 
-                ratio = relative_distance( i, j )
-                if ratio > IS_EQUAL_RATIO:
+                if relative_distance_ge(i, j, IS_EQUAL_RATIO):
                     # They are equal, we are ok with that
                     continue
                 else:

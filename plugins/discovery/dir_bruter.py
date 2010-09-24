@@ -32,7 +32,6 @@ import core.data.parsers.urlParser as urlParser
 import os
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-from core.controllers.misc.levenshtein import relative_distance
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 

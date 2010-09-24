@@ -34,7 +34,7 @@ import core.data.parsers.urlParser as urlParser
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_lt
 
 
 class userDir(baseDiscoveryPlugin):
@@ -129,8 +129,7 @@ class userDir(baseDiscoveryPlugin):
             path = mutant.replace( urlParser.baseUrl( mutant ) , '' )
             response_body = response.getBody().replace( path, '')
             
-            ratio = relative_distance( response_body, self._non_existant )
-            if ratio < 0.7:
+            if relative_distance_lt(response_body, self._non_existant, 0.7):
                 
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.getData( 'userDir', 'users') ]:

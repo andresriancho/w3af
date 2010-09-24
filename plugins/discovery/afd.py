@@ -33,7 +33,7 @@ import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_lt
 
 import urllib
 
@@ -109,27 +109,28 @@ class afd(baseDiscoveryPlugin):
             # Analyze the results
             return self._filtered, self._not_filtered
                 
-    def _send_and_analyze(self, offending_string, offending_URL, original_response_body, rnd_param):
+    def _send_and_analyze(self, offending_string, offending_URL, original_resp_body, rnd_param):
         '''
         Actually send the HTTP request.
         @return: None, everything is saved to the self._filtered and self._not_filtered lists.
         '''
         try:
-            response_body = self._urlOpener.GET( offending_URL, useCache=False ).getBody()
-        except KeyboardInterrupt,e:
+            resp_body = self._urlOpener.GET(offending_URL, useCache=False).getBody()
+        except KeyboardInterrupt, e:
             raise e
         except Exception:
             # I get here when the remote end closes the connection
-            self._filtered.append( offending_URL )
+            self._filtered.append(offending_URL)
         else:
             # I get here when the remote end returns a 403 or something like that...
             # So I must analyze the response body
-            response_body = response_body.replace(offending_string,'')
-            response_body = response_body.replace(rnd_param,'')
-            if relative_distance(response_body, original_response_body) < 0.15:
-                self._filtered.append( offending_URL )
+            resp_body = resp_body.replace(offending_string, '')
+            resp_body = resp_body.replace(rnd_param, '')
+            if relative_distance_lt(resp_body, original_resp_body, 0.15):
+                self._filtered.append(offending_URL)
             else:
-                self._not_filtered.append( offending_URL )
+                self._not_filtered.append(offending_URL)
+            
         
     def _analyze_results( self, filtered, not_filtered ):
         '''

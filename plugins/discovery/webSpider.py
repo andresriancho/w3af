@@ -27,7 +27,7 @@ from core.controllers.w3afException import w3afException
 
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.urlParser as urlParser
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_ge
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.config as cf
@@ -301,9 +301,11 @@ class webSpider(baseDiscoveryPlugin):
                             
                             check_response = self._urlOpener.GET( new_reference, useCache=True,
                                                                                         headers= headers)
-                            
-                            ratio = relative_distance( response.getBody(), check_response.getBody() )
-                            if ratio > IS_EQUAL_RATIO:
+                            resp_body = response.getBody()
+                            check_resp_body = check_response.getBody()
+
+                            if relative_distance_ge(resp_body,
+                                                    check_resp_body, IS_EQUAL_RATIO):
                                 # If they are equal, then they are both a 404 (or something invalid)
                                 #om.out.debug( reference + ' was broken!')
                                 return

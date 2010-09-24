@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_ge
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -354,7 +354,7 @@ class fileReaderShell(read_shell):
             
             #   Now I compare both strings, if they are VERY similar, then filename is a non 
             #   existing file.
-            if relative_distance( app_error,  trimmed_result ) > 0.9:
+            if relative_distance_ge(app_error, trimmed_result, 0.9):
                 filtered = NO_SUCH_FILE
 
         #

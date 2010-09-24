@@ -29,7 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.controllers.w3afException import w3afException
 
@@ -101,7 +101,7 @@ class findvhost(baseDiscoveryPlugin):
         
         return []
         
-    def _get_dead_links( self, fuzzableRequest ):
+    def _get_dead_links(self, fuzzableRequest):
         '''
         Find every link on a HTML document verify if the domain is reachable or not; after that,
         verify if the web found a different name for the target site or if we found a new site that
@@ -111,20 +111,22 @@ class findvhost(baseDiscoveryPlugin):
         res = []
         
         # Get some responses to compare later
-        base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
-        original_response = self._urlOpener.GET( fuzzableRequest.getURI() , useCache=True )
-        base_response = self._urlOpener.GET( base_url , useCache=True )
+        base_url = urlParser.baseUrl(fuzzableRequest.getURL())
+        original_response = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True)
+        base_response = self._urlOpener.GET(base_url, useCache=True)
+        base_resp_body = base_response.getBody()
         
         try:
-            dp = dpCache.dpc.getDocumentParserFor( original_response )
+            dp = dpCache.dpc.getDocumentParserFor(original_response)
         except w3afException:
             # Failed to find a suitable parser for the document
             return []
         
         # Set the non existant response
         non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
-        self._non_existant_response = self._urlOpener.GET( base_url, 
-                                                useCache=False, headers={'Host': non_existant } )
+        self._non_existant_response = self._urlOpener.GET(base_url, 
+                                                useCache=False, headers={'Host': non_existant})
+        nonexist_resp_body = self._non_existant_response.getBody()
         
         # Note:
         # - With parsed_references I'm 100% that it's really something in the HTML
@@ -139,7 +141,7 @@ class findvhost(baseDiscoveryPlugin):
         parsed_references.extend(re_references)
         
         for link in parsed_references:
-            domain = urlParser.getDomain( link )
+            domain = urlParser.getDomain(link)
             
             #
             # First section, find internal hosts using the HTTP Host header:
@@ -150,26 +152,23 @@ class findvhost(baseDiscoveryPlugin):
                 # This sucks, but it's cool if the document has a link to 
                 # http://some.internal.site.target.com/
                 try:
-                    vhost_response = self._urlOpener.GET( base_url, useCache=False, 
-                                                                        headers={'Host': domain } )
+                    vhost_response = self._urlOpener.GET(base_url, useCache=False,
+                                                         headers={'Host': domain })
                 except w3afException:
                     pass
                 else:
-                    self._already_queried.append( domain )
+                    self._already_queried.append(domain)
+                    vhost_resp_body = vhost_response.getBody()
                     
-                    dist_a = relative_distance( vhost_response.getBody(), base_response.getBody() )
-                    dist_b = relative_distance( vhost_response.getBody(), 
-                                                            self._non_existant_response.getBody() )
-
                     # If they are *really* different (not just different by some chars)
-                    if  dist_a  < 0.35 and dist_b < 0.35:
-
+                    if relative_distance_lt(vhost_resp_body, base_resp_body, 0.35) and \
+                        relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
                         # and the domain can't just be resolved using a DNS query to
                         # our regular DNS server
                         report = True
                         if self._can_resolve_domain_names:
                             try:
-                                socket.gethostbyname( domain )
+                                socket.gethostbyname(domain)
                             except:
                                 # aha! The HTML is linking to a domain that's
                                 # hosted in the same server, and the domain name
@@ -227,15 +226,17 @@ class findvhost(baseDiscoveryPlugin):
         Test some generic virtual hosts, only do this once.
         '''
         res = []
-        base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+        base_url = urlParser.baseUrl(fuzzableRequest.getURL())
         
-        common_vhost_list = self._get_common_virtualhosts( urlParser.getDomain( base_url ) )
+        common_vhost_list = self._get_common_virtualhosts(urlParser.getDomain(base_url))
         
         # Get some responses to compare later
-        original_response = self._urlOpener.GET( base_url, useCache=True )
+        original_response = self._urlOpener.GET(base_url, useCache=True)
+        orig_resp_body = original_response.getBody()
         non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
-        self._non_existant_response = self._urlOpener.GET( base_url, useCache=False, \
-                                                        headers={'Host': non_existant } )
+        self._non_existant_response = self._urlOpener.GET(base_url, useCache=False, \
+                                                        headers={'Host': non_existant })
+        nonexist_resp_body = self._non_existant_response.getBody()
         
         for common_vhost in common_vhost_list:
             try:
@@ -244,12 +245,12 @@ class findvhost(baseDiscoveryPlugin):
             except w3afException:
                 pass
             else:
-                # If they are *really* different (not just different by some chars) 
-                dist_a = relative_distance( vhost_response.getBody(), original_response.getBody() )
-                dist_b = relative_distance( vhost_response.getBody(), 
-                                                        self._non_existant_response.getBody() )
-                if dist_a < 0.35 and dist_b < 0.35:
-                    res.append( (common_vhost, vhost_response.id) )
+                vhost_resp_body = vhost_response.getBody()
+
+                # If they are *really* different (not just different by some chars)
+                if relative_distance_lt(vhost_resp_body, orig_resp_body, 0.35) and \
+                    relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
+                    res.append((common_vhost, vhost_response.id))
         
         return res
     

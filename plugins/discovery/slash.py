@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_lt
 
 from core.data.db.temp_persist import disk_list
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -86,21 +86,23 @@ class slash( baseDiscoveryPlugin ):
             
         return fr
         
-    def _do_request( self, fuzzableRequest, original_response ):
+    def _do_request( self, fuzzableRequest, orig_resp ):
         '''
         Sends the request.
         @parameter fuzzableRequest: The fuzzable request object to modify.
-        @parameter original_response: The response for the original request that was sent.
+        @parameter orig_resp: The response for the original request that was sent.
         '''
         try:
-            response = self._urlOpener.GET( fuzzableRequest.getURI(), useCache = True )                                                           
+            resp = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True)
         except KeyboardInterrupt, e:
             raise e
         else:
-            if relative_distance( response.getBody(), original_response.getBody() ) < 0.70\
-            and not is_404( response ):
-                self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-                om.out.debug( 'slash plugin found new URI: "' + fuzzableRequest.getURI() + '".' )
+            resp_body = resp.getBody()
+            orig_resp = orig_resp.getBody()
+            if relative_distance_lt(resp_body, orig_resp, 0.7) and \
+                not is_404(resp):
+                self._fuzzableRequests.extend(self._createFuzzableRequests(resp))
+                om.out.debug('slash plugin found new URI: "' + fuzzableRequest.getURI() + '".')
         
     def getOptions( self ):
         '''

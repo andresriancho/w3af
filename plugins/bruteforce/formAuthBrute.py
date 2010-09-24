@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
 from core.controllers.w3afException import w3afException
 from core.data.dc.form import form as form
-from core.controllers.misc.levenshtein import relative_distance
+from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 import core.data.kb.knowledgeBase as kb
@@ -171,16 +171,14 @@ class formAuthBrute(baseBruteforcePlugin):
                 raise w3afException('Failed to generate a response that matches the failed login page.')
     
     
-    def _matchesFailedLogin(self, response_body):
+    def _matchesFailedLogin(self, resp_body):
         '''
-        @return: True if the response_body matches the previously created responses that
+        @return: True if the resp_body matches the previously created responses that
         are stored in self._login_failed_result_list.
-        '''
-        # In the ratio, 1 is completely equal.
-        ratio0 = relative_distance( response_body, self._login_failed_result_list[0])
-        ratio1 = relative_distance( response_body, self._login_failed_result_list[1])
-        
-        if ratio0 > 0.65 or ratio1 > 0.65:
+        '''        
+        # 0.65 gives a good measure of similarity
+        if relative_distance_ge(resp_body, self._login_failed_result_list[0], 0.65) or \
+            relative_distance_ge(resp_body, self._login_failed_result_list[1], 0.65):
             return True
         else:
             # I'm happy! The response_body IS NOT a failed login page.
