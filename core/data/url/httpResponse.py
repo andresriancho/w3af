@@ -243,11 +243,11 @@ class httpResponse:
 
         #   Set the type, for easy access.
         for key in headers.keys():
-            if 'Content-Type'.lower() == key.lower():
-                self._content_type = headers[ key ]
+            if 'content-type' == key.lower():
+                self._content_type = headers[key]
                 
                 #   Text or HTML?
-                magic_words = [ 'text', 'html', 'xml', 'txt']
+                magic_words = ['text', 'html', 'xml', 'txt', 'javascript']
                 for mw in magic_words:
                     if self._content_type.lower().count(mw):
                         self._is_text_or_html_response = True

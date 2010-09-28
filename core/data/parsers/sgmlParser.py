@@ -217,12 +217,12 @@ class sgmlParser(abstractParser, SGMLParser):
         if tag.lower() not in self._tagsContainingURLs:
             return
 
-        for attr in attrs:
-            if attr[0].lower() in self._urlAttrs:
+        for attr_name, attr_val in attrs:
+            if attr_name.lower() in self._urlAttrs:
                 
                 # Only add it to the result of the current URL is not a fragment
-                if len(attr[1]) and attr[1][0] != '#':
-                    url = urlParser.urlJoin(self._baseUrl, attr[1])
+                if attr_val and not attr_val.startswith('#'):
+                    url = urlParser.urlJoin(self._baseUrl, attr_val)
                     url = self._decode_URL(url, self._encoding)
                     url = urlParser.normalizeURL(url)
                     if url not in self._parsed_URLs:
@@ -268,7 +268,7 @@ class sgmlParser(abstractParser, SGMLParser):
             - etc.
         
         @return: Two sets, one with the parsed URLs, and one with the URLs that came out of a
-        regular expression. The second list if less trustworthy.
+        regular expression. The second list is less trustworthy.
         '''
         tmp_re_URLs = set(self._re_URLs) - set( self._parsed_URLs )
         return list(set( self._parsed_URLs )), list(tmp_re_URLs)

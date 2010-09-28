@@ -59,7 +59,8 @@ class httpAuthDetect(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        already_reported = [ u.getURL() for u in kb.kb.getData( 'httpAuthDetect', 'auth' ) ]
+        already_reported = [u.getURL() for u in \
+                            kb.kb.getData('httpAuthDetect', 'auth')]
         
         # If I have a 401 code, and this URL wasn't already reported...
         if response.getCode() == 401 and \
@@ -83,20 +84,21 @@ class httpAuthDetect(baseGrepPlugin):
         #   Analyze the HTTP URL
         #
         if '@' in response.getURI():
-            if self._auth_uri_regex.match( response.getURI() ):
-            
+
+            if self._auth_uri_regex.match(response.getURI()):
                 # An authentication URI was found!
                 v = vuln.vuln()
-                v.setURL( response.getURL() )
-                v.setId( response.id )
-                desc = 'The resource: "'+ response.getURI() + '" has a user and password in the URI.'
-                v.setDesc( desc )
+                v.setURL(response.getURL())
+                v.setId(response.id)
+                desc = 'The resource: "%s" has a user and password in ' \
+                'the URI.' % response.getURI()
+                v.setDesc(desc)
                 v.setSeverity(severity.HIGH)
-                v.setName( 'Basic HTTP credentials' )
-                v.addToHighlight( response.getURI() )
+                v.setName('Basic HTTP credentials')
+                v.addToHighlight(response.getURI())
                 
-                kb.kb.append( self , 'userPassUri' , v )
-                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                kb.kb.append(self, 'userPassUri', v)
+                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
 
 
         #
@@ -104,11 +106,11 @@ class httpAuthDetect(baseGrepPlugin):
         #
         url_list = []
         try:
-            documentParser = dpCache.dpc.getDocumentParserFor( response )
+            documentParser = dpCache.dpc.getDocumentParserFor(response)
         except w3afException, w3:
-            msg = 'Failed to find a suitable document parser.'
-            msg += ' Exception: ' + str(w3)
-            om.out.error( msg )
+            msg = 'Failed to find a suitable document parser. ' \
+            'Exception: ' + str(w3)
+            om.out.error(msg)
         else:
             parsed_references, re_references = documentParser.getReferences()
             url_list.extend(parsed_references)
@@ -116,20 +118,20 @@ class httpAuthDetect(baseGrepPlugin):
 
         for url in url_list:
                 
-            if self._auth_uri_regex.match( url ):
+            if self._auth_uri_regex.match(url):
                 v = vuln.vuln()
-                v.setURL( response.getURL() )
+                v.setURL(response.getURL())
                 v.setId( response.id )
                 msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
                 msg += ' body. The offending URL is: "' + url + '".'
-                v.setDesc( msg )
+                v.setDesc(msg)
                 
                 v.setSeverity(severity.HIGH)
-                v.setName( 'Basic HTTP credentials' )
-                v.addToHighlight( url )
+                v.setName('Basic HTTP credentials')
+                v.addToHighlight(url)
                 
-                kb.kb.append( self , 'userPassUri' , v )
-                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                kb.kb.append(self, 'userPassUri', v)
+                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
                     
     def _analyze_401(self, response):
         '''
@@ -142,7 +144,8 @@ class httpAuthDetect(baseGrepPlugin):
             if key.lower() == 'www-authenticate':
                 realm = response.getHeaders()[ key ]
                 break
-                
+        
+        
         if realm == None:
             # Report this strange case
             i = info.info()
