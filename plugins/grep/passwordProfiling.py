@@ -81,17 +81,17 @@ class passwordProfiling(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None.
         '''
+        
         # Initial setup
         lang = kb.kb.getData( 'lang', 'lang' )
         if lang == []:
             lang = 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.getCode() not in [500, 401, 403, 404]\
-        and not is_404( response )\
-        and request.getMethod() in ['POST', 'GET']:
+        if response.getCode() not in [500, 401, 403, 404] and \
+            not is_404(response) and request.getMethod() in ['POST', 'GET']:
             # Run the plugins
-            data = self._run_plugins( response )
+            data = self._run_plugins(response)
             
             with self._plugin_lock:
                 old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
@@ -99,12 +99,11 @@ class passwordProfiling(baseGrepPlugin):
                 # "merge" both maps and update the repetitions
                 for d in data:
                     
-                    if len(d) >= 4\
-                    and d.isalnum()\
-                    and not d.isdigit()\
-                    and d.lower() not in self._banned_words\
-                    and d.lower() not in self._commonWords[ lang ] \
-                    and not self._wasSent( request, d ):
+                    if len(d) >= 4 and d.isalnum() and \
+                        not d.isdigit() and \
+                        d.lower() not in self._banned_words and \
+                        d.lower() not in self._commonWords[lang] and \
+                        not self._wasSent(request, d):
                         
                         if d in old_data:
                             old_data[ d ] += data[ d ]
@@ -130,7 +129,8 @@ class passwordProfiling(baseGrepPlugin):
                     new_data = old_data
                 
                 # save the updated map
-                kb.kb.save( self, 'passwordProfiling', new_data )
+                kb.kb.save(self, 'passwordProfiling', new_data)
+
     
     def _run_plugins( self, response ):
         '''
@@ -139,7 +139,7 @@ class passwordProfiling(baseGrepPlugin):
         @return: A map with word:repetitions
         '''
         # Create plugin instances only once
-        if len(self._plugins)==0:
+        if not self._plugins:
             for plugin_name in self._plugin_name_list:
                 plugin_instance = factory( 'plugins.grep.passwordProfilingPlugins.' +  plugin_name )
                 self._plugins.append( plugin_instance )
@@ -152,6 +152,7 @@ class passwordProfiling(baseGrepPlugin):
                 # this plugins only return a something different of None of they found something
                 res = wordMap
                 break
+        
         return res
         
     def setOptions( self, OptionList ):

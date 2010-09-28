@@ -20,8 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+
 from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
 
+words_split_re = re.compile("[^\w]")
 
 class html(basePpPlugin):
     '''
@@ -40,39 +43,30 @@ class html(basePpPlugin):
         @parameter body: In most common cases, an html. Could be almost anything.
         @return: A map of strings:repetitions.
         '''
+        
         data = {}
 
         if response.is_text_or_html():
             
             dom = response.getDOM()
+            # Splitter function
+            split = words_split_re.split
+            # Filter function
+            filter_by_len = lambda x: len(x) > 3
 
             # In some strange cases, we fail to normalize the document
-            if dom != None:
-
-                title_elements = dom.findall('title')
-                title_words = []
-                for element in title_elements:
-                    title_words.extend( element.text.split(' ') )
-                title_words = [ w.strip() for w in title_words if len(w) > 3 ]
+            if dom is not None:
                 
-                all_strings_list = [tag.text for tag in dom.iter()]
-                all_words = []
-                for a_string in all_strings_list:
-                    if a_string != None:
-                        all_words.extend( a_string.split(' ') )
-                all_words = [ w.strip() for w in all_words if len(w) > 3 ]
-
-                for word in title_words:
-                    if word in data:
-                        data[ word ] += 5
-                    else:
-                        data[ word ] = 5
-                
-                for word in all_words:
-                    if word in data:
-                        data[ word ] += 1
-                    else:
-                        data[ word ] = 1
-            
-            return data
+                for ele in dom.getiterator():
+                    # Words inside <title> weights more.
+                    inc = (ele.tag == 'title') and 5 or 1
+                    text = ele.text
+                    if text is not None:
+                        # Filter by length of the word (> 3)
+                        for w in filter(filter_by_len, split(text)):
+                            if w in data:
+                                data[w] += inc
+                            else:
+                                data[w] = inc
+        return data
     

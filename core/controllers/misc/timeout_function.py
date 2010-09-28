@@ -79,11 +79,11 @@ def timelimited(timeout, function, *args, **kwds):
                 self._error_ = e
 
         def _stop(self):
-             # UGLY! force the thread to stop by (ab)using
-             # the private __stop or _stop method, but that
-             # seems to work better than these recipes
-             # <http://code.activestate.com/recipes/496960/>
-             # <http://sebulba.wikispaces.com/recipe+thread2>
+            # UGLY! force the thread to stop by (ab)using
+            # the private __stop or _stop method, but that
+            # seems to work better than these recipes
+            # <http://code.activestate.com/recipes/496960/>
+            # <http://sebulba.wikispaces.com/recipe+thread2>
             if self.isAlive():
                 _Thread_stop(self)
                 
