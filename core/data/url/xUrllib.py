@@ -684,25 +684,28 @@ class xUrllib:
         timeout_seconds = 5
         timedout_grep_wrapper = TimeLimited( grep_plugin.grep_wrapper, timeout_seconds)
         try:
-            timedout_grep_wrapper( request, response)
+            timedout_grep_wrapper(request, response)
         except KeyboardInterrupt:
             # Correct control+c handling...
             raise
         except TimeLimitExpired:
-            msg = 'The "' + grep_plugin.getName() + '" plugin took more than ' + str(timeout_seconds)
-            msg += ' seconds to run.'
-            msg += ' For a plugin that should only perform pattern matching, this is too much,'
-            msg += ' please review its source code.'
-            om.out.error( msg )
+            msg = 'The "%s" plugin took more than %s seconds to run. ' \
+            'For a plugin that should only perform pattern matching, ' \
+            'this is too much, please review its source code.' % \
+            (grep_plugin.getName(), timeout_seconds)
+            om.out.error(msg)
         except Exception, e:
-            msg = 'Error in grep plugin, "' + grep_plugin.getName() + '" raised the exception: '
-            msg += str(e) + '. Please report this bug to the w3af sourceforge project page '
-            msg += '[ https://sourceforge.net/apps/trac/w3af/newticket ] '
-            msg += '\nException: ' + str(traceback.format_exc(1))
-            om.out.error( msg )
-            om.out.error( str(traceback.format_exc()) )
+            msg = 'Error in grep plugin, "%s" raised the exception: %s. ' \
+            'Please report this bug to the w3af sourceforge project page ' \
+            '[ https://sourceforge.net/apps/trac/w3af/newticket ] ' \
+            '\nException: %s' % (grep_plugin.getName(), str(e), 
+                                 traceback.format_exc(1))
+            om.out.error(msg)
+            om.out.error(getattr(e, 'orig_traceback_str', '') or \
+                            traceback.format_exc())
+
         
-        om.out.debug('Finished grep_worker for response: ' + repr(response) )
+        om.out.debug('Finished grep_worker for response: ' + repr(response))
 
 _abbrevs = [
     (1<<50L, 'P'),
