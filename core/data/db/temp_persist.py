@@ -64,10 +64,11 @@ class disk_list(object):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    def __init__(self):
+    def __init__(self, text_factory=sqlite3.OptimizedUnicode):
         '''
         Create the sqlite3 database and the thread lock.
         
+        @param text_factory: A callable object to handle strings.
         @return: None
         '''
         # Init some attributes
@@ -75,6 +76,9 @@ class disk_list(object):
         self._filename = None
         self._current_index = 0
         
+        # text factory for the connection
+        self._text_factory = text_factory
+
         # Create the lock
         self._db_lock = threading.RLock()
         
@@ -92,7 +96,11 @@ class disk_list(object):
             try:
                 # Create the database
                 self._conn = sqlite3.connect(self._filename, check_same_thread=False)
-                self._conn.text_factory = str
+                
+                # Set up the text_factory to the connection
+                # See http://sourceforge.net/tracker/?func=detail&aid=3045048&group_id=170274&atid=853652
+                self._conn.text_factory = self._text_factory
+
                 # Create table
                 self._conn.execute('''create table data (index_ real, information text)''')
 
