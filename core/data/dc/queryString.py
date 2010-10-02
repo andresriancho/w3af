@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import urllib
 from core.data.dc.dataContainer import dataContainer
+
 
 class queryString(dataContainer):
     '''
