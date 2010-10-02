@@ -39,7 +39,7 @@ import re
 
 class pathDisclosure(baseGrepPlugin):
     '''
-    Grep every page for traces of path disclosure problems.
+    Grep every page for traces of path disclosure vulnerabilities.
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -51,17 +51,42 @@ class pathDisclosure(baseGrepPlugin):
         self._already_added = []
         
         # Compile all regular expressions now
-        self._path_disc_regex_list = []
+        self._compiled_regexes = {}
         self._compile_regex()
         
     def _compile_regex(self):
         '''
         @return: None, the result is saved in self._path_disc_regex_list
         '''
+        #
+        #    I tried to enhance the performance of this plugin by putting
+        #    all the regular expressions in one (1|2|3|4...|N)
+        #    That gave no visible result.
+        #
         for path_disclosure_string in self._get_path_disclosure_strings():
             regex_string = '('+path_disclosure_string + '.*?)[^A-Za-z0-9\._\-\\/\+~]'
             regex = re.compile( regex_string,  re.IGNORECASE)
-            self._path_disc_regex_list.append(regex)
+            self._compiled_regexes[ path_disclosure_string ] = regex
+            
+    def _potential_disclosures(self, html_string ):
+        '''
+        Taking into account that regular expressions are slow, we first
+        apply this function to check if the HTML string has potential
+        path disclosures.
+
+        With this performance enhancement we reduce the plugin run time
+        to 1/8 of the time in cases where no potential disclosures are found,
+        and around 1/3 when potential disclosures *are* found. 
+        
+        @return: A list of the potential path disclosures
+        '''
+        potential_disclosures = []
+        
+        for path_disclosure_string in self._get_path_disclosure_strings():
+            if path_disclosure_string in html_string:
+                potential_disclosures.append( path_disclosure_string )
+            
+        return potential_disclosures
 
     def grep(self, request, response):
         '''
@@ -72,23 +97,26 @@ class pathDisclosure(baseGrepPlugin):
         @return: None, the result is saved in the kb.
         '''
         if response.is_text_or_html():
-            # Decode the realurl
-            realurl = urlParser.urlDecode( response.getURL() )
             
             html_string = response.getBody()
-            for path_disc_regex in self._path_disc_regex_list:
+            
+            for potential_disclosure in self._potential_disclosures( html_string ):
                 
+                path_disc_regex = self._compiled_regexes[ potential_disclosure ]
                 match_list = path_disc_regex.findall( html_string  )
-                filtered_match_list = []
+
+                # Decode the realurl
+                realurl = urlParser.urlDecode( response.getURL() )
+
                 
                 #   Sort by the longest match, this is needed for filtering out some false positives
                 #   please read the note below.
                 match_list.sort(self._longest)
                 
                 for match in match_list:
-                    
+
                     # This if is to avoid false positives
-                    if not self._wasSent( request, match ) and not \
+                    if not request.sent( match ) and not \
                     self._attr_value( match, html_string ):
                         
                         # Check for dups
@@ -276,8 +304,7 @@ class pathDisclosure(baseGrepPlugin):
         '''
         
         path_disclosure_strings = []
-        path_disclosure_strings.append(r"[A-Z]:\\")
-        path_disclosure_strings.append(r"file:///?[A-Z]\|")
+        #path_disclosure_strings.append(r"file:///?[A-Z]\|")
         path_disclosure_strings.extend( get_common_directories() )
         return path_disclosure_strings
 

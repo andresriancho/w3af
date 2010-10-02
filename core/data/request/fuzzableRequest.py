@@ -53,6 +53,9 @@ class fuzzableRequest:
         self._headers = {}
         self._cookie = None
         self._dc = dc()
+
+        # Set the internal variables
+        self._sent_information = None
     
     def dump( self ):
         '''
@@ -109,6 +112,40 @@ class fuzzableRequest:
           strRes = strRes[: -1]
       return strRes
                 
+    def sent(self, something_interesting):
+        '''
+        Checks if the something_interesting was sent in the request.
+
+        @parameter something_interesting: The string
+        @return: True if it was sent
+        '''
+        if self._sent_information is None:
+            self._sent_information = ''
+    
+            if self.getMethod().upper() == 'POST':
+                sent_data = self.getData()
+                
+                if sent_data is not None:
+                    
+                    # Save the information as-is, encoded.
+                    self._sent_information += ' ' + sent_data
+                    
+                    # Save the decoded information
+                    sent_data = urllib.unquote( str(sent_data) )
+                    self._sent_information += ' ' + sent_data
+                    
+            
+            # Save the url as-is, encoded.
+            self._sent_information += ' ' + self.getURI()
+            # Save the decoded URL
+            self._sent_information += ' ' + urllib.unquote_plus( self.getURI() )
+    
+        if something_interesting in self._sent_information:
+            return True
+        else:
+            # I didn't sent the something_interesting in any way
+            return False
+
     def __str__( self ):
         '''
         Return a str representation of this fuzzable request.

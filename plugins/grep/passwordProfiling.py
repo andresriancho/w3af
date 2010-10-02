@@ -103,7 +103,7 @@ class passwordProfiling(baseGrepPlugin):
                         not d.isdigit() and \
                         d.lower() not in self._banned_words and \
                         d.lower() not in self._commonWords[lang] and \
-                        not self._wasSent(request, d):
+                        not request.sent( d ):
                         
                         if d in old_data:
                             old_data[ d ] += data[ d ]

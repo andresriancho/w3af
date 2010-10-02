@@ -85,7 +85,7 @@ class getMails(baseGrepPlugin):
         
         for mail_address in mails:
             # Reduce false positives
-            if self._wasSent( request, mail_address ):
+            if request.sent( mail_address ):
                 continue
                 
             # Email address are case insensitive

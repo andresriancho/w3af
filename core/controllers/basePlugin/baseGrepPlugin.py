@@ -71,38 +71,6 @@ class baseGrepPlugin(basePlugin):
         @parameter response: The HTTP response obj
         '''
         raise w3afException('Plugin is not implementing required method grep' )
-
-    def _wasSent( self, request, something_interesting ):
-        '''
-        Checks if the something_interesting was sent in the request.
-
-        @parameter request: The HTTP request
-        @parameter something_interesting: The string
-        @return: True if it was sent
-        '''
-        url = urllib.unquote_plus( request.getURI() )
-
-        sent_data = ''
-        if request.getMethod().upper() == 'POST':
-            sent_data = request.getData()
-            # This fixes bug #2012748
-            if sent_data != None:
-                sent_data = urllib.unquote( str(sent_data) )
-            else:
-                sent_data = ''
-        
-        # This fixes bug #1990018
-        # False positive with http://localhost/home/f00.html and
-        # /home/user/
-        path = urlParser.getPath(url)
-        if something_interesting[0:5] in path:
-            return True
-
-        if url.count( something_interesting ) or sent_data.count( something_interesting ):
-            return True
-
-        # I didn't sent the something_interesting in any way
-        return False
             
     def _testResponse( self, request, response ):
         '''

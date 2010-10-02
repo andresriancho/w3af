@@ -144,7 +144,7 @@ class strangeParameters(baseGrepPlugin):
         '''
         regex = '(SELECT .*? FROM|INSERT INTO .*? VALUES|UPDATE .*? SET .*? WHERE)'
         for match in re.findall( regex, value, re.IGNORECASE):
-            if not self._wasSent(request, match):
+            if not request.sent( match ):
                 return True
         
         return False
@@ -162,12 +162,12 @@ class strangeParameters(baseGrepPlugin):
 
         for regex in _strange_parameter_re:
             for match in re.findall( regex, value ):
-                if not self._wasSent(request, match):
+                if not request.sent( match ):
                     return True
         
         splitted_value = [ x for x in re.split( r'([a-zA-Z0-9. ]+)', value ) if x != '' ]
         if len( splitted_value ) > 4:
-            if not self._wasSent(request, value):
+            if not request.sent( value ):
                 return True
         
         return False
