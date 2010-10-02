@@ -63,9 +63,10 @@ def getQueryString( url, ignoreExceptions=True ):
     '''
     parsedQs = None
     result = queryString()
-    
-    if hasQueryString( url ):
-        scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+
+    if qs:
         try:
             parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=False)
         except Exception, e:
