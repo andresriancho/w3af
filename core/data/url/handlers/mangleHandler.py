@@ -23,7 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import core.controllers.outputManager as om
 import core.data.request.fuzzableRequest as fuzzableRequest
+
 import core.data.url.httpResponse as httpResponse
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 import core.data.url.handlers.logHandler
 from core.data.parsers.urlParser import getDomain
@@ -77,7 +80,7 @@ class mangleHandler(urllib2.BaseHandler):
             data = None
         else:
             data = fuzzableRequest.getData()
-        req = urllib2.Request( fuzzableRequest.getURI(), data=data\
+        req = HTTPRequest( fuzzableRequest.getURI(), data=data\
         , headers=fuzzableRequest.getHeaders(), origin_req_host=host )
         return req
         

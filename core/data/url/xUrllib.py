@@ -46,6 +46,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.request.frFactory import createFuzzableRequestRaw
 
 from core.data.url.httpResponse import httpResponse as httpResponse
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
@@ -212,7 +213,7 @@ class xUrllib:
         Returns a dict with the headers that would be used when sending a request
         to the remote server.
         '''
-        req = urllib2.Request( uri )
+        req = HTTPRequest( uri )
         req = self._addHeaders( req )
         return req.headers
     
@@ -278,13 +279,13 @@ class xUrllib:
         
         qs = urlParser.getQueryString( uri )
         if qs:
-            req = urllib2.Request( uri )
+            req = HTTPRequest( uri )
         else:
             if data:
-                req = urllib2.Request( uri + '?' + data )
+                req = HTTPRequest( uri + '?' + data )
             else:
                 # It's really an url...
-                req = urllib2.Request( uri )
+                req = HTTPRequest( uri )
             
         req = self._addHeaders( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
@@ -301,7 +302,7 @@ class xUrllib:
         if self._isBlacklisted( uri ):
             return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
         
-        req = urllib2.Request(uri, data )
+        req = HTTPRequest(uri, data )
         req = self._addHeaders( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
@@ -347,7 +348,7 @@ class xUrllib:
         '''
         class anyMethod:
             
-            class methodRequest(urllib2.Request):
+            class methodRequest(HTTPRequest):
                 def get_method(self):
                     return self._method
                 def set_method( self, method ):
@@ -633,7 +634,7 @@ class xUrllib:
         
     def _evasion( self, request ):
         '''
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugins
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugins
         '''
         for eplugin in self._evasionPlugins:
             try:

@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import urllib2
 import core.data.parsers.urlParser as urlParser
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class URLParameterHandler(urllib2.BaseHandler):
@@ -41,7 +42,7 @@ class URLParameterHandler(urllib2.BaseHandler):
         
     def http_request( self, req ):
         new_url = urlParser.setParam(req.get_full_url(), self._url_parameter)
-        new_request = urllib2.Request(new_url, headers=req.headers,
+        new_request = HTTPRequest(new_url, headers=req.headers,
             origin_req_host=req.get_origin_req_host(),
             unverifiable=req.is_unverifiable())
         return new_request

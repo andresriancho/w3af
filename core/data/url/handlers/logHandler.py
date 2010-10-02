@@ -24,7 +24,10 @@ import urllib2
 import urlparse
 
 import core.controllers.outputManager as om
+
 import core.data.url.httpResponse as httpResponse
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
@@ -85,7 +88,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')
             
-            new_request = urllib2.Request(newurl,
+            new_request = HTTPRequest(newurl,
             headers=req.headers,
             origin_req_host=req.get_origin_req_host(),
             unverifiable=True)
