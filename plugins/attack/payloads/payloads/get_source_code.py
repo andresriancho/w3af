@@ -87,6 +87,6 @@ class get_source_code(base_payload):
                 rows.append( [remote_filename,local_filename] )
                 
             result_table = table( rows )
-            result_table.draw( 100 )                    
+            result_table.draw( 140 )                    
             return
 
