@@ -101,7 +101,7 @@ class localFileInclude(baseAuditPlugin):
 
         extension = urlParser.getExtension(origUrl)
 
-        # I will only try to open this files, they are easy to identify of they 
+        # I will only try to open these files, they are easy to identify of they 
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
         # Feel free to mail me ( Andres Riancho ) if you know about other default files that
         # could be installed on AIX ? Solaris ? and are not /etc/passwd
@@ -207,9 +207,9 @@ class localFileInclude(baseAuditPlugin):
                         #    when we perform a defineCut.
                         match_source_code = match.group(0)
                         if '?>' in match_source_code:
-                            v['file_pattern'] = '?>'
+                            v['file_pattern'] = '<?'
                         elif '%>' in match_source_code:
-                            v['file_pattern'] = '%>'
+                            v['file_pattern'] = '<%'
                         else:
                             v['file_pattern'] = match_source_code[:-4]
                         
