@@ -49,6 +49,7 @@ class httpResponse:
         self._charset = 'utf-8'
         self._content_type = ''
         self._dom = None
+        self._clear_text_body = None
         
         # Set the URL variables
         # The URL that we really GET'ed
@@ -84,6 +85,42 @@ class httpResponse:
     def getRedirURI( self ): return self._redirectedURI
     def getCode( self ): return self._code
     def getBody( self ): return self._body
+
+    def getClearTextBody(self):
+        '''
+        @return: A clear text representation of the HTTP response body. 
+        '''
+        
+        if self._clear_text_body is not None:
+            #
+            #    We already calculated this, we can return it now.
+            #
+            return self._clear_text_body
+        else:
+            #
+            #    Calculate the clear text body
+            #
+            dom = self.getDOM()
+            
+            if dom is None:
+                # return None if we don't have a DOM
+                return None
+                
+            else:
+                self._clear_text_body = ''
+                
+                for elem in dom.getiterator():
+                    
+                    if elem.tag == 'br':
+                        self._clear_text_body += '\n'
+                    else:
+                        # get the text
+                        text = elem.text
+                        if text is not None:
+                            self._clear_text_body += text
+                
+                return self._clear_text_body
+
     
     def getDOM( self ):
         '''
@@ -96,7 +133,7 @@ class httpResponse:
             try:
                 parser = etree.HTMLParser(recover=True)
                 self._dom = etree.fromstring(self._body, parser)
-            except Exception, e:
+            except Exception:
                 msg = 'The HTTP body for "%s" could NOT be ' \
                 'parsed by libxml2.' % self.getURL()
                 om.out.debug(msg)

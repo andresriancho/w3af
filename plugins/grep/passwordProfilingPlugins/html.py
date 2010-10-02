@@ -57,10 +57,10 @@ class html(basePpPlugin):
             # In some strange cases, we fail to normalize the document
             if dom is not None:
                 
-                for ele in dom.getiterator():
+                for elem in dom.getiterator():
                     # Words inside <title> weights more.
-                    inc = (ele.tag == 'title') and 5 or 1
-                    text = ele.text
+                    inc = (elem.tag == 'title') and 5 or 1
+                    text = elem.text
                     if text is not None:
                         # Filter by length of the word (> 3)
                         for w in filter(filter_by_len, split(text)):

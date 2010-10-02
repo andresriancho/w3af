@@ -73,13 +73,18 @@ class creditCards(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._cardResponses = []
 
-        regex = '(?:^|[^\d])((?:<.*>)?\d{4}(?:</.*>)?[\- ]?(?:</.*>)?'
-        regex += '\d{4}(?:</.*>)?[\- ]?(?:<.*>)?\d{2}(?:</.*>)?[\- ]?'
-        regex += '(?:<.*>)?\d{2}(?:</.*>)?[\- ]?(?:<.*>)?\d{1,4}(?:</.*>)?)(?:[^\d]|$)'
-        markupRegex = '(<.*?>)|(</.*?>)|\-'
+        cc_regex = '((^|[^\d])\d{4}[- ]?(\d{4}[- ]?\d{4}|\d{6})[- ]?(\d{5}|\d{4})($|[^\d]))'
+        #    (^|[^\d])                        Match the start of the string, or something that's NOT a digit
+        #    \d{4}[- ]?                       Match four digits, and then (optionally) a "-" or a space
+        #    (\d{4}[- ]?\d{4}|\d{6})          Match one of the following:
+        #            - Four digits, and then (optionally) a "-" or a space and then four digits again (VISA cards)
+        #            - Six digits (AMEX cards)
+        #    [- ]?                            Match a "-" or a space (optionally)
+        #    (\d{5}|\d{4})                    Match the final digits, five or four digits
+        #    ($|[^\d])                        Match the end of the string, or something that's NOT a digit
 
-        self._regex = re.compile(regex)
-        self._markupRegex = re.compile(markupRegex)
+        self._cc_regex = re.compile(cc_regex)
+
         
     def grep(self, request, response):
         '''
@@ -89,7 +94,9 @@ class creditCards(baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() == 200:
-            found_cards = self._find_card(response.getBody())
+            
+            found_cards = self._find_card( response.getClearTextBody() )
+            
             for card in found_cards:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
@@ -108,10 +115,12 @@ class creditCards(baseGrepPlugin):
         '''
         res = []
 
-        matches = self._regex.findall(body)
+        match_list = self._cc_regex.findall(body)
 
-        for possible_cc in matches:
-            possible_cc = self._markupRegex.sub('', possible_cc)
+        for match_set in match_list:
+            
+            possible_cc = match_set[0]
+            
             if luhnCheck(possible_cc):
                 res.append(possible_cc)
 

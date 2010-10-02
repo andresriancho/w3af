@@ -50,10 +50,7 @@ class ssn(baseGrepPlugin):
         # match numbers of the form: 'nnn-nn-nnnn', 'nnnnnnnnn', 'nnn nn nnnn'
         regex = '(?:^|[^\d])(\d{3})(?:[\- ]?)(\d{2})(?:[\- ]?)(\d{4})(?:[^\d]|$)'
         self._regex = re.compile(regex)
-        
-        # re that removes tags
-        self._re_removeTags = re.compile('(<.*?>|</.*?>)')
-        
+                
     def grep(self, request, response):
         '''
         Plugin entry point, find the SSN numbers.
@@ -63,7 +60,7 @@ class ssn(baseGrepPlugin):
         @return: None.
         '''
         if response.is_text_or_html() and response.getCode() == 200:
-            found_ssn, validated_ssn = self._find_SSN(response.getBody())
+            found_ssn, validated_ssn = self._find_SSN( response.getClearTextBody() )
             if validated_ssn:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
@@ -76,14 +73,10 @@ class ssn(baseGrepPlugin):
                 v.addToHighlight( found_ssn )
                 kb.kb.append( self, 'ssn', v )
      
-    def _find_SSN(self, body):
+    def _find_SSN(self, body_without_tags):
         '''
-        Remove the tags and apply the ssn regex.
-        @return: True if the 
+        @return: True if the body has a SSN 
         '''
-        # Now, remove html tags
-        body_without_tags = self._re_removeTags.sub('', body)
-        
         validated_ssn = None
         ssn = None
         for match in self._regex.finditer(body_without_tags):

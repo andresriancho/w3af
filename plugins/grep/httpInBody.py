@@ -48,10 +48,7 @@ class httpInBody (baseGrepPlugin):
         # re that searches for
         #HTTP/1.1 200 OK
         self._re_response = re.compile('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*')
-        
-        # re that remove tags
-        self._re_removeTags = re.compile('(<.*?>|</.*?>)')
-        
+                
     def grep(self, request, response):
         '''
         Plugin entry point.
@@ -72,7 +69,7 @@ class httpInBody (baseGrepPlugin):
             if 'HTTP/1' in response:
 
                 # Now, remove tags
-                body_without_tags = self._re_removeTags.sub('', response.getBody() )
+                body_without_tags = response.getClearTextBody()
                 
                 res = self._re_request.search( body_without_tags )
                 if res:
