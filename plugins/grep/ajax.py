@@ -26,7 +26,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
-from core.data.getResponseType import *
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -75,16 +74,18 @@ class ajax(baseGrepPlugin):
                 for element in script_elements:
                     # returns the text between <script> and </script>
                     script_content = element.text
-
-                    res = self._ajax_regex_re.search(script_content)
-                    if res:
-                        i = info.info()
-                        i.setName('AJAX code')
-                        i.setURL(url)
-                        i.setDesc('The URL: "%s" has an AJAX code.' % url)
-                        i.setId(response.id)
-                        i.addToHighlight(res.group(0))
-                        kb.kb.append(self, 'ajax', i)
+                    
+                    if script_content is not None:
+                        
+                        res = self._ajax_regex_re.search(script_content)
+                        if res:
+                            i = info.info()
+                            i.setName('AJAX code')
+                            i.setURL(url)
+                            i.setDesc('The URL: "%s" has an AJAX code.' % url)
+                            i.setId(response.id)
+                            i.addToHighlight(res.group(0))
+                            kb.kb.append(self, 'ajax', i)
 
 
 
