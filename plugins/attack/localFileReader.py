@@ -122,7 +122,7 @@ class localFileReader(baseAttackPlugin):
 
     def _verifyVuln( self, vuln_obj ):
         '''
-        This command verifies a vuln. This is really hard work!
+        This command verifies a vuln.
 
         @return : True if vuln can be exploited.
         '''
@@ -324,8 +324,17 @@ class fileReaderShell(read_shell):
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
         else:
+            #print '=' * 40 + ' Sb ' + '=' * 40
+            #print response.getBody()
+            #print '=' * 40 + ' Eb ' + '=' * 40
+
             cutted_response = self._cut( response.getBody() )
             filtered_response = self._filter_errors( cutted_response, filename )
+            
+            #print '=' * 40 + ' Sc ' + '=' * 40
+            #print filtered_response
+            #print '=' * 40 + ' Ec ' + '=' * 40
+            
             return filtered_response
                 
     def _filter_errors( self, result,  filename ):
