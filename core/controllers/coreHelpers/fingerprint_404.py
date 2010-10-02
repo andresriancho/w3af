@@ -238,7 +238,8 @@ class fingerprint_404:
             # whenever the next call to GET is done
             raise w3afException('w3afMustStopException found by _send_404, someone else will handle it.')
         except Exception, e:
-            raise w3afException('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+            raise
         
         else:
             # I don't want the random file name to affect the 404, so I replace it with a blank space
