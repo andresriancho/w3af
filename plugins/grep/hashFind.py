@@ -62,19 +62,24 @@ class hashFind(baseGrepPlugin):
             body = response.getBody()
             splitted_body = self._split_re.split(body)
             for possible_hash in splitted_body:
-                hash_type = self._get_hash_type( possible_hash )
-                if hash_type:
-                    if self._has_hash_distribution( possible_hash ):
-                        i = info.info()
-                        i.setName( hash_type + 'hash in HTML content')
-                        i.setURL( response.getURL() )
-                        i.addToHighlight(possible_hash)
-                        i.setId( response.id )
-                        msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
-                        msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
-                        msg += '". This is uncommon and requires human verification.'
-                        i.setDesc( msg )
-                        kb.kb.append( self, 'hashFind', i )
+                
+                #    This is a performance enhancement that cuts the execution
+                #    time of this plugin in half.
+                if len(possible_hash) > 31:
+                
+                    hash_type = self._get_hash_type( possible_hash )
+                    if hash_type:
+                        if self._has_hash_distribution( possible_hash ):
+                            i = info.info()
+                            i.setName( hash_type + 'hash in HTML content')
+                            i.setURL( response.getURL() )
+                            i.addToHighlight(possible_hash)
+                            i.setId( response.id )
+                            msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
+                            msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
+                            msg += '". This is uncommon and requires human verification.'
+                            i.setDesc( msg )
+                            kb.kb.append( self, 'hashFind', i )
     
     def _has_hash_distribution( self, possible_hash ):
         '''
