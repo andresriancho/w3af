@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
-from core.controllers.w3afException import w3afException
 
 # This regex means: "find all tags that are of the form <? something ?> 
 # but if that something is "xml .*" ignore it completely. This is to 
@@ -31,9 +30,10 @@ from core.controllers.w3afException import w3afException
 php = re.compile( '<\?(?! *xml).*\?>', re.IGNORECASE | re.DOTALL)
 
 # The rest of the regex are ok, because this patterns aren't used in html / xhtml
-asp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
-jsp = re.compile( '<%.*%>', re.IGNORECASE | re.DOTALL)
-jsp2 = re.compile( '<jsp:.*>', re.IGNORECASE | re.DOTALL)
+asp = re.compile( '<%.*?%>', re.IGNORECASE | re.DOTALL)
+# Commented this one because it's the same regular expression that ASP
+#jsp = re.compile( '<%.*?%>', re.IGNORECASE | re.DOTALL)
+jsp2 = re.compile( '<jsp:.*?>', re.IGNORECASE | re.DOTALL)
 
 # I've also seen some devs think like this:
 #
@@ -43,19 +43,20 @@ jsp2 = re.compile( '<jsp:.*>', re.IGNORECASE | re.DOTALL)
 # or like this:  <!--? print 'something' ?>
 #
 # Not a bad idea, huh?
-commented_asp = re.compile( '<!--\s*%.*%(--)?>', re.IGNORECASE | re.DOTALL)
-commented_php = re.compile( '<!--\s*\?.*\?(--)?>', re.IGNORECASE | re.DOTALL)
-commented_jsp = re.compile( '<!--\s*%.*%(--)?>', re.IGNORECASE | re.DOTALL)
-commented_jsp2 = re.compile( '<!--\s*jsp:.*(--)?>', re.IGNORECASE | re.DOTALL)
+commented_asp = re.compile( '<!--\s*%.*?%(--)?>', re.IGNORECASE | re.DOTALL)
+commented_php = re.compile( '<!--\s*\?.*?\?(--)?>', re.IGNORECASE | re.DOTALL)
+# Commented this one because it's the same regular expression that ASP
+#commented_jsp = re.compile( '<!--\s*%.*?%(--)?>', re.IGNORECASE | re.DOTALL)
+commented_jsp2 = re.compile( '<!--\s*jsp:.*?(--)?>', re.IGNORECASE | re.DOTALL)
 
 REGEX_LIST = []
 REGEX_LIST.append( (php, 'PHP') )
-REGEX_LIST.append( (asp, 'ASP') )
-REGEX_LIST.append( (jsp, 'JSP') )
+REGEX_LIST.append( (asp, 'ASP or JSP') )
+#REGEX_LIST.append( (jsp, 'JSP') )
 REGEX_LIST.append( (jsp2, 'JSP') )
 REGEX_LIST.append( (commented_php, 'PHP') )
-REGEX_LIST.append( (commented_asp, 'ASP') )
-REGEX_LIST.append( (commented_jsp, 'JSP') )
+REGEX_LIST.append( (commented_asp, 'ASP or JSP') )
+#REGEX_LIST.append( (commented_jsp, 'JSP') )
 REGEX_LIST.append( (commented_jsp2, 'JSP') )
 
 
@@ -63,9 +64,9 @@ def is_source_file( file_content ):
     '''
     @parameter file_content: 
     @return: A tuple with (
-                                        a re.match object if the file_content matches a source code file,
-                                        a string with the source code programming language
-                                        ).
+                            a re.match object if the file_content matches a source code file,
+                            a string with the source code programming language
+                          ).
     '''
     for regex, lang in REGEX_LIST:
         
