@@ -39,6 +39,9 @@ def _returnEscapedChar(exc):
 codecs.register_error("returnEscapedChar", _returnEscapedChar)
 
 
+DEFAULT_CHARSET = 'utf-8'
+
+
 class httpResponse:
     
     def __init__( self, code, read , info, geturl, originalUrl, msg='OK', id=None, time=0.2):
@@ -211,11 +214,11 @@ class httpResponse:
             om.out.debug('hmmm... wtf?! The remote web server failed to send the content-type header.')
             self._body = body
         else:
-            if not re.findall('text/(\w+)', lowerCaseHeaders['content-type'] ):
+            if not self.is_text_or_html():
                 # Not text, save as it is.
                 self._body = body
             else:
-                # According to the web server, the body content is a text/html content
+                # According to the web server, the body content is text, html, xml or something similar
                 
                 # I'll get the charset from the response headers, and the charset from the HTML content meta tag
                 # if the charsets differ, then I'll decode the text with one encoder, and then with the other; comparing
@@ -224,26 +227,26 @@ class httpResponse:
                 
                 # Go for the headers
                 headers_charset = ''
-                reCharset = re.findall('charset=([\w-]+)', lowerCaseHeaders['content-type'] )
-                if reCharset:
+                re_charset = re.findall('charset=([\w-]+)', lowerCaseHeaders['content-type'] )
+                if re_charset:
                     # well... it seems that they are defining a charset in the response headers..
-                    headers_charset = reCharset[0].lower().strip()
+                    headers_charset = re_charset[0].lower().strip()
                     
                 # Now go for the meta tag
                 # I parse <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> ?
                 meta_charset = ''
-                reCharset = re.findall('<meta.*?content=".*?charset=([\w-]+)".*?>', body, re.IGNORECASE )
-                if reCharset:
+                re_charset = re.findall('<meta.*?content=".*?charset=([\w-]+)".*?>', body, re.IGNORECASE )
+                if re_charset:
                     # well... it seems that they are defining a charset in meta tag...
-                    meta_charset = reCharset[0].lower().strip()
+                    meta_charset = re_charset[0].lower().strip()
                 
                 # by default we asume:
-                charset = 'utf-8'
+                charset = DEFAULT_CHARSET
                 if meta_charset == '' and headers_charset != '':
                     charset = headers_charset
                 elif headers_charset == '' and meta_charset != '':
                     charset = meta_charset
-                elif headers_charset == meta_charset and headers_charset != '' and meta_charset != '':
+                elif headers_charset == meta_charset and headers_charset != '':
                     charset = headers_charset
                 elif meta_charset != headers_charset:
                     om.out.debug('The remote web application sent charset="'+ headers_charset + '" in the header, but charset="' +\
@@ -261,8 +264,10 @@ class httpResponse:
                     msg = 'Charset LookupError: unknown charset: ' + charset
                     msg += '; ignored and set to default: ' + self._charset
                     om.out.debug( msg )
+                    
                     # Use the default
-                    unicode_str = body.decode(self._charset, 'returnEscapedChar')
+                    charset = DEFAULT_CHARSET
+                    unicode_str = body.decode(charset, 'returnEscapedChar')
                
                 # Now we use the unicode_str to create a utf-8 string that will be used in all w3af
                 self._body = unicode_str.encode('utf-8')
