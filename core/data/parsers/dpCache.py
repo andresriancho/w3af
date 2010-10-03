@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 import core.data.parsers.documentParser as documentParser
 from core.controllers.misc.lru import LRU

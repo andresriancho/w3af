@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.w3afException import w3afException
+import core.controllers.outputManager as om
 
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdfParser as pdfParser
@@ -51,7 +52,8 @@ class documentParser:
         elif httpResponse.is_text_or_html():
             self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
         else:
-            raise w3afException('There is no parser for "' + httpResponse.getURL() + '".')
+            msg = 'There is no parser for "%s".' % httpResponse.getURL() 
+            om.out.debug( msg )
     
     def _isPDF( self, httpResponse ):
         '''
