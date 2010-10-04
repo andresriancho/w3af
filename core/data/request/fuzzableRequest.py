@@ -128,7 +128,7 @@ class fuzzableRequest:
                 if sent_data is not None:
                     
                     # Save the information as-is, encoded.
-                    self._sent_information += ' ' + sent_data
+                    self._sent_information += ' ' + str(sent_data)
                     
                     # Save the decoded information
                     sent_data = urllib.unquote( str(sent_data) )
