@@ -53,7 +53,7 @@ class documentParser:
             self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
         else:
             msg = 'There is no parser for "%s".' % httpResponse.getURL() 
-            om.out.debug( msg )
+            raise w3afException( msg )
     
     def _isPDF( self, httpResponse ):
         '''
