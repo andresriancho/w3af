@@ -149,7 +149,7 @@ class webSpider(baseDiscoveryPlugin):
                 except w3afException, w3:
                     msg = 'Failed to find a suitable document parser.'
                     msg += ' Exception: "' + str(w3) +'".'
-                    om.out.error( msg )
+                    om.out.debug( msg )
                 else:
                     # Note:
                     # - With parsed_references I'm 100% that it's really something in the HTML

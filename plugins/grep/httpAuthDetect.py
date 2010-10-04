@@ -110,7 +110,7 @@ class httpAuthDetect(baseGrepPlugin):
         except w3afException, w3:
             msg = 'Failed to find a suitable document parser. ' \
             'Exception: ' + str(w3)
-            om.out.error(msg)
+            om.out.debug(msg)
         else:
             parsed_references, re_references = documentParser.getReferences()
             url_list.extend(parsed_references)
