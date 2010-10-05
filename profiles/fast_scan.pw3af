@@ -1,50 +1,120 @@
-[profile]
-name = fast_scan
-description = Perform a fast scan of the target site, using only a few discovery plugins and the fastest audit plugins.
+[grep.strangeHeaders]
 
-[output.gtkOutput]
+[grep.svnUsers]
+
+[grep.passwordProfiling]
+
+[grep.blankBody]
 
 [misc-settings]
+exportFuzzableRequests = 
 maxThreads = 15
+fuzzFormComboValues = tmb
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
+maxDiscoveryTime = 60
 fuzzableHeaders = 
 showProgressBar = True
 fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
-maxDiscoveryTime = 60
-
-localAddress = 127.0.0.1
+interface = eth0
+localAddress = 192.168.1.100
 nonTargets = 
+
+[grep.strangeHTTPCode]
+
+[grep.oracle]
+
+[output.console]
+verbose = False
+
+[grep.motw]
+
+[grep.objects]
+
+[grep.strangeParameters]
+
+[grep.errorPages]
+
+[grep.fileUpload]
+
+[grep.ajax]
+
+[grep.creditCards]
+
+[grep.error500]
+
+[discovery.webSpider]
+
+[grep.feeds]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[grep.hashFind]
+
+[profile]
+name = fast_scan
+description = Perform a fast scan of the target site, using only a few discovery plugins and the fastest audit plugins.
+
+[grep.lang]
+
+[grep.findComments]
+
+[output.gtkOutput]
+
+[grep.formAutocomplete]
+
+[grep.ssn]
+
+[grep.dotNetEventValidation]
+
+[grep.metaTags]
 
 [audit.sqli]
 
+[grep.strangeReason]
+
+[grep.httpInBody]
+
+[grep.domXss]
+
+[grep.directoryIndexing]
+
+[grep.codeDisclosure]
+
+[grep.collectCookies]
+
+[grep.getMails]
+
+[grep.privateIP]
+
+[grep.pathDisclosure]
+
 [http-settings]
 proxyPort = 8080
-headersFile = 
+urlParameter = 
+never404 = 
+basicAuthDomain = 
 maxFileSize = 400000
 proxyAddress = 
-basicAuthDomain = 
+headersFile = 
 always404 = 
 maxRetrys = 2
-never404 = 
+ntlmAuthUser = 
+ntlmAuthPass = 
 ignoreSessCookies = False
-cookieJarFile = 
 timeout = 10
 userAgent = w3af.sourceforge.net
 basicAuthUser = 
 basicAuthPass = 
 404string = 
+cookieJarFile = 
 
-[output.console]
-verbose = False
+[grep.wsdlGreper]
 
-[discovery.yahooSiteExplorer]
-resultLimit = 300
-
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
+[grep.httpAuthDetect]
 
