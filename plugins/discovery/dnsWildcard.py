@@ -92,7 +92,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         else:
             if modified_response.getBody() != original_response.getBody():
                 i = info.info()
-                i.setName('DNS Wildcard')
+                i.setName('Default domain')
                 i.setURL( modified_response.getURL() )
                 i.setMethod( 'GET' )
                 msg = 'The contents of ' + modified_response.getURI()
