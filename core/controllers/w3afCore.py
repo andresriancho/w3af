@@ -65,7 +65,7 @@ from core.controllers.coreHelpers.export import export
 from core.data.profile.profile import profile as profile
 
 
-class w3afCore:
+class w3afCore(object):
     '''
     This is the core of the framework, it calls all plugins, handles exceptions,
     coordinates all the work, creates threads, etc.
@@ -296,7 +296,7 @@ class w3afCore:
         '''
         self._initialized = True
         
-        # This is inited before all, to have a full logging facility.
+        # This is inited before all, to have a full logging support.
         om.out.setOutputPlugins( self._strPlugins['output'] )
         
         # First, create an instance of each requested plugin and add it to the plugin list
@@ -455,25 +455,31 @@ class w3afCore:
             try:
                 ###### This is the main section ######
                 # Create the first fuzzableRequestList
+
+                # We only want to scan pages that are in scope
+                get_curr_scope_pages = lambda fr:\
+                    urlParser.getDomain(fr.getURL())==urlParser.getDomain(url)
+
                 for url in cf.cf.getData('targets'):
                     try:
-                        response = self.uriOpener.GET( url, useCache=True )
-                        self._fuzzableRequestList.extend( createFuzzableRequests( response ) )
+                        response = self.uriOpener.GET(url, useCache=True)
+                        self._fuzzableRequestList += filter(
+                            get_curr_scope_pages, createFuzzableRequests(response))
                     except KeyboardInterrupt:
                         self._end()
                         raise
                     except w3afException, w3:
-                        om.out.error( 'The target URL: ' + url + ' is unreachable.' )
-                        om.out.error( 'Error description: ' + str(w3) )
+                        om.out.error('The target URL: ' + url + ' is unreachable.')
+                        om.out.error('Error description: ' + str(w3))
                     except Exception, e:
-                        om.out.error( 'The target URL: ' + url + ' is unreachable because of an unhandled exception.' )
-                        om.out.error( 'Error description: "' + str(e) + '". See debug output for more information.')
-                        om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
+                        om.out.error('The target URL: ' + url + ' is unreachable because of an unhandled exception.')
+                        om.out.error('Error description: "' + str(e) + '". See debug output for more information.')
+                        om.out.error('Traceback for this error: ' + str(traceback.format_exc()))
                     else:
                         #
-                        #   NOTE: I need to perform this test here in order to avoid some wierd
-                        #   thread locking that happens when the webspider calls is_404, and 
-                        #   the function locks in order to calculate the 
+                        # NOTE: I need to perform this test here in order to avoid some weird
+                        # thread locking that happens when the webspider calls is_404, and 
+                        # the function locks in order to calculate the 
                         #
                         from core.controllers.coreHelpers.fingerprint_404 import is_404
                         is_404(response)
