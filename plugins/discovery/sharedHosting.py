@@ -109,24 +109,23 @@ class sharedHosting(baseDiscoveryPlugin):
                                 is_vulnerable = False
                     
                     if is_vulnerable:
+                        severityOfThisVuln = severity.MEDIUM
                         v = vuln.vuln()
                         v.setURL( fuzzableRequest.getURL() )
                         v.setId( 1 )
                         v['alsoInHosting'] = results
-                        msg = 'The web application under test seems to be in a shared hosting.'
+                        msg = 'The web application under test seems to be in a shared hosting. '
+                        msg += 'This list of domains, and the domain of the web application under '
+                        msg += 'test, all point to the same IP address (%s):\n' % ip_address
+                        for url in results:
+                            domain = urlParser.getDomain(url)
+                            msg += '- %s\n' % url
+                            kb.kb.append( self, 'domains', domain)
                         v.setDesc( msg )
                         v.setName( 'Shared hosting' )
-                        v.setSeverity(severity.MEDIUM)
-                        
+                        v.setSeverity(severityOfThisVuln)
+                        om.out.vulnerability( msg, severity=severityOfThisVuln )
                         kb.kb.append( self, 'sharedHosting', v )
-                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                        
-                        msg = 'This list of domains, and the domain of the web application under'
-                        msg += ' test, all point to the same IP address (%s):' % ip_address
-                        om.out.vulnerability( msg, severity=severity.MEDIUM )
-                        for url in results:
-                            om.out.vulnerability('- ' + url , severity=severity.MEDIUM)
-                            kb.kb.append( self, 'domains', urlParser.getDomain(url) )
                 
         return []
     
