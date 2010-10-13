@@ -42,7 +42,7 @@ codecs.register_error("returnEscapedChar", _returnEscapedChar)
 DEFAULT_CHARSET = 'utf-8'
 
 
-class httpResponse:
+class httpResponse(object):
     
     def __init__( self, code, read , info, geturl, originalUrl, msg='OK', id=None, time=0.2):
         '''
