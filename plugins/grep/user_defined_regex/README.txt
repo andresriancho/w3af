@@ -1,0 +1,1 @@
+The default file is taken from the fuzzdb project http://code.google.com/p/fuzzdb/ (errors.txt in folder regex) and supports w3af's errorPage plugin. It is able to find more generic strings which leads to more false positives but simplifiest the process of finding customised error messages. The fuzzdb file was extended with some more strings.
