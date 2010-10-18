@@ -262,7 +262,9 @@ def unknown_method(url):
     get_characteristics('unknown_method', res)
 
 def unauthorized_activity(url):
-    unauthorized_activities = ('OPTIONS', 'TRACE', 'GET', 'HEAD', 'DELETE', 
+    
+    # Removed the DELETE method so we don't remove a whole site without wanting to :)
+    unauthorized_activities = ('OPTIONS', 'TRACE', 'GET', 'HEAD', 
                                'PUT', 'POST', 'COPY', 'MOVE', 'MKCOL', 
                                'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK', 
                                'SEARCH')
