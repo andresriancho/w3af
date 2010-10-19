@@ -374,6 +374,18 @@ def loadImage(filename):
     im.show()
     return im
 
+def loadIcon(stock_item_id):
+    '''Loads a pixbuf from Stock. 
+    
+    @param stock_item_id: Stock item id string
+    @return: The icon's pixbuf
+    '''
+    # If param id not found use default stock item.
+    stock_item = getattr(gtk, stock_item_id, gtk.STOCK_FILE)
+    
+    return gtk.IconTheme().load_icon(stock_item, 16, ())
+    
+
 
 class SensitiveAnd(object):
     ''''AND's some sensitive info for a widget.

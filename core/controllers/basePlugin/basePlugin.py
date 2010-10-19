@@ -199,10 +199,7 @@ class basePlugin(configurable):
         '''
         This function is called when extending a list of plugin instances.
         '''
-        if self.__class__.__name__ == other.__class__.__name__:
-            return True
-        else:
-            return False
+        return self.__class__.__name__ == other.__class__.__name__
     
     def end( self ):
         '''

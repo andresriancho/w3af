@@ -97,7 +97,7 @@ def createFuzzableRequests( httpResponse, request=None, add_self=True ):
     else:
         form_list = dp.getForms()
     
-    if len( form_list ) == 0:
+    if not form_list:
         
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
