@@ -120,7 +120,7 @@ class bug_report_window(simple_base_window):
         
         # Internal variables
         self.bug_url = None
-        self.manual_bug_report = 'https://sourceforge.net/tracker2/?func=add&group_id=170274&atid=853652'
+        self.manual_bug_report = 'https://sourceforge.net/apps/trac/w3af/newticket'
         
         # Save the info for later
         self.exception_text = exception_text
@@ -153,7 +153,7 @@ class bug_report_window(simple_base_window):
         self.label.set_line_wrap(True)
         label_text = _("<i>All this info is in a file called ") + filename + _(" for later review.</i>\n\n")
         label_text += _('If you wish, <b>you can contribute</b> to the w3af project and submit this')
-        label_text += _(' bug to the sourceforge bug tracking system from within this window.')
+        label_text += _(' bug to the sourceforge\'s Trac system from within this window.')
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the exception traceback and the version information to')
         label_text += _(' sourceforge, no personal or confidencial information is collected.\n\n')

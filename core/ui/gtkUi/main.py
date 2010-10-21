@@ -78,7 +78,6 @@ from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, 
 from . import export_request
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
-from . import exception_handler
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version

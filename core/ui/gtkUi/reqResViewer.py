@@ -77,7 +77,7 @@ except:
 def sigsegv_handler(signum, frame):
     print _('This is a catched segmentation fault!')
     print _('I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:')
-    print _('https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652')
+    print 'https://sourceforge.net/apps/trac/w3af/newticket'
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 # End signal handler
 
@@ -759,7 +759,7 @@ class responsePart(requestResponsePart):
             print _('This is a catched exception!')
             print _('Exception:'), type(e), str(e)
             print _('I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:')
-            print _('https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652')
+            print 'https://sourceforge.net/apps/trac/w3af/newticket'
 
     def _renderMozilla(self, body, mimeType, baseURI):
         self._renderingWidget.render_data(body, long(len(body)), baseURI , mimeType)

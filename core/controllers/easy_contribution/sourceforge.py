@@ -20,21 +20,43 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
-import os
-import cgi
+import string
 import time
 import md5
 import urllib2, urllib
 import cookielib
-from core.controllers.misc.get_w3af_version import get_w3af_version
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 
 
 class sourceforge(object):
     
+    # URLs
+    LOGIN_PAGE = 'https://sourceforge.net/account/login.php'
+    NEW_TKT_URL = 'https://sourceforge.net/apps/trac/w3af/newticket'
+    CREATED_TKT = 'https://sourceforge.net/apps/trac/w3af/ticket/'
+    # Error report body
+    WIKI_DETAILS_TEMPLATE = string.Template(
+'''== User description: ==
+$user_desc
+[[BR]][[BR]]
+== Version Information: ==
+{{{
+$w3af_v
+}}}
+[[BR]][[BR]]
+== Traceback: ==
+{{{
+$t_back
+}}}''')
+    # Form token regex
+    FORM_TOKEN_RE = 'name="__FORM_TOKEN"\svalue="(\w*?)"'
+    # Created ticket regex
+    NEW_TICKET_RE = 'Add\sAttachment\sto\s<a href="/apps/trac/w3af/ticket/(\d*?)">Ticket'
+    
     def __init__(self):
         '''
-        This class is a wrapper for reporting bugs to sourceforge using python.
+        This class is a wrapper for reporting bugs to sourceforge's TRAC
+        using python.
         
         @author: Andres Riancho ( andres.riancho@gmail.com )
         '''
@@ -67,90 +89,95 @@ class sourceforge(object):
         
         @return: True if successful login, false otherwise.
         '''
-        url = 'https://sourceforge.net/account/login.php'
-        values = {'return_to' : '',
-            'ssl_status' : '',
-            'form_loginname' : user, 
-            'form_pw' : passwd,
-            'login' : 'Log in'}
-
-        data = urllib.urlencode(values)
-        req = urllib2.Request(url, data)
+        values = {'return_to': '',
+            'ssl_status': '',
+            'form_loginname': user, 
+            'form_pw': passwd,
+            'login': 'Log in'}
         try:
-            response = urllib2.urlopen(req)
-            the_page = response.read()
+            resp = self._do_request(self.LOGIN_PAGE, values)
         except:
             return False
         else:
-            self.logged_in = 'Invalid username or password' not in the_page
+            self.logged_in = 'Invalid username or password' not in resp.read()
             return self.logged_in
             
-    def report_bug(self, user_title, user_description, w3af_version, traceback, filename):
+    def report_bug(self, user_title, user_desc, w3af_version, traceback, filename):
         '''
         I use urllib2 instead of the w3af wrapper, because the error may be in there!
         
         @parameter user_title: The title that the user wants to use in the bug report
         @parameter user_description: The description for the bug that was provided by the user
         
-        @return: The new bug URL if the bug report was successful, or None if something failed.
+        @return: The new ticket URL if the bug report was successful, or None if something failed.
         '''
         
-        # Handle the summary
-        summary = '[Auto-Generated] Bug Report - '
-        if user_title:
-            summary += user_title
-        else:
-            # Generate the summary, the random token is added to avoid the
-            # double click protection added by sourceforge.
-            summary += md5.new( time.ctime() ).hexdigest()
-            
-        # Now we handle the details
-        details = ''
-        if user_description:
-            details += 'User description: \n'+ user_description + '\n\n\n'
-        
-        details += 'Version information: \n' + w3af_version + '\n\n\n'
-        details += 'Traceback: \n' + traceback
-        
-        # sourceforge rule #3759-3: Users that don't have logged in; can't send bugs using https.
-        if self.logged_in:
-            schema = 'https://'
-        else:
-            schema = 'http://'
-        url = schema + 'sourceforge.net/tracker2/index.php'
-        
-        values = {'group_id' : '170274',
-            'atid' : '853652',
-            'func' : 'postadd', 
-            'category_id':'1166485', 
-            'artifact_group_id':'100', 
-            'assigned_to':'100', 
-            'priority':'5',
-            'summary': summary,
-            'details': details,
-            'input_file': file(filename),
-            'file_description':'Traceback',
-            'submit':'Add Artifact' }
-        
-        if not self.logged_in:
-            # anonymous bug reports are slightly different
-            values.pop('priority')
-            values.pop('assigned_to')
+        # Handle the summary. Concat 'user_title'. If empty, append a random
+        # token to avoid the double click protection added by sourceforge.
+        summary = '[Auto-Generated] Bug Report - %s' % \
+            (user_title or md5.new(time.ctime()).hexdigest())
 
-        req = urllib2.Request(url, values)
-        try:
-            response = urllib2.urlopen(req)
-            the_page = response.read()
-        except:
-            return False
+        user_desc = user_desc or ''
         
-        if 'ERROR' not in the_page:
-            # parse the tracking URL
-            # (Artifact <a href="/tracker2/?func=detail&aid=2590539&group_id=170274&atid=853652">2590539</a>)
-            re_result = re.findall('\\(Artifact <a href="(.*?)">\d*</a>\\)', the_page)
-            if re_result:
-                return 'https://sourceforge.net' + re_result[0]
-            
-            return None
-        else:
-            return None
+        # Build details string
+        details = self.WIKI_DETAILS_TEMPLATE.substitute(user_desc=user_desc,
+                                                        w3af_v=w3af_version,
+                                                        t_back=traceback)
+        resp = self._do_request(self.NEW_TKT_URL)
+        form_token = self._get_match_from_response(resp, self.FORM_TOKEN_RE) or ''
+        
+        values = {
+            'field_component': 'automatic-bug-report',
+            'field_milestone': '',
+            'field_type': 'defect',
+            'field_status': 'new',
+            'field_priority': 'major',
+            'field_summary': summary,
+            'field_description': details,
+            '__FORM_TOKEN': form_token,
+            'attachment': 'on',
+            'submit': 'Create ticket'}
+
+        resp = self._do_request(self.NEW_TKT_URL, values)
+        # If evrything went weel a ticket_id must be present        
+        ticket_id = self._get_match_from_response(resp, self.NEW_TICKET_RE)
+
+        if ticket_id:
+            attach_file_url = resp.geturl()
+            self._attach_file(attach_file_url, ticket_id, filename, form_token)
+            return self.CREATED_TKT + ticket_id
+        return None
+        
+    def _attach_file(self, url, ticket_id, filename, form_token):
+        '''Attach file to ticket <ticket_id>
+        '''
+        values = {
+            'attachment': [file(filename)],
+            'description': ['Error Traceback'],
+            'action': ['new'],
+            'realm': ['ticket'],
+            '__FORM_TOKEN': [form_token],
+            'id': [ticket_id],
+            'submit': ['Add attachment']}
+        
+        req = urllib2.Request(url, values)
+        urllib2.urlopen(req)
+    
+    def _get_match_from_response(self, response, pattern):
+        '''Try to match <pattern> in the response's body. Return the 
+        matched string. If no match is found return None.
+        '''
+        the_page = response.read()
+        mo = re.search(pattern, the_page)
+        return (mo.groups()[0] if mo else None)
+
+    def _do_request(self, url, data=None):
+        '''Do request to <url> using <data>.
+        Raises URLError on errors.
+        '''
+        if data:
+            data = urllib.urlencode(data)
+
+        req = urllib2.Request(url, data)
+        resp = urllib2.urlopen(req)
+        return resp

@@ -62,7 +62,7 @@ def handle_crash(type, value, tb):
     # save the info to a file
     filename = tempfile.gettempdir() + os.path.sep + "w3af_crash-" + createRandAlNum(5) + ".txt"
     arch = file(filename, "w")
-    arch.write(_('Submit this bug here: https://sourceforge.net/tracker/?func=add&group_id=170274&atid=853652 \n'))
+    arch.write(_('Submit this bug here: https://sourceforge.net/apps/trac/w3af/newticket \n'))
     arch.write(versions)
     arch.write(exception)
     arch.close()
