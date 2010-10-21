@@ -30,7 +30,6 @@ def usage():
     om.out.information('')
     om.out.information('Options:')
     om.out.information('    -h              Print this help message.')
-    om.out.information('    -i <dir>        Directory where MSF is installed (only used to install the virtual daemon).')
     om.out.information('    -p <filename>   Run with the selected profile')
     om.out.information('')
     om.out.information('http://w3af.sourceforge.net/')
@@ -50,10 +49,6 @@ def main():
             om.out.information( base64.b64decode( 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGVzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ==' ) )
         if o == "-s":
             scriptFile = a
-        if o == "-i":
-            # Install the virtual daemon module in the MSF directory
-            from core.controllers.vdaemon.install import installVdaemon
-            installVdaemon( a )
         if o in ('-p', '--profile'):
             # selected profile
             profile = a

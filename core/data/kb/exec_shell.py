@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import time
+
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
 from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
@@ -29,7 +31,6 @@ import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om
 
 from core.data.kb.shell import shell
-import time
 
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 from plugins.attack.payloads.decorators.download_decorator import download_debug
@@ -189,7 +190,7 @@ class exec_shell(shell):
         #    Advanced exploitation
         #   
         elif command == 'start vdaemon':
-            return self.start_vdaemon()
+            return self.start_vdaemon( parameters )
             
         elif command == 'start w3afAgent':
             return self.start_w3afAgent()
@@ -261,10 +262,11 @@ class exec_shell(shell):
             agentManager.run()
             return 'Successfully started the w3afAgent.'
 
-    def start_vdaemon(self):
+    def start_vdaemon(self, parameters):
         '''
         Starts a virtual daemon using the "execute" syscall.
         
+        @param parameters: The user defined parameters
         @return: The message to show to the user.
         '''
         from core.controllers.vdaemon.vdFactory import getVirtualDaemon
@@ -273,10 +275,7 @@ class exec_shell(shell):
         except w3afException, w3:
             return 'Error' + str(w3)
         else:
-            vd.setRemoteIP( urlParser.getDomain( self.getURL() )  )
-            vd.start2()
-            # Let the server start
-            time.sleep(0.1)
+            vd.run( parameters )
             return 'Successfully started the virtual daemon.'
 
     def end_interaction(self):

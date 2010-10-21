@@ -59,7 +59,7 @@ class miscSettings(configurable):
             cf.cf.save('maxDiscoveryTime', 120 )
             cf.cf.save('maxThreads', 15 )
             cf.cf.save('fuzzableHeaders', [] )
-
+            cf.cf.save('msf_location', '/opt/metasploit3/bin/' )
             
             #
             #
@@ -156,6 +156,10 @@ class miscSettings(configurable):
         o13 = option('exportFuzzableRequests', cf.cf.getData('exportFuzzableRequests'), d13,
                             'string', tabid='Export fuzzable Requests')
         
+        ######### Metasploit ###########
+        d15 = 'Full path of Metasploit framework binary directory (%s in most linux installs)' % cf.cf.getData('msf_location')
+        o15 = option('msf_location', cf.cf.getData('msf_location'), d11, 'string', tabid='Metasploit')
+        
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
@@ -171,6 +175,7 @@ class miscSettings(configurable):
         ol.add(o12)
         ol.add(o13)
         ol.add(o14)
+        ol.add(o15)
         return ol
     
     def getDesc( self ):
@@ -204,6 +209,8 @@ class miscSettings(configurable):
         cf.cf.save('demo', optionsMap['demo'].getValue()  )
         cf.cf.save('nonTargets', optionsMap['nonTargets'].getValue() )
         cf.cf.save('exportFuzzableRequests', optionsMap['exportFuzzableRequests'].getValue() )
+        
+        cf.cf.save('msf_location', optionsMap['msf_location'].getValue() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 miscSettings()
