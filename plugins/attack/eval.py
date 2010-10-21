@@ -99,7 +99,7 @@ class eval(baseAttackPlugin):
             # Create the shell object
             shell_obj = eval_shell( vuln_obj )
             shell_obj.setUrlOpener( self._urlOpener )
-            shell_obj.setCut( self._header, self._footer )
+            shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setCode( self._shell_code )
             return shell_obj
         else:
@@ -128,7 +128,7 @@ class eval(baseAttackPlugin):
             except Exception:
                 continue
             else:
-                cut_result = self._defineCut( http_res.getBody(), shell_handler.SHELL_IDENTIFIER, exact=True )
+                cut_result = self._define_exact_cut( http_res.getBody(), shell_handler.SHELL_IDENTIFIER )
                 if cut_result:
                     self._shell_code = code
                     return True

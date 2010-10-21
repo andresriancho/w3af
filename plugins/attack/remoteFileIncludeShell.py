@@ -167,7 +167,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             # Create the shell object
             shell_obj = rfi_shell( vuln_obj )
             shell_obj.setUrlOpener( self._urlOpener )
-            shell_obj.setCut( self._header, self._footer )
+            shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setWebServer( self._web_server )
             shell_obj.setExploitDc( self._exploit_dc )
             return shell_obj
@@ -204,8 +204,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             except:
                 successfully_exploited = False
             else:
-                successfully_exploited = self._defineCut( http_res.getBody(), \
-                                                        shell_handler.SHELL_IDENTIFIER, exact=True )
+                successfully_exploited = self._define_exact_cut( http_res.getBody(), shell_handler.SHELL_IDENTIFIER )
 
             if successfully_exploited:
                 self._exploit_dc = data_container

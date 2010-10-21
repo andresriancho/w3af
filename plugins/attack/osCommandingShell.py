@@ -101,7 +101,7 @@ class osCommandingShell(baseAttackPlugin):
             # Create the shell object
             shell_obj = osShell( vuln )
             shell_obj.setUrlOpener( self._urlOpener )
-            shell_obj.setCut( self._header, self._footer )
+            shell_obj.set_cut( self._header_length, self._footer_length )
             return shell_obj
             
         else:
@@ -139,7 +139,7 @@ class osCommandingShell(baseAttackPlugin):
             om.out.error( str(e) )
             return False
         else:
-            return self._defineCut( response.getBody(), rand , exact=True )
+            return self._define_exact_cut( response.getBody(), rand )
     
     def getOptions(self):
         '''

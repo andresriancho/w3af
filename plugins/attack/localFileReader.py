@@ -113,7 +113,7 @@ class localFileReader(baseAttackPlugin):
             # Create the shell object
             shell_obj = fileReaderShell( vuln_obj )
             shell_obj.setUrlOpener( self._urlOpener )
-            shell_obj.setCut( self._header, self._footer )
+            shell_obj.set_cut( self._header_length, self._footer_length )
             
             return shell_obj
             
@@ -127,13 +127,25 @@ class localFileReader(baseAttackPlugin):
         @return : True if vuln can be exploited.
         '''
         function_reference = getattr( self._urlOpener , vuln_obj.getMethod() )
+        
+        #    Prepare the first request, with the original data
+        data_a = str(vuln_obj.getDc())
+        
+        #    Prepare the second request, with a non existent file
+        vulnerable_parameter = vuln_obj.getVar()
+        vulnerable_dc = vuln_obj.getDc()
+        vulnerable_dc_copy = vulnerable_dc.copy()
+        vulnerable_dc_copy[ vulnerable_parameter ] = '/do/not/exist'
+        data_b = str(vulnerable_dc_copy) 
+        
         try:
-            response = function_reference( vuln_obj.getURL(), str(vuln_obj.getDc()) )
+            response_a = function_reference( vuln_obj.getURL(), data_a )
+            response_b = function_reference( vuln_obj.getURL(), data_b )
         except w3afException, e:
             om.out.error( str(e) )
             return False
         else:
-            if self._defineCut( response.getBody(), vuln_obj['file_pattern'], exact=False ):
+            if self._guess_cut( response_a.getBody(), response_b.getBody(), vuln_obj['file_pattern'] ):
                 return True
             else:
                 return False

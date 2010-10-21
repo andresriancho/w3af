@@ -225,14 +225,14 @@ class sql_webshell(baseAttackPlugin):
             if webshell_url:
                 # Define the corresponding cut...
                 response = self._urlOpener.GET( webshell_url )
-                self._defineCut( response.getBody(), shell_handler.SHELL_IDENTIFIER , exact=True )
+                self._define_exact_cut( response.getBody(), shell_handler.SHELL_IDENTIFIER )
                 
                 # Create the shell object
                 # Set shell parameters
                 shell_obj = sql_web_shell( vuln_obj )
                 shell_obj.setUrlOpener( self._urlOpener )
                 shell_obj.setWebShellURL( webshell_url )
-                shell_obj.setCut( self._header, self._footer )
+                shell_obj.set_cut( self._header_length, self._footer_length )
                 kb.kb.append( self, 'shell', shell_obj )
                 return shell_obj
             else:
