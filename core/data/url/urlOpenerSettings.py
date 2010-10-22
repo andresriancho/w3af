@@ -36,7 +36,6 @@ import core.data.url.handlers.logHandler as logHandler
 import core.data.url.handlers.mangleHandler as mangleHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
 
-from extlib.ntlm import ntlm
 import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
 
 from core.controllers.configurable import configurable
@@ -112,6 +111,7 @@ class urlOpenerSettings( configurable ):
 
             cf.cf.save('ntlmAuthUser', '' )
             cf.cf.save('ntlmAuthPass', '' )
+            cf.cf.save('ntlmAuthURL', '' )
             
             cf.cf.save('ignoreSessCookies', False )
             cf.cf.save('maxFileSize', 400000 )
@@ -260,8 +260,9 @@ class urlOpenerSettings( configurable ):
     
     def setNtlmAuth( self, url, username, password ):
 
-        cf.cf.save('ntlmAuthPass',  password)
+        cf.cf.save('ntlmAuthPass', password )
         cf.cf.save('ntlmAuthUser', username )
+        cf.cf.save('ntlmAuthURL', url )
         
         om.out.debug( 'Called SetNtlmAuth')
 
@@ -390,6 +391,12 @@ class urlOpenerSettings( configurable ):
 
         d7 = 'Set the NTLM authentication password for HTTP requests'
         o7 = option('ntlmAuthPass', cf.cf.getData('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
+
+        d7b = 'Set the NTLM authentication domain for HTTP requests'
+        h7b = 'This configures on which requests to send the authentication settings configured'
+        h7b += ' in ntlmAuthPass and ntlmAuthUser. If you are unsure, just set it to the'
+        h7b += ' target domain name.'
+        o7b = option('ntlmAuthURL', cf.cf.getData('ntlmAuthURL'), d7b, 'string', tabid='NTLM Authentication')
                 
         d8 = 'Set the cookiejar filename.'
         h8 = 'The cookiejar file must be in mozilla format.'
@@ -446,6 +453,7 @@ class urlOpenerSettings( configurable ):
         ol.add(o5)
         ol.add(o6)
         ol.add(o7)
+        ol.add(o7b)
         ol.add(o8)
         ol.add(o9)
         ol.add(o10)
@@ -476,6 +484,12 @@ class urlOpenerSettings( configurable ):
             self.setBasicAuth( optionsMap['basicAuthDomain'].getValue(),
                                         optionsMap['basicAuthUser'].getValue(),
                                         optionsMap['basicAuthPass'].getValue()  )
+        
+        if optionsMap['ntlmAuthUser'].getValue() != cf.cf.getData('ntlmAuthUser') or\
+        optionsMap['ntlmAuthPass'].getValue() != cf.cf.getData('ntlmAuthPass') or\
+        optionsMap['ntlmAuthURL'].getValue() != cf.cf.getData('ntlmAuthURL'):
+            self.setNtlmAuth( optionsMap['ntlmAuthURL'], optionsMap['ntlmAuthUser'] ,
+                              optionsMap['ntlmAuthPass'])
 
         # Only apply changes if they exist
         if optionsMap['proxyAddress'].getValue() != cf.cf.getData('proxyAddress') or\
