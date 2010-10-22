@@ -21,10 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-
-import time
 from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
+
+import hashlib
+import time
+
 
 class echoLnx( basePayloadTransfer ):
     '''
@@ -88,6 +89,18 @@ class echoLnx( basePayloadTransfer ):
             
             # Send the command to the remote server
             self._exec( cmd )
+        
+        #    Check if the file was uploaded correctly
+        #    Verify that md5sum exists first...
+        if '/etc/passwd' in self._exec( 'md5sum /etc/passwd' ): 
+            md5sum_res = self._exec( 'md5sum ' + self._filename )
+            hash = md5sum_res.split(' ')[0]
+            
+            m = hashlib.md5()
+            m.update(strObject)
+            return hash == m.hexdigest()
+            
+        return 
         
     def getSpeed( self ):
         '''

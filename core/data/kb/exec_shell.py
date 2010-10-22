@@ -189,10 +189,10 @@ class exec_shell(shell):
         #
         #    Advanced exploitation
         #   
-        elif command == 'start vdaemon':
-            return self.start_vdaemon( parameters )
+        elif original_command.startswith('start vdaemon '):
+            return self.start_vdaemon( parameters[1:] )
             
-        elif command == 'start w3afAgent':
+        elif original_command.startswith('start w3afAgent '):
             return self.start_w3afAgent()
                 
         #

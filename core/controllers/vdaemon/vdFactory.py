@@ -28,21 +28,21 @@ from core.controllers.intrusionTools.execMethodHelpers import *
 from core.controllers.w3afException import w3afException
 
 
-def getVirtualDaemon( execMethod ):
+def getVirtualDaemon( exec_method ):
     '''
-    Uses the execMethod to run remote commands and determine what's the remote OS is,
+    Uses the exec_method to run remote commands and determine what's the remote OS is,
     and based on that info, it returns the corresponding virtual daemon.
     '''
     try:
-        os = osDetectionExec( execMethod )
+        os = osDetectionExec( exec_method )
     except w3afException, w3:
         raise w3
     else:
         if os == 'windows':
             om.out.debug('Identified remote OS as Windows, returning winVd object.')
-            return winVd( execMethod )
+            return winVd( exec_method )
         elif os == 'linux':
             om.out.debug('Identified remote OS as Linux, returning lnxVd object.')
-            return lnxVd( execMethod )
+            return lnxVd( exec_method )
         else:
             raise w3afException('Failed to get a virtual daemon for the remote OS: ' + os )

@@ -36,7 +36,7 @@ def osDetectionExec( execMethod ):
     except:
         pass
     else:
-        if 'w3af' == linux1 and ':' in linux2:
+        if 'w3af' == linux1 and linux2.count(':') > 2:
             om.out.debug('Identified remote OS as Linux, returning "linux".')
             return 'linux'
         

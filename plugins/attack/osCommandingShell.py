@@ -127,8 +127,11 @@ class osCommandingShell(baseAttackPlugin):
         rand = createRandAlpha( 8 )
         if vuln['os'] == 'windows':
             command = vuln['separator'] + 'echo ' + rand
+            # TODO: Confirm that this works in windows
+            rand = rand + '\n\n'
         else:
             command = vuln['separator'] + '/bin/echo ' + rand
+            rand = rand + '\n'
             
         # Lets define the result header and footer.
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
@@ -232,18 +235,7 @@ class osCommandingShell(baseAttackPlugin):
         '''
 
 class osShell(exec_shell):
-    def specific_user_input( self, command ):
-        '''
-        This method is called when a user writes a command in the shell and hits enter.
-        
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
-
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
-        @return: The result of the command.
-        '''
-        pass
-    
+ 
     @exec_debug
     def execute(self, command):
         '''
