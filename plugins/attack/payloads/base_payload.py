@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import plugins.attack.payloads.payload_handler as payload_handler
 
-SYSCALL_LIST = ['read', 'write', 'execute', 'unlink']
+SYSCALL_LIST = ['read', 'write', 'execute', 'unlink', 'is_open_port']
 
 
 class base_payload(object):
@@ -71,6 +71,8 @@ class base_payload(object):
 
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.run_execute( *args )
+        elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
+            return self.run_is_open_port( *args )
         else:
             return self.run_read( *args )
     

