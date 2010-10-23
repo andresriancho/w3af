@@ -56,7 +56,6 @@ class exec_shell(shell):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
-        om.out.console('    start vdaemon                   Start the virtual daemon')
         om.out.console('    start w3afAgent                 Start the w3afAgent service')
         om.out.console('    endInteraction                  Exit the shell session')
         om.out.console('')
@@ -185,13 +184,7 @@ class exec_shell(shell):
         #
         elif command in ['e', 'exec', 'execute']:
             return self.execute( ' '.join(parameters) )
-        
-        #
-        #    Advanced exploitation
-        #   
-        elif original_command.startswith('start vdaemon '):
-            return self.start_vdaemon( parameters[1:] )
-            
+                    
         elif original_command.startswith('start w3afAgent '):
             return self.start_w3afAgent()
                 
@@ -261,22 +254,6 @@ class exec_shell(shell):
         else:
             agentManager.run()
             return 'Successfully started the w3afAgent.'
-
-    def start_vdaemon(self, parameters):
-        '''
-        Starts a virtual daemon using the "execute" syscall.
-        
-        @param parameters: The user defined parameters
-        @return: The message to show to the user.
-        '''
-        from core.controllers.vdaemon.vdFactory import getVirtualDaemon
-        try:
-            vd = getVirtualDaemon(self.execute)
-        except w3afException, w3:
-            return 'Error' + str(w3)
-        else:
-            vd.run( parameters )
-            return 'Successfully started the virtual daemon.'
 
     def end_interaction(self):
         '''

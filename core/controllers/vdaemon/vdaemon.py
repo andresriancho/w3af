@@ -145,7 +145,7 @@ class vdaemon(object):
         subprocess.Popen( ['gnome-terminal', '-e', msfcli_command] )
         
         # Some slow systems require time to load msfcli
-        time.sleep(4)
+        time.sleep(10)
         
         # TODO: Better response!
         return True
@@ -170,6 +170,9 @@ class vdaemon(object):
         command = '%s %s %s X > %s' % (self._msfpayload_path, payload, ' '.join(parameters), output_filename)
         os.system( command )
         
+        if 'reverse' in payload:
+            om.out.console('Remember to setup your firewall to allow the reverse connection!')
+        
         if os.path.isfile( output_filename ):
             
             #    Error handling
@@ -191,7 +194,7 @@ class vdaemon(object):
         @return: The name of the remote file that was uploaded.
         '''
         om.out.debug('Called _send_exe_to_server()')
-        om.out.console('Please wait while w3af uploads the payload to the remote server.')
+        om.out.console('Wait while w3af uploads the payload to the remote server...')
         
         ptf = payloadTransferFactory( self._exec_method )
         

@@ -27,6 +27,7 @@ from core.controllers.intrusionTools.delayedExecution import delayedExecution
 from core.controllers.intrusionTools.execMethodHelpers import *
 import time
 
+
 class crontabHandler( delayedExecution ):
     '''
     This class defines a crontab handler, that will:
@@ -76,7 +77,7 @@ class crontabHandler( delayedExecution ):
         for line in newCron.split('\n'):
             self._exec( '/bin/echo ' + line + ' >> ' + self._cronFile )
         applyNewCronRes = self._exec( 'crontab ' + self._cronFile )
-        #self._exec( '/bin/rm ' + self._cronFile )
+        self._exec( '/bin/rm ' + self._cronFile )
         
         filename = commandToExec.split(' ')[0]
         self._exec( '/bin/chmod +x ' + filename )
