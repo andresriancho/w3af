@@ -483,7 +483,7 @@ class sqlShellObj(shell):
         
     def end_interaction(self):
         '''
-        When the user executes endInteraction in the console, this method is called.
+        When the user executes "exit" in the console, this method is called.
         Basically, here we handle WHAT TO DO in that case. In most cases (and this is
         why we implemented it this way here) the response is "yes, do it end me" that
         equals to "return True".

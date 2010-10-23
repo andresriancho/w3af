@@ -42,13 +42,13 @@ class vdaemon(object):
     finally execute the payload in the remote server. 
     
     This class should be sub-classed by winVd and lnxVd, each implementing a different way
-    of sending the metasploit shellcode to the remote web server.
+    of sending the metasploit payload to the remote web server.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__( self, exec_method ):        
         
-        # This is the method that will be used to send the metasploit shellcode to the 
+        # This is the method that will be used to send the metasploit payload to the 
         # remote webserver ( using echo $payload > file )
         self._exec_method = exec_method
         

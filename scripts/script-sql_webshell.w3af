@@ -36,6 +36,6 @@ execute w
 read /etc/passwd
 payload tcp
 
-endInteraction
+exit
 
 exit

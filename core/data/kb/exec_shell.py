@@ -56,8 +56,13 @@ class exec_shell(shell):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
-        om.out.console('    start w3afAgent                 Start the w3afAgent service')
-        om.out.console('    endInteraction                  Exit the shell session')
+        om.out.console('    read <file>                     Read the remote server <file> and echo to this console')
+        om.out.console('    write <file> <content>          Write <content> to the remote <file>')
+        om.out.console('    upload <local> <remote>         Upload <local> file to <remote> location')
+        om.out.console('    execute <cmd>                   ')
+        om.out.console('    exec <cmd>                      ')
+        om.out.console('    e <cmd>                         Run <cmd> on the remote operating system')                
+        om.out.console('    exit                            Exit this shell session')
         om.out.console('')
         om.out.console('All the other commands are executed on the remote server.')
         return True
@@ -137,8 +142,9 @@ class exec_shell(shell):
         '''
         This is the method that is called when a user wants to execute something in the shell.
         
-        First, I trap the requests for starting the virtual daemon and the w3afAgent, and if this is not the
-        case, I forward the request to the specific_user_input method which should be implemented by all shellAttackPlugins.
+        First, I trap the requests for the regular commands like read, write, upload, etc., and if this is not the
+        case, I forward the request to the specific_user_input method which should be implemented by all shell
+        attack plugins.
         '''
         #
         #    Here I get all the common methods like help, payloads, lsp, etc.
@@ -185,9 +191,6 @@ class exec_shell(shell):
         elif command in ['e', 'exec', 'execute']:
             return self.execute( ' '.join(parameters) )
                     
-        elif original_command.startswith('start w3afAgent '):
-            return self.start_w3afAgent()
-                
         #
         #    Call the shell subclass method if needed
         #
@@ -239,25 +242,9 @@ class exec_shell(shell):
         read_command = read_command_format % (filename,)
         return self.execute( read_command )
         
-    def start_w3afAgent(self):
-        '''
-        start a w3afAgent, to do this, I must transfer the agent client to the
-        remote end and start the w3afServer in this local machine
-        all this work is done by the w3afAgentManager, I just need to called
-        start and thats it.
-        '''
-        from core.controllers.w3afAgent.w3afAgentManager import w3afAgentManager
-        try:
-            agentManager = w3afAgentManager(self.execute)
-        except w3afException, w3:
-            return 'Error' + str(w3)
-        else:
-            agentManager.run()
-            return 'Successfully started the w3afAgent.'
-
     def end_interaction(self):
         '''
-        When the user executes endInteraction in the console, this method is called.
+        When the user executes "exit" in the console, this method is called.
         Basically, here we handle WHAT TO DO in that case. In most cases (and this is
         why we implemented it this way here) the response is "yes, do it end me" that
         equals to "return True".

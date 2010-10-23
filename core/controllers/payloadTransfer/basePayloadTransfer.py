@@ -23,13 +23,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.w3afException import *
 
+import hashlib
+
+
 class basePayloadTransfer:
     '''
     This is a base class for doing payload transfers.
     '''
 
     def __init__( self , execMethod, os ):
-        self._execMethod = execMethod
+        self._exec_method = execMethod
         self._os = os
         
     def canTransfer( self ):
@@ -56,12 +59,22 @@ class basePayloadTransfer:
         @return: The transfer speed of the transfer object. It should return a number between 100 (fast) and 1 (slow)
         '''
         raise w3afException('You should implement the getSpeed method when you inherit from echo.')
+
+    def verify_upload(self, file_content, remote_filename):
+        '''
+        Runs a series of commands to verify if the file was successfully uploaded.
+        
+        @param file_content: The bytestream that should be in the remote_filename
+        @param remote_filename: The remote file where the uploaded content should be in
+        @return: True if the file was successfully uploaded.
+        '''
+        if '/etc/passwd' in self._exec_method( 'md5sum /etc/passwd' ): 
+            md5sum_res = self._exec_method( 'md5sum ' + remote_filename )
+            hash = md5sum_res.split(' ')[0]
+            
+            m = hashlib.md5()
+            m.update(file_content)
+            return hash == m.hexdigest()
     
-    def _exec( self, command ):
-        '''
-        A wrapper for executing commands
-        '''
-        om.out.debug('Executing: ' + command )
-        response = apply( self._execMethod, ( command ,))
-        om.out.debug('"' + command + '" returned: ' + response )
-        return response
+        #    TODO: Hmmmmmmm....
+        return True

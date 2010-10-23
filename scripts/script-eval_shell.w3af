@@ -34,7 +34,7 @@ payload users
 payload tcp
 payload interesting_files
 
-endInteraction
+exit
 
 assert len(kb.kb.getData('eval','shell')) == 1
 

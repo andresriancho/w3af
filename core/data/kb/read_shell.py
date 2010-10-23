@@ -49,9 +49,9 @@ class read_shell(shell):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
-        om.out.console('    read                            Read a file from the remote operating system')
-        om.out.console('    download                        Download a file from the remote OS to the local file system')
-        om.out.console('    endInteraction                  Exit the shell session')
+        om.out.console('    read <file>                     Read the remote server <file> and echo to this console')
+        om.out.console('    download <remote> <local>       Download <remote> file to <local> file system location')
+        om.out.console('    exit                            Exit the shell session')
         om.out.console('')
         om.out.console('All the other commands are executed on the remote server.')
         return True

@@ -31,7 +31,7 @@ execute w
 read /etc/passwd
 payload tcp
 
-endInteraction
+exit
 back
 assert len(kb.kb.getData('davShell','shell')) == 1
 

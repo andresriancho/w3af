@@ -32,7 +32,7 @@ payload uptime
 payload users
 payload tcp
 
-endInteraction
+exit
 
 back
 

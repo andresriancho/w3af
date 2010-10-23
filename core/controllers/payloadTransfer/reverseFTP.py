@@ -78,7 +78,7 @@ class reverseFTP( basePayloadTransfer ):
                 - reverseFTPClient.py <w3af-ip-address> <port> <destination>
             - verify that the file exists
         '''
-        pass
+        return False
         
     def getSpeed( self ):
         '''

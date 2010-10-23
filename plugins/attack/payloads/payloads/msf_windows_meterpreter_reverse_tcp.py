@@ -2,7 +2,7 @@ from plugins.attack.payloads.base_payload import base_payload
 from plugins.attack.payloads.payloads.metasploit import metasploit
 
 
-class msf_windows_meterpreter_reverse(metasploit):
+class msf_windows_meterpreter_reverse_tcp(metasploit):
     '''
     This payload creates a reverse meterpreter shell in windows using the metasploit framework.
     '''

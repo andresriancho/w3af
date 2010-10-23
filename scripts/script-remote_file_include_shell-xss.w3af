@@ -35,7 +35,7 @@ read /etc/passwd
 payload uptime
 payload tcp
 
-endInteraction
+exit
 
 assert len( kb.kb.getData('remoteFileIncludeShell', 'shell') ) == 1
 

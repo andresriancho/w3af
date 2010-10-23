@@ -81,9 +81,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
-        om.out.console('    start vdaemon                   Start the virtual daemon')
-        om.out.console('    start w3afAgent                 Start the w3afAgent service')
-        om.out.console('    endInteraction                  Exit the shell session')
+        om.out.console('    exit                            Exit the shell session')
         om.out.console('')
         om.out.console('All the other commands are executed on the remote server.')
         return True
@@ -123,7 +121,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
 
     def end_interaction(self):
         '''
-        When the user executes endInteraction in the console, this method is called.
+        When the user executes "exit" in the console, this method is called.
         Basically, here we handle WHAT TO DO in that case. In most cases (and this is
         why we implemented it this way here) the response is "yes, do it end me" that
         equals to "return True".

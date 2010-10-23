@@ -271,7 +271,7 @@ class xssShell(shell):
         @parameter command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        msg = 'TODO: Code some commands here. For now, just execute endInteraction'
+        msg = 'TODO: Code some commands here. For now, just execute "exit"'
         msg += ' (this won\'t close BeEF)'
         return msg
         

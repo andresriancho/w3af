@@ -30,6 +30,6 @@ interact 0
 list
 list -r 2
 
-endInteraction
+exit
 
 exit

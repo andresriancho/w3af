@@ -31,7 +31,7 @@ payload tcp
 
 list
 
-endInteraction
+exit
 back
 
 assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
