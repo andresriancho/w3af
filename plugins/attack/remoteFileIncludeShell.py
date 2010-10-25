@@ -253,16 +253,20 @@ class remoteFileIncludeShell(baseAttackPlugin):
             #
             function_reference = getattr( self._urlOpener , vuln.getMethod() )
             data_container = vuln.getDc()
-            #    A port that should always be closed,
-            data_container[ vuln.getVar() ] = 'http://www.google.com:92/'   
+            
+            #    A port that should "always" be closed,
+            data_container[ vuln.getVar() ] = 'http://localhost:92/'   
 
             try:
                 http_response = function_reference( vuln.getURL(), str(data_container) )
             except:
                 return False
             else:
-                if 'failed to open stream' in http_response.getBody():
-                    return SUCCESS_OPEN_PORT
+                rfi_errors = ['php_network_getaddresses: getaddrinfo',
+                                    'failed to open stream: Connection refused in']
+                for error in rfi_errors:
+                    if error in http_response.getBody():
+                        return SUCCESS_OPEN_PORT
                     
         return NO_SUCCESS
     
