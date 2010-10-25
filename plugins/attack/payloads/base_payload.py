@@ -54,7 +54,22 @@ class base_payload(object):
         @parameter payload_name: The name of the payload I want to run.
         @return: The payload result.
         '''
-        return payload_handler.exec_payload(self.shell, payload_name, use_api=True)
+        try:
+            return payload_handler.exec_payload(self.shell, payload_name, use_api=True)
+        except:
+            #
+            #    Run the payload name with any shell that has the capabilities we need,
+            #    not the one we're already using (that failed because it doesn't have
+            #    the capabilities).
+            #
+            try:
+                return payload_handler.exec_payload(None, payload_name, use_api=True)
+            except:
+                msg = 'The payload you are trying to run ("%s") can not be run with the current' % self
+                msg += ' is trying to call another payload ("%s") which is failing because' % payload_name
+                msg += ' there are no shells that support the necessary system calls.'
+                return msg
+                
     
     def run(self, *args):
         '''
@@ -91,6 +106,8 @@ class base_payload(object):
 
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.api_execute( *args )
+        elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
+            return self.api_is_open_port( *args )
         else:
             return self.api_read( *args )
 
