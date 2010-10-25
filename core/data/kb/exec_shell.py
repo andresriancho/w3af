@@ -56,6 +56,8 @@ class exec_shell(shell):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
+        om.out.console('    lsp                             List payloads')
+        om.out.console('    payload <payload>               Execute "payload" and get the result')
         om.out.console('    read <file>                     Read the remote server <file> and echo to this console')
         om.out.console('    write <file> <content>          Write <content> to the remote <file>')
         om.out.console('    upload <local> <remote>         Upload <local> file to <remote> location')

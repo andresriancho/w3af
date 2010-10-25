@@ -81,6 +81,7 @@ class shell(vuln, exploitResult, commonAttackMethods):
         '''
         om.out.console('Available commands:')
         om.out.console('    help                            Display this information')
+        om.out.console('    lsp                             List the available payloads')        
         om.out.console('    exit                            Exit the shell session')
         om.out.console('')
         om.out.console('All the other commands are executed on the remote server.')
