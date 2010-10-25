@@ -488,8 +488,8 @@ class urlOpenerSettings( configurable ):
         if optionsMap['ntlmAuthUser'].getValue() != cf.cf.getData('ntlmAuthUser') or\
         optionsMap['ntlmAuthPass'].getValue() != cf.cf.getData('ntlmAuthPass') or\
         optionsMap['ntlmAuthURL'].getValue() != cf.cf.getData('ntlmAuthURL'):
-            self.setNtlmAuth( optionsMap['ntlmAuthURL'], optionsMap['ntlmAuthUser'] ,
-                              optionsMap['ntlmAuthPass'])
+            self.setNtlmAuth( optionsMap['ntlmAuthURL'].getValue(), optionsMap['ntlmAuthUser'].getValue() ,
+                              optionsMap['ntlmAuthPass'].getValue())
 
         # Only apply changes if they exist
         if optionsMap['proxyAddress'].getValue() != cf.cf.getData('proxyAddress') or\
