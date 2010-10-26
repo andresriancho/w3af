@@ -47,7 +47,7 @@ class base_payload(object):
 
         return available_syscalls.intersection(run_options)
         
-    def exec_payload(self, payload_name):
+    def exec_payload(self, payload_name, parameters=[]):
         '''
         Execute ANOTHER payload, by providing the other payload name.
         
@@ -55,7 +55,7 @@ class base_payload(object):
         @return: The payload result.
         '''
         try:
-            return payload_handler.exec_payload(self.shell, payload_name, use_api=True)
+            return payload_handler.exec_payload(self.shell, payload_name, parameters, use_api=True)
         except:
             #
             #    Run the payload name with any shell that has the capabilities we need,
@@ -63,7 +63,7 @@ class base_payload(object):
             #    the capabilities).
             #
             try:
-                return payload_handler.exec_payload(None, payload_name, use_api=True)
+                return payload_handler.exec_payload(None, payload_name, parameters, use_api=True)
             except:
                 msg = 'The payload you are trying to run ("%s") can not be run with the current' % self
                 msg += ' is trying to call another payload ("%s") which is failing because' % payload_name
