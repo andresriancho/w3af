@@ -57,16 +57,6 @@ def dependencyCheck():
         print 'You have to install the nltk lib. Please read the users guide.'
         print 'Error: ' + str(e)
         sys.exit( 1 )
-            
-    try:
-        import extlib.pygoogle.google as pygoogle
-    except:
-        try:
-            import google as pygoogle
-        except Exception, e:
-            print 'You have to install pygoogle and fpconst libs. Please read the users guide.'
-            print 'Error: ' + str(e)
-            sys.exit( 1 )
 
     try:
         import extlib.BeautifulSoup as BeautifulSoup
