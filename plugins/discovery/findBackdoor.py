@@ -32,7 +32,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -101,15 +100,15 @@ WEB_SHELLS = (
     'cmd.sh','cmd.js','shell.js',        
     'list.sh','up.sh','nc.exe','netcat.exe','socat.exe','cmd.pl')
 
-# Regular expressions used to...
+# Regular expressions to detect possible backdoors
 BACKDOOR_RE_COLLECTION = (
     re.compile('''<input .*?value=('|")(run|send|exec|execute|run cmd|''' \
                     '''execute command|run command|list|connect)('|")>'''),
     re.compile('''<input .*?name=('|")cmd|command('|")>'''),
     re.compile('''<form .*?enctype=('|")multipart/form-data('|")'''))
 
-# Words used to...
-BACKDOOR_KEYWORDS = set(
+# List of known offensive words.
+KNOWN_OFFENSIVE_WORDS = set(
     ('access', 'backdoor', 'cmd', 'cmdExe_Click', 'cmd_exec', 
     'command', 'connect', 'directory', 'directories', 'exec', 
     'exec_cmd', 'execute', 'eval', 'file', 'file upload', 'hack', 'hacked', 
@@ -205,7 +204,7 @@ class findBackdoor(baseDiscoveryPlugin):
             # If no regex matched then try with keywords. At least 2 should be
             # contained in 'body_text' to succeed.
             times = 0
-            for back_kw in BACKDOOR_KEYWORDS:
+            for back_kw in KNOWN_OFFENSIVE_WORDS:
                 if re.search(back_kw, body_text, re.I):
                     times += 1
                     if times == 2:
