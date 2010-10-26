@@ -59,16 +59,6 @@ def dependencyCheck():
         sys.exit( 1 )
 
     try:
-        import extlib.BeautifulSoup as BeautifulSoup
-    except:
-        try:
-            import BeautifulSoup
-        except:
-            print 'You have to install BeautifulSoup lib. Please read the users guide.'
-            sys.exit( 1 )
-        
-
-    try:
         import extlib.SOAPpy.SOAPpy as SOAPpy
     except:
         try:

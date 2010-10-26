@@ -69,11 +69,6 @@ try:
 except Exception, e:
     withGtkHtml2 = False
 
-try:
-    import extlib.BeautifulSoup as BeautifulSoup
-except:
-    import BeautifulSoup
-
 def sigsegv_handler(signum, frame):
     print _('This is a catched segmentation fault!')
     print _('I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:')
@@ -793,11 +788,6 @@ class responsePart(requestResponsePart):
             mimeType = 'text/html'
             body = _('The response type is: <i>') + mimeType + _('</i>. w3af is still under development, in the future images will be displayed.')
 
-        # Show it rendered, but before rendering, use BeautifulSoup to normalize the HTML
-        # this should avoid some bugs in the HTML renderers!
-        soup = BeautifulSoup.BeautifulSoup(body)
-        body = soup.prettify()
-       
         self._renderFunction(body, mimeType, baseURI)
 
 
