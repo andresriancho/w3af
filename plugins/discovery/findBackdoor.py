@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+
 import core.controllers.outputManager as om
 
 # options
@@ -36,6 +38,88 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 
+# By aungkhant. Lists are taken from underground shell repositories and
+# common sense
+
+WEB_SHELLS = (
+    # PHP
+    'php-backdoor.php', 'simple-backdoor.php', 'cmd.php', 'phpshell.php',
+    'NCC-Shell.php', 'mysql.php', 'mysql_tool.php', 'gfs_sh.php', 'iMHaPFtp.php',
+    'ironshell.php', 'lamashell.php', 'load_shell.php', 'matamu.php',
+    'c99_w4cking.php', 'Crystal.php', 'ctt_sh.php', 'cybershell.php', 'Dx.php',
+    'c99_PSych0.php', 'c99_madnet.php', 'c99_locus7s.php', 'c99.php',
+    'accept_language.php', 'rootshell.php', 'ru24_post_sh.php', 'zacosmall.php' ,
+    'pws.php', 'r57.php', 'r57_iFX.php', 'r57_kartal.php', 'r57_Mohajer22.php',
+    'pHpINJ.php', 'PHPJackal.php', 'PHPRemoteView.php', 'Private-i3lue.php',
+    'PHANTASMA.php', 'nstview.php', 'nshell.php', 'NetworkFileManagerPHP.php',
+    'simple_cmd.php', 'Uploader.php', 'php-include-w-shell.php', 'backupsql.php',
+    'myshell.php', 'c99shell.php',
+    'c100.php', 'c100shell.php', 'locus7s.php', 'locus.php',
+    'safe0ver.php','stresbypass.php','ekin0x.php','liz0zim.php',
+    'erne.php','spybypass.php','phpbypass.php','sosyete.php',
+    'remview.php','zaco.php','nst.php','heykir.php',
+    'simattacker.php','avent.php','fatal.php','dx.php',
+    'goonshell.php','safemod.php','unreal.php','w4k.php',
+    'winshell.php','mysql2.php','sql.php','jackal.php',
+    'dc.php','w4cking.php','x.php','xx.php','xxx.php',
+    'w3k.php','h4x.php','h4x0r.php','l33t.php',
+    'cod3r.php','cod3rzshell.php','cod3rz.php',
+    'locus.php','locu.php',
+    'jsback.php','worm.php','simp-worm_sys.p5.php',
+    'owned.php','0wn3d.php',
+    # CGI / Perl
+    'perlcmd.cgi', 'cmd.pl',
+    'shell.pl','cmd.cgi','shell.cgi',
+    # JSP
+    'jsp-reverse.jsp', 'cmdjsp.jsp', 'cmd.jsp', 'cmd_win32.jsp',
+    'JspWebshell.jsp', 'JspWebshell1.2.jsp',
+    'shell.jsp',
+    'jsp-reverse.jspx', 'cmdjsp.jspx', 'cmd.jspx', 'cmd_win32.jspx',
+    'JspWebshell.jspx', 'JspWebshell1.2.jspx',
+    'shell.jspx',
+    'browser.jsp','cmd_win32.jsp',
+    'CmdServlet','cmdServlet','servlet/CmdServlet','servlet/cmdServlet',
+    'ListServlet','UpServlet',
+    'up_win32.jsp',
+    # ASP
+    'cmd.asp', 'cmdasp.aspx', 'cmdasp.asp', 'cmd-asp-5.1.asp', 'cmd.aspx',
+    'ntdaddy.asp',        
+    'ntdaddy.aspx','ntdaddy.mspx','cmd.mspx',
+    'shell.asp','zehir4.asp','rhtools.asp','fso.asp',
+    'shell.aspx','zehir4.aspx','rhtools.aspx','fso.aspx',
+    'shell.mspx','zehir4.mspx','rhtools.mspx','fso.mspx',
+    'kshell.asp','aspydrv.asp','kacak.asp',
+    'kshell.aspx','aspydrv.aspx','kacak.aspx',
+    'kshell.mspx','aspydrv.mspx','kacak.mspx',
+    # Other
+    'cmd.cfm', 'cfexec.cfm',
+    'shell.cfm','shell.do','shell.nsf','shell.d2w','shell.GPL',
+    'shell.show','shell.py',
+    'cmd.do','cmd.nsf','cmd.d2w','cmd.GPL',
+    'cmd.show','cmd.py',
+    'cmd.c','exploit.c','0wn3d.c',
+    'cmd.sh','cmd.js','shell.js',        
+    'list.sh','up.sh','nc.exe','netcat.exe','socat.exe','cmd.pl')
+
+# Regular expressions used to...
+BACKDOOR_RE_COLLECTION = (
+    re.compile('''<input .*?value=('|")(run|send|exec|execute|run cmd|''' \
+                    '''execute command|run command|list|connect)('|")>'''),
+    re.compile('''<input .*?name=('|")cmd|command('|")>'''),
+    re.compile('''<form .*?enctype=('|")multipart/form-data('|")'''))
+
+# Words used to...
+BACKDOOR_KEYWORDS = set(
+    ('access', 'backdoor', 'cmd', 'cmdExe_Click', 'cmd_exec', 
+    'command', 'connect', 'directory', 'directories', 'exec', 
+    'exec_cmd', 'execute', 'eval', 'file', 'file upload', 'hack', 'hacked', 
+    'hacked by', 'hacking', 'htaccess', 'launch command', 'launch shell',
+    'list', 'listing', 'output', 'passwd', 'password', 'permission', 
+    'remote', 'reverse', 'run', 'runcmd', 'server', 'shell', 
+    'socket', 'system', 'user', 'userfile', 'userid', 'web shell',
+    'webshell'))
+
+
 class findBackdoor(baseDiscoveryPlugin):
     '''
     Find web backdoors and web shells.
@@ -49,30 +133,33 @@ class findBackdoor(baseDiscoveryPlugin):
         self._analyzed_dirs = []
         self._fuzzable_requests_to_return = []
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzableRequest):
         '''
         For every directory, fetch a list of shell files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        (among other things) the URL to test.
         '''
-        domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+        domain_path = urlParser.getDomainPath(fuzzableRequest.getURL())
         self._fuzzable_requests_to_return = []
-        
+
         if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.append( domain_path )
+            self._analyzed_dirs.append(domain_path)
 
             # Search for the web shells
-            for web_shell_filename in self._get_web_shells():
-                web_shell_url = urlParser.urlJoin(  domain_path , web_shell_filename )
-                
+            for web_shell_filename in WEB_SHELLS:
+                web_shell_url = urlParser.urlJoin(domain_path , 
+                                                  web_shell_filename)
                 # Perform the check in different threads
-                targs = (web_shell_url, )
-                self._tm.startFunction( target=self._check_if_exists, args=targs, ownerObj=self )
-            
+                targs = (web_shell_url,)
+                self._tm.startFunction(target=self._check_if_exists, 
+                                       args=targs, ownerObj=self)
+
             # Wait for all threads to finish
-            self._tm.join( self )
-                
+            self._tm.join(self)
+
             return self._fuzzable_requests_to_return
+
     
     def _check_if_exists(self, web_shell_url):
         '''
@@ -81,124 +168,75 @@ class findBackdoor(baseDiscoveryPlugin):
         @parameter web_shell_url: The URL to check
         '''
         try:
-            response = self._urlOpener.GET( web_shell_url, useCache=True )
+            response = self._urlOpener.GET(web_shell_url, useCache=True)
         except w3afException:
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
-            if not is_404( response ):
+            if self._is_possible_backdoor(response):
                 v = vuln.vuln()
-                v.setId( response.id )
-                v.setName( 'Possible web backdoor' )
+                v.setId(response.id)
+                v.setName('Possible web backdoor')
                 v.setSeverity(severity.HIGH)
-                v.setURL( response.getURL() )
-                msg = 'A web backdoor was found at: "' + v.getURL() + '" ; this could'
-                msg += ' indicate that your server was hacked.'
-                v.setDesc( msg )
-                kb.kb.append( self, 'backdoors', v )
-                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                
-                fuzzable_requests = self._createFuzzableRequests( response )
-                self._fuzzable_requests_to_return.extend( fuzzable_requests )
-                    
-    
-    def _get_web_shells( self ):
-        '''
-        @return: A list of filenames of common web shells and web backdoors.
-        '''
-        res = []
-        
-        ## by aungkhant, Lists are taken from underground shell repositories and common sense
-        
-        # PHP
-        res.extend( ['php-backdoor.php', 'simple-backdoor.php', 'cmd.php', 'phpshell.php'] )
-        res.extend( ['NCC-Shell.php', 'mysql.php', 'mysql_tool.php', 'gfs_sh.php', 'iMHaPFtp.php'] )
-        res.extend( ['ironshell.php', 'lamashell.php', 'load_shell.php', 'matamu.php'] )
-        res.extend( ['c99_w4cking.php', 'Crystal.php', 'ctt_sh.php', 'cybershell.php', 'Dx.php'] )
-        res.extend( ['c99_PSych0.php', 'c99_madnet.php', 'c99_locus7s.php', 'c99.php'] )
-        res.extend( ['accept_language.php', 'rootshell.php', 'ru24_post_sh.php', 'zacosmall.php' ] )
-        res.extend( ['pws.php', 'r57.php', 'r57_iFX.php', 'r57_kartal.php', 'r57_Mohajer22.php'] )
-        res.extend( ['pHpINJ.php', 'PHPJackal.php', 'PHPRemoteView.php', 'Private-i3lue.php'] )
-        res.extend( ['PHANTASMA.php', 'nstview.php', 'nshell.php', 'NetworkFileManagerPHP.php'] )
-        res.extend( ['simple_cmd.php', 'Uploader.php', 'php-include-w-shell.php', 'backupsql.php'] )
-        res.extend( ['myshell.php', 'c99shell.php'] )
-        res.extend( ['c100.php', 'c100shell.php', 'locus7s.php', 'locus.php'] )
-        res.extend( ['safe0ver.php','stresbypass.php','ekin0x.php','liz0zim.php'])
-        res.extend( ['erne.php','spybypass.php','phpbypass.php','sosyete.php'])
-        res.extend( ['remview.php','zaco.php','nst.php','heykir.php'])
-        res.extend( ['simattacker.php','avent.php','fatal.php','dx.php'])
-        res.extend( ['goonshell.php','safemod.php','unreal.php','w4k.php'])
-        res.extend( ['winshell.php','mysql2.php','sql.php','jackal.php'])
-        res.extend( ['dc.php','w4cking.php','x.php','xx.php','xxx.php'])
-        res.extend( ['w3k.php','h4x.php','h4x0r.php','l33t.php'])
-        res.extend( ['cod3r.php','cod3rzshell.php','cod3rz.php'])
-        res.extend( ['locus.php','locu.php'])
-        res.extend( ['jsback.php','worm.php','simp-worm_sys.p5.php'])
-        res.extend( ['owned.php','0wn3d.php'])
-        
-        # CGI / Perl
-        res.extend( ['perlcmd.cgi', 'cmd.pl'] )
-        res.extend( ['shell.pl','cmd.cgi','shell.cgi'])
-        
-        # JSP
-        res.extend( ['jsp-reverse.jsp', 'cmdjsp.jsp', 'cmd.jsp', 'cmd_win32.jsp'] )
-        res.extend( ['JspWebshell.jsp', 'JspWebshell1.2.jsp'] )
-        res.extend( ['shell.jsp'])
-        res.extend( ['jsp-reverse.jspx', 'cmdjsp.jspx', 'cmd.jspx', 'cmd_win32.jspx'] )
-        res.extend( ['JspWebshell.jspx', 'JspWebshell1.2.jspx'] )
-        res.extend( ['shell.jspx'])
-        res.extend( ['browser.jsp','cmd_win32.jsp'])
-        res.extend( ['CmdServlet','cmdServlet','servlet/CmdServlet','servlet/cmdServlet'])
-        res.extend( ['ListServlet','UpServlet'] )
-        res.extend( ['up_win32.jsp'] )
-        
-        # ASP
-        res.extend( ['cmd.asp', 'cmdasp.aspx', 'cmdasp.asp', 'cmd-asp-5.1.asp', 'cmd.aspx'] )
-        res.extend( ['ntdaddy.asp'] )        
-        res.extend( ['ntdaddy.aspx','ntdaddy.mspx','cmd.mspx'] )
-        res.extend( ['shell.asp','zehir4.asp','rhtools.asp','fso.asp'])
-        res.extend( ['shell.aspx','zehir4.aspx','rhtools.aspx','fso.aspx'])
-        res.extend( ['shell.mspx','zehir4.mspx','rhtools.mspx','fso.mspx'])
-        res.extend( ['kshell.asp','aspydrv.asp','kacak.asp'])
-        res.extend( ['kshell.aspx','aspydrv.aspx','kacak.aspx'])
-        res.extend( ['kshell.mspx','aspydrv.mspx','kacak.mspx'])  
-        
-        # Other
-        res.extend( ['cmd.cfm', 'cfexec.cfm'] )
-        res.extend( ['shell.cfm','shell.do','shell.nsf','shell.d2w','shell.GPL'])
-        res.extend( ['shell.show','shell.py'])
-        res.extend( ['cmd.do','cmd.nsf','cmd.d2w','cmd.GPL'])
-        res.extend( ['cmd.show','cmd.py'])
-        res.extend( ['cmd.c','exploit.c','0wn3d.c'])
-        res.extend( ['cmd.sh','cmd.js','shell.js'])        
-        res.extend( ['list.sh','up.sh','nc.exe','netcat.exe','socat.exe'])
-        res.extend( ['cmd.pl'])
-        return res
+                v.setURL(response.getURL())
+                msg = 'A web backdoor was found at: "%s"; this could ' \
+                'indicate that the server was hacked.' % v.getURL()
+                v.setDesc(msg)
+                kb.kb.append(self, 'backdoors', v)
+                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
 
-    def getOptions( self ):
+                fuzzable_requests = self._createFuzzableRequests(response)
+                self._fuzzable_requests_to_return += fuzzable_requests
+            
+    def _is_possible_backdoor(self, response):
+        '''
+        Heuristic to infer if the content of httpResponse has the pattern of a
+        backdoor response.
+        
+        @return: A bool value
+        '''
+        if response.getCode() in xrange(200, 300):
+            body_text = response.getBody()
+            
+            # First try to match at least one regex.
+            for re_patt in BACKDOOR_RE_COLLECTION:
+                if re.search(re_patt, body_text, re.I):
+                    return True
+    
+            # If no regex matched then try with keywords. At least 2 should be
+            # contained in 'body_text' to succeed.
+            times = 0
+            for back_kw in BACKDOOR_KEYWORDS:
+                if re.search(back_kw, body_text, re.I):
+                    times += 1
+                    if times == 2:
+                        return True
+        return False
+
+    def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = optionList()
         return ol
 
-    def setOptions( self, OptionList ):
+    def setOptions(self, OptionList):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptions().
         
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         pass
 
-    def getPluginDeps( self ):
+    def getPluginDeps(self):
         '''
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
         return []
 
-    def getLongDesc( self ):
+    def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
