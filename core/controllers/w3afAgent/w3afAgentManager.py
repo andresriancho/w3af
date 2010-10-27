@@ -201,7 +201,7 @@ class w3afAgentManager( w3afThread ):
         # Do an extrusion scan and return the inbound open ports
         es = extrusionScanner( self._exec_method )
         try:
-            inbound_port = es.getinbound_port()
+            inbound_port = es.getInboundPort()
         except Exception, e:
             
             om.out.error( 'The extrusion scan failed.' )
