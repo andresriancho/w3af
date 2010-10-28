@@ -117,7 +117,7 @@ class osCommandingShell(baseAttackPlugin):
         # kb.kb.append( self, 'osCommanding', v )
         exploitDc = vuln.getDc()
         
-        if exploitDc == None:
+        if exploitDc is None:
             om.out.error('You hitted bug #1948260. Please report how to reproduce it here:')
             bug_URL = 'https://sourceforge.net/tracker/index.php?func=detail&aid=1948260'
             bug_URL += '&group_id=170274&atid=853652'

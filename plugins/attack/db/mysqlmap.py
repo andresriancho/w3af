@@ -503,7 +503,7 @@ class MySQLMap(Common):
         
         union = self.unionCheck()
         # union = http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
-        if union == None:
+        if union is None:
             raise Exception('Failed to find a valid SQL UNION.')
         
         if self.args.injectionMethod == "numeric":

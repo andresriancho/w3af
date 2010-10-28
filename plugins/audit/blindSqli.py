@@ -70,11 +70,11 @@ class blindSqli(baseAuditPlugin):
             self._blind_sqli_time_delay.setUrlOpener( self._urlOpener )
             time_delay = self._blind_sqli_time_delay.is_injectable( freq, parameter )
             
-            if response_diff != None:
+            if response_diff is not None:
                 om.out.vulnerability( response_diff.getDesc() )
                 kb.kb.append(self, 'blindSqli', response_diff)
             
-            elif time_delay != None:
+            elif time_delay is not None:
                 om.out.vulnerability( time_delay.getDesc() )
                 kb.kb.append(self, 'blindSqli', time_delay)
                 

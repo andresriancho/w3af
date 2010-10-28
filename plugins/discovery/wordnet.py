@@ -214,7 +214,7 @@ class wordnet(baseDiscoveryPlugin):
         
         @return: An URL list.
         '''
-        if analyzed_variable == None:
+        if analyzed_variable is None:
             # The URL was analyzed
             url = fuzzableRequest.getURL()
             fname = urlParser.getFileName( url )

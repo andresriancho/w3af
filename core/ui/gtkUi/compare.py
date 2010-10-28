@@ -193,7 +193,7 @@ class Compare(entries.RememberingWindow):
             # more than one, we can delete any
             self.delbut.set_sensitive(True)
 
-        if len([r[2] for r in self.elements if r[2] != None]) >= 3:
+        if len([r[2] for r in self.elements if r[2] is not None]) >= 3:
             self.clusterbut.set_sensitive(True)
 
         # put the text in the right and adjust the page selector 

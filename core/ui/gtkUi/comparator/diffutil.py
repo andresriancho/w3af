@@ -285,7 +285,7 @@ class Differ(object):
         elif len(sequences)==2:
             matcher = IncrementalSequenceMatcher(None, sequences[1], sequences[0])
             work = matcher.initialise()
-            while work.next() == None:
+            while work.next() is None:
                 yield None
             diffs = [matcher.get_difference_opcodes(), []]
         elif len(sequences)==3:
@@ -293,7 +293,7 @@ class Differ(object):
             for i in range(2):
                 matcher = IncrementalSequenceMatcher(None, sequences[1], sequences[i*2])
                 work = matcher.initialise()
-                while work.next() == None:
+                while work.next() is None:
                     yield None
                 diffs[i] = matcher.get_difference_opcodes()
         else:

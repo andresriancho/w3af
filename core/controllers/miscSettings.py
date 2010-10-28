@@ -48,7 +48,7 @@ class miscSettings(configurable):
         #
         # User configured variables
         #
-        if cf.cf.getData('autoDependencies') == None:
+        if cf.cf.getData('autoDependencies') is None:
             # It's the first time I'm runned
             cf.cf.save('fuzzableCookie', False )
             cf.cf.save('fuzzFileContent', True )

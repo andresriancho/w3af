@@ -146,7 +146,7 @@ class httpAuthDetect(baseGrepPlugin):
                 break
         
         
-        if realm == None:
+        if realm is None:
             # Report this strange case
             i = info.info()
             i.setName('Authentication without www-authenticate header')

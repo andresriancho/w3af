@@ -98,7 +98,7 @@ class knowledgeBase:
             if name not in self._kb.keys():
                 res = []
             else:
-                if variableName == None:
+                if variableName is None:
                     res = self._kb[name]
                 elif variableName not in self._kb[name].keys():
                     res = []

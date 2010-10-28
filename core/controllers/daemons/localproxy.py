@@ -74,7 +74,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
                 del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
                 
-                if head == body == None:
+                if head == body is None:
                     # The request was dropped!
                     # We close the connection to the browser and exit
                     self.rfile.close()

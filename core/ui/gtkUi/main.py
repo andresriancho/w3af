@@ -491,7 +491,7 @@ class MainApp(object):
         
         # We know that we have focus.... but... is the selection a plugin ?
         (path, column) = treeToUse.get_cursor()
-        if path != None and len(path) > 1:
+        if path is not None and len(path) > 1:
             # Excellent! it is over a plugin!
             # enable the menu option
             ag = self._actiongroup.get_action("EditPlugin")

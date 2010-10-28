@@ -71,7 +71,7 @@ class wizard:
         self._already_asked.append( self._currentQuestion )
 
         # Special case to end iteration
-        if self._nextQuestionId == None:
+        if self._nextQuestionId is None:
             return None
 
         # Find the next one

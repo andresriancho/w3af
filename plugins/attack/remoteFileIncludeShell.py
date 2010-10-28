@@ -100,7 +100,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             raise w3afException(msg)
         
         rfi_vulns = kb.kb.getData( 'remoteFileInclude' , 'remoteFileInclude' )
-        if vuln_to_exploit != None:
+        if vuln_to_exploit is not None:
             rfi_vulns = [ v for v in rfi_vulns if v.getId() == vuln_to_exploit ]
         
         if len( rfi_vulns ) == 0:

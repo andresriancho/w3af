@@ -178,7 +178,7 @@ def main():
             usage()
             sys.exit()
 
-    if type == None:
+    if type is None:
             usage()
             sys.exit()
     else:

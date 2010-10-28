@@ -220,7 +220,7 @@ class clusterCellData(gtk.TreeView):
         # It seems that python-cluster compares each pair (a,b) more than once!!
         # So I implemented this ratio cache...
         in_cache = self._distance_cache.get( (a.getId(), b.getId()), None )
-        if in_cache != None:
+        if in_cache is not None:
             return in_cache
             
         # Not in cache, perform calculations...
@@ -381,7 +381,7 @@ class clusterCellData(gtk.TreeView):
         
     def handlePopup(self, treeview, event, popup_win):
         current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = self.getCurrentCellData(treeview, event)
-        if cell_x != None:
+        if cell_x is not None:
             # Search the Id and show the data
             # FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)
             # I'm talking about the self._colDict[ current_column ]!

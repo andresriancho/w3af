@@ -132,7 +132,7 @@ class TestHTTPSClient(unittest.TestCase):
     def testSendRequestToRemote(self):
         self.client._putRequest('66.35.250.203', 'https://www.sourceforge.net')
         timestamp, headers = self.client._getReply()
-        self.failUnless(headers != None and headers.startswith('HTTP/'))
+        self.failUnless(headers is not None and headers.startswith('HTTP/'))
 
 
 if __name__ == '__main__':

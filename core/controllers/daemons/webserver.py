@@ -106,7 +106,7 @@ class w3afWebHandler(BaseHTTPRequestHandler):
                     # This aint nice, but this aint a complete web server implementation
                     # it is only here to serve some files to "victim" web servers
                     type, encoding = mimetypes.guess_type( self.path )
-                    if type != None:
+                    if type is not None:
                         self.send_header('Content-type',    type )
                     else:
                         self.send_header('Content-type',    'text/html')

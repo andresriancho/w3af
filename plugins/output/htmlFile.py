@@ -381,7 +381,7 @@ class htmlFile(baseOutputPlugin):
         self._write_to_file('</BODY>'+ '\n' + '</HTML>'+ '\n')
         
         # Close the file.
-        if self._file != None:
+        if self._file is not None:
             self._file.close()
             
     def getLongDesc( self ):

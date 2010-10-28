@@ -58,7 +58,7 @@ class feeds(baseGrepPlugin):
         dom = response.getDOM()
         
         # In some strange cases, we fail to normalize the document
-        if dom != None:
+        if dom is not None:
             
             for tag_name, attr_name, feed_type in self._rss_tag_attr:
                 

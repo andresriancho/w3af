@@ -67,7 +67,7 @@ class objects(baseGrepPlugin):
             dom = response.getDOM()
 
             # In some strange cases, we fail to normalize the document
-            if dom != None:
+            if dom is not None:
             
                 for tag_name in self._tag_names:
                     

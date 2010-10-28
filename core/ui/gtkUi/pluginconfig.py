@@ -371,7 +371,7 @@ class PluginTree(gtk.TreeView):
             _time = event.time
             (path, column) = tv.get_cursor()
             # Is it over a plugin name ?
-            if path != None and len(path) > 1:
+            if path is not None and len(path) > 1:
                 # Get the information about the click
                 pname = self.treestore[path][3]
                 ptype = self.treestore[path[:1]][3]
@@ -671,7 +671,7 @@ class PluginConfigBody(gtk.VBox):
         #self.out_plugin_tree
         (path, column) = treeToUse.get_cursor()
         # Is it over a plugin name ?
-        if path != None and len(path) > 1:
+        if path is not None and len(path) > 1:
             # Get the information about the click
             pname = treeToUse.treestore[path][3]
             ptype = treeToUse.treestore[path[:1]][3]

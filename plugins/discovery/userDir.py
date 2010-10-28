@@ -301,7 +301,7 @@ class userDir(baseDiscoveryPlugin):
         '''
         res = []
         
-        if userList == None:
+        if userList is None:
             userList = self._get_users()
             
         for user in userList:

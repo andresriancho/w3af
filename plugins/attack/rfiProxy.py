@@ -133,7 +133,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         
     def stop(self):
         if self._running:
-            if self._wS != None:
+            if self._wS is not None:
                 self._wS.stop()
             self._proxy.server_close()
             self._go = False
@@ -182,7 +182,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         if self._rfiConnGenerator == '':
             # If user failed to configure self._rfiConnGenerator we will run a webserver
             # and configure the _rfiConnGenerator attr for him
-            if self._wS == None:
+            if self._wS is None:
                 om.out.information( 'Running a local httpd to serve the RFI connection generator to remote web app.' )
                 webroot = os.path.join('plugins', 'attack', 'rfiProxy')
                 self._wS = webserver( self._proxyPublicIP, self._httpdPort , webroot )

@@ -148,7 +148,7 @@ class proxy(w3afThread):
         """
         Starts the proxy daemon; usually this method isn't called directly. In most cases you'll call start2()
         """
-        if self._proxyHandler == None:
+        if self._proxyHandler is None:
             self._proxyHandler = w3afProxyHandler
         
         # Timeout to wait for thread starting

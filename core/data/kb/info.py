@@ -89,7 +89,7 @@ class info(dict):
         return self._uri
         
     def getDesc( self ):
-        if self._id != None and self._id != 0:
+        if self._id is not None and self._id != 0:
             if not self._desc.strip().endswith('.'):
                 self._desc += '.'
             

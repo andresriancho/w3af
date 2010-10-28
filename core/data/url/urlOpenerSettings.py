@@ -93,7 +93,7 @@ class urlOpenerSettings( configurable ):
         self._manglePlugins = []
 
         # User configured variables
-        if cf.cf.getData('timeout') == None:
+        if cf.cf.getData('timeout') is None:
             # This is the first time we are executed...
         
             cf.cf.save('timeout', 15 )
@@ -287,7 +287,7 @@ class urlOpenerSettings( configurable ):
     def buildOpeners(self):
         om.out.debug( 'Called buildOpeners')
         
-        if self._cookieHandler == None and not cf.cf.getData('ignoreSessCookies'):
+        if self._cookieHandler is None and not cf.cf.getData('ignoreSessCookies'):
             cj = self._cookielib.MozillaCookieJar()
             self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
         

@@ -28,7 +28,7 @@ def get_common_directories( os=None ):
     @return: A list of common directories
     '''
     directories = []
-    if os == 'linux' or os == None:
+    if os == 'linux' or os is None:
         directories.append("/bin/")
         directories.append("/boot/")
         directories.append("/cdrom/")
@@ -50,7 +50,7 @@ def get_common_directories( os=None ):
         directories.append("/var/")
         directories.append("/htdocs/")
     
-    if os == 'windows' or os == None:
+    if os == 'windows' or os is None:
         directories.append(r"C:\\")
         directories.append(r"D:\\")
         directories.append(r"E:\\")

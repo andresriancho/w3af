@@ -71,7 +71,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         @return: True if we can exploit a vuln stored in the kb.
         '''
         vulns = self.getExploitableVulns()
-        if vulnToExploit != None:
+        if vulnToExploit is not None:
             vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
             if vulns:
                 return True
@@ -147,13 +147,13 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
 
         for vuln in self.getExploitableVulns():
             
-            if vulnToExploit != None:
+            if vulnToExploit is not None:
                 if vulnToExploit != vuln.getId():
                     continue
                     
             # Try to get a shell using a vuln
             s = self._generateShell(vuln)
-            if s != None:
+            if s is not None:
                 kb.kb.append( self, 'shell', s )
                 if self._generateOnlyOne:
                     # A shell was generated, I only need one point of exec.

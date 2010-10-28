@@ -116,7 +116,7 @@ def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] ,
     #
     # Get the original response, and apply it to all mutants
     #
-    if oResponse != None:
+    if oResponse is not None:
         for m in result:
             m.setOriginalResponseBody( oResponse )
         

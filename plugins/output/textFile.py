@@ -92,7 +92,7 @@ class textFile(baseOutputPlugin):
             raise w3afException( msg )
         
     def __del__(self):
-        if self._file != None:
+        if self._file is not None:
             self._file.close()
     
     def _write_to_file( self, msg ):

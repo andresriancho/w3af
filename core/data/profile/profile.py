@@ -52,7 +52,7 @@ class profile:
         # Save the profile_file_name variable
         self._profile_file_name = profile_file_name
     
-        if profile_file_name != None:
+        if profile_file_name is not None:
             # Verify if I can find the file
             if not os.path.exists(profile_file_name):
 
@@ -358,9 +358,9 @@ class profile:
         
         @return: None
         '''
-        if file_name == '' and self._profile_file_name == None:
+        if file_name == '' and self._profile_file_name is None:
             raise w3afException('Error while saving profile, you didn\'t specified the file name.')
-        elif file_name != '' and self._profile_file_name == None:
+        elif file_name != '' and self._profile_file_name is None:
             # The user is specifiyng a file_name!
             if not file_name.endswith('.pw3af'):
                 file_name += '.pw3af'

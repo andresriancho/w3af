@@ -78,7 +78,7 @@ class content_negotiation(baseDiscoveryPlugin):
             
         else:
             
-            if self._is_vulnerable( fuzzableRequest ) == None:
+            if self._is_vulnerable( fuzzableRequest ) is None:
                 # I can't say if it's vulnerable or not (yet), save the current directory to be
                 # included in the bruteforcing process, and return.
                 self._to_bruteforce.append(fuzzableRequest.getURL())
@@ -227,7 +227,7 @@ class content_negotiation(baseDiscoveryPlugin):
         
         @return: True if vulnerable.
         '''
-        if self._is_vulnerable_result != None:
+        if self._is_vulnerable_result is not None:
             # The test was already performed, we return the old response
             return self._is_vulnerable_result
             

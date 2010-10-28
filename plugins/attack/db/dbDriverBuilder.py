@@ -68,7 +68,7 @@ class dbDriverBuilder:
         '''
         if 'type' not in vuln:
             vuln = self._getType( vuln )
-            if vuln == None:
+            if vuln is None:
                 return None
         
         driverList = []

@@ -156,7 +156,7 @@ class w3afAgentClient( threading.Thread ):
             if is_routable(ip):
                 self.socks_bind_address = ip
                 break
-        if self.socks_bind_address == None:
+        if self.socks_bind_address is None:
             self.socks_bind_address = ipaddrlist[0]
 
         log.info( 'The chosen bind adress is', self.socks_bind_address )

@@ -1314,7 +1314,7 @@ class w3afCore(object):
         Raise a w3afException if the profile to load has some type of problem.
         '''
         # Clear all enabled plugins if profile_name is None
-        if profile_name == None:
+        if profile_name is None:
             self._zeroSelectedPlugins()
             return
         

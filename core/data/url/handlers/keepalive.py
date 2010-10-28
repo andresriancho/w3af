@@ -239,7 +239,7 @@ class HTTPResponse(httplib.HTTPResponse):
             self.close()
             return ''
             
-        if self._multiread == None:
+        if self._multiread is None:
             #read all
             self._multiread = self._raw_read()  
             
@@ -360,7 +360,7 @@ class ConnectionManager:
     
     def get_connectionNumber( self, host=None ):
         res = 0
-        if host == None:
+        if host is None:
             for i in self._hostmap:
                 res += len(self._hostmap[ i ])
         else:

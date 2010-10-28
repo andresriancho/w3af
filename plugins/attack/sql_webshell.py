@@ -79,7 +79,7 @@ class sql_webshell(baseAttackPlugin):
         '''
         om.out.debug( 'Starting sql_webshell fastExploit.' )
         
-        if self._url == None or self._method == None or self._data == None or self._injvar == None:
+        if self._url is None or self._method is None or self._data is None or self._injvar is None:
             raise w3afException('You have to configure the plugin parameters')
         else:
             
@@ -111,7 +111,7 @@ class sql_webshell(baseAttackPlugin):
                 msg += '. Please wait...'
                 om.out.console( msg )
                 shell_obj = self._generateShell( vuln_obj )
-                if shell_obj != None:
+                if shell_obj is not None:
                     kb.kb.append( self, 'shell', shell_obj )
                     return [shell_obj, ]
                     
@@ -136,7 +136,7 @@ class sql_webshell(baseAttackPlugin):
         '''
         vulns = self.getExploitableVulns()
 
-        if vulnToExploit != None:
+        if vulnToExploit is not None:
             vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
             
         if len(vulns) != 0:
@@ -169,7 +169,7 @@ class sql_webshell(baseAttackPlugin):
             for v in vulns:
             
                 # Filter the vuln that was selected by the user
-                if vulnToExploit != None:
+                if vulnToExploit is not None:
                     if vulnToExploit != v.getId():
                         continue
             
@@ -216,7 +216,7 @@ class sql_webshell(baseAttackPlugin):
             
         dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal )
         driver = dbBuilder.getDriverForVuln( vuln_obj )
-        if driver == None:
+        if driver is None:
             return None
         else:
             # We have a driver, now, using this driver, we have to create the webshell in the

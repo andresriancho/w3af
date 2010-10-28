@@ -60,7 +60,7 @@ class mangleHandler(urllib2.BaseHandler):
             headers[ i ] = request.unredirected_hdrs[ i ]
         fr.setHeaders( headers )
         
-        if request.get_data() == None:
+        if request.get_data() is None:
             fr.setData( '' )
         else:
             fr.setData( request.get_data() )
@@ -107,7 +107,7 @@ class mangleHandler(urllib2.BaseHandler):
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
             
-            if response._connection.sock == None:
+            if response._connection.sock is None:
                 # This fixes bug #1982106
                 # https://sourceforge.net/tracker/index.php?func=detail&aid=1982106&group_id=170274&atid=853652
                 # Returning None is like saying "I don't know what to do with this, let the next handler manage it".

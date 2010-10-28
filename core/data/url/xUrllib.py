@@ -201,7 +201,7 @@ class xUrllib:
     
     def _init( self ):
         if self.settings.needUpdate or \
-        self._opener == None or self._cacheOpener == None:
+        self._opener is None or self._cacheOpener is None:
         
             self.settings.needUpdate = False
             self.settings.buildOpeners()
@@ -330,7 +330,7 @@ class xUrllib:
                     om.out.error( msg )
                     raise w3afException( msg )
         
-        if resource_length != None:
+        if resource_length is not None:
             return resource_length
         else:
             msg = 'The response didn\'t contain a content-length header. Unable to return the'

@@ -46,7 +46,7 @@ class targetSettings(configurable):
     
     def __init__( self ):
         # User configured variables
-        #if cf.cf.getData('targets') == None:
+        #if cf.cf.getData('targets') is None:
         if True:
             # It's the first time I'm runned
             # Set the defaults in the config

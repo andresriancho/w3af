@@ -131,7 +131,7 @@ class Clue:
     def _updateDigest(self):
         """Updates header fingerprint.
         """
-        assert self.__tmphdrs != None
+        assert self.__tmphdrs is not None
         fingerprint = hashfn(self.__tmphdrs)
         self.__tmphdrs = None
         self.info['digest'] = fingerprint.hexdigest()

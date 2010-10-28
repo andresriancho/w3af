@@ -301,7 +301,7 @@ class ProfileList(gtk.TreeView):
         
         (path, column) = tv.get_cursor()
         # Is it over a plugin name ?
-        if path != None and len(path) == 1:
+        if path is not None and len(path) == 1:
             # Enable/disable the options in function of state
             newstatus = self._getActionsSensitivity(path)
             children = gm.get_children()

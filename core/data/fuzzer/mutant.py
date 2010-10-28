@@ -110,7 +110,7 @@ class mutant:
         body of the response that is generated when w3af requests the fuzzable request for
         the first time.
         '''
-        if self._originalResponseBody == None:
+        if self._originalResponseBody is None:
             raise Exception('[mutant error] You should set the original response body before getting its value!')
         else:
             return self._originalResponseBody

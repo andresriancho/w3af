@@ -272,7 +272,7 @@ class fuzzableRequest:
             self._cookie = c
         elif isinstance( c, basestring ):
             self._cookie = cookie( c )
-        elif c == None:
+        elif c is None:
             self._cookie = None
         else:
             om.out.error('[fuzzableRequest error] setCookie received: "' + str(type(c)) + '" , "' + repr(c) + '"'  )

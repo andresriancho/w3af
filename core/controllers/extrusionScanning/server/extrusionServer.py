@@ -116,7 +116,7 @@ class extrusionServer:
         to connect back to the extrusionServer.
         '''
         
-        if self._host == None:
+        if self._host is None:
             # This is hard to do...
             possiblePackets = []
             possibleHosts = {}
@@ -125,7 +125,7 @@ class extrusionServer:
             
             for p in packetList:
                 # Analyze TCP
-                if p[TCP] != None and p[TCP].dport in self._tcpPortList and p[IP].dst in get_if_addr( self._iface )\
+                if p[TCP] is not None and p[TCP].dport in self._tcpPortList and p[IP].dst in get_if_addr( self._iface )\
                 and p[TCP].flags == 0x2: # is SYN
                     possiblePackets.append( p )
                     if p[IP].src in possibleHosts:
@@ -134,7 +134,7 @@ class extrusionServer:
                         possibleHosts[ p[IP].src ] = 1
                 
                 # Analyze UDP
-                if p[UDP] != None and p[UDP].dport in self._udpPortList and p[IP].dst in get_if_addr( self._iface ):
+                if p[UDP] is not None and p[UDP].dport in self._udpPortList and p[IP].dst in get_if_addr( self._iface ):
                     possiblePackets.append( p )
                     if p[IP].src in possibleHosts:
                         possibleHosts[ p[IP].src ] += 1
@@ -158,13 +158,13 @@ class extrusionServer:
             
             for p in possiblePackets:
                 if p[IP].src in goodHosts:
-                    if p[TCP] != None:
+                    if p[TCP] is not None:
                         tuple = ( p[IP].src , p[TCP].dport, 'TCP' )
                         if tuple not in goodPorts:
                             goodPorts.append( tuple )
                             om.out.debug('[extrusionServer] Adding ' + str(tuple) )
                     
-                    if p[UDP] != None:
+                    if p[UDP] is not None:
                         tuple = ( p[IP].src , p[UDP].dport, 'UDP' )
                         if tuple not in goodPorts:
                             goodPorts.append( tuple )
@@ -175,13 +175,13 @@ class extrusionServer:
         else:
             goodPorts = []
             for p in packetList:
-                if p[TCP] != None and p[TCP].dport in self._tcpPortList and p[IP].src == self._host \
+                if p[TCP] is not None and p[TCP].dport in self._tcpPortList and p[IP].src == self._host \
                 and p[TCP].flags == 0x2:
                     
                     if ( p[IP].src , p[TCP].dport, 'TCP') not in goodPorts:
                         goodPorts.append( ( p[IP].src , p[TCP].dport, 'TCP') )
                 
-                if p[UDP] != None and p[UDP].dport in self._udpPortList and p[IP].src == self._host:
+                if p[UDP] is not None and p[UDP].dport in self._udpPortList and p[IP].src == self._host:
 
                     if ( p[IP].src , p[UDP].dport, 'UDP') not in goodPorts:
                         goodPorts.append( ( p[IP].src , p[UDP].dport, 'UDP') )

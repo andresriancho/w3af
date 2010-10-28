@@ -248,7 +248,7 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         Stop the server, remove the file from the webroot.
         '''
-        if self._webserver != None:
+        if self._webserver is not None:
             self._webserver.stop()
             # Remove the file
             filename = urlParser.getFileName(self._rfi_url)

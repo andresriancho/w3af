@@ -349,7 +349,7 @@ class httpResponse(object):
         res = '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL()
 
         # extra info
-        if self.id != None:
+        if self.id is not None:
             res += ' | id:'+str(self.id)
 
         if self._fromCache != False:

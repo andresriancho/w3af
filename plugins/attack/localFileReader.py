@@ -352,7 +352,7 @@ class fileReaderShell(read_shell):
             elif result.count('</a>]: failed to open stream:'):
                 filtered = FAILED_STREAM
                 
-        elif self._application_file_not_found_error != None:
+        elif self._application_file_not_found_error is not None:
             #   The application file not found error string that I have has the "not_exist0.txt"
             #   string in it, so I'm going to remove that string from it.
             app_error = self._application_file_not_found_error.replace("not_exist0.txt",  '')

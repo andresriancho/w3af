@@ -82,7 +82,7 @@ class history:
         self._pointer += 1
 
         if self._pointer == sl:
-            if self._pending != None:
+            if self._pending is not None:
                 result = self._pending
                 self._pending = None
             else:

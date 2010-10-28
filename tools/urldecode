@@ -59,7 +59,7 @@ def main():
             usage()
             sys.exit()
 
-    if decode == None:
+    if decode is None:
             usage()
             sys.exit()
     else:

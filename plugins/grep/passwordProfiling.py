@@ -147,7 +147,7 @@ class passwordProfiling(baseGrepPlugin):
         res = {}
         for plugin in self._plugins:
             wordMap = plugin.getWords( response )
-            if wordMap != None:
+            if wordMap is not None:
                 # If a plugin returned something thats not None, then we are done.
                 # this plugins only return a something different of None of they found something
                 res = wordMap
