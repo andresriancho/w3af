@@ -372,7 +372,7 @@ class consoleUi:
         return ''.join(self._line)
 
     def _parseLine(self, line=None):
-        if line==None:
+        if line is None:
             line = self._getLineStr()
         result = []
         parser = shlex(line)
