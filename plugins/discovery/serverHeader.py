@@ -91,14 +91,18 @@ class serverHeader(baseDiscoveryPlugin):
                 else:
                     # strange !
                     i = info.info()
-                    i.setName('Omited server header')
+                    i.setName('Omitted server header')
                     i.setId( response.getId() )
-                    msg = 'The remote HTTP Server ommited the "server" header in it\'s response.'
+                    msg = 'The remote HTTP Server omitted the "server" header in it\'s response.'
                     i.setDesc( msg )
                     om.out.information( i.getDesc() )
                     
                     # Save the results in the KB so that other plugins can use this information
-                    kb.kb.append( self, 'omitedHeader', i )
+                    kb.kb.append( self, 'omittedHeader', i )
+
+                    # Also save this for easy internal use
+                    # other plugins can use this information
+                    kb.kb.save( self , 'serverString' , '' )
                     
                 if self._exec_one_time:
                     self._exec = False
@@ -122,44 +126,42 @@ class serverHeader(baseDiscoveryPlugin):
                 for i in [ 'ASPNET', 'POWERED']:
                     if i in header_name.upper() or header_name.upper() in i:
                         powered_by = response.getHeaders()[header_name]
-                        
-                        i = info.info()
-                        i.setName('Powered by header')
-                        i.setId( response.getId() )
-                        msg = '"' + header_name + '" header for this HTTP server is: "'
-                        msg += powered_by + '".'
-                        i.setDesc( msg )
-                        i['poweredBy'] = powered_by
-                        om.out.information( i.getDesc() )
-                        i.addToHighlight( header_name + ':' )
-                        
-                        # Save the results in the KB so that other plugins can use this information
-                        
-                        # Before knowing that some servers may return more than one poweredby
-                        # header I had:
-                        # - kb.kb.save( self , 'poweredBy' , poweredBy )
-                        # But I have seen an IIS server with PHP that returns both the ASP.NET and
-                        # the PHP headers
+
+                        #
+                        #    Check if I already have this info in the KB
+                        #
                         powered_by_in_kb = [ j['poweredBy'] for j in kb.kb.getData( 'serverHeader', 'poweredBy' ) ]
                         if powered_by not in powered_by_in_kb:
-                            kb.kb.append( self , 'poweredBy' , i )
                         
-                        # Also save this for easy internal use
-                        kb.kb.append( self , 'poweredByString' , powered_by )
-                        
-                        if self._exec_one_time:
-                            self._x_powered = False          
+                            #
+                            #    I don't have it in the KB, so I need to add it,
+                            #
+                            i = info.info()
+                            i.setName('Powered by header')
+                            i.setId( response.getId() )
+                            msg = '"' + header_name + '" header for this HTTP server is: "'
+                            msg += powered_by + '".'
+                            i.setDesc( msg )
+                            i['poweredBy'] = powered_by
+                            om.out.information( i.getDesc() )
+                            i.addToHighlight( header_name + ':' )
+                            
+                            #    Save the results in the KB so that other plugins can use this information
+                            # Before knowing that some servers may return more than one poweredby
+                            # header I had:
+                            # - kb.kb.save( self , 'poweredBy' , poweredBy )
+                            # But I have seen an IIS server with PHP that returns both the ASP.NET and
+                            # the PHP headers
+                            powered_by_in_kb = [ j['poweredBy'] for j in kb.kb.getData( 'serverHeader', 'poweredBy' ) ]
+                            if powered_by not in powered_by_in_kb:
+                                kb.kb.append( self , 'poweredBy' , i )
+                            
+                                # Also save this for easy internal use
+                                kb.kb.append( self , 'poweredByString' , powered_by )
+                            
+                            if self._exec_one_time:
+                                self._x_powered = False          
 
-            # not as strange as the one above, this is because of a config or simply
-            # cause I requested a static "html" file.
-            if powered_by == '':
-                
-                # I will save the server header as the poweredBy, its the best choice I have
-                # right now
-                if kb.kb.getData( 'serverHeader' , 'serverString' ) not in \
-                kb.kb.getData( 'serverHeader', 'poweredByString' ):
-                    kb.kb.append( self , 'poweredByString' , \
-                                            kb.kb.getData( 'serverHeader' , 'serverString' ) )
     
     def getOptions( self ):
         '''
