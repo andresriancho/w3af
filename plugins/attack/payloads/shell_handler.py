@@ -93,7 +93,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
                 if h.lower().count( real_extension ):
                     known_framework.append( (filename, real_extension) )
             
-            # extension here is the parameter passed by the user, that can be '' , this happends in davShell
+            # extension here is the parameter passed by the user, that can be '' , this happens in davShell
             uncertain_framework.append( (filename, real_extension) )
     
     # We keep the order, first the ones we think could work, then the ones that may
