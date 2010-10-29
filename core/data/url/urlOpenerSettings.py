@@ -202,17 +202,41 @@ class urlOpenerSettings( configurable ):
         return cf.cf.getData('User-Agent')
         
     def setProxy( self, ip , port):
-        om.out.debug( 'Called SetProxy(' + ip + ',' + str(port) + ')')
+        '''
+        Saves the proxy information and creates the handler.
+        
+        If the information is invalid it will set self._proxyHandler to None,
+        so no proxy is used.
+        
+        @return: None
+        '''
+        om.out.debug( 'Called setProxy(%s,%s)' % (ip, port) )
+        
+        if not ip:
+            #    The user doesn't want a proxy anymore
+            cf.cf.save('proxyAddress', '' )
+            cf.cf.save('proxyPort', '' )         
+            self._proxyHandler = None
+            return
+            
         if port > 65535 or port < 1:
+            #    The user entered something invalid
+            self._proxyHandler = None
             raise w3afException('Invalid port number: '+ str(port) )
 
+        #
+        #    Great, we have all valid information.
+        #
         cf.cf.save('proxyAddress', ip )
         cf.cf.save('proxyPort', port )         
         
-        # Remember that this line:
+        #
+        #    Remember that this line:
+        #
         #proxyMap = { 'http' : "http://" + ip + ":" + str(port) , 'https' : "https://" + ip + ":" + str(port) }
-        # makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
-        # The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
+        #
+        #    makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
+        #    The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
         proxyMap = { 'http' : "http://" + ip + ":" + str(port) }
         self._proxyHandler = self._ulib.ProxyHandler( proxyMap )
 
@@ -291,7 +315,7 @@ class urlOpenerSettings( configurable ):
             cj = self._cookielib.MozillaCookieJar()
             self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
         
-        # Instanciate the handlers passing the proxy as parameter
+        # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
         self._kAHTTPS = kAHTTPS(self.getProxy())
         
