@@ -87,31 +87,33 @@ class fuzzableRequest:
         return result_string
 
     def export( self ):
-      '''
-      @return: a csv str representation of the request
-      '''
-      strRes = ''
-      strRes += self._method + ',' 
-      strRes += self._url
- 
-      if self._method == 'GET': 
-        if self._dc:
-          strRes += '?'
-          for i in self._dc:
-            #
-            #   FIXME: What about repeated parameter names?!
-            #
-            strRes += i + '=' + urllib.quote(str(self._dc[i])) + '&'          
-          strRes = strRes[: -1]
-        strRes += ','
-      else:
-        strRes += ','
-        if self._dc:
-          for i in self._dc:
-            strRes += i + '=' + urllib.quote(str(self._dc[i])) + '&'          
-          strRes = strRes[: -1]
-      return strRes
-                
+        '''
+        METHOD,URL,DC
+        Examples:
+        GET,http://localhost/index.php?abc=123&def=789,
+        POST,http://localhost/index.php,abc=123&def=789
+        
+        @return: a csv str representation of the request
+        '''
+        #
+        #   FIXME: What if a comma is inside the URL or DC?
+        #   TODO: Why don't we export headers and cookies?
+        #
+        str_res = ''
+        str_res += self._method + ',' 
+        str_res += self._url
+
+        if self._method == 'GET': 
+            if self._dc:
+                str_res += '?'
+                str_res += str(self._dc)         
+            str_res += ','
+        else:
+            str_res += ','
+            if self._dc:
+                str_res += str(self._dc)
+        return str_res
+                    
     def sent(self, something_interesting):
         '''
         Checks if the something_interesting was sent in the request.
