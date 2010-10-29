@@ -17,9 +17,14 @@ class interesting_files(base_payload):
         interesting_extensions.append('.readme')
         interesting_extensions.append('.xls')
         interesting_extensions.append('.xlsx')
+        interesting_extensions.append('.docx')
+        interesting_extensions.append('.pptx')
         interesting_extensions.append('.odt')
         interesting_extensions.append('.wri')
-
+        interesting_extensions.append('.config')
+        interesting_extensions.append('.nfo')
+        interesting_extensions.append('.info')
+        
         file_list = []
         file_list.append('passwords')
         file_list.append('passwd')
