@@ -31,7 +31,6 @@ from core.data.options.optionList import optionList
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import os
 import re
 
 
