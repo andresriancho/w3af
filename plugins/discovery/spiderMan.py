@@ -168,7 +168,7 @@ class spiderMan(baseDiscoveryPlugin):
         
         Another feature of this plugin is to save the cookies that are sent by the web application, in order to be able to
         use them in other plugins. So if you have a web application that has a login with cookie session management
-        you should enable this plugin, do the login through the bworser and then let the other plugins spider the rest 
+        you should enable this plugin, do the login through the browser and then let the other plugins spider the rest 
         of the application for you. Important note: If you enable webSpider, you should ignore the "logout" link.
         
         Two configurable parameters exist:

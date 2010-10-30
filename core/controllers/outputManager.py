@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import os,sys
+import os
 from core.controllers.misc.factory import factory
 # severity constants for vuln messages
 import core.data.constants.severity as severity
@@ -86,7 +86,7 @@ class outputManager:
             'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
         '''
         for oPlugin in self._outputPluginList:
-          oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
+            oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
     
     def debug(self, message, newLine = True ):
         '''

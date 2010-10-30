@@ -39,15 +39,14 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.w3afException import w3afException
-from core.controllers.daemons.webserver import webserver
+import core.controllers.daemons.webserver as webserver
 import core.data.constants.w3afPorts as w3afPorts
 
 import os, time
-import re
 
-CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly configured to use.'
-CONFIG_ERROR_MSG += ' Please set the local address and port, or use the official w3af site'
-CONFIG_ERROR_MSG += ' as the target server for remote inclusions.'
+CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly ' \
+'configured to use. Please set the local address and port, or use the ' \
+'official w3af site as the target server for remote inclusions.'
 
 
 class remoteFileInclude(baseAuditPlugin):
@@ -61,7 +60,6 @@ class remoteFileInclude(baseAuditPlugin):
         
         # Internal variables
         self._error_reported = False
-        self._webserver = None
         
         # User configured parameters
         self._rfi_url = ''
@@ -70,7 +68,7 @@ class remoteFileInclude(baseAuditPlugin):
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
         
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Tests an URL for remote file inclusion vulnerabilities.
         
@@ -83,15 +81,15 @@ class remoteFileInclude(baseAuditPlugin):
             raise w3afException(CONFIG_ERROR_MSG)
         
         if not self._error_reported:
-            # The plugin is going to use two different techniques:
-            # 1- create a request that will include a file from the w3af official site
-            self._local_test_inclusion( freq )
+            # 1- create a request that will include a file from a local web server
+            self._local_test_inclusion(freq)
             
-            # 2- create a request that will include a file from a local web server        
+            # The plugin is going to use two different techniques:
+            # 2- create a request that will include a file from the w3af official site
             if self._use_w3af_site:
-                self._w3af_site_test_inclusion( freq )
+                self._w3af_site_test_inclusion(freq)
                 
-        self._tm.join( self )
+        self._tm.join(self)
     
     def _correctly_configured(self):
         '''
@@ -110,28 +108,38 @@ class remoteFileInclude(baseAuditPlugin):
         @return: None, everything is saved to the kb
         '''
         #
-        #   The listen address is an empty string when I have no default route
+        # The listen address is an empty string when I have no default route
         #
-        #   Only work if:
-        #       - The listen address is private and the target address is private
-        #       - The listen address is public and the target address is public
+        # Only work if:
+        #   - The listen address is private and the target address is private
+        #   - The listen address is public and the target address is public
         #
         if self._listen_address == '':
             return
+        
+        is_listen_priv = is_private_site(self._listen_address)
+        is_target_priv = is_private_site(urlParser.getDomain(freq.getURL()))
             
-        if (is_private_site(self._listen_address) and is_private_site(urlParser.getDomain(freq.getURL()))) or\
-        (not is_private_site(self._listen_address) and not is_private_site(urlParser.getDomain(freq.getURL()))):
-            om.out.debug( 'RFI test using local web server for URL: ' + freq.getURL() )
+        if (is_listen_priv and is_target_priv) or \
+            not (is_listen_priv or is_target_priv):
+            om.out.debug('RFI test using local web server for URL: ' + freq.getURL())
             om.out.debug('w3af is running a webserver')
-            self._start_server()             
-            
-            # Perform the real work
-            self._test_inclusion( freq )
+            try:
+                # Create file for remote inclusion
+                self._create_file()
                 
-            self._stop_server()
-            
-            # Wait for threads to finish
-            self._tm.join( self )
+                # Start web server
+                webroot = os.path.join(get_home_dir(), 'webroot')
+                webserver.start_webserver(self._listen_address,
+                                          self._listen_port, webroot)
+                
+                # Perform the real work
+                self._test_inclusion(freq)
+                
+                # Wait for threads to finish
+                self._tm.join(self)
+            finally:
+                self._rm_file()
             
     def _w3af_site_test_inclusion(self, freq):
         '''
@@ -143,30 +151,31 @@ class remoteFileInclude(baseAuditPlugin):
         self._rfi_url = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
         self._rfi_result = 'w3af is goood!'
         # Perform the real work
-        self._test_inclusion( freq )
+        self._test_inclusion(freq)
         
-    def _test_inclusion( self, freq ):
+    def _test_inclusion(self, freq):
         '''
         Checks a fuzzableRequest for remote file inclusion bugs.
         
         @return: None
         '''
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant(freq, analyze=False).getBody()
         
-        rfi_url_list = [ self._rfi_url,  ]
-        mutants = createMutants( freq, rfi_url_list, oResponse=oResponse )
+        rfi_url_list = [self._rfi_url]
+        mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
         for mutant in mutants:
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'remoteFileInclude' , 'remoteFileInclude',\
-                                        mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug('remoteFileInclude', 'remoteFileInclude',
+                              mutant.getURL(), mutant.getVar()):
                 
                 targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs , ownerObj=self )
+                self._tm.startFunction(target=self._sendMutant, args=targs,
+                                       ownerObj=self)
                 
-    def _analyzeResult( self, mutant, response ):
+    def _analyzeResult(self, mutant, response):
         '''
         Analyze results of the _sendMutant method.
         '''
@@ -180,16 +189,16 @@ class remoteFileInclude(baseAuditPlugin):
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'remoteFileInclude' , 'remoteFileInclude' ,\
-                                        mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug('remoteFileInclude', 'remoteFileInclude', 
+                                mutant.getURL(), mutant.getVar()):
                 
                 if self._rfi_result in response:
-                    v = vuln.vuln( mutant )
-                    v.setId( response.id )
+                    v = vuln.vuln(mutant)
+                    v.setId(response.id)
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Remote file inclusion vulnerability' )
-                    v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
-                    kb.kb.append( self, 'remoteFileInclude', v )
+                    v.setName('Remote file inclusion vulnerability')
+                    v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                    kb.kb.append(self, 'remoteFileInclude', v)
                 
                 else:
                     #
@@ -204,34 +213,31 @@ class remoteFileInclude(baseAuditPlugin):
                             v.setId( response.id )
                             v.setSeverity(severity.MEDIUM)
                             v.addToHighlight(error)
-                            v.setName( 'Remote file inclusion vulnerability' )
-                            v.setDesc( 'Remote file inclusion was found at: ' + mutant.foundAt() )
-                            kb.kb.append( self, 'remoteFileInclude', v )
+                            v.setName('Remote file inclusion vulnerability')
+                            v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                            kb.kb.append(self, 'remoteFileInclude', v)
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
-        self.printUniq( kb.kb.getData( 'remoteFileInclude', 'remoteFileInclude' ), 'VAR' )
+        self._tm.join(self)
+        self.printUniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
 
-    def _start_server(self):
+    def _create_file(self):
         '''
-        Starts a webserver for including files, and configure the parameters.
+        Create random name file php with random php content. To be used in the
+        remote file inclusion test.
         '''
         # First, generate the php file to be included.
-        rand1 = createRandAlNum( 9 )
-        rand2 = createRandAlNum( 9 )
+        rand1 = createRandAlNum(9)
+        rand2 = createRandAlNum(9)
         filename = createRandAlNum()
-        php_code = '<? \n echo "'
-        php_code += rand1 + '";\n'
-        php_code += ' echo "'
-        php_code += rand2 + '";\n'
-        php_code += ' ?>'
+        php_code = '<? \n echo "%s";\n echo "%s";\n ?>' % (rand1, rand2)
         
         # Write the php to the webroot
-        file_handler = open( os.path.join( get_home_dir(), 'webroot', filename ) , 'w')
-        file_handler.write( php_code )
+        file_handler = open(os.path.join(get_home_dir(), 'webroot', filename), 'w')
+        file_handler.write(php_code)
         file_handler.close()
         
         # Define the required parameters
@@ -239,23 +245,15 @@ class remoteFileInclude(baseAuditPlugin):
         self._rfi_url += '/' + filename
         self._rfi_result = rand1 + rand2
         
-        webroot = os.path.join(get_home_dir(), 'webroot')
-        self._webserver = webserver( self._listen_address, self._listen_port , webroot )
-        self._webserver.start2()
-        time.sleep( 0.2 )
-        
-    def _stop_server( self ):
+    def _rm_file(self):
         '''
         Stop the server, remove the file from the webroot.
         '''
-        if self._webserver is not None:
-            self._webserver.stop()
-            # Remove the file
-            filename = urlParser.getFileName(self._rfi_url)
-            os.remove( os.path.join(get_home_dir(), 'webroot', filename ) )
-            self._webserver = None
+        # Remove the file
+        filename = urlParser.getFileName(self._rfi_url)
+        os.remove(os.path.join(get_home_dir(), 'webroot', filename))
 
-    def getOptions( self ):
+    def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''

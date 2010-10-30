@@ -26,8 +26,6 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.parsers.urlParser as urlParser
 
-import copy
-
 
 class baseAuditPlugin(basePlugin):
     '''
