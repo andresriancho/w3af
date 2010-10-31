@@ -93,7 +93,8 @@ class creditCards(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html() and response.getCode() == 200:
+        if response.is_text_or_html() and response.getCode() == 200 \
+        and response.getClearTextBody() is not None:
             
             found_cards = self._find_card( response.getClearTextBody() )
             

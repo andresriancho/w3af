@@ -59,7 +59,9 @@ class ssn(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None.
         '''
-        if response.is_text_or_html() and response.getCode() == 200:
+        if response.is_text_or_html() and response.getCode() == 200 \
+        and response.getClearTextBody() is not None:
+            
             found_ssn, validated_ssn = self._find_SSN( response.getClearTextBody() )
             if validated_ssn:
                 v = vuln.vuln()

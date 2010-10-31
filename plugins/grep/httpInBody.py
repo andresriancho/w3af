@@ -66,7 +66,7 @@ class httpInBody (baseGrepPlugin):
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
-            if 'HTTP/1' in response:
+            if 'HTTP/1' in response and response.getClearTextBody() is not None:
 
                 # Now, remove tags
                 body_without_tags = response.getClearTextBody()
