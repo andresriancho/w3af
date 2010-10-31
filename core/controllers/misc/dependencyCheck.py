@@ -24,10 +24,14 @@ import core.controllers.outputManager as om
 import sys
 import subprocess
 
+# Use w3af's 'extlib' modules first. By doing this we ensure that modules
+# in 'w3af/extlib/' are first imported over python installation 'site-packages/'
+sys.path.insert(0, "./extlib")
 
 def dependencyCheck():
     '''
-    This function verifies that the dependencies that are needed by the framework core are met.
+    This function verifies that the dependencies that are needed by the
+    framework core are met.
     '''
 
     om.out.debug('Checking core dependencies')
@@ -51,7 +55,6 @@ def dependencyCheck():
     warnings.filterwarnings('ignore', '.*',)
 
     try:
-        sys.path.append("./extlib")
         import nltk
     except Exception, e:
         print 'You have to install the nltk lib. Please read the users guide.'
