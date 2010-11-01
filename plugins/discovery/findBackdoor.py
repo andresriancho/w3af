@@ -29,6 +29,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
@@ -100,12 +101,13 @@ WEB_SHELLS = (
     'cmd.sh','cmd.js','shell.js',        
     'list.sh','up.sh','nc.exe','netcat.exe','socat.exe','cmd.pl')
 
-# Regular expressions to detect possible backdoors
-BACKDOOR_RE_COLLECTION = (
-    re.compile('''<input .*?value=('|")(run|send|exec|execute|run cmd|''' \
-                    '''execute command|run command|list|connect)('|")>'''),
-    re.compile('''<input .*?name=('|")cmd|command('|")>'''),
-    re.compile('''<form .*?enctype=('|")multipart/form-data('|")'''))
+# Mapping object to use in XPath search
+BACKDOOR_RE_COLLECTION = {
+    'input': {'value': ('run', 'send', 'exec', 'execute', 'run cmd', 
+                         'execute command', 'run command', 'list', 'connect'), 
+              'name': ('cmd', 'command')},
+    'form': {'enctype': ('multipart/form-data',)}
+  }
 
 # List of known offensive words.
 KNOWN_OFFENSIVE_WORDS = set(
@@ -188,18 +190,25 @@ class findBackdoor(baseDiscoveryPlugin):
             
     def _is_possible_backdoor(self, response):
         '''
-        Heuristic to infer if the content of httpResponse has the pattern of a
+        Heuristic to infer if the content of <response> has the pattern of a
         backdoor response.
         
+        @param response: httpResponse object
         @return: A bool value
         '''
-        if response.getCode() in xrange(200, 300):
+        if not is_404(response):
             body_text = response.getBody()
-            
-            # First try to match at least one regex.
-            for re_patt in BACKDOOR_RE_COLLECTION:
-                if re.search(re_patt, body_text, re.I):
-                    return True
+            dom  = response.getDOM()
+            if dom:
+                for ele, attrs in BACKDOOR_RE_COLLECTION.iteritems():
+                    for attrname, attr_vals in attrs.iteritems():
+                        # Set of lowered attribute values
+                        dom_attr_vals = \
+                            set(n.get(attrname).lower() for n in \
+                                (dom.xpath('//%s[@%s]' % (ele, attrname))))
+                        # If at least one elem in intersection return True
+                        if (dom_attr_vals and set(attr_vals)):
+                            return True
     
             # If no regex matched then try with keywords. At least 2 should be
             # contained in 'body_text' to succeed.
