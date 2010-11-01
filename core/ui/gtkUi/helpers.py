@@ -21,9 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 # This module is a collection of useful code snippets for the GTK gui
 
-import threading, re, sys, Queue
-import  traceback, webbrowser
-import time
+import threading, re, Queue
+import  webbrowser
 import gtk
 import os
 from core.controllers.w3afException import w3afException
@@ -363,16 +362,19 @@ class Throbber(gtk.ToolButton):
             self.set_icon_widget(self.img_static)
             
 
-def loadImage(filename):
+def loadImage(filename, path='core/ui/gtkUi/data/'):
     '''Loads a pixbuf from disk.
 
     @param filename: the file name, full path
     @returns: The pixbuf from the image.
     '''
     im = gtk.Image()
+    filename = os.path.join(path, filename)
     im.set_from_file(filename)
     im.show()
     return im
+
+
 
 def loadIcon(stock_item_id):
     '''Loads a pixbuf from Stock. 
@@ -381,10 +383,13 @@ def loadIcon(stock_item_id):
     @return: The icon's pixbuf
     '''
     # If param id not found use default stock item.
-    stock_item = getattr(gtk, stock_item_id, gtk.STOCK_FILE)
-    
-    return gtk.IconTheme().load_icon(stock_item, 16, ())
-    
+    stock_item = getattr(gtk, stock_item_id, gtk.STOCK_MISSING_IMAGE)
+    icon_theme = gtk.IconTheme()
+    try:
+        icon = icon_theme.load_icon(stock_item, 16, ())
+    except:
+        icon = loadImage('missing-image.png').get_pixbuf()
+    return icon
 
 
 class SensitiveAnd(object):
@@ -410,12 +415,12 @@ class SensitiveAnd(object):
         
 import core.data.constants.severity as severity
 KB_ICONS = {
-    ("info", None): loadImage('core/ui/gtkUi/data/information.png'),
-    ("vuln", None):  loadImage('core/ui/gtkUi/data/vulnerability.png'),
-    ("shell", None):  loadImage('core/ui/gtkUi/data/shell.png'),
-    ("vuln", severity.LOW):  loadImage('core/ui/gtkUi/data/vulnerability_l.png'),
-    ("vuln", severity.MEDIUM):  loadImage('core/ui/gtkUi/data/vulnerability_m.png'),
-    ("vuln", severity.HIGH):  loadImage('core/ui/gtkUi/data/vulnerability_h.png'),
+    ("info", None): loadImage('information.png'),
+    ("vuln", None):  loadImage('vulnerability.png'),
+    ("shell", None):  loadImage('shell.png'),
+    ("vuln", severity.LOW):  loadImage('vulnerability_l.png'),
+    ("vuln", severity.MEDIUM):  loadImage('vulnerability_m.png'),
+    ("vuln", severity.HIGH):  loadImage('vulnerability_h.png'),
 }
 KB_COLOR_LEVEL = {
     ("info", None):            0,

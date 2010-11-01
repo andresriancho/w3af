@@ -102,7 +102,7 @@ WEB_SHELLS = (
     'list.sh','up.sh','nc.exe','netcat.exe','socat.exe','cmd.pl')
 
 # Mapping object to use in XPath search
-BACKDOOR_RE_COLLECTION = {
+BACKDOOR_COLLECTION = {
     'input': {'value': ('run', 'send', 'exec', 'execute', 'run cmd', 
                          'execute command', 'run command', 'list', 'connect'), 
               'name': ('cmd', 'command')},
@@ -200,7 +200,7 @@ class findBackdoor(baseDiscoveryPlugin):
             body_text = response.getBody()
             dom  = response.getDOM()
             if dom:
-                for ele, attrs in BACKDOOR_RE_COLLECTION.iteritems():
+                for ele, attrs in BACKDOOR_COLLECTION.iteritems():
                     for attrname, attr_vals in attrs.iteritems():
                         # Set of lowered attribute values
                         dom_attr_vals = \
