@@ -24,6 +24,7 @@ import copy
 import operator
 import random
 
+import core.controllers.outputManager as om
 from core.data.dc.dataContainer import dataContainer
 from core.data.parsers.encode_decode import urlencode
 
@@ -303,6 +304,11 @@ class form(dataContainer):
         else:
             matrix = self._selects.values()
             variants_total = self._getVariantsCount(matrix, mode)
+            
+            # Inform user
+            om.out.information("Form variants leads to combinatoric " \
+                "explosion. Generating %s randomly distributed variants." \
+                % self.TOP_VARIANTS)
             
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
