@@ -249,7 +249,7 @@ class form(dataContainer):
 
         self._setVar(name, value)
 
-    def getVariants(self, mode="all"):
+    def getVariants(self, mode="tmb"):
         """
         Returns all variants of form by mode:
           "all" - all values
@@ -263,7 +263,7 @@ class form(dataContainer):
             raise ValueError, "mode must be in [all, tb, tmb, t, b]"
         
         yield self
-        
+
         # Nothing to do
         if not self._selects:
             return
@@ -273,7 +273,7 @@ class form(dataContainer):
 
         # Build self variant based on `sample_path`
         for sample_path in self._getSamplePaths(mode):
-            print sample_path,','
+
             # Clone self
             self_variant = copy.deepcopy(self)
             
@@ -293,7 +293,7 @@ class form(dataContainer):
             yield self_variant
 
     
-    def _getSamplePaths(self, mode="tmb"):
+    def _getSamplePaths(self, mode):
         if mode in ["t", "tb"]:
             yield [0] * len(self._selects)
 
@@ -315,11 +315,11 @@ class form(dataContainer):
 
                 for path in rand.sample(xrange(variants_total),
                                             self.TOP_VARIANTS):
-                    yield self._decodePath(path, matrix)
+                    yield self._decodePath(path, matrix, mode)
 
             # Less than TOP_VARIANTS elems in matrix
             else:
-                # Compress matrix to (N x M) where 1 <= M <=3
+                # Compress matrix dimensions to (N x Mc) where 1 <= Mc <=3
                 if mode == "tmb":
                     tmb_matrix = []
                     for vector in matrix:
@@ -338,10 +338,10 @@ class form(dataContainer):
 
                 # Now get all paths!
                 for path in xrange(variants_total):
-                    decoded_path = self._decodePath(path, matrix)
+                    decoded_path = self._decodePath(path, matrix, mode)
                     yield decoded_path
 
-    def _decodePath(self, path, matrix, mode="tmb"):
+    def _decodePath(self, path, matrix, mode):
         '''
         Decode the integer `path` into a tuple of ints where the ith-elem 
         is the index to select from vector given by matrix[i].
@@ -369,15 +369,16 @@ class form(dataContainer):
 
         return decoded_path
     
-    def _getVariantsCount(self, matrix, mode="tmb"):
+    def _getVariantsCount(self, matrix, mode):
         '''
         
         @param matrix: 
         @param tmb: 
         '''
-        # TODO: validate <mode>
         if mode in ["t", "b"]:
             return 1
+        elif mode == "tb":
+            return 2
         else:
-            len_fun = lambda x: min(len(x), 3) if mode == "tmb" else len
+            len_fun = (lambda x: min(len(x), 3)) if mode == "tmb" else len
             return reduce(operator.mul, map(len_fun, matrix))
