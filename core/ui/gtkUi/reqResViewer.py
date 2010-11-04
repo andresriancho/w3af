@@ -168,6 +168,12 @@ class reqResViewer(gtk.VBox):
 
         self.show()
 
+    def focusResponse(self):
+        self.nb.set_current_page(1)
+
+    def focusRequest(self):
+        self.nb.set_current_page(0)
+
     def _popupMenu(self, widget, event):
         '''Show a Audit popup menu.'''
         _time = event.time

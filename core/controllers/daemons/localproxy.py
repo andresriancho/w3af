@@ -19,10 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-if __name__ == '__main__':
-    import sys
-    sys.path.insert(0, '/home/dz0/w3af/w3af/trunk')
     
 from core.controllers.daemons.proxy import proxy
 from core.controllers.daemons.proxy import w3afProxyHandler
