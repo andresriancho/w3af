@@ -305,15 +305,15 @@ class form(dataContainer):
             matrix = self._selects.values()
             variants_total = self._getVariantsCount(matrix, mode)
             
-            # Inform user
-            om.out.information("Form variants leads to combinatoric " \
-                "explosion. Generating %s randomly distributed variants." \
-                % self.TOP_VARIANTS)
-            
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
             # matrix by using `SEED` in the random generation
             if variants_total > self.TOP_VARIANTS:
+                
+                # Inform user
+                om.out.information("Form variants leads to combinatoric " \
+                    "explosion. Generating %s randomly distributed variants." \
+                    % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed.
                 rand = random.Random()
