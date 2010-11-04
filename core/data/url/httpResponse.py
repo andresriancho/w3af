@@ -302,6 +302,10 @@ class httpResponse(object):
                 #   SWF?
                 if self._content_type.lower().count('x-shockwave-flash'):
                     self._is_swf_response = True
+
+                #   Image?
+                if self._content_type.lower().count('image'):
+                    self._is_image_response = True
                 
                 return
 
@@ -328,6 +332,12 @@ class httpResponse(object):
         @return: True if this response is a SWF file
         '''
         return self._is_swf_response
+
+    def is_image( self ):
+        '''
+        @return: True if this response is an image file
+        '''
+        return self._is_image_response
             
     def setURL( self, url ): self._realurl = url
     def setURI( self, uri ): self._uri = uri
