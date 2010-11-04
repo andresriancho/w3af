@@ -40,51 +40,51 @@ class strangeReason(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._w3c_reasons = {
-            100: 'Continue',
-            101: 'Switching Protocols',
+            100: ['continue',],
+            101: ['switching protocols',],
 
-            200: 'OK',
-            201: 'Created',
-            202: 'Accepted',
-            203: 'Non-Authoritative Information',
-            204: 'No Content',
-            205: 'Reset Content',
-            206: 'Partial Content',
+            200: ['ok',],
+            201: ['created',],
+            202: ['accepted',],
+            203: ['non-authoritative information',],
+            204: ['no content',],
+            205: ['reset content',],
+            206: ['partial content',],
 
-            300: 'Multiple Choices',
-            301: 'Moved Permanently',
-            302: 'Found',
-            303: 'See Other',
-            304: 'Not Modified',
-            305: 'Use Proxy',
-            306: '(Unused)',
-            307: 'Temporary Redirect',
+            300: ['multiple choices',],
+            301: ['moved permanently',],
+            302: ['found',],
+            303: ['see other',],
+            304: ['not modified',],
+            305: ['use proxy',],
+            306: ['(unused)',],
+            307: ['temporary redirect',],
 
-            400: 'Bad Request',
-            401: 'Unauthorized',
-            402: 'Payment Required',
-            403: 'Forbidden',
-            404: 'Not Found',
-            405: 'Method Not Allowed',
-            406: 'Not Acceptable',
-            407: 'Proxy Authentication Required',
-            408: 'Request Timeout',
-            409: 'Conflict',
-            410: 'Gone',
-            411: 'Length Required',
-            412: 'Precondition Failed',
-            413: 'Request Entity Too Large',
-            414: 'Request-URI Too Long',
-            415: 'Unsupported Media Type',
-            416: 'Requested Range Not Satisfiable',
-            417: 'Expectation Failed',
+            400: ['bad request',],
+            401: ['unauthorized', 'authorization required'],
+            402: ['payment required',],
+            403: ['forbidden',],
+            404: ['not found',],
+            405: ['method not allowed','not allowed'],
+            406: ['not acceptable',],
+            407: ['proxy authentication required',],
+            408: ['request timeout',],
+            409: ['conflict',],
+            410: ['gone',],
+            411: ['length required',],
+            412: ['precondition failed',],
+            413: ['request entity too large',],
+            414: ['request-uri too long',],
+            415: ['unsupported media type',],
+            416: ['requested range not satisfiable',],
+            417: ['expectation failed',],
 
-            500: 'Internal Server Error',
-            501: 'Not Implemented',
-            502: 'Bad Gateway',
-            503: 'Service Unavailable',
-            504: 'Gateway Timeout',
-            505: 'HTTP Version Not Supported',
+            500: ['internal server error',],
+            501: ['not implemented',],
+            502: ['bad gateway',],
+            503: ['service unavailable',],
+            504: ['gateway timeout',],
+            505: ['http version not supported',],
         }
         
     def grep(self, request, response):
@@ -97,12 +97,11 @@ class strangeReason(baseGrepPlugin):
         '''
         if response.getCode() in self._w3c_reasons:
             
-            w3c_reason = self._w3c_reasons[response.getCode()]
-            w3c_reason = w3c_reason.lower()
+            w3c_reason_list = self._w3c_reasons[ response.getCode() ]
             
             response_reason = response.getMsg().lower()
             
-            if response_reason != w3c_reason:
+            if response_reason not in w3c_reason_list:
                 #
                 #   I check if the kb already has a info object with this code:
                 #
