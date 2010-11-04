@@ -30,7 +30,7 @@ import re
 import urllib
 
 
-class abstractParser:
+class abstractParser(object):
     '''
     This class is an abstract document parser.
     
