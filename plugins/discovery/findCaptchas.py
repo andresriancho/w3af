@@ -63,7 +63,7 @@ class findCaptchas(baseDiscoveryPlugin):
         changed_images_list = []
         if image_map_1.keys() != image_map_2.keys():
             for img_src in image_map_1:
-                if img_src not in image_map_2 and self._has_image_extension( img_src ):
+                if img_src not in image_map_2:
                     changed_images_list.append( img_src )
         else:
             # Compare content
@@ -81,15 +81,6 @@ class findCaptchas(baseDiscoveryPlugin):
             om.out.information( i.getDesc() )
             
         return []
-    
-    def _has_image_extension( self, img_src ):
-        '''
-        Verify it the image source is an image or "a php script".
-        '''
-        if 'image' in mimetypes.guess_type( urlParser.getFileName(img_src) )[0]:
-            return True
-        else:
-            return False
     
     def _get_images( self, fuzzable_request ):
         '''
@@ -121,7 +112,8 @@ class findCaptchas(baseDiscoveryPlugin):
                     except:
                         om.out.debug('Failed to retrieve the image for finding captchas.')
                     else:
-                        res[ img_src ] = sha.new(image_response.getBody()).hexdigest()
+                        if image_response.is_image():
+                            res[ img_src ] = sha.new(image_response.getBody()).hexdigest()
         
         return res
 
