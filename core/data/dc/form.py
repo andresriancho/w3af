@@ -50,7 +50,7 @@ class form(dataContainer):
         self._selects = {}
         self._submitMap = {}
         
-        # it is used for processing checkboxes
+        # This is used for processing checkboxes
         self._secret_value = "3_!21#47w@"
         
     def getAction(self):
@@ -124,14 +124,6 @@ class form(dataContainer):
         #
 
         return urlencode(tmp)
-    
-    def copy(self):
-        '''
-        This method returns a copy of the form Object.
-        
-        @return: A copy of myself.
-        '''
-        return copy.deepcopy( self )
         
     def addSubmit( self, name, value ):
         '''
@@ -238,6 +230,9 @@ class form(dataContainer):
         Adds one more select field with options
         Options is list of options attrs (tuples)
         """
+        if not name:
+            return
+        
         self._selects[name] = []
         self._types[name] = 'select'
         
@@ -260,8 +255,8 @@ class form(dataContainer):
           "b" - bottom values
         """
         
-        if mode not in ["all", "tb", "tmb", "t", "b"]:
-            raise ValueError, "mode must be in [all, tb, tmb, t, b]"
+        if mode not in ("all", "tb", "tmb", "t", "b"):
+            raise ValueError, "mode must be in ('all', 'tb', 'tmb', 't', 'b')"
         
         yield self
 
@@ -269,18 +264,18 @@ class form(dataContainer):
         if not self._selects:
             return
         
-        sel_names = self._selects.keys()
         secret_value = self._secret_value
+        sel_names = self._selects.keys()
+        matrix = self._selects.values()
 
         # Build self variant based on `sample_path`
-        for sample_path in self._getSamplePaths(mode):
-
+        for sample_path in self._getSamplePaths(mode, matrix):
             # Clone self
             self_variant = copy.deepcopy(self)
             
-            for index in sample_path:
-                sel_name = sel_names[index]
-                value = self._selects[sel_name][index]
+            for row_index, col_index in enumerate(sample_path):
+                sel_name = sel_names[row_index]
+                value = matrix[row_index][col_index]
                 
                 if value != secret_value:
                     # FIXME: Needs to support repeated parameter names
@@ -288,21 +283,20 @@ class form(dataContainer):
                 else:
                     # FIXME: Is it good solution to simply delete unwant to
                     # send checkboxes?
-                    if self_variant.get(sel_name): # We might had remove it b4
+                    if self_variant.get(sel_name): # We might had removed it b4
                         del self_variant[sel_name]
             
             yield self_variant
 
     
-    def _getSamplePaths(self, mode):
+    def _getSamplePaths(self, mode, matrix):
         if mode in ["t", "tb"]:
-            yield [0] * len(self._selects)
+            yield [0] * len(matrix)
 
         if mode in ["t", "tb"]:
-            yield [-1] * len(self._selects)            
+            yield [-1] * len(matrix)
         # mode in ["tmb", "all"]
         else:
-            matrix = self._selects.values()
             variants_total = self._getVariantsCount(matrix, mode)
             
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
@@ -321,33 +315,31 @@ class form(dataContainer):
 
                 for path in rand.sample(xrange(variants_total),
                                             self.TOP_VARIANTS):
-                    yield self._decodePath(path, matrix, mode)
+                    yield self._decodePath(path, matrix)
 
             # Less than TOP_VARIANTS elems in matrix
             else:
                 # Compress matrix dimensions to (N x Mc) where 1 <= Mc <=3
                 if mode == "tmb":
-                    tmb_matrix = []
-                    for vector in matrix:
-                        # Create new 3-length top vector
-                        new_vector = [vector[0]]
-                        if len(vector) == 2: # Special case
-                            new_vector.append(vector[1])
+                    for row, vector in enumerate(matrix):
+                        # Create new 3-length tops vector
+                        if len(vector) <= 3:
+                            new_vector = vector[:]
                         else:
+                            new_vector = [vector[0]]
                             new_vector.append(vector[len(vector)/2])
                             new_vector.append(vector[-1])
+                        matrix[row] = new_vector
 
-                        tmb_matrix.append(new_vector)
-                        # Work with these!
-                        matrix = tmb_matrix
+                        # New variants total
                         variants_total = self._getVariantsCount(matrix, mode)
 
                 # Now get all paths!
                 for path in xrange(variants_total):
-                    decoded_path = self._decodePath(path, matrix, mode)
+                    decoded_path = self._decodePath(path, matrix)
                     yield decoded_path
 
-    def _decodePath(self, path, matrix, mode):
+    def _decodePath(self, path, matrix):
         '''
         Decode the integer `path` into a tuple of ints where the ith-elem 
         is the index to select from vector given by matrix[i].
@@ -358,7 +350,7 @@ class form(dataContainer):
         @param path: integer
         @param matrix: list of lists
         @return: Tuple of integers
-        '''
+        '''        
         # Hack to make the algorithm work.
         matrix.append([1])
         get_count = lambda i: reduce(operator.mul, map(len, matrix[i+1:]))
