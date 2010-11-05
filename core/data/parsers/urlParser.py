@@ -30,7 +30,6 @@ from core.controllers.misc.is_ip_address import is_ip_address
 import urlparse as _uparse
 import urllib
 import cgi
-import socket
 import re
 import string
 
@@ -265,6 +264,23 @@ def getDomain( url ):
     scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
     domain = domain.split(':')[0]
     return domain
+
+def isValidURLDomain(url):
+    '''
+    >>> isValidURLDomain("http://1.2.3.4")
+    True
+    >>> isValidURLDomain("http://aaa.com")
+    True
+    >>> isValidURLDomain("http://aaa.")
+    False
+    >>> isValidURLDomain("http://aa*a")
+    False
+    
+    @parameter url: The url to parse.
+    @return: Returns a boolean that indicates if <url>'s domain is valid
+    '''
+    _, domain, _, _, _, _  = _uparse.urlparse(url)
+    return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', domain or '') is not None
 
 def getNetLocation( url ):
     '''

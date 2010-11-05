@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import re
 import time
 import urllib2
-import urlparse
 
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
@@ -99,13 +97,12 @@ class targetSettings(configurable):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't support it.
         '''
-        parsed_url = urlparse.urlparse(targetUrl)
-        scheme = parsed_url.scheme
-        hostname = parsed_url.hostname or ''
+        protocol = urlParser.getProtocol(targetUrl)
+        domain = urlParser.getDomain(targetUrl) or ''
         
-        aFile = fileTarget and scheme == 'file' and hostname
-        aHTTP = scheme in ['http', 'https'] and \
-                    re.match('(\w+$|([a-z0-9-]+(\.[a-z0-9-]+)+))', hostname)
+        aFile = fileTarget and protocol == 'file' and domain
+        aHTTP = protocol in ['http', 'https'] and \
+                    urlParser.isValidURLDomain(targetUrl)
 
         if not (aFile or aHTTP):
             msg = 'Invalid format for target URL "%s", you have to specify ' \
