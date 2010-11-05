@@ -34,7 +34,6 @@ from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.comboOption import comboOption
 from core.data.options.optionList import optionList
-from attack.payloads.payloads.hostname import hostname
 
 cf.cf.save('targets', [] )
 cf.cf.save('targetDomains', [] )
