@@ -34,6 +34,7 @@ from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.comboOption import comboOption
 from core.data.options.optionList import optionList
+from attack.payloads.payloads.hostname import hostname
 
 cf.cf.save('targets', [] )
 cf.cf.save('targetDomains', [] )
@@ -101,11 +102,11 @@ class targetSettings(configurable):
         '''
         parsed_url = urlparse.urlparse(targetUrl)
         scheme = parsed_url.scheme
-        hostname = parsed_url.hostname
+        hostname = parsed_url.hostname or ''
         
-        aFile = (fileTarget and scheme == 'file' and hostname)
-        aHTTP = (scheme in ['http', 'https'] and hostname and \
-                    re.match('\w', hostname[0]))
+        aFile = fileTarget and scheme == 'file' and hostname
+        aHTTP = scheme in ['http', 'https'] and \
+                    re.match('(\w+$|([a-z0-9-]+(\.[a-z0-9-]+)+))', hostname)
 
         if not (aFile or aHTTP):
             msg = 'Invalid format for target URL "%s", you have to specify ' \
