@@ -19,14 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+import time
+import urllib2
+import urlparse
 
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
 
 import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
-import time
-import urllib2
 
 # options
 from core.data.options.option import option
@@ -97,16 +99,18 @@ class targetSettings(configurable):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't support it.
         '''
-        if fileTarget:
-            aFile = targetUrl.count('file://') and len(targetUrl) > len('file://')
-        else:
-            aFile = False
-        aHTTP = targetUrl.count('http://') and len(targetUrl) > len('http://')
-        aHTTPS = targetUrl.count('https://') and len(targetUrl) > len('https://')
-        if not aFile and not aHTTP and not aHTTPS:
-            msg = 'Invalid format for target URL "'+ targetUrl
-            msg += '", you have to specify the protocol (http/https/file) and a domain or IP'
-            msg += 'address. Examples: http://host.tld/ ; https://127.0.0.1/ .'
+        parsed_url = urlparse.urlparse(targetUrl)
+        scheme = parsed_url.scheme
+        hostname = parsed_url.hostname
+        
+        aFile = (fileTarget and scheme == 'file' and hostname)
+        aHTTP = (scheme in ['http', 'https'] and hostname and \
+                    re.match('\w', hostname[0]))
+
+        if not (aFile or aHTTP):
+            msg = 'Invalid format for target URL "%s", you have to specify ' \
+            'the protocol (http/https/file) and a domain or IP address. ' \
+            'Examples: http://host.tld/ ; https://127.0.0.1/ .' % targetUrl
             raise w3afException( msg )
     
     def setOptions( self, optionsMap ):
