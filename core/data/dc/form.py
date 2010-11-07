@@ -279,7 +279,7 @@ class form(dataContainer):
                 
                 if value != secret_value:
                     # FIXME: Needs to support repeated parameter names
-                    self_variant[sel_name] = value
+                    self_variant[sel_name] = [value]
                 else:
                     # FIXME: Is it good solution to simply delete unwant to
                     # send checkboxes?
