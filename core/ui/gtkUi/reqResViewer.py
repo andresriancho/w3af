@@ -85,7 +85,7 @@ class reqResViewer(gtk.VBox):
 
     '''
     def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True, 
-                        withCompare=True, editableRequest=False, editableResponse=False, 
+                        withCompare=True, withAudit=True, editableRequest=False, editableResponse=False, 
                         widgname="default"):
                             
         super(reqResViewer,self).__init__()
@@ -116,8 +116,6 @@ class reqResViewer(gtk.VBox):
         # Buttons
         hbox = gtk.HBox()
         
-        hbox = gtk.HBox()
-        
         if withManual or withFuzzy or withCompare:
             from .craftedRequests import ManualRequests, FuzzyRequests
             
@@ -140,6 +138,15 @@ class reqResViewer(gtk.VBox):
                 b.show()
                 hbox.pack_end(b, False, False, padding=2)
 
+        if withAudit:
+            # Add everything I need for the audit request thing:
+            # The button that shows the menu
+            b = entries.SemiStockButton("", gtk.STOCK_EXECUTE, _("Audit Request with..."))
+            b.connect("button-release-event", self._popupMenu)
+            self.request.childButtons.append(b)
+            b.show()
+            hbox.pack_start(b, False, False, padding=2)
+
 
         # I always can export requests
         b = entries.SemiStockButton("", gtk.STOCK_COPY, _("Export Request"))
@@ -150,14 +157,6 @@ class reqResViewer(gtk.VBox):
             
         self.pack_start(hbox, False, False, padding=5)
         hbox.show()
-
-        # Add everything I need for the audit request thing:
-        # The button that shows the menu
-        b = entries.SemiStockButton("", gtk.STOCK_EXECUTE, _("Audit Request with..."))
-        b.connect("button-release-event", self._popupMenu)
-        self.request.childButtons.append(b)
-        b.show()
-        hbox.pack_start(b, False, False, padding=2)
         
         # The throbber (hidden!)
         self.throbber = helpers.Throbber()
@@ -865,14 +864,18 @@ class reqResWindow(entries.RememberingWindow):
     A window to show a request/response pair.
     """
     def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
-                 withFuzzy=True, withCompare=True, editableRequest=False,
-                 editableResponse=False, widgname="default"):
+                 withFuzzy=True, withCompare=True, withAudit=True,
+                 editableRequest=False, editableResponse=False,
+                 widgname="default"):
         # Create the window
         entries.RememberingWindow.__init__(
-            self, w3af, "reqResWin", _("w3af - HTTP Request/Response"), "Browsing_the_Knowledge_Base")
+            self, w3af, "reqResWin", _("w3af - HTTP Request/Response"), 
+            "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
-        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, withCompare, editableRequest, editableResponse, widgname)
+        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, 
+                                withCompare, withAudit, editableRequest, 
+                                editableResponse, widgname)
 
         # Search the id in the DB
         historyItem = HistoryItem()

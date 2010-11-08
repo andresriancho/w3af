@@ -189,7 +189,7 @@ class KBBrowser(entries.RememberingHPaned):
         scrollwin22.show()
 
         # The request/response viewer
-        self.rrV = reqResViewer.reqResViewer(w3af)
+        self.rrV = reqResViewer.reqResViewer(w3af, withAudit=False)
         self.rrV.set_sensitive(False)
 
         # Create the title label to show the request id
