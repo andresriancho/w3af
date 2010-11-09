@@ -1,10 +1,4 @@
-
-import random
 import unittest
-
-import sys
-sys.path.append("/home/jandalia/workspace2/w3af")
-sys.path.insert(0, "C:\Program Files\w3af\w3af")
 
 from core.data.dc import form
 
@@ -20,34 +14,29 @@ form_with_checkbox = [
 
 form_select_cars = [
     {'tagname': 'select', 'name': 'cars', 
-                                    'options': ((('value', 'volvo'),),
-                                                (('value', 'saab'),),
-                                                (('value', 'jeep'),),
-                                                (('value', 'chevy'),),
-                                                (('value', 'fiat'),))}]
+        'options': ((('value', 'volvo'),),
+                    (('value', 'saab'),),
+                    (('value', 'jeep'),),
+                    (('value', 'chevy'),),
+                    (('value', 'fiat'),))}]
 
 form_select_misc = [
     {'tagname': 'select', 'name': 'colors', 
-                                    'options': ((('value', 'black'),),
-                                                (('value', 'blue'),),
-                                                (('value', 'yellow'),),
-                                                (('value', 'green'),),
-                                                (('value', 'red'),))},
+        'options': ((('value', 'black'),),
+                    (('value', 'blue'),),
+                    (('value', 'yellow'),),
+                    (('value', 'green'),),
+                    (('value', 'red'),))},
     {'tagname': 'select', 'name': 'letters', 
-                                    'options': ((('value', 'a'),), (('value', 'b'),),
-                                                (('value', 'c'),), (('value', 'd'),),
-                                                (('value', 'e'),), (('value', 'f'),),
-                                                (('value', 'g'),), (('value', 'h'),),
-                                                (('value', 'i'),), (('value', 'j'),))}
+        'options': ((('value', 'a'),), (('value', 'b'),),
+                    (('value', 'c'),), (('value', 'd'),),
+                    (('value', 'e'),), (('value', 'f'),),
+                    (('value', 'g'),), (('value', 'h'),),
+                    (('value', 'i'),), (('value', 'j'),))}
     ]
 
 # Global container for form
 ALL_FORMS = (form_with_radio, form_with_checkbox, form_select_cars)
-
-form_four = []
-form_five = []
-form_six = []
-form_seven = []
 
 class test_form(unittest.TestCase):
 
@@ -62,49 +51,114 @@ class test_form(unittest.TestCase):
                     self.assertTrue(set(t[0][1] for t in elem['options']) == \
                                     set(new_form._selects[ename]))
                 else:
-                    ivalue = elem['value']
-                    self.assertTrue(ivalue in  new_form[ename])
-                    self.assertTrue(ivalue in  new_form._selects[ename])
-
-    def test_no_name(self):
-        # input has no `name` attr. `id` should be used instead
-        # right now not in `selects`. ask andres what about it
-        pass
-
-    def test_same_variants_generation(self):
-        # When using random variants generation in we should get the same
-        # variants
-        pass
+                    evalue = elem['value']
+                    self.assertTrue(evalue in  new_form[ename])
+                    self.assertTrue(evalue in  new_form._selects[ename])
 
     def test_tmb_variants(self):
+        # 'top-middle-bottom' mode variants
+        def filter_tmb(values):
+            if len(values) > 3:
+                values = (values[0], values[len(values)/2], values[-1])
+            return values
+        
         bigform_data = form_with_radio + form_select_cars + form_select_misc
-        clean_data = get_clean_data(bigform_data)
+        clean_data = get_gruped_data(bigform_data)
         new_bigform = create_form_helper(bigform_data)
         total_variants = 2*3*3*3
+        variants_set = set()
         
         for i, form_variant in enumerate(new_bigform.getVariants(mode="tmb")):
 
             if i == 0: # First element must be the created `new_bigform`
                 self.assertEquals(id(new_bigform), id(form_variant))
                 continue
+
             for name, values in clean_data.items():
-                self.assertTrue(form_variant[name][0] in values)
-
-        self.assertEquals(i, total_variants)
-
+                tmb_values = filter_tmb(values)
+                self.assertTrue(form_variant[name][0] in tmb_values)
             
+            variants_set.add(repr(form_variant))
+        
+        # Ensure we actually got the expected number of variants
+        self.assertEquals(i, total_variants)
+        # Variants shouldn't duplicated
+        self.assertEquals(len(variants_set), total_variants)
+        
 
     def test_all_variants(self):
-        pass
+        # 'all' mode variants
+        bigform_data = form_with_radio + form_select_misc
+        clean_data = get_gruped_data(bigform_data)
+        new_bigform = create_form_helper(bigform_data)
+        total_variants = 2*5*10
+        variants_set = set()
+        
+        for i, form_variant in enumerate(new_bigform.getVariants(mode="all")):
 
-    def test_t_b_tb_variants(self):
-        pass
+            if i == 0: # First element must be the created `new_bigform`
+                self.assertEquals(id(new_bigform), id(form_variant))
+                continue
+            for name, all_values in clean_data.items():
+                self.assertTrue(form_variant[name][0] in all_values)
+            
+            variants_set.add(repr(form_variant))
+
+        # Ensure we actually got the expected number of variants
+        self.assertEquals(total_variants, i)
+        # Variants shouldn't duplicated
+        self.assertEquals(total_variants, len(variants_set))
+
+    def test_t_b_variants(self):
+        # 'top' and 'bottom' variants
+        bigform_data = form_with_radio + form_select_cars + form_select_misc
+        clean_data = get_gruped_data(bigform_data)
+        new_bigform = create_form_helper(bigform_data)
+        total_variants = 1
+        
+        # 'top' mode variants
+        t_form_variants = [fv for fv in new_bigform.getVariants(mode="t")][1:]
+        # Ensure we actually got the expected number of variants
+        self.assertEquals(total_variants, len(t_form_variants))
+
+        for name, values in clean_data.items():
+            self.assertEquals(values[0], t_form_variants[0][name][0])
+        
+        # 'bottom' mode variants
+        t_form_variants = [fv for fv in new_bigform.getVariants(mode="b")][1:]
+        # Ensure we actually got the expected number of variants
+        self.assertEquals(total_variants, len(t_form_variants))
+
+        for name, values in clean_data.items():
+            self.assertEquals(values[-1], t_form_variants[0][name][0])
+        
 
     def test_max_variants(self):
-        pass
-
-
-def get_clean_data(form_data):
+        # Combinatoric explosion (mode="all"): total_variants = 2*5*5*5 = 
+        # 250 > dc.form.TOP_VARIANTS = 150
+        new_form = create_form_helper(form_with_radio + form_select_cars + \
+                                      form_select_misc)
+        self.assertEquals(form.form.TOP_VARIANTS, 
+                          len([fv for fv in new_form.getVariants(mode="all")])-1)
+        
+    def test_same_variants_generation(self):
+        # Combinatoric explosion (mode="all"): total_variants = 250 > 150
+        # Therefore will be used random variants generation. We should get the
+        #  same every time we call `form.getVariants`
+        new_form = create_form_helper(form_with_radio + form_select_cars + \
+                                      form_select_misc)
+        get_all_variants = lambda: set(repr(fv) for fv in \
+                                       new_form.getVariants(mode="all"))
+        variants = get_all_variants()
+        for i in xrange(10):
+            self.assertEquals(variants, get_all_variants())
+        
+        
+def get_gruped_data(form_data):
+    '''
+    Group form data by elem `name`. Return dict with the following structure:
+    {'cars': ['volvo', 'audi', 'lada'], 'sex': ['M', 'F'], ...}
+    '''
     res = {}
     for elem_data in form_data:
         values = res.setdefault(elem_data['name'], [])

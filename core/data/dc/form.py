@@ -188,7 +188,7 @@ class form(dataContainer):
 
     def addCheckBox(self, attrs):
         """
-        Adds radio field
+        Adds checkbox field
         """
         name, value = self.addInput(attrs)
 
@@ -293,10 +293,10 @@ class form(dataContainer):
         if mode in ["t", "tb"]:
             yield [0] * len(matrix)
 
-        if mode in ["t", "tb"]:
+        if mode in ["b", "tb"]:
             yield [-1] * len(matrix)
         # mode in ["tmb", "all"]
-        else:
+        elif mode in ["tmb", "all"]:
             variants_total = self._getVariantsCount(matrix, mode)
             
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
@@ -322,17 +322,15 @@ class form(dataContainer):
                 # Compress matrix dimensions to (N x Mc) where 1 <= Mc <=3
                 if mode == "tmb":
                     for row, vector in enumerate(matrix):
-                        # Create new 3-length tops vector
-                        if len(vector) <= 3:
-                            new_vector = vector[:]
-                        else:
+                        # Create new 3-length vector
+                        if len(vector) > 3:
                             new_vector = [vector[0]]
                             new_vector.append(vector[len(vector)/2])
                             new_vector.append(vector[-1])
-                        matrix[row] = new_vector
+                            matrix[row] = new_vector
 
-                        # New variants total
-                        variants_total = self._getVariantsCount(matrix, mode)
+                    # New variants total
+                    variants_total = self._getVariantsCount(matrix, mode)
 
                 # Now get all paths!
                 for path in xrange(variants_total):
