@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-import core.data.parsers.urlParser as urlParser
 from core.data.parsers.encode_decode import htmldecode
 from core.controllers.w3afException import w3afException
 
@@ -42,9 +41,10 @@ class abstractParser(object):
         redirURL = httpResponse.getRedirURL()
         if redirURL:
             url = redirURL
+        
         self._baseUrl = url
-        self._baseDomain = urlParser.getDomain(url)
-        self._rootDomain = urlParser.getRootDomain(url)
+        self._baseDomain = url.getDomain()
+        self._rootDomain = url.getRootDomain()
         
         # A nice default
         self._encoding = 'utf-8'

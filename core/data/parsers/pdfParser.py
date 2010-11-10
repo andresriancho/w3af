@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.data.parsers.abstractParser import abstractParser
+from core.data.parsers.urlParser import url_object
 
 try:
     import extlib.pyPdf.pyPdf as pyPdf
@@ -40,10 +41,12 @@ class pdfParser(abstractParser):
     '''
     def __init__(self, httpResponse):
         abstractParser.__init__(self , httpResponse)
+        
+        #    Two lists with url objects
         self._parsed_URLs = []
         self._re_URLs = []
         
-        # work !
+        #    Work !
         self._preParse( httpResponse.getBody() )
         
     def _preParse( self, document ):
@@ -54,7 +57,7 @@ class pdfParser(abstractParser):
         # Get the URLs using a regex
         url_regex = '((http|https):[A-Za-z0-9/](([A-Za-z0-9$_.+!*(),;/?:@&~=-])|'
         url_regex += '%[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)'
-        self._re_URLs = [ x[0] for x in re.findall(url_regex, content_text ) ]
+        self._re_URLs = [ url_object( x[0] ) for x in re.findall(url_regex, content_text ) ]
         
         # Get the mail addys
         self.findEmails( content_text )

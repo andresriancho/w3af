@@ -27,6 +27,7 @@ import random
 import core.controllers.outputManager as om
 from core.data.dc.dataContainer import dataContainer
 from core.data.parsers.encode_decode import urlencode
+from core.data.parsers.urlParser import url_object
 
 
 class form(dataContainer):
@@ -60,6 +61,19 @@ class form(dataContainer):
         return self._action
         
     def setAction(self, action):
+        '''
+        >>> f = form()
+        >>> f.setAction('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The action of a form must be of urlParser.url type.
+        >>> f = form()
+        >>> f.setAction( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(action, url_object):
+            raise ValueError('The action of a form must be of urlParser.url type.')
+        
         self._action = action
         
     def getMethod(self):

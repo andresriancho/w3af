@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
 from core.data.parsers.sgmlParser import sgmlParser
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 
 import core.data.dc.form as form
 
@@ -48,7 +48,7 @@ class wmlParser(sgmlParser):
         @parameter httpResponse: The HTTP response document that contains the WML
         document inside its body.
         '''
-        assert self._baseUrl != '', 'The base URL must be setted.'
+        assert self._baseUrl is not None, 'The base URL must be set.'
         # Now we are ready to work
         self._parse ( httpResponse.getBody() )
         
@@ -94,7 +94,7 @@ class wmlParser(sgmlParser):
             for attr in attrs:
                 if attr[0] == 'href':
                     decoded_action = self._decode_URL(attr[1], self._encoding)
-                    action = urlParser.urlJoin( self._baseUrl , decoded_action)
+                    action = self._baseUrl.urlJoin( decoded_action )
                     foundAction = True
                     
             if not foundAction:

@@ -27,7 +27,7 @@ import core.data.kb.config as cf
 from lxml import etree
 
 from core.data.parsers.sgmlParser import sgmlParser
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 
 import core.data.dc.form as form
 
@@ -60,7 +60,7 @@ class htmlParser(sgmlParser):
         @parameter httpResponse: The HTTP response document that contains the HTML
         document inside its body.
         '''
-        assert self._baseUrl != '', 'The base URL must be setted.'
+        assert self._baseUrl is not None, 'The base URL must be set.'
         
         HTMLDocument = httpResponse.getBody()
         
@@ -141,7 +141,7 @@ class htmlParser(sgmlParser):
         for attr in attrs:
             if attr[0].lower() == 'action':
                 decoded_action = self._decode_URL(attr[1], self._encoding)
-                action = urlParser.urlJoin( self._baseUrl, decoded_action )
+                action = self._baseUrl.urlJoin( decoded_action )
                 foundAction = True
 
         if not foundAction:
@@ -150,7 +150,7 @@ class htmlParser(sgmlParser):
             msg += ' posted back to the same URL (the one that returned the HTML that we are '
             msg += ' parsing).'
             om.out.debug(msg)
-            action = self._source_url
+            action = url_object(self._source_url)
 
         # Create the form object and store everything for later use
         self._insideForm = True

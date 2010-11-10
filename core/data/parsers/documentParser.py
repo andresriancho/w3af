@@ -122,7 +122,7 @@ class documentParser:
         
     def getReferences( self ):
         '''
-        @return: A list of URL strings.
+        @return: A list of URL objects.
         '''
         return self._parser.getReferences()
     

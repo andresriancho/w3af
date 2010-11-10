@@ -27,13 +27,14 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.controllers.misc.is_ip_address import is_ip_address
 
-import urlparse as _uparse
+import urlparse
 import urllib
 import cgi
 import re
 import string
 
-class url(object):
+
+class url_object(object):
     '''
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
@@ -48,7 +49,7 @@ class url(object):
 
         Simple generic test, more detailed tests in each method!
         
-        >>> u = url('http://www.google.com/foo/bar.txt')
+        >>> u = url_object('http://www.google.com/foo/bar.txt')
         >>> u.path
         '/foo/bar.txt'
         >>> u.scheme
@@ -59,23 +60,23 @@ class url(object):
         'txt'
         >>> 
         '''
-        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = _uparse.urlparse( url_string )
+        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
 
     @property
     def url_string(self):
-        return _uparse.urlunparse( (self.scheme, self.domain, self.path, self.params, self.qs, self.fragment) )
+        return urlparse.urlunparse( (self.scheme, self.domain, self.path, self.params, self.qs, self.fragment) )
         
     def hasQueryString( self ):
         '''
         Analyzes the uri to check for a query string.
         
-        >>> u = url('http://www.google.com/foo/bar.txt')
+        >>> u = url_object('http://www.google.com/foo/bar.txt')
         >>> u.hasQueryString()
         False
-        >>> u = url('http://www.google.com/foo/bar.txt?id=1')
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=1')
         >>> u.hasQueryString()
         True
-        >>> u = url('http://www.google.com/foo/bar.txt;par=3')
+        >>> u = url_object('http://www.google.com/foo/bar.txt;par=3')
         >>> u.hasQueryString()
         False
     
@@ -91,13 +92,13 @@ class url(object):
     
         @return: A QueryString Object that represents the query string.
 
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3')
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3')
         >>> u.getQueryString()
         {'id': ['3']}
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3&id=4')
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3&id=4')
         >>> u.getQueryString()
         {'id': ['3', '4']}
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3&ff=4&id=5')
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3&ff=4&id=5')
         >>> u.getQueryString()
         {'id': ['3', '5'], 'ff': ['4']}
             
@@ -132,12 +133,12 @@ class url(object):
     
         return result
     
-    def uri2url( self ):
+    def uri2url_object( self ):
         '''
         @return: Returns a string contaning the URL without the query string. Example :
 
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3')
-        >>> u.uri2url()
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3')
+        >>> u.uri2url_object()
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
@@ -150,10 +151,10 @@ class url(object):
         '''
         @return: Returns a string contaning the URL without the fragment. Example :
         
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3#foobar')
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3#foobar')
         >>> u.removeFragment()
         'http://www.google.com/foo/bar.txt?id=3'
-        >>> u = url('http://www.google.com/foo/bar.txt#foobar')
+        >>> u = url_object('http://www.google.com/foo/bar.txt#foobar')
         >>> u.removeFragment()
         'http://www.google.com/foo/bar.txt'
         '''
@@ -164,19 +165,19 @@ class url(object):
             res += '?' + self.qs
         return res
     
-    def baseUrl( self ):
+    def baseurl_object( self ):
         '''
         @return: Returns a string contaning the URL without the query string and without any path. 
         Example :
         
-        >>> u = url('http://www.google.com/foo/bar.txt?id=3#foobar')
-        >>> u.baseUrl()
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=3#foobar')
+        >>> u.baseurl_object()
         'http://www.google.com/'
         '''
         return self.scheme+'://'+self.domain + '/'
     
     
-    def normalizeURL( self ):
+    def normalizeurl_object( self ):
         '''
         This method was added to be able to avoid some issues which are generated
         by the different way browsers and urlparser.urljoin join the URLs. A clear
@@ -203,24 +204,24 @@ class url(object):
     
         So, before the path normalization, I perform a small net location normalization that transforms:
         
-        >>> u = url('http://host.tld:80/foo/bar')
-        >>> u.normalizeURL()
+        >>> u = url_object('http://host.tld:80/foo/bar')
+        >>> u.normalizeurl_object()
         >>> u.url_string
         'http://host.tld/foo/bar'
-        >>> u = url('https://host.tld:443/foo/bar')
-        >>> u.normalizeURL()
+        >>> u = url_object('https://host.tld:443/foo/bar')
+        >>> u.normalizeurl_object()
         >>> u.url_string
         'https://host.tld/foo/bar'
-        >>> u = url('http://user:passwd@host.tld:80')
-        >>> u.normalizeURL()
+        >>> u = url_object('http://user:passwd@host.tld:80')
+        >>> u.normalizeurl_object()
         >>> u.url_string
         'http://user:passwd@host.tld/'
-        >>> u = url('http://abc/../f00.b4r')
-        >>> u.normalizeURL()
+        >>> u = url_object('http://abc/../f00.b4r')
+        >>> u.normalizeurl_object()
         >>> u.url_string
         'http://abc/f00.b4r'
-        >>> u = url('http://abc/../../f00.b4r')
-        >>> u.normalizeURL()
+        >>> u = url_object('http://abc/../../f00.b4r')
+        >>> u.normalizeurl_object()
         >>> u.url_string
         'http://abc/f00.b4r'
         '''
@@ -259,9 +260,9 @@ class url(object):
         # Now normalize the path:
         relativeURL = self.getPathQs()
     
-        commonjoin = _uparse.urljoin(baseURL, relativeURL)
+        commonjoin = urlparse.urljoin(baseURL, relativeURL)
         
-        common_join_url = url(commonjoin)
+        common_join_url = url_object(commonjoin)
         path = common_join_url.getPathQs()
     
         while path.startswith('../') or path.startswith('/../'):
@@ -270,31 +271,31 @@ class url(object):
             elif path.startswith('/../'):
                 path = path[3:]
     
-        fixed_url = _uparse.urljoin(baseURL, path)
+        fixed_url = urlparse.urljoin(baseURL, path)
         
         #    "re-init" the object 
-        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = _uparse.urlparse( fixed_url )
+        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( fixed_url )
     
     def getPort( self ):
         '''
         @return: The TCP port that is going to be used to contact the remote end.
 
-        >>> u = url('http://abc/f00.b4r')
+        >>> u = url_object('http://abc/f00.b4r')
         >>> u.getPort()
         80
-        >>> u = url('http://abc:80/f00.b4r')
+        >>> u = url_object('http://abc:80/f00.b4r')
         >>> u.getPort()
         80
-        >>> u = url('http://abc:443/f00.b4r')
+        >>> u = url_object('http://abc:443/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url('https://abc/f00.b4r')
+        >>> u = url_object('https://abc/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url('https://abc:443/f00.b4r')
+        >>> u = url_object('https://abc:443/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url('https://abc:80/f00.b4r')
+        >>> u = url_object('https://abc:80/f00.b4r')
         >>> u.getPort()
         80
 
@@ -326,37 +327,37 @@ class url(object):
 
         Examples:
         
-        >>> u = url('http://abc/foo.bar')
+        >>> u = url_object('http://abc/foo.bar')
         >>> u.urlJoin('abc.html').url_string
         'http://abc/abc.html'
         >>> u.urlJoin('/abc.html').url_string
         'http://abc/abc.html'
-        >>> u = url('http://abc/')
+        >>> u = url_object('http://abc/')
         >>> u.urlJoin('/abc.html').url_string
         'http://abc/abc.html'
         >>> u.urlJoin('/def/abc.html').url_string
         'http://abc/def/abc.html'
-        >>> u = url('http://abc/def/jkl/')
+        >>> u = url_object('http://abc/def/jkl/')
         >>> u.urlJoin('/def/abc.html').url_string
         'http://abc/def/abc.html'
         >>> u.urlJoin('def/abc.html').url_string
         'http://abc/def/jkl/def/abc.html'
 
         '''
-        joined_url = _uparse.urljoin( self.url_string, relative )
-        jurl_obj = url(joined_url)
-        jurl_obj.normalizeURL()
+        joined_url = urlparse.urljoin( self.url_string, relative )
+        jurl_obj = url_object(joined_url)
+        jurl_obj.normalizeurl_object()
         return jurl_obj
     
     def getDomain( self ):
         '''
-        >>> url('http://abc/def/jkl/').getDomain()
+        >>> url_object('http://abc/def/jkl/').getDomain()
         'abc'
-        >>> url('http://1.2.3.4/def/jkl/').getDomain()
+        >>> url_object('http://1.2.3.4/def/jkl/').getDomain()
         '1.2.3.4'
-        >>> url('http://555555/def/jkl/').getDomain()
+        >>> url_object('http://555555/def/jkl/').getDomain()
         '555555'
-        >>> url('http://foo.bar.def/def/jkl/').getDomain()
+        >>> url_object('http://foo.bar.def/def/jkl/').getDomain()
         'foo.bar.def'
     
         @return: Returns the domain name for the url.
@@ -366,19 +367,19 @@ class url(object):
     
     def is_valid_domain( self ):
         '''
-        >>> url("http://1.2.3.4").is_valid_domain()
+        >>> url_object("http://1.2.3.4").is_valid_domain()
         True
-        >>> url("http://aaa.com").is_valid_domain()
+        >>> url_object("http://aaa.com").is_valid_domain()
         True
-        >>> url("http://aaa.").is_valid_domain()
+        >>> url_object("http://aaa.").is_valid_domain()
         False
-        >>> url("http://aaa*a").is_valid_domain()
+        >>> url_object("http://aaa*a").is_valid_domain()
         False
-        >>> url("http://aa-bb").is_valid_domain()
+        >>> url_object("http://aa-bb").is_valid_domain()
         True
-        >>> url("http://abc").is_valid_domain()
+        >>> url_object("http://abc").is_valid_domain()
         True
-        >>> url("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
+        >>> url_object("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
         True
         
         @parameter url: The url to parse.
@@ -388,11 +389,11 @@ class url(object):
     
     def getNetLocation( self ):
         '''
-        >>> url("http://1.2.3.4").getNetLocation()
+        >>> url_object("http://1.2.3.4").getNetLocation()
         '1.2.3.4'
-        >>> url("http://aaa.com:80").getNetLocation()
+        >>> url_object("http://aaa.com:80").getNetLocation()
         'aaa.com:80'
-        >>> url("http://aaa:443").getNetLocation()
+        >>> url_object("http://aaa:443").getNetLocation()
         'aaa:443'
     
         @return: Returns the net location for the url.
@@ -401,11 +402,11 @@ class url(object):
     
     def getProtocol( self ):
         '''
-        >>> url("http://1.2.3.4").getProtocol()
+        >>> url_object("http://1.2.3.4").getProtocol()
         'http'
-        >>> url("https://aaa.com:80").getProtocol()
+        >>> url_object("https://aaa.com:80").getProtocol()
         'https'
-        >>> url("ftp://aaa:443").getProtocol()
+        >>> url_object("ftp://aaa:443").getProtocol()
         'ftp'
 
         @return: Returns the domain name for the url.
@@ -424,23 +425,23 @@ class url(object):
         
         Code taken from: http://getoutfoxed.com/node/41
 
-        >>> url("http://1.2.3.4").getRootDomain()
+        >>> url_object("http://1.2.3.4").getRootDomain()
         '1.2.3.4'
-        >>> url("https://aaa.com:80").getRootDomain()
+        >>> url_object("https://aaa.com:80").getRootDomain()
         'aaa.com'
-        >>> url("http://aaa.com").getRootDomain()
+        >>> url_object("http://aaa.com").getRootDomain()
         'aaa.com'
-        >>> url("http://www.aaa.com").getRootDomain()
+        >>> url_object("http://www.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url("http://mail.aaa.com").getRootDomain()
+        >>> url_object("http://mail.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url("http://foo.bar.spam.eggs.aaa.com").getRootDomain()
+        >>> url_object("http://foo.bar.spam.eggs.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url("http://foo.bar.spam.eggs.aaa.com.ar").getRootDomain()
+        >>> url_object("http://foo.bar.spam.eggs.aaa.com.ar").getRootDomain()
         'aaa.com.ar'
-        >>> url("http://foo.aaa.com.ar").getRootDomain()
+        >>> url_object("http://foo.aaa.com.ar").getRootDomain()
         'aaa.com.ar'
-        >>> url("http://foo.aaa.edu.sz").getRootDomain()
+        >>> url_object("http://foo.aaa.edu.sz").getRootDomain()
         'aaa.edu.sz'
 
         '''
@@ -520,17 +521,17 @@ class url(object):
         '''
         @return: Returns the domain name and the path for the url.
     
-        >>> url('http://abc/def/jkl/').getDomainPath()
+        >>> url_object('http://abc/def/jkl/').getDomainPath()
         'http://abc/def/jkl/'
-        >>> url('http://abc/def.html').getDomainPath()
+        >>> url_object('http://abc/def.html').getDomainPath()
         'http://abc/'
-        >>> url('http://abc/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc/xyz/def.html').getDomainPath()
         'http://abc/xyz/'
-        >>> url('http://abc:80/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc:80/xyz/def.html').getDomainPath()
         'http://abc:80/xyz/'
-        >>> url('http://abc:443/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc:443/xyz/def.html').getDomainPath()
         'http://abc:443/xyz/'
-        >>> url('https://abc:443/xyz/def.html').getDomainPath()
+        >>> url_object('https://abc:443/xyz/def.html').getDomainPath()
         'https://abc:443/xyz/'
         '''
         if self.path:
@@ -543,11 +544,11 @@ class url(object):
         '''
         @return: Returns the filename name for the given url.
     
-        >>> url('https://abc:443/xyz/def.html').getFileName()
+        >>> url_object('https://abc:443/xyz/def.html').getFileName()
         'def.html'
-        >>> url('https://abc:443/xyz/').getFileName()
+        >>> url_object('https://abc:443/xyz/').getFileName()
         ''
-        >>> url('https://abc:443/xyz/d').getFileName()
+        >>> url_object('https://abc:443/xyz/d').getFileName()
         'd'
         '''
         return self.path[self.path.rfind('/')+1:]
@@ -556,11 +557,11 @@ class url(object):
         '''
         @return: Returns the extension of the filename, if possible, else, ''.
         
-        >>> url('https://abc:443/xyz/d').getExtension()
+        >>> url_object('https://abc:443/xyz/d').getExtension()
         ''
-        >>> url('https://abc:443/xyz/d.html').getExtension()
+        >>> url_object('https://abc:443/xyz/d.html').getExtension()
         'html'
-        >>> url('https://abc:443/xyz/').getExtension()
+        >>> url_object('https://abc:443/xyz/').getExtension()
         ''
         '''
         fname = self.getFileName()
@@ -572,9 +573,9 @@ class url(object):
     
     def allButScheme( self ):
         '''
-        >>> url('https://abc:443/xyz/').allButScheme()
+        >>> url_object('https://abc:443/xyz/').allButScheme()
         'abc:443/xyz/'
-        >>> url('https://abc:443/xyz/file.asp').allButScheme()
+        >>> url_object('https://abc:443/xyz/file.asp').allButScheme()
         'abc:443/xyz/'
 
         @return: Returns the domain name and the path for the url.
@@ -583,11 +584,11 @@ class url(object):
     
     def getPath( self ):
         '''
-        >>> url('https://abc:443/xyz/file.asp').getPath()
+        >>> url_object('https://abc:443/xyz/file.asp').getPath()
         '/xyz/file.asp'
-        >>> url('https://abc:443/xyz/').getPath()
+        >>> url_object('https://abc:443/xyz/').getPath()
         '/xyz/'
-        >>> url('https://abc:443/xyz/123/456/789/').getPath()
+        >>> url_object('https://abc:443/xyz/123/456/789/').getPath()
         '/xyz/123/456/789/'
 
         @return: Returns the path for the url:
@@ -596,13 +597,13 @@ class url(object):
     
     def getPathQs( self ):
         '''
-        >>> url('https://abc:443/xyz/123/456/789/').getPath()
+        >>> url_object('https://abc:443/xyz/123/456/789/').getPath()
         '/xyz/123/456/789/'
-        >>> url('https://abc:443/xyz/123/456/789/').getPathQs()
+        >>> url_object('https://abc:443/xyz/123/456/789/').getPathQs()
         '/xyz/123/456/789/'
-        >>> url('https://abc:443/xyz/file.asp').getPathQs()
+        >>> url_object('https://abc:443/xyz/file.asp').getPathQs()
         '/xyz/file.asp'
-        >>> url('https://abc:443/xyz/file.asp?id=1').getPathQs()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1').getPathQs()
         '/xyz/file.asp?id=1'
     
         @return: Returns the domain name and the path for the url.
@@ -616,11 +617,11 @@ class url(object):
     
     def urlDecode( self ):
         '''
-        >>> url('https://abc:443/xyz/file.asp?id=1').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1').urlDecode()
         'https://abc:443/xyz/file.asp?id=1'
-        >>> url('https://abc:443/xyz/file.asp?id=1 2').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1 2').urlDecode()
         'https://abc:443/xyz/file.asp?id=1 2'
-        >>> url('https://abc:443/xyz/file.asp?id=1+2').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1+2').urlDecode()
         'https://abc:443/xyz/file.asp?id=1 2'
 
         @return: An URL-Decoded version of the URL.
@@ -634,20 +635,20 @@ class url(object):
         '''
         Get a list of all directories and subdirectories.
         
-        >>> url('http://abc/xyz/def/123/').getDirectories()
+        >>> url_object('http://abc/xyz/def/123/').getDirectories()
         ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/', 'http://abc/xyz/def/123/']
-        >>> url('http://abc/xyz/def/').getDirectories()
+        >>> url_object('http://abc/xyz/def/').getDirectories()
         ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/']
-        >>> url('http://abc/xyz/').getDirectories()
+        >>> url_object('http://abc/xyz/').getDirectories()
         ['http://abc/', 'http://abc/xyz/']
-        >>> url('http://abc/').getDirectories()
+        >>> url_object('http://abc/').getDirectories()
         ['http://abc/']
 
         '''
         res = []
         
         dp = self.getDomainPath()
-        bu = self.baseUrl()
+        bu = self.baseurl_object()
         directories = dp.replace( bu, '' )
         splitted_dirs = directories.split('/')
         for i in xrange( len(splitted_dirs) ):
@@ -662,15 +663,15 @@ class url(object):
         '''
         Analizes the url to check for a params
 
-        >>> url('http://abc/').hasParams()
+        >>> url_object('http://abc/').hasParams()
         False
-        >>> url('http://abc/;id=1').hasParams()
+        >>> url_object('http://abc/;id=1').hasParams()
         True
-        >>> url('http://abc/?id=3;id=1').hasParams()
+        >>> url_object('http://abc/?id=3;id=1').hasParams()
         False
-        >>> url('http://abc/;id=1?id=3').hasParams()
+        >>> url_object('http://abc/;id=1?id=3').hasParams()
         True
-        >>> url('http://abc/foobar.html;id=1?id=3').hasParams()
+        >>> url_object('http://abc/foobar.html;id=1?id=3').hasParams()
         True
     
         @return: True if the URL has params.
@@ -681,15 +682,15 @@ class url(object):
     
     def getParamsString( self ):
         '''
-        >>> url('http://abc/').getParamsString()
+        >>> url_object('http://abc/').getParamsString()
         ''
-        >>> url('http://abc/;id=1').getParamsString()
+        >>> url_object('http://abc/;id=1').getParamsString()
         'id=1'
-        >>> url('http://abc/?id=3;id=1').getParamsString()
+        >>> url_object('http://abc/?id=3;id=1').getParamsString()
         ''
-        >>> url('http://abc/;id=1?id=3').getParamsString()
+        >>> url_object('http://abc/;id=1?id=3').getParamsString()
         'id=1'
-        >>> url('http://abc/foobar.html;id=1?id=3').getParamsString()
+        >>> url_object('http://abc/foobar.html;id=1?id=3').getParamsString()
         'id=1'
     
         @return: Returns the params inside the url.
@@ -700,30 +701,30 @@ class url(object):
         '''
         @return: Returns a new url object contaning the URL without the parameter. Example :
 
-        >>> url('http://abc/').removeParams().url_string
+        >>> url_object('http://abc/').removeParams().url_string
         'http://abc/'
-        >>> url('http://abc/def.txt').removeParams().url_string
+        >>> url_object('http://abc/def.txt').removeParams().url_string
         'http://abc/def.txt'
-        >>> url('http://abc/;id=1').removeParams().url_string
+        >>> url_object('http://abc/;id=1').removeParams().url_string
         'http://abc/'
-        >>> url('http://abc/;id=1&file=2').removeParams().url_string
+        >>> url_object('http://abc/;id=1&file=2').removeParams().url_string
         'http://abc/'
-        >>> url('http://abc/;id=1?file=2').removeParams().url_string
+        >>> url_object('http://abc/;id=1?file=2').removeParams().url_string
         'http://abc/?file=2'
-        >>> url('http://abc/xyz.txt;id=1?file=2').removeParams().url_string
+        >>> url_object('http://abc/xyz.txt;id=1?file=2').removeParams().url_string
         'http://abc/xyz.txt?file=2'
 
         '''
-        url_without_params = _uparse.urlunparse( (self.scheme, self.domain, self.path, None, self.qs, self.fragment) )
-        return url(url_without_params)
+        url_without_params = urlparse.urlunparse( (self.scheme, self.domain, self.path, None, self.qs, self.fragment) )
+        return url_object(url_without_params)
     
     def setParam( self, param_string ):
         '''
-        >>> u = url('http://abc/;id=1')
+        >>> u = url_object('http://abc/;id=1')
         >>> u.setParam('file=2')
         >>> u.getParamsString()
         'file=2'
-        >>> u = url('http://abc/xyz.txt;id=1?file=2')
+        >>> u = url_object('http://abc/xyz.txt;id=1?file=2')
         >>> u.setParam('file=3')
         >>> u.getParamsString()
         'file=3'
@@ -741,16 +742,16 @@ class url(object):
     
         @return: A QueryString object.
 
-        >>> u = url('http://abc/xyz.txt;id=1?file=2')
+        >>> u = url_object('http://abc/xyz.txt;id=1?file=2')
         >>> u.getParams()
         {'id': '1'}
-        >>> u = url('http://abc/xyz.txt;id=1&file=2?file=2')
+        >>> u = url_object('http://abc/xyz.txt;id=1&file=2?file=2')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
-        >>> u = url('http://abc/xyz.txt;id=1&file=2?spam=2')
+        >>> u = url_object('http://abc/xyz.txt;id=1&file=2?spam=2')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
-        >>> u = url('http://abc/xyz.txt;id=1&file=2?spam=3')
+        >>> u = url_object('http://abc/xyz.txt;id=1&file=2?spam=3')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
 
@@ -768,13 +769,22 @@ class url(object):
                     result[ i ] = parsedData[ i ][0]
         return result
 
+    def __eq__(self, other):
+        '''
+        @return: True if the url_strings are equal
+        '''
+        if not isinstance(other, url):
+            raise ValueError('The urlParser.url class only knows how to __eq__ with objects of the same type.')
+
+        return self.url_string == other.url_string
+
     def __str__(self):
         '''
         @return: A string representation of myself
 
-        >>> str( url('http://abc/xyz.txt;id=1?file=2') )
+        >>> str( url_object('http://abc/xyz.txt;id=1?file=2') )
         'http://abc/xyz.txt;id=1?file=2'
-        >>> str( url('http://abc:80/') )
+        >>> str( url_object('http://abc:80/') )
         'http://abc:80/'
         '''
         return self.url_string

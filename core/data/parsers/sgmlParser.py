@@ -26,6 +26,7 @@ from core.controllers.w3afException import w3afException
 import core.data.dc.form as form
 import core.data.parsers.urlParser as urlParser
 from core.data.parsers.abstractParser import abstractParser as abstractParser
+from core.data.parsers.urlParser import url_object
 
 from sgmllib import SGMLParser
 import traceback
@@ -71,7 +72,7 @@ class sgmlParser(abstractParser, SGMLParser):
         
         self._normalizeMarkup = normalizeMarkup
         
-        # Fill self._re_URLs
+        #    Fill self._re_URLs list with url objects
         self._regex_url_parse( httpResponse )
         
         # Now we are ready to work
@@ -141,7 +142,7 @@ class sgmlParser(abstractParser, SGMLParser):
                     new_base_url = attr[1]
                     break
             # set the new base URL
-            self._baseUrl = urlParser.urlJoin( self._baseUrl , new_base_url )
+            self._baseUrl = self._baseUrl.urlJoin( new_base_url )
         
         if tag.lower() == 'script':
             self._insideScript = True
@@ -202,13 +203,13 @@ class sgmlParser(abstractParser, SGMLParser):
                 # The content variables looks something like... "4;URL=http://www.f00.us/"
                 # The content variables looks something like... "2; URL=http://www.f00.us/"
                 # The content variables looks something like... "6  ; URL=http://www.f00.us/"
-                for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
-                    url = url.strip()
-                    url = self._decode_URL( url, self._encoding )
-                    url = urlParser.urlJoin( self._baseUrl , url )
+                for url_string in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
+                    url_string = url_string.strip()
+                    url_string = self._decode_URL( url_string, self._encoding )
+                    url_instance = self._baseUrl.urlJoin( url_string )
                     
-                    self._parsed_URLs.append( url )
-                    self._tag_and_url.append( ('meta', url ) )
+                    self._parsed_URLs.append( url_instance )
+                    self._tag_and_url.append( ('meta', url_instance ) )
     
     def _findReferences(self, tag, attrs):
         '''
@@ -222,12 +223,14 @@ class sgmlParser(abstractParser, SGMLParser):
                 
                 # Only add it to the result of the current URL is not a fragment
                 if attr_val and not attr_val.startswith('#'):
-                    url = urlParser.urlJoin(self._baseUrl, attr_val)
-                    url = self._decode_URL(url, self._encoding)
-                    url = urlParser.normalizeURL(url)
-                    if url not in self._parsed_URLs:
-                        self._parsed_URLs.append(url)
-                        self._tag_and_url.append((tag.lower(), url))
+                    
+                    url_string = self._decode_URL( attr_val, self._encoding)
+                    url_instance = self._baseUrl.urlJoin( url_string )
+                    url_instance = url_instance.normalizeURL()
+                    
+                    if url_instance not in self._parsed_URLs:
+                        self._parsed_URLs.append(url_instance)
+                        self._tag_and_url.append((tag.lower(), url_instance))
                         break
     
     def _parse(self, s):

@@ -19,23 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import urlparse as _uparse
+import urlparse
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afException
 
+
 def urlbuild(scheme, domain, path='/', params=None, qs=None, fragment=None):
     '''
     Build URL from fragments
+    >>> urlbuild('http', 'abc')
+    'http://abc/'
+    >>> urlbuild('http', 'abc:80', path='foo')
+    'http://abc:80/foo'
     '''
-    res = scheme + '://' + domain + path
-    if params:
-        res += ';' + params
-    if qs:
-        res += '?' + qs
-    if fragment:
-        res += '#' + fragment
-    return res
+    return urlparse.urlunparse((scheme, domain, path, params, qs, fragment))
 
 def checkVersionSintax(version):
     '''
@@ -58,11 +56,11 @@ def checkVersionSintax(version):
 
 def checkURISintax(uri, host=None):
     '''
-    @return: True if the sintax of the URI section of HTTP is valid; else raise an exception.
+    @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
     '''
     res = uri
     supportedSchemes = ['http', 'https']
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse(uri)
+    scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
 
     if not scheme:
         scheme = 'http'
