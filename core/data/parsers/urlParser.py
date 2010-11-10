@@ -33,562 +33,751 @@ import cgi
 import re
 import string
 
-'''
-This module parses URLs.
-
-@author: Andres Riancho ( andres.riancho@gmail.com )
-'''
-
-def hasQueryString( uri ):
+class url(object):
     '''
-    Analizes the uri to check for a query string.
-
-    @parameter uri: The uri to analize.
-    @return: True if the URI has a query string.
+    This class represents a URL and gives access to all its parts
+    with several "getter" methods.
+    
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( uri )
-    if qs != '':
-        return True
-    return False
+    
+    def __init__(self, url_string ):
+        '''
+        @param url_string: A string with a URL.
+        @return: True if the url_string was successfully parsed into an URL object.
 
-def getQueryString( url, ignoreExceptions=True ):
-    '''
-    Parses the query string and returns a dict.
+        Simple generic test, more detailed tests in each method!
+        
+        >>> u = url('http://www.google.com/foo/bar.txt')
+        >>> u.path
+        '/foo/bar.txt'
+        >>> u.scheme
+        'http'
+        >>> u.getFileName()
+        'bar.txt'
+        >>> u.getExtension()
+        'txt'
+        >>> 
+        '''
+        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = _uparse.urlparse( url_string )
 
-    @parameter url: The url with the query string to parse.
-    @return: A QueryString Object, example :
-        - input url : http://localhost/foo.asp?xx=yy&bb=dd
-        - output dict : { xx:yy , bb:dd }
-    '''
-    parsedQs = None
-    result = queryString()
+    @property
+    def url_string(self):
+        return _uparse.urlunparse( (self.scheme, self.domain, self.path, self.params, self.qs, self.fragment) )
+        
+    def hasQueryString( self ):
+        '''
+        Analyzes the uri to check for a query string.
+        
+        >>> u = url('http://www.google.com/foo/bar.txt')
+        >>> u.hasQueryString()
+        False
+        >>> u = url('http://www.google.com/foo/bar.txt?id=1')
+        >>> u.hasQueryString()
+        True
+        >>> u = url('http://www.google.com/foo/bar.txt;par=3')
+        >>> u.hasQueryString()
+        False
+    
+        @return: True if self has a query string.
+        '''
+        if self.qs != '':
+            return True
+        return False
+    
+    def getQueryString( self, ignoreExceptions=True ):
+        '''
+        Parses the query string and returns a dict.
+    
+        @return: A QueryString Object that represents the query string.
 
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-
-    if qs:
-        try:
-            parsedQs = cgi.parse_qs( qs ,keep_blank_values=True,strict_parsing=False)
-        except Exception, e:
-            if not ignoreExceptions:
-                raise w3afException('Strange things found when parsing query string: "' + qs + '"')
-        else:
-            #
-            #   Before we had something like this:
-            #
-            #for i in parsedQs.keys():
-            #    result[ i ] = parsedQs[ i ][0]
-            #
-            #   But with that, we fail to handle web applications that use "duplicated parameter
-            #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
-            #
-            #   (please note the lack of [0]) , and that if the value isn't a list... 
-            #    I create an artificial list
-            for i in parsedQs.keys():
-                if isinstance( parsedQs[ i ], list ):
-                    result[ i ] = parsedQs[ i ]
-                else:
-                    result[ i ] = [parsedQs[ i ], ]
-
-    return result
-
-def uri2url( url):
-    '''
-    @parameter url: The url with the query string.
-    @return: Returns a string contaning the URL without the query string. Example :
-        - input url : http://localhost/foo.asp?xx=yy&bb=dd#fragment
-        - output url string : http://localhost/foo.asp
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    res = scheme + '://' + domain + path
-    if params != '':
-        res += ";" + params
-    return res
-
-def removeFragment(  url ):
-    '''
-    @parameter url: The url with fragments
-    @return: Returns a string contaning the URL without the fragment. Example :
-        - input url : http://localhost/foo.asp?xx=yy&bb=dd#fragment
-        - output url string : http://localhost/foo.asp?xx=yy&bb=dd
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    res = scheme + '://' + domain + path
-    if params != '':
-        res += ';' + params
-    if qs != '':
-        res += '?' + qs
-    return res
-
-def baseUrl(  url ):
-    '''
-    @parameter url: The url with the query string.
-    @return: Returns a string contaning the URL without the query string and without any path. 
-    Example :
-        - input url : http://localhost/dir1/foo.asp?xx=yy&bb=dd
-        - output url string : http://localhost/
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return scheme+'://'+domain + '/'
-
-
-def normalizeURL(url):
-    '''
-    This method was added to be able to avoid some issues which are generated
-    by the different way browsers and urlparser.urljoin join the URLs. A clear
-    example of this is the following case:
-        baseURL = 'http:/abc/'
-        relativeURL = '/../f00.b4r'
-
-    w3af would try to GET http:/abc/../f00.b4r; while mozilla would try to
-    get http:/abc/f00.b4r . In some cases, the first is ok, on other cases
-    the first one doesn't even work and return a 403 error message.
-
-    So, to sum up, this method takes an URL, and returns a normalized URL.
-    For the example we were talking before, it will return:
-    'http://abc/f00.b4r'
-    instead of the normal response from urlparser.urljoin: 'http://abc/../f00.b4r'
-
-    Added later: Before performing anything, I also normalize the net location part of the URL.
-    In some web apps we see things like:
-        - http://host.tld:80/foo/bar
-
-    As you may have noticed, the ":80" is redundant, and what's even worse, it can confuse w3af because
-    in most cases http://host.tld:80/foo/bar != http://host.tld/foo/bar , and http://host.tld/foo/bar could also be
-    found by the webSpider plugin, so we are analyzing the same thing twice.
-
-    So, before the path normalization, I perform a small net location normalization that transforms:
-    >>> normalizeURL('http://host.tld:80/foo/bar')
-    'http://host.tld/foo/bar'
-    >>> normalizeURL('https://host.tld:443/foo/bar')
-    'https://host.tld/foo/bar'
-    >>> normalizeURL('http://user:passwd@host.tld:80')
-    'http://user:passwd@host.tld/'
-    >>> normalizeURL('http://abc/../f00.b4r')
-    'http://abc/f00.b4r'
-    >>> normalizeURL('http://abc/../../f00.b4r')
-    'http://abc/f00.b4r'
-    '''
-    # net location normalization:
-    net_location = getNetLocation(url)
-    protocol = getProtocol(url)
-
-    # We may have auth URLs like <http://user:passwd@host.tld:80>. Notice the
-    # ":" duplication. We'll be interested in transforming 'net_location'
-    # beginning in the last appereance of ':'
-    at_symb_index = net_location.rfind('@')
-    colon_symb_max_index = net_location.rfind(':')
-    # Found
-    if colon_symb_max_index > at_symb_index:
-
-        host = net_location[:colon_symb_max_index]
-        port = net_location[(colon_symb_max_index + 1):]
-
-        # Assign default port if nondigit.
-        if not port.isdigit():
-            if protocol == 'https':
-                port = '443'
-            else:
-                port = '80'
-
-        if (protocol == 'http' and port == '80') or \
-            (protocol == 'https' and port == '443'):
-            net_location = host
-        else:
-            # The net location has a specific port definition
-            net_location = host + ':' + port
-
-    # A normalized baseURL:
-    baseURL = protocol + '://' + net_location + '/'
-
-    # Now normalize the path:
-    relativeURL = getPathQs(url)
-
-    commonjoin = _uparse.urljoin(baseURL, relativeURL)
-
-    path = getPathQs(commonjoin)
-
-    while path.startswith('../') or path.startswith('/../'):
-        if path.startswith('../'):
-            path = path[2:]
-        elif path.startswith('/../'):
-            path = path[3:]
-
-    fixedURL = _uparse.urljoin(baseURL, path)
-    return fixedURL
-
-def getPort( url ):
-    '''
-    @return: The TCP port that is going to be used to contact the remote end.
-    '''
-    net_location = getNetLocation( url )
-    protocol = getProtocol( url )
-    if ':' in net_location:
-        host,  port = net_location.split(':')
-        return int(port)
-    else:
-        if protocol.lower() == 'http':
-            return 80
-        elif protocol.lower() == 'https':
-            return 443
-        else:
-            # Just in case...
-            return 80
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3')
+        >>> u.getQueryString()
+        {'id': ['3']}
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3&id=4')
+        >>> u.getQueryString()
+        {'id': ['3', '4']}
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3&ff=4&id=5')
+        >>> u.getQueryString()
+        {'id': ['3', '5'], 'ff': ['4']}
             
-def urlJoin( baseurl , relative ):
-    '''
-    Construct a full (''absolute'') URL by combining a ''base URL'' (base) with a ``relative URL'' (url). 
-    Informally, this uses components of the base URL, in particular the addressing scheme,
-    the network location and (part of) the path, to provide missing components in the relative URL.
-
-    Example:
-        >>> urljoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
-        'http://www.cwi.nl/%7Eguido/FAQ.html'
-    For more information read RFC 1808 espeally section 5.
-    
-    @param baseurl: The base url to join
-    @param relative: The relative url to add to the base url
-    @return: The joined URL.
-    '''
-    response = _uparse.urljoin( baseurl, relative )
-    response = normalizeURL(response)
-    return response
-
-def getDomain( url ):
-    '''
-    Input: http://localhost:4444/f00_bar.html
-    Output: localhost
-
-    @parameter url: The url to parse.
-    @return: Returns the domain name for the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    domain = domain.split(':')[0]
-    return domain
-
-def isValidURLDomain(url):
-    '''
-    >>> isValidURLDomain("http://1.2.3.4")
-    True
-    >>> isValidURLDomain("http://aaa.com")
-    True
-    >>> isValidURLDomain("http://aaa.")
-    False
-    >>> isValidURLDomain("http://aa*a")
-    False
-    
-    @parameter url: The url to parse.
-    @return: Returns a boolean that indicates if <url>'s domain is valid
-    '''
-    _, domain, _, _, _, _  = _uparse.urlparse(url)
-    return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', domain or '') is not None
-
-def getNetLocation( url ):
-    '''
-    Input: http://localhost:4444/f00_bar.html
-    Output: localhost:4444
-
-    @parameter url: The url to parse.
-    @return: Returns the net location for the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return domain
-
-def getProtocol( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the domain name for the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return scheme
-
-def getRootDomain( input ):
-    '''
-    Get the root domain name. Examples:
-    
-    input: www.ciudad.com.ar
-    output: ciudad.com.ar
-    
-    input: i.love.myself.ru
-    output: myself.ru
-    
-    Code taken from: http://getoutfoxed.com/node/41
-    '''
-    # TODO: this list should be updated from time to time, automatically.
-    # taken from http:#en.wikipedia.org/wiki/List_of_Internet_top-level_domains
-    gTopLevelDomainDict =  {
-        "ac":1,"ad":1,"ae":1,"aero":1,"af":1,"ag":1,"ai":1,"al":1,"am":1,
-        "an":1,"ao":1,"aq":1,"ar":1,"arpa":1,"as":1,"at":1,"au":1,"aw":1,
-        "az":1,"ba":1,"bb":1,"bd":1,"be":1,"bf":1,"bg":1,"bh":1,"bi":1,
-        "biz":1,"bj":1,"bm":1,"bn":1,"bo":1,"br":1,"bs":1,"bt":1,"bv":1,
-        "bw":1,"by":1,"bz":1,"ca":1,"cc":1,"cd":1,"cf":1,"cg":1,"ch":1,
-        "ci":1,"ck":1,"cl":1,"cm":1,"cn":1,"co":1,"com":1,"coop":1,"cr":1,
-        "cu":1,"cv":1,"cx":1,"cy":1,"cz":1,"de":1,"dj":1,"dk":1,"dm":1,
-        "do":1,"dz":1,"ec":1,"edu":1,"ee":1,"eg":1,"er":1,"es":1,"et":1,
-        "fi":1,"fj":1,"fk":1,"fm":1,"fo":1,"fr":1,"ga":1,"gb":1,"gd":1,
-        "ge":1,"gf":1,"gg":1,"gh":1,"gi":1,"gl":1,"gm":1,"gn":1,"gov":1,
-        "gp":1,"gq":1,"gr":1,"gs":1,"gt":1,"gu":1,"gw":1,"gy":1,"hk":1,
-        "hm":1,"hn":1,"hr":1,"ht":1,"hu":1,"id":1,"ie":1,"il":1,"im":1,
-        "in":1,"info":1,"int":1,"io":1,"iq":1,"ir":1,"is":1,"it":1,"je":1,
-        "jm":1,"jo":1,"jp":1,"ke":1,"kg":1,"kh":1,"ki":1,"km":1,"kn":1,
-        "kr":1,"kw":1,"ky":1,"kz":1,"la":1,"lb":1,"lc":1,"li":1,"lk":1,
-        "lr":1,"ls":1,"lt":1,"lu":1,"lv":1,"ly":1,"ma":1,"mc":1,"md":1,
-        "mg":1,"mh":1,"mil":1,"mk":1,"ml":1,"mm":1,"mn":1,"mo":1,"mp":1,
-        "mq":1,"mr":1,"ms":1,"mt":1,"mu":1,"museum":1,"mv":1,"mw":1,"mx":1,
-        "my":1,"mz":1,"na":1,"name":1,"nc":1,"ne":1,"net":1,"nf":1,"ng":1,
-        "ni":1,"nl":1,"no":1,"np":1,"nr":1,"nu":1,"nz":1,"om":1,"org":1,
-        "pa":1,"pe":1,"pf":1,"pg":1,"ph":1,"pk":1,"pl":1,"pm":1,"pn":1,
-        "pr":1,"pro":1,"ps":1,"pt":1,"pw":1,"py":1,"qa":1,"re":1,"ro":1,
-        "ru":1,"rw":1,"sa":1,"sb":1,"sc":1,"sd":1,"se":1,"sg":1,"sh":1,
-        "si":1,"sj":1,"sk":1,"sl":1,"sm":1,"sn":1,"so":1,"sr":1,"st":1,
-        "su":1,"sv":1,"sy":1,"sz":1,"tc":1,"td":1,"tf":1,"tg":1,"th":1,
-        "tj":1,"tk":1,"tm":1,"tn":1,"to":1,"tp":1,"tr":1,"tt":1,"tv":1,
-        "tw":1,"tz":1,"ua":1,"ug":1,"uk":1,"um":1,"us":1,"uy":1,"uz":1,
-        "va":1,"vc":1,"ve":1,"vg":1,"vi":1,"vn":1,"vu":1,"wf":1,"ws":1,
-        "ye":1,"yt":1,"yu":1,"za":1,"zm":1,"zw":1 
-    }
-    
-    # break authority into two parts: subdomain(s), and base authority
-    # e.g. images.google.com --> [images, google.com]
-    #      www.popo.com.au --> [www, popo.com.au]
-    def splitAuthority(aAuthority):
-    
-        # walk down from right, stop at (but include) first non-toplevel domain
-        chunks = re.split("\.",aAuthority)
-        chunks.reverse()
         
-        baseAuthority=""
-        subdomain=""
-        foundBreak = 0
-        
-        for i in chunks:
-            if (not foundBreak):
-                baseAuthority = i + (".","")[baseAuthority==""] + baseAuthority
+        '''
+        parsed_qs = None
+        result = queryString()
+    
+        if self.qs:
+            try:
+                parsed_qs = cgi.parse_qs( self.qs ,keep_blank_values=True,strict_parsing=False)
+            except Exception, e:
+                if not ignoreExceptions:
+                    raise w3afException('Strange things found when parsing query string: "' + qs + '"')
             else:
-                subdomain = i  + (".","")[subdomain==""] + subdomain
-            if (not gTopLevelDomainDict.has_key(i)):
-                foundBreak=1
-        return ([subdomain,baseAuthority])
+                #
+                #   Before we had something like this:
+                #
+                #for i in parsed_qs.keys():
+                #    result[ i ] = parsed_qs[ i ][0]
+                #
+                #   But with that, we fail to handle web applications that use "duplicated parameter
+                #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
+                #
+                #   (please note the lack of [0]) , and that if the value isn't a list... 
+                #    I create an artificial list
+                for i in parsed_qs.keys():
+                    if isinstance( parsed_qs[ i ], list ):
+                        result[ i ] = parsed_qs[ i ]
+                    else:
+                        result[ i ] = [parsed_qs[ i ], ]
     
-    # def to split URI into its parts, returned as URI object
-    def decomposeURI(aURI):
-        
-        authority = getDomain(aURI)
-        s = splitAuthority(authority)
-        subdomain = s[0]
-        baseAuthority = s[1]
-        
-        return baseAuthority
+        return result
     
-    # Normalize the URL
-    if not input.count('://'):
-        # sometimes i make mistakes...
-        url = 'http://' + input
-    else:
-        url = input
-        
-    domain = getNetLocation( url )
+    def uri2url( self ):
+        '''
+        @return: Returns a string contaning the URL without the query string. Example :
+
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3')
+        >>> u.uri2url()
+        'http://www.google.com/foo/bar.txt'
+        >>> 
+        '''
+        res = self.scheme + '://' + self.domain + self.path
+        if self.params != '':
+            res += ";" + self.params
+        return res
     
-    if is_ip_address(domain):
-        # An IP address has no "root domain" 
-        return domain
-    else:
-        return decomposeURI( url )
+    def removeFragment( self ):
+        '''
+        @return: Returns a string contaning the URL without the fragment. Example :
         
-def getDomainPath( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the domain name and the path for the url.
-
-    >>> getDomainPath('http://localhost/')
-    'http://localhost/'
-    >>> getDomainPath('http://localhost/abc/')
-    'http://localhost/abc/'
-    >>> getDomainPath('http://localhost/abc/def.html')
-    'http://localhost/abc/'
-    >>> 
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    if path:
-        res = scheme + '://' +domain+ path[:path.rfind('/')+1]
-    else:
-        res = scheme + '://' +domain+ '/'
-    return res
-
-def getFileName( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the filename name for the given url.
-
-    >>> getFileName('http://localhost/')
-    ''
-    >>> getFileName('http://localhost/abc')
-    'abc'
-    >>> getFileName('http://localhost/abc.html')
-    'abc.html'
-    >>> getFileName('http://localhost/def/abc.html')
-    'abc.html'
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return path[path.rfind('/')+1:]
-
-def getExtension( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the extension of the filename, if possible, else, ''.
-    '''
-    fname = getFileName( url )
-    extension = fname[ fname.rfind('.') +1 :]
-    if extension == fname:
-        return ''
-    else:
-        return extension
-
-def allButScheme( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the domain name and the path for the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return domain+ path[:path.rfind('/')+1]
-
-def getPath( url ):
-    '''
-    @parameter url: The url to parse.
-    @return: Returns the path for the url:
-        Input:
-            http://localhost/pepe/0a0a
-        Output:
-            /pepe/0a0a
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return path
-
-def getPathQs(url):
-    '''
-    >>> getPathQs( 'http://localhost/a/b/c/hh.html' )
-    '/a/b/c/hh.html'
-
-    @parameter url: The url to parse.
-    @return: Returns the domain name and the path for the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    res = path
-    if qs != '':
-        res += '?' + qs
-    if params != '':
-        res += ';' + params
-    return res
-
-def urlDecode( url ):
-    '''
-    UrlDecode the url.
-    '''
-    res = None
-    if type(url) == type(""):
-        res = urllib.unquote(string.replace(url, "+", " "))
-    return res
-
-def getDirectories( url ):
-    '''
-    Get a list of all directories and subdirectories.
-    Example:
-        - url = 'http://www.o.com/a/b/c/'
-        - return: ['http://www.o.com/a/b/c/','http://www.o.com/a/b/','http://www.o.com/a/','http://www.o.com/']
-    '''
-    res = []
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3#foobar')
+        >>> u.removeFragment()
+        'http://www.google.com/foo/bar.txt?id=3'
+        >>> u = url('http://www.google.com/foo/bar.txt#foobar')
+        >>> u.removeFragment()
+        'http://www.google.com/foo/bar.txt'
+        '''
+        res = self.scheme + '://' + self.domain + self.path
+        if self.params != '':
+            res += ';' + self.params
+        if self.qs != '':
+            res += '?' + self.qs
+        return res
     
-    dp = getDomainPath( url )
-    bu = baseUrl( url )
-    directories = dp.replace( bu, '' )
-    splittedDirs = directories.split('/')
-    for i in xrange( len(splittedDirs) ):
-        url = bu + '/'.join( splittedDirs[:i] )
-        if url[len( url )-1] != '/':
-            url += '/'
-        res.append( url )
-    
-    return res
-
-def hasParams( url ):
-    '''
-    Analizes the url to check for a params
-
-    @parameter url: The url to analize.
-    @return: True if the URL has params.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    if params != '':
-        return True
-    return False
-
-def getParamsString( url ):
-    '''
-    Input: http://localhost:4444/f00_bar.html;foo=bar?abc=def
-    Output: foo=bar
-
-    @parameter url: The url to parse.
-    @return: Returns the params inside the url.
-    '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    return params
-
-def removeParams( url ):
-    '''
-    @parameter url: The url with parameter
-    @return: Returns a string contaning the URL without the parameter. Example :
-        - input url : http://localhost/foo.asp;jsessionid=ABDR1234?xx=yy&bb=dd#fragment
-        - output url string : http://localhost/foo.asp?xx=yy&bb=dd
-    '''
-    scheme, domain, path, params, qs, x3 = _uparse.urlparse( url )
-    res = scheme + '://' + domain + path
-    if qs != '':
-        res += '?' + qs
-    return res
-
-def setParam( url, param_string ):
-    '''
-    @parameter url: The url to parse.
-    @parameter param_string: The param to set (e.g. "foo=aaa").
-    @return: Returns the url containing param.
-    '''
-    try:
-        param, value = param_string.split("=")
-    except ValueError, ve:
-        param = param_string
-        value = ''
+    def baseUrl( self ):
+        '''
+        @return: Returns a string contaning the URL without the query string and without any path. 
+        Example :
         
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-    res = scheme + '://' + domain + path
-    params = getParams(url)
-    params[param] = value
-    params_string = ";".join([k+"="+params[k] for k in params.keys() ])
-    res = res + ';' + params_string
-    if qs != '':
-        res += '?' + qs
-    return res
+        >>> u = url('http://www.google.com/foo/bar.txt?id=3#foobar')
+        >>> u.baseUrl()
+        'http://www.google.com/'
+        '''
+        return self.scheme+'://'+self.domain + '/'
+    
+    
+    def normalizeURL( self ):
+        '''
+        This method was added to be able to avoid some issues which are generated
+        by the different way browsers and urlparser.urljoin join the URLs. A clear
+        example of this is the following case:
+            baseURL = 'http:/abc/'
+            relativeURL = '/../f00.b4r'
+    
+        w3af would try to GET http:/abc/../f00.b4r; while mozilla would try to
+        get http:/abc/f00.b4r . In some cases, the first is ok, on other cases
+        the first one doesn't even work and return a 403 error message.
+    
+        So, to sum up, this method takes an URL, and returns a normalized URL.
+        For the example we were talking before, it will return:
+        'http://abc/f00.b4r'
+        instead of the normal response from urlparser.urljoin: 'http://abc/../f00.b4r'
+    
+        Added later: Before performing anything, I also normalize the net location part of the URL.
+        In some web apps we see things like:
+            - http://host.tld:80/foo/bar
+    
+        As you may have noticed, the ":80" is redundant, and what's even worse, it can confuse w3af because
+        in most cases http://host.tld:80/foo/bar != http://host.tld/foo/bar , and http://host.tld/foo/bar could also be
+        found by the webSpider plugin, so we are analyzing the same thing twice.
+    
+        So, before the path normalization, I perform a small net location normalization that transforms:
+        
+        >>> u = url('http://host.tld:80/foo/bar')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        'http://host.tld/foo/bar'
+        >>> u = url('https://host.tld:443/foo/bar')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        'https://host.tld/foo/bar'
+        >>> u = url('http://user:passwd@host.tld:80')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        'http://user:passwd@host.tld/'
+        >>> u = url('http://abc/../f00.b4r')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        'http://abc/f00.b4r'
+        >>> u = url('http://abc/../../f00.b4r')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        'http://abc/f00.b4r'
+        '''
+        # net location normalization:
+        net_location = self.getNetLocation()
+        protocol = self.getProtocol()
+    
+        # We may have auth URLs like <http://user:passwd@host.tld:80>. Notice the
+        # ":" duplication. We'll be interested in transforming 'net_location'
+        # beginning in the last appereance of ':'
+        at_symb_index = net_location.rfind('@')
+        colon_symb_max_index = net_location.rfind(':')
+        # Found
+        if colon_symb_max_index > at_symb_index:
+    
+            host = net_location[:colon_symb_max_index]
+            port = net_location[(colon_symb_max_index + 1):]
+    
+            # Assign default port if nondigit.
+            if not port.isdigit():
+                if protocol == 'https':
+                    port = '443'
+                else:
+                    port = '80'
+    
+            if (protocol == 'http' and port == '80') or \
+                (protocol == 'https' and port == '443'):
+                net_location = host
+            else:
+                # The net location has a specific port definition
+                net_location = host + ':' + port
+    
+        # A normalized baseURL:
+        baseURL = protocol + '://' + net_location + '/'
+    
+        # Now normalize the path:
+        relativeURL = self.getPathQs()
+    
+        commonjoin = _uparse.urljoin(baseURL, relativeURL)
+        
+        common_join_url = url(commonjoin)
+        path = common_join_url.getPathQs()
+    
+        while path.startswith('../') or path.startswith('/../'):
+            if path.startswith('../'):
+                path = path[2:]
+            elif path.startswith('/../'):
+                path = path[3:]
+    
+        fixed_url = _uparse.urljoin(baseURL, path)
+        
+        #    "re-init" the object 
+        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = _uparse.urlparse( fixed_url )
+    
+    def getPort( self ):
+        '''
+        @return: The TCP port that is going to be used to contact the remote end.
 
-def getParams( url, ignoreExceptions=True ):
-    '''
-    Parses the params string and returns a dict.
+        >>> u = url('http://abc/f00.b4r')
+        >>> u.getPort()
+        80
+        >>> u = url('http://abc:80/f00.b4r')
+        >>> u.getPort()
+        80
+        >>> u = url('http://abc:443/f00.b4r')
+        >>> u.getPort()
+        443
+        >>> u = url('https://abc/f00.b4r')
+        >>> u.getPort()
+        443
+        >>> u = url('https://abc:443/f00.b4r')
+        >>> u.getPort()
+        443
+        >>> u = url('https://abc:80/f00.b4r')
+        >>> u.getPort()
+        80
 
-    @parameter url: The url with the params string to parse.
-    @return: A QueryString Object, example :
-        - input url : http://localhost/foo.jsp;xx=yy;bb=dd
-        - output dict : { xx:yy , bb:dd }
-    '''
-    parsedData = None
-    result = {}
-    if hasParams( url ):
-        scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
-        try:
-            parsedData = cgi.parse_qs( params, keep_blank_values=True, strict_parsing=True)
-        except Exception, e:
-            if not ignoreExceptions:
-                raise w3afException('Strange things found when parsing params string: ' + params)
+        '''
+        net_location = self.getNetLocation()
+        protocol = self.getProtocol()
+        if ':' in net_location:
+            host,  port = net_location.split(':')
+            return int(port)
         else:
-            for i in parsedData.keys():
-                result[ i ] = parsedData[ i ][0]
-    return result
+            if protocol.lower() == 'http':
+                return 80
+            elif protocol.lower() == 'https':
+                return 443
+            else:
+                # Just in case...
+                return 80
+                
+    def urlJoin( self , relative ):
+        '''
+        Construct a full (''absolute'') URL by combining a ''base URL'' (self) with a ``relative URL'' (relative). 
+        Informally, this uses components of the base URL, in particular the addressing scheme,
+        the network location and (part of) the path, to provide missing components in the relative URL.
+    
+        For more information read RFC 1808 espeally section 5.
+        
+        @param relative: The relative url to add to the base url
+        @return: The joined URL.
+
+        Examples:
+        
+        >>> u = url('http://abc/foo.bar')
+        >>> u.urlJoin('abc.html').url_string
+        'http://abc/abc.html'
+        >>> u.urlJoin('/abc.html').url_string
+        'http://abc/abc.html'
+        >>> u = url('http://abc/')
+        >>> u.urlJoin('/abc.html').url_string
+        'http://abc/abc.html'
+        >>> u.urlJoin('/def/abc.html').url_string
+        'http://abc/def/abc.html'
+        >>> u = url('http://abc/def/jkl/')
+        >>> u.urlJoin('/def/abc.html').url_string
+        'http://abc/def/abc.html'
+        >>> u.urlJoin('def/abc.html').url_string
+        'http://abc/def/jkl/def/abc.html'
+
+        '''
+        joined_url = _uparse.urljoin( self.url_string, relative )
+        jurl_obj = url(joined_url)
+        jurl_obj.normalizeURL()
+        return jurl_obj
+    
+    def getDomain( self ):
+        '''
+        >>> url('http://abc/def/jkl/').getDomain()
+        'abc'
+        >>> url('http://1.2.3.4/def/jkl/').getDomain()
+        '1.2.3.4'
+        >>> url('http://555555/def/jkl/').getDomain()
+        '555555'
+        >>> url('http://foo.bar.def/def/jkl/').getDomain()
+        'foo.bar.def'
+    
+        @return: Returns the domain name for the url.
+        '''
+        domain = self.domain.split(':')[0]
+        return domain
+    
+    def is_valid_domain( self ):
+        '''
+        >>> url("http://1.2.3.4").is_valid_domain()
+        True
+        >>> url("http://aaa.com").is_valid_domain()
+        True
+        >>> url("http://aaa.").is_valid_domain()
+        False
+        >>> url("http://aaa*a").is_valid_domain()
+        False
+        >>> url("http://aa-bb").is_valid_domain()
+        True
+        >>> url("http://abc").is_valid_domain()
+        True
+        >>> url("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
+        True
+        
+        @parameter url: The url to parse.
+        @return: Returns a boolean that indicates if <url>'s domain is valid
+        '''
+        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', self.domain ) is not None
+    
+    def getNetLocation( self ):
+        '''
+        >>> url("http://1.2.3.4").getNetLocation()
+        '1.2.3.4'
+        >>> url("http://aaa.com:80").getNetLocation()
+        'aaa.com:80'
+        >>> url("http://aaa:443").getNetLocation()
+        'aaa:443'
+    
+        @return: Returns the net location for the url.
+        '''
+        return self.domain
+    
+    def getProtocol( self ):
+        '''
+        >>> url("http://1.2.3.4").getProtocol()
+        'http'
+        >>> url("https://aaa.com:80").getProtocol()
+        'https'
+        >>> url("ftp://aaa:443").getProtocol()
+        'ftp'
+
+        @return: Returns the domain name for the url.
+        '''
+        return self.scheme
+    
+    def getRootDomain( self ):
+        '''
+        Get the root domain name. Examples:
+        
+        input: www.ciudad.com.ar
+        output: ciudad.com.ar
+        
+        input: i.love.myself.ru
+        output: myself.ru
+        
+        Code taken from: http://getoutfoxed.com/node/41
+
+        >>> url("http://1.2.3.4").getRootDomain()
+        '1.2.3.4'
+        >>> url("https://aaa.com:80").getRootDomain()
+        'aaa.com'
+        >>> url("http://aaa.com").getRootDomain()
+        'aaa.com'
+        >>> url("http://www.aaa.com").getRootDomain()
+        'aaa.com'
+        >>> url("http://mail.aaa.com").getRootDomain()
+        'aaa.com'
+        >>> url("http://foo.bar.spam.eggs.aaa.com").getRootDomain()
+        'aaa.com'
+        >>> url("http://foo.bar.spam.eggs.aaa.com.ar").getRootDomain()
+        'aaa.com.ar'
+        >>> url("http://foo.aaa.com.ar").getRootDomain()
+        'aaa.com.ar'
+        >>> url("http://foo.aaa.edu.sz").getRootDomain()
+        'aaa.edu.sz'
+
+        '''
+        # TODO: this list should be updated from time to time, automatically.
+        # taken from http:#en.wikipedia.org/wiki/List_of_Internet_top-level_domains
+        gTopLevelDomainDict =  {
+            "ac":1,"ad":1,"ae":1,"aero":1,"af":1,"ag":1,"ai":1,"al":1,"am":1,
+            "an":1,"ao":1,"aq":1,"ar":1,"arpa":1,"as":1,"at":1,"au":1,"aw":1,
+            "az":1,"ba":1,"bb":1,"bd":1,"be":1,"bf":1,"bg":1,"bh":1,"bi":1,
+            "biz":1,"bj":1,"bm":1,"bn":1,"bo":1,"br":1,"bs":1,"bt":1,"bv":1,
+            "bw":1,"by":1,"bz":1,"ca":1,"cc":1,"cd":1,"cf":1,"cg":1,"ch":1,
+            "ci":1,"ck":1,"cl":1,"cm":1,"cn":1,"co":1,"com":1,"coop":1,"cr":1,
+            "cu":1,"cv":1,"cx":1,"cy":1,"cz":1,"de":1,"dj":1,"dk":1,"dm":1,
+            "do":1,"dz":1,"ec":1,"edu":1,"ee":1,"eg":1,"er":1,"es":1,"et":1,
+            "fi":1,"fj":1,"fk":1,"fm":1,"fo":1,"fr":1,"ga":1,"gb":1,"gd":1,
+            "ge":1,"gf":1,"gg":1,"gh":1,"gi":1,"gl":1,"gm":1,"gn":1,"gov":1,
+            "gp":1,"gq":1,"gr":1,"gs":1,"gt":1,"gu":1,"gw":1,"gy":1,"hk":1,
+            "hm":1,"hn":1,"hr":1,"ht":1,"hu":1,"id":1,"ie":1,"il":1,"im":1,
+            "in":1,"info":1,"int":1,"io":1,"iq":1,"ir":1,"is":1,"it":1,"je":1,
+            "jm":1,"jo":1,"jp":1,"ke":1,"kg":1,"kh":1,"ki":1,"km":1,"kn":1,
+            "kr":1,"kw":1,"ky":1,"kz":1,"la":1,"lb":1,"lc":1,"li":1,"lk":1,
+            "lr":1,"ls":1,"lt":1,"lu":1,"lv":1,"ly":1,"ma":1,"mc":1,"md":1,
+            "mg":1,"mh":1,"mil":1,"mk":1,"ml":1,"mm":1,"mn":1,"mo":1,"mp":1,
+            "mq":1,"mr":1,"ms":1,"mt":1,"mu":1,"museum":1,"mv":1,"mw":1,"mx":1,
+            "my":1,"mz":1,"na":1,"name":1,"nc":1,"ne":1,"net":1,"nf":1,"ng":1,
+            "ni":1,"nl":1,"no":1,"np":1,"nr":1,"nu":1,"nz":1,"om":1,"org":1,
+            "pa":1,"pe":1,"pf":1,"pg":1,"ph":1,"pk":1,"pl":1,"pm":1,"pn":1,
+            "pr":1,"pro":1,"ps":1,"pt":1,"pw":1,"py":1,"qa":1,"re":1,"ro":1,
+            "ru":1,"rw":1,"sa":1,"sb":1,"sc":1,"sd":1,"se":1,"sg":1,"sh":1,
+            "si":1,"sj":1,"sk":1,"sl":1,"sm":1,"sn":1,"so":1,"sr":1,"st":1,
+            "su":1,"sv":1,"sy":1,"sz":1,"tc":1,"td":1,"tf":1,"tg":1,"th":1,
+            "tj":1,"tk":1,"tm":1,"tn":1,"to":1,"tp":1,"tr":1,"tt":1,"tv":1,
+            "tw":1,"tz":1,"ua":1,"ug":1,"uk":1,"um":1,"us":1,"uy":1,"uz":1,
+            "va":1,"vc":1,"ve":1,"vg":1,"vi":1,"vn":1,"vu":1,"wf":1,"ws":1,
+            "ye":1,"yt":1,"yu":1,"za":1,"zm":1,"zw":1 
+        }
+        
+        # break authority into two parts: subdomain(s), and base authority
+        # e.g. images.google.com --> [images, google.com]
+        #      www.popo.com.au --> [www, popo.com.au]
+        def splitAuthority(aAuthority):
+        
+            # walk down from right, stop at (but include) first non-toplevel domain
+            chunks = re.split("\.",aAuthority)
+            chunks.reverse()
+            
+            baseAuthority=""
+            subdomain=""
+            foundBreak = 0
+            
+            for i in chunks:
+                if (not foundBreak):
+                    baseAuthority = i + (".","")[baseAuthority==""] + baseAuthority
+                else:
+                    subdomain = i  + (".","")[subdomain==""] + subdomain
+                if (not gTopLevelDomainDict.has_key(i)):
+                    foundBreak=1
+            return ([subdomain,baseAuthority])
+        
+        # def to split URI into its parts, returned as URI object
+        def decomposeURI():
+            
+            authority = self.getDomain()
+            s = splitAuthority(authority)
+            subdomain = s[0]
+            baseAuthority = s[1]
+            
+            return baseAuthority
+                
+        if is_ip_address(self.domain):
+            # An IP address has no "root domain" 
+            return self.domain
+        else:
+            return decomposeURI()
+            
+    def getDomainPath( self ):
+        '''
+        @return: Returns the domain name and the path for the url.
+    
+        >>> url('http://abc/def/jkl/').getDomainPath()
+        'http://abc/def/jkl/'
+        >>> url('http://abc/def.html').getDomainPath()
+        'http://abc/'
+        >>> url('http://abc/xyz/def.html').getDomainPath()
+        'http://abc/xyz/'
+        >>> url('http://abc:80/xyz/def.html').getDomainPath()
+        'http://abc:80/xyz/'
+        >>> url('http://abc:443/xyz/def.html').getDomainPath()
+        'http://abc:443/xyz/'
+        >>> url('https://abc:443/xyz/def.html').getDomainPath()
+        'https://abc:443/xyz/'
+        '''
+        if self.path:
+            res = self.scheme + '://' +self.domain+ self.path[:self.path.rfind('/')+1]
+        else:
+            res = self.scheme + '://' +self.domain+ '/'
+        return res
+    
+    def getFileName( self ):
+        '''
+        @return: Returns the filename name for the given url.
+    
+        >>> url('https://abc:443/xyz/def.html').getFileName()
+        'def.html'
+        >>> url('https://abc:443/xyz/').getFileName()
+        ''
+        >>> url('https://abc:443/xyz/d').getFileName()
+        'd'
+        '''
+        return self.path[self.path.rfind('/')+1:]
+    
+    def getExtension( self ):
+        '''
+        @return: Returns the extension of the filename, if possible, else, ''.
+        
+        >>> url('https://abc:443/xyz/d').getExtension()
+        ''
+        >>> url('https://abc:443/xyz/d.html').getExtension()
+        'html'
+        >>> url('https://abc:443/xyz/').getExtension()
+        ''
+        '''
+        fname = self.getFileName()
+        extension = fname[ fname.rfind('.') +1 :]
+        if extension == fname:
+            return ''
+        else:
+            return extension
+    
+    def allButScheme( self ):
+        '''
+        >>> url('https://abc:443/xyz/').allButScheme()
+        'abc:443/xyz/'
+        >>> url('https://abc:443/xyz/file.asp').allButScheme()
+        'abc:443/xyz/'
+
+        @return: Returns the domain name and the path for the url.
+        '''
+        return self.domain+ self.path[:self.path.rfind('/')+1]
+    
+    def getPath( self ):
+        '''
+        >>> url('https://abc:443/xyz/file.asp').getPath()
+        '/xyz/file.asp'
+        >>> url('https://abc:443/xyz/').getPath()
+        '/xyz/'
+        >>> url('https://abc:443/xyz/123/456/789/').getPath()
+        '/xyz/123/456/789/'
+
+        @return: Returns the path for the url:
+        '''
+        return self.path
+    
+    def getPathQs( self ):
+        '''
+        >>> url('https://abc:443/xyz/123/456/789/').getPath()
+        '/xyz/123/456/789/'
+        >>> url('https://abc:443/xyz/123/456/789/').getPathQs()
+        '/xyz/123/456/789/'
+        >>> url('https://abc:443/xyz/file.asp').getPathQs()
+        '/xyz/file.asp'
+        >>> url('https://abc:443/xyz/file.asp?id=1').getPathQs()
+        '/xyz/file.asp?id=1'
+    
+        @return: Returns the domain name and the path for the url.
+        '''
+        res = self.path
+        if self.params != '':
+            res += ';' + self.params
+        if self.qs != '':
+            res += '?' + self.qs
+        return res
+    
+    def urlDecode( self ):
+        '''
+        >>> url('https://abc:443/xyz/file.asp?id=1').urlDecode()
+        'https://abc:443/xyz/file.asp?id=1'
+        >>> url('https://abc:443/xyz/file.asp?id=1 2').urlDecode()
+        'https://abc:443/xyz/file.asp?id=1 2'
+        >>> url('https://abc:443/xyz/file.asp?id=1+2').urlDecode()
+        'https://abc:443/xyz/file.asp?id=1 2'
+
+        @return: An URL-Decoded version of the URL.
+        '''
+        res = None
+        if type(self.url_string) == type(""):
+            res = urllib.unquote(string.replace(self.url_string, "+", " "))
+        return res
+    
+    def getDirectories( self ):
+        '''
+        Get a list of all directories and subdirectories.
+        
+        >>> url('http://abc/xyz/def/123/').getDirectories()
+        ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/', 'http://abc/xyz/def/123/']
+        >>> url('http://abc/xyz/def/').getDirectories()
+        ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/']
+        >>> url('http://abc/xyz/').getDirectories()
+        ['http://abc/', 'http://abc/xyz/']
+        >>> url('http://abc/').getDirectories()
+        ['http://abc/']
+
+        '''
+        res = []
+        
+        dp = self.getDomainPath()
+        bu = self.baseUrl()
+        directories = dp.replace( bu, '' )
+        splitted_dirs = directories.split('/')
+        for i in xrange( len(splitted_dirs) ):
+            url = bu + '/'.join( splitted_dirs[:i] )
+            if url[len( url )-1] != '/':
+                url += '/'
+            res.append( url )
+        
+        return res
+    
+    def hasParams( self ):
+        '''
+        Analizes the url to check for a params
+
+        >>> url('http://abc/').hasParams()
+        False
+        >>> url('http://abc/;id=1').hasParams()
+        True
+        >>> url('http://abc/?id=3;id=1').hasParams()
+        False
+        >>> url('http://abc/;id=1?id=3').hasParams()
+        True
+        >>> url('http://abc/foobar.html;id=1?id=3').hasParams()
+        True
+    
+        @return: True if the URL has params.
+        '''
+        if self.params != '':
+            return True
+        return False
+    
+    def getParamsString( self ):
+        '''
+        >>> url('http://abc/').getParamsString()
+        ''
+        >>> url('http://abc/;id=1').getParamsString()
+        'id=1'
+        >>> url('http://abc/?id=3;id=1').getParamsString()
+        ''
+        >>> url('http://abc/;id=1?id=3').getParamsString()
+        'id=1'
+        >>> url('http://abc/foobar.html;id=1?id=3').getParamsString()
+        'id=1'
+    
+        @return: Returns the params inside the url.
+        '''
+        return self.params
+    
+    def removeParams( self ):
+        '''
+        @return: Returns a new url object contaning the URL without the parameter. Example :
+
+        >>> url('http://abc/').removeParams().url_string
+        'http://abc/'
+        >>> url('http://abc/def.txt').removeParams().url_string
+        'http://abc/def.txt'
+        >>> url('http://abc/;id=1').removeParams().url_string
+        'http://abc/'
+        >>> url('http://abc/;id=1&file=2').removeParams().url_string
+        'http://abc/'
+        >>> url('http://abc/;id=1?file=2').removeParams().url_string
+        'http://abc/?file=2'
+        >>> url('http://abc/xyz.txt;id=1?file=2').removeParams().url_string
+        'http://abc/xyz.txt?file=2'
+
+        '''
+        url_without_params = _uparse.urlunparse( (self.scheme, self.domain, self.path, None, self.qs, self.fragment) )
+        return url(url_without_params)
+    
+    def setParam( self, param_string ):
+        '''
+        >>> u = url('http://abc/;id=1')
+        >>> u.setParam('file=2')
+        >>> u.getParamsString()
+        'file=2'
+        >>> u = url('http://abc/xyz.txt;id=1?file=2')
+        >>> u.setParam('file=3')
+        >>> u.getParamsString()
+        'file=3'
+        >>> u.getPathQs()
+        '/xyz.txt;file=3?file=2'
+        
+        @parameter param_string: The param to set (e.g. "foo=aaa").
+        @return: Returns the url containing param.
+        '''
+        self.params = param_string 
+        
+    def getParams( self, ignoreExceptions=True ):
+        '''
+        Parses the params string and returns a dict.
+    
+        @return: A QueryString object.
+
+        >>> u = url('http://abc/xyz.txt;id=1?file=2')
+        >>> u.getParams()
+        {'id': '1'}
+        >>> u = url('http://abc/xyz.txt;id=1&file=2?file=2')
+        >>> u.getParams()
+        {'id': '1', 'file': '2'}
+        >>> u = url('http://abc/xyz.txt;id=1&file=2?spam=2')
+        >>> u.getParams()
+        {'id': '1', 'file': '2'}
+        >>> u = url('http://abc/xyz.txt;id=1&file=2?spam=3')
+        >>> u.getParams()
+        {'id': '1', 'file': '2'}
+
+        '''
+        parsedData = None
+        result = {}
+        if self.hasParams():
+            try:
+                parsedData = cgi.parse_qs( self.params, keep_blank_values=True, strict_parsing=True)
+            except Exception, e:
+                if not ignoreExceptions:
+                    raise w3afException('Strange things found when parsing params string: ' + params)
+            else:
+                for i in parsedData.keys():
+                    result[ i ] = parsedData[ i ][0]
+        return result
+
+    def __str__(self):
+        '''
+        @return: A string representation of myself
+
+        >>> str( url('http://abc/xyz.txt;id=1?file=2') )
+        'http://abc/xyz.txt;id=1?file=2'
+        >>> str( url('http://abc:80/') )
+        'http://abc:80/'
+        '''
+        return self.url_string
 
 if __name__ == "__main__":
     import doctest
