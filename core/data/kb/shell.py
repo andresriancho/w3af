@@ -25,7 +25,6 @@ from core.controllers.misc.commonAttackMethods import commonAttackMethods
 from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
-import core.data.parsers.urlParser as urlParser
 
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om

@@ -72,7 +72,7 @@ class form(dataContainer):
         >>>
         '''
         if not isinstance(action, url_object):
-            raise ValueError('The action of a form must be of urlParser.url type.')
+            raise ValueError('The action of a form must be of urlParser.url_object type.')
         
         self._action = action
         

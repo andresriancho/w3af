@@ -24,7 +24,6 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
 import core.data.dc.form as form
-import core.data.parsers.urlParser as urlParser
 from core.data.parsers.abstractParser import abstractParser as abstractParser
 from core.data.parsers.urlParser import url_object
 

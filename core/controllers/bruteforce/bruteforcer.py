@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import *
 import core.data.kb.knowledgeBase as kb
 import os.path
 from core.controllers.misc.make_leet import make_leet
+from core.data.parsers.urlParser import url_object
 
 
 class bruteforcer:
@@ -82,7 +82,7 @@ class bruteforcer:
         '''
         self._specialUserIndex = -1
         self._specialUsers = []
-        self._specialUsers.append( getDomain(self._url) )
+        self._specialUsers.append( self._url.getDomain() )
         
         if self._useMailUsers:
             mails = kb.kb.getData( 'mails', 'mails' )
@@ -104,8 +104,8 @@ class bruteforcer:
         '''
         self._specialPassIndex = -1
         self._specialPasswords = []
-        self._specialPasswords.append( getDomain(self._url) )
-        self._specialPasswords.append( getRootDomain(self._url) )
+        self._specialPasswords.append( self._url.getDomain() )
+        self._specialPasswords.append( self._url.getRootDomain() )
         if self._useProfiling:
             self._specialPasswords.extend( self._getProfilingResults() )
         
@@ -297,6 +297,19 @@ class bruteforcer:
     def getProfilingNumber( self ): return self._profilingNumber
     
     def setURL( self, url ):
+        '''
+        >>> b = bruteforcer()
+        >>> b.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL in the bruteforcer must be of urlParser.url_object type.
+        >>> b = bruteforcer()
+        >>> b.setURL( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL in the bruteforcer must be of urlParser.url_object type.')
+
         self._url = url
     
     def getURL( self ): return self._url

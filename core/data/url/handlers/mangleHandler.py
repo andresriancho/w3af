@@ -29,7 +29,6 @@ from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 import core.data.url.handlers.logHandler
-from core.data.parsers.urlParser import getDomain
 
 
 class mangleHandler(urllib2.BaseHandler):
@@ -74,7 +73,7 @@ class mangleHandler(urllib2.BaseHandler):
         @parameter fuzzableRequest: A fuzzableRequest.
         @return: A urllib2 request obj.
         '''
-        host = getDomain( fuzzableRequest.getURL() )
+        host = fuzzableRequest.getURL().getDomain()
         
         if fuzzableRequest.getMethod().upper() == 'GET':
             data = None
@@ -98,11 +97,11 @@ class mangleHandler(urllib2.BaseHandler):
         if len( self._pluginList ):
             # Create the httpResponse object
             code, msg, hdrs = response.code, response.msg, response.info()
-            url = response.geturl()
+            url_instance = url_object( response.geturl() )
             body = response.read()
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
-            httpRes = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg)
+            httpRes = httpResponse.httpResponse( code, body, hdrs, url_instance, url_instance, msg=msg)
             
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )

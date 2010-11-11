@@ -72,7 +72,7 @@ import core.controllers.w3afCore
 import core.controllers.miscSettings
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, exception_handler
 from . import export_request
@@ -617,7 +617,8 @@ class MainApp(object):
         # sets the title 
         targets = cf.cf.getData('targets')
         if targets:
-            target_domain = urlParser.getDomain(targets[0])
+            target_domain_obj = url_object( targets[0] )
+            target_domain = target_domain_obj.getDomain()
             self.window.set_title("w3af - " + target_domain)
 
     def _scan_pause(self, widget):

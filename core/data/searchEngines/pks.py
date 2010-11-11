@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
-import core.data.parsers.urlParser as urlParser
 import urllib
 import re
 
@@ -47,7 +46,7 @@ class pks(searchEngine):
         '''
         if hostname.count('//'):
             msg = 'You must provide the pks search engine with a root domain name (as returned by'
-            msg += ' urlParser.getRootDomain).'
+            msg += ' url_object.getRootDomain).'
             raise w3afException( msg )
     
         res = self.met_search( hostname )

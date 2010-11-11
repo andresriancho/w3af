@@ -22,9 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
-from core.data.parsers import urlParser as urlParser
 import urllib
 import core.controllers.outputManager as om
+
 
 class mutantFileName(mutant):
     '''
@@ -52,7 +52,7 @@ class mutantFileName(mutant):
         self._safeEncodeChars = safeChars
     
     def getURL( self ):
-        domain_path = urlParser.getDomainPath(self._freq.getURL())
+        domain_path = self._freq.getURL().getDomainPath()
         # Please note that this double encoding is needed if we want to work with mod_rewrite
         encoded = urllib.quote_plus( self._mutant_dc['fuzzedFname'], self._safeEncodeChars )
         if self._doubleEncoding:

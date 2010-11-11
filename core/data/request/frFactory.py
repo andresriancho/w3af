@@ -29,8 +29,8 @@ except:
     import simplejson as json
 
 import core.data.parsers.dpCache as dpCache
-import core.data.parsers.urlParser as urlParser
 import core.data.parsers.wsdlParser as wsdlParser
+from core.data.parsers.urlParser import url_object
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 import core.data.request.httpQsRequest as httpQsRequest
 import core.data.request.wsPostDataRequest as wsPostDataRequest
@@ -41,6 +41,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 from core.data.dc.queryString import queryString
+
 
 def createFuzzableRequests( httpResponse, request=None, add_self=True ):
     '''
@@ -57,7 +58,7 @@ def createFuzzableRequests( httpResponse, request=None, add_self=True ):
     
     # query string
     url = httpResponse.getURL()
-    QSObject = urlParser.getQueryString( httpResponse.getURI() )
+    QSObject = httpResponse.getURI().getQueryString()
     
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
@@ -143,7 +144,7 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     plugins like spiderMan.
     
     @parameter method: A string that represents the method ('GET', 'POST', etc)
-    @parameter url: A string that represents the URL
+    @parameter url: An url_object that represents the URL
     @parameter postData: A string that represents the postdata, if its a GET request, set to None.
     @parameter headers: A dict that holds the headers
     '''
@@ -155,7 +156,7 @@ def createFuzzableRequestRaw(method, url, postData, headers):
         qsr.setURL(url)
         qsr.setMethod(method)
         qsr.setHeaders(headers)
-        dc = urlParser.getQueryString(url)
+        dc = url.getQueryString()
         qsr.setDc(dc)
         return qsr
     #
@@ -231,7 +232,8 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     # NOT a JSON or XMLRPC request!, let's try the simple url encoded post data...
     #
     try:
-        dc = urlParser.getQueryString( 'http://w3af/?' + postData )
+        tmp_url = url_object('http://w3af/?' + postData)
+        dc = tmp_url.getQueryString()
         pdr.setDc( dc )
     except:
         om.out.debug('Failed to create a data container that can store this data: "' + postData + '".')

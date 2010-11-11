@@ -27,9 +27,6 @@ import re
 from lxml import etree
 
 import core.controllers.outputManager as om
-from core.data.parsers.urlParser import uri2url
-
-
 
 # Handle codecs
 import codecs
@@ -44,7 +41,7 @@ DEFAULT_CHARSET = 'utf-8'
 
 class httpResponse(object):
     
-    def __init__( self, code, read , info, geturl, originalUrl, msg='OK', id=None, time=0.2):
+    def __init__( self, code, read , info, geturl, original_url, msg='OK', id=None, time=0.2):
         '''
         @parameter time: The time between the request and the response.
         '''
@@ -56,11 +53,11 @@ class httpResponse(object):
         
         # Set the URL variables
         # The URL that we really GET'ed
-        self._realurl = uri2url( originalUrl )
-        self._uri = originalUrl
+        self._realurl = original_url.uri2url()
+        self._uri = original_url
         # The URL where we were redirected (may be the same as originalUrl when no redirect)
         self._redirectedURL = geturl
-        self._redirectedURI = uri2url( geturl )
+        self._redirectedURI = geturl.uri2url()
         
         # Set the rest
         self.setCode(code)
@@ -356,7 +353,7 @@ class httpResponse(object):
         self._fromCache = fcache
 
     def __repr__( self ):
-        res = '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL()
+        res = '< httpResponse | %s | %s ' % ( self.getCode() , self.getURL() )
 
         # extra info
         if self.id is not None:

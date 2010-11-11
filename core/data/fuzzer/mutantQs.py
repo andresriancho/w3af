@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.data.fuzzer.mutant import mutant
-import core.data.parsers.urlParser
+
 
 class mutantQs(mutant):
     '''

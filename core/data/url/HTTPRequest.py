@@ -30,6 +30,6 @@ class HTTPRequest(urllib2.Request):
                  origin_req_host=None, unverifiable=False):
         
         # Call the base class
-        urllib2.Request.__init__(self, url, data, headers, origin_req_host, unverifiable)
+        urllib2.Request.__init__(self, url.url_string, data, headers, origin_req_host, unverifiable)
 
         

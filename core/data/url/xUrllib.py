@@ -40,8 +40,8 @@ from core.controllers.w3afException import w3afMustStopException,  w3afException
 #
 #   Data imports
 #
-import core.data.parsers.urlParser as urlParser
 from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.urlParser import url_object
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 
@@ -224,12 +224,12 @@ class xUrllib:
         '''
         listOfNonTargets = cf.cf.getData('nonTargets') or []
         for u in listOfNonTargets:
-            if urlParser.uri2url( uri ) == urlParser.uri2url( u ):
+            if uri.uri2url() == u.uri2url():
                 msg = 'The URL you are trying to reach was configured as a non-target. ( '
                 msg += uri +' ). Returning an empty response.'
                 om.out.debug( msg )
                 return True
-        
+
         return False
     
     def sendRawRequest( self, head, postdata, fixContentLength=True):
@@ -268,6 +268,15 @@ class xUrllib:
         '''
         Gets a uri using a proxy, user agents, and other settings that where set previously.
         
+        >>> x = xUrllib()
+        >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
+        True
+        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=abc')).getBody()
+        True
+        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def')).getBody()
+        False
+        
+
         @param uri: This is the url to GET
         @param data: Only used if the uri parameter is really a URL.
         @return: An httpResponse object.
@@ -275,10 +284,12 @@ class xUrllib:
         self._init()
 
         if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
+            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
+                                 msg='No Content', id=consecutive_number_generator.inc() )
         
-        qs = urlParser.getQueryString( uri )
+        qs = uri.getQueryString()
         if qs:
+            #    The uri has the QS information
             req = HTTPRequest( uri )
         else:
             if data:
@@ -286,7 +297,7 @@ class xUrllib:
             else:
                 # It's really an url...
                 req = HTTPRequest( uri )
-            
+        
         req = self._addHeaders( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
@@ -300,9 +311,10 @@ class xUrllib:
         '''
         self._init()
         if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
+            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
+                                 msg='No Content', id=consecutive_number_generator.inc() )
         
-        req = HTTPRequest(uri, data )
+        req = HTTPRequest( uri, data )
         req = self._addHeaders( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
@@ -363,7 +375,8 @@ class xUrllib:
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, 'No Content', id=consecutive_number_generator.inc() )
+                    return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
+                                         'No Content', id=consecutive_number_generator.inc() )
             
                 if data:
                     req = self.methodRequest( uri, data )
@@ -482,8 +495,11 @@ class xUrllib:
                 code = int(e.code)
                 info = e.info()
                 geturl = e.geturl()
+                geturl_instance = url_object(geturl) 
+                original_url_instance = url_object(original_url)
                 read = self._readRespose( e )
-                httpResObj = httpResponse(code, read, info, geturl, original_url, id=e.id, time=time.time() - start_time, msg=e.msg )
+                httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
+                                          id=e.id, time=time.time() - start_time, msg=e.msg )
                 
                 # Clear the log of failed requests; this request is done!
                 if id(req) in self._errorCount:
@@ -505,16 +521,20 @@ class xUrllib:
             # The handling of this errors is complex... if I get a lot of errors in a row, I'll raise a
             # w3afMustStopException because the remote webserver might be unreachable.
             # For the first N errors, I just return an empty response...
-            om.out.debug( req.get_method() + ' ' + original_url +' returned HTTP code "' + str(http_constants.NO_CONTENT) + '"' )
-            om.out.debug( 'Unhandled exception in xUrllib._send(): ' + str ( e ) )
-            om.out.debug( str( traceback.format_exc() ) )
+            msg = req.get_method() + ' ' + original_url +' returned HTTP code "' + str(http_constants.NO_CONTENT) + '"'
+            msg += 'Unhandled exception in xUrllib._send(): ' + str ( e )
+            msg += str( traceback.format_exc() )
+            om.out.debug( msg )
             
             # Clear the log of failed requests; this request is done!
             if id(req) in self._errorCount:
                 del self._errorCount[ id(req) ]
             self._incrementGlobalErrorCount()
             
-            return httpResponse( http_constants.NO_CONTENT, '', {}, original_url, original_url, msg='No Content', id=consecutive_number_generator.inc() )
+            original_url_instance = url_object(original_url)
+
+            return httpResponse( http_constants.NO_CONTENT, '', {}, original_url_instance, original_url_instance,
+                                 msg='No Content', id=consecutive_number_generator.inc() )
         else:
             # Everything ok !
             if not req.get_data():
@@ -534,8 +554,11 @@ class xUrllib:
             code = int(res.code)
             info = res.info()
             geturl = res.geturl()
+            geturl_instance = url_object(geturl) 
+            original_url_instance = url_object(original_url)
             read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl, original_url, id=res.id, time=time.time() - start_time, msg=res.msg )
+            httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
+                                      id=res.id, time=time.time() - start_time, msg=res.msg )
             # Let the upper layers know that this response came from the local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
@@ -649,7 +672,10 @@ class xUrllib:
     def _grepResult(self, request, response):
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
-        if len( self._grepPlugins ) and urlParser.getDomain( request.get_full_url() ) in cf.cf.getData('targetDomains'):
+        url_instance = url_object( request.get_full_url() )
+        domain = url_instance.getDomain()
+        
+        if len( self._grepPlugins ) and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
             fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )

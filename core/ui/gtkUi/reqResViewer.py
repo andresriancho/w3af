@@ -33,10 +33,10 @@ from . import entries
 # To show request and responses
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
-from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.data.parsers.httpRequestParser import httpRequestParser
-from core.data.parsers.urlParser import getQueryString
 from core.data.dc.queryString import queryString
+
+from core.controllers.w3afException import w3afException, w3afMustStopException
 
 import core.controllers.outputManager as om
 
@@ -632,7 +632,7 @@ class requestPart(requestResponsePart):
             self._updateHeadersTab(self._obj.getHeaders())
         # Params tab
         if source != self.SOURCE_PARAMS:
-            queryParams = getQueryString(self._obj.getURI())
+            queryParams = self._obj.getURI().getQueryString()
             self._updateParamsTab(queryParams)
 
     def _updateParamsTab(self, queryParams):

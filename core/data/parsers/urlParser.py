@@ -132,8 +132,8 @@ class url_object(object):
                         result[ i ] = [parsed_qs[ i ], ]
     
         return result
-    
-    def uri2url_object( self ):
+        
+    def uri2url( self ):
         '''
         @return: Returns a string contaning the URL without the query string. Example :
 
@@ -145,7 +145,10 @@ class url_object(object):
         res = self.scheme + '://' + self.domain + self.path
         if self.params != '':
             res += ";" + self.params
-        return res
+        
+        #    Create the new url_object
+        u = url_object( res )
+        return u
     
     def removeFragment( self ):
         '''
@@ -165,7 +168,7 @@ class url_object(object):
             res += '?' + self.qs
         return res
     
-    def baseurl_object( self ):
+    def baseUrl( self ):
         '''
         @return: Returns a string contaning the URL without the query string and without any path. 
         Example :
@@ -177,7 +180,7 @@ class url_object(object):
         return self.scheme+'://'+self.domain + '/'
     
     
-    def normalizeurl_object( self ):
+    def normalizeUrl( self ):
         '''
         This method was added to be able to avoid some issues which are generated
         by the different way browsers and urlparser.urljoin join the URLs. A clear

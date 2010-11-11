@@ -28,8 +28,6 @@ from core.data.searchEngines.googleSearchEngine import googleSearchEngine, \
     GAjaxSearch, GStandardSearch, GMobileSearch, GSetSearch
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
-from core.data.parsers import urlParser
-
 
 # Global vars
 HEADERS = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
@@ -103,7 +101,7 @@ class test_GoogleAPISearch(unittest.TestCase):
         for searcher in self._get_google_searchers(query, start, self.count):
             # returned URLs' domain should be the expected
             for link in searcher.links:
-                link_domain = urlParser.getDomain(link.URL)
+                link_domain = link.URL.getDomain()
                 self.assertTrue(link_domain == domain, 
                                 "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain))
     

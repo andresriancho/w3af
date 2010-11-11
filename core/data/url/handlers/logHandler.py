@@ -29,9 +29,9 @@ import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.parsers.urlParser import url_object
 
 
 class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
@@ -88,10 +88,11 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')
             
-            new_request = HTTPRequest(newurl,
-            headers=req.headers,
-            origin_req_host=req.get_origin_req_host(),
-            unverifiable=True)
+            newurl_instance = url_object(newurl)
+            new_request = HTTPRequest(newurl_instance,
+                                      headers=req.headers,
+                                      origin_req_host=req.get_origin_req_host(),
+                                      unverifiable=True)
             
             return new_request
         else:
@@ -192,22 +193,28 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         method = request.get_method()
         url =  request.get_full_url()
+        url_instance = url_object(url)
         headers = request.headers
         postData = request.get_data()
 
         for i in request.unredirected_hdrs.keys():
             headers[ i ] = request.unredirected_hdrs[ i ]
-        fr = createFuzzableRequestRaw(method, url, postData, headers)
+        fr = createFuzzableRequestRaw(method, url_instance, postData, headers)
 
         if isinstance(response, httpResponse.httpResponse):
             res = response
         else:
             code, msg, hdrs = response.code, response.msg, response.info()
+            
             url = response.geturl()
+            url_instance = url_object(url)
+            
             body = response.read()
             id = response.id
+            
             # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
-            res = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg, id=id)
+            res = httpResponse.httpResponse( code, body, hdrs, url_instance, url_instance, msg=msg, id=id)
+            
         om.out.logHttp( fr, res )
     
     def http_response(self, request, response):

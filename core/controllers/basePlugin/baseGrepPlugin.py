@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import urllib
@@ -57,7 +56,7 @@ class baseGrepPlugin(basePlugin):
         if response.getFromCache():
             #om.out.debug('Grep plugins not testing: ' + repr(fuzzableRequest) + ' cause it was already tested.' )
             pass
-        elif urlParser.getDomain( fuzzableRequest.getURL() ) in cf.cf.getData('targetDomains'):
+        elif fuzzableRequest.getURL().getDomain() in cf.cf.getData('targetDomains'):
             self.grep( fuzzableRequest, response )
         else:
             #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )

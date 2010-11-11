@@ -22,10 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+
 from core.data.dc.dataContainer import dataContainer as dc
 from core.data.dc.cookie import cookie as cookie
 import core.data.kb.config as cf
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import url_object
+
 import copy
 import urllib
 
@@ -242,12 +244,12 @@ class fuzzableRequest:
         return not self.__eq__( other )
     
     def setURL( self , url ):
-        self._url = url.replace(' ', '%20')
-        self._uri = self._url
+        self._url = url.uri2url()
+        self._uri = url
     
     def setURI( self, uri ):
-        self._uri = uri.replace(' ', '%20')
-        self._url = uri2url( uri )
+        self._uri = uri
+        self._url = uri.uri2url()
         
     def setMethod( self , method ):
         self._method = method

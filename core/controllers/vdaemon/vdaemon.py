@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.data.kb.config as cf
-import core.data.parsers.urlParser as urlParser
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException

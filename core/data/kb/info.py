@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.parsers.urlParser import uri2url
+from core.data.parsers.urlParser import url_object
 import core.data.constants.severity as severity
 
 
@@ -67,11 +67,35 @@ class info(dict):
         return self._name
     
     def setURL( self, url ):
-        self._url = uri2url( url )
+        '''
+        >>> i = info()
+        >>> i.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL in the info object must be of urlParser.url_object type.
+        >>> i = info()
+        >>> i.setURL( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL in the info object must be of urlParser.url_object type.')
+        
+        self._url = url.uri2url()
     
     def setURI( self, uri ):
+        '''
+        >>> i = info()
+        >>> i.setURI('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URI in the info object must be of urlParser.url_object type.
+        >>> i = info()
+        >>> i.setURI( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The URI in the info object must be of urlParser.url_object type.')
+        
         self._uri = uri
-        self._url = uri2url( uri )
+        self._url = uri.uri2url()
     
     def setMethod( self, method ):
         self._method = method.upper()

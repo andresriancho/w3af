@@ -38,7 +38,7 @@ from core.controllers.misc.factory import factory
 from core.controllers.misc.get_local_ip import get_local_ip
 
 from core.data.url.xUrllib import xUrllib
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 from core.controllers.w3afException import w3afException, w3afRunOnce, w3afFileException, w3afMustStopException
 from core.controllers.targetSettings import targetSettings as targetSettings
 
@@ -458,7 +458,7 @@ class w3afCore(object):
 
                 # We only want to scan pages that are in scope
                 get_curr_scope_pages = lambda fr:\
-                    urlParser.getDomain(fr.getURL())==urlParser.getDomain(url)
+                    fr.getURL().getDomain() == url.getDomain()
 
                 for url in cf.cf.getData('targets'):
                     try:
@@ -811,9 +811,9 @@ class w3afCore(object):
             for iFr, pluginWhoFoundIt in fuzzableRequestList:
                 # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
                 # so i'll remove fragments here
-                iFr.setURL( urlParser.removeFragment( iFr.getURL() ) )
+                iFr.setURL( iFr.getURL().removeFragment() )
                 
-                if iFr not in self._alreadyWalked and urlParser.baseUrl( iFr.getURL() ) in cf.cf.getData('baseURLs'):
+                if iFr not in self._alreadyWalked and iFr.getURL().baseUrl() in cf.cf.getData('baseURLs'):
                     # Found a new fuzzable request
                     newFR.append( iFr )
                     self._alreadyWalked.append( iFr )
