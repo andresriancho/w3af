@@ -27,6 +27,7 @@ import re
 from lxml import etree
 
 import core.controllers.outputManager as om
+from core.data.parsers.urlParser import url_object
 
 # Handle codecs
 import codecs
@@ -45,6 +46,12 @@ class httpResponse(object):
         '''
         @parameter time: The time between the request and the response.
         '''
+        if not isinstance(geturl, url_object):
+            raise ValueError('The geturl __init__ parameter of a httpResponse object must be of urlParser.url_object type.')
+
+        if not isinstance(original_url, url_object):
+            raise ValueError('The original_url __init__ parameter of a httpResponse object must be of urlParser.url_object type.')
+        
         # A nice and comfortable default
         self._charset = 'utf-8'
         self._content_type = ''
@@ -336,8 +343,41 @@ class httpResponse(object):
         '''
         return self._is_image_response
             
-    def setURL( self, url ): self._realurl = url
-    def setURI( self, uri ): self._uri = uri
+    def setURL( self, url ):
+        '''
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL of a httpResponse object must be of urlParser.url_object type.
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURL( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL of a httpResponse object must be of urlParser.url_object type.')
+        
+        self._realurl = url.uri2url()
+    
+    def setURI( self, uri ):
+        '''
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURI('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URI of a httpResponse object must be of urlParser.url_object type.
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURI( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The URI of a httpResponse object must be of urlParser.url_object type.')
+        
+        self._uri = uri
+        self._realurl = uri.uri2url()
+        
     def setWaitTime( self, t ): self._time = t
 
     def getFromCache(self):

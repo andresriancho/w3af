@@ -66,7 +66,7 @@ class form(dataContainer):
         >>> f.setAction('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        ValueError: The action of a form must be of urlParser.url type.
+        ValueError: The action of a form must be of urlParser.url_object type.
         >>> f = form()
         >>> f.setAction( url_object('http://www.google.com/') )
         >>>

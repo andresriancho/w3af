@@ -244,10 +244,36 @@ class fuzzableRequest:
         return not self.__eq__( other )
     
     def setURL( self , url ):
+        '''
+        >>> f = fuzzableRequest()
+        >>> f.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL of a fuzzable request must be of urlParser.url_object type.
+        >>> f = fuzzableRequest()
+        >>> f.setURL( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL of a fuzzable request must be of urlParser.url_object type.')
+        
         self._url = url.uri2url()
         self._uri = url
     
     def setURI( self, uri ):
+        '''
+        >>> f = fuzzableRequest()
+        >>> f.setURI('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URI of a fuzzable request must be of urlParser.url_object type.
+        >>> f = fuzzableRequest()
+        >>> f.setURI( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The URI of a fuzzable request must be of urlParser.url_object type.')
+                
         self._uri = uri
         self._url = uri.uri2url()
         
