@@ -138,7 +138,7 @@ class url_object(object):
         @return: Returns a string contaning the URL without the query string. Example :
 
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3')
-        >>> u.uri2url_object()
+        >>> u.uri2url().url_string
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
@@ -174,10 +174,10 @@ class url_object(object):
         Example :
         
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3#foobar')
-        >>> u.baseurl_object()
+        >>> u.baseUrl().url_string
         'http://www.google.com/'
         '''
-        return self.scheme+'://'+self.domain + '/'
+        return url_object( self.scheme + '://' + self.domain + '/' )
     
     
     def normalizeUrl( self ):
@@ -208,23 +208,23 @@ class url_object(object):
         So, before the path normalization, I perform a small net location normalization that transforms:
         
         >>> u = url_object('http://host.tld:80/foo/bar')
-        >>> u.normalizeurl_object()
+        >>> u.normalizeUrl()
         >>> u.url_string
         'http://host.tld/foo/bar'
         >>> u = url_object('https://host.tld:443/foo/bar')
-        >>> u.normalizeurl_object()
+        >>> u.normalizeUrl()
         >>> u.url_string
         'https://host.tld/foo/bar'
         >>> u = url_object('http://user:passwd@host.tld:80')
-        >>> u.normalizeurl_object()
+        >>> u.normalizeUrl()
         >>> u.url_string
         'http://user:passwd@host.tld/'
         >>> u = url_object('http://abc/../f00.b4r')
-        >>> u.normalizeurl_object()
+        >>> u.normalizeUrl()
         >>> u.url_string
         'http://abc/f00.b4r'
         >>> u = url_object('http://abc/../../f00.b4r')
-        >>> u.normalizeurl_object()
+        >>> u.normalizeUrl()
         >>> u.url_string
         'http://abc/f00.b4r'
         '''
@@ -349,7 +349,7 @@ class url_object(object):
         '''
         joined_url = urlparse.urljoin( self.url_string, relative )
         jurl_obj = url_object(joined_url)
-        jurl_obj.normalizeurl_object()
+        jurl_obj.normalizeUrl()
         return jurl_obj
     
     def getDomain( self ):
@@ -651,7 +651,7 @@ class url_object(object):
         res = []
         
         dp = self.getDomainPath()
-        bu = self.baseurl_object()
+        bu = self.baseUrl().url_string
         directories = dp.replace( bu, '' )
         splitted_dirs = directories.split('/')
         for i in xrange( len(splitted_dirs) ):
