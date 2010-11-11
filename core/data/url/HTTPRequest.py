@@ -22,12 +22,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import urllib2
 import urllib
+from core.data.parsers.urlParser import url_object
 
 
 class HTTPRequest(urllib2.Request):
     
     def __init__(self, url, data=None, headers={},
                  origin_req_host=None, unverifiable=False):
+        '''
+        This is a simple wrapper around a urllib2 request object.
+        
+        >>> r = HTTPRequest('http://www.google.com')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.
+        
+        >>> u = url_object('http://www.google.com')
+        >>> r = HTTPRequest(u)
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.')
         
         # Call the base class
         urllib2.Request.__init__(self, url.url_string, data, headers, origin_req_host, unverifiable)

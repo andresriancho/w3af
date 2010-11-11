@@ -25,6 +25,8 @@ import re
 
 import core.controllers.outputManager as om
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
+from core.data.parsers.urlParser import url_object
+
 
 class bing(searchEngine):
     '''
@@ -55,11 +57,17 @@ class bing(searchEngine):
             Dummy class that represents the search result.
             '''
             def __init__( self, url ):
+                if not isinstance(url, url_object):
+                    msg = 'The url __init__ parameter of a bingResult object must'
+                    msg += ' be of urlParser.url_object type.'
+                    raise ValueError( msg )
+
                 self.URL = url
 
         url = 'http://www.bing.com/search?'
         _query = urllib.urlencode({'q':query, 'first':start+1, 'FORM':'PERE'})
-        response = self._urlOpener.GET(url+_query, headers=self._headers,
+        url_instance = url_object(url+_query)
+        response = self._urlOpener.GET( url_instance, headers=self._headers,
                 useCache=True, grepResult=False)
         results = []
 
@@ -71,5 +79,5 @@ class bing(searchEngine):
 
         for url in urls:
             if 'www.bing.com' not in url:
-                results.append(bingResult(url))
+                results.append(bingResult( url_object(url) ))
         return results

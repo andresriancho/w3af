@@ -29,7 +29,9 @@ except:
 
 from core.controllers import outputManager as om
 from core.controllers.w3afException import w3afException
+
 from core.data.searchEngines.searchEngine import searchEngine
+from core.data.parsers.urlParser import url_object
 
 
 GOOGLE_SORRY_PAGE = 'http://www.google.com/support/bin/answer.py?answer=86640'
@@ -161,6 +163,11 @@ class GoogleAPISearch(object):
         return self._links
 
     def _do_GET(self, url):
+        if not isinstance(url, url_object):
+            msg = 'The url parameter of a _do_GET  must'
+            msg += ' be of urlParser.url_object type.'
+            raise ValueError( msg )
+        
         return self._url_open_func(url)
 
     def _do_google_search(self):
@@ -215,9 +222,11 @@ class GAjaxSearch(GoogleAPISearch):
                            'rsz': size, 'start': start}
             params = urllib.urlencode(params_dict)
             
+            google_url_instance = url_object(self.GOOGLE_AJAX_SEARCH_URL + params)
+            
             # Do the request
             try:
-                resp = self._do_GET(self.GOOGLE_AJAX_SEARCH_URL + params)
+                resp = self._do_GET( google_url_instance )
             except:
                 raise w3afException('Failed to GET google.com AJAX API.')
             
@@ -242,7 +251,7 @@ class GAjaxSearch(GoogleAPISearch):
         for page in pages:
             # Update results list
             parsed_page = json.loads(page.getBody())
-            links += [googleResult(res['url']) for res in \
+            links += [googleResult( url_object( res['url'] ) ) for res in \
                         parsed_page['responseData']['results']]
         return links[:self._count]
     
@@ -281,7 +290,8 @@ class GStandardSearch(GoogleAPISearch):
             params = urllib.urlencode({'hl': 'en', 'q': self._query,
                                        'start': start, 'sa': 'N'})
             
-            response = self._do_GET(self.GOOGLE_SEARCH_URL + params)
+            google_url_instance = url_object(self.GOOGLE_SEARCH_URL + params)
+            response = self._do_GET( google_url_instance )
             
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
@@ -315,7 +325,7 @@ class GStandardSearch(GoogleAPISearch):
                     url = 'http://' + url
                     
                 # Save the links
-                links.append(googleResult(url))
+                links.append( googleResult( url_object(url) ) )
 
         return links[:self._count]
     
@@ -369,7 +379,8 @@ class GMobileSearch(GStandardSearch):
             param_dict['start'] = start
             params = urllib.urlencode(param_dict)
             gm_url = self.GOOGLE_SEARCH_URL + params
-            response = self._do_GET(gm_url)               
+            gm_url_instance = url_object(gm_url)
+            response = self._do_GET( gm_url_instance )               
             
             if GOOGLE_SORRY_PAGE in response:
                 raise w3afException(
@@ -424,8 +435,9 @@ class GSetSearch(GoogleAPISearch):
                 q_param += 1
 
             url += '&btn=Small+Set+%2815+items+or+fewer%29'
+            url_instance = url_object( url )
             # Now I get the results
-            response = self._do_GET(url)
+            response = self._do_GET(url_instance)
             results.append(response)
 
         return results
@@ -450,5 +462,10 @@ class googleResult(object):
     This is a dummy class that represents a search engine result.
     '''    
     def __init__(self, url):
+        if not isinstance(url, url_object):
+            msg = 'The url __init__ parameter of a googleResult object must'
+            msg += ' be of urlParser.url_object type.'
+            raise ValueError( msg )
+
         self.URL = url
 
