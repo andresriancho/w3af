@@ -52,13 +52,15 @@ class basePlugin(configurable):
 
     def setUrlOpener( self, urlOpener):
         '''
-        This method should not be overwritten by any plugin (but you are free to do it, for example
-        a good idea is to rewrite this method to change the UrlOpener to do some IDS evasion technic).
+        This method should not be overwritten by any plugin (but you are free
+        to do it, for example a good idea is to rewrite this method to change
+        the UrlOpener to do some IDS evasion technic).
         
-        This method takes a CustomUrllib object as parameter and assigns it to itself. 
-        Then, on the testUrl method you use self.CustomUrlOpener._custom_urlopen(...) 
-        to open a Url and you are sure that the plugin is using the user supplied
-        settings (proxy, user agent, etc).
+        This method takes a CustomUrllib object as parameter and assigns it 
+        to itself. Then, on the testUrl method you use 
+        self.CustomUrlOpener._custom_urlopen(...) 
+        to open a Url and you are sure that the plugin is using the user 
+        supplied settings (proxy, user agent, etc).
         
         @return: No value is returned.
         '''

@@ -30,7 +30,7 @@ import copy
 import urllib
 
 
-class fuzzableRequest:
+class fuzzableRequest(object):
     '''
     This class represents a fuzzable request. Fuzzable requests where created to allow w3af plugins
     to be much simpler and dont really care if the vulnerability is in the postdata, querystring, header, cookie
