@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+import itertools
+
 import core.controllers.outputManager as om
 
 # options
@@ -31,9 +34,18 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+from controllers.w3afException import w3afException
 
-import re
-
+try:
+    f = file('plugins/grep/ssn/ssnAreasGroups.txt', 'r')
+    try:
+        content = f.read()
+        exec content
+        assert isinstance(areas_groups_map, dict), "Invalid file content."
+    finally:
+        f.close()
+except IOError:
+    raise w3afException, "File ssnAreasGroups.txt not found."
 
 class ssn(baseGrepPlugin):
     '''
@@ -41,15 +53,15 @@ class ssn(baseGrepPlugin):
 
     @author: dliz <dliz !at! users.sourceforge.net>
     '''
+    # match numbers of the form: 'nnn-nn-nnnn', 'nnnnnnnnn', 'nnn nn nnnn'
+    regex = '(?:^|[^\d])(\d{3})(?:[\- ]?)(\d{2})(?:[\- ]?)(\d{4})(?:[^\d]|$)'
+    ssn_regex = re.compile(regex)
+    
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
         self._ssnResponses = []
-        
-        # match numbers of the form: 'nnn-nn-nnnn', 'nnnnnnnnn', 'nnn nn nnnn'
-        regex = '(?:^|[^\d])(\d{3})(?:[\- ]?)(\d{2})(?:[\- ]?)(\d{4})(?:[^\d]|$)'
-        self._regex = re.compile(regex)
                 
     def grep(self, request, response):
         '''
@@ -60,9 +72,9 @@ class ssn(baseGrepPlugin):
         @return: None.
         '''
         if response.is_text_or_html() and response.getCode() == 200 \
-        and response.getClearTextBody() is not None:
+            and response.getClearTextBody() is not None:
             
-            found_ssn, validated_ssn = self._find_SSN( response.getClearTextBody() )
+            found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
                 v.setURL( response.getURL() )
@@ -81,13 +93,14 @@ class ssn(baseGrepPlugin):
         '''
         validated_ssn = None
         ssn = None
-        for match in self._regex.finditer(body_without_tags):
+        for match in self.ssn_regex.finditer(body_without_tags):
             validated_ssn = self._validate_SSN(match)
             if validated_ssn:
                 ssn = match.group(0)
                 break
 
         return ssn, validated_ssn
+    
     
     def _validate_SSN(self, potential_ssn):
         '''
@@ -103,34 +116,54 @@ class ssn(baseGrepPlugin):
 
         Source of information: wikipedia and socialsecurity.gov
         '''
-        area_code        = int(potential_ssn.group(1))
-        group_number     = int(potential_ssn.group(2))
-        serial_number    = int(potential_ssn.group(3))
         
-        # Checks
-        if ((area_code > 772) or (area_code == 0) or (area_code == 666)):
-            om.out.debug("area_code erred out: " + str(area_code) )
+        area_number = int(potential_ssn.group(1))
+        group_number = int(potential_ssn.group(2))
+        serial_number = int(potential_ssn.group(3))
+
+        if not group_number:
             return False
-        if (group_number == 0):
-            om.out.debug("group_number erred out: "+ str( group_number) )
+        if not serial_number:
             return False
-        if (serial_number == 0):
-            om.out.debug("serial_number erred out: "+ str(serial_number))
+
+        group = areas_groups_map.get(area_number)        
+        if not group:
             return False
-        if ((area_code == 987) and (group_number == 65) and \
-            ((4320 <= serial_number) or (serial_number <= 4329))):
-            msg = "advt area code erred out: " + str(area_code) + ' ' 
-            msg += str(group_number) + ' ' +str(serial_number)
-            om.out.debug( msg )
-            return False
-        if ((area_code == 78) and (group_number == 5) and (serial_number == 1120)):
-            msg = "invalid ssn erred out: "+ str(area_code)  + ' ' 
-            msg += str(group_number) + ' ' + str(serial_number)
-            om.out.debug( msg )
-            return False
-       
-        # If none of above conditions, then we have a valid ssn in the document. And we return it
-        return str(area_code)+'-'+ str(group_number)+ '-' + str(serial_number)
+        
+        odd_one = xrange(1, 11, 2)
+        even_two = xrange(10, 100, 2) # (10-98 even only)
+        even_three = xrange(2, 10, 2)
+        odd_four = xrange(11, 100, 2) # (11-99 odd only)
+        le_group = lambda x: x <= group
+        isSSN = False
+    
+        # For little odds (odds between 1 and 9)
+        if group in odd_one:
+            if group_number <= group:
+                isSSN = True
+
+        # For big evens (evens between 10 and 98)
+        elif group in even_two:
+            if group_number in itertools.chain(odd_one, 
+                                               filter(le_group, even_two)):
+                isSSN = True
+
+        # For little evens (evens between 2 and 8)
+        elif group in even_three:
+            if group_number in itertools.chain(odd_one, even_two,
+                                               filter(le_group, even_three)):
+                isSSN = True
+
+        # For big odds (odds between 11 and 99)
+        elif group in odd_four:
+            if group_number in itertools.chain(odd_one, even_two, even_three,
+                                               filter(le_group, odd_four)):
+                isSSN = True
+        
+        if isSSN:
+            return '%s-%s-%s' % (area_number, group_number, serial_number)
+        return None
+
 
 
     def end(self):
@@ -140,17 +173,17 @@ class ssn(baseGrepPlugin):
         # Print results
         self.printUniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
 
-    def getOptions( self ):
+    def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''    
         ol = optionList()
         return ol
         
-    def setOptions( self, opt ):
+    def setOptions(self, opt):
         pass
      
-    def getLongDesc( self ):
+    def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -159,7 +192,7 @@ class ssn(baseGrepPlugin):
         the US social security numbers. 
         '''
         
-    def getPluginDeps( self ):
+    def getPluginDeps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
