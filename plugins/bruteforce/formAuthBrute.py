@@ -319,8 +319,8 @@ class formAuthBrute(baseBruteforcePlugin):
                         data_container[self._passwd_field_name][0] = \
                                                             createRandAlNum(8)
                         freq.setDc(data_container)
-                        resp = _doPOSTWithoutCookies(xUrllib(), freq)
-                        body = resp.getBody()
+                        verif_resp = _doPOSTWithoutCookies(xUrllib(), freq)
+                        body = verif_resp.getBody()
                         body = body.replace(username, '').replace(userpwd, '')
     
                         if self._matchesFailedLogin(body):
@@ -347,15 +347,17 @@ class formAuthBrute(baseBruteforcePlugin):
                             v.setName('Guessable credentials')
                             kb.kb.append(self, 'auth', v)
         
-                            # Save cookies in the 'main' urlOpenes so the rest
-                            # of active plugins use them.
+                            # Save cookies in the 'main' urlOpenet so the rest
+                            # of active plugins use them. This is part of the
+                            # previously mentioned hack.
                             headers = resp.getHeaders()
                             additionalHeaders = []
                             for header_name in headers:
                                 if 'cookie' in header_name.lower():
                                     additionalHeaders.append(
                                             (header_name, headers[header_name]))                            
-                            self._urlOpener.settings.setHeadersList(additionalHeaders)
+                            self._urlOpener.settings.setHeadersList(
+                                                            additionalHeaders)
 
                             om.out.vulnerability(msg, severity=severity.HIGH)
                             return
