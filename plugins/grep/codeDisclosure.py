@@ -58,8 +58,41 @@ class codeDisclosure(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-        '''
 
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> from core.controllers.coreHelpers.fingerprint_404 import is_404
+        >>> o = create_temp_dir()
+        >>> global is_404
+        >>> is_404 = lambda x: False
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> c = codeDisclosure()
+        >>> c.grep(request, response)
+        >>> assert len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 0
+
+        Disclose some PHP code,
+        >>> kb.kb.save('codeDisclosure','codeDisclosure',[])
+        >>> body = 'header <? echo "a"; ?> footer'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> c = codeDisclosure()
+        >>> c.grep(request, response)
+        >>> assert len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1
+        '''
         if response.is_text_or_html() and response.getURL() not in self._already_added:
             
             match, lang  = is_source_file( response.getBody() )
