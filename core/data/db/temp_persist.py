@@ -109,7 +109,7 @@ class disk_list(object):
                 
                 fail_count += 1
                 if fail_count == 5:
-                    raise Exception('Failed to create databse file. Original exception: ' + str(e))
+                    raise Exception('Failed to create database file. Original exception: ' + str(e))
             else:
                 break
                 
