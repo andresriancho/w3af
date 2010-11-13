@@ -34,7 +34,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException
 
 try:
     f = file('plugins/grep/ssn/ssnAreasGroups.txt', 'r')
@@ -46,6 +46,7 @@ try:
         f.close()
 except IOError:
     raise w3afException, "File ssnAreasGroups.txt not found."
+
 
 class ssn(baseGrepPlugin):
     '''
@@ -70,10 +71,56 @@ class ssn(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None.
+
+
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.url.HTTPRequest import HTTPRequest
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = HTTPRequest(url)
+        >>> s = ssn()
+        >>> s.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
+
+        With "-" separating the SSN parts
+        >>> kb.kb.save('ssn','ssn',[])
+        >>> body = 'header 771-12-9876 footer'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> s.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+
+        With HTML tags in the middle:
+        >>> kb.kb.save('ssn','ssn',[])
+        >>> body = 'header <b>771</b>-<b>12</b>-<b>9876</b> footer'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> s.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+
+        All the numbers together:
+        >>> kb.kb.save('ssn','ssn',[])
+        >>> body = 'header 771129876 footer'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> s.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+
+        One extra number at the end:
+        >>> kb.kb.save('ssn','ssn',[])
+        >>> body = 'header 7711298761 footer'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> s.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
         '''
         if response.is_text_or_html() and response.getCode() == 200 \
             and response.getClearTextBody() is not None:
-            
+
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
@@ -89,7 +136,23 @@ class ssn(baseGrepPlugin):
      
     def _find_SSN(self, body_without_tags):
         '''
-        @return: True if the body has a SSN 
+        @return: SSN as found in the text and SSN in its regular format if the body had an SSN
+
+        >>> s = ssn()
+        >>> s._find_SSN( '' )
+        (None, None)
+        >>> s._find_SSN( 'header 771129876 footer' )
+        ('771129876', '771-12-9876')
+        >>> s._find_SSN( '771129876' )
+        ('771129876', '771-12-9876')
+        >>> s._find_SSN( 'header 771 12 9876 footer' )
+        ('771 12 9876', '771-12-9876')
+        >>> s._find_SSN( 'header 771 12 9876 32 footer' )
+        ('771 12 9876', '771-12-9876')
+        >>> s._find_SSN( 'header 771 12 9876 32 64 footer' )
+        ('771 12 9876', '771-12-9876')
+        >>> s._find_SSN( 'header 771129876 771129875 footer' )
+        ('771129876', '771-12-9876')
         '''
         validated_ssn = None
         ssn = None
@@ -97,6 +160,7 @@ class ssn(baseGrepPlugin):
             validated_ssn = self._validate_SSN(match)
             if validated_ssn:
                 ssn = match.group(0)
+                ssn = ssn.strip()
                 break
 
         return ssn, validated_ssn
@@ -116,7 +180,6 @@ class ssn(baseGrepPlugin):
 
         Source of information: wikipedia and socialsecurity.gov
         '''
-        
         area_number = int(potential_ssn.group(1))
         group_number = int(potential_ssn.group(2))
         serial_number = int(potential_ssn.group(3))
