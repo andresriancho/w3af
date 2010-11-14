@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import copy
 import re
-
+import httplib
 from lxml import etree
 
 import core.controllers.outputManager as om
@@ -40,7 +40,10 @@ codecs.register_error("returnEscapedChar", _returnEscapedChar)
 
 
 DEFAULT_CHARSET = 'utf-8'
-
+CR = '\r'
+LF = '\n'
+CRLF = CR + LF
+SP = ' '
 
 class httpResponse(object):
     
@@ -281,7 +284,14 @@ class httpResponse(object):
 
         @parameter headers: The headers dict.
         '''
-        self._headers = headers
+        # Fix lowercase in header names from HTTPMessage
+        if isinstance(headers, httplib.HTTPMessage):
+            self._headers = {}
+            for header in headers.headers:
+                key, value = header.split(':', 1)
+                self._headers[key.strip()] = value.strip()
+        else:
+            self._headers = headers
 
         #   Set the type, for easy access.
         for key in headers.keys():
@@ -376,7 +386,7 @@ class httpResponse(object):
             Header1: Value1
             Header2: Value2
         '''
-        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + '\n'
+        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + CRLF
         strRes += self.dumpHeaders()
         return strRes
         
@@ -385,7 +395,7 @@ class httpResponse(object):
         Return a DETAILED str representation of this HTTP response object.
         '''
         strRes = self.dumpResponseHead()
-        strRes += '\n\n'
+        strRes += CRLF
         strRes += self.getBody()
         return strRes
         
@@ -395,7 +405,7 @@ class httpResponse(object):
         '''
         strRes = ''
         for header in self._headers:
-            strRes += header + ': ' + self._headers[ header ] + '\n'
+            strRes += header + ': ' + self._headers[ header ] + CRLF
         return strRes
         
     def copy( self ):
