@@ -180,7 +180,7 @@ class url_object(object):
         return url_object( self.scheme + '://' + self.domain + '/' )
     
     
-    def normalizeUrl( self ):
+    def normalizeURL( self ):
         '''
         This method was added to be able to avoid some issues which are generated
         by the different way browsers and urlparser.urljoin join the URLs. A clear
@@ -208,23 +208,27 @@ class url_object(object):
         So, before the path normalization, I perform a small net location normalization that transforms:
         
         >>> u = url_object('http://host.tld:80/foo/bar')
-        >>> u.normalizeUrl()
+        >>> u.normalizeURL()
         >>> u.url_string
         'http://host.tld/foo/bar'
+        
         >>> u = url_object('https://host.tld:443/foo/bar')
-        >>> u.normalizeUrl()
+        >>> u.normalizeURL()
         >>> u.url_string
         'https://host.tld/foo/bar'
+        
         >>> u = url_object('http://user:passwd@host.tld:80')
-        >>> u.normalizeUrl()
+        >>> u.normalizeURL()
         >>> u.url_string
         'http://user:passwd@host.tld/'
+        
         >>> u = url_object('http://abc/../f00.b4r')
-        >>> u.normalizeUrl()
+        >>> u.normalizeURL()
         >>> u.url_string
         'http://abc/f00.b4r'
+        
         >>> u = url_object('http://abc/../../f00.b4r')
-        >>> u.normalizeUrl()
+        >>> u.normalizeURL()
         >>> u.url_string
         'http://abc/f00.b4r'
         '''
@@ -349,7 +353,7 @@ class url_object(object):
         '''
         joined_url = urlparse.urljoin( self.url_string, relative )
         jurl_obj = url_object(joined_url)
-        jurl_obj.normalizeUrl()
+        jurl_obj.normalizeURL()
         return jurl_obj
     
     def getDomain( self ):

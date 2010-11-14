@@ -204,8 +204,8 @@ class sgmlParser(abstractParser, SGMLParser):
                 # The content variables looks something like... "6  ; URL=http://www.f00.us/"
                 for url_string in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                     url_string = url_string.strip()
-                    url_string = self._decode_URL( url_string, self._encoding )
                     url_instance = self._baseUrl.urlJoin( url_string )
+                    url_instance = self._decode_URL( url_instance, self._encoding ) 
                     
                     self._parsed_URLs.append( url_instance )
                     self._tag_and_url.append( ('meta', url_instance ) )

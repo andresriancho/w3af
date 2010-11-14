@@ -140,8 +140,8 @@ class htmlParser(sgmlParser):
         foundAction = False
         for attr in attrs:
             if attr[0].lower() == 'action':
-                decoded_action = self._decode_URL(attr[1], self._encoding)
-                action = self._baseUrl.urlJoin( decoded_action )
+                action = self._baseUrl.urlJoin( attr[1] )
+                action = self._decode_URL( action , self._encoding)
                 foundAction = True
 
         if not foundAction:
