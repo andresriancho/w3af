@@ -16,7 +16,7 @@
     <definitions>
         <context id="http">
             <include>
-                <context id="head">
+                <context id="head" once-only="true">
                     <start>^</start>
                     <end>^$</end>
                     <include>
@@ -30,16 +30,7 @@
                             <keyword>TRACE</keyword>
                             <keyword>CONNECT</keyword>
                         </context>
-                        <context style-ref="code" first-line-only="true">
-                            <match>\s[0-9]{3}\s</match>
-                        </context>
-                        <context style-ref="url" first-line-only="true">
-                            <match>(http|https):\/\/[^\s]*</match>
-                        </context>
-                        <context style-ref="url" first-line-only="true">
-                            <match>\s\/[^\s]+</match>
-                        </context>
-                            <context style-ref="iheaders">
+                        <context style-ref="iheaders">
                             <keyword>Host</keyword>
                             <keyword>Set-Cookie</keyword>
                             <keyword>Cookie</keyword>
@@ -48,6 +39,15 @@
                             <keyword>X-DNS-Prefetch-Control</keyword>
                             <keyword>X-XSS-Protection</keyword>
                             <keyword>X-Content-Type-Options</keyword>
+                        </context>
+                        <context style-ref="code" first-line-only="true">
+                            <match>\s[0-9]{3}\s</match>
+                        </context>
+                        <context style-ref="url" first-line-only="true">
+                            <match>(http|https):\/\/[^\s]*</match>
+                        </context>
+                        <context style-ref="url" first-line-only="true">
+                            <match>\s\/[^\s]+</match>
                         </context>
                         <context style-ref="headers">
                             <match>^.+: </match>
