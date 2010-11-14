@@ -24,13 +24,6 @@ import gobject
 import re
 import threading
 
-CAN_SEARCH_CASE_INSENSITIVE = False
-try:
-    from gtksourceview2 import SEARCH_CASE_INSENSITIVE
-    CAN_SEARCH_CASE_INSENSITIVE = True
-except:
-    pass
-
 from core.ui.gtkUi import history
 from core.ui.gtkUi import helpers
 from core.data.options.preferences import Preferences
