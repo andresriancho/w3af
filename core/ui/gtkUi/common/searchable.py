@@ -205,7 +205,7 @@ class Searchable(object):
         if not positions:
             self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_notfnd)
             self.textbuf.select_range(startIter, startIter)
-            return
+            return positions
         # highlight them all
         for (iterini, iterfin) in positions:
             self.textbuf.apply_tag_by_name(tag, iterini, iterfin)
