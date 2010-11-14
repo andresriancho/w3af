@@ -68,7 +68,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._lstore = gtk.ListStore(gobject.TYPE_UINT,gobject.TYPE_BOOLEAN,
                 gobject.TYPE_STRING,gobject.TYPE_STRING,gobject.TYPE_STRING,
                 gobject.TYPE_UINT, gobject.TYPE_STRING,
-                gobject.TYPE_UINT, gobject.TYPE_FLOAT)
+                gobject.TYPE_UINT, gobject.TYPE_STRING,gobject.TYPE_FLOAT)
         # Create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -221,23 +221,17 @@ class httpLogTab(entries.RememberingHPaned):
         column.set_resizable(True)
         column.set_sizing(gtk.TREE_VIEW_COLUMN_GROW_ONLY)
         treeview.append_column(column)
-        # Column for Code
-        column = gtk.TreeViewColumn(_('Code'), gtk.CellRendererText(),text=5)
-        column.set_sort_column_id(5)
-        treeview.append_column(column)
-        # Column for response message
-        column = gtk.TreeViewColumn(_('Message'), gtk.CellRendererText(),text=6)
-        column.set_sort_column_id(6)
-        column.set_resizable(True)
-        treeview.append_column(column)
-        # Column for content-length
-        column = gtk.TreeViewColumn(_('Content-Length'), gtk.CellRendererText(),text=7)
-        column.set_sort_column_id(7)
-        treeview.append_column(column)
-        # Column for response time
-        column = gtk.TreeViewColumn(_('Time (ms)'), gtk.CellRendererText(),text=8)
-        column.set_sort_column_id(8)
-        treeview.append_column(column)
+        extColumns = [
+                (5, _('Code')),
+                (6, _('Message')),
+                (7, _('Content-Length')),
+                (8, _('Content-Type')),
+                (9, _('Time (ms)')),
+                ]
+        for n, title in extColumns:
+            column = gtk.TreeViewColumn(title, gtk.CellRendererText(),text=n)
+            column.set_sort_column_id(n)
+            treeview.append_column(column)
 
     def toggleBookmark(self, cell, path, model):
         """Toggle bookmark."""
@@ -393,9 +387,9 @@ class httpLogTab(entries.RememberingHPaned):
         if not appendMode:
             self._lstore.clear()
         for item in results:
-            self._lstore.append([item.id, item.mark, item.request.getMethod(), item.request.getURI(),
-                item.tag, item.response.getCode(), item.response.getMsg(), len(item.response.getBody()),
-                item.response.getWaitTime()])
+            self._lstore.append([item.id, item.mark, item.method, item.url,
+                item.tag, item.code, item.msg, item.responseSize,item.contentType,
+                item.time])
         # Size search results
         if len(results) < 10:
             position = 13 + 48 * len(results)

@@ -27,16 +27,21 @@ import functools
 import os
 
 from . import reqResViewer, helpers, entries, fuzzygen
-
 # Alternative ways of seeing the data
 from .clusterGraph import distance_function_selector
-
 # Generators
 from .payload_generators import create_generator_menu
-
 from core.data.db.history import HistoryItem
 from core.controllers.w3afException import w3afException, w3afMustStopException
 
+ui_proxy_menu = """
+<ui>
+  <toolbar name="Toolbar">
+    <toolitem action="Send"/>
+    <separator name="sep1"/>
+  </toolbar>
+</ui>
+"""
 manual_request_example = """\
 GET http://localhost/script.php HTTP/1.0
 Host: www.some_host.com
@@ -86,32 +91,30 @@ class ManualRequests(entries.RememberingWindow):
             w3af, "manualreq", "w3af - Manual Requests", "Manual_Requests")
         self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.w3af = w3af
-
-        # The table to store the checkbox and the button
-        table = gtk.Table(1, 20)
-        table.set_col_spacings(10)
-
+        self._uimanager = gtk.UIManager()
+        accelgroup = self._uimanager.get_accel_group()
+        self.add_accel_group(accelgroup)
+        actiongroup = gtk.ActionGroup('UIManager')
+        actiongroup.add_actions([
+            ('Send', gtk.STOCK_YES, _('_Send Request'), None, _('Send request'), self._send),
+        ])
+        # Finish the toolbar
+        self._uimanager.insert_action_group(actiongroup, 0)
+        self._uimanager.add_ui_from_string(ui_proxy_menu)
+        toolbar = self._uimanager.get_widget('/Toolbar')
+        b = toolbar.get_nth_item(0)
+        self.vbox.pack_start(toolbar, False)
+        toolbar.show()
         # Fix content length checkbox
         self._fixContentLengthCB = gtk.CheckButton('Fix content length header')
         self._fixContentLengthCB.set_active(True)
         self._fixContentLengthCB.show()
-
-        # send button
-        b = gtk.Button("Send")
-        b.connect("clicked", self._send)
-
-        # Store all inside the table
-        table.attach(self._fixContentLengthCB, 9, 10, 0, 1, xoptions=gtk.SHRINK)
-        table.attach(b, 19, 20, 0, 1, xoptions=gtk.SHRINK)
-
         # request-response viewer
         self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive],\
                 withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
+        self.vbox.pack_start(self._fixContentLengthCB, False, False)
         self.vbox.pack_start(self.reqresp, True, True)
-
-        self.vbox.pack_start(table, False, False)
-
         # Add a default request
         if initialRequest is None:
             self.reqresp.request.showRaw(manual_request_example, '')
@@ -120,7 +123,6 @@ class ManualRequests(entries.RememberingWindow):
             self.reqresp.request.showRaw(initialUp, initialDn)
 
         # Show all!
-        table.show_all()
         self.show()
 
     def _send(self, widg):
@@ -301,7 +303,7 @@ class FuzzyRequests(entries.RememberingWindow):
         helplabel = gtk.Label()
         helplabel.set_selectable(True)
         helplabel.set_markup(FUZZYHELP)
-        self.originalReq.append_page(helplabel, gtk.Label("Syntax help"))
+       # self.originalReq.append_page(helplabel, gtk.Label("Syntax help"))
         helplabel.show()
         self.originalReq.show()
         vbox.pack_start(self.originalReq, True, True, padding=5)

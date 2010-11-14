@@ -19,11 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import gtk, gobject
-import threading
-from . import history, helpers
+import gtk
+import gobject
 import re
+import threading
 
+CAN_SEARCH_CASE_INSENSITIVE = False
+try:
+    from gtksourceview2 import SEARCH_CASE_INSENSITIVE
+    CAN_SEARCH_CASE_INSENSITIVE = True
+except:
+    pass
+
+from core.ui.gtkUi import history
+from core.ui.gtkUi import helpers
+from core.data.options.preferences import Preferences
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
@@ -379,10 +389,6 @@ class SemiStockButton(gtk.Button):
     '''
     def __init__(self, text, image, tooltip=None):
         super(SemiStockButton,self).__init__(stock=image)
-        # Icons in menus and buttons are not shown by default in GNOME 2.28
-        settings = self.get_settings()
-        settings.set_property('gtk-button-images', True)
-
         align = self.get_children()[0]
         box = align.get_children()[0]
         (self.image, self.label) = box.get_children()
@@ -649,230 +655,6 @@ class TextDialog(gtk.Dialog):
         self.show()
 
 
-class Searchable(object):
-    '''Class that gives the machinery to search to a TextView.
-
-    Just inheritate it from the box that has the textview to extend.
-
-    @param textview: the textview to extend
-    @param small: True if the buttons will only have the icons
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, textview, small=False):
-        self.textview = textview
-        self.small = small
-        
-        # By default, don't match case
-        self._matchCaseValue = False
-        
-        # key definitions
-        self.key_f = gtk.gdk.keyval_from_name("f")
-        self.key_g = gtk.gdk.keyval_from_name("g")
-        self.key_G = gtk.gdk.keyval_from_name("G")
-        self.key_F3 = gtk.gdk.keyval_from_name("F3")
-        self.key_Esc = gtk.gdk.keyval_from_name("Escape")
-
-        # signals
-        self.connect("key-press-event", self._key)
-        self.textview.connect("populate-popup", self._populate_popup)
-
-        # colors for textview and entry backgrounds
-        self.textbuf = self.textview.get_buffer()
-        self.textbuf.create_tag("yellow-background", background="yellow")
-        colormap = self.get_colormap()
-        self.bg_normal = colormap.alloc_color("white")
-        self.bg_notfnd = colormap.alloc_color("red")
-
-        # build the search tab
-        self._build_search(None)
-
-    def _key(self, widg, event):
-        '''Handles keystrokes.'''
-        # ctrl-something
-        if event.state & gtk.gdk.CONTROL_MASK:
-            if event.keyval == self.key_f:   # -f
-                self.show_search()
-            elif event.keyval == self.key_g:   # -g
-                self._find(None, "next")
-            elif event.keyval == self.key_G:   # -G (with shift)
-                self._find(None, "previous")
-            return True
-
-        # F3
-        if event.keyval == self.key_F3:
-            if event.state & gtk.gdk.SHIFT_MASK:
-                self._find(None, "previous")
-            else:
-                self._find(None, "next")
-        # Esc
-        if event.keyval == self.key_Esc:
-            self._close(None, None)
-        return False
-
-    def _populate_popup(self, textview, menu):
-        '''Populates the menu with the Find item.'''
-        menu.append(gtk.SeparatorMenuItem())
-        opc = gtk.MenuItem(_("Find..."))
-        menu.append(opc)
-        opc.connect("activate", self.show_search)
-        menu.show_all()
-
-    def show_search(self, widget=None):
-        '''Shows the search tab.'''
-        self.srchtab.show_all()
-        self.search_entry.grab_focus()
-        self.searching = True
-
-    def _build_search(self, widget):
-        '''Builds the search bar.'''
-        tooltips = gtk.Tooltips()
-        self.srchtab = gtk.HBox()
-        
-        # close button
-        close = gtk.Image()
-        close.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-        eventbox = gtk.EventBox()
-        eventbox.add(close)
-        eventbox.connect("button-release-event", self._close)
-        self.srchtab.pack_start(eventbox, expand=False, fill=False, padding=3)
-
-        # label
-        label = gtk.Label("Find:")
-        self.srchtab.pack_start(label, expand=False, fill=False, padding=3)
-
-        # entry
-        self.search_entry = gtk.Entry()
-        tooltips.set_tip(self.search_entry, _("Type here the phrase you want to find"))
-        self.search_entry.connect("activate", self._find, "next")
-        self.search_entry.connect("changed", self._find, "find")
-        self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
-
-        # find next button
-        if self.small:
-            but_text = ''
-        else:
-            but_text = 'Next'
-        butn = SemiStockButton(but_text, gtk.STOCK_GO_DOWN)
-        butn.connect("clicked", self._find, "next")
-        tooltips.set_tip(butn, _("Find the next ocurrence of the phrase"))
-        self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
-
-        # find previous button
-        if self.small:
-            but_text = ''
-        else:
-            but_text = ('Previous')
-        butp = SemiStockButton(but_text, gtk.STOCK_GO_UP)
-        butp.connect("clicked", self._find, "previous")
-        tooltips.set_tip(butp, _("Find the previous ocurrence of the phrase"))
-        self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
-
-        # make last two buttons equally width
-        wn,hn = butn.size_request()
-        wp,hp = butp.size_request()
-        newwidth = max(wn, wp)
-        butn.set_size_request(newwidth, hn)
-        butp.set_size_request(newwidth, hp)
-        
-        # Match case CheckButton
-        butCase = gtk.CheckButton(_('Match case'))
-        butCase.set_active(self._matchCaseValue)
-        butCase.connect("clicked", self._matchCase)
-        butCase.show()
-        self.srchtab.pack_start(butCase, expand=False, fill=False, padding=3)
-
-        self.pack_start(self.srchtab, expand=False, fill=False)
-        self.searching = False
-
-    def _matchCase(self, widg):
-        '''
-        Toggles self._matchCaseValue and searches again
-        '''
-        self._matchCaseValue = not self._matchCaseValue
-        self._find(None, 'find')
-        
-
-    def _find(self, widget, direction):
-        '''Actually find the text, and handle highlight and selection.'''
-        # if not searching, don't do anything
-        if not self.searching:
-            return
-
-        # get widgets and info
-        self._clean()
-        tosearch = self.search_entry.get_text()
-        if not tosearch:
-            return
-        (ini, fin) = self.textbuf.get_bounds()
-        alltext = self.textbuf.get_slice(ini, fin, True)
-
-        if not self._matchCaseValue:
-            alltext = alltext.lower()
-            tosearch = tosearch.lower()
-
-        # find the positions where the phrase is found
-        positions = []
-        pos = 0
-        while True:
-            try:
-                pos = alltext.index(tosearch, pos)
-            except ValueError:
-                break
-            fin = pos + len(tosearch)
-            iterini = self.textbuf.get_iter_at_offset(pos)
-            iterfin = self.textbuf.get_iter_at_offset(fin)
-            positions.append((pos, fin, iterini, iterfin))
-            pos += 1
-        if not positions:
-            self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_notfnd)
-            self.textbuf.select_range(ini, ini)
-            return
-
-        # highlight them all
-        for (ini, fin, iterini, iterfin) in positions:
-            self.textbuf.apply_tag_by_name("yellow-background", iterini, iterfin)
-
-        # find where's the cursor in the found items
-        cursorpos = self.textbuf.get_property("cursor-position")
-        for ind, (ini, fin, iterini, iterfin) in enumerate(positions):
-            if ini >= cursorpos:
-                keypos = ind
-                break
-        else:
-            keypos = 0
-
-        # go next or previos, and adjust in the border
-        if direction == "next":
-            keypos += 1
-            if keypos >= len(positions):
-                keypos = 0
-        elif direction == "previous":
-            keypos -= 1
-            if keypos < 0:
-                keypos = len(positions) - 1
-        
-        # mark and show it
-        (ini, fin, iterini, iterfin) = positions[keypos]
-        self.textbuf.select_range(iterini, iterfin)
-        self.textview.scroll_to_iter(iterini, 0, False)
-
-    def _close(self, widget, event):
-        '''Hides the search bar, and cleans the background.'''
-        self.srchtab.hide()
-        self._clean()
-        self.searching = False
-
-    def _clean(self):
-        '''Cleans the entry colors.'''
-        # highlights
-        (ini, fin) = self.textbuf.get_bounds()
-        self.textbuf.remove_tag_by_name("yellow-background", ini, fin)
-
-        # entry background
-        self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_normal)
-
-
 
 class RememberingWindow(gtk.Window):
     '''Just a window that remembers position and size.
@@ -1079,7 +861,8 @@ class EasyTable(gtk.Table):
         r = self.auto_rowcounter
         for i,widg in enumerate(widgets):
             if widg is not None:
-                self.attach(widg, i, i+1, r, r+1, yoptions=gtk.EXPAND, xpadding=5)
+                #self.attach(widg, i, i+1, r, r+1, xpadding=5)
+                self.attach(widg, i, i+1, r, r+1,  xpadding=5, xoptions=gtk.FILL, yoptions=0)
                 widg.show()
         self.auto_rowcounter += 1
 
@@ -1205,3 +988,155 @@ class StatusBar(gtk.Statusbar):
         if self._timer is not None:
             self._timer.cancel()
             self._timer = None
+
+class ConfigOptions(gtk.VBox, Preferences):
+    """Configuration class.
+    @param w3af: The Core
+    @param parentWidg: The parentWidg widget with *reloadOptions* method
+    """
+    def __init__(self, w3af, parentWidg, label='config'):
+        gtk.VBox.__init__(self)
+        Preferences.__init__(self, label)
+
+        self.set_spacing(5)
+        self.def_padding = 5
+        self.w3af = w3af
+        self.parentWidg = parentWidg
+        self.widgets_status = {}
+        self.propagAnyWidgetChanged = helpers.PropagateBuffer(self._changedAnyWidget)
+        self.propagLabels = {}
+
+    def show(self):
+        # Init options
+        self._initOptionsView()
+        # Buttons
+        buttonsArea = gtk.HBox()
+        buttonsArea.show()
+        self.saveBtn = gtk.Button(_("_Apply"), stock=gtk.STOCK_APPLY)
+        self.saveBtn.show()
+        self.rvrtBtn = gtk.Button(_("_Reset"), stock=gtk.STOCK_REVERT_TO_SAVED)
+        self.rvrtBtn.show()
+        buttonsArea.pack_start(self.rvrtBtn, False, False, padding=self.def_padding)
+        buttonsArea.pack_start(self.saveBtn, False, False, padding=self.def_padding)
+        self.saveBtn.connect("clicked", self._savePanel)
+        self.saveBtn.set_sensitive(False)
+        self.rvrtBtn.set_sensitive(False)
+        self.rvrtBtn.connect("clicked", self._revertPanel)
+        self.pack_start(buttonsArea, False, False)
+        super(ConfigOptions,self).show()
+
+    def _initOptionsView(self):
+        tooltips = gtk.Tooltips()
+        for section, optList in self.options.items():
+            frame = gtk.Frame()
+            label = gtk.Label('<b>%s</b>' % self.sections[section])
+            label.set_use_markup(True)
+            label.show()
+            frame.set_label_widget(label)
+            frame.set_shadow_type(gtk.SHADOW_NONE)
+            frame.show()
+            table = EasyTable(len(optList), 2)
+            for i, opt in enumerate(optList):
+                titl = gtk.Label(opt.getDesc())
+                titl.set_alignment(xalign=0.0, yalign=0.5)
+                widg = wrapperWidgets[opt.getType()](self._changedWidget, opt)
+                if hasattr(widg, 'set_width_chars'):
+                    widg.set_width_chars(50)
+                opt.widg = widg
+                tooltips.set_tip(widg, opt.getHelp())
+                table.autoAddRow(titl, widg)
+                self.widgets_status[widg] = (titl, opt.getDesc(), "<b>%s</b>" % opt.getDesc())
+                table.show()
+                frame.add(table)
+            self.pack_start(frame, False, False)
+
+    def _changedAnyWidget(self, like_initial):
+        """Adjust the save/revert buttons and alert the tree of the change.
+
+        @param like_initial: if the widgets are modified or not.
+
+        It only will be called if any widget changed its state, through
+        a propagation buffer.
+        """
+        self.saveBtn.set_sensitive(not like_initial)
+        self.rvrtBtn.set_sensitive(not like_initial)
+        self.parentWidg.like_initial = like_initial
+
+    def _changedLabelNotebook(self, like_initial, label, text):
+        if like_initial:
+            label.set_text(text)
+        else:
+            label.set_markup("<b>%s</b>" % text)
+
+    def _changedWidget(self, widg, like_initial):
+        """Receives signal when a widget changed or not.
+
+        @param widg: the widget who changed.
+        @param like_initial: if it's modified or not
+
+        Handles the boldness of the option label and then propagates
+        the change.
+        """
+        (labl, orig, chng) = self.widgets_status[widg]
+        if like_initial:
+            labl.set_text(orig)
+        else:
+            labl.set_markup(chng)
+        self.propagAnyWidgetChanged.change(widg, like_initial)
+        #propag = self.propagLabels[widg]
+        #if propag is not None:
+         #   propag.change(widg, like_initial)
+
+
+    def _savePanel(self, widg):
+        """Saves the config changes to the plugins.
+
+        @param widg: the widget who generated the signal
+
+        First it checks if there's some invalid configuration, then gets the value of 
+        each option and save them to the plugin.
+        """
+        # check if all widgets are valid
+        invalid = []
+        for section, optList in self.options.items():
+            for opt in optList:
+                if hasattr(opt.widg, "isValid"):
+                    if not opt.widg.isValid():
+                        invalid.append(opt.getName())
+        if invalid:
+            msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
+            msg += "\n-".join(invalid)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg.set_title(_('Configuration error'))
+            dlg.run()
+            dlg.destroy()
+            return
+
+        # Get the value from the GTK widget and set it to the option object
+        for section, optList in self.options.items():
+            for opt in optList:
+                opt.setValue(opt.widg.getValue())
+
+        for section, optList in self.options.items():
+            for opt in optList:
+                opt.widg.save()
+        self.w3af.mainwin.sb(_("Configuration saved successfully"))
+        self.parentWidg.reloadOptions()
+
+    def _revertPanel(self, *vals):
+        """Revert all widgets to their initial state."""
+        for widg in self.widgets_status:
+            widg.revertValue()
+        self.w3af.mainwin.sb(_("The configuration was reverted to its last saved state"))
+        self.parentWidg.reloadOptions()
+
+    def _showHelp(self, widg, helpmsg):
+        """Shows a dialog with the help message of the config option.
+
+        @param widg: the widget who generated the signal
+        @param helpmsg: the message to show in the dialog
+        """
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, helpmsg)
+        dlg.set_title('Plugin help')
+        dlg.run()
+        dlg.destroy()

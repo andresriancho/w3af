@@ -40,14 +40,14 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.db import DB, WhereHelper
 
-
 class HistoryItem:
     '''Represents history item.'''
 
     _db = None
     _dataTable = 'data_table'
-    _columns = [('id','integer'), ('url', 'text'), ('code', 'text'), ('tag', 'text'),
-            ('mark', 'integer'), ('info', 'text'), ('raw_pickled_data', 'blob')]
+    _columns = [('id','integer'), ('url', 'text'), ('code', 'integer'), ('tag', 'text'),
+            ('mark', 'integer'), ('info', 'text'), ('time', 'float'), ('msg', 'text'), ('content_type', 'text'), 
+            ('method', 'text'), ('response_size', 'integer')]
     _primaryKeyColumns = ['id',]
     id = None
     request = None
@@ -55,9 +55,17 @@ class HistoryItem:
     info = None
     mark = False
     tag = ''
+    contentType= ''
+    responseSize = 0
+    method = 'GET'
+    msg = 'OK'
+    code = 200
+    time = 0.2
 
     def __init__(self, db=None):
         '''Construct object.'''
+        self._border = '-#=' * 20
+        self._ext = '.trace'
         if db:
             self._db = db
         elif not kb.kb.getData('gtkOutput', 'db') == []:
@@ -66,7 +74,16 @@ class HistoryItem:
         else:
             raise w3afException('The database is not initialized yet.')
 
-    def find(self, searchData, resultLimit=-1, orderData=[]):
+        self._sessionDir = os.path.join(get_home_dir() , 'sessions', cf.cf.getData('sessionName'))
+        try:
+            os.mkdir(self._sessionDir)
+        except OSError, oe:
+            # [Errno 17] File exists
+            if oe.errno != 17:
+                msg = 'Unable to write to the user home directory: ' + get_home_dir()
+                raise w3afException( msg )
+
+    def find(self, searchData, resultLimit=-1, orderData=[], full=False):
         '''Make complex search.
         search_data = {name: (value, operator), ...}
         orderData = [(name, direction)]
@@ -93,24 +110,35 @@ class HistoryItem:
             rawResult = self._db.retrieveAll(sql, where.values())
             for row in rawResult:
                 item = self.__class__(self._db)
-                item._loadFromRow(row)
+                item._loadFromRow(row, full)
                 result.append(item)
         except w3afException:
             raise w3afException('You performed an invalid search. Please verify your syntax.')
         return result
 
-    def _loadFromRow(self, row):
+    def _loadFromRow(self, row, full=True):
         '''Load data from row with all columns.'''
-        f = StringIO(str(row[-1]))
-        req, res = Unpickler(f).load()
-        self.id = res.getId()
-        self.request = req
-        self.response = res
-        self.info = row[-2]
-        self.mark = bool(row[-3])
-        self.tag = row[-4]
+        self.id = row[0]
+        self.url = row[1]
+        self.code = row[2]
+        self.tag = row[3]
+        self.mark = bool(row[4])
+        self.info = row[5]
+        self.time = float(row[6])
+        self.msg = row[7]
+        self.contentType = row[8]
+        self.method = row[9]
+        self.responseSize = int(row[10])
+        self.request, self.response = self._loadFromFile(self.id)
 
-    def load(self, id=None):
+    def _loadFromFile(self, id):
+        with open(os.path.join(self._sessionDir, str(id) + self._ext), 'rb') as rrfile:
+            data = rrfile.read()
+        f = StringIO(data)
+        req, res = Unpickler(f).load()
+        return (req, res)
+
+    def load(self, id=None, full=True):
         '''Load data from DB by ID.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
@@ -121,7 +149,7 @@ class HistoryItem:
         sql = 'SELECT * FROM ' + self._dataTable + ' WHERE id = ? '
         try:
             row = self._db.retrieve(sql, (id,))
-            self._loadFromRow(row)
+            self._loadFromRow(row, full)
         except w3afException:
             raise w3afException('You performed an invalid search. Please verify your syntax.')
         except Exception, e:
@@ -131,12 +159,12 @@ class HistoryItem:
             
         return True
 
-    def read(self, id):
+    def read(self, id, full=True):
         '''Return item by ID.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
         resultItem = self.__class__(self._db)
-        resultItem.load(id)
+        resultItem.load(id, full)
         return resultItem
 
     def save(self):
@@ -148,21 +176,33 @@ class HistoryItem:
         values.append(self.tag)
         values.append(int(self.mark))
         values.append(self.info)
-        f = StringIO()
-        p = Pickler(f)
-        p.dump((self.request, self.response))
-        values.append(f.getvalue())
+        values.append(self.response.getWaitTime())
+        values.append(self.response.getMsg())
+        values.append(self.response.getContentType())
+        values.append(self.request.getMethod())
+        values.append(len(self.response.getBody()))
+
         if not self.id:
-            sql = 'INSERT INTO ' + self._dataTable + ' (id, url, code, tag, mark, info, raw_pickled_data)'
-            sql += ' VALUES (?,?,?,?,?,?,?)'
+            sql = 'INSERT INTO ' + self._dataTable + ' (id, url, code, tag, mark, info, time, msg, content_type, method, response_size)'
+            sql += ' VALUES (?,?,?,?,?,?,?,?,?,?,?)'
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
             values.append(self.id)
             sql = 'UPDATE ' + self._dataTable
-            sql += ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, raw_pickled_data = ? '
+            sql += ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
+            sql += ', method = ?, response_size = ? '
             sql += ' WHERE id = ?'
             self._db.execute(sql, values)
+        # 
+        # Save raw data to file
+        # 
+        f = StringIO()
+        p = Pickler(f)
+        p.dump((self.request, self.response))
+        with open(os.path.join(self._sessionDir, str(self.response.id) + self._ext), 'wb') as rrfile:
+            rrfile.write(f.getvalue())
+            rrfile.flush()
         return True
 
     def getColumns(self):
