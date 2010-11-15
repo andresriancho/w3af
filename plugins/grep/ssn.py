@@ -35,17 +35,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 from core.controllers.w3afException import w3afException
-
-try:
-    f = file('plugins/grep/ssn/ssnAreasGroups.txt', 'r')
-    try:
-        content = f.read()
-        exec content
-        assert isinstance(areas_groups_map, dict), "Invalid file content."
-    finally:
-        f.close()
-except IOError:
-    raise w3afException, "File ssnAreasGroups.txt not found."
+from .ssndata.ssnAreasGroups import areas_groups_map
 
 
 class ssn(baseGrepPlugin):
