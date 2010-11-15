@@ -104,21 +104,27 @@ class ProxiedRequests(entries.RememberingWindow):
         vbox.show()
         # Notebook
         self.nb = gtk.Notebook()
+        tabs = []
         # Intercept
         tmp = gtk.Label(_("_Intercept"))
         tmp.set_use_underline(True)
         self.nb.append_page(vbox, tmp)
+        tabs.append('Intercept')
         # History
         self.httplog = httpLogTab.httpLogTab(w3af, time_refresh=True)
         tmp = gtk.Label(_("_History"))
         tmp.set_use_underline(True)
         self.nb.append_page(self.httplog, tmp)
+        tabs.append('History')
         # Options
         tmp = gtk.Label(_("_Options"))
         tmp.set_use_underline(True)
         self.nb.append_page(self.pref, tmp)
+        tabs.append('Options')
         self.vbox.pack_start(self.nb, True, True, padding=self.def_padding)
         self.nb.show()
+        # Go to Home Tab
+        self.nb.set_current_page(tabs.index(self.pref.getValue('proxy', 'home_tab')))
         # Status bar for messages
         self.status_bar = gtk.Statusbar()
         self.vbox.pack_start(self.status_bar, False, False)
@@ -144,7 +150,8 @@ class ProxiedRequests(entries.RememberingWindow):
         proxyOptions.add(Option("notrap",
             ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
         proxyOptions.add(Option("fixlength", True, "Fix content length", "boolean"))
-        proxyOptions.add(comboOption("trap_view", ['Splitted', 'Tabbed'], "ReqRes view of trap tab", "combo"))
+        proxyOptions.add(comboOption("trap_view", ['Splitted', 'Tabbed'], "View of Intercept tab", "combo"))
+        proxyOptions.add(comboOption("home_tab", ['Intercept', 'History', 'Options'], "Home tab", "combo"))
         self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
         editorOptions = optionList()
