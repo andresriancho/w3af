@@ -160,6 +160,9 @@ class LDAPi(baseAuditPlugin):
             error_strings.append('LDAPException')
             error_strings.append('com.sun.jndi.ldap')
             
+            # PHP
+            error_strings.append('Search: Bad search filter')
+            
             # http://support.microsoft.com/kb/218185
             error_strings.append('Protocol error occurred')
             error_strings.append('Size limit has exceeded')
