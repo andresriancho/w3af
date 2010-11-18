@@ -361,7 +361,7 @@ class ConnectionManager:
     def get_connectionNumber( self, host=None ):
         res = 0
         if host is None:
-            for i in self._hostmap:
+            for i in self._hostmap.keys():
                 res += len(self._hostmap[ i ])
         else:
             res = len(self._hostmap[ host ])
