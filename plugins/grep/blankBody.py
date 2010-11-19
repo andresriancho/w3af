@@ -100,7 +100,7 @@ class blankBody(baseGrepPlugin):
 
         '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
-        and response.getCode() not in [401, 304] and 'location' not in response.getLowerCaseHeaders()\
+        and response.getCode() not in [401, 304, 204] and 'location' not in response.getLowerCaseHeaders()\
         and response.getURL() not in self._already_reported:
             
             #   report these informations only once
