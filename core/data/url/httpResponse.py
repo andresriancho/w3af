@@ -74,6 +74,7 @@ class httpResponse(object):
         self._is_text_or_html_response = False
         self._is_swf_response = False
         self._is_pdf_response = False
+        self._is_image_response = False
         self.setHeaders(info)
         
         self.setBody(read)
