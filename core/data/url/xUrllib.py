@@ -586,7 +586,7 @@ class xUrllib:
     
     def _incrementGlobalErrorCount( self ):
         '''
-        Increment the error count, and if we got a lot of failures... raise a "afMustStopException"
+        Increment the error count, and if we got a lot of failures... raise a "w3afMustStopException"
         '''
         if self._ignore_errors_conf:
             return
