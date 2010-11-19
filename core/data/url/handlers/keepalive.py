@@ -29,8 +29,7 @@
 >>> from keepalive import HTTPHandler
 >>> keepalive_handler = HTTPHandler()
 >>> opener = urllib2.build_opener(keepalive_handler)
->>> urllib2.install_opener(opener)
->>> 
+>>> urllib2.install_opener(opener) 
 >>> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
@@ -71,8 +70,10 @@ EXTRA ATTRIBUTES AND METHODS
   If you want the best of both worlds, use this inside an
   AttributeError-catching try:
 
-  >>> try: status = fo.status
-  >>> except AttributeError: status = None
+    >>> try:
+    ...     status = fo.status
+    ... except AttributeError:
+    ...     status = None
 
   Unfortunately, these are ONLY there if status == 200, so it's not
   easy to distinguish between non-200 responses.  The reason is that
@@ -688,7 +689,7 @@ def error_handler(url):
     keepalive_handler.close_all()
 
 def continuity(url):
-    import md5
+    import hashlib
     format = '%25s: %s'
     
     # first fetch the file with the normal http handler
@@ -697,7 +698,8 @@ def continuity(url):
     fo = urllib2.urlopen(url)
     foo = fo.read()
     fo.close()
-    m = md5.new(foo)
+    m = hashlib.md5()
+    m.update(foo)
     print format % ('normal urllib', m.hexdigest())
 
     # now install the keepalive handler and try again
@@ -707,7 +709,8 @@ def continuity(url):
     fo = urllib2.urlopen(url)
     foo = fo.read()
     fo.close()
-    m = md5.new(foo)
+    m = hashlib.md5()
+    m.update(foo)
     print format % ('keepalive read', m.hexdigest())
 
     fo = urllib2.urlopen(url)
@@ -717,7 +720,8 @@ def continuity(url):
         if f: foo = foo + f
         else: break
     fo.close()
-    m = md5.new(foo)
+    m = hashlib.md5()
+    m.update(foo)
     print format % ('keepalive readline', m.hexdigest())
 
 def comp(N, url):
@@ -758,7 +762,7 @@ def fetch(N, url, delay=0):
 
     return diff
 
-def test_timeout(url):
+def keep_alive_timeout(url):
     global DEBUG
     dbbackup = DEBUG
     class FakeLogger:
@@ -792,7 +796,7 @@ def test_timeout(url):
     DEBUG = dbbackup
 
     
-def test(url, N=10):
+def keep_alive(url, N=10):
     print "checking error hander (do this on a non-200)"
     try: error_handler(url)
     except IOError, e:
@@ -806,7 +810,7 @@ def test(url, N=10):
     comp(N, url)
     print
     print "performing dropped-connection check"
-    test_timeout(url)
+    keep_alive_timeout(url)
     
 if __name__ == '__main__':
     import time
@@ -817,4 +821,4 @@ if __name__ == '__main__':
     except:
         print "%s <integer> <url>" % sys.argv[0]
     else:
-        test(url, N)
+        keep_alive(url, N)
