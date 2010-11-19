@@ -74,13 +74,16 @@ class wmlParser(sgmlParser):
         'http://www.w3af.com/index.aspx'
 
         Get a link by applying regular expressions
-        >>> response = httpResponse( 200, '/index.aspx', {}, u, u )
+        >>> response = httpResponse( 200, 'header /index.aspx footer', {}, u, u )
         >>> w = wmlParser( response )
         >>> re, parsed = w.getReferences()
+        >>> #
+        >>> # TODO: Shouldn't this be the other way around?!
+        >>> #
         >>> re
-        ['http://www.w3af.com/index.aspx']
-        >>> parsed
         []
+        >>> parsed[0].url_string
+        'http://www.w3af.com/index.aspx'
 
         '''
         

@@ -219,8 +219,7 @@ class abstractParser(object):
         relative_URLs = find_relative( httpResponse.getBody() )
         self._re_URLs.extend( relative_URLs )
         [ i.normalizeURL() for i in self._re_URLs ]
-        self._re_URLs = list(set(self._re_URLs))
-        
+        self._re_URLs = list(set(self._re_URLs)) 
 
     def getEmails( self, domain=None ):
         '''
