@@ -94,7 +94,6 @@ class ria_enumerator(baseDiscoveryPlugin):
             ### CrossDomain.XML
             cross_domain_url = urlParser.urlJoin(  base_url , 'crossdomain.xml' )
             om.out.debug( 'Checking crossdomain.xml file')
-            om.out.information( 'Checking crossdomain.xml file')
             response = self._urlOpener.GET( cross_domain_url, useCache=True )
 
             if not is_404( response ):
@@ -102,7 +101,7 @@ class ria_enumerator(baseDiscoveryPlugin):
 
             ### CrossAccessPolicy.XML
             client_access_url = urlParser.urlJoin(  base_url , 'clientaccesspolicy.xml' )
-            om.out.information( 'Checking clientaccesspolicy.xml file')
+            om.out.debug( 'Checking clientaccesspolicy.xml file')
             response = self._urlOpener.GET( client_access_url, useCache=True )
 
             if not is_404( response ):
@@ -114,7 +113,7 @@ class ria_enumerator(baseDiscoveryPlugin):
         '''
         Analyze XML files.
         '''
-        om.out.information( 'Checking Response')
+        om.out.debug( 'Checking XML response in ria_enumerator.')
         try:
             dom = xml.dom.minidom.parseString( response.getBody() )
         except Exception:
@@ -143,7 +142,7 @@ class ria_enumerator(baseDiscoveryPlugin):
 
             for url in url_list:
                 url = url.getAttribute(attribute)
-                om.out.information(url)
+
                 if url == '*':
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
