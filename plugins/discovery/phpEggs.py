@@ -281,8 +281,8 @@ class phpEggs(baseDiscoveryPlugin):
                         #   Only run once.
                         self._exec = False
                 
-                # analyze the info to see if we can identify the version
-                self._analyze_egg( GET_results )
+                    # analyze the info to see if we can identify the version
+                    self._analyze_egg( GET_results )
                 
                 # Now we save the extension as one of the already analyzed
                 if ext != '':
