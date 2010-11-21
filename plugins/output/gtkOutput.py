@@ -32,15 +32,18 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.history import HistoryItem
 from core.data.db.db import DB
+
 # The output plugin must know the session name that is saved in the config object,
 # the session name is assigned in the target settings
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 
 class gtkOutput(baseOutputPlugin):
     '''

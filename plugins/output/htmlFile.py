@@ -27,8 +27,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
-import core.data.parsers.urlParser as urlParser
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -317,7 +315,7 @@ class htmlFile(baseOutputPlugin):
             #
             #   Get the port
             #
-            port = str( urlParser.getPort( i.getURL() ) )
+            port = str( i.getURL().getPort() )
             
             self._write_to_file(
                 '''<tr>
