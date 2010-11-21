@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import urllib2
 import urllib
+import copy
+
 from core.data.parsers.urlParser import url_object
 
 
@@ -43,7 +45,13 @@ class HTTPRequest(urllib2.Request):
         if not isinstance(url, url_object):
             raise ValueError('The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.')
         
+        #
+        #    Save some information for later access in an easier way
+        #
+        self.url_object = url
+        
         # Call the base class
         urllib2.Request.__init__(self, url.url_string, data, headers, origin_req_host, unverifiable)
 
-        
+    def copy(self):
+        return copy.deepcopy( self )
