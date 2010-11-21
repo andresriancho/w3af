@@ -33,7 +33,6 @@ import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from core.controllers.misc.temp_dir import get_temp_dir
@@ -143,7 +142,7 @@ class fileUpload(baseAuditPlugin):
         or one of the "default" ones like "upload" or "files".
         '''
         # Generate a list of directories where I can search for the uploaded file
-        domain_path_list = [ urlParser.getDomainPath(i) for i in kb.kb.getData( 'urls' , 'urlList' )]
+        domain_path_list = [ i.getDomainPath() for i in kb.kb.getData( 'urls' , 'urlList' )]
         domain_path_list = list(set(domain_path_list))
         
         # Try to find the file!

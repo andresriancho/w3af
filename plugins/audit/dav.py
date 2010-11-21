@@ -32,12 +32,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+from core.data.parsers.urlParser import url_object
 
 from core.data.db.temp_persist import disk_list
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 
 
@@ -61,14 +61,16 @@ class dav(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         # Start
-        domain_path = urlParser.getDomainPath( freq.getURL() )
+        domain_path = freq.getURL().getDomainPath()
         if domain_path not in self._already_tested_dirs:
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
             self._already_tested_dirs.append( domain_path )
             
-            self._PUT( domain_path )
-            self._PROPFIND( domain_path )
-            self._SEARCH( domain_path )
+            domain_path_url = url_object( domain_path )
+            
+            self._PUT( domain_path_url )
+            self._PROPFIND( domain_path_url )
+            self._SEARCH( domain_path_url )
             
     def _SEARCH( self, domain_path ):
         '''
@@ -93,7 +95,7 @@ class dav(baseAuditPlugin):
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
             msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
-            msg += domain_path + '"'
+            msg += domain_path.url_string + '"'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
             
@@ -120,7 +122,7 @@ class dav(baseAuditPlugin):
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
             msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
-            msg += domain_path + '"'
+            msg += domain_path.url_string + '"'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
         
@@ -129,7 +131,7 @@ class dav(baseAuditPlugin):
         Tests PUT method.
         '''
         # upload
-        url = urlParser.urlJoin( domain_path, createRandAlpha( 5 ) )
+        url = domain_path.urlJoin( createRandAlpha( 5 ) )
         rndContent = createRandAlNum(6)
         put_response = self._urlOpener.PUT( url , data=rndContent )
         
@@ -142,8 +144,8 @@ class dav(baseAuditPlugin):
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
-            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path + '".'
-            msg += ' A test file was uploaded to: "' + res.getURL() + '".'
+            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path.url_string + '".'
+            msg += ' A test file was uploaded to: "' + res.getURL().url_string + '".'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
         
@@ -156,7 +158,7 @@ class dav(baseAuditPlugin):
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
             msg += ' error code. In most cases, this means that the DAV extension failed in'
-            msg += ' some way. This error was found at: "' + put_response.getURL() + '".'
+            msg += ' some way. This error was found at: "' + put_response.getURL().url_string + '".'
             i.setDesc( msg )
             kb.kb.append( self, 'dav', i )
         
@@ -170,7 +172,7 @@ class dav(baseAuditPlugin):
             msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
             msg +=' but the directory does not have the correct permissions that would allow'
             msg += ' the web server to write to it. This error was found at: "'
-            msg += put_response.getURL() + '".'
+            msg += put_response.getURL().url_string + '".'
             i.setDesc( msg )
             kb.kb.append( self, 'dav', i )
             
