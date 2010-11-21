@@ -32,6 +32,51 @@ import urllib
 import cgi
 import re
 import string
+import copy
+
+def parse_qs( url_encoded_string, ignoreExceptions=True ):
+    '''
+    Parse a url encoded string (a=b&c=d) into a queryString object.
+    
+    @param url_encoded_string: The string to parse
+    @return: A queryString object (a dict wrapper). 
+
+    >>> parse_qs('id=3')
+    {'id': ['3']}
+    >>> parse_qs('id=3&id=4')
+    {'id': ['3', '4']}
+    >>> parse_qs('id=3&ff=4&id=5')
+    {'id': ['3', '5'], 'ff': ['4']}
+
+    '''
+    parsed_qs = None
+    result = queryString()
+
+    if url_encoded_string:
+        try:
+            parsed_qs = cgi.parse_qs( url_encoded_string ,keep_blank_values=True,strict_parsing=False)
+        except Exception, e:
+            if not ignoreExceptions:
+                raise w3afException('Strange things found when parsing query string: "' + qs + '"')
+        else:
+            #
+            #   Before we had something like this:
+            #
+            #for i in parsed_qs.keys():
+            #    result[ i ] = parsed_qs[ i ][0]
+            #
+            #   But with that, we fail to handle web applications that use "duplicated parameter
+            #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
+            #
+            #   (please note the lack of [0]) , and that if the value isn't a list... 
+            #    I create an artificial list
+            for i in parsed_qs.keys():
+                if isinstance( parsed_qs[ i ], list ):
+                    result[ i ] = parsed_qs[ i ]
+                else:
+                    result[ i ] = [parsed_qs[ i ], ]
+
+    return result
 
 
 class url_object(object):
@@ -101,37 +146,17 @@ class url_object(object):
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3&ff=4&id=5')
         >>> u.getQueryString()
         {'id': ['3', '5'], 'ff': ['4']}
-            
         
         '''
-        parsed_qs = None
-        result = queryString()
+        return parse_qs( self.qs, ignoreExceptions=True )
     
-        if self.qs:
-            try:
-                parsed_qs = cgi.parse_qs( self.qs ,keep_blank_values=True,strict_parsing=False)
-            except Exception, e:
-                if not ignoreExceptions:
-                    raise w3afException('Strange things found when parsing query string: "' + qs + '"')
-            else:
-                #
-                #   Before we had something like this:
-                #
-                #for i in parsed_qs.keys():
-                #    result[ i ] = parsed_qs[ i ][0]
-                #
-                #   But with that, we fail to handle web applications that use "duplicated parameter
-                #   names". For example: http://host.tld/abc?sp=1&sp=2&sp=3
-                #
-                #   (please note the lack of [0]) , and that if the value isn't a list... 
-                #    I create an artificial list
-                for i in parsed_qs.keys():
-                    if isinstance( parsed_qs[ i ], list ):
-                        result[ i ] = parsed_qs[ i ]
-                    else:
-                        result[ i ] = [parsed_qs[ i ], ]
-    
-        return result
+    def setQueryString(self, qs):
+        '''
+        Sets the query string for this URL.
+        
+        @return: None.
+        '''
+        self.qs = str(qs)        
         
     def uri2url( self ):
         '''
@@ -528,6 +553,11 @@ class url_object(object):
         '''
         @return: Returns the domain name and the path for the url.
     
+        What do I really need to return here? an object representation
+        of 'http://abc/def/jkl/' or the string?
+        >>> 1
+        2
+        
         >>> url_object('http://abc/def/jkl/').getDomainPath()
         'http://abc/def/jkl/'
         >>> url_object('http://abc/def.html').getDomainPath()
@@ -602,6 +632,9 @@ class url_object(object):
         '''
         return self.path
     
+    def setPath(self, path):
+        self.path = path
+    
     def getPathQs( self ):
         '''
         >>> url_object('https://abc:443/xyz/123/456/789/').getPath()
@@ -626,7 +659,7 @@ class url_object(object):
         '''
         >>> url_object('https://abc:443/xyz/file.asp?id=1').urlDecode()
         'https://abc:443/xyz/file.asp?id=1'
-        >>> url_object('https://abc:443/xyz/file.asp?id=1 2').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1%202').urlDecode()
         'https://abc:443/xyz/file.asp?id=1 2'
         >>> url_object('https://abc:443/xyz/file.asp?id=1+2').urlDecode()
         'https://abc:443/xyz/file.asp?id=1 2'
@@ -795,6 +828,20 @@ class url_object(object):
         'http://abc:80/'
         '''
         return self.url_string
+    
+    def __add__(self, other):
+        '''
+        @return: The same as urlJoin.
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = u + '/abc'
+        >>> x.url_string
+        'http://www.w3af.com/abc'
+        '''
+        return self.urlJoin( other )
+
+    def copy(self):
+        return copy.deepcopy( self )
 
 if __name__ == "__main__":
     import doctest
