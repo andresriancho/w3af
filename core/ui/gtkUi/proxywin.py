@@ -94,10 +94,10 @@ class ProxiedRequests(entries.RememberingWindow):
         self._initOptions()
         self._prevIpport = None
         # We need to make widget (split or tabbed) firstly
-        layout = self.pref.getValue('proxy', 'trap_view')
+        self._layout = self.pref.getValue('proxy', 'trap_view')
         self.reqresp = reqResViewer.reqResViewer(w3af,
                 [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
-                editableRequest=True, layout=layout)
+                editableRequest=True, layout=self._layout)
         self.reqresp.set_sensitive(False)
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)
@@ -215,6 +215,9 @@ class ProxiedRequests(entries.RememberingWindow):
         httpeditor.set_highlight_current_line(self.pref.getValue('editor', 'highlight_current_line'))
         httpeditor.set_highlight_syntax(self.pref.getValue('editor', 'highlight_syntax'))
         self.pref.save()
+
+        if self._layout != self.pref.getValue('proxy', 'trap_view'):
+            self.showAlert(_("Some of options will take effect after you restart proxy tool"))
 
     def showAlert(self, msg):
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
