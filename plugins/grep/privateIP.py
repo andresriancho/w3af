@@ -32,7 +32,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-import core.data.parsers.urlParser as urlParser
 import re
 
 
@@ -71,7 +70,7 @@ class privateIP(baseGrepPlugin):
         for regex in self._regex_list:
             for match in regex.findall(headers_string):
                 # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                if match != urlParser.getDomain(response.getURL()):
+                if match != response.getURL().getDomain():
                     v = vuln.vuln()
                     v.setURL( response.getURL() )
                     v.setId( response.id )
@@ -106,7 +105,7 @@ class privateIP(baseGrepPlugin):
                         continue
                         
                     # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                    if match != urlParser.getDomain(response.getURL()) and \
+                    if match != response.getURL().getDomain() and \
                     not request.sent( match ):
 
                         v = vuln.vuln()

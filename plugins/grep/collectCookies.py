@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -34,9 +35,6 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 import Cookie
-
-import core.data.parsers.urlParser as urlParser
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
 class collectCookies(baseGrepPlugin):
@@ -157,7 +155,7 @@ class collectCookies(baseGrepPlugin):
         if request.getURL().startswith('http://'):
             for cookie in kb.kb.getData( 'collectCookies', 'cookies' ):
                 if cookie.getURL().startswith('https://') and \
-                urlParser.getDomain( request.getURL() ) == urlParser.getDomain( cookie.getURL() ):
+                request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
                     # request, is using this values in the POSTDATA / QS / COOKIE
                     for key in cookie['cookie-object'].keys():

@@ -32,8 +32,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 import core.data.parsers.dpCache as dpCache
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
 
 class getMails(baseGrepPlugin):
     '''
@@ -56,7 +56,7 @@ class getMails(baseGrepPlugin):
         @return: None
         '''
         self._grep_worker(request, response, 'mails', \
-                urlParser.getRootDomain(response.getURL()))
+                response.getURL().getRootDomain())
 
         if not self._only_target_domain:
             self._grep_worker(request, response, 'external_mails')
