@@ -22,13 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import urllib2
 
 
 class selfReference(baseEvasionPlugin):
@@ -44,17 +43,44 @@ class selfReference(baseEvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @return: The modified request
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> import re
+        >>> sr = selfReference()
+
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u )
+        >>> sr.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/./'
+
+        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> r = HTTPRequest( u )
+        >>> sr.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/./abc/./'
+
+        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
+        >>> r = HTTPRequest( u )
+        >>> sr.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/./abc/./def.htm?id=1'
+
+        >>> #
+        >>> #    The plugins should not modify the original request
+        >>> #
+        >>> u.url_string
+        'http://www.w3af.com/abc/def.htm?id=1'
+        
         '''
         # We mangle the URL
-        path = urlParser.getPathQs( request.get_full_url() )
+        path = request.url_object.getPath()
         path = path.replace('/','/./' )
         
         # Finally, we set all the mutants to the request in order to return it
-        url = urlParser.getProtocol( request.get_full_url() )
-        url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path        
-        new_req = urllib2.Request( url , request.get_data(), request.headers, 
-                                                request.get_origin_req_host() )
+        new_url = request.url_object.copy()
+        new_url.setPath( path )
+        new_req = HTTPRequest( new_url , request.get_data(), 
+                               request.headers, request.get_origin_req_host() )
         
         return new_req
     

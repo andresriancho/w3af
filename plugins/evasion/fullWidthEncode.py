@@ -22,13 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.parsers.urlParser import parse_qs
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import urllib, urllib2
+import urllib
 
 
 class fullWidthEncode(baseEvasionPlugin):
@@ -45,7 +46,31 @@ class fullWidthEncode(baseEvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @return: The modified request
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> fwe = fullWidthEncode()
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u )
+        >>> fwe.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/'
+
+        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> r = HTTPRequest( u )
+        >>> fwe.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+
+        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> r = HTTPRequest( u )
+        >>> fwe.modifyRequest( r ).url_object.url_string
+        'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+        >>> #
+        >>> #    The plugins should not modify the original request
+        >>> #
+        >>> u.url_string
+        'http://www.w3af.com/hola-mundo'
         '''
         # This is a test URL
         # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E
@@ -53,25 +78,28 @@ class fullWidthEncode(baseEvasionPlugin):
         # <%=Request.QueryString("q")%>
         
         # First we mangle the URL        
-        path = urlParser.getPathQs( request.get_full_url() )
+        path = request.url_object.getPath()
         path = self._mutate( path )
         
         # Now we mangle the postdata
         data = request.get_data()
         if data:
-            # Only mangle the postdata if it is a url encoded string
+            
             try:
-                urlParser.getQueryString('http://w3af/?' + data )
+                # Only mangle the postdata if it is a url encoded string
+                parse_qs( data )
             except:
                 pass
             else:
+                # We get here only if the parsing was successful
                 data = self._mutate( data )            
         
         # Finally, we set all the mutants to the request in order to return it
-        url = urlParser.getProtocol( request.get_full_url() )
-        url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path
+        new_url = request.url_object.copy()
+        new_url.setPath( path )
         
-        new_req = urllib2.Request( url , data, request.headers, request.get_origin_req_host() )
+        new_req = HTTPRequest( new_url , data, request.headers, 
+                               request.get_origin_req_host() )
         
         return new_req
     
