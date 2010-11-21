@@ -281,6 +281,9 @@ class xUrllib:
         @param data: Only used if the uri parameter is really a URL.
         @return: An httpResponse object.
         '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The uri parameter of xUrllib.GET() must be of urlParser.url_object type.')
+
         self._init()
 
         if self._isBlacklisted( uri ):
@@ -309,6 +312,9 @@ class xUrllib:
         @param data: A string with the data for the POST.
         @return: An httpResponse object.
         '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The uri parameter of xUrllib.POST() must be of urlParser.url_object type.')
+
         self._init()
         if self._isBlacklisted( uri ):
             return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
@@ -371,6 +377,12 @@ class xUrllib:
                 self._method = method
             
             def __call__( self, uri, data='', headers={}, useCache=False, grepResult=True ):
+                '''
+                @return: An httpResponse object that's the result of sending the request
+                with a method which is different from "GET" or "POST".
+                '''
+                if not isinstance(uri, url_object):
+                    raise ValueError('The uri parameter of anyMethod.__call__() must be of urlParser.url_object type.')
                 
                 self._xurllib._init()
                 
@@ -426,8 +438,13 @@ class xUrllib:
         '''
         Actually send the request object.
         
+        @param req: The HTTPRequest object that represents the request.
         @return: An httpResponse object.
         '''
+        if not isinstance(req, HTTPRequest):
+            msg = 'xUrllib._send() req parameter has to be of HTTPRequest type.'
+            raise ValueError( msg )
+        
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
         self._callBeforeSend()
@@ -663,7 +680,8 @@ class xUrllib:
             try:
                 request = eplugin.modifyRequest( request )
             except w3afException, e:
-                om.out.error('Evasion plugin "'+eplugin.getName()+'" failed to modify the request. Exception: ' + str(e) )
+                msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"' % (eplugin.getName(), e)
+                om.out.error( msg )
             except Exception, e:
                 raise e
                 
