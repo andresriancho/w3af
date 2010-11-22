@@ -415,14 +415,17 @@ class w3afCore(object):
         try:
             self._realStart()
         except w3afMustStopException, wmse:
-            om.out.error('')
-            om.out.error('**IMPORTANT** The following error was detected by w3af and couldn\'t be resolved: ' + str(wmse) )
-            om.out.error('')
-            self._end()
-        except Exception, e:
-            om.out.error('')
-            om.out.error( 'Unhandled error, traceback: ' + str( traceback.format_exc() ) )
-            om.out.error('')
+            om.out.error('\n**IMPORTANT** The following error was detected ' \
+                         'by w3af and couldn\'t be resolved: %s\n' % wmse)
+            # TODO: FIXME. Hack to avoid displaying dialog when w3af must stop
+            # I'm sure we can do sth better than this.
+            try:
+                self._end()
+            except:
+                pass
+        except Exception:
+            om.out.error('\nUnhandled error, traceback: %s\n' % \
+                         traceback.format_exc()) 
             self.progress.stop()
             raise
         else:

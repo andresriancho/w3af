@@ -108,26 +108,62 @@ EXTRA ATTRIBUTES AND METHODS
 # $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
 
 from __future__ import with_statement
-
+from collections import deque
 import urllib2
 import httplib
+import operator
 import socket
 import threading
-import traceback
 import urllib
 import sys
+import time
 
-if __name__ != '__main__':
-    import core.controllers.outputManager as om
-    from core.controllers.w3afException import w3afException
-    import core.data.kb.config as cf
-    from core.data.constants.httpConstants import *
+if sys.version_info < (2, 6):
+    import collections
+    # Adding maxlen behaviour so it can be used as the 'tail filter' in Linux
+    # We'll only be interested in the statuses for the last N responses
+    class _deque(collections.deque):
+        def __init__(self, iterable=(), maxlen=None):
+            collections.deque.__init__(self, iterable)
+            self._maxlen = maxlen
+        def append(self, ele):
+            collections.deque.append(self, ele)
+            if len(self) > self._maxlen:
+                self.popleft()
+    deque = _deque
 
+import core.controllers.outputManager as om
+from core.controllers.w3afException import w3afException, w3afMustStopException
+import core.data.kb.config as cf
+from core.data.constants.httpConstants import NO_CONTENT
+
+HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = None
-MAXCONNECTIONS = 500
 
-if sys.version_info < (2, 4): HANDLE_ERRORS = 1
-else: HANDLE_ERRORS = 0
+# Global connection timeout. In seconds.
+TIMEOUT = 25
+# Max connections allowed per host.
+MAXCONNECTIONS = 30
+# If found this number of timeouts in-a-row per target host then we may either:
+#    1) Shrink the pool size (we might be stressing the remote host) and retry;
+#        or:
+#    2) Give up and make w3af stop sending requests for that host.
+# This number should not be greater than (MAXCONNECTIONS / 2)
+IN_A_ROW_TIMEOUTS = 15
+# Constants for responses statuses
+RESP_OK = 0
+RESP_TIMEOUT = 1
+RESP_BAD = 2
+
+class URLTimeoutError(urllib2.URLError):
+    '''
+    Our own URLError timeout exception. Basically a wrapper for socket.timeout.
+    '''
+    def __init__(self):
+        urllib2.URLError.__init__(self, (408, 'timeout'))
+    
+    def __str__(self):
+        return '<urlopen error timeout>'
 
 
 class HTTPResponse(httplib.HTTPResponse):
@@ -169,18 +205,17 @@ class HTTPResponse(httplib.HTTPResponse):
 
     def _raw_read(self, amt=None):
         '''
-        This is the original read function from httplib with a minor modification
-        that allows me to check the size of the file being fetched, and throw an exception
-        in case it is too big.
+        This is the original read function from httplib with a minor 
+        modification that allows me to check the size of the file being 
+        fetched, and throw an exception in case it is too big.
         '''
         if self.fp is None:
             return ''
 
-        if __name__ != '__main__':
-            if self.length > cf.cf.getData('maxFileSize'):
-                self.status = NO_CONTENT
-                self.reason = 'No Content'  # Reason-Phrase
-                return ''
+        if self.length > cf.cf.getData('maxFileSize'):
+            self.status = NO_CONTENT
+            self.reason = 'No Content'  # Reason-Phrase
+            return ''
 
         if self.chunked:
             return self._read_chunked(amt)
@@ -217,7 +252,7 @@ class HTTPResponse(httplib.HTTPResponse):
                 self._handler._request_closed(self, self._host, self._connection)
 
     def close_connection(self):
-        self._handler._remove_connection(self._host, self._connection, close=1)
+        self._handler._remove_connection(self._host, self._connection)
         self.close()
         
     def info(self):
@@ -285,218 +320,326 @@ class HTTPResponse(httplib.HTTPResponse):
 
     def setBody( self, data ):
         '''
-        This was added to make my life a lot simpler while implementing mangle plugins
+        This was added to make my life a lot simpler while implementing mangle
+        plugins
         '''
         self._multiread = data
 
+
 class ConnectionManager:
-    """
+    '''
     The connection manager must be able to:
         * keep track of all existing HTTPConnections
         * kill the connections that we're not going to use anymore
-    """
+        * Create/reuse connections when needed.
+        * Control the size of the pool.
+    '''
+
     def __init__(self):
         self._lock = threading.RLock()
+        self._host_pool_size = MAXCONNECTIONS
         self._hostmap = {} # map hosts to a list of connections
-        self._connmap = {} # map connections to host
-        self._readymap = {} # map connection to ready state
+        self._used_cons = [] # connections being used per host
+        self._free_conns = [] # available connections
 
-    def add(self, host, connection, ready):
-        '''
-        Add a connection to the connmap.
-        '''
-        with self._lock:
-            try:
-                if not self._hostmap.has_key(host): self._hostmap[host] = []
-                self._hostmap[host].append(connection)
-                self._connmap[connection] = host
-                self._readymap[connection] = ready
-            finally:
-                if __name__ != '__main__':
-                    msg = 'keepalive: added one connection, len(self._hostmap["'+host+'"]): '
-                    msg += str( self.get_connectionNumber(host) )
-                    om.out.debug( msg )
-
-    def remove(self, connection):
+    def remove_connection(self, conn, host=None):
         '''
         Remove a connection, it was closed by the server.
+        
+        @param conn: Connection to remove
+        @param host: The host for to the connection.
+        will be removed faster.
         '''
         with self._lock:
             try:
-                host = self._connmap[connection]
-            except KeyError:
+                self._used_cons.remove(conn)
+                self._free_conns.remove(conn)
+            except ValueError:
                 pass
-            else:
-                del self._connmap[connection]
-                del self._readymap[connection]
-                self._hostmap[host].remove(connection)
-                if __name__ != '__main__':
-                    msg = 'keepalive: removed one connection,  len(self._hostmap["'+host+'"]): '
-                    msg += str( self.get_connectionNumber(host) )
-                    om.out.debug( msg )
-                if not self._hostmap[host]: del self._hostmap[host]
-
-    def set_ready(self, connection, ready):
-        self._readymap[connection] = ready
-        
-    def get_ready_conn(self, host):
-        conn = None
-        
-        with self._lock:
-            if self._hostmap.has_key(host):
-                for c in self._hostmap[host]:
-                    if self._readymap[c]:
-                        self._readymap[c] = 0
-                        conn = c
+            
+            if host:
+                self._hostmap[host].remove(conn)
+            else: # We don't know the_host. Need to find it by looping
+                for _host, conns in self._hostmap.iteritems():
+                    if conn in conns:
+                        host = _host
+                        conns.remove(conn)
                         break
+
+            conn_total = self.get_connections_total(host)
+            msg = 'keepalive: removed one connection, len(self._hostmap' \
+            '["%s"]): %s' % (host, conn_total)
+            om.out.debug(msg)
+            
+            # No more conns for 'host', remove it from mapping
+            if not conn_total:
+                del self._hostmap[host]
+
+    def free_connection(self, conn):
+        '''
+        Recycle a connection. Mark it as available for being reused.
+        '''
+        if conn in self._used_cons:
+            self._used_cons.remove(conn)
+            self._free_conns.append(conn)
+    
+    def replace_connection(self, bad_conn, host, conn_factory):
+        '''
+        Re-create a mal-functioning connection.
         
-        return conn
+        @param bad_conn: The bad connection
+        @param host: The host for the connection
+        @param conn_factory: The factory function for new connection creation.
+        '''
+        self.remove_connection(bad_conn, host)
+        new_conn = conn_factory(host)
+        conns = self._hostmap.setdefault(host, [])
+        conns.append(new_conn)
+        self._used_cons.append(new_conn)
+        return new_conn
+        
+        
+    def get_available_connection(self, host, conn_factory):
+        '''
+        Return an available connection ready to be reused
+        
+        @param host: Host for the connection.
+        @param conn_factory: Factory function for connection creation. Receives
+            <host> as parameter.
+        '''
+        with self._lock:
+            retry_count = 10
+            
+            while retry_count > 0:
+                ret_conn = None
+
+                # First check if we can reuse an existing free conn.
+                for conn in self._hostmap.setdefault(host, []):
+                    try:
+                        self._free_conns.remove(conn)
+                    except ValueError:
+                        continue
+                    else:
+                        self._used_cons.append(conn)
+                        ret_conn = conn
+                        break
+                    
+                # No?... well, let's try to create a new one.
+                conn_total = self.get_connections_total(host)
+                if not ret_conn and conn_total < self._host_pool_size:
+                    msg = 'keepalive: added one connection, len(self._hostmap'\
+                    '["%s"]): %s' % (host, conn_total + 1)
+                    om.out.debug(msg)
+                    ret_conn = conn_factory(host)
+                    self._used_cons.append(ret_conn)
+                    self._hostmap[host].append(ret_conn)
+                
+                if ret_conn is not None: # Good! We have one!
+                    return ret_conn
+                else: # Maybe we should wait a little and try again 8^)
+                    retry_count -= 1
+                    time.sleep(0.2)
+            
+            msg = 'keepalive: been waiting too long for a pool connection.' \
+            ' I\'m giving up. Seems like the pool is full.'
+            om.out.debug(msg)
+            raise w3afException(msg)
+    
+    def resize_pool(self, new_size):
+        '''
+        Set a new pool size.
+        '''
+        pass
+
 
     def get_all(self, host=None):
+        '''
+        If <host> is passed return a list containing the created connections
+        for that host. Otherwise return a dict with 'host: str' and 
+        'conns: list' as items.
+        
+        @param host: Host
+        '''
         if host:
             return list(self._hostmap.get(host, []))
         else:
             return dict(self._hostmap)
-    
-    def get_connectionNumber( self, host=None ):
-        res = 0
-        if host is None:
-            for i in self._hostmap.keys():
-                res += len(self._hostmap[ i ])
-        else:
-            res = len(self._hostmap[ host ])
-        return res
-        
+
+    def get_connections_total(self, host=None):
+        '''
+        If <host> is None return the grand total of created connections; 
+        otherwise return the total of created conns. for <host>.
+        '''
+        values = self._hostmap.values() if (host is None) \
+                                            else [self._hostmap[host]]
+        return reduce(operator.add, map(len, values))
+
+# Create the pool instance to use. Intended to be shared by handlers.
+# See our HTTPHandler and HTTPSHandler class definitions below.
+connMgr = ConnectionManager()
+
+
 class KeepAliveHandler:
+    
+    _cm = connMgr
+
     def __init__(self):
-        self._cm = ConnectionManager()
-        self._lock = threading.RLock()
-        
-    #### Connection Management
+        self._pool_lock = threading.RLock()
+        # Map hosts to a `collections.deque` of response status.
+        self._hostresp = {}
+        # Current number of 'in-a-row-timeouts'. It may vary depending on the
+        # current size of the pool.
+        self._curr_check_failures = IN_A_ROW_TIMEOUTS
+        # Tail list filter factory function
+        self._get_tail_filter = lambda: deque(maxlen=self._curr_check_failures)
+
+
     def open_connections(self):
-        """return a list of connected hosts and the number of connections
-        to each.  [('foo.com:80', 2), ('bar.org', 1)]"""
+        '''
+        Return a list of connected hosts and the number of connections
+        to each.  [('foo.com:80', 2), ('bar.org', 1)]
+        '''
         return [(host, len(li)) for (host, li) in self._cm.get_all().items()]
 
     def close_connection(self, host):
-        """close connection(s) to <host>
+        '''
+        Close connection(s) to <host>
         host is the host:port spec, as in 'www.cnn.com:8080' as passed in.
-        no error occurs if there is no connection to that host."""
-        for h in self._cm.get_all(host):
-            self._cm.remove(h)
-            h.close()
+        no error occurs if there is no connection to that host.
+        '''
+        for conn in self._cm.get_all(host):
+            self._cm.remove_connection(conn, host)
+            conn.close()
         
     def close_all(self):
-        """close all open connections"""
-        for host, conns in self._cm.get_all().items():
-            for h in conns:
-                self._cm.remove(h)
-                h.close()
+        '''
+        Close all open connections
+        '''
+        for conns in self._cm.get_all().values():
+            for conn in conns:
+                self._cm.remove_connection(conn)
+                conn.close()
         
     def _request_closed(self, request, host, connection):
-        """tells us that this request is now closed and that the
-        connection is ready for another request"""
-        self._cm.set_ready(connection, 1)
+        '''
+        Tells us that this request is now closed and that the
+        connection is ready for another request
+        '''
+        self._cm.free_connection(connection)
 
-    def _remove_connection(self, host, connection, close=0):
-        if close: connection.close()
-        self._cm.remove(connection)
+    def _remove_connection(self, host, conn):
+        self._cm.remove_connection(conn, host)
+        conn.close()
         
-    #### Transaction Execution
     def do_open(self, req):
+        '''
+        Called by handler's url_open method.
+        '''
         host = req.get_host()
         if not host:
             raise urllib2.URLError('no host given')
-        
-        if self._cm.get_connectionNumber() >= MAXCONNECTIONS:
-            # This will fix the 'Too many open files' exception
-            if __name__ != '__main__':
-                msg = 'keepalive: Closing all connections. The connection number exceeded'
-                msg += ' MAXCONNECTIONS (' + str(MAXCONNECTIONS) + ') .'
-                om.out.debug( msg )
-            
-            with self._lock:
-                self.close_all()
-
-        else:
-            if __name__ != '__main__':
-                msg = 'keepalive: The connection manager has '
-                msg += str(self._cm.get_connectionNumber()) + ' active connections.'
-                om.out.debug( msg )
             
         try:
-            h = self._cm.get_ready_conn(host)
-            while h:
-                r = self._reuse_connection(h, req, host)
-
-                # if this response is non-None, then it worked and we're
-                # done.  Break out, skipping the else block.
-                if r: break
-
-                # connection is bad - possibly closed by server
-                # discard it and ask for the next free connection
-                h.close()
-                self._cm.remove(h)
-                h = self._cm.get_ready_conn(host)
-            else:
-                # no (working) free connections were found.  Create a new one.
-                h = self._get_connection(host)
-                
-                # First of all, call the request method. This is needed for HTTPS Proxy
-                if isinstance(h, ProxyHTTPConnection):
-                    h.proxy_setup( req.get_full_url() )
-                
-                if DEBUG: DEBUG.info("creating new connection to %s (%d)", host, id(h))
-                self._cm.add(host, h, 0)
-                self._start_transaction(h, req)
-                r = h.getresponse()
-        except (socket.error, httplib.HTTPException), err:
-            raise urllib2.URLError(err)
+            resp_statuses = self._hostresp.setdefault(host,
+                                                      self._get_tail_filter())
+            # Check if all our last 'resp_statuses' were timeouts and raise
+            # a w3afMustStopException if this is the case.
+            if len(resp_statuses) == self._curr_check_failures and \
+                all(st == RESP_TIMEOUT for st in resp_statuses):
+                msg = 'w3af found too much consecutive timeouts. The remote ' \
+                'webserver seems to be unresponsive; please verify manually.'
+                raise w3afMustStopException(msg)
             
-        # if not a persistent connection, don't try to reuse it
-        if r.will_close: self._cm.remove(h)
+            conn_factory = self._get_connection
+            conn = self._cm.get_available_connection(host, conn_factory)
+            
+            if conn.is_fresh:
+                conn.is_fresh = False
+                self._start_transaction(conn, req)
+                resp = conn.getresponse()
+            else:
+                # We'll try to use a previously created connection
+                resp = self._reuse_connection(conn, req, host)
+                # If the resp is None it means that connection is bad. It was
+                # possibly closed by the server. Replace it with a new one.
+                if resp is None:
+                    conn.close()
+                    conn = self._cm.replace_connection(conn, host, 
+                                                       conn_factory)
+                    # First of all, call the request method. This is needed for
+                    # HTTPS Proxy
+                    if isinstance(conn, ProxyHTTPConnection):
+                        conn.proxy_setup(req.get_full_url())
+                    # Try again with the fresh one
+                    conn.is_fresh = False
+                    self._start_transaction(conn, req)
+                    resp = conn.getresponse()
 
-        if DEBUG: DEBUG.info("STATUS: %s, %s", r.status, r.reason)
-        r._handler = self
-        r._host = host
-        r._url = req.get_full_url()
-        r._connection = h
-        r.code = r.status
-        r.headers = r.msg
-        r.msg = r.reason
+        except (socket.error, httplib.HTTPException), err:
+            # We better discard this connection
+            self._cm.remove_connection(conn, host)
+            if isinstance(err, socket.timeout):
+                resp_statuses.append(RESP_TIMEOUT)
+                _err = URLTimeoutError()
+            else:
+                resp_statuses.append(RESP_BAD)
+                _err = urllib2.URLError(err)
+            raise _err
         
-        if r.status == 200 or not HANDLE_ERRORS:
-            return r
+        # This response seems to be fine
+        resp_statuses.append(RESP_OK)
+            
+        # If not a persistent connection, don't try to reuse it
+        if resp.will_close:
+            self._cm.remove_connection(conn, host)
         else:
-            return self.parent.error('http', req, r, r.status, r.msg, r.headers)
+            self._cm.free_connection(conn)
 
-    def _reuse_connection(self, h, req, host):
-        """start the transaction with a re-used connection
+        if DEBUG:
+            DEBUG.info("STATUS: %s, %s", resp.status, resp.reason)
+        resp._handler = self
+        resp._host = host
+        resp._url = req.get_full_url()
+        resp._connection = conn
+        resp.code = resp.status
+        resp.headers = resp.msg
+        resp.msg = resp.reason
+        
+        if resp.status == 200 or not HANDLE_ERRORS:
+            return resp
+        else:
+            return self.parent.error('http', req, resp, resp.status, resp.msg,
+                                     resp.headers)
+    
+
+    def _reuse_connection(self, conn, req, host):
+        '''
+        Start the transaction with a re-used connection
         return a response object (r) upon success or None on failure.
         This DOES not close or remove bad connections in cases where
         it returns.  However, if an unexpected exception occurs, it
         will close and remove the connection before re-raising.
-        """
+        '''
         try:
-            self._start_transaction(h, req)
-            r = h.getresponse()
+            self._start_transaction(conn, req)
+            r = conn.getresponse()
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException):
             r = None
         except:
-            # adding this block just in case we've missed
-            # something we will still raise the exception, but
-            # lets try and close the connection and remove it
-            # first.  We previously got into a nasty loop
-            # where an exception was uncaught, and so the
-            # connection stayed open.  On the next try, the
-            # same exception was raised, etc.  The tradeoff is
-            # that it's now possible this call will raise
-            # a DIFFERENT exception
-            if DEBUG: DEBUG.error("unexpected exception - closing connection to %s (%d)", host, id(h))
-            self._cm.remove(h)
-            h.close()
+            # adding this block just in case we've missed something we will
+            # still raise the exception, but lets try and close the connection
+            # and remove it first.  We previously got into a nasty loop where
+            # an exception was uncaught, and so the connection stayed open.
+            # On the next try, the same exception was raised, etc. The tradeoff
+            # is that it's now possible this call will raise a DIFFERENT
+            # exception
+            if DEBUG:
+                DEBUG.error("unexpected exception - closing connection to %s" \
+                            " (%d)", host, id(conn))
+            self._cm.remove_connection(conn, host)
+            conn.close()
             raise
                     
         if r is None or r.version == 9:
@@ -504,48 +647,57 @@ class KeepAliveHandler:
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            if DEBUG: DEBUG.info("failed to re-use connection to %s (%d)", host, id(h))
+            if DEBUG:
+                DEBUG.info("failed to re-use connection to %s (%d)", host,
+                           id(conn))
             r = None
         else:
-            if DEBUG: DEBUG.info("re-using connection to %s (%d)", host, id(h))
+            if DEBUG:
+                DEBUG.info("re-using connection to %s (%d)", host, id(conn))
             r._multiread = None
 
         return r
 
-    def _start_transaction(self, h, req):
+    def _start_transaction(self, conn, req):
+        '''
+        The real workhorse.
+        '''
         try:
             if req.has_data():
                 data = req.get_data()
-                h.putrequest( req.get_method() , req.get_selector(), skip_host=1, skip_accept_encoding=1)
+                conn.putrequest(req.get_method(), req.get_selector(),
+                                skip_host=1, skip_accept_encoding=1)
+                
                 if not req.has_header('Content-type'):
-                    h.putheader('Content-type' , 'application/x-www-form-urlencoded')
+                    conn.putheader('Content-type', 
+                                   'application/x-www-form-urlencoded')
+
                 if not req.has_header('Content-length'):
-                    h.putheader('Content-length', '%d' % len(data))
+                    conn.putheader('Content-length', '%d' % len(data))
             else:
-                h.putrequest( req.get_method() , req.get_selector(), skip_host=1, skip_accept_encoding=1)
+                conn.putrequest(req.get_method(), req.get_selector(),
+                                skip_host=1, skip_accept_encoding=1)
         except (socket.error, httplib.HTTPException), err:
             raise urllib2.URLError(err)
         
-        headerDict = {}
-        
-        for k, v in self.parent.addheaders:
-            headerDict[ k ] = v
-            
-        for k, v in req.headers.items():
-            headerDict[ k ] = v     
-            
-        for k, v in req.unredirected_hdrs.items():
-            headerDict[ k ] = v
-        
-        for k in headerDict:
-            h.putheader(k, headerDict[k] )
+        # Add headers.
+        headerDict = dict(self.parent.addheaders)
+        headerDict.update(req.headers)
+        headerDict.update(req.unredirected_hdrs)
+    
+        for k, v in headerDict.iteritems():
+            conn.putheader(k, v)
+        conn.endheaders()
 
-        h.endheaders()
         if req.has_data():
-            h.send(data)
+            conn.send(data)
 
     def _get_connection(self, host):
+        '''
+        "Abstract" method.
+        '''
         return NotImplementedError
+
 
 class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
     def __init__(self):
@@ -582,14 +734,21 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         else:
             return HTTPSConnection(host)
 
-class ProxyHTTPConnection(httplib.HTTPConnection):
+class _HTTPConnection(httplib.HTTPConnection):
+
+    def __init__(self, host, port=None, strict=None):
+        httplib.HTTPConnection.__init__(self, host, port, strict)
+        self.is_fresh = True
+        
+
+class ProxyHTTPConnection(_HTTPConnection):
     '''
     this class is used to provide HTTPS CONNECT support.
     '''
     _ports = {'http' : 80, 'https' : 443}
     
     def __init__(self, host, port=None, strict=None):
-        httplib.HTTPConnection.__init__(self, host, port, strict)
+        _HTTPConnection.__init__(self, host, port, strict)
         
     def proxy_setup(self, url):
         #request is called before connect, so can interpret url and get
@@ -615,15 +774,18 @@ class ProxyHTTPConnection(httplib.HTTPConnection):
     def connect(self):
         httplib.HTTPConnection.connect(self)
         #send proxy CONNECT request
-        self.send("CONNECT %s:%d HTTP/1.0\r\n\r\n" % (self._real_host, self._real_port))
+        self.send("CONNECT %s:%d HTTP/1.0\r\n\r\n" % (self._real_host,
+                                                      self._real_port))
         #expect a HTTP/1.0 200 Connection established
-        response = self.response_class(self.sock, strict=self.strict, method=self._method)
+        response = self.response_class(self.sock, strict=self.strict,
+                                       method=self._method)
         (version, code, message) = response._read_status()
         #probably here we can handle auth requests...
         if code != 200:
             #proxy returned and error, abort connection, and raise exception
             self.close()
-            raise socket.error, "Proxy connection failed: %d %s" % (code, message.strip())
+            raise socket.error, "Proxy connection failed: %d %s" % \
+            (code, message.strip())
         #eat up header block from proxy....
         while True:
             #should not use directly fp probablu
@@ -639,7 +801,8 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
     # Customized response class
     response_class = HTTPResponse
     
-    def __init__(self, host, port = None, key_file = None, cert_file = None, strict = None):
+    def __init__(self, host, port=None, key_file=None, cert_file=None,
+                 strict=None):
         ProxyHTTPConnection.__init__(self, host, port)
         self.key_file = key_file
         self.cert_file = cert_file
@@ -650,12 +813,29 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
         ssl = socket.ssl(self.sock, self.key_file, self.cert_file)
         self.sock = httplib.FakeSocket(self.sock, ssl)    
 
-class HTTPConnection(httplib.HTTPConnection):
+class HTTPConnection(_HTTPConnection):
     # use the modified response class
     response_class = HTTPResponse
 
+    # TODO: In Python > 2.5 the timeout is a constructor parameter. The 
+    # socket.setdefaulttimeout(TIMEOUT) call will no longer be needed.
+    # CHANGE ME!!
+    def __init__(self, host, port=None, strict=None):
+        _HTTPConnection.__init__(self, host, port, strict)
+        socket.setdefaulttimeout(TIMEOUT)
+
 class HTTPSConnection(httplib.HTTPSConnection):
     response_class = HTTPResponse
+    
+    # TODO: In Python > 2.5 the timeout is a constructor parameter. The 
+    # socket.setdefaulttimeout(TIMEOUT) call will no longer be needed.
+    # CHANGE ME!!
+    def __init__(self, host, port=None, key_file=None, cert_file=None,
+                 strict=None):
+        httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
+                                        strict)
+        socket.setdefaulttimeout(TIMEOUT)
+        self.is_fresh = True
     
 #########################################################################
 #####   TEST FUNCTIONS

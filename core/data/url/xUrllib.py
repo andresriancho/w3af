@@ -35,7 +35,7 @@ from core.controllers.misc.number_generator import consecutive_number_generator
 
 from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 
-from core.controllers.w3afException import w3afMustStopException,  w3afException
+from core.controllers.w3afException import w3afMustStopException, w3afException
 
 #
 #   Data imports
@@ -44,7 +44,7 @@ import core.data.parsers.urlParser as urlParser
 from core.data.parsers.httpRequestParser import httpRequestParser
 
 from core.data.request.frFactory import createFuzzableRequestRaw
-
+from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.httpResponse import httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
@@ -64,7 +64,7 @@ import os
 import traceback
 
     
-class xUrllib:
+class xUrllib(object):
     '''
     This is a urllib2 wrapper.
     
@@ -93,7 +93,7 @@ class xUrllib:
         self._mustStop = False
         self._ignore_errors_conf = False
     
-    def pause(self,  pauseYesNo):
+    def pause(self, pauseYesNo):
         '''
         When the core wants to pause a scan, it calls this method, in order to freeze all actions
         @parameter pauseYesNo: True if I want to pause the scan; False to un-pause it.
@@ -120,7 +120,7 @@ class xUrllib:
             dumpMemoryUsage()
             self._memoryUsageCounter = 0
     
-    def _sleepIfPausedDieIfStopped( self ):
+    def _sleepIfPausedDieIfStopped(self):
         '''
         This method sleeps until self._paused is False.
         '''
@@ -409,7 +409,7 @@ class xUrllib:
         else:
             return False
             
-    def _send( self , req , useCache=False, useMultipart=False, grepResult=True ):
+    def _send(self, req, useCache=False, useMultipart=False, grepResult=True):
         '''
         Actually send the request object.
         
@@ -420,133 +420,149 @@ class xUrllib:
         self._callBeforeSend()
 
         # Sanitize the URL
-        self._checkURI( req )
+        self._checkURI(req)
         
         # Evasion
         original_url = req._Request__original
-        req = self._evasion( req )
+        req = self._evasion(req)
         
         start_time = time.time()
         res = None
         try:
-            if useCache:
-                res = self._cacheOpener.open( req )
+            the_opener = self._cacheOpener if useCache else self._opener
+            res = the_opener.open(req)
+        except urllib2.HTTPError, e:
+            # We usually get here when response codes in [404, 403, 401,...]
+            msg = '%s %s returned HTTP code "%s" - id: %s' % \
+                            (req.get_method(), original_url, e.code, e.id)
+            if hasattr(e, 'from_cache'):
+                msg += ' - from cache.'
+            om.out.debug(msg)
+            
+            # Return this info to the caller
+            code = int(e.code)
+            info = e.info()
+            geturl = e.geturl()
+            read = self._readRespose(e)
+            httpResObj = httpResponse(code, read, info, geturl, original_url,
+                                      id=e.id, time=time.time() - start_time,
+                                      msg=e.msg)
+            
+            # Clear the log of failed requests; this request is done!
+            if id(req) in self._errorCount:
+                del self._errorCount[id(req)]
+
+            # Reset errors counter
+            self._zeroGlobalErrorCount()
+        
+            if grepResult:
+                self._grepResult(req, httpResObj)
             else:
-                res = self._opener.open( req )
+                om.out.debug('No grep for: "%s", the plugin sent ' \
+                             'grepResult=False.' % geturl)
+            return httpResObj
         except urllib2.URLError, e:
             # I get to this section of the code if a 400 error is returned
             # also possible when a proxy is configured and not available
             # also possible when auth credentials are wrong for the URI
-            if hasattr(e, 'reason'):
-                self._incrementGlobalErrorCount()
-                try:
-                    e.reason[0]
-                except:
-                    raise w3afException('Unexpected error in urllib2 / httplib: ' + repr(e.reason) )                    
-                else:
-                    if isinstance(e.reason, type(())):
-                        # It's a tuple
-                        if e.reason[0] in (-2, 111):
-                            msg = 'w3af failed to reach the server while requesting: "' + original_url
-                            msg += '".\nReason: "' + str(e.reason[1]) + '" , error code: "'
-                            msg += str(e.reason[0]) + '".'
-                            raise w3afException( msg )
-                        else:
-                            msg = 'w3af failed to reach the server while requesting: "' + original_url
-                            msg += '".\nReason: "' + str(e.reason[1]) + '" , error code: "' + str(e.reason[0])
-                            msg += '"; going to retry.'
-                            om.out.debug( msg )
-                            om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
-                            req._Request__original = original_url
-                            return self._retry( req, useCache )
-                    else:
-                        # Not a tuple, something "strange"!
-                        msg = 'w3af failed to reach the server while requesting: "' + original_url
-                        msg += '".\nReason: "' + str(e.reason)
-                        msg += '"; going to retry.'
-                        om.out.debug( msg )
-                        om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
-                        req._Request__original = original_url
-                        return self._retry( req, useCache )
-
-            elif hasattr(e, 'code'):
-                # We usually get here when the response has codes 404, 403, 401, etc...
-                msg = req.get_method() + ' ' + original_url +' returned HTTP code "'
-                msg += str(e.code) + '" - id: ' + str(e.id)
-                
-                if hasattr(e,'from_cache'):
-                    msg += ' - from cache.'
-                om.out.debug( msg )
-                
-                # Return this info to the caller
-                code = int(e.code)
-                info = e.info()
-                geturl = e.geturl()
-                read = self._readRespose( e )
-                httpResObj = httpResponse(code, read, info, geturl, original_url, id=e.id, time=time.time() - start_time, msg=e.msg )
-                
-                # Clear the log of failed requests; this request is done!
-                if id(req) in self._errorCount:
-                    del self._errorCount[ id(req) ]
-                self._zeroGlobalErrorCount()
             
-                if grepResult:
-                    self._grepResult( req, httpResObj )
-                else:
-                    om.out.debug('No grep for: "' + geturl + '", the plugin sent grepResult=False.')
-                return httpResObj
-        except KeyboardInterrupt, k:
+            # Timeouts are not intended to increment the global error counter.
+            # They are part of the expected behaviour.
+            if not isinstance(e, URLTimeoutError):
+                self._incrementGlobalErrorCount()
+            try:
+                e.reason[0]
+            except:
+                raise w3afException('Unexpected error in urllib2 : %s' \
+                                     % repr(e.reason))
+            else:
+                if isinstance(e.reason, tuple): # Is it a tuple?
+                    msg = 'w3af failed to reach the server while requesting:' \
+                    ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
+                    % (original_url, e.reason[1], e.reason[0])
+
+                    # TODO: Which case is this one?
+                    # Terminate!
+                    if e.reason[0] in (-2, 111):
+                        raise w3afException(msg)
+
+                else: # Not a tuple. It might a wrapped socket or httplib error
+                    # See `except` block in <keepalive.KeepAliveHandler.do_open>
+                    # method for details.
+                    msg = 'w3af failed to reach the server while requesting:' \
+                    ' "%s".\nReason: "%s"; going to retry.' % \
+                    (original_url, e.reason)
+
+                # Log the errors
+                om.out.debug(msg)
+                om.out.debug('Traceback for this error: %s' % \
+                             traceback.format_exc())
+                req._Request__original = original_url
+                # Then retry!
+                return self._retry(req, useCache)
+        except KeyboardInterrupt:
             # Correct control+c handling...
-            raise k
+            raise
+        except w3afMustStopException:
+            raise
         except Exception, e:
             # This except clause will catch errors like 
             # "(-3, 'Temporary failure in name resolution')"
             # "(-2, 'Name or service not known')"
-            # The handling of this errors is complex... if I get a lot of errors in a row, I'll raise a
-            # w3afMustStopException because the remote webserver might be unreachable.
+            # The handling of these errors is complex... if I get a lot of 
+            # errors in a row, I'll raise a 'w3afMustStopException' because 
+            # the remote webserver might be unreachable.
             # For the first N errors, I just return an empty response...
-            om.out.debug( req.get_method() + ' ' + original_url +' returned HTTP code "' + str(http_constants.NO_CONTENT) + '"' )
-            om.out.debug( 'Unhandled exception in xUrllib._send(): ' + str ( e ) )
-            om.out.debug( str( traceback.format_exc() ) )
-            
+
+            msg = '%s %s returned HTTP code "%s"' % \
+            (req.get_method(), original_url, http_constants.NO_CONTENT)
+            om.out.debug(msg)
+            om.out.debug('Unhandled exception in xUrllib._send(): %s' % e)
+            om.out.debug(traceback.format_exc())
+
             # Clear the log of failed requests; this request is done!
-            if id(req) in self._errorCount:
-                del self._errorCount[ id(req) ]
+            req_id = id(req)
+            if req_id in self._errorCount:
+                del self._errorCount[req_id]
             self._incrementGlobalErrorCount()
-            
-            return httpResponse( http_constants.NO_CONTENT, '', {}, original_url, original_url, msg='No Content', id=consecutive_number_generator.inc() )
+
+            return httpResponse(http_constants.NO_CONTENT, '', {},
+                                original_url, original_url, msg='No Content',
+                                id=consecutive_number_generator.inc())
         else:
-            # Everything ok !
-            if not req.get_data():
-                msg = req.get_method() + ' ' + urllib.unquote_plus( original_url ) +' returned HTTP code "'
-                msg += str(res.code) + '" - id: ' + str(res.id)
-                if hasattr(res,'from_cache'):
-                    msg += ' - from cache.'
-                om.out.debug( msg )
-            else:
-                msg = req.get_method() + ' ' + original_url +' with data: "'
-                msg += urllib.unquote_plus( req.get_data() ) +'" returned HTTP code "'
-                msg += str(res.code) + '" - id: ' + str(res.id)
-                if hasattr(res,'from_cache'):
-                    msg += ' - from cache.'
-                om.out.debug( msg )
-            
+            # Everything went well!
+            rdata = req.get_data()
+            if not rdata:
+                msg = '%s %s returned HTTP code "%s" - id: %s' % \
+                (req.get_method(), urllib.unquote_plus(original_url), res.code,
+                 res.id)
+            else:                
+                msg = '%s %s with data: "%s" returned HTTP code "%s" - id: %s'\
+                % (req.get_method(), original_url, urllib.unquote_plus(rdata),
+                   res.code, res.id)
+
+            if hasattr(res, 'from_cache'):
+                msg += ' - from cache.'
+            om.out.debug(msg)
+
             code = int(res.code)
             info = res.info()
             geturl = res.geturl()
-            read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl, original_url, id=res.id, time=time.time() - start_time, msg=res.msg )
+            read = self._readRespose(res)
+            httpResObj = httpResponse(code, read, info, geturl, original_url,
+                                      id=res.id, time=time.time() - start_time,
+                                      msg=res.msg)
             # Let the upper layers know that this response came from the local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
-            
+
             # Clear the log of failed requests; this request is done!
             if id(req) in self._errorCount:
-                del self._errorCount[ id(req) ]
+                del self._errorCount[id(req)]
             self._zeroGlobalErrorCount()
-            
+
             if grepResult:
-                self._grepResult( req, httpResObj )
+                self._grepResult(req, httpResObj)
             else:
                 om.out.debug('No grep for : ' + geturl + ' , the plugin sent grepResult=False.')
             return httpResObj
@@ -558,35 +574,36 @@ class xUrllib:
         except KeyboardInterrupt, k:
             raise k
         except Exception, e:
-            om.out.error( str ( e ) )
+            om.out.error(str(e))
             return read
         return read
         
-    def _retry( self, req , useCache ):
+    def _retry(self, req, useCache):
         '''
         Try to send the request again while doing some error handling.
         '''
-        if self._errorCount.get( id(req), 0 ) < self.settings.getMaxRetrys() :
+        req_id = id(req)
+        if self._errorCount.setdefault(req_id, 1) < \
+                self.settings.getMaxRetrys():
             # Increment the error count of this particular request.
-            if id(req) not in self._errorCount:
-                self._errorCount[ id(req) ] = 0
-            self._errorCount[ id(req) ] += 1
-            
+            self._errorCount[req_id] += 1            
             om.out.debug('Re-sending request...')
-            return self._send( req, useCache )
+            return self._send(req, useCache)
         else:
-            error_amt = self._errorCount[ id(req) ]
+            error_amt = self._errorCount[req_id]
             # Clear the log of failed requests; this one definetly failed...
-            del self._errorCount[ id(req) ]
+            del self._errorCount[req_id]
             # No need to add this:
             #self._incrementGlobalErrorCount()
             # The global error count is already incremented by the _send method.
-            msg = 'Too many retries (' + str(error_amt) +') while requesting: ' + req.get_full_url()
-            raise w3afException( msg )
+            msg = 'Too many retries (%s) while requesting: %s'  % \
+                                            (error_amt, req.get_full_url())
+            raise w3afException(msg)
     
-    def _incrementGlobalErrorCount( self ):
+    def _incrementGlobalErrorCount(self):
         '''
-        Increment the error count, and if we got a lot of failures... raise a "w3afMustStopException"
+        Increment the error count, and if we got a lot of failures raise a
+        "w3afMustStopException"
         '''
         if self._ignore_errors_conf:
             return
@@ -597,14 +614,17 @@ class xUrllib:
         else:
             self._lastRequestFailed = True
         
-        om.out.debug('Incrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
+        om.out.debug('Incrementing global error count. GEC: %s' % \
+                     self._consecutiveErrorCount)
         
-        if self._consecutiveErrorCount >= 10:
-            msg = 'The xUrllib found too much consecutive errors. The remote webserver doesn\'t'
-            msg += ' seem to be reachable anymore; please verify manually.'
-            raise w3afMustStopException( msg )
+        if self._consecutiveErrorCount >= 10 and not self._mustStop:
+            msg = 'The xUrllib found too much consecutive errors. The remote' \
+            ' webserver doesn\'t seem to be reachable anymore; please verify' \
+            ' manually.'
+            self.stop()
+            raise w3afMustStopException(msg)
 
-    def ignore_errors( self, yes_no ):
+    def ignore_errors(self, yes_no):
         '''
         Let the library know if errors should be ignored or not. Basically,
         ignore all calls to "_incrementGlobalErrorCount" and don't raise the
@@ -618,7 +638,8 @@ class xUrllib:
         if self._lastRequestFailed or self._consecutiveErrorCount:
             self._lastRequestFailed = False
             self._consecutiveErrorCount = 0
-            om.out.debug('Decrementing global error count. GEC: ' + str(self._consecutiveErrorCount))
+            om.out.debug('Decrementing global error count. GEC: %s' % \
+                         self._consecutiveErrorCount)
     
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins

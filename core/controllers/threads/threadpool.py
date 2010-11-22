@@ -93,8 +93,6 @@ class WorkerThread(threading.Thread):
             if DEBUG:
                 msg = '[worker] Unblocking after Queue.get().'
                 om.out.debug( msg )
-            
-            if DEBUG:
                 msg = '[worker] workRequestQueue length for thread with id ' + str(id(self)) + ' is '
                 msg += str(self.workRequestQueue.qsize())
                 om.out.debug( msg )
@@ -123,7 +121,7 @@ class WorkerThread(threading.Thread):
         self._dismissed.set()
 
 
-class WorkRequest:
+class WorkRequest(object):
     """A request to execute a callable for putting in the request queue later.
 
     See the module function makeRequests() for the common case
@@ -157,7 +155,7 @@ class WorkRequest:
         self.ownerObj = ownerObj
 
 
-class ThreadPoolImplementation:
+class ThreadPoolImplementation(object):
     """A thread pool, distributing work requests and collecting results.
 
     See the module doctring for more information.
@@ -193,13 +191,13 @@ class ThreadPoolImplementation:
     def createWorkers(self, num_workers):
         """Add num_workers worker threads to the pool."""
 
-        for i in range(num_workers):
+        for i in xrange(num_workers):
             self.workers.append(WorkerThread(self.requestsQueue, self.resultsQueue))
 
     def dismissWorkers(self, num_workers):
         """Tell num_workers worker threads to to quit when they're done."""
 
-        for i in range(min(num_workers, len(self.workers))):
+        for i in xrange(min(num_workers, len(self.workers))):
             worker = self.workers.pop()
             worker.dismiss()
 
@@ -215,22 +213,26 @@ class ThreadPoolImplementation:
             try:
                 # still results pending?
                 if not joinAll:
-                    owned_work_requests = [ wr for wr in self.workRequests.values() if id(wr.ownerObj) == id(ownerObj) ]
+                    owned_work_reqs_len = \
+                            len([wr for wr in self.workRequests.itervalues() \
+                                 if id(wr.ownerObj) == id(ownerObj)])
                 else:
-                    owned_work_requests = self.workRequests.values()
-                if not owned_work_requests:
+                    owned_work_reqs_len = len(self.workRequests)
+
+                if not owned_work_reqs_len:
                     raise NoResultsPending
                 
                 if DEBUG:
-                    msg = 'The object calling poll("'+ str(ownerObj) +'") still owns '
-                    msg += str(len(owned_work_requests)) + ' work requests.'
-                    om.out.debug( msg )
+                    msg = 'The object calling poll("%s") still owns %s work' \
+                    ' requests.' % (ownerObj, owned_work_reqs_len)
+                    om.out.debug(msg)
                 
-                #   Are there still workers to process remaining requests?
+                # Are there still workers to process remaining requests?
                 elif block and not self.workers:
                     raise NoWorkersAvailable
                                 
-                #   Get back a new result from the queue where the workers put their result.
+                # Get back a new result from the queue where the workers put
+                # their result.
                 request, result = self.resultsQueue.get(block=block, timeout=1)
 
                 if id(request.ownerObj) == id(ownerObj) or joinAll:
@@ -240,8 +242,9 @@ class ThreadPoolImplementation:
                     del self.workRequests[request.requestID]
 
                     # Raised here so I can handle it in the main thread...
-                    # TODO: Remove this. No part of the code handles errors from tm.join()
-                    if isinstance( result, Exception ):
+                    # TODO: Remove this. No part of the code handles errors 
+                    # from tm.join()
+                    if isinstance(result, Exception):
                         raise result
                     
                 else:
@@ -283,7 +286,7 @@ def makeRequests(callable, args_list, callback=None):
               WorkRequest(callable, [item], None, callback=callback))
     return requests
 
-class ThreadPool( object ):
+class ThreadPool(object):
     '''
     This is a Singleton class that I had to add here as a kludge, in order to avoid the
     creation of two ThreadPool instances. If two ThreadPools are created, the whole

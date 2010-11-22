@@ -309,7 +309,7 @@ class urlOpenerSettings( configurable ):
         self.needUpdate = True
                         
     def buildOpeners(self):
-        om.out.debug( 'Called buildOpeners')
+        om.out.debug('Called buildOpeners')
         
         if self._cookieHandler is None and not cf.cf.getData('ignoreSessCookies'):
             cj = self._cookielib.MozillaCookieJar()

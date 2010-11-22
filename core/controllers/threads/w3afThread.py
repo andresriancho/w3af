@@ -50,7 +50,7 @@ class w3afThread(threading.Thread):
         
     def run(self):
         '''
-        w3af w3afThreads MUST implment a run method.
+        w3af w3afThreads MUST implement a run method.
         '''
         raise w3afException('w3af w3afThreads MUST implment a run method.')
     
