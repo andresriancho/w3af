@@ -162,7 +162,7 @@ class pathDisclosure(baseGrepPlugin):
                             v = vuln.vuln()
                             v.setURL( response.getURL() )
                             v.setId( response.id )
-                            msg = 'The URL: "' + v.getURL().url_string + '" has a path disclosure '
+                            msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
                             msg += 'vulnerability which discloses: "' + match  + '".'
                             v.setDesc( msg )
                             v.setSeverity(severity.LOW)

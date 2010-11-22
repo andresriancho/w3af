@@ -28,12 +28,12 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.is_private_site import is_private_site
 
+from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -118,7 +118,7 @@ class remoteFileInclude(baseAuditPlugin):
             return
         
         is_listen_priv = is_private_site(self._listen_address)
-        is_target_priv = is_private_site(urlParser.getDomain(freq.getURL()))
+        is_target_priv = is_private_site(freq.getURL().getDomain())
             
         if (is_listen_priv and is_target_priv) or \
             not (is_listen_priv or is_target_priv):
@@ -148,7 +148,7 @@ class remoteFileInclude(baseAuditPlugin):
         @param freq: A fuzzableRequest object
         @return: None, everything is saved to the kb
         '''        
-        self._rfi_url = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
+        self._rfi_url = url_object('http://w3af.sourceforge.net/w3af/remoteFileInclude.html')
         self._rfi_result = 'w3af is goood!'
         # Perform the real work
         self._test_inclusion(freq)
@@ -241,8 +241,8 @@ class remoteFileInclude(baseAuditPlugin):
         file_handler.close()
         
         # Define the required parameters
-        self._rfi_url = 'http://' + self._listen_address +':' + str(self._listen_port)
-        self._rfi_url += '/' + filename
+        self._rfi_url = url_object('http://' + self._listen_address +':' + str(self._listen_port))
+        self._rfi_url.urlJoin( filename )
         self._rfi_result = rand1 + rand2
         
     def _rm_file(self):
@@ -250,7 +250,7 @@ class remoteFileInclude(baseAuditPlugin):
         Stop the server, remove the file from the webroot.
         '''
         # Remove the file
-        filename = urlParser.getFileName(self._rfi_url)
+        filename = self._rfi_url.getFileName()
         os.remove(os.path.join(get_home_dir(), 'webroot', filename))
 
     def getOptions(self):

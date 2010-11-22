@@ -49,14 +49,12 @@ class collectCookies(baseGrepPlugin):
         self._already_reported_server = []
         self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
 
-    def _setCookieToRep(self, inst, **kwd):
-        if 'cobj' in kwd:
-            obj = kwd['cobj']
+    def _setCookieToRep(self, inst, cobj=None, cstr=None):
+        if cobj is not None:
+            obj = cobj
             inst['cookie-object'] = obj
             cstr = obj.output(header='')
-        elif 'cstr' in kwd:
-            cstr = kwd['cstr']
-            
+        
         if cstr:
             inst['cookie-string'] = cstr
             inst.addToHighlight(cstr)
@@ -221,7 +219,7 @@ class collectCookies(baseGrepPlugin):
             v = vuln.vuln()
             v.setURL( response.getURL() )
             v.setId( response.getId() )
-            self._setCookieToRep(v, cookieObj)
+            self._setCookieToRep(v, cobj=cookieObj)
             v.setSeverity(severity.HIGH)
             v.setName( 'Secure cookies over insecure channel' )
             msg = 'A cookie marked as secure was sent over an insecure channel'

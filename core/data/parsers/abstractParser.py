@@ -370,6 +370,6 @@ class abstractParser(object):
                     decoded = urllib.unquote(url_object_to_decode.url_string).decode('utf-8').encode('utf-8')
                     return url_object(decoded)
                 except UnicodeDecodeError, ude:
-                    msg = 'Failed to _decode_URL: "' + url_object_to_decode.url_string +'" using encoding: "' + encoding + '".'
+                    msg = 'Failed to _decode_URL: "' + url_object_to_decode +'" using encoding: "' + encoding + '".'
                     om.out.error(msg)
                     raise ude

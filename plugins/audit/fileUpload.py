@@ -147,9 +147,9 @@ class fileUpload(baseAuditPlugin):
         
         # Try to find the file!
         for url in domain_path_list:
-            for path in self._generate_paths( url, mutant.uploaded_file_name ):
+            for possible_location in self._generate_urls( url, mutant.uploaded_file_name ):
 
-                get_response = self._urlOpener.GET( path, useCache=False )
+                get_response = self._urlOpener.GET( possible_location, useCache=False )
                 if not is_404( get_response ):
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
@@ -177,7 +177,7 @@ class fileUpload(baseAuditPlugin):
         for tmp_file, tmp_file_name in self._file_list:
             tmp_file.close()
         
-    def _generate_paths( self, url, uploaded_file_name ):
+    def _generate_urls( self, url, uploaded_file_name ):
         '''
         @parameter url: A URL where the uploaded_file_name could be
         @parameter uploaded_file_name: The name of the file that was uploaded to the server
@@ -196,8 +196,9 @@ class fileUpload(baseAuditPlugin):
         
         res = []
         for default_path in tmp:
-            for path in urlParser.getDirectories( url ):
-                possible_location = path + default_path + '/'  + uploaded_file_name
+            for sub_url in url.getDirectories():
+                possible_location = sub_url.urlJoin( default_path + '/' )
+                possible_location = possible_location.urlJoin( uploaded_file_name )
                 res.append( possible_location )
         return res
         

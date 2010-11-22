@@ -95,7 +95,7 @@ class dav(baseAuditPlugin):
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
             msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
-            msg += domain_path.url_string + '"'
+            msg += domain_path + '"'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
             
@@ -122,7 +122,7 @@ class dav(baseAuditPlugin):
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
             msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
-            msg += domain_path.url_string + '"'
+            msg += domain_path + '"'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
         
@@ -144,8 +144,8 @@ class dav(baseAuditPlugin):
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
-            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path.url_string + '".'
-            msg += ' A test file was uploaded to: "' + res.getURL().url_string + '".'
+            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path + '".'
+            msg += ' A test file was uploaded to: "' + res.getURL() + '".'
             v.setDesc( msg )
             kb.kb.append( self, 'dav', v )
         
@@ -158,7 +158,7 @@ class dav(baseAuditPlugin):
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
             msg += ' error code. In most cases, this means that the DAV extension failed in'
-            msg += ' some way. This error was found at: "' + put_response.getURL().url_string + '".'
+            msg += ' some way. This error was found at: "' + put_response.getURL() + '".'
             i.setDesc( msg )
             kb.kb.append( self, 'dav', i )
         
@@ -172,7 +172,7 @@ class dav(baseAuditPlugin):
             msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
             msg +=' but the directory does not have the correct permissions that would allow'
             msg += ' the web server to write to it. This error was found at: "'
-            msg += put_response.getURL().url_string + '".'
+            msg += put_response.getURL() + '".'
             i.setDesc( msg )
             kb.kb.append( self, 'dav', i )
             

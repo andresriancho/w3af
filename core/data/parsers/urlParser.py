@@ -553,29 +553,24 @@ class url_object(object):
         '''
         @return: Returns the domain name and the path for the url.
     
-        What do I really need to return here? an object representation
-        of 'http://abc/def/jkl/' or the string?
-        >>> 1
-        2
-        
-        >>> url_object('http://abc/def/jkl/').getDomainPath()
+        >>> url_object('http://abc/def/jkl/').getDomainPath().url_string
         'http://abc/def/jkl/'
-        >>> url_object('http://abc/def.html').getDomainPath()
+        >>> url_object('http://abc/def.html').getDomainPath().url_string
         'http://abc/'
-        >>> url_object('http://abc/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc/xyz/def.html').getDomainPath().url_string
         'http://abc/xyz/'
-        >>> url_object('http://abc:80/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc:80/xyz/def.html').getDomainPath().url_string
         'http://abc:80/xyz/'
-        >>> url_object('http://abc:443/xyz/def.html').getDomainPath()
+        >>> url_object('http://abc:443/xyz/def.html').getDomainPath().url_string
         'http://abc:443/xyz/'
-        >>> url_object('https://abc:443/xyz/def.html').getDomainPath()
+        >>> url_object('https://abc:443/xyz/def.html').getDomainPath().url_string
         'https://abc:443/xyz/'
         '''
         if self.path:
             res = self.scheme + '://' +self.domain+ self.path[:self.path.rfind('/')+1]
         else:
             res = self.scheme + '://' +self.domain+ '/'
-        return res
+        return url_object(res)
     
     def getFileName( self ):
         '''
@@ -589,6 +584,24 @@ class url_object(object):
         'd'
         '''
         return self.path[self.path.rfind('/')+1:]
+
+    def setFileName( self, new ):
+        '''
+        @return: Sets the filename name for the given URL.
+    
+        >>> u = url_object('https://abc:443/xyz/def.html')
+        >>> u.setFileName( 'abc.pdf' )
+        >>> u.url_string
+        'https://abc:443/xyz/abc.pdf'
+        
+        >>> u = url_object('https://abc:443/xyz/def.html?id=1')
+        >>> u.setFileName( 'abc.pdf' )
+        >>> u.url_string
+        'https://abc:443/xyz/abc.pdf?id=1'
+
+        '''
+        last_slash = self.path.rfind('/')
+        self.path = self.path[:last_slash+1] + self.path[last_slash+1:].replace( self.getFileName(), new, 1)
     
     def getExtension( self ):
         '''
@@ -675,19 +688,19 @@ class url_object(object):
         '''
         Get a list of all directories and subdirectories.
         
-        >>> url_object('http://abc/xyz/def/123/').getDirectories()
+        >>> [i.url_string for i in url_object('http://abc/xyz/def/123/').getDirectories()]
         ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/', 'http://abc/xyz/def/123/']
-        >>> url_object('http://abc/xyz/def/').getDirectories()
+        >>> [i.url_string for i in url_object('http://abc/xyz/def/').getDirectories()]
         ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/']
-        >>> url_object('http://abc/xyz/').getDirectories()
+        >>> [i.url_string for i in url_object('http://abc/xyz/').getDirectories()]
         ['http://abc/', 'http://abc/xyz/']
-        >>> url_object('http://abc/').getDirectories()
+        >>> [i.url_string for i in url_object('http://abc/').getDirectories()]
         ['http://abc/']
 
         '''
         res = []
         
-        dp = self.getDomainPath()
+        dp = self.getDomainPath().url_string
         bu = self.baseUrl().url_string
         directories = dp.replace( bu, '' )
         splitted_dirs = directories.split('/')
@@ -695,7 +708,7 @@ class url_object(object):
             url = bu + '/'.join( splitted_dirs[:i] )
             if url[len( url )-1] != '/':
                 url += '/'
-            res.append( url )
+            res.append( url_object(url) )
         
         return res
     
@@ -812,11 +825,30 @@ class url_object(object):
     def __eq__(self, other):
         '''
         @return: True if the url_strings are equal
+
         '''
-        if not isinstance(other, url):
+        if not isinstance(other, url_object):
             raise ValueError('The urlParser.url class only knows how to __eq__ with objects of the same type.')
 
         return self.url_string == other.url_string
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __hash__(self):
+        '''
+        >>> u1 = url_object('http://abc/')
+        >>> u2 = url_object('http://abc/def.htm')
+        >>> test = [u1, u2]
+        >>> len( list( set( test ) ) )
+        2
+        >>> u1 = url_object('http://abc/')
+        >>> u2 = url_object('http://abc/')
+        >>> test = [u1, u2]
+        >>> len( list( set( test ) ) )
+        1
+        '''
+        return hash(self.url_string)
 
     def __str__(self):
         '''
@@ -831,14 +863,59 @@ class url_object(object):
     
     def __add__(self, other):
         '''
-        @return: The same as urlJoin.
+        @return: This URL concatenated with the "other" string.
         
         >>> u = url_object('http://www.w3af.com/')
-        >>> x = u + '/abc'
-        >>> x.url_string
+        >>> x = u + 'abc'
+        >>> x
         'http://www.w3af.com/abc'
+
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = u + ' hello world!'
+        >>> x
+        'http://www.w3af.com/ hello world!'
+
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = u + 1
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: cannot concatenate 'int' and 'url_object' objects
+        
         '''
-        return self.urlJoin( other )
+        if not isinstance(other, basestring):
+            msg = "cannot concatenate '%s' and '%s' objects"
+            msg = msg % ( other.__class__.__name__, self.__class__.__name__)
+            raise TypeError(msg)
+        
+        return self.url_string + other 
+
+    def __radd__(self, other):
+        '''
+        @return: The "other" string concatenated with this URL.
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = 'abc' + u
+        >>> x
+        'abchttp://www.w3af.com/'
+
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = 'hello world! ' + u
+        >>> x
+        'hello world! http://www.w3af.com/'
+
+        >>> u = url_object('http://www.w3af.com/')
+        >>> x = 1 + u
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: cannot concatenate 'int' and 'url_object' objects
+        
+        '''
+        if not isinstance(other, basestring):
+            msg = "cannot concatenate '%s' and '%s' objects"
+            msg = msg % ( other.__class__.__name__, self.__class__.__name__)
+            raise TypeError(msg)
+        
+        return other + self.url_string 
 
     def copy(self):
         return copy.deepcopy( self )

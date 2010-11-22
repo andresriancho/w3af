@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import getProtocol, allButScheme
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -80,7 +79,7 @@ class unSSL(baseAuditPlugin):
                 
             # It seems that we can request the insecure HTTP URL
             # (checked with the GET request)
-            if 'HTTPS' == getProtocol( freq.getURL() ).upper():
+            if 'HTTPS' == freq.getURL().getProtocol().upper():
 
                 # We are going to perform requests that (in normal cases)
                 # are going to fail, so we set the ignore errors flag to True

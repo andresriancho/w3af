@@ -140,7 +140,7 @@ class fuzzableRequest:
                     
             
             # Save the url as-is, encoded.
-            self._sent_information += ' ' + self.getURI().url_string
+            self._sent_information += ' ' + self.getURI()
             # Save the decoded URL
             self._sent_information += ' ' + urllib.unquote_plus( self.getURI().url_string )
     
