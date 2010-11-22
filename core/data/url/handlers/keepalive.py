@@ -592,8 +592,6 @@ class KeepAliveHandler:
         # If not a persistent connection, don't try to reuse it
         if resp.will_close:
             self._cm.remove_connection(conn, host)
-        else:
-            self._cm.free_connection(conn)
 
         if DEBUG:
             DEBUG.info("STATUS: %s, %s", resp.status, resp.reason)
