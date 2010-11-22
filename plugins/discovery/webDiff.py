@@ -31,7 +31,6 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 
 import os
 

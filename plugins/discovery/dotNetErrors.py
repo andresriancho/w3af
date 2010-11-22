@@ -34,7 +34,6 @@ import core.data.constants.severity as severity
 
 from core.data.db.temp_persist import disk_list
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 
@@ -81,7 +80,7 @@ class dotNetErrors(baseDiscoveryPlugin):
         res = []
         special_chars = ['|', '~']
 
-        filename = urlParser.getFileName( original_url )
+        filename = original_url.getFileName()
         if filename != '' and '.' in filename:
             splitted_filename = filename.split('.')
             extension = splitted_filename[-1:][0]
@@ -89,7 +88,7 @@ class dotNetErrors(baseDiscoveryPlugin):
 
             for char in special_chars:
                 new_filename = name + char + '.' + extension
-                new_url = urlParser.urlJoin( urlParser.getDomainPath(original_url), new_filename)
+                new_url = original_url.urlJoin(new_filename)
                 res.append( new_url )
 
         return res

@@ -32,7 +32,6 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import core.data.parsers.urlParser as urlParser
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -74,8 +73,7 @@ class phishtank(baseDiscoveryPlugin):
             if self._update_DB:
                 self._do_update()
             
-            domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            to_check_list = self._get_to_check( domain )
+            to_check_list = self._get_to_check( fuzzableRequest.getURL() )
             
             # I found some URLs, create fuzzable requests
             phishtank_matches = self._is_in_phishtank( to_check_list )
@@ -98,15 +96,16 @@ class phishtank(baseDiscoveryPlugin):
                 
         return self._fuzzable_requests
         
-    def _get_to_check( self, domain ):
+    def _get_to_check( self, target_url ):
         '''
+        @param target_url: The url object we can use to extract some information from.
         @return: From the domain, get a list of FQDN, rootDomain and IP address.
         '''
         res = []
         
         addrinfo = None
         try:
-            addrinfo = socket.getaddrinfo( domain, 0)
+            addrinfo = socket.getaddrinfo( target_url.getDomain(), 0)
         except:
             pass
         else:
@@ -114,19 +113,18 @@ class phishtank(baseDiscoveryPlugin):
         
         fqdn = ''
         try:
-            fqdn = socket.getfqdn( domain )
+            fqdn = socket.getfqdn( target_url.getDomain() )
         except:
             pass
         else:
             res.append( fqdn )
             
-        rootDomain = ''
         try:
-            rootDomain = urlParser.getRootDomain( domain )
+            root_domain = target_url.getRootDomain()
         except Exception, e:
             om.out.debug( str(e) )
         else:
-            res.append( rootDomain )
+            res.append( root_domain )
         
         res = list( set( res ) )
         return res
@@ -198,11 +196,16 @@ class phishtank(baseDiscoveryPlugin):
                     #
                     #   Now I try to match the entry with an element in the to_check_list
                     #
-                    phish_domain = urlParser.getDomain( self.url )
-                    for url in self._to_check_list:
-                        if url == phish_domain or phish_domain.endswith('.' + url ):
-                            ptm = phishTankMatch( self.url, self.phish_detail_url )
-                            self.matches.append( ptm )
+                    for host in self._to_check_list:
+                        if host in self.url:
+                            phish_url = url_object( self.url )
+                            host_url = url_object( host )
+                            
+                            if host_url.getDomain() == phish_url.getDomain() or \
+                            phish_url.getDomain().endswith('.' + host_url.getDomain() ):
+                            
+                                ptm = phishTankMatch( self.url, self.phish_detail_url )
+                                self.matches.append( ptm )
         
         file_handler = None
         try:

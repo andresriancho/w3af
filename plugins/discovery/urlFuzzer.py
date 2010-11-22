@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -68,7 +67,7 @@ class urlFuzzer(baseDiscoveryPlugin):
             self._first_time = False
         
         # First we need to delete fragments and query strings from URL.
-        url = urlParser.uri2url( url )
+        url = url.uri2url()
 
         # And we mark this one as a "do not return" URL, because the core already
         # found it using another technique.
@@ -128,13 +127,10 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         This method tries to lower the false positives. 
         '''     
-        if urlParser.getDomainPath( uri ) == uri:
+        if not uri.hasQueryString():
             return False
         
-        url = urlParser.uri2url( uri )
-        url += createRandAlNum( 7 )
-        if urlParser.getQueryString( uri ):
-            url = url + '?' + str( urlParser.getQueryString( uri ) )
+        url.setFileName( url.getFileName() + createRandAlNum( 7 ) )
             
         try:
             response = self._urlOpener.GET( url, useCache=True, headers=self._headers )
@@ -174,15 +170,16 @@ class urlFuzzer(baseDiscoveryPlugin):
         
         @return: A list of mutants.
         '''
-        domain = urlParser.getDomain( url )
-        domainPath = urlParser.getDomainPath( url )
+        domain = url.getDomain()
+        domain_path = url.getDomainPath()
         
-        splittedDomain = domain.split('.')
+        splitted_domain = domain.split('.')
         res = []
-        for i in xrange( len ( splittedDomain ) ):
-            filename = '.'.join(splittedDomain[0: i+1])
+        for i in xrange( len ( splitted_domain ) ):
+            filename = '.'.join(splitted_domain[0: i+1])
             for extension in self._get_backup_extensions():
-                res.append( domainPath + filename + '.' + extension )
+                filename_ext = filename  + '.' + extension
+                res.append( domain_path.setFileName( filename_ext ) )
                 ### TODO: review this code !!
         return res
         
@@ -217,7 +214,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         mutants = []
         
-        extension = urlParser.getExtension( url )
+        extension = url.getExtension()
         if extension:
             
             if url.rfind('.') > url.rfind('/'):

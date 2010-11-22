@@ -33,8 +33,6 @@ from core.data.searchEngines.yahooSiteExplorer import yahooSiteExplorer as yse
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.is_private_site import is_private_site
 
-import core.data.parsers.urlParser as urlParser
-
 # For URLError
 # FIXME: In the future, xUrllib should only raise w3afException
 import urllib2
@@ -67,7 +65,7 @@ class yahooSiteExplorer(baseDiscoveryPlugin):
             self._run = False
             self._yse = yse( self._urlOpener )
             
-            domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            domain = fuzzableRequest.getURL().getDomain()
             if is_private_site( domain ):
                 msg = 'There is no point in searching yahoo site explorer for site: "'
                 msg += domain + '" . Yahoo doesnt index private pages.'

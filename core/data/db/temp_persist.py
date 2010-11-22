@@ -105,11 +105,14 @@ class disk_list(object):
                 self._conn.execute('''create table data (index_ real, information text)''')
 
             except Exception,  e:
-                self._filename = None
                 
                 fail_count += 1
                 if fail_count == 5:
-                    raise Exception('Failed to create databse file. Original exception: ' + str(e))
+                    msg = 'Failed to create database file. Original exception: "%s %s"' % (e, self._filename)
+                    raise Exception( msg )
+
+                self._filename = None
+
             else:
                 break
                 

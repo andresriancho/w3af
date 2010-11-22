@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -64,7 +63,7 @@ class zone_h(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
                         
-            target_domain = urlParser.getRootDomain( fuzzableRequest.getURL() )
+            target_domain = fuzzableRequest.getURL().getRootDomain()
             
             # Example URL:
             # http://www.zone-h.org/component/option,com_attacks/Itemid,44/filter_domain,empnut.ufv.br/

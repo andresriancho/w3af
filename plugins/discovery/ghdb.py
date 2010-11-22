@@ -36,7 +36,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.is_private_site import is_private_site
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 import core.data.constants.severity as severity
 
 import os.path
@@ -81,7 +80,7 @@ class ghdb(baseDiscoveryPlugin):
             self._run = False
             
             # Get the domain and set some parameters
-            domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            domain = fuzzableRequest.getURL().getDomain()
             if is_private_site( domain ):
                 msg = 'There is no point in searching google for "site:'+ domain
                 msg += '" . Google doesnt index private pages.'

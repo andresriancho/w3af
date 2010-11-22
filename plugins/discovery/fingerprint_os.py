@@ -29,10 +29,11 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+from core.data.parsers.urlParser import url_object
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce,  w3afException
 from core.controllers.misc.levenshtein import relative_distance_ge
+
 
 class fingerprint_os(baseDiscoveryPlugin):
     '''
@@ -71,12 +72,16 @@ class fingerprint_os(baseDiscoveryPlugin):
         Analyze responses and determine if remote web server runs on windows or *nix
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
-        dirs = urlParser.getDirectories( fuzzableRequest.getURL() )
-        filename = urlParser.getFileName( fuzzableRequest.getURL() )
+        dirs = fuzzableRequest.getURL().getDirectories()
+        filename = fuzzableRequest.getURL().getFileName()
+        
         if len( dirs ) > 1 and filename:
-            last = dirs[-1]
-            windowsURL = last[0:-1] + '\\' + filename
-            windows_response = self._urlOpener.GET( windowsURL )
+            
+            last_url = dirs[-1]
+            last_url = last_url.url_string
+            
+            windows_url = url_object( last_url[0:-1] + '\\' + filename )
+            windows_response = self._urlOpener.GET( windows_url )
             
             original_response = self._urlOpener.GET( fuzzableRequest.getURL() )
             self._found_OS = True

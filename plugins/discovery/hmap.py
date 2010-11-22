@@ -31,7 +31,6 @@ import core.data.kb.info as info
 
 import plugins.discovery.oHmap.hmap as originalHmap
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce,  w3afException
 
 
@@ -72,8 +71,8 @@ class hmap(baseDiscoveryPlugin):
                 om.out.information( msg )
                 
                 url = fuzzableRequest.getURL()
-                protocol = urlParser.getProtocol( url )
-                server = urlParser.getNetLocation( url )
+                protocol = url.getProtocol()
+                server = url.getNetLocation()
                 
                 # Set some defaults that can be overriden later
                 if protocol == 'https':

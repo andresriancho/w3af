@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -67,7 +66,7 @@ class phpinfo(baseDiscoveryPlugin):
         '''
         self._new_fuzzable_requests = []
 
-        for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
+        for domain_path in fuzzableRequest.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
 
@@ -92,7 +91,7 @@ class phpinfo(baseDiscoveryPlugin):
         @return: None, everything is saved to the self._new_fuzzable_requests list.
         '''
         # Request the file
-        php_info_url = urlParser.urlJoin(  domain_path , php_info_filename )
+        php_info_url = domain_path.urlJoin( php_info_filename )
         try:
             response = self._urlOpener.GET( php_info_url, useCache=True )
             om.out.debug( '[phpinfo] Testing "' + php_info_url + '".' )

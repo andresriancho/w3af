@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -63,11 +62,11 @@ class oracleDiscovery(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             
-            baseUrl = urlParser.baseUrl( fuzzableRequest.getURL() )
+            base_url = fuzzableRequest.getURL().baseUrl()
             
             for url, regex_string in self.getOracleData():
 
-                oracle_discovery_URL = urlParser.urlJoin(  baseUrl , url )
+                oracle_discovery_URL = base_url.urlJoin( url )
                 response = self._urlOpener.GET( oracle_discovery_URL, useCache=True )
                 
                 if not is_404( response ):
