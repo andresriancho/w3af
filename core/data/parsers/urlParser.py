@@ -275,11 +275,13 @@ def isValidURLDomain(url):
     False
     >>> isValidURLDomain("http://aa*a")
     False
+    >>> isValidURLDomain('http://localhost:8080')
+    True
     
     @parameter url: The url to parse.
     @return: Returns a boolean that indicates if <url>'s domain is valid
     '''
-    _, domain, _, _, _, _  = _uparse.urlparse(url)
+    domain  = getDomain(url)
     return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', domain or '') is not None
 
 def getNetLocation( url ):
