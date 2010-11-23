@@ -391,14 +391,14 @@ class ConnectionManager:
         @param host: The host for the connection
         @param conn_factory: The factory function for new connection creation.
         '''
-        self.remove_connection(bad_conn, host)
-        new_conn = conn_factory(host)
-        conns = self._hostmap.setdefault(host, [])
-        conns.append(new_conn)
-        self._used_cons.append(new_conn)
-        return new_conn
-        
-        
+        with self._lock:
+            self.remove_connection(bad_conn, host)
+            new_conn = conn_factory(host)
+            conns = self._hostmap.setdefault(host, [])
+            conns.append(new_conn)
+            self._used_cons.append(new_conn)
+            return new_conn
+
     def get_available_connection(self, host, conn_factory):
         '''
         Return an available connection ready to be reused
