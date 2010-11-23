@@ -32,7 +32,7 @@ from core.controllers.misc.is_private_site import is_private_site
 from core.data.request.httpQsRequest import httpQsRequest
 from core.controllers.w3afException import w3afException
 from core.data.parsers.dpCache import dpc as dpc
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 
 from core.data.db.temp_persist import disk_list
@@ -67,7 +67,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
                                                       the URL to test.
         '''
         # Get the domain and set some parameters
-        domain = urlParser.getDomain( fuzzableRequest.getURL() )
+        domain = fuzzableRequest.getURL().getDomain()
         if is_private_site( domain ):
             msg = 'There is no point in searching archive.org for "'+ domain + '"'
             msg += ' because it is a private site that will never be indexed.'
@@ -77,7 +77,8 @@ class archiveDotOrg(baseDiscoveryPlugin):
             om.out.debug( 'archiveDotOrg plugin is testing: ' + fuzzableRequest.getURL() )
             
             start_url = 'http://web.archive.org/web/*/' + fuzzableRequest.getURL()
-            domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            start_url = url_object( start_url )
+            domain = fuzzableRequest.getURL().getDomain()
             references = self._spider_archive( [ start_url, ] , self._max_depth, domain )
             
             return self._analyze_urls( references )
@@ -96,7 +97,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         real_URLs = []
         for url in references:
             try:
-                url = url[url.index('http', 1):]
+                url = url.url_string[url.url_string.url.index('http', 1):]
             except Exception:
                 pass
             else:
@@ -113,7 +114,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         # Verify if they exist in the target site and add them to the result if they do.
         for real_url in real_URLs:
             if self._exists_in_target( real_url ):
-                QSObject = urlParser.getQueryString( real_url )
+                QSObject = real_url.getQueryString()
                 qsr = httpQsRequest()
                 qsr.setURI( real_url )
                 qsr.setDc( QSObject )
@@ -167,7 +168,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
                         
                         # Filter the ones I want
                         url_regex = 'http://web\.archive\.org/web/.*/http[s]?://' + domain + '/.*'
-                        new_urls = [ u for u in parsed_references if re.match(url_regex, u ) ]
+                        new_urls = [ url_object(u) for u in parsed_references if re.match(url_regex, u ) ]
                         
                         # Go recursive
                         if max_depth -1 > 0:

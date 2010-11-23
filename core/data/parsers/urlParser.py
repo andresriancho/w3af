@@ -105,11 +105,11 @@ class url_object(object):
         'txt'
         >>> 
         '''
-        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
+        self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
 
     @property
     def url_string(self):
-        return urlparse.urlunparse( (self.scheme, self.domain, self.path, self.params, self.qs, self.fragment) )
+        return urlparse.urlunparse( (self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment) )
         
     def hasQueryString( self ):
         '''
@@ -167,7 +167,7 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        res = self.scheme + '://' + self.domain + self.path
+        res = self.scheme + '://' + self.netloc + self.path
         if self.params != '':
             res += ";" + self.params
         
@@ -186,7 +186,7 @@ class url_object(object):
         >>> u.removeFragment()
         'http://www.google.com/foo/bar.txt'
         '''
-        res = self.scheme + '://' + self.domain + self.path
+        res = self.scheme + '://' + self.netloc + self.path
         if self.params != '':
             res += ';' + self.params
         if self.qs != '':
@@ -202,7 +202,7 @@ class url_object(object):
         >>> u.baseUrl().url_string
         'http://www.google.com/'
         '''
-        return url_object( self.scheme + '://' + self.domain + '/' )
+        return url_object( self.scheme + '://' + self.netloc + '/' )
     
     
     def normalizeURL( self ):
@@ -306,7 +306,7 @@ class url_object(object):
         fixed_url = urlparse.urljoin(baseURL, path)
         
         #    "re-init" the object 
-        self.scheme, self.domain, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( fixed_url )
+        self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( fixed_url )
     
     def getPort( self ):
         '''
@@ -394,8 +394,47 @@ class url_object(object):
     
         @return: Returns the domain name for the url.
         '''
-        domain = self.domain.split(':')[0]
+        domain = self.netloc.split(':')[0]
         return domain
+
+    def setDomain( self, new_domain ):
+        '''
+        >>> u = url_object('http://abc/def/jkl/')
+        >>> u.getDomain()
+        'abc'
+
+        >>> u.setDomain('host.tld')
+        >>> u.getDomain()
+        'host.tld'
+
+        >>> u.setDomain('foobar')
+        >>> u.getDomain()
+        'foobar'
+
+        >>> u.setDomain('foobar:443')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: 'foobar:443' is an invalid domain
+
+        >>> u.setDomain('foo*bar')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: 'foo*bar' is an invalid domain
+
+        >>> u = url_object('http://abc:443/def/jkl/')
+        >>> u.getDomain()
+        'abc'
+        >>> u.setDomain('host.tld')
+        >>> u.getNetLocation()
+        'host.tld:443'
+    
+        @return: Returns the domain name for the url.
+        '''
+        if re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', new_domain ) is None:
+            raise TypeError( "'%s' is an invalid domain" % (new_domain) )
+        else:
+            domain = self.netloc.split(':')[0]
+            self.netloc = self.netloc.replace(domain, new_domain)
     
     def is_valid_domain( self ):
         '''
@@ -417,7 +456,7 @@ class url_object(object):
         @parameter url: The url to parse.
         @return: Returns a boolean that indicates if <url>'s domain is valid
         '''
-        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', self.domain ) is not None
+        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', self.netloc ) is not None
     
     def getNetLocation( self ):
         '''
@@ -430,7 +469,7 @@ class url_object(object):
     
         @return: Returns the net location for the url.
         '''
-        return self.domain
+        return self.netloc
     
     def getProtocol( self ):
         '''
@@ -543,9 +582,9 @@ class url_object(object):
             
             return baseAuthority
                 
-        if is_ip_address(self.domain):
+        if is_ip_address(self.netloc):
             # An IP address has no "root domain" 
-            return self.domain
+            return self.netloc
         else:
             return decomposeURI()
             
@@ -567,9 +606,9 @@ class url_object(object):
         'https://abc:443/xyz/'
         '''
         if self.path:
-            res = self.scheme + '://' +self.domain+ self.path[:self.path.rfind('/')+1]
+            res = self.scheme + '://' +self.netloc+ self.path[:self.path.rfind('/')+1]
         else:
-            res = self.scheme + '://' +self.domain+ '/'
+            res = self.scheme + '://' +self.netloc+ '/'
         return url_object(res)
     
     def getFileName( self ):
@@ -630,7 +669,7 @@ class url_object(object):
 
         @return: Returns the domain name and the path for the url.
         '''
-        return self.domain+ self.path[:self.path.rfind('/')+1]
+        return self.netloc+ self.path[:self.path.rfind('/')+1]
     
     def getPath( self ):
         '''
@@ -768,7 +807,7 @@ class url_object(object):
         'http://abc/xyz.txt?file=2'
 
         '''
-        url_without_params = urlparse.urlunparse( (self.scheme, self.domain, self.path, None, self.qs, self.fragment) )
+        url_without_params = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, self.qs, self.fragment) )
         return url_object(url_without_params)
     
     def setParam( self, param_string ):

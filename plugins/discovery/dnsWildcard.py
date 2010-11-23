@@ -30,7 +30,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
 import re
@@ -62,13 +61,13 @@ class dnsWildcard(baseDiscoveryPlugin):
             self._exec = False
             
             if not re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?',
-                                    urlParser.getDomain( fuzzableRequest.getURL() ) ):
+                                    fuzzableRequest.getURL().getDomain() ):
                 # Only do all this if this is a domain name!
-                base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+                base_url = fuzzableRequest.getURL().baseUrl()
                 original_response = self._urlOpener.GET( base_url, useCache=True )
                 
-                domain = urlParser.getDomain( fuzzableRequest.getURL() )
-                proto = urlParser.getProtocol( fuzzableRequest.getURL() )
+                domain = fuzzableRequest.getURL().getDomain()
+                proto = fuzzableRequest.getURL().getProtocol()
                 if domain.startswith('www.'):
                     dns_wildcard_url = proto + '://' + domain.replace('www.', '') + '/'
                 else:
@@ -84,7 +83,11 @@ class dnsWildcard(baseDiscoveryPlugin):
         Check if http://ip(domain)/ == http://domain/
         '''
         ip_address = socket.gethostbyname( domain )
-        ip_url = urlParser.getProtocol( original_response.getURL() ) + '://'+ ip_address + '/'
+
+        url = original_response.getURL()
+        ip_url = url.copy()
+        ip_url.setDomain( ip_address )
+
         try:
             modified_response = self._urlOpener.GET( ip_url, useCache=True )
         except w3afException:
