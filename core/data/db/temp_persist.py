@@ -35,12 +35,7 @@ try:
 except:
    import pickle
 
-try:
-    from core.controllers.misc.temp_dir import get_temp_dir
-except:
-    def get_temp_dir():
-        return '/tmp/'
-
+from core.controllers.misc.temp_dir import get_temp_dir
 
 class disk_list(object):
     '''
@@ -136,15 +131,25 @@ class disk_list(object):
                 pass
     
     def __contains__(self, value):
+        '''
+        @return: True if the str(value) is in our list.
+        '''
         with self._db_lock:
-            t = (value, )
+            t = (str(value), )
             cursor = self._conn.execute('select count(*) from data where information=?', t)
             return cursor.fetchone()[0]
     
     def append(self, value):
+        '''
+        Append a value to the disk_list.
+        
+        @param value: The value to append. In all cases we're going to store the str()
+        representation of the value. In order to be consistent, in __contains__ we also
+        perform a str(). 
+        '''
         # thread safe here!
         with self._db_lock:
-            t = (self._current_index, value)
+            t = (self._current_index, str(value))
             self._conn.execute("insert into data values (?, ?)", t)
             self._current_index += 1
     
@@ -166,25 +171,38 @@ class disk_list(object):
         with self._db_lock:
             cursor = self._conn.execute('select count(*) from data')
             return cursor.fetchone()[0]
+
+import unittest
+class disk_list_test(unittest.TestCase):
+
+    def setUp(self):
+        global get_temp_dir
+        def get_temp_dir():
+            return '/tmp/'
+
+    def test_string_add_contains(self):
+        dl = disk_list()
+        for i in xrange(5000):
+            r = self.create_string()
+            dl.append( r )
+        self.assertTrue( len(dl) == 5000 )
+        self.assertTrue( r in dl )
+        self.assertTrue( 'abc' not in dl )
+
+    def test_string_add_contains(self):
+        dl = disk_list()
+        for i in xrange(5000):
+            dl.append( i )
+        self.assertTrue( len(dl) == 5000 )
+        self.assertTrue( 500 in dl )        
+        self.assertTrue( False not in dl )
+        self.assertTrue( 'abc' not in dl )
         
-if __name__ == '__main__':
+        # TODO: This is not very nice... but for now we can bare with it.
+        self.assertTrue( '500' in dl )
+
     def create_string():
         strr = ''
         for i in xrange(300):
             strr += choice(string.letters)
         return strr
-    
-    print ''
-    print 'Testing disk_list:'
-    dlist = disk_list()
-    
-    print '1- Loading items...'
-    for i in xrange(5000):
-        r = create_string()
-        dlist.append( r )
-    
-    print '2- Assert statements...'
-    assert len(dlist) == 5000
-    assert r in dlist
-    assert not 'abc' in dlist
-    print 'Done!'
