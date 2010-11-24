@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 
 from core.data.db.temp_persist import disk_list
 
@@ -53,7 +52,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        url = urlParser.uri2url( fuzzableRequest.getURL() )
+        url = fuzzableRequest.getURL().uri2url()
         if url not in self._already_tested:
             self._already_tested.append( url )
             

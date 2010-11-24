@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 import os
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -71,8 +70,8 @@ class dir_bruter(baseDiscoveryPlugin):
 
             self._fuzzable_requests = []
             
-            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+            domain_path = fuzzableRequest.getURL().getDomainPath()
+            base_url = fuzzableRequest.getURL().baseUrl()
             
             to_test = []
             if not self._tested_base_url:
@@ -103,8 +102,7 @@ class dir_bruter(baseDiscoveryPlugin):
             
             # ignore comments and empty lines
             if directory_name and not directory_name.startswith('#'):
-                dir_url = urlParser.urlJoin(  base_path , directory_name)
-                dir_url +=  '/'
+                dir_url = base_path.urlJoin( directory_name +  '/' )
 
                 http_response = self._urlOpener.GET( dir_url, useCache=False )
                 
@@ -112,8 +110,8 @@ class dir_bruter(baseDiscoveryPlugin):
                     #
                     #   Looking fine... but lets see if this is a false positive or not...
                     #
-                    dir_url = urlParser.urlJoin(  base_path , directory_name + createRandAlNum(5) )
-                    dir_url +=  '/'
+                    dir_url = base_path.urlJoin( directory_name + createRandAlNum(5) + '/')
+
                     invalid_http_response = self._urlOpener.GET( dir_url, useCache=False )
 
                     if is_404( invalid_http_response ):
