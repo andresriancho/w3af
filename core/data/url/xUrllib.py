@@ -428,8 +428,9 @@ class xUrllib(object):
         
         start_time = time.time()
         res = None
+        the_opener = self._cacheOpener if useCache else self._opener
+        
         try:
-            the_opener = self._cacheOpener if useCache else self._opener
             res = the_opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
