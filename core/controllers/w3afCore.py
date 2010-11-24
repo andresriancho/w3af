@@ -417,12 +417,7 @@ class w3afCore(object):
         except w3afMustStopException, wmse:
             om.out.error('\n**IMPORTANT** The following error was detected ' \
                          'by w3af and couldn\'t be resolved: %s\n' % wmse)
-            # TODO: FIXME. Hack to avoid displaying dialog when w3af must stop
-            # I'm sure we can do sth better than this.
-            try:
-                self._end()
-            except:
-                pass
+            self._end()
         except Exception:
             om.out.error('\nUnhandled error, traceback: %s\n' % \
                          traceback.format_exc()) 
