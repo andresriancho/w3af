@@ -184,12 +184,24 @@ class rfiProxy(baseAttackPlugin, w3afThread):
             webserver.start_webserver(self._proxyPublicIP, self._httpdPort, webroot)
             self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
             
-        ### TODO: I really dislike this, if someone knows how to send variables to 
-        ### w3afProxyHandler in a nicer way, please contact me ( andres.riancho@gmail.com )
+        ### TODO: I really dislike this:
         global url
         global exploitData
         global variable
         global rfiConnGenerator
+        #    We should change it to something like this:
+        #
+        #>>> import new
+        #>>> class A(object):
+        #       def foo(self):
+        #               print self.x
+        #>>> B = new.classobj('B', (A,), {'x': 1})
+        #>>> b = B()
+        #>>> b.foo()
+        #1
+        #>>>
+        #
+        #    Kudos to Javier for the nice solution :)
         url = self._url
         exploitData = self._exploitData
         rfiConnGenerator = self._rfiConnGenerator
