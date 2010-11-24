@@ -32,7 +32,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
@@ -57,8 +56,8 @@ class domain_dot(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                                     (among other things) the URL to test.
         '''
-        domain = urlParser.getDomain(fuzzableRequest.getURL())
-        extension = urlParser.getDomain(fuzzableRequest.getURL())
+        domain = fuzzableRequest.getURL().getDomain()
+        extension = fuzzableRequest.getURL().getExtension()
         
         if (domain, extension) not in self._already_tested:
             
@@ -67,14 +66,14 @@ class domain_dot(baseDiscoveryPlugin):
             
             # Generate the new URL
             domain += '.'
-            path = urlParser.getPath( fuzzableRequest.getURL() )
-            protocol = urlParser.getProtocol( fuzzableRequest.getURL() )
-            new_URL = protocol + '://' + domain + path
+            dot_url = fuzzableRequest.getURL()
+            dot_url = dot_url.copy()
+            dot_url.setDomain(domain)
             try:
                 # GET the original response
                 original_response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=False )
                 # GET the response with the modified domain (with the trailing dot)
-                response = self._urlOpener.GET( new_URL, useCache=False )
+                response = self._urlOpener.GET( dot_url, useCache=False )
             except KeyboardInterrupt,e:
                 raise e
             except w3afException,w3:
