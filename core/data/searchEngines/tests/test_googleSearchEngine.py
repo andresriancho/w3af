@@ -54,7 +54,7 @@ class test_googleSearchEngine(unittest.TestCase):
     def test_get_links_results_unique(self):
         # URLs should be unique
         results = self.gse.getNResults(self.query, self.limit)
-        self.assertTrue(len(results) == len(set(r.URL for r in results)))
+        self.assertTrue(len(results) == len(set([r.URL for r in results])))
     
     def test_page_body(self):
         # Verify that responses' body contains at least one word in query
@@ -111,7 +111,7 @@ class test_GoogleAPISearch(unittest.TestCase):
         start = 0
         for searcher in self._get_google_searchers(query, start, self.count):
             for link in searcher.links:
-                self.assertTrue(URL_REGEX.match(link.URL) is not None)
+                self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
         
     
     def test_pages_results_type(self):
