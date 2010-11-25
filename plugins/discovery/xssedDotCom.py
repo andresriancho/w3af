@@ -81,14 +81,17 @@ class xssedDotCom(baseDiscoveryPlugin):
                 msg = 'An exception was raised while running xssedDotCom plugin. Exception: '
                 msg += '"' + str(e) + '".'
                 om.out.debug( msg )
-            
-            try:
-                return self._parse_xssed_result( response )
-            except w3afException, e:
-                self._exec = True
-                msg = 'An exception was raised while running xssedDotCom plugin. Exception: '
-                msg += '"' + str(e) + '".'
-                om.out.debug( msg )
+            else:
+                #
+                #   Only parse the xssed result if we have it,
+                #
+                try:
+                    return self._parse_xssed_result( response )
+                except w3afException, e:
+                    self._exec = True
+                    msg = 'An exception was raised while running xssedDotCom plugin. Exception: '
+                    msg += '"' + str(e) + '".'
+                    om.out.debug( msg )
 
     def _decode_xssed_url(self, url):
         '''
