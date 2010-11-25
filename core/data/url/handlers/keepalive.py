@@ -143,7 +143,7 @@ DEBUG = None
 # Global connection timeout. In seconds.
 TIMEOUT = 25
 # Max connections allowed per host.
-MAXCONNECTIONS = 30
+MAXCONNECTIONS = 50
 # If found this number of timeouts in-a-row per target host then we may either:
 #    1) Shrink the pool size (we might be stressing the remote host) and retry;
 #        or:
@@ -360,7 +360,7 @@ class ConnectionManager:
             if host:
                 self._hostmap[host].remove(conn)
             else: # We don't know the_host. Need to find it by looping
-                for _host, conns in self._hostmap.iteritems():
+                for _host, conns in self._hostmap.items():
                     if conn in conns:
                         host = _host
                         conns.remove(conn)
@@ -438,7 +438,7 @@ class ConnectionManager:
                     return ret_conn
                 else: # Maybe we should wait a little and try again 8^)
                     retry_count -= 1
-                    time.sleep(0.2)
+                    time.sleep(0.3)
             
             msg = 'keepalive: been waiting too long for a pool connection.' \
             ' I\'m giving up. Seems like the pool is full.'
@@ -474,7 +474,7 @@ class ConnectionManager:
                                             else [self._hostmap[host]]
         return reduce(operator.add, map(len, values))
 
-# Create the pool instance to use. Intended to be shared by handlers.
+# Create the pool instance to be used. Intended to be shared by handlers.
 # See our HTTPHandler and HTTPSHandler class definitions below.
 connMgr = ConnectionManager()
 
@@ -694,7 +694,7 @@ class KeepAliveHandler:
         '''
         "Abstract" method.
         '''
-        return NotImplementedError
+        raise NotImplementedError()
 
 
 class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
