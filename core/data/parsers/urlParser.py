@@ -687,6 +687,21 @@ class url_object(object):
     
     def setPath(self, path):
         self.path = path
+
+    def getPathWithoutFile( self ):
+        '''
+        >>> url_object('https://abc:443/xyz/file.asp').getPathWithoutFile()
+        '/xyz/'
+        >>> url_object('https://abc:443/xyz/').getPathWithoutFile()
+        '/xyz/'
+        >>> url_object('https://abc:443/xyz/123/456/789/').getPathWithoutFile()
+        '/xyz/123/456/789/'
+
+        @return: Returns the path for the url:
+        '''
+        path = self.getPath()
+        filename = self.getFileName()
+        return path.replace(filename, '', 1)
     
     def getPathQs( self ):
         '''
