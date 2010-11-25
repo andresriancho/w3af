@@ -40,6 +40,7 @@ except:
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
+
 class extrusionServer:
     '''
     This class defines a simple server that listens on the current interface for connections
