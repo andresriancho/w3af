@@ -31,7 +31,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 import core.controllers.daemons.webserver as webserver
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
@@ -208,7 +207,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # Create the shell
-        extension = urlParser.getExtension( vuln.getURL() )
+        extension = vuln.getURL().getExtension()
         
         # I get a list of tuples with file_content and extension to use
         shell_list = shell_handler.get_webshells( extension )
@@ -281,7 +280,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         URL poiting to a XSS bug, or a URL poiting to our local webserver.
         '''
         if self._use_XSS_vuln and self._xss_vuln:
-            url = urlParser.uri2url(self._xss_vuln.getURL())
+            url = self._xss_vuln.getURL().uri2url()
             data_container = self._xss_vuln.getDc()
             data_container = data_container.copy()
             data_container[self._xss_vuln.getVar()] = file_content

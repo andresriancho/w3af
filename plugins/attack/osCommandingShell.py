@@ -246,10 +246,10 @@ class osShell(exec_shell):
         @return: The result of the command.
         '''
         functionReference = getattr( self._urlOpener , self.getMethod() )
-        exploitDc = self.getDc()
-        exploitDc[ self.getVar() ] = self['separator'] + command
+        exploit_dc = self.getDc()
+        exploit_dc[ self.getVar() ] = self['separator'] + command
         try:
-            response = functionReference( self.getURL() , str(exploitDc) )
+            response = functionReference( self.getURL() , str(exploit_dc) )
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:

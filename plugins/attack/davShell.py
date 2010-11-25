@@ -32,7 +32,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.exec_shell import exec_shell as exec_shell
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import plugins.attack.payloads.shell_handler as shell_handler
@@ -107,7 +106,7 @@ class davShell(baseAttackPlugin):
         '''
         # Create the shell
         filename = createRandAlpha( 7 )
-        extension = urlParser.getExtension( vuln_obj.getURL() )
+        extension = vuln_obj.getURL().getExtension()
         
         # I get a list of tuples with file_content and extension to use
         shell_list = shell_handler.get_webshells( extension )
@@ -118,7 +117,7 @@ class davShell(baseAttackPlugin):
             om.out.debug('Uploading shell with extension: "'+extension+'".' )
             
             # Upload the shell
-            url_to_upload = urlParser.urlJoin( vuln_obj.getURL() , filename + '.' + extension )
+            url_to_upload = vuln_obj.getURL().urlJoin( filename + '.' + extension )
             om.out.debug('Uploading file: ' + url_to_upload )
             self._urlOpener.PUT( url_to_upload, data=file_content )
             
@@ -215,7 +214,7 @@ class davShellObj(exec_shell):
     
     def end( self ):
         om.out.debug('davShellObj is going to delete the webshell that was uploaded before.')
-        url_to_del = urlParser.uri2url( self._exploit_url )
+        url_to_del = self._exploit_url.uri2url()
         try:
             self._urlOpener.DELETE( url_to_del )
         except w3afException, e:
