@@ -214,7 +214,7 @@ class ThreadPoolImplementation(object):
                 # still results pending?
                 if not joinAll:
                     owned_work_reqs_len = \
-                            len([wr for wr in self.workRequests.itervalues() \
+                            len([wr for wr in self.workRequests.values() \
                                  if id(wr.ownerObj) == id(ownerObj)])
                 else:
                     owned_work_reqs_len = len(self.workRequests)
