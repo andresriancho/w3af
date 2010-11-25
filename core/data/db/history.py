@@ -47,7 +47,7 @@ class HistoryItem:
     _dataTable = 'data_table'
     _columns = [('id','integer'), ('url', 'text'), ('code', 'integer'), ('tag', 'text'),
             ('mark', 'integer'), ('info', 'text'), ('time', 'float'), ('msg', 'text'), ('content_type', 'text'), 
-            ('method', 'text'), ('response_size', 'integer')]
+            ('method', 'text'), ('response_size', 'integer'), ('codef', 'integer')]
     _primaryKeyColumns = ['id',]
     id = None
     request = None
@@ -181,17 +181,19 @@ class HistoryItem:
         values.append(self.response.getContentType())
         values.append(self.request.getMethod())
         values.append(len(self.response.getBody()))
+        code = int(self.response.getCode()) / 100
+        values.append(code)
 
         if not self.id:
-            sql = 'INSERT INTO ' + self._dataTable + ' (id, url, code, tag, mark, info, time, msg, content_type, method, response_size)'
-            sql += ' VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+            sql = 'INSERT INTO ' + self._dataTable + ' (id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef)'
+            sql += ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
             values.append(self.id)
             sql = 'UPDATE ' + self._dataTable
             sql += ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
-            sql += ', method = ?, response_size = ? '
+            sql += ', method = ?, response_size = ?, codef = ? '
             sql += ' WHERE id = ?'
             self._db.execute(sql, values)
         # 
