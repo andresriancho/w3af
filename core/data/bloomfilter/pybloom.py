@@ -42,7 +42,7 @@ import math
 import hashlib
 from struct import unpack, pack, calcsize
 
-import bitvector
+import extlib.bitvector as bitvector
 
 __version__ = '1.0.3'
 __author__  = "Jay Baird <jay@mochimedia.com>, Bob Ippolito <bob@redivi.com>,\
