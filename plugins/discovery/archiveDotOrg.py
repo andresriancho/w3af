@@ -35,7 +35,7 @@ from core.data.parsers.dpCache import dpc as dpc
 import core.data.parsers.urlParser as urlParser
 import core.data.kb.knowledgeBase as kb
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import re
@@ -53,7 +53,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_visited = disk_list()
+        self._already_visited = ScalableBloomFilter()
         
         # User configured parameters
         self._max_depth = 3
@@ -143,7 +143,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         
         for url in url_list:
             if url not in self._already_visited:
-                self._already_visited.append( url )
+                self._already_visited.add( url )
                 
                 try:
                     http_response = self._urlOpener.GET( url, useCache=True )

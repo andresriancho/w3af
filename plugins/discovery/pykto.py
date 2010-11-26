@@ -36,7 +36,7 @@ import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import os.path
@@ -54,7 +54,7 @@ class pykto(baseDiscoveryPlugin):
         
         # int_ernal variables
         self._exec = True
-        self._already_visited = disk_list()
+        self._already_visited = ScalableBloomFilter()
         self._first_time = True
         
         # User configured parameters
@@ -110,7 +110,7 @@ class pykto(baseDiscoveryPlugin):
                 url = urlParser.getDomainPath( fuzzableRequest.getURL() )
                 if url not in self._already_visited:
                     # Save the directories I already have tested
-                    self._already_visited.append( url )
+                    self._already_visited.add( url )
                     self.__run( url )
 
         return self._new_fuzzable_requests

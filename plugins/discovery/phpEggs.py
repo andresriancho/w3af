@@ -31,7 +31,7 @@ from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.data.parsers.urlParser as urlParser
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -49,7 +49,7 @@ class phpEggs(baseDiscoveryPlugin):
         self._exec = True
         
         # Already analyzed extensions
-        self._already_analyzed_ext = disk_list()
+        self._already_analyzed_ext = ScalableBloomFilter()
         
         # This is a list of hashes and description of the egg for every PHP version.
         self._egg_DB = {}
@@ -286,7 +286,7 @@ class phpEggs(baseDiscoveryPlugin):
                 
                 # Now we save the extension as one of the already analyzed
                 if ext != '':
-                    self._already_analyzed_ext.append(ext)
+                    self._already_analyzed_ext.add(ext)
         
         return []
     

@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import re
 
@@ -45,7 +45,7 @@ class ajax(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = disk_list()
+        self._already_inspected = ScalableBloomFilter()
         
         # Create the regular expression to search for AJAX
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
@@ -146,7 +146,7 @@ class ajax(baseGrepPlugin):
         if response.is_text_or_html() and url not in self._already_inspected:
             
             # Don't repeat URLs
-            self._already_inspected.append(url)
+            self._already_inspected.add(url)
             
             dom = response.getDOM()
             # In some strange cases, we fail to normalize the document

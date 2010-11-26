@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import re
 
@@ -55,7 +55,7 @@ class dotNetEventValidation(baseGrepPlugin):
         encryptedVsRegex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
         self._encryptedVs = re.compile( encryptedVsRegex, re.IGNORECASE|re.DOTALL)
 
-        self._already_reported = disk_list()
+        self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -70,7 +70,7 @@ class dotNetEventValidation(baseGrepPlugin):
             if request.getURI() in self._already_reported:
                 return
             else:
-                self._already_reported.append(request.getURI())
+                self._already_reported.add(request.getURI())
 
             res = self._viewstate.search(response.getBody())
             if res:

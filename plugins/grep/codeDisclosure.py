@@ -34,7 +34,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 
 class codeDisclosure(baseGrepPlugin):
@@ -48,7 +48,7 @@ class codeDisclosure(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         #   Internal variables
-        self._already_added = disk_list()
+        self._already_added = ScalableBloomFilter()
         self._first_404 = True
 
     def grep(self, request, response):
@@ -110,7 +110,7 @@ class codeDisclosure(baseGrepPlugin):
                     msg = 'The URL: "' + v.getURL() + '" has a '+lang+' code disclosure vulnerability.'
                     v.setDesc( msg )
                     kb.kb.append( self, 'codeDisclosure', v )
-                    self._already_added.append( response.getURL() )
+                    self._already_added.add( response.getURL() )
                 
                 else:
                     

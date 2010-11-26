@@ -36,6 +36,7 @@ import core.data.dc.form as form
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 from core.data.request.variant_identification import are_variants
 
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.data.db.temp_persist import disk_list
 
 # options
@@ -65,7 +66,7 @@ class webSpider(baseDiscoveryPlugin):
         self._fuzzableRequests = []
         self._first_run = True
         self._already_crawled = disk_list()
-        self._already_filled_form = disk_list()
+        self._already_filled_form = ScalableBloomFilter()
 
         # User configured variables
         self._ignore_regex = ''
@@ -95,7 +96,7 @@ class webSpider(baseDiscoveryPlugin):
             if fuzzableRequest.getURL() in self._already_filled_form:
                 return []
             else:
-                self._already_filled_form.append( fuzzableRequest.getURL() )
+                self._already_filled_form.add( fuzzableRequest.getURL() )
                 
             to_send = original_dc.copy()
             for parameter_name in to_send:

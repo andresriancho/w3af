@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
 from core.data.parsers.urlParser import getProtocol, getNetLocation, getDomain
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -51,7 +51,7 @@ class sslCertificate(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested_domains = disk_list()
+        self._already_tested_domains = ScalableBloomFilter()
 
     def audit(self, freq ):
         '''
@@ -99,7 +99,7 @@ class sslCertificate(baseAuditPlugin):
 
             # Perform the analysis
             self._analyze_cert( cert, ssl_conn, host )
-            self._already_tested_domains.append(domain)
+            self._already_tested_domains.add(domain)
             # Print the SSL information to the log
             desc = 'This is the information about the SSL certificate used in the target site:'
             desc += '\n'

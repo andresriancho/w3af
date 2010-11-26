@@ -35,11 +35,7 @@ try:
 except:
    import pickle
 
-try:
-    from core.controllers.misc.temp_dir import get_temp_dir
-except:
-    def get_temp_dir():
-        return '/tmp/'
+from core.controllers.misc.temp_dir import get_temp_dir
 
 
 class disk_list(object):
@@ -167,24 +163,4 @@ class disk_list(object):
             cursor = self._conn.execute('select count(*) from data')
             return cursor.fetchone()[0]
         
-if __name__ == '__main__':
-    def create_string():
-        strr = ''
-        for i in xrange(300):
-            strr += choice(string.letters)
-        return strr
-    
-    print ''
-    print 'Testing disk_list:'
-    dlist = disk_list()
-    
-    print '1- Loading items...'
-    for i in xrange(5000):
-        r = create_string()
-        dlist.append( r )
-    
-    print '2- Assert statements...'
-    assert len(dlist) == 5000
-    assert r in dlist
-    assert not 'abc' in dlist
-    print 'Done!'
+

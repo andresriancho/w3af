@@ -24,7 +24,7 @@ from lxml import etree
 
 # options
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.data.options.optionList import optionList
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -44,7 +44,7 @@ class fileUpload(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = disk_list()
+        self._already_inspected = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -58,7 +58,7 @@ class fileUpload(baseGrepPlugin):
 
         if response.is_text_or_html() and not url in self._already_inspected:
 
-            self._already_inspected.append(url)
+            self._already_inspected.add(url)
             dom = response.getDOM()
 
             # In some strange cases, we fail to normalize the document

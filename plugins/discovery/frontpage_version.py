@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 #python modules
 import re
@@ -47,7 +47,7 @@ class frontpage_version(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = disk_list()
+        self._analyzed_dirs = ScalableBloomFilter()
         self._exec = True
 
     def discover(self, fuzzableRequest ):
@@ -71,7 +71,7 @@ class frontpage_version(baseDiscoveryPlugin):
             if domain_path not in self._analyzed_dirs:
 
                 # Save the domain_path so I know I'm not working in vane
-                self._analyzed_dirs.append( domain_path )
+                self._analyzed_dirs.add( domain_path )
 
                 # Request the file
                 frontpage_info_url = urlParser.urlJoin(  domain_path , "_vti_inf.html" )

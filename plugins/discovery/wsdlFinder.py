@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 import core.data.parsers.urlParser as urlParser
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 
 class wsdlFinder(baseDiscoveryPlugin):
@@ -44,7 +44,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = disk_list()
+        self._already_tested = ScalableBloomFilter()
         self._new_fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):
@@ -55,7 +55,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         '''
         url = urlParser.uri2url( fuzzableRequest.getURL() )
         if url not in self._already_tested:
-            self._already_tested.append( url )
+            self._already_tested.add( url )
             
             # perform the requests
             for wsdl_parameter in self._get_WSDL():

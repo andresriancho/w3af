@@ -25,7 +25,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -40,7 +40,7 @@ class blankBody(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_reported = disk_list()
+        self._already_reported = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''
@@ -104,7 +104,7 @@ class blankBody(baseGrepPlugin):
         and response.getURL() not in self._already_reported:
             
             #   report these informations only once
-            self._already_reported.append( response.getURL() )
+            self._already_reported.add( response.getURL() )
             
             #   append the info object to the KB.
             i = info.info()

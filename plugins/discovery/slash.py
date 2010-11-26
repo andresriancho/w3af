@@ -32,7 +32,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
@@ -45,7 +45,7 @@ class slash( baseDiscoveryPlugin ):
     
     def __init__( self ):
         baseDiscoveryPlugin.__init__( self )
-        self._already_visited = disk_list()
+        self._already_visited = ScalableBloomFilter()
         
     def discover( self, fuzzableRequest ):
         '''
@@ -56,7 +56,7 @@ class slash( baseDiscoveryPlugin ):
         
         url = fuzzableRequest.getURL()
         if url not in self._already_visited:
-            self._already_visited.append( url )
+            self._already_visited.add( url )
 
             om.out.debug( 'slash plugin is testing: "' + fuzzableRequest.getURI() + '".' )
             
@@ -67,7 +67,7 @@ class slash( baseDiscoveryPlugin ):
             self._tm.startFunction( target = self._do_request, args = targs , ownerObj = self )
            
             self._tm.join( self )
-            self._already_visited.append( fr.getURI() )
+            self._already_visited.add( fr.getURL() )
                 
         return self._fuzzableRequests
 

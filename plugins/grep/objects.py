@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import re
 
@@ -50,8 +50,7 @@ class objects(baseGrepPlugin):
         self._tag_names.append('object')
         self._tag_names.append('applet')
         
-        self._already_added_object = disk_list()
-        self._already_added_applet = disk_list()
+        self._already_analyzed = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -62,7 +61,9 @@ class objects(baseGrepPlugin):
         @return: None
         '''
 
-        if response.is_text_or_html() and response.getURL() not in self._already_added_object:
+        if response.is_text_or_html() and response.getURL() not in self._already_analyzed:
+
+            self._already_analyzed.add( response.getURL() )
             
             dom = response.getDOM()
 
@@ -83,7 +84,6 @@ class objects(baseGrepPlugin):
                         i.addToHighlight( tag_name )
 
                         kb.kb.append( self, tag_name, i )
-                        self._already_added_object.append( response.getURL() )
     
     def setOptions( self, OptionList ):
         pass
