@@ -125,17 +125,29 @@ class httpLogTab(entries.RememberingHPaned):
         self._advSearchBox.set_spacing(self._padding)
         self.pref = FilterOptions(self)
         # Filter options
+        self._filterMethods = [
+                ('GET', 'GET', False),
+                ('POST', 'POST', False),
+                ]
+        filterMethods = optionList()
+        for method in self._filterMethods:
+            filterMethods.add(Option(method[0], method[2], method[1], "boolean"))
+        self.pref.addSection('methods', _('Request Method'), filterMethods)
         filterId = optionList()
         filterId.add(Option("min", "0", "Min ID", "string"))
         filterId.add(Option("max", "0", "Max ID", "string"))
         self.pref.addSection('trans_id', _('Transaction ID'), filterId)
         filterCodes = optionList()
-        filterCodes.add(Option("1xx", True, "1xx", "boolean"))
-        filterCodes.add(Option("2xx", True, "2xx", "boolean"))
-        filterCodes.add(Option("3xx", True, "3xx", "boolean"))
-        filterCodes.add(Option("4xx", True, "4xx", "boolean"))
-        filterCodes.add(Option("5xx", True, "5xx", "boolean"))
-        self.pref.addSection('codes', _('Codes'), filterCodes)
+        codes = [
+                ("1xx", "1xx", False),
+                ("2xx", "2xx", False),
+                ("3xx", "3xx", False),
+                ("4xx", "4xx", False),
+                ("5xx", "5xx", False),
+                ]
+        for code in codes:
+            filterCodes.add(Option(code[0], code[2], code[1], "boolean"))
+        self.pref.addSection('codes', _('Response Code'), filterCodes)
         filterTags = optionList()
         filterTags.add(Option("tag", False, "Tag", "boolean"))
         self.pref.addSection('commented', _('Commented'), filterTags)
@@ -145,11 +157,12 @@ class httpLogTab(entries.RememberingHPaned):
                 ('javascript', 'JavaScript', False),
                 ('image', 'Images', False),
                 ('flash', 'Flash', False),
+                ('css', 'CSS', False),
                 ('text', 'Text', False),
                 ]
         for filterType in self._filterTypes:
             filterTypes.add(Option(filterType[0], filterType[2], filterType[1], "boolean"))
-        self.pref.addSection('types', _('Content Type'), filterTypes)
+        self.pref.addSection('types', _('Response Content Type'), filterTypes)
         self.pref.show()
         self._advSearchBox.pack_start(self.pref, False, False)
         self._advSearchBox.hide_all()
@@ -289,12 +302,17 @@ class httpLogTab(entries.RememberingHPaned):
         if self.pref.getValue('commented', 'tag'):
             searchData.append(('tag', '', "!="))
         # Content type
-        codes = self.pref.getOptions('types')
         filterTypes = []
         for filterType in self._filterTypes:
             if self.pref.getValue('types', filterType[0]):
                 filterTypes.append(('content_type', "%"+filterType[0]+"%", 'like'))
         searchData.append((filterTypes, 'OR'))
+        # Method
+        filterMethods = []
+        for method in self._filterMethods:
+            if self.pref.getValue('methods', method[0]):
+                filterTypes.append(('method', method[0], '='))
+        searchData.append((filterMethods, 'OR'))
 
         try:
             # Please see the 5000 below
