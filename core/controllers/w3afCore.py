@@ -1016,7 +1016,7 @@ class w3afCore(object):
         try:
             pI.setOptions( pluginOptions )
         except Exception, e:
-            raise e
+            raise
         else:
             # Now that we are sure that these options are valid, lets save them
             # so we can use them later!

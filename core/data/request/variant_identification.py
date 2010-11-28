@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.data.request.httpQsRequest as httpQsRequest
-
+from core.data.parsers.urlParser import url_object
 
 def are_variants( url_a ,  url_b ):
     '''
@@ -35,6 +35,16 @@ def are_variants( url_a ,  url_b ):
     @parameter url_b: The other URL we want to analyze
     @return: True if the URLs are variants.
     '''
+    if not isinstance(url_a, url_object):
+        msg = 'The "url_a" parameter in "are_variants" '
+        msg += ' must be of urlParser.url_object type.'
+        raise ValueError( msg )
+
+    if not isinstance(url_b, url_object):
+        msg = 'The "url_b" parameter in "are_variants" '
+        msg += ' must be of urlParser.url_object type.'
+        raise ValueError( msg )
+    
     qs_a = url_a.getQueryString()
     qsr_a = httpQsRequest.httpQsRequest()
     qsr_a.setURL( url_a.uri2url() )

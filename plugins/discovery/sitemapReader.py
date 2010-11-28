@@ -30,6 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.data.parsers.urlParser import url_object
 
 
 class sitemapReader(baseDiscoveryPlugin):
@@ -79,9 +80,10 @@ class sitemapReader(baseDiscoveryPlugin):
                     raise w3afException('Error while parsing sitemap.xml')
                 urlList = dom.getElementsByTagName("loc")
                 for url in urlList:
-                    url = url.childNodes[0].data 
+                    url = url.childNodes[0].data
+                    url_instance = url_object( url )
                     #   Send the requests using threads:
-                    targs = ( url,  )
+                    targs = ( url_instance,  )
                     self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
             
                 # Wait for all threads to finish

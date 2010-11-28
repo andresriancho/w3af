@@ -67,11 +67,14 @@ class dnsWildcard(baseDiscoveryPlugin):
                 original_response = self._urlOpener.GET( base_url, useCache=True )
                 
                 domain = fuzzableRequest.getURL().getDomain()
-                proto = fuzzableRequest.getURL().getProtocol()
-                if domain.startswith('www.'):
-                    dns_wildcard_url = proto + '://' + domain.replace('www.', '') + '/'
+                dns_wildcard_url = fuzzableRequest.getURL().copy()
+                
+                #    TODO: This is weak! What if the subdomain is "www2"?
+                #    Example: Target set by user is www2.host.tld.
+                if domain.startswith('www.'):                    
+                    dns_wildcard_url.setDomain( domain.replace('www.', '') )
                 else:
-                    dns_wildcard_url = proto + '://www.' + domain + '/'
+                    dns_wildcard_url.setDomain( 'www.' + domain )
                 
                 self._test_DNS( original_response, dns_wildcard_url )
                 self._test_IP( original_response, domain )

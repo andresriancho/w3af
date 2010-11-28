@@ -26,7 +26,7 @@ import core.data.request.httpPostDataRequest as httpPostDataRequest
 import core.data.request.httpQsRequest as httpQsRequest
 
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import parse_qs, url_object
 from core.controllers.w3afException import w3afException
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
@@ -92,7 +92,7 @@ class sql_webshell(baseAttackPlugin):
                 raise w3afException('Method not supported.')
             
             freq.setURL( self._url )
-            freq.setDc( urlParser.getQueryString( 'http://a/a.txt?' + self._data ) )
+            freq.setDc( parse_qs( self._data ) )
             freq.setHeaders( {} )
             
             bsql = blind_sqli_response_diff()
@@ -254,7 +254,7 @@ class sql_webshell(baseAttackPlugin):
         upload_success = False
         
         # First, we test if we can upload a file into a directory we can access:
-        webroot_dirs = get_webroot_dirs( urlParser.getDomain(vuln_obj.getURL()) )
+        webroot_dirs = get_webroot_dirs( vuln_obj.getURL().getDomain() )
         for webroot in webroot_dirs:
             
             if upload_success: break
@@ -276,7 +276,7 @@ class sql_webshell(baseAttackPlugin):
                 test_string = content = createRandAlNum(16)
             
                 # Create the test URL
-                test_url = urlParser.urlJoin(vuln_obj.getURL(), path + '/' + remote_filename )
+                test_url = vuln_obj.getURL().urlJoin( path + '/' + remote_filename )
 
                 if self._upload_file( driver, remote_path, content, test_url, test_string):
                     upload_success = True
@@ -290,7 +290,7 @@ class sql_webshell(baseAttackPlugin):
             om.out.console('Trying to write a webshell.')
             
             # Get the extension from the vulnerable script
-            extension = urlParser.getExtension( vuln_obj.getURL() )
+            extension = vuln_obj.getURL().getExtension()
             
             for file_content, real_extension in shell_handler.get_webshells( extension ):
                 
@@ -342,10 +342,7 @@ class sql_webshell(baseAttackPlugin):
         @return: A list of the website directories.
         '''
         url_list = kb.kb.getData('urls','urlList')
-        url_list = [ urlParser.getPath(i) for i in url_list ]
-        # And now remove the filename
-        url_list = [ i[:i.rfind('/')] for i in url_list ]
-        # uniq
+        url_list = [ i.getPathWithoutFilename() for i in url_list ]
         url_list = list(set(url_list))
         return url_list
     
@@ -406,7 +403,7 @@ class sql_webshell(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = urlParser.uri2url( optionsMap['url'].getValue() )
+        self._url = url_object( optionsMap['url'].getValue() ).uri2url()
             
         if optionsMap['method'].getValue() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')

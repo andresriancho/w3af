@@ -1,7 +1,6 @@
 import core.data.kb.knowledgeBase as kb
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
-from core.data.parsers.urlParser import getPath
 import os
 
 
@@ -43,7 +42,7 @@ class get_source_code(base_payload):
                 for webroot in webroot_list:
                     for url in url_list:
 
-                        path_and_file = getPath( url )
+                        path_and_file = url.getPath()
                         relative_path_file = path_and_file[1:]
                         remote_full_path = os.path.join(webroot, relative_path_file )
                                                                        

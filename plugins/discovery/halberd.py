@@ -83,7 +83,7 @@ class halberd(baseDiscoveryPlugin):
             msg += ' http://halberd.superadditive.com/'
             om.out.information( msg )
             
-            self._main( fuzzableRequest.getURL().baseUrl() )
+            self._main( fuzzableRequest.getURL().baseUrl().url_string )
             
         return []
         

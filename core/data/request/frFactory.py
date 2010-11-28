@@ -148,6 +148,12 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     @parameter postData: A string that represents the postdata, if its a GET request, set to None.
     @parameter headers: A dict that holds the headers
     '''
+    if not isinstance(url, url_object):
+        msg = 'The "url" parameter of createFuzzableRequestRaw @ frFactory'
+        msg += ' must be of urlParser.url_object type.'
+        raise ValueError( msg )
+
+    
     #
     # Just a query string request ! no postdata
     #

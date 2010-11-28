@@ -26,6 +26,8 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
 import core.data.parsers.dpCache as dpCache
+from core.data.parsers.urlParser import url_object
+
 from core.controllers.misc.levenshtein import relative_distance_ge
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -219,8 +221,11 @@ class webSpider(baseDiscoveryPlugin):
         start ignoring all those variants.
         '''
         number_of_variants = 0
+        #    TODO: The self._already_crawled should be an ORM instead of a simple
+        #    disk_list, so I could iterate through all the results and avoid having
+        #    to create the url_object() using parsing again.
         for reference in self._already_crawled:
-            if are_variants(reference, new_reference):
+            if are_variants( url_object(reference) , new_reference):
                 number_of_variants += 1
                 
             if number_of_variants > MAX_VARIANTS:
@@ -246,7 +251,7 @@ class webSpider(baseDiscoveryPlugin):
             #   But this does not, and it is friendlier that simply ignoring the referer
             #
             referer = originalURL.baseUrl()
-            if not referer.endswith('/'):
+            if not referer.url_string.endswith('/'):
                 referer += '/'
             headers = { 'Referer': referer }
             
@@ -349,7 +354,7 @@ class webSpider(baseDiscoveryPlugin):
             # I have to work :S
         is_forward = False
         for domain_path in self._target_urls:
-            if reference.startswith(domain_path):
+            if reference.url_string.startswith( domain_path.url_string ):
                 is_forward = True
                 break
         return is_forward

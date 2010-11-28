@@ -75,9 +75,10 @@ class httpQsRequest(fuzzableRequest):
         
     def getURI( self ):
         if self._dc:
-            res = self._url + '?' + str(self._dc)
+            res = self._url.copy()
+            res.setQueryString( self._dc )
         else:
-            res = self._url
+            res = self._url.copy()
         return res
     
     def setData( self, d=None ):

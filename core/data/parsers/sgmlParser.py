@@ -41,7 +41,6 @@ class sgmlParser(abstractParser, SGMLParser):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-
     def __init__(self, httpResponse, normalizeMarkup=True, verbose=0):
         abstractParser.__init__( self, httpResponse )
         SGMLParser.__init__(self, verbose)
@@ -223,9 +222,9 @@ class sgmlParser(abstractParser, SGMLParser):
                 # Only add it to the result of the current URL is not a fragment
                 if attr_val and not attr_val.startswith('#'):
                     
-                    url_string = self._decode_URL( attr_val, self._encoding)
-                    url_instance = self._baseUrl.urlJoin( url_string )
-                    url_instance = url_instance.normalizeURL()
+                    url_instance = self._baseUrl.urlJoin( attr_val )
+                    url_instance = self._decode_URL( url_instance, self._encoding)
+                    url_instance.normalizeURL()
                     
                     if url_instance not in self._parsed_URLs:
                         self._parsed_URLs.append(url_instance)

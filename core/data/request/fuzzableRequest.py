@@ -256,7 +256,7 @@ class fuzzableRequest:
         '''
         if not isinstance(url, url_object):
             raise ValueError('The URL of a fuzzable request must be of urlParser.url_object type.')
-        
+
         self._url = url.uri2url()
         self._uri = url
     
@@ -273,7 +273,7 @@ class fuzzableRequest:
         '''
         if not isinstance(uri, url_object):
             raise ValueError('The URI of a fuzzable request must be of urlParser.url_object type.')
-                
+        
         self._uri = uri
         self._url = uri.uri2url()
         

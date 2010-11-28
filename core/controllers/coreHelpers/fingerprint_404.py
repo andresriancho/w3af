@@ -186,7 +186,7 @@ class fingerprint_404:
 
             rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
                 
-            url404 = domain_path.urlJoin( rand_alnum_file )
+            url404 = url.getDomainPath().urlJoin( rand_alnum_file )
 
             #   Send the requests using threads:
             targs = ( url404,  )
@@ -267,8 +267,8 @@ class fingerprint_404:
         '''
         original_body = response.getBody()
         url = response.getURL()
-        to_replace = url.split('/')
-        to_replace.append( url )
+        to_replace = url.url_string.split('/')
+        to_replace.append( url.url_string )
         
         for i in to_replace:
             if len(i) > 6:

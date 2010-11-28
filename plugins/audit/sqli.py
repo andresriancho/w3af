@@ -58,11 +58,11 @@ class sqli(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         om.out.debug( 'SQLi plugin is testing: ' + freq.getURL() )
-        
+
         oResponse = self._sendMutant( freq , analyze=False ).getBody()
         sqli_strings = self._get_sqli_strings()
         mutants = createMutants( freq , sqli_strings, oResponse=oResponse )
-        
+
         for mutant in mutants:
             
             # Only spawn a thread if the mutant has a modified variable

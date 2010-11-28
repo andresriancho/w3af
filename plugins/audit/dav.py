@@ -66,11 +66,9 @@ class dav(baseAuditPlugin):
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
             self._already_tested_dirs.append( domain_path )
             
-            domain_path_url = url_object( domain_path )
-            
-            self._PUT( domain_path_url )
-            self._PROPFIND( domain_path_url )
-            self._SEARCH( domain_path_url )
+            self._PUT( domain_path )
+            self._PROPFIND( domain_path )
+            self._SEARCH( domain_path )
             
     def _SEARCH( self, domain_path ):
         '''

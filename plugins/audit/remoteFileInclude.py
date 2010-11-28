@@ -241,8 +241,8 @@ class remoteFileInclude(baseAuditPlugin):
         file_handler.close()
         
         # Define the required parameters
-        self._rfi_url = url_object('http://' + self._listen_address +':' + str(self._listen_port))
-        self._rfi_url.urlJoin( filename )
+        self._rfi_url = url_object('http://' + self._listen_address +':' + str(self._listen_port) + '/')
+        self._rfi_url = self._rfi_url.urlJoin( filename )
         self._rfi_result = rand1 + rand2
         
     def _rm_file(self):

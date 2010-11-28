@@ -168,31 +168,22 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        res = self.scheme + '://' + self.netloc + self.path
-        if self.params != '':
-            res += ";" + self.params
-        
-        #    Create the new url_object
-        u = url_object( res )
-        return u
+        url_without_qs = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, None, self.fragment) )
+        return url_object(url_without_qs)
     
     def removeFragment( self ):
         '''
-        @return: Returns a string contaning the URL without the fragment. Example :
+        @return: Returns a url_object containing the URL without the fragment. Example:
         
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3#foobar')
-        >>> u.removeFragment()
+        >>> u.removeFragment().url_string
         'http://www.google.com/foo/bar.txt?id=3'
         >>> u = url_object('http://www.google.com/foo/bar.txt#foobar')
-        >>> u.removeFragment()
+        >>> u.removeFragment().url_string
         'http://www.google.com/foo/bar.txt'
         '''
-        res = self.scheme + '://' + self.netloc + self.path
-        if self.params != '':
-            res += ';' + self.params
-        if self.qs != '':
-            res += '?' + self.qs
-        return res
+        url_without_frag = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, self.qs, None) )
+        return url_object(url_without_frag)
     
     def baseUrl( self ):
         '''
@@ -375,6 +366,9 @@ class url_object(object):
         'http://abc/def/abc.html'
         >>> u.urlJoin('def/abc.html').url_string
         'http://abc/def/jkl/def/abc.html'
+        >>> u = url_object('http://abc:8080/')
+        >>> u.urlJoin('abc.html').url_string
+        'http://abc:8080/abc.html'
 
         '''
         joined_url = urlparse.urljoin( self.url_string, relative )
@@ -412,6 +406,10 @@ class url_object(object):
         >>> u.getDomain()
         'foobar'
 
+        >>> u.setDomain('foobar.')
+        >>> u.getDomain()
+        'foobar.'
+
         >>> u.setDomain('foobar:443')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
@@ -431,7 +429,7 @@ class url_object(object):
     
         @return: Returns the domain name for the url.
         '''
-        if re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', new_domain ) is None:
+        if re.match('[a-z0-9-\.]+([a-z0-9-]+)*$', new_domain ) is None:
             raise TypeError( "'%s' is an invalid domain" % (new_domain) )
         else:
             domain = self.netloc.split(':')[0]
@@ -915,6 +913,24 @@ class url_object(object):
         'http://abc:80/'
         '''
         return self.url_string
+
+    def __contains__(self, s):
+        '''
+        @return: True if "s" in url_string
+
+        >>> u = url_object('http://abc/xyz.txt;id=1?file=2')
+        >>> '1' in u
+        True
+        
+        >>> u = url_object('http://abc/xyz.txt;id=1?file=2')
+        >>> 'file=2' in u
+        True
+
+        >>> u = url_object('http://abc/xyz.txt;id=1?file=2')
+        >>> 'hello!' in u
+        False
+        '''
+        return s in self.url_string
     
     def __add__(self, other):
         '''
