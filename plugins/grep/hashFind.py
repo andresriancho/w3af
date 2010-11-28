@@ -30,6 +30,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import re
 
@@ -44,8 +45,11 @@ class hashFind(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
+        self._already_reported = ScalableBloomFilter()
+        
         # regex to split between words
         self._split_re = re.compile('[^\w]')
+        
         
     def grep(self, request, response):
         '''
@@ -70,16 +74,19 @@ class hashFind(baseGrepPlugin):
                     hash_type = self._get_hash_type( possible_hash )
                     if hash_type:
                         if self._has_hash_distribution( possible_hash ):
-                            i = info.info()
-                            i.setName( hash_type + 'hash in HTML content')
-                            i.setURL( response.getURL() )
-                            i.addToHighlight(possible_hash)
-                            i.setId( response.id )
-                            msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
-                            msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
-                            msg += '". This is uncommon and requires human verification.'
-                            i.setDesc( msg )
-                            kb.kb.append( self, 'hashFind', i )
+                            if (possible_hash, response.getURL()) not in self._already_reported:
+                                i = info.info()
+                                i.setName( hash_type + 'hash in HTML content')
+                                i.setURL( response.getURL() )
+                                i.addToHighlight(possible_hash)
+                                i.setId( response.id )
+                                msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
+                                msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
+                                msg += '". This is uncommon and requires human verification.'
+                                i.setDesc( msg )
+                                kb.kb.append( self, 'hashFind', i )
+                                
+                                self._already_reported.add( (possible_hash, response.getURL()) )
     
     def _has_hash_distribution( self, possible_hash ):
         '''
