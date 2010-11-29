@@ -211,7 +211,7 @@ class ProxiedRequests(entries.RememberingWindow):
             self.showAlert(_("Invalid configuration!\n" + str(w3)))
 
         self._prevIpport = newPort
-        httpeditor = self.reqresp.request.getRawTextView()
+        httpeditor = self.reqresp.request.getViewById('HttpRawView')
         httpeditor.set_show_line_numbers(self.pref.getValue('editor', 'display_line_num'))
         httpeditor.set_highlight_current_line(self.pref.getValue('editor', 'highlight_current_line'))
         httpeditor.set_highlight_syntax(self.pref.getValue('editor', 'highlight_syntax'))
