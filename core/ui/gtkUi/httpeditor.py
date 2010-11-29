@@ -52,7 +52,7 @@ class HttpEditor(gtk.VBox, Searchable):
         self.textView.set_show_line_numbers(False)
         # Other options
         # Font
-        self.textView.set_wrap_mode(gtk.WRAP_WORD)
+        self.set_wrap(False)
         self.textView.set_border_width(5)
         fontDesc = pango.FontDescription('monospace')
         if fontDesc:
@@ -128,8 +128,11 @@ class HttpEditor(gtk.VBox, Searchable):
     def set_show_line_numbers(self, val):
         self.textView.set_show_line_numbers(val)
 
-    def set_wrap_mode(val):
-        self.textView.set_wrap_mode(val)
+    def set_wrap(self, val):
+        if val:
+            self.textView.set_wrap_mode(gtk.WRAP_WORD)
+        else:
+            self.textView.set_wrap_mode(gtk.WRAP_NONE)
 # 
 # Private methods
 #

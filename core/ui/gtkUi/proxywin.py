@@ -149,15 +149,16 @@ class ProxiedRequests(entries.RememberingWindow):
         proxyOptions.add(Option('methodtrap', "GET,POST", _("Methods to trap"), "list"))
         proxyOptions.add(Option("notrap",
             ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
-        proxyOptions.add(Option("fixlength", True, "Fix content length", "boolean"))
-        proxyOptions.add(comboOption("trap_view", ['Splitted', 'Tabbed'], "View of Intercept tab", "combo"))
-        proxyOptions.add(comboOption("home_tab", ['Intercept', 'History', 'Options'], "Home tab", "combo"))
+        proxyOptions.add(Option("fixlength", True, _("Fix content length"), "boolean"))
+        proxyOptions.add(comboOption("trap_view", ['Splitted', 'Tabbed'], _("View of Intercept tab"), "combo"))
+        proxyOptions.add(comboOption("home_tab", ['Intercept', 'History', 'Options'], _("Home tab"), "combo"))
         self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
         editorOptions = optionList()
-        editorOptions.add(Option("highlight_current_line", True, "Highlight current line", "boolean"))
-        editorOptions.add(Option("highlight_syntax", True, "Highlight syntax", "boolean"))
-        editorOptions.add(Option("display_line_num", True, "Display line numbers", "boolean"))
+        editorOptions.add(Option("wrap", True, _("Wrap long lines"), "boolean"))
+        editorOptions.add(Option("highlight_current_line", True, _("Highlight current line"), "boolean"))
+        editorOptions.add(Option("highlight_syntax", True, _("Highlight syntax"), "boolean"))
+        editorOptions.add(Option("display_line_num", True, _("Display line numbers"), "boolean"))
         self.pref.addSection('editor', _('HTTP Editor Options'), editorOptions)
         # Load values from configfile
         self.pref.loadValues()
@@ -214,6 +215,7 @@ class ProxiedRequests(entries.RememberingWindow):
         httpeditor.set_show_line_numbers(self.pref.getValue('editor', 'display_line_num'))
         httpeditor.set_highlight_current_line(self.pref.getValue('editor', 'highlight_current_line'))
         httpeditor.set_highlight_syntax(self.pref.getValue('editor', 'highlight_syntax'))
+        httpeditor.set_wrap(self.pref.getValue('editor', 'wrap'))
         self.pref.save()
 
         if self._layout != self.pref.getValue('proxy', 'trap_view'):
