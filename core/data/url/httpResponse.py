@@ -379,7 +379,11 @@ class httpResponse(object):
         # aaaand close...
         res += ' >'
         return res
-    
+
+    def getStatusLine(self):
+        '''Return status-line of response.'''
+        return 'HTTP/1.1' + SP + str(self._code) + SP + self._msg + CRLF
+
     def dumpResponseHead( self ):
         '''
         @return: A string with:
@@ -387,10 +391,10 @@ class httpResponse(object):
             Header1: Value1
             Header2: Value2
         '''
-        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + CRLF
+        strRes = self.getStatusLine()
         strRes += self.dumpHeaders()
         return strRes
-        
+
     def dump( self ):
         '''
         Return a DETAILED str representation of this HTTP response object.
@@ -411,3 +415,5 @@ class httpResponse(object):
         
     def copy( self ):
         return copy.deepcopy( self )
+
+
