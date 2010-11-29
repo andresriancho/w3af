@@ -558,8 +558,9 @@ class xUrllib(object):
                 httpResObj.setFromCache(True)
 
             # Clear the log of failed requests; this request is done!
-            if id(req) in self._errorCount:
-                del self._errorCount[id(req)]
+            req_id = id(req)
+            if req_id in self._errorCount:
+                del self._errorCount[req_id]
             self._zeroGlobalErrorCount()
 
             if grepResult:
