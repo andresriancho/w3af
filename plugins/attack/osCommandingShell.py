@@ -20,9 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -116,12 +113,6 @@ class osCommandingShell(baseAttackPlugin):
         # The vuln was saved to the kb as:
         # kb.kb.append( self, 'osCommanding', v )
         exploitDc = vuln.getDc()
-        
-        if exploitDc is None:
-            om.out.error('You hitted bug #1948260. Please report how to reproduce it here:')
-            bug_URL = 'https://sourceforge.net/tracker/index.php?func=detail&aid=1948260'
-            bug_URL += '&group_id=170274&atid=853652'
-            om.out.error( bug_URL )
             
         # Define a test command:
         rand = createRandAlpha( 8 )
