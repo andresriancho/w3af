@@ -202,7 +202,7 @@ class frontpage_version(baseDiscoveryPlugin):
             name = 'FrontPage FPAuthorScriptUrl'
 
             desc = 'The FPAuthorScriptUrl is at: "'
-            desc += i.getURL().getDomainPath().urlJoin( frontpage_admin.group(1) )
+            desc += i.getURL().getDomainPath().urlJoin( frontpage_author.group(1) )
             desc += '".'
             
         i.setName( name )
