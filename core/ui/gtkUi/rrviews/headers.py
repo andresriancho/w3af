@@ -175,8 +175,10 @@ class HttpHeadersView(RememberingVPaned):
         if self.is_request:
             self.startLine = obj.getRequestLine()
             self._updateHeadersTab(obj.getHeaders())
+            data = ''
             if obj.getData():
-                self._raw.set_text(str(obj.getData()))
+                data = str(obj.getData())
+            self._raw.set_text(data)
         else:
             self.startLine = obj.getStatusLine()
             self._updateHeadersTab(obj.getHeaders())
