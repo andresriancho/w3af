@@ -631,6 +631,8 @@ class url_object(object):
         >>> u.setFileName( 'abc.pdf' )
         >>> u.url_string
         'https://abc:443/xyz/abc.pdf'
+        >>> u.getFileName()
+        'abc.pdf'
         
         >>> u = url_object('https://abc:443/xyz/def.html?id=1')
         >>> u.setFileName( 'abc.pdf' )
