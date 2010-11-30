@@ -19,10 +19,10 @@ tweaked the code here and there.
 
 Basic usage:
 
->>> main = TreadPool(poolsize)
->>> requests = makeRequests(some_callable, list_of_args, callback)
->>> [main.putRequests(req) for req in requests]
->>> main.wait()
+    <<< main = TreadPool(poolsize)
+    <<< requests = makeRequests(some_callable, list_of_args, callback)
+    <<< [main.putRequests(req) for req in requests]
+    <<< main.wait()
 
 See the end of the module code for a brief, annotated usage example.
 """
