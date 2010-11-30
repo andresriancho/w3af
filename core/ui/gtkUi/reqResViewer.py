@@ -267,10 +267,13 @@ class requestResponsePart(gtk.Notebook):
         self.childButtons = []
         self._views = []
         self.enableWidget = enableWidget
+    def addView(self, view):
+        self._views.append(view)
+        self.append_page(view, gtk.Label(view.label))
+
     def show(self):
         for view in self._views:
             view.show()
-            self.append_page(view, gtk.Label(view.label))
         super(requestResponsePart, self).show()
 
     def set_sensitive(self, how):
@@ -319,8 +322,8 @@ class requestResponsePart(gtk.Notebook):
 class requestPart(requestResponsePart):
     def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
         requestResponsePart.__init__(self, w3af, enableWidget,editable, widgname=widgname+"request")
-        self._views.append(HttpRawView(w3af, self, editable))
-        self._views.append(HttpHeadersView(w3af, self, editable))
+        self.addView(HttpRawView(w3af, self, editable))
+        self.addView(HttpHeadersView(w3af, self, editable))
     def getBothTexts(self):
         data = ''
         if self._obj.getData():
@@ -335,10 +338,10 @@ class responsePart(requestResponsePart):
         requestResponsePart.__init__(self, w3af, editable=editable, widgname=widgname+"response")
         http = HttpRawView(w3af, self, editable)
         http.is_request = False
-        self._views.append(http)
+        self.addView(http)
         headers = HttpHeadersView(w3af, self, editable)
         headers.is_request = False
-        self._views.append(headers)
+        self.addView(headers)
 
     def getBothTexts(self):
         return (self._obj.dumpResponseHead(), str(self._obj.getBody()))

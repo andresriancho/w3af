@@ -296,14 +296,14 @@ class FuzzyRequests(entries.RememberingWindow):
             self.originalReq.showRaw(initialUp, initialDn)
 
         # Add the right button popup menu to the text widgets
-        rawTextView = self.originalReq.getRawTextView()
+        rawTextView = self.originalReq.getViewById('HttpRawView')
         rawTextView.textView.connect("populate-popup", self._populate_popup)
 
         # help
         helplabel = gtk.Label()
         helplabel.set_selectable(True)
         helplabel.set_markup(FUZZYHELP)
-       # self.originalReq.append_page(helplabel, gtk.Label("Syntax help"))
+        self.originalReq.append_page(helplabel, gtk.Label("Syntax help"))
         helplabel.show()
         self.originalReq.show()
         vbox.pack_start(self.originalReq, True, True, padding=5)
