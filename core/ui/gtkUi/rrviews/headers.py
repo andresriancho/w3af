@@ -23,6 +23,7 @@ import gtk
 import gobject
 import pango
 from core.ui.gtkUi.httpeditor import HttpEditor
+from core.ui.gtkUi.entries import RememberingVPaned
 from core.data.parsers.httpRequestParser import httpRequestParser
 
 CR = '\r'
@@ -30,11 +31,11 @@ LF = '\n'
 CRLF = CR + LF
 SP = ' '
 
-class HttpHeadersView(gtk.VPaned):
+class HttpHeadersView(RememberingVPaned):
     '''Headers + raw payload view.'''
-    def __init__(self, parentView, editable=False):
+    def __init__(self, w3af, parentView, editable=False):
         '''Make object.'''
-        gtk.VPaned.__init__(self)
+        RememberingVPaned.__init__(self, w3af, 'headers_view')
         self.id = 'HttpHeadersView'
         self.label = 'Headers'
         self.startLine = ''
@@ -175,7 +176,7 @@ class HttpHeadersView(gtk.VPaned):
             self.startLine = obj.getRequestLine()
             self._updateHeadersTab(obj.getHeaders())
             if obj.getData():
-                self._raw.set_text(obj.getData())
+                self._raw.set_text(str(obj.getData()))
         else:
             self.startLine = obj.getStatusLine()
             self._updateHeadersTab(obj.getHeaders())

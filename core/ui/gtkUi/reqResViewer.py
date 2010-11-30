@@ -66,10 +66,10 @@ class reqResViewer(gtk.VBox):
         super(reqResViewer,self).__init__()
         self.w3af = w3af
         # Request
-        self.request = requestPart(enableWidget, editableRequest, widgname=widgname)
+        self.request = requestPart(w3af, enableWidget, editableRequest, widgname=widgname)
         self.request.show()
         # Response
-        self.response = responsePart(editableResponse, widgname=widgname)
+        self.response = responsePart(w3af, editableResponse, widgname=widgname)
         self.response.show()
         self.layout = layout
         if layout == 'Tabbed':
@@ -260,9 +260,10 @@ class reqResViewer(gtk.VBox):
 
 class requestResponsePart(gtk.Notebook):
     """Request/response common class."""
-    def __init__(self, enableWidget=[], editable=False, widgname="default"):
+    def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
         super(requestResponsePart, self).__init__()
         self._obj = None
+        self.w3af = w3af
         self.childButtons = []
         self._views = []
         self.enableWidget = enableWidget
@@ -316,10 +317,10 @@ class requestResponsePart(gtk.Notebook):
             view.highlight(text, sev)
 
 class requestPart(requestResponsePart):
-    def __init__(self, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(self, enableWidget,editable, widgname=widgname+"request")
-        self._views.append(HttpRawView(self, editable))
-        self._views.append(HttpHeadersView(self, editable))
+    def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
+        requestResponsePart.__init__(self, w3af, enableWidget,editable, widgname=widgname+"request")
+        self._views.append(HttpRawView(w3af, self, editable))
+        self._views.append(HttpHeadersView(w3af, self, editable))
     def getBothTexts(self):
         return (self._obj.dumpRequestHead(), str(self._obj.getData()))
     def showRaw(self, head, body):
@@ -327,12 +328,12 @@ class requestPart(requestResponsePart):
         self.synchronize()
 
 class responsePart(requestResponsePart):
-    def __init__(self, editable, widgname="default"):
-        requestResponsePart.__init__(self, editable=editable, widgname=widgname+"response")
-        http = HttpRawView(self, editable)
+    def __init__(self, w3af, editable, widgname="default"):
+        requestResponsePart.__init__(self, w3af, editable=editable, widgname=widgname+"response")
+        http = HttpRawView(w3af, self, editable)
         http.is_request = False
         self._views.append(http)
-        headers = HttpHeadersView(self, editable)
+        headers = HttpHeadersView(w3af, self, editable)
         headers.is_request = False
         self._views.append(headers)
 

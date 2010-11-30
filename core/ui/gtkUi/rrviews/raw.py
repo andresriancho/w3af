@@ -27,7 +27,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 
 class HttpRawView(HttpEditor):
     '''Raw view with HTTP Editor.'''
-    def __init__(self, parentView, editable=False):
+    def __init__(self, w3af, parentView, editable=False):
         '''Make object.'''
         HttpEditor.__init__(self)
         self.id = 'HttpRawView'
