@@ -138,6 +138,17 @@ class HistoryItem:
         req, res = Unpickler(f).load()
         return (req, res)
 
+    def delete(self, id=None):
+        '''Delete data from DB by ID.'''
+        if not self._db:
+            raise w3afException('The database is not initialized yet.')
+        if not id:
+            id = self.id
+        sql = 'DELETE FROM ' + self._dataTable + ' WHERE id = ? '
+        self._db.execute(sql, (id,))
+        # FIXME 
+        # don't forget about files!
+
     def load(self, id=None, full=True):
         '''Load data from DB by ID.'''
         if not self._db:

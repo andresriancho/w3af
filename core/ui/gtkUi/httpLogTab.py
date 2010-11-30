@@ -82,6 +82,16 @@ class httpLogTab(entries.RememberingHPaned):
         self.__add_columns( self._lstoreTreeview )
         self._lstoreTreeview.show()
         self._lstoreTreeview.connect('cursor-changed', self._viewInReqResViewer)
+        # Popup menu
+        self._rightButtonMenu = None
+        self._lstoreTreeview.connect('button-press-event', self._popupMenu)
+        #
+        # 
+        # Selection
+        #
+        treeselection = self._lstoreTreeview.get_selection()
+        treeselection.set_mode(gtk.SELECTION_MULTIPLE)
+
         self._sw.add(self._lstoreTreeview)
         #self._sw.set_sensitive(False)
         self._sw.show_all()
@@ -91,6 +101,41 @@ class httpLogTab(entries.RememberingHPaned):
         self._vpan.pack2(self._reqResViewer)
         self._vpan.show()
         mainvbox.pack_start(self._vpan)
+
+    def _popupMenu( self, tv, event ):
+        '''Generate and show popup menu.'''
+        if event.button != 3:
+            return
+        # creates the whole menu only once
+        if self._rightButtonMenu is None:
+            gm = gtk.Menu()
+            self._rightButtonMenu = gm
+            # the items
+            e = gtk.MenuItem(_("Delete selected items"))
+            e.connect('activate', self._deleteSelected)
+            gm.append(e)
+            gm.show_all()
+        else:
+            gm = self._rightButtonMenu
+        gm.popup( None, None, None, event.button, event.time)
+        return True
+
+    def _deleteSelected(self, widg=None):
+        '''Delete selected transactions.'''
+        ids = []
+        iters = []
+        sel = self._lstoreTreeview.get_selection()
+        (model, pathlist) = sel.get_selected_rows()
+        for path in pathlist:
+            iters.append(self._lstore.get_iter(path))
+            itemNumber = path[0]
+            iid = self._lstore[itemNumber][0]
+            ids.append(iid)
+        for i in iters:
+            self._lstore.remove(i)
+        #  TODO Move this action to separate thread
+        for iid in ids:
+            self._historyItem.delete(iid)
 
     def _initSearchBox(self, mainvbox):
         """Init Search box."""
