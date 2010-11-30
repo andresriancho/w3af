@@ -214,7 +214,7 @@ class xUrllib:
         to the remote server.
         '''
         req = HTTPRequest( uri )
-        req = self._addHeaders( req )
+        req = self._add_headers( req )
         return req.headers
     
     def _isBlacklisted( self, uri ):
@@ -264,7 +264,7 @@ class xUrllib:
         return function_reference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
                                                 useCache=False, grepResult=False)
         
-    def GET(self, uri, data='', headers={}, useCache=False, grepResult=True):
+    def GET(self, uri, data=None, headers={}, useCache=False, grepResult=True):
         '''
         Gets a uri using a proxy, user agents, and other settings that where set previously.
         
@@ -277,10 +277,14 @@ class xUrllib:
         False
         
 
-        @param uri: This is the url to GET
-        @param data: Only used if the uri parameter is really a URL.
+        @param uri: This is the URI to GET, with the query string included.
+        @param data: Only used if the uri parameter is really a URL. The data will be
+        converted into a string and set as the URL object query string before sending.
         @return: An httpResponse object.
         '''
+        #
+        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        #
         if not isinstance(uri, url_object):
             raise ValueError('The uri parameter of xUrllib.GET() must be of urlParser.url_object type.')
 
@@ -290,19 +294,15 @@ class xUrllib:
             return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
                                  msg='No Content', id=consecutive_number_generator.inc() )
         
-        qs = uri.getQueryString()
-        if qs:
-            #    The uri has the QS information
-            req = HTTPRequest( uri )
-        else:
-            if data:
-                uri.setQueryString(data)
-                req = HTTPRequest( uri )
-            else:
-                # It's really an url...
-                req = HTTPRequest( uri )
-        
-        req = self._addHeaders( req, headers )
+        #
+        #    Create and send the request
+        #
+        if data is not None:
+            uri = uri.copy()
+            uri.setQueryString(str(data))
+            
+        req = HTTPRequest( uri )
+        req = self._add_headers( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
     def POST(self, uri, data='', headers={}, grepResult=True, useCache=False ):
@@ -313,16 +313,23 @@ class xUrllib:
         @param data: A string with the data for the POST.
         @return: An httpResponse object.
         '''
+        #
+        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        #
         if not isinstance(uri, url_object):
             raise ValueError('The uri parameter of xUrllib.POST() must be of urlParser.url_object type.')
 
         self._init()
+
         if self._isBlacklisted( uri ):
             return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
                                  msg='No Content', id=consecutive_number_generator.inc() )
         
+        #
+        #    Create and send the request
+        #
         req = HTTPRequest( uri, data )
-        req = self._addHeaders( req, headers )
+        req = self._add_headers( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
     def getRemoteFileSize( self, req, useCache=True ):
@@ -399,19 +406,19 @@ class xUrllib:
                 req.set_method( self._method )
 
                 if headers:
-                    req = self._xurllib._addHeaders( req, headers )
+                    req = self._xurllib._add_headers( req, headers )
                 else:
                     # This adds the default headers like the user-agent,
                     # and any headers configured by the user
                     # https://sourceforge.net/tracker/?func=detail&aid=2788341&group_id=170274&atid=853652
-                    req = self._xurllib._addHeaders( req, {} )
+                    req = self._xurllib._add_headers( req, {} )
                 
                 return self._xurllib._send( req, useCache=useCache, grepResult=grepResult )
         
         am = anyMethod( self, method_name )
         return am
 
-    def _addHeaders( self , req, headers={} ):
+    def _add_headers( self , req, headers={} ):
         # Add all custom Headers if they exist
         for i in self.settings.HeaderList:
             req.add_header( i[0], i[1] )
