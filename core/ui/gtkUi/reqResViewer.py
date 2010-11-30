@@ -322,7 +322,10 @@ class requestPart(requestResponsePart):
         self._views.append(HttpRawView(w3af, self, editable))
         self._views.append(HttpHeadersView(w3af, self, editable))
     def getBothTexts(self):
-        return (self._obj.dumpRequestHead(), str(self._obj.getData()))
+        data = ''
+        if self._obj.getData():
+            data = str(self._obj.getData())
+        return (self._obj.dumpRequestHead(), data)
     def showRaw(self, head, body):
         self._obj = httpRequestParser(head, body)
         self.synchronize()

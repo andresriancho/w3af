@@ -34,6 +34,7 @@ class HttpRawView(HttpEditor):
         self.label = 'Raw'
         self.parentView = parentView
         self.initial = False
+        self.set_editable(editable)
         if editable:
             buf = self.textView.get_buffer()
             buf.connect("changed", self._changed)
