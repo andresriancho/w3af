@@ -174,11 +174,12 @@ class HttpHeadersView(gtk.VPaned):
         if self.is_request:
             self.startLine = obj.getRequestLine()
             self._updateHeadersTab(obj.getHeaders())
-            self._raw.set_text(str(obj.getData()))
+            if obj.getData():
+                self._raw.set_text(obj.getData())
         else:
             self.startLine = obj.getStatusLine()
             self._updateHeadersTab(obj.getHeaders())
-            self._raw.set_text(str(obj.getBody()))
+            self._raw.set_text(obj.getBody())
 
     def getObject(self):
         '''Return object (request or resoponse).'''
