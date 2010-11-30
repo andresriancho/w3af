@@ -25,14 +25,14 @@ from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 
-def osDetectionExec( execMethod ):
+def osDetectionExec( exec_method ):
     '''
-    Uses the execMethod to run remote commands and determine what's the remote OS is
+    Uses the exec_method to run remote commands and determine what's the remote OS is
     and returns a string with 'windows' or 'linux' or raises a w3afException if unknown.
     '''
     try:
-        linux1 = apply( execMethod, ( 'echo -n w3af',))
-        linux2 = apply( execMethod, ( 'head -n 1 /etc/passwd',))
+        linux1 = exec_method( 'echo -n w3af' )
+        linux2 = exec_method( 'head -n 1 /etc/passwd' )
     except:
         pass
     else:
@@ -42,8 +42,8 @@ def osDetectionExec( execMethod ):
         
     try:
         # Try if it's a windows system
-        win1 = apply( execMethod, ( 'type %SYSTEMROOT%\\win.ini',))
-        win2 = apply( execMethod, ( 'echo /?',))
+        win1 = exec_method( 'type %SYSTEMROOT%\\win.ini' )
+        win2 = exec_method( 'echo /?' )
     except:
         pass
     else:
@@ -53,22 +53,22 @@ def osDetectionExec( execMethod ):
     
     raise w3afException('Failed to get/identify the remote OS.')
 
-def getRemoteTempFile( execMethod ):
+def getRemoteTempFile( exec_method ):
     '''
     @return: The name of a file in the remote file system that the user that I'm executing commands with
     can write, read and execute. The normal responses for this are files in /tmp/ or %TEMP% depending
     on the remote OS.
     '''
-    os = osDetectionExec( execMethod )
+    os = osDetectionExec( exec_method )
     if  os == 'windows':
-        _filename = apply( execMethod, ('echo %TEMP%',) ).strip() + '\\'
+        _filename = exec_method('echo %TEMP%').strip() + '\\'
         _filename += createRandAlNum(6)
         
         # verify existance
-        dirRes = apply( execMethod, ('dir '+_filename,) ).strip().lower()
+        dirRes = exec_method('dir '+_filename).strip().lower()
         if 'not found' in dirRes:
             # Shit, the file exists, run again and see what we can do
-            return getRemoteTempFile( execMethod )
+            return getRemoteTempFile( exec_method )
         else:
             return _filename
         return _filename
@@ -78,10 +78,10 @@ def getRemoteTempFile( execMethod ):
         _filename = '/tmp/' + createRandAlNum( 6 )
         
         # verify existance
-        lsRes = apply( execMethod, ('ls '+_filename,) ).strip()
+        lsRes = exec_method('ls '+_filename).strip()
         if _filename == lsRes:
             # Shit, the file exists, run again and see what we can do
-            return getRemoteTempFile( execMethod )
+            return getRemoteTempFile( exec_method )
         else:
             return _filename
     else:
