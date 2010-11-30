@@ -71,8 +71,10 @@ EXTRA ATTRIBUTES AND METHODS
   If you want the best of both worlds, use this inside an
   AttributeError-catching try:
 
-  >>> try: status = fo.status
-  >>> except AttributeError: status = None
+    >>> try:
+    ...     status = fo.status
+    ... except AttributeError:
+    ...     status = None
 
   Unfortunately, these are ONLY there if status == 200, so it's not
   easy to distinguish between non-200 responses.  The reason is that
