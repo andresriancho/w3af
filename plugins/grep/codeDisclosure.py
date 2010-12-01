@@ -91,7 +91,8 @@ class codeDisclosure(baseGrepPlugin):
         >>> request.setMethod( 'GET' )
         >>> c = codeDisclosure()
         >>> c.grep(request, response)
-        >>> assert len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1
+        >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))
+        1
         '''
         if response.is_text_or_html() and response.getURL() not in self._already_added:
             

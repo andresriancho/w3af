@@ -140,7 +140,8 @@ class ajax(baseGrepPlugin):
         >>> request.setMethod( 'GET' )
         >>> a = ajax()
         >>> a.grep(request, response)
-        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
+        >>> len(kb.kb.getData('ajax', 'ajax'))
+        1
         '''
         url = response.getURL()
         if response.is_text_or_html() and url not in self._already_inspected:

@@ -96,8 +96,8 @@ class blankBody(baseGrepPlugin):
         >>> request.setURL( url )
         >>> request.setMethod( 'GET' )
         >>> b.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
-
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        0
         '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
         and response.getCode() not in [401, 304, 204] and 'location' not in response.getLowerCaseHeaders()\

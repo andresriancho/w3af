@@ -290,8 +290,8 @@ def urldecode(t):
 def html_escape(t):
     """Convert special HTML characters ('&', '<', '>', '"', "'") in string to HTML-safe sequences.
 
-    >>> html_escape('<>"\'&')
-    '&lt;&gt;&quot;&#039;&amp;'
+    >>> html_escape('<>"&')
+    '&lt;&gt;&quot;&amp;'
     >>> 
     """
     html_escape_table = {

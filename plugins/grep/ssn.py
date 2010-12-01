@@ -74,7 +74,8 @@ class ssn(baseGrepPlugin):
         >>> request = HTTPRequest(url)
         >>> s = ssn()
         >>> s.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        0
 
         With "-" separating the SSN parts
         >>> kb.kb.save('ssn','ssn',[])
@@ -90,7 +91,8 @@ class ssn(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> s.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        1
 
         All the numbers together:
         >>> kb.kb.save('ssn','ssn',[])
@@ -98,7 +100,8 @@ class ssn(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> s.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        1
 
         One extra number at the end:
         >>> kb.kb.save('ssn','ssn',[])
@@ -106,7 +109,8 @@ class ssn(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> s.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        0
         '''
         if response.is_text_or_html() and response.getCode() == 200 \
             and response.getClearTextBody() is not None:
