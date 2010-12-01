@@ -48,8 +48,8 @@ def html_export(request_string):
         postData = httpRequest.getDc()
         for i in postData:
             res += '<label>' + i + '</label>\n'
-            res += '<input type="text" name="' + i + '" value="' + postData[i][0] + '">\n'
-    res += '<input type="sumbit">\n'
+            res += '<input type="text" name="' + i.strip() + '" value="' + postData[i][0] + '">\n'
+    res += '<input type="submit">\n'
     res += '</form>\n'
     res += '''</body>\n</html>'''
     return res
