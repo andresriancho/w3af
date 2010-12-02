@@ -19,11 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import gtk
 from core.ui.gtkUi.entries import RememberingVPaned
 from core.ui.gtkUi.entries import RememberingWindow
 from core.ui.gtkUi.entries import SemiStockButton
 from core.ui.gtkUi.httpeditor import HttpEditor
 from core.data.parsers.httpRequestParser import httpRequestParser
+from core.controllers.w3afException import w3afException, w3afMustStopException
 
 class HttpRawView(HttpEditor):
     '''Raw view with HTTP Editor.'''
@@ -51,5 +53,11 @@ class HttpRawView(HttpEditor):
     def _changed(self, widg=None):
         '''Synchronize changes with other views (callback).'''
         if not self.initial:
-            self.parentView.setObject(self.getObject())
+            try:
+                obj = self.getObject()
+                self.reset_bg_color()
+            except w3afException, ex:
+                self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))            
+                return
+            self.parentView.setObject(obj)
             self.parentView.synchronize(self.id)
