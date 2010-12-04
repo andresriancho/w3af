@@ -44,6 +44,7 @@ from .export_request import export_request
 from . import helpers
 from core.ui.gtkUi.rrviews.raw import HttpRawView
 from core.ui.gtkUi.rrviews.headers import HttpHeadersView
+from core.ui.gtkUi.rrviews.rendering import getRenderingView
 
 def sigsegv_handler(signum, frame):
     print _('This is a catched segmentation fault!')
@@ -342,6 +343,11 @@ class responsePart(requestResponsePart):
         headers = HttpHeadersView(w3af, self, editable)
         headers.is_request = False
         self.addView(headers)
+        try:
+            rend = getRenderingView(w3af, self)
+            self.addView(rend)
+        except Exception, ex:
+            print ex
 
     def getBothTexts(self):
         return (self._obj.dumpResponseHead(), str(self._obj.getBody()))
