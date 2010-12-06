@@ -483,6 +483,19 @@ class url_object(object):
         '''
         return self.scheme
     
+    def setProtocol( self, protocol ):
+        '''
+        >>> u = url_object("http://1.2.3.4")
+        >>> u.getProtocol()
+        'http'
+        >>> u.setProtocol('https')
+        >>> u.getProtocol()
+        'https'
+
+        @return: Returns the domain name for the url.
+        '''
+        self.scheme = protocol
+
     def getRootDomain( self ):
         '''
         Get the root domain name. Examples:
@@ -962,6 +975,29 @@ class url_object(object):
         
         return self.url_string + other 
 
+    def __nonzero__(self):
+        '''
+        @return: True if the URL has a domain and a protocol.
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> if u:
+        ...    True
+        ...
+        True
+        >>>
+
+        >>> u = url_object('http:///')
+        >>> if not u:
+        ...    True
+        ...
+        True
+        >>>
+        '''
+        if self.scheme and self.netloc:
+            return True
+        
+        return False
+        
     def __radd__(self, other):
         '''
         @return: The "other" string concatenated with this URL.
