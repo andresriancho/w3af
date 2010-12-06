@@ -88,7 +88,7 @@ class userDir(baseDiscoveryPlugin):
             
             # Check the users to see if they exist
             url_user_list = self._create_dirs( base_url )
-            for url, user in url_user_list :
+            for url, user in url_user_list:
                 om.out.debug('userDir is testing ' + url )
                 
                 #   Send the requests using threads:
@@ -238,7 +238,7 @@ class userDir(baseDiscoveryPlugin):
             toTest = get_users_by_app()
         
         for data_related_to_user, user in toTest:
-            url_user_list = self._create_dirs( url, userList=[ user, ] )
+            url_user_list = self._create_dirs( url, user_list=[ user, ] )
             for uDir, user in url_user_list:
                 if self._do_request( uDir, user ):
                     i = info.info()
