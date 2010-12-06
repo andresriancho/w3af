@@ -150,7 +150,7 @@ class htmlParser(sgmlParser):
             msg += ' posted back to the same URL (the one that returned the HTML that we are '
             msg += ' parsing).'
             om.out.debug(msg)
-            action = url_object(self._source_url)
+            action = self._source_url
 
         # Create the form object and store everything for later use
         self._insideForm = True
