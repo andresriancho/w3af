@@ -34,6 +34,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.searchEngines.pks import pks as pks
+from core.data.parsers.urlParser import url_object
 
 
 class fingerPKS(baseDiscoveryPlugin):
@@ -66,7 +67,7 @@ class fingerPKS(baseDiscoveryPlugin):
             results = pks_se.search( root_domain )
             for result in results:
                 i = info.info()
-                i.setURL( 'http://pgp.mit.edu:11371/' )
+                i.setURL( url_object('http://pgp.mit.edu:11371/') )
                 i.setId( [] )
                 mail = result.username +'@' + root_domain
                 i.setName( mail )
