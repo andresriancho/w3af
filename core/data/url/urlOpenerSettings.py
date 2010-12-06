@@ -244,7 +244,7 @@ class urlOpenerSettings( configurable ):
         return cf.cf.getData('proxyAddress') + ':' + str(cf.cf.getData('proxyPort'))
         
     def setBasicAuth( self, url, username, password ):
-        if url == '':
+        if not url:
             msg = 'To properly configure the basic authentication settings, you'
             msg += ' should also set the auth domain. If you are unsure, you can'
             msg += ' set it to the target domain name.'
@@ -261,18 +261,19 @@ class urlOpenerSettings( configurable ):
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
         # add the username and password
-        if url.startswith('http://') or url.startswith('https://'):
-            scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( url )
+        if url.getProtocol() in ['http', 'https']:
+            domain = url.getDomain()
+            protocol = url.getProtocol()
             self._password_mgr.add_password(None, domain, username, password)
         else:
-            domain = url
-            scheme = 'http://'
+            domain = url.getDomain()
+            protocol = 'http'
             self._password_mgr.add_password(None, domain, username, password)
 
         self._basicAuthHandler = FastHTTPBasicAuthHandler(self._password_mgr)
 
         # Only for w3af, no usage in urllib2
-        self._basicAuthStr = scheme + '://' + username + ':' + password + '@' + domain + '/'
+        self._basicAuthStr = protocol + '://' + username + ':' + password + '@' + domain + '/'
         
         self.needUpdate = True
 
