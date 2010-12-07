@@ -297,7 +297,8 @@ class httpResponse(object):
         #   Set the type, for easy access.
         for key in headers.keys():
             if 'content-type' == key.lower():
-                self._content_type = headers[key]
+                # we need exactly content type but not charset
+                self._content_type = headers[key].split(';', 1)[0]
                 
                 #   Text or HTML?
                 magic_words = ['text', 'html', 'xml', 'txt', 'javascript']
