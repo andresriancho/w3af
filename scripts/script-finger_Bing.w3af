@@ -12,7 +12,7 @@ back
 
 discovery fingerBing
 discovery config fingerBing
-set resultLimit 10
+set resultLimit 100
 back
 back
 
@@ -22,6 +22,6 @@ back
 
 start
 
-assert len( kb.kb.getData( 'fingerBing', 'mails' ) ) == 2
+assert len( kb.kb.getData( 'fingerBing', 'mails' ) ) > 2
 
 exit

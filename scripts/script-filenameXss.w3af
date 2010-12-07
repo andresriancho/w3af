@@ -18,7 +18,7 @@ audit xss
 back
 
 target
-set target http://moth/w3af/core/fuzzFileName/test/1.html
+set target http://moth/w3af/core/fuzzFileName/f00.php?var=1
 back
 
 start

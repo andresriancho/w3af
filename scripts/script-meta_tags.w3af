@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('metaTags','metaTags')) == 6
+assert len(kb.kb.getData('metaTags','metaTags')) == 2 
 
 exit

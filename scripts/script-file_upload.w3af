@@ -19,6 +19,6 @@ back
 
 start
 
-assert len( kb.kb.getData('fileUpload', 'fileUpload') ) == 1
+assert len( kb.kb.getData('fileUpload', 'fileUpload') ) > 0
 
 exit

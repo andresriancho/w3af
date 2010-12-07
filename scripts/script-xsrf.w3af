@@ -10,10 +10,10 @@ set verbose True
 back
 back
 target
-set target http://moth/w3af/xsrf/xsrf.php?abc=2
+set target http://moth/w3af/audit/xsrf/xsrf.php?abc=2 
 back
 start
 
-assert len(kb.kb.getData('xsrf','xsrf')) == 1
+assert len(kb.kb.getData('xsrf','get_xsrf')) == 1
 
 exit

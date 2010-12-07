@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('wsdlGreper','wsdl')) == 3
+assert len(kb.kb.getData('wsdlGreper','wsdl')) == 1 
 
 exit

@@ -20,14 +20,15 @@ back
 
 start
 
-assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
+assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 1 
 
 exploit
 exploit localFileReader
 interact 0
 
 payload tcp
-
+exit
+exit
 
 
 

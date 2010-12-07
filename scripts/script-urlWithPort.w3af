@@ -17,7 +17,7 @@ back
 back
 
 target
-set target http://localhost:80/w3af/audit/sql_injection/select/sql_injection_table.php?table=users
+set target http://moth/w3af/audit/sql_injection/select/sql_injection_table.php?table=users
 back
 
 start
