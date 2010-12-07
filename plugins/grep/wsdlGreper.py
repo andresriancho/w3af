@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -44,6 +45,7 @@ class wsdlGreper(baseGrepPlugin):
 
         # Only generate the lists once.
         # Adding 0,001% performance ;)
+        self._already_inspected = ScalableBloomFilter()
         self._wsdl_strings = self._get_WSDL_strings()
         self._disco_strings = ['disco:discovery ']
 
@@ -55,7 +57,11 @@ class wsdlGreper(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.is_text_or_html() and response.getCode() == 200:
+        url = response.getURL()
+        if response.is_text_or_html() and response.getCode() == 200  and \
+            url not in self._already_inspected:
+            # Don't repeat URLs
+            self._already_inspected.add(url)
             is_WSDL = False
             for wsdl_string in self._wsdl_strings:
                 if wsdl_string in response:

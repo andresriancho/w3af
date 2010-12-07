@@ -66,8 +66,9 @@ class htmlParser(sgmlParser):
         
         if self._normalizeMarkup:
             # In some cases, the parsing library could fail.
-            if httpResponse.getDOM() is not None:
-                HTMLDocument = etree.tostring( httpResponse.getDOM() )
+            dom = httpResponse.getDOM()
+            if dom is not None:
+                HTMLDocument = etree.tostring(dom)
 
         # Now we are ready to work
         self._parse ( HTMLDocument )

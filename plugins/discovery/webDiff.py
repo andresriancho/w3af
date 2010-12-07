@@ -255,7 +255,7 @@ class webDiff(baseDiscoveryPlugin):
         '''
         return '''
         This plugin tries to do a diff of two directories, a local and a remote one. The idea is to 
-        mimic the functionality implemented by the linux command "diff" when invoced with two
+        mimic the functionality implemented by the linux command "diff" when invoked with two
         directories.
         
         Four configurable parameter exist:
@@ -266,7 +266,7 @@ class webDiff(baseDiscoveryPlugin):
             
         This plugin will read the file list inside "localDir", and for each file it will request the 
         same filename from the "remotePath", matches and failures are recorded and saved.
-        The content of both files is checked only if "content" is setted to True and the file
+        The content of both files is checked only if "content" is set to True and the file
         extension aint in the "banUrl" list.
         
         The "banUrl" list should be used to ban script extensions like ASP, PHP, etc.

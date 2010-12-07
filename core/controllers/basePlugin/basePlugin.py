@@ -150,7 +150,8 @@ class basePlugin(configurable):
             else:
                 om.out.information( i.getDesc() )
             
-    def _sendMutant( self, mutant, analyze=True, grepResult=True, analyze_callback=None ):
+    def _sendMutant(self, mutant, analyze=True, grepResult=True, 
+                     analyze_callback=None, useCache=True):
         '''
         Sends a mutant to the remote web server.
         '''
@@ -173,9 +174,9 @@ class basePlugin(configurable):
         
         functor = getattr( self._urlOpener , method )
         # run functor , run !   ( forest gump flash )
-        res = apply( functor, args, 
-                            {'data': data, 'headers': headers, 'grepResult': grepResult,
-                            'useCache': True } )
+        res = apply(functor, args,
+                    {'data': data, 'headers': headers,
+                     'grepResult': grepResult, 'useCache': useCache})
         
         if analyze:
             if analyze_callback:

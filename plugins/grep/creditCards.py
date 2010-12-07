@@ -83,7 +83,7 @@ class creditCards(baseGrepPlugin):
         #    (\d{5}|\d{4})                    Match the final digits, five or four digits
         #    ($|[^\d])                        Match the end of the string, or something that's NOT a digit
 
-        self._cc_regex = re.compile(cc_regex)
+        self._cc_regex = re.compile(cc_regex, re.M)
 
         
     def grep(self, request, response):
@@ -119,9 +119,7 @@ class creditCards(baseGrepPlugin):
         match_list = self._cc_regex.findall(body)
 
         for match_set in match_list:
-            
             possible_cc = match_set[0]
-            
             if luhnCheck(possible_cc):
                 res.append(possible_cc)
 

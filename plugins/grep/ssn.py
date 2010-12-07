@@ -30,6 +30,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -52,6 +53,7 @@ class ssn(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
+        self._already_inspected = ScalableBloomFilter()
         self._ssnResponses = []
                 
     def grep(self, request, response):
@@ -112,17 +114,22 @@ class ssn(baseGrepPlugin):
         >>> len(kb.kb.getData('ssn', 'ssn'))
         0
         '''
-        if response.is_text_or_html() and response.getCode() == 200 \
-            and response.getClearTextBody() is not None:
+        url = response.getURL()
+        if response.is_text_or_html() and response.getCode() == 200 and \
+            response.getClearTextBody() is not None and \
+            url not in self._already_inspected:
+            
+            # Don't repeat URLs
+            self._already_inspected.add(url)
 
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
-                v.setURL( response.getURL() )
+                v.setURL( url )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'US Social Security Number disclosure' )
-                msg = 'The URL: "' + v.getURL() + '" possibly discloses a US '
+                msg = 'The URL: "' + url + '" possibly discloses a US '
                 msg += 'Social Security Number: "'+ validated_ssn +'"'
                 v.setDesc( msg )
                 v.addToHighlight( found_ssn )

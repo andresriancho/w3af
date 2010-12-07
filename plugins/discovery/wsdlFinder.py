@@ -76,7 +76,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         @return: None.
         '''
         try:
-            response = self._urlOpener.GET( url_to_request, useCache=True )
+            self._urlOpener.GET( url_to_request, useCache=True )
         except w3afException:
             om.out.debug('Failed to request the WSDL file: ' + url_to_request)
         else:
@@ -113,7 +113,7 @@ class wsdlFinder(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.wsdlGreper']

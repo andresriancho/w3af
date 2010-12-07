@@ -414,7 +414,8 @@ class xss(baseAuditPlugin):
         self._tm.join( self )
         if self._check_stored_xss:
             for fuzzable_request in self._fuzzableRequests:
-                response = self._sendMutant( fuzzable_request, analyze=False )
+                response = self._sendMutant(fuzzable_request, analyze=False,
+                                            useCache=False)
                 
                 for mutant, mutant_response_id in self._xssMutants:
                     # Remember that httpResponse objects have a faster "__in__" than

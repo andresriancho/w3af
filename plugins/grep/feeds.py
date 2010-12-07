@@ -42,10 +42,10 @@ class feeds(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._rss_tag_attr = [ ('rss', 'version', 'RSS') ,     #   <rss version="...">
-                                        ('feed', 'version', 'OPML') ,   #   <feed version="..."
-                                        ('opml', 'version', 'OPML')     #   <opml version="...">
-                                        ]
+        self._rss_tag_attr = [('rss', 'version', 'RSS'),# <rss version="...">
+                              ('feed', 'version', 'OPML'),# <feed version="..."
+                              ('opml', 'version', 'OPML') # <opml version="...">
+                              ]
                 
     def grep(self, request, response):
         '''
@@ -63,7 +63,7 @@ class feeds(baseGrepPlugin):
             for tag_name, attr_name, feed_type in self._rss_tag_attr:
                 
                 # Find all tags with tag_name
-                element_list = dom.findall( tag_name )
+                element_list = dom.xpath('//%s' % tag_name)
             
                 for element in element_list:
                     

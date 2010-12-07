@@ -492,7 +492,7 @@ class w3afCore(object):
                 if cf.cf.getData('exportFuzzableRequests') != '':
                     self.export.exportFuzzableRequestList(self._fuzzableRequestList)
                     
-                if len( self._fuzzableRequestList ) == 0:
+                if not self._fuzzableRequestList:
                     om.out.information('No URLs found by discovery.')
                 else:
                     # del() all the discovery and bruteforce plugins

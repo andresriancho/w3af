@@ -123,7 +123,7 @@ class allowedMethods(baseDiscoveryPlugin):
         if with_options:
             id_list.append( res.id )
 
-        if not with_options:
+        else:
             #
             #   Before doing anything else, I'll send a request with a non-existant method
             #   If that request succeds, then all will...

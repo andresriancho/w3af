@@ -33,8 +33,6 @@ import core.data.kb.info as info
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
-import re
-
 
 class objects(baseGrepPlugin):
     '''
@@ -60,10 +58,10 @@ class objects(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
+        url = response.getURL()
+        if response.is_text_or_html() and url not in self._already_analyzed:
 
-        if response.is_text_or_html() and response.getURL() not in self._already_analyzed:
-
-            self._already_analyzed.add( response.getURL() )
+            self._already_analyzed.add(url)
             
             dom = response.getDOM()
 
@@ -73,12 +71,12 @@ class objects(baseGrepPlugin):
                 for tag_name in self._tag_names:
                     
                     # Find all input tags with a type file attribute
-                    element_list = dom.findall( tag_name )
+                    element_list = dom.xpath('//%s' % tag_name )
                     
                     if element_list:
                         i = info.info()
                         i.setName(tag_name.title() + ' tag')
-                        i.setURL( response.getURL() )
+                        i.setURL(url)
                         i.setId( response.id )
                         i.setDesc( 'The URL: "' + i.getURL() + '" has an '+ tag_name + ' tag.' )          
                         i.addToHighlight( tag_name )

@@ -82,7 +82,8 @@ class fileUpload(baseAuditPlugin):
        
                 for mutant in mutants:
                     targs = (mutant,)
-                    self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                    self._tm.startFunction(target=self._sendMutant, 
+                                            args=targs, ownerObj=self)
                     
             self._tm.join( self )
             
@@ -135,7 +136,7 @@ class fileUpload(baseAuditPlugin):
         
         return result
         
-    def _analyzeResult( self, mutant, mutant_response ):
+    def _analyzeResult(self, mutant, mutant_response):
         '''
         Analyze results of the _sendMutant method. 
         
@@ -143,28 +144,29 @@ class fileUpload(baseAuditPlugin):
         or one of the "default" ones like "upload" or "files".
         '''
         # Generate a list of directories where I can search for the uploaded file
-        domain_path_list = [ urlParser.getDomainPath(i) for i in kb.kb.getData( 'urls' , 'urlList' )]
-        domain_path_list = list(set(domain_path_list))
-        
+        domain_path_list = [urlParser.getDomainPath(i) for i in \
+                            kb.kb.getData('urls' , 'urlList')]
+        domain_path_list = set(domain_path_list)
+
         # Try to find the file!
         for url in domain_path_list:
-            for path in self._generate_paths( url, mutant.uploaded_file_name ):
+            for path in self._generate_paths(url, mutant.uploaded_file_name):
 
-                get_response = self._urlOpener.GET( path, useCache=False )
-                if not is_404( get_response ):
+                get_response = self._urlOpener.GET(path, useCache=False)
+                if not is_404(get_response):
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
-                    mutant.setModValue( '<file_object>' )
-                    v = vuln.vuln( mutant )
-                    v.setId( [mutant_response.id, get_response.id] )
+                    mutant.setModValue('<file_object>')
+                    v = vuln.vuln(mutant)
+                    v.setId([mutant_response.id, get_response.id])
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Insecure file upload' )
+                    v.setName('Insecure file upload')
                     v['fileDest'] = get_response.getURL()
                     v['fileVars'] = mutant.getFileVariables()
                     msg = 'A file upload to a directory inside the webroot was found at: '
                     msg += mutant.foundAt()
-                    v.setDesc( msg )
-                    kb.kb.append( self, 'fileUpload', v )
+                    v.setDesc(msg)
+                    kb.kb.append(self, 'fileUpload', v)
                     return
     
     def end(self):
@@ -178,29 +180,19 @@ class fileUpload(baseAuditPlugin):
         for tmp_file, tmp_file_name in self._file_list:
             tmp_file.close()
         
-    def _generate_paths( self, url, uploaded_file_name ):
+    def _generate_paths(self, url, uploaded_file_name):
         '''
         @parameter url: A URL where the uploaded_file_name could be
         @parameter uploaded_file_name: The name of the file that was uploaded to the server
         @return: A list of paths where the file could be.
         '''
-        tmp = []
-        tmp.append('uploads')
-        tmp.append('upload')
-        tmp.append('file')
-        tmp.append('user')
-        tmp.append('files')
-        tmp.append('downloads')
-        tmp.append('download')
-        tmp.append('up')
-        tmp.append('down')
-        
-        res = []
+        tmp = ['uploads', 'upload', 'file', 'user', 'files', 'downloads', 
+               'download', 'up', 'down']
+
         for default_path in tmp:
-            for path in urlParser.getDirectories( url ):
-                possible_location = path + default_path + '/'  + uploaded_file_name
-                res.append( possible_location )
-        return res
+            for path in urlParser.getDirectories(url):
+                possible_loc = path + default_path + '/'  + uploaded_file_name
+                yield possible_loc
         
     def getOptions( self ):
         '''
