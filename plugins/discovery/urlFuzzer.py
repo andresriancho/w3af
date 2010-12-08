@@ -130,14 +130,14 @@ class urlFuzzer(baseDiscoveryPlugin):
         if not uri.hasQueryString():
             return False
         
-        url.setFileName( url.getFileName() + createRandAlNum( 7 ) )
+        uri.setFileName( uri.getFileName() + createRandAlNum( 7 ) )
             
         try:
-            response = self._urlOpener.GET( url, useCache=True, headers=self._headers )
+            response = self._urlOpener.GET( uri, useCache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         except w3afException,e:
-            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
+            msg = 'An exception was raised while requesting "'+uri+'" , the error message is: '
             msg += str(e)
             om.out.error( msg )
         else:
