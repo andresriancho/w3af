@@ -157,8 +157,9 @@ class url_object(object):
         
         @return: None.
         '''
-        if isinstance(qs, dict):
+        if isinstance(qs, dict) and not isinstance(qs, queryString):
             qs = urllib.urlencode( qs )
+            
         self.qs = str(qs)        
         
     def uri2url( self ):
