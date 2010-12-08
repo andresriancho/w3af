@@ -28,12 +28,11 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.url.httpResponse as httpResponse
+from core.data.parsers.urlParser import url_object
 
 import cStringIO
 
 from core.data.request.frFactory import createFuzzableRequestRaw
-
-import core.data.parsers.urlParser as urlParser
 
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 from core.controllers.w3afException import w3afException, w3afRunOnce
@@ -105,7 +104,7 @@ class spiderMan(baseDiscoveryPlugin):
             # Create the proxy server
             self._proxy = proxy( self._listenAddress, self._listenPort, self._urlOpener, \
                                             self.createPH())
-            self._proxy.targetDomain = urlParser.getDomain( freq.getURL() )
+            self._proxy.targetDomain = freq.getURL().getDomain()
             
             # Inform the user
             msg = 'spiderMan proxy is running on ' + self._listenAddress + ':'
@@ -207,7 +206,8 @@ class proxyHandler(w3afProxyHandler):
             self._spiderMan.append_fuzzable_request( freq )
             
             grep = False
-            if urlParser.getDomain( self.path ) == self.server.w3afLayer.targetDomain:
+            url = url_object(self.path)
+            if url.getDomain() == self.server.w3afLayer.targetDomain:
                 grep = True
                 
             try:
