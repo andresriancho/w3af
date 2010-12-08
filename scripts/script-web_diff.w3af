@@ -12,17 +12,18 @@ back
 
 discovery allowedMethods,webDiff
 discovery config webDiff
-set localDir /var/www/w3af/discovery/web_spider/follow_links/
-set remotePath http://127.0.0.1/w3af/discovery/web_spider/follow_links/
+###### PUT LOCAL DIR HERE ######
+set localDir /home/jandalia/follow_links/
+set remotePath http://moth/w3af/discovery/web_spider/follow_links/
 back
 back
 
 target
-set target http://127.0.0.1/
+set target http://moth
 back
 
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 11
+assert len(kb.kb.getData('urls','urlList')) == 6 
 
 exit

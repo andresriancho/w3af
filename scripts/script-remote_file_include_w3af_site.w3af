@@ -3,6 +3,7 @@
 plugins
 audit remoteFileInclude
 audit config remoteFileInclude
+set listenAddress 127.0.0.1
 set usew3afSite True
 back
 output console,textFile

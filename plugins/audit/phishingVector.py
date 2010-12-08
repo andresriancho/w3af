@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
+import re
 
 import core.controllers.outputManager as om
 
@@ -33,8 +35,6 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-
-import re
 
 
 class phishingVector(baseAuditPlugin):
@@ -53,7 +53,8 @@ class phishingVector(baseAuditPlugin):
         # blacklisted http:// and https:// but missed ftp://.
         # I also use hTtp instead of http because I want to evade some (stupid) case sensitive
         # filters
-        self._test_urls = ['hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/', 'fTp://w3af.sf.net/']
+        self._test_urls = ('hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/',
+                           'fTp://w3af.sf.net/')
 
     def audit(self, freq ):
         '''
@@ -64,24 +65,22 @@ class phishingVector(baseAuditPlugin):
         om.out.debug( 'phishingVector plugin is testing: ' + freq.getURL() )
         
         mutants = createMutants( freq , self._test_urls )
-            
         for mutant in mutants:
-            if self._hasNoBug( 'phishingVector' , 'phishingVector' , \
-                                        mutant.getURL() , mutant.getVar() ):
-                # Only spawn a thread if the mutant has a modified variable
-                # that has no reported bugs in the kb
                 targs = (mutant,)
                 self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
                 
         self._tm.join( self )
             
-    def _analyzeResult( self, mutant, response ):
+    def _analyzeResult(self, mutant, response):
         '''
         Analyze results of the _sendMutant method.
         '''
-        response = self._find_phishing_vector( mutant, response )
-        for v in response:
-            kb.kb.append( self, 'phishingVector', v )
+        with self._plugin_lock:
+            if self._hasNoBug('phishingVector', 'phishingVector', \
+                              mutant.getURL() , mutant.getVar()):
+                    vulns = self._find_phishing_vector(mutant, response)
+                    for vuln in vulns:
+                        kb.kb.append(self, 'phishingVector', vuln)
     
     def _find_phishing_vector( self, mutant, response ):
         '''

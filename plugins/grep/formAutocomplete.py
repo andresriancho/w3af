@@ -24,7 +24,7 @@ from lxml import etree
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.controllers.outputManager as om
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 import core.data.kb.knowledgeBase as kb
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -38,6 +38,7 @@ AUTOCOMPLETE_FORMS_XPATH = "//form[not(@autocomplete) or " \
 # equals-case-sensitive 'password'
 PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 
+
 class formAutocomplete(baseGrepPlugin):
     '''
     Grep every page for detection of forms with 'autocomplete' capabilities 
@@ -48,7 +49,7 @@ class formAutocomplete(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_inspected = disk_list()
+        self._already_inspected = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -64,7 +65,7 @@ class formAutocomplete(baseGrepPlugin):
 
         if response.is_text_or_html() and not url in self._already_inspected:
 
-            self._already_inspected.append(url)
+            self._already_inspected.add(url)
             dom = response.getDOM()
 
             if dom is not None:

@@ -33,7 +33,7 @@ import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.controllers.w3afException import w3afException
@@ -50,7 +50,7 @@ class frontpage(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = disk_list()
+        self._already_tested = ScalableBloomFilter()
         self._stop_on_first = True
 
     def audit(self, freq ):
@@ -73,7 +73,7 @@ class frontpage(baseAuditPlugin):
             # directory where I can write a file.
             if domain_path not in self._already_tested:
                 om.out.debug( 'frontpage plugin is testing: ' + freq.getURL() )
-                self._already_tested.append( domain_path )
+                self._already_tested.add( domain_path )
                 
                 # Find a file that doesn't exist
                 found404 = False

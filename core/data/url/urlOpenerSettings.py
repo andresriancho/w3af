@@ -310,7 +310,7 @@ class urlOpenerSettings( configurable ):
         self.needUpdate = True
                         
     def buildOpeners(self):
-        om.out.debug( 'Called buildOpeners')
+        om.out.debug('Called buildOpeners')
         
         if self._cookieHandler is None and not cf.cf.getData('ignoreSessCookies'):
             cj = self._cookielib.MozillaCookieJar()
@@ -322,23 +322,23 @@ class urlOpenerSettings( configurable ):
         
         # Prepare the list of handlers
         handlers = []
-        for handler in [ self._proxyHandler, self._basicAuthHandler,  \
-                                self._ntlmAuthHandler, self._cookieHandler, \
-                                MultipartPostHandler.MultipartPostHandler, \
-                                self._kAHTTP, self._kAHTTPS, logHandler.logHandler, \
-                                mangleHandler.mangleHandler( self._manglePlugins ), \
-                                HTTPGzipProcessor, self._urlParameterHandler ]:
+        for handler in [self._proxyHandler, self._basicAuthHandler,
+                        self._ntlmAuthHandler, self._cookieHandler,
+                        MultipartPostHandler.MultipartPostHandler,
+                        self._kAHTTP, self._kAHTTPS, logHandler.logHandler,
+                        mangleHandler.mangleHandler(self._manglePlugins),
+                        HTTPGzipProcessor, self._urlParameterHandler]:
             if handler:
                 handlers.append(handler)
         
-        self._nonCacheOpener = apply( self._ulib.build_opener, tuple(handlers) )
+        self._nonCacheOpener = self._ulib.build_opener(*handlers)
         
         # Prevent the urllib from putting his user-agent header
         self._nonCacheOpener.addheaders = [ ('Accept', '*/*') ]
         
         # Add the local cache to the list of handlers
-        handlers.append( localCache.CacheHandler() )
-        self._cacheOpener = apply( self._ulib.build_opener, tuple(handlers) )
+        handlers.append(localCache.CacheHandler())
+        self._cacheOpener = self._ulib.build_opener(*handlers)
         
         # Prevent the urllib from putting his user-agent header
         self._cacheOpener.addheaders = [ ('Accept', '*/*') ]

@@ -52,13 +52,15 @@ class basePlugin(configurable):
 
     def setUrlOpener( self, urlOpener):
         '''
-        This method should not be overwritten by any plugin (but you are free to do it, for example
-        a good idea is to rewrite this method to change the UrlOpener to do some IDS evasion technic).
+        This method should not be overwritten by any plugin (but you are free
+        to do it, for example a good idea is to rewrite this method to change
+        the UrlOpener to do some IDS evasion technic).
         
-        This method takes a CustomUrllib object as parameter and assigns it to itself. 
-        Then, on the testUrl method you use self.CustomUrlOpener._custom_urlopen(...) 
-        to open a Url and you are sure that the plugin is using the user supplied
-        settings (proxy, user agent, etc).
+        This method takes a CustomUrllib object as parameter and assigns it 
+        to itself. Then, on the testUrl method you use 
+        self.CustomUrlOpener._custom_urlopen(...) 
+        to open a Url and you are sure that the plugin is using the user 
+        supplied settings (proxy, user agent, etc).
         
         @return: No value is returned.
         '''
@@ -165,7 +167,8 @@ class basePlugin(configurable):
             else:
                 om.out.information( i.getDesc() )
             
-    def _sendMutant( self, mutant, analyze=True, grepResult=True, analyze_callback=None ):
+    def _sendMutant(self, mutant, analyze=True, grepResult=True, 
+                     analyze_callback=None, useCache=True):
         '''
         Sends a mutant to the remote web server.
         '''
@@ -188,9 +191,9 @@ class basePlugin(configurable):
         
         functor = getattr( self._urlOpener , method )
         # run functor , run !   ( forest gump flash )
-        res = apply( functor, args, 
-                            {'data': data, 'headers': headers, 'grepResult': grepResult,
-                            'useCache': True } )
+        res = apply(functor, args,
+                    {'data': data, 'headers': headers,
+                     'grepResult': grepResult, 'useCache': useCache})
         
         if analyze:
             if analyze_callback:

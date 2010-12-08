@@ -61,6 +61,9 @@ class commonAttackMethods:
         body_b_len = len(body_b)
         
         longest_match = sequence_matcher.find_longest_match(0, body_a_len, 0, body_b_len)
+        longest_match_a = longest_match[0]
+        longest_match_b = longest_match[1]        
+        longest_match_size = longest_match[2]
         
         #    This should return a long match at the beginning or the end of the string
         #
@@ -71,7 +74,8 @@ class commonAttackMethods:
         #    the amount of bytes consumed by the "/etc/passwd" file is less and allows
         #    me to calculate a more accurate ratio.
         #
-        if (float(longest_match.size) / body_b_len) < 0.1:
+
+        if (float(longest_match_size) / body_b_len) < 0.01:
             self._footer_length = 0
             self._header_length = 0
             
@@ -87,26 +91,27 @@ class commonAttackMethods:
             #
             #    We're in the case where at least we have a header, a footer or both.
             #
-            
-            if longest_match.a + longest_match.size == body_a_len:
+
+            if longest_match_a + longest_match_size == body_a_len:
                 #    The longest match is in the footer
-                self._footer_length = longest_match.size
+                self._footer_length = longest_match_size
                 
                 #    Now I need to calculate the header
-                longest_match_header = sequence_matcher.find_longest_match(0, longest_match.a, 0, longest_match.b)
+                longest_match_header = sequence_matcher.find_longest_match(0, longest_match_a, 0, longest_match_b)
+                longest_match_header_size = longest_match_header[2]
     
                 #    Do we really have a header?
-                if (float(longest_match_header.size) / (body_b_len - longest_match.a)) < 0.1:
+                if (float(longest_match_header_size) / (body_b_len - longest_match_a)) < 0.1:
                     #    No we don't
                     self._header_length = 0
                 else:
                     # We have a header!
-                    self._header_length = longest_match_header.size
+                    self._header_length = longest_match_header_size
                 
             else:
             
                 #    The longest match is in the header
-                self._header_length = longest_match.size
+                self._header_length = longest_match_size
                 
                 #    Now I need to calculate the footer
                 #
@@ -118,14 +123,15 @@ class commonAttackMethods:
                 
                 longest_match_footer = sequence_matcher.find_longest_match(0, body_a_len - self._header_length, \
                                                                            0, body_b_len - self._header_length)
-                
+                longest_match_footer_size = longest_match_footer[2]
+
                 #    Do we really have a footer?
-                if (float(longest_match_footer.size) / (body_b_len - longest_match.a)) < 0.1:
+                if (float(longest_match_footer_size) / (body_b_len - longest_match_a)) < 0.01:
                     #    No we don't
                     self._footer_length = 0
                 else:
                     # We have a header!
-                    self._footer_length = longest_match_footer.size
+                    self._footer_length = longest_match_footer_size
                 
         return True 
         
@@ -171,6 +177,10 @@ class commonAttackMethods:
         if body == '':
             om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')
             return body
-            
+
+        #   Special case where there are no header or footers,
+        if self._header_length == self._footer_length == 0:
+            return body
+
         return body[self._header_length:-self._footer_length]
     

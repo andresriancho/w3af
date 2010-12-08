@@ -32,7 +32,7 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.fuzzer.fuzzer import createRandAlNum
 
@@ -49,7 +49,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         self._first_time = True
         self._fuzzImages = False
         self._headers = {}
-        self._already_reported = disk_list()
+        self._already_reported = ScalableBloomFilter()
         
     def discover(self, fuzzableRequest ):
         '''
@@ -71,7 +71,7 @@ class urlFuzzer(baseDiscoveryPlugin):
 
         # And we mark this one as a "do not return" URL, because the core already
         # found it using another technique.
-        self._already_reported.append( url )
+        self._already_reported.add( url )
         
         self._verify_head_enabled( url )
         if self._head_enabled():
@@ -120,7 +120,7 @@ class urlFuzzer(baseDiscoveryPlugin):
                         om.out.information( i.getDesc() )
                         
                         #   Report only once
-                        self._already_reported.append( response.getURL() )
+                        self._already_reported.add( response.getURL() )
                     
     
     def _return_without_eval( self, uri ):

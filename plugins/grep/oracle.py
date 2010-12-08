@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -41,6 +42,7 @@ class oracle(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        self._already_analyzed = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''
@@ -50,8 +52,10 @@ class oracle(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
+        url = response.getURL()
+        if response.is_text_or_html() and url not in self._already_analyzed:
+            self._already_analyzed.add(url)
 
-        if response.is_text_or_html():
             for msg in self._getDescriptiveMessages():
                 # Remember that httpResponse objects have a faster "__in__" than
                 # the one in strings; so string in response.getBody() is slower than
@@ -60,10 +64,10 @@ class oracle(baseGrepPlugin):
                     
                     i = info.info()
                     i.setName('Oracle application')
-                    i.setURL( response.getURL() )
+                    i.setURL(url)
                     i.setId( response.id )
                     i.addToHighlight( msg )
-                    msg = 'The URL: "' + response.getURL() + '" was created using Oracle'
+                    msg = 'The URL: "' + url + '" was created using Oracle'
                     msg += ' Application server.'
                     i.setDesc( msg )
                     kb.kb.append( self , 'oracle' , i )

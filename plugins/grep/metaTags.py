@@ -28,6 +28,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
@@ -52,6 +53,7 @@ class metaTags(baseGrepPlugin):
         self._interesting_words = {'user':None, 'pass':None, 'microsoft':None,
         'visual':None, 'linux':None, 'source':None, 'author':None, 'release':None,
         'version':None, 'verify-v1':'Google Sitemap' }
+        self._already_inspected = ScalableBloomFilter()
         
         '''
         Can someone explain what this meta tag does?
@@ -72,51 +74,55 @@ class metaTags(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html():
+        url = response.getURL()
+        
+        if response.is_text_or_html() and not is_404( response ) and \
+            url not in self._already_inspected:
+
+            self._already_inspected.add(url)
             
-            if not is_404( response ):
-                try:
-                    dp = dpCache.dpc.getDocumentParserFor( response )
-                except w3afException:
-                    pass
-                else:
-                    meta_tag_list = dp.getMetaTags()
-                    
-                    for tag in meta_tag_list:
-                        name = self._find_name( tag )
-                        for attr in tag:
-                            for word in self._interesting_words:
+            try:
+                dp = dpCache.dpc.getDocumentParserFor( response )
+            except w3afException:
+                pass
+            else:
+                meta_tag_list = dp.getMetaTags()
+                
+                for tag in meta_tag_list:
+                    name = self._find_name( tag )
+                    for attr in tag:
+                        for word in self._interesting_words:
 
-                                # Check if we have something interesting
-                                # and WHERE that thing actually is
-                                where = value = None
-                                if ( word in attr[0].lower() ):
-                                    where = 'name'
-                                    value = attr[0].lower()
-                                elif ( word in attr[1].lower() ):
-                                    where = 'value'
-                                    value = attr[1].lower()
-                                
-                                # Now... if we found something, report it =)
-                                if where:
-                                    # The atribute is interesting!
-                                    i = info.info()
-                                    i.setName('Interesting META tag')
-                                    i.setURI( response.getURI() )
-                                    i.setId( response.id )
-                                    msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
-                                    msg += 'attribute '+ where +' "'+ value +'" which'
-                                    msg += ' looks interesting.'
-                                    i.addToHighlight( where, value )
-                                    if self._interesting_words.get(name, None):
-                                        msg += ' The tag is used for '
-                                        msg += self._interesting_words[name] + '.'
-                                    i.setDesc( msg )
-                                    kb.kb.append( self , 'metaTags' , i )
+                            # Check if we have something interesting
+                            # and WHERE that thing actually is
+                            where = value = None
+                            if ( word in attr[0].lower() ):
+                                where = 'name'
+                                value = attr[0].lower()
+                            elif ( word in attr[1].lower() ):
+                                where = 'value'
+                                value = attr[1].lower()
+                            
+                            # Now... if we found something, report it =)
+                            if where:
+                                # The atribute is interesting!
+                                i = info.info()
+                                i.setName('Interesting META tag')
+                                i.setURI( response.getURI() )
+                                i.setId( response.id )
+                                msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
+                                msg += 'attribute '+ where +' "'+ value +'" which'
+                                msg += ' looks interesting.'
+                                i.addToHighlight( where, value )
+                                if self._interesting_words.get(name, None):
+                                    msg += ' The tag is used for '
+                                    msg += self._interesting_words[name] + '.'
+                                i.setDesc( msg )
+                                kb.kb.append( self , 'metaTags' , i )
 
-                                else:
-                                    # The attribute is not interesting
-                                    pass
+                            else:
+                                # The attribute is not interesting
+                                pass
     
     def _find_name( self, tag ):
         '''

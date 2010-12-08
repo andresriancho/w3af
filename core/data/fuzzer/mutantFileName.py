@@ -53,16 +53,19 @@ class mutantFileName(mutant):
     
     def getURL( self ):
         domain_path = self._freq.getURL().getDomainPath()
+        
         # Please note that this double encoding is needed if we want to work with mod_rewrite
         encoded = urllib.quote_plus( self._mutant_dc['fuzzedFname'], self._safeEncodeChars )
         if self._doubleEncoding:
             encoded = urllib.quote_plus( encoded, safe=self._safeEncodeChars )
-        return  domain_path + self._mutant_dc['start'] + encoded + self._mutant_dc['end']
+        
+        domain_path.setFileName( self._mutant_dc['start'] + encoded + self._mutant_dc['end'] )
+        return domain_path
         
     getURI = getURL
     
     def getData( self ):
-        return ''
+        return None
     
     def printModValue( self ):
         res = 'The sent '+ self.getMutantType() +' is: "' + self._mutant_dc['start']

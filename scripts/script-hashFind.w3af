@@ -23,6 +23,6 @@ back
 
 start
 
-assert len( kb.kb.getData( 'hashFind', 'hashFind' ) ) == 6
+assert len( kb.kb.getData( 'hashFind', 'hashFind' ) ) == 2 
 
 exit

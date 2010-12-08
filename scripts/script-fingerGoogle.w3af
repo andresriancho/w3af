@@ -14,12 +14,12 @@ discovery fingerGoogle
 back
 
 target
-set target http://www.cybsec.com/
+set target http://www.gmail.com/
 back
 
 start
 
-assert len( kb.kb.getData( 'fingerGoogle', 'mails' ) ) == 2
+assert len( kb.kb.getData( 'fingerGoogle', 'mails' ) ) > 3
 
 exit
 

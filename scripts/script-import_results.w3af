@@ -18,7 +18,7 @@ back
 back
 
 target
-set target http://moth/w3af/xss/test-xss.php
+set target http://moth/w3af/audit/xss/simple_xss.php
 back
 
 start

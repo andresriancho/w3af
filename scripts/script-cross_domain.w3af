@@ -1,14 +1,14 @@
 # This script shows how w3af reads a crossdomain.xml file
 
 plugins
-discovery crossDomain
+discovery ria_enumerator 
 back
 target
-set target http://127.0.0.1/
+set target http://moth
 back
 start
 
-assert len( kb.kb.getData('crossDomain', 'vuln') ) == 1
-assert len( kb.kb.getData('crossDomain', 'info') ) == 2
+assert len( kb.kb.getData('ria_enumerator', 'vuln') ) == 1
+assert len( kb.kb.getData('ria_enumerator', 'info') ) == 2
 
 exit

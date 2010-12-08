@@ -26,6 +26,7 @@ import core.data.request.fuzzableRequest as fuzzableRequest
 
 import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.parsers.urlParser import url_object
 
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 import core.data.url.handlers.logHandler
@@ -51,7 +52,7 @@ class mangleHandler(urllib2.BaseHandler):
         @return: A fuzzableRequest.
         '''
         fr = fuzzableRequest.fuzzableRequest()
-        fr.setURI( request.get_full_url() )
+        fr.setURI( request.url_object )
         fr.setMethod( request.get_method() )
         
         headers = request.headers
@@ -79,8 +80,10 @@ class mangleHandler(urllib2.BaseHandler):
             data = None
         else:
             data = fuzzableRequest.getData()
-        req = HTTPRequest( fuzzableRequest.getURI(), data=data\
-        , headers=fuzzableRequest.getHeaders(), origin_req_host=host )
+            
+        req = HTTPRequest( fuzzableRequest.getURI(), data=data,
+                           headers=fuzzableRequest.getHeaders(),
+                           origin_req_host=host )
         return req
         
     def http_request(self, request):
@@ -127,7 +130,7 @@ class mangleHandler(urllib2.BaseHandler):
         kaRes.setBody( mangledResponse.getBody() )
         kaRes.headers = mangledResponse.getHeaders()
         kaRes.code = mangledResponse.getCode()
-        kaRes._url = mangledResponse.getURI()
+        kaRes._url = mangledResponse.getURI().url_string
         kaRes.msg = originalResponse.msg
         return kaRes
     

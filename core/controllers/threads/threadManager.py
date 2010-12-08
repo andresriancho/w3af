@@ -20,12 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
-from core.controllers.threads.threadpool import *
+from core.controllers.threads.threadpool import ThreadPool, WorkRequest
 import core.data.kb.config as cf
-import time
 
 
-class threadManager:
+class threadManager(object):
     '''
     This class manages threads.
     
@@ -40,7 +39,7 @@ class threadManager:
         self._initPool()
     
     def _initPool( self ):
-        self._maxThreads = cf.cf.getData('maxThreads' ) or 0
+        self._maxThreads = cf.cf.getData('maxThreads') or 0
         
         #
         #   Please note that I'm using the q_size parameter of the Threadpool. This is what the 
@@ -57,26 +56,28 @@ class threadManager:
         #       self._tm.startFunction( target=self._do_request, args=(url,) )
         #
         if self._maxThreads:
-            self._threadPool = ThreadPool( self._maxThreads, q_size = 200)
+            self._threadPool = ThreadPool(self._maxThreads, q_size = 200)
         else:
             # if I want to use the restrict argument of startFunction, the thread pool 
             # MUST have some threads
-            self._threadPool = ThreadPool( 5, 15 )
+            self._threadPool = ThreadPool(5, 15)
     
-    def setMaxThreads( self, threads ):
-        if self._maxThreads > threads:
-            self._threadPool.dismissWorkers( self._maxThreads - threads )
-            self._maxThreads = threads
-        elif self._maxThreads < threads:
-            self._threadPool.createWorkers( threads - self._maxThreads )
-            self._maxThreads = threads
+    def setMaxThreads(self, num_threads):
 
-    def getMaxThreads( self ):
+        if self._maxThreads > num_threads:
+            self._threadPool.dismissWorkers(self._maxThreads - num_threads)
+            self._maxThreads = num_threads
+
+        elif self._maxThreads < num_threads:
+            self._threadPool.createWorkers(num_threads - self._maxThreads)
+            self._maxThreads = num_threads
+
+    def getMaxThreads(self):
         if not self._initialized:
             self._initPool()
         return self._maxThreads
         
-    def startDaemon( self, threadObj ):
+    def startDaemon(self, threadObj):
         om.out.debug('Starting daemon thread: ' + str(threadObj) )
         threadObj.setDaemon(1)
         threadObj.start()
@@ -96,17 +97,17 @@ class threadManager:
             om.out.debug('Calling join on daemon thread: ' + str(thread) )
             thread.join(self._waitForJoin)
         
-    def startFunction( self, target, args=(), kwds={}, restrict=True, ownerObj=None ):
+    def startFunction(self, target, args=(), kwds={}, restrict=True, ownerObj=None):
         if not self._initialized:
             self._initPool()
             self._initialized = True
         
-        if self._maxThreads == 0 and restrict:
+        if not self._maxThreads and restrict:
             # Just start the function
             if not self.informed:
                 om.out.debug('Threading is disabled.' )
                 self.informed = True
-            apply( target, args, kwds )
+            target(*args, **kwds)
         else:
             # Assign a job to a thread in the thread pool
             wr = WorkRequest( target, args=args, kwds=kwds, ownerObj=ownerObj )

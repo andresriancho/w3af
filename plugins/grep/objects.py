@@ -31,9 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
-
-import re
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 
 class objects(baseGrepPlugin):
@@ -50,8 +48,7 @@ class objects(baseGrepPlugin):
         self._tag_names.append('object')
         self._tag_names.append('applet')
         
-        self._already_added_object = disk_list()
-        self._already_added_applet = disk_list()
+        self._already_analyzed = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -61,8 +58,10 @@ class objects(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
+        url = response.getURL()
+        if response.is_text_or_html() and url not in self._already_analyzed:
 
-        if response.is_text_or_html() and response.getURL() not in self._already_added_object:
+            self._already_analyzed.add(url)
             
             dom = response.getDOM()
 
@@ -72,18 +71,17 @@ class objects(baseGrepPlugin):
                 for tag_name in self._tag_names:
                     
                     # Find all input tags with a type file attribute
-                    element_list = dom.findall( tag_name )
+                    element_list = dom.xpath('//%s' % tag_name )
                     
                     if element_list:
                         i = info.info()
                         i.setName(tag_name.title() + ' tag')
-                        i.setURL( response.getURL() )
+                        i.setURL(url)
                         i.setId( response.id )
                         i.setDesc( 'The URL: "' + i.getURL() + '" has an '+ tag_name + ' tag.' )          
                         i.addToHighlight( tag_name )
 
                         kb.kb.append( self, tag_name, i )
-                        self._already_added_object.append( response.getURL() )
     
     def setOptions( self, OptionList ):
         pass

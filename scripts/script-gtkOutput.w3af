@@ -8,13 +8,14 @@ output
 
 output config textFile
 set verbose True
+set fileName out.dbg
 back
 
 discovery pykto
 back
 
 target
-set target http://127.0.0.1/
+set target http://moth/
 back
 
 start

@@ -587,7 +587,7 @@ class phpinfo(baseDiscoveryPlugin):
 
         ### [/magic_quotes_gpc] ###
         
-         ### [open_basedir] ###
+        ### [open_basedir] ###
         regex_str = 'open_basedir</td><td class="v">(.*?)</td>'
         open_basedir = re.search(regex_str, response.getBody() , re.IGNORECASE)
         

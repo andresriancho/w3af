@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
@@ -45,7 +45,7 @@ class digitSum(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._already_visited = disk_list()
+        self._already_visited = ScalableBloomFilter()
         self._first_time = True
         
         # This is for the Referer
@@ -76,7 +76,7 @@ class digitSum(baseDiscoveryPlugin):
         if original_response.is_text_or_html() or self._fuzz_images:
             for fr in self._mangle_digits( fuzzableRequest ):
                 if fr.getURL() not in self._already_visited:
-                    self._already_visited.append( fr.getURI() )
+                    self._already_visited.add( fr.getURI() )
                     
                     targs = ( fr, original_response)
                     self._tm.startFunction( target=self._do_request, args=targs , ownerObj=self )
@@ -86,7 +86,7 @@ class digitSum(baseDiscoveryPlugin):
             
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
-            self._already_visited.append( fuzzableRequest.getURI() )
+            self._already_visited.add( fuzzableRequest.getURI() )
                 
         return self._fuzzableRequests
 

@@ -16,12 +16,12 @@ back
 
 start
 
-assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
+assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 1 
 
 exploit
 exploit localFileReader
 interact 0
 
 payload apache_config_directory
-
-
+exit
+exit

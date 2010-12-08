@@ -20,6 +20,6 @@ back
 
 start
 
-assert len(kb.kb.getData('phpinfo','phpinfo')) == 1
+assert len(kb.kb.getData('phpinfo','phpinfo')) == 16
 
 exit

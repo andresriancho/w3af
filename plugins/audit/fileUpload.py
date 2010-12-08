@@ -81,7 +81,8 @@ class fileUpload(baseAuditPlugin):
        
                 for mutant in mutants:
                     targs = (mutant,)
-                    self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+                    self._tm.startFunction(target=self._sendMutant, 
+                                            args=targs, ownerObj=self)
                     
             self._tm.join( self )
             
@@ -134,7 +135,7 @@ class fileUpload(baseAuditPlugin):
         
         return result
         
-    def _analyzeResult( self, mutant, mutant_response ):
+    def _analyzeResult(self, mutant, mutant_response):
         '''
         Analyze results of the _sendMutant method. 
         
@@ -148,22 +149,22 @@ class fileUpload(baseAuditPlugin):
         # Try to find the file!
         for url in domain_path_list:
             for possible_location in self._generate_urls( url, mutant.uploaded_file_name ):
-
                 get_response = self._urlOpener.GET( possible_location, useCache=False )
                 if not is_404( get_response ):
+
                     # This is necesary, if I dont do this, the session saver will break cause
                     # REAL file objects can't be picked
-                    mutant.setModValue( '<file_object>' )
-                    v = vuln.vuln( mutant )
-                    v.setId( [mutant_response.id, get_response.id] )
+                    mutant.setModValue('<file_object>')
+                    v = vuln.vuln(mutant)
+                    v.setId([mutant_response.id, get_response.id])
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Insecure file upload' )
+                    v.setName('Insecure file upload')
                     v['fileDest'] = get_response.getURL()
                     v['fileVars'] = mutant.getFileVariables()
                     msg = 'A file upload to a directory inside the webroot was found at: '
                     msg += mutant.foundAt()
-                    v.setDesc( msg )
-                    kb.kb.append( self, 'fileUpload', v )
+                    v.setDesc(msg)
+                    kb.kb.append(self, 'fileUpload', v)
                     return
     
     def end(self):
@@ -183,24 +184,14 @@ class fileUpload(baseAuditPlugin):
         @parameter uploaded_file_name: The name of the file that was uploaded to the server
         @return: A list of paths where the file could be.
         '''
-        tmp = []
-        tmp.append('uploads')
-        tmp.append('upload')
-        tmp.append('file')
-        tmp.append('user')
-        tmp.append('files')
-        tmp.append('downloads')
-        tmp.append('download')
-        tmp.append('up')
-        tmp.append('down')
-        
-        res = []
+        tmp = ['uploads', 'upload', 'file', 'user', 'files', 'downloads', 
+               'download', 'up', 'down']
+
         for default_path in tmp:
             for sub_url in url.getDirectories():
                 possible_location = sub_url.urlJoin( default_path + '/' )
                 possible_location = possible_location.urlJoin( uploaded_file_name )
-                res.append( possible_location )
-        return res
+                yield possible_location
         
     def getOptions( self ):
         '''

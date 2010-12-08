@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="http" _name="HTTP" version="2.0" _section="Others">
+    <metadata>
+        <property name="mimetypes">text/x-http</property>
+        <property name="globs">http*</property>
+    </metadata>
+    <styles>
+        <style id="startline" _name="Start line" map-to="def:shebang"/>
+        <style id="headers" _name="Headers" map-to="def:keyword"/>
+        <style id="iheaders" _name="Interesting headers" map-to="def:string"/>
+        <style id="methods" _name="Methods" map-to="def:type"/>
+        <style id="url" _name="URL" map-to="def:preprocessor"/>
+        <style id="code" _name="Response code" map-to="def:constant"/>
+    </styles>
+    <default-regex-options case-sensitive="true"/>
+    <definitions>
+        <context id="http">
+            <include>
+                <context id="head" once-only="true">
+                    <start>^</start>
+                    <end>^$</end>
+                    <include>
+                        <context style-ref="methods" first-line-only="true">
+                            <keyword>GET</keyword>
+                            <keyword>POST</keyword>
+                            <keyword>HEAD</keyword>
+                            <keyword>PUT</keyword>
+                            <keyword>DELETE</keyword>
+                            <keyword>OPTIONS</keyword>
+                            <keyword>TRACE</keyword>
+                            <keyword>CONNECT</keyword>
+                        </context>
+                        <context style-ref="iheaders">
+                            <keyword>Host</keyword>
+                            <keyword>Set-Cookie</keyword>
+                            <keyword>Cookie</keyword>
+                            <keyword>Server</keyword>
+                            <keyword>X-Frame-Options</keyword>
+                            <keyword>X-DNS-Prefetch-Control</keyword>
+                            <keyword>X-XSS-Protection</keyword>
+                            <keyword>X-Content-Type-Options</keyword>
+                        </context>
+                        <context style-ref="code" first-line-only="true">
+                            <match>\s[0-9]{3}\s</match>
+                        </context>
+                        <context style-ref="url" first-line-only="true">
+                            <match>(http|https):\/\/[^\s]*</match>
+                        </context>
+                        <context style-ref="url" first-line-only="true">
+                            <match>\s\/[^\s]+</match>
+                        </context>
+                        <context style-ref="headers">
+                            <match>^.+: </match>
+                        </context>
+                    </include>
+                </context>
+            </include>
+        </context>
+    </definitions>
+</language>

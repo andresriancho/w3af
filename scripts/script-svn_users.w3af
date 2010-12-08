@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('svnUsers','users')) == 3
+assert len(kb.kb.getData('svnUsers','users')) == 1 
 
 exit

@@ -29,7 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 
 class wsdlFinder(baseDiscoveryPlugin):
@@ -43,7 +43,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = disk_list()
+        self._already_tested = ScalableBloomFilter()
         self._new_fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):
@@ -54,7 +54,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         '''
         url = fuzzableRequest.getURL().uri2url()
         if url not in self._already_tested:
-            self._already_tested.append( url )
+            self._already_tested.add( url )
             
             # perform the requests
             for wsdl_parameter in self._get_WSDL():
@@ -75,7 +75,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         @return: None.
         '''
         try:
-            response = self._urlOpener.GET( url_to_request, useCache=True )
+            self._urlOpener.GET( url_to_request, useCache=True )
         except w3afException:
             om.out.debug('Failed to request the WSDL file: ' + url_to_request)
         else:
@@ -112,7 +112,7 @@ class wsdlFinder(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.wsdlGreper']

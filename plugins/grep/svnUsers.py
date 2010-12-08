@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -44,7 +45,7 @@ class svnUsers(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        
+        self._already_inspected = ScalableBloomFilter()
         # Add the regex to match something like this:
         #
         #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $
@@ -62,7 +63,11 @@ class svnUsers(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.is_text_or_html():
+        url = response.getURL()
+        if response.is_text_or_html() and url not in self._already_inspected:
+            
+            # Don't repeat URLs
+            self._already_inspected.add(url)
             
             for regex in self._regex_list:
                 for m in regex.findall( response.getBody() ):

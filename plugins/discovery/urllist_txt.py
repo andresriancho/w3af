@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb

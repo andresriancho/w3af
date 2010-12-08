@@ -141,4 +141,4 @@ def smartFill( variable_name ):
         msg += variable_name + '".'
         om.out.debug( msg )
         
-        return '5672'
+        return '56'

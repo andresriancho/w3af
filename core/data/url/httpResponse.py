@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import copy
 import re
-
+import httplib
 from lxml import etree
 
 import core.controllers.outputManager as om
@@ -38,7 +38,10 @@ codecs.register_error("returnEscapedChar", _returnEscapedChar)
 
 
 DEFAULT_CHARSET = 'utf-8'
-
+CR = '\r'
+LF = '\n'
+CRLF = CR + LF
+SP = ' '
 
 class httpResponse(object):
     
@@ -75,6 +78,7 @@ class httpResponse(object):
         self._is_text_or_html_response = False
         self._is_swf_response = False
         self._is_pdf_response = False
+        self._is_image_response = False
         self.setHeaders(info)
         
         self.setBody(read)
@@ -285,12 +289,20 @@ class httpResponse(object):
 
         @parameter headers: The headers dict.
         '''
-        self._headers = headers
+        # Fix lowercase in header names from HTTPMessage
+        if isinstance(headers, httplib.HTTPMessage):
+            self._headers = {}
+            for header in headers.headers:
+                key, value = header.split(':', 1)
+                self._headers[key.strip()] = value.strip()
+        else:
+            self._headers = headers
 
         #   Set the type, for easy access.
         for key in headers.keys():
             if 'content-type' == key.lower():
-                self._content_type = headers[key]
+                # we need exactly content type but not charset
+                self._content_type = headers[key].split(';', 1)[0]
                 
                 #   Text or HTML?
                 magic_words = ['text', 'html', 'xml', 'txt', 'javascript']
@@ -405,7 +417,11 @@ class httpResponse(object):
         # aaaand close...
         res += ' >'
         return res
-    
+
+    def getStatusLine(self):
+        '''Return status-line of response.'''
+        return 'HTTP/1.1' + SP + str(self._code) + SP + self._msg + CRLF
+
     def dumpResponseHead( self ):
         '''
         @return: A string with:
@@ -413,16 +429,16 @@ class httpResponse(object):
             Header1: Value1
             Header2: Value2
         '''
-        strRes = 'HTTP/1.1 ' + str(self._code) + ' ' + self._msg + '\n'
+        strRes = self.getStatusLine()
         strRes += self.dumpHeaders()
         return strRes
-        
+
     def dump( self ):
         '''
         Return a DETAILED str representation of this HTTP response object.
         '''
         strRes = self.dumpResponseHead()
-        strRes += '\n\n'
+        strRes += CRLF
         strRes += self.getBody()
         return strRes
         
@@ -432,8 +448,10 @@ class httpResponse(object):
         '''
         strRes = ''
         for header in self._headers:
-            strRes += header + ': ' + self._headers[ header ] + '\n'
+            strRes += header + ': ' + self._headers[ header ] + CRLF
         return strRes
         
     def copy( self ):
         return copy.deepcopy( self )
+
+

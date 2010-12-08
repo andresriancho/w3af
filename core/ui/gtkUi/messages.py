@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
-
+from core.ui.gtkUi.common.searchable import Searchable
 
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
@@ -119,7 +119,7 @@ class _LineScroller(gtk.TextView):
         yield False
 
 
-class Messages(gtk.VBox, entries.Searchable):
+class Messages(gtk.VBox, Searchable):
     '''The Messages window.
 
     It contains the checkboxes to filter and the messages theirselves.
@@ -156,7 +156,7 @@ class Messages(gtk.VBox, entries.Searchable):
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
         
-        entries.Searchable.__init__(self, self.sclines)
+        Searchable.__init__(self, self.sclines)
         search.connect("clicked", self.show_search)
         self.show()
 

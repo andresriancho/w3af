@@ -26,9 +26,15 @@ import pango
 
 # The elements to create the req/res viewer
 from . import reqResViewer, entries
+from core.ui.gtkUi.entries import EasyTable
+from core.ui.gtkUi.entries import wrapperWidgets
 from core.data.db.history import HistoryItem
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
+from core.data.options.preferences import Preferences
+from core.data.options.option import option as Option
+from core.data.options.comboOption import comboOption
+from core.data.options.optionList import optionList
 
 class httpLogTab(entries.RememberingHPaned):
     '''A tab that shows all HTTP requests and responses made by the framework.
@@ -48,7 +54,7 @@ class httpLogTab(entries.RememberingHPaned):
         mainvbox.set_spacing(self._padding)
         # Add the menuHbox, Req/Res viewer and the R/R selector on the bottom
         self._initSearchBox(mainvbox)
-        self._initAdvSearchBox(mainvbox)
+        self._initFilterBox(mainvbox)
         self._initReqResViewer(mainvbox)
         mainvbox.show()
         # Add everything
@@ -68,7 +74,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._lstore = gtk.ListStore(gobject.TYPE_UINT,gobject.TYPE_BOOLEAN,
                 gobject.TYPE_STRING,gobject.TYPE_STRING,gobject.TYPE_STRING,
                 gobject.TYPE_UINT, gobject.TYPE_STRING,
-                gobject.TYPE_UINT, gobject.TYPE_FLOAT)
+                gobject.TYPE_UINT, gobject.TYPE_STRING,gobject.TYPE_FLOAT)
         # Create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -76,6 +82,16 @@ class httpLogTab(entries.RememberingHPaned):
         self.__add_columns( self._lstoreTreeview )
         self._lstoreTreeview.show()
         self._lstoreTreeview.connect('cursor-changed', self._viewInReqResViewer)
+        # Popup menu
+        self._rightButtonMenu = None
+        self._lstoreTreeview.connect('button-press-event', self._popupMenu)
+        #
+        # 
+        # Selection
+        #
+        treeselection = self._lstoreTreeview.get_selection()
+        treeselection.set_mode(gtk.SELECTION_MULTIPLE)
+
         self._sw.add(self._lstoreTreeview)
         #self._sw.set_sensitive(False)
         self._sw.show_all()
@@ -86,95 +102,114 @@ class httpLogTab(entries.RememberingHPaned):
         self._vpan.show()
         mainvbox.pack_start(self._vpan)
 
-    def _initSearchBox(self, mainvbox):
-        """Init Search box."""
-        # The search entry
-        self._searchText = gtk.Entry()
-        self._searchText.connect("activate", self._findRequestResponse)
-        # The button that is used to advanced search
-        advSearchBtn = gtk.ToggleButton(label=_("_Advanced"))
-        advSearchBtn.connect("toggled", self._showHideAdvancedBox)
-        # The button that is used to search
-        searchBtn = gtk.Button(stock=gtk.STOCK_FIND)
-        searchBtn.connect("clicked", self._findRequestResponse)
-        # The button that is used show all entries
-        showAllBtn = gtk.Button(stock=gtk.STOCK_CLEAR)
-        showAllBtn.connect("clicked", self._showAllRequestResponses)
-        # Create the container that has the menu
-        menuHbox = gtk.HBox()
-        menuHbox.set_spacing(self._padding)
-        menuHbox.pack_start(gtk.Label(_("Search:")), False)
-        menuHbox.pack_start(self._searchText)
-        menuHbox.pack_start(advSearchBtn, False)
-        menuHbox.pack_start(searchBtn, False)
-        menuHbox.pack_start(showAllBtn, False)
-        menuHbox.show_all()
-        mainvbox.pack_start(menuHbox, False, True)
+    def _popupMenu( self, tv, event ):
+        '''Generate and show popup menu.'''
+        if event.button != 3:
+            return
+        # creates the whole menu only once
+        if self._rightButtonMenu is None:
+            gm = gtk.Menu()
+            self._rightButtonMenu = gm
+            # the items
+            e = gtk.MenuItem(_("Delete selected items"))
+            e.connect('activate', self._deleteSelected)
+            gm.append(e)
+            gm.show_all()
+        else:
+            gm = self._rightButtonMenu
+        gm.popup( None, None, None, event.button, event.time)
+        return True
 
-    def _initAdvSearchBox(self, mainvbox):
-        """Init advanced search options."""
-        self._comboValues = ["=", ">", "<"]
-        self._advSearchBox = gtk.HBox()
-        self._advSearchBox.set_spacing(self._padding)
-        options = [("code", _("Code")), ("id", _("ID"))]
-        for opt in options:
-            self._advSearchBox.pack_start(gtk.Label(opt[1]), False, False)
-            combo = gtk.combo_box_new_text()
-            for o in self._comboValues:
-                combo.append_text(o)
-            combo.set_active(0)
-            setattr(self, "_" + opt[0] + "Combo", combo)
-            entry = gtk.Entry()
-            entry.connect("activate", self._findRequestResponse)
-            setattr(self, "_" + opt[0] + "Entry", entry)
-            self._advSearchBox.pack_start(combo, False, False)
-            self._advSearchBox.pack_start(entry, False, False)
-        self._advSearchBox.hide_all()
-        mainvbox.pack_start(self._advSearchBox, False, False)
+    def _deleteSelected(self, widg=None):
+        '''Delete selected transactions.'''
+        ids = []
+        iters = []
+        sel = self._lstoreTreeview.get_selection()
+        (model, pathlist) = sel.get_selected_rows()
+        for path in pathlist:
+            iters.append(self._lstore.get_iter(path))
+            itemNumber = path[0]
+            iid = self._lstore[itemNumber][0]
+            ids.append(iid)
+        for i in iters:
+            self._lstore.remove(i)
+        #  TODO Move this action to separate thread
+        for iid in ids:
+            self._historyItem.delete(iid)
 
     def _initSearchBox(self, mainvbox):
         """Init Search box."""
         # The search entry
         self._searchText = gtk.Entry()
-        self._searchText.connect("activate", self._findRequestResponse)
+        self._searchText.connect("activate", self.findRequestResponse)
         # The button that is used to advanced search
-        advSearchBtn = gtk.ToggleButton(label=_("_Advanced"))
-        advSearchBtn.connect("toggled", self._showHideAdvancedBox)
-        # The button that is used to search
-        searchBtn = gtk.Button(stock=gtk.STOCK_FIND)
-        searchBtn.connect("clicked", self._findRequestResponse)
-        # The button that is used show all entries
-        showAllBtn = gtk.Button(stock=gtk.STOCK_CLEAR)
-        showAllBtn.connect("clicked", self._showAllRequestResponses)
+        filterBtn = gtk.ToggleButton(label=_("_Filter Options"))
+        filterBtn.connect("toggled", self._showHideFilterBox)
+        filterImg = gtk.Image()
+        filterImg.set_from_stock(gtk.STOCK_FIND, gtk.ICON_SIZE_MENU)
+        filterBtn.set_image(filterImg)
+        # Clear button
+        close = gtk.Image()
+        close.set_from_stock(gtk.STOCK_CLEAR , gtk.ICON_SIZE_MENU)
+        clearBox = gtk.EventBox()
+        clearBox.add(close)
+        clearBox.connect("button-release-event", self._showAllRequestResponses)
         # Create the container that has the menu
         menuHbox = gtk.HBox()
         menuHbox.set_spacing(self._padding)
         menuHbox.pack_start(gtk.Label(_("Search:")), False)
         menuHbox.pack_start(self._searchText)
-        menuHbox.pack_start(advSearchBtn, False)
-        menuHbox.pack_start(searchBtn, False)
-        menuHbox.pack_start(showAllBtn, False)
+        menuHbox.pack_start(clearBox, False)
+        menuHbox.pack_start(filterBtn, False)
         menuHbox.show_all()
         mainvbox.pack_start(menuHbox, False, True)
 
-    def _initAdvSearchBox(self, mainvbox):
+    def _initFilterBox(self, mainvbox):
         """Init advanced search options."""
-        self._comboValues = ["=", ">", "<"]
         self._advSearchBox = gtk.HBox()
         self._advSearchBox.set_spacing(self._padding)
-        options = [("code", _("Code")), ("id", _("ID"))]
-        for opt in options:
-            self._advSearchBox.pack_start(gtk.Label(opt[1]), False, False)
-            combo = gtk.combo_box_new_text()
-            for o in self._comboValues:
-                combo.append_text(o)
-            combo.set_active(0)
-            setattr(self, "_" + opt[0] + "Combo", combo)
-            entry = gtk.Entry()
-            entry.connect("activate", self._findRequestResponse)
-            setattr(self, "_" + opt[0] + "Entry", entry)
-            self._advSearchBox.pack_start(combo, False, False)
-            self._advSearchBox.pack_start(entry, False, False)
+        self.pref = FilterOptions(self)
+        # Filter options
+        self._filterMethods = [
+                ('GET', 'GET', False),
+                ('POST', 'POST', False),
+                ]
+        filterMethods = optionList()
+        for method in self._filterMethods:
+            filterMethods.add(Option(method[0], method[2], method[1], "boolean"))
+        self.pref.addSection('methods', _('Request Method'), filterMethods)
+        filterId = optionList()
+        filterId.add(Option("min", "0", "Min ID", "string"))
+        filterId.add(Option("max", "0", "Max ID", "string"))
+        self.pref.addSection('trans_id', _('Transaction ID'), filterId)
+        filterCodes = optionList()
+        codes = [
+                ("1xx", "1xx", False),
+                ("2xx", "2xx", False),
+                ("3xx", "3xx", False),
+                ("4xx", "4xx", False),
+                ("5xx", "5xx", False),
+                ]
+        for code in codes:
+            filterCodes.add(Option(code[0], code[2], code[1], "boolean"))
+        self.pref.addSection('codes', _('Response Code'), filterCodes)
+        filterTags = optionList()
+        filterTags.add(Option("tag", False, "Tag", "boolean"))
+        self.pref.addSection('commented', _('Commented'), filterTags)
+        filterTypes = optionList()
+        self._filterTypes = [
+                ('html', 'HTML', False),
+                ('javascript', 'JavaScript', False),
+                ('image', 'Images', False),
+                ('flash', 'Flash', False),
+                ('css', 'CSS', False),
+                ('text', 'Text', False),
+                ]
+        for filterType in self._filterTypes:
+            filterTypes.add(Option(filterType[0], filterType[2], filterType[1], "boolean"))
+        self.pref.addSection('types', _('Response Content Type'), filterTypes)
+        self.pref.show()
+        self._advSearchBox.pack_start(self.pref, False, False)
         self._advSearchBox.hide_all()
         mainvbox.pack_start(self._advSearchBox, False, False)
 
@@ -221,23 +256,17 @@ class httpLogTab(entries.RememberingHPaned):
         column.set_resizable(True)
         column.set_sizing(gtk.TREE_VIEW_COLUMN_GROW_ONLY)
         treeview.append_column(column)
-        # Column for Code
-        column = gtk.TreeViewColumn(_('Code'), gtk.CellRendererText(),text=5)
-        column.set_sort_column_id(5)
-        treeview.append_column(column)
-        # Column for response message
-        column = gtk.TreeViewColumn(_('Message'), gtk.CellRendererText(),text=6)
-        column.set_sort_column_id(6)
-        column.set_resizable(True)
-        treeview.append_column(column)
-        # Column for content-length
-        column = gtk.TreeViewColumn(_('Content-Length'), gtk.CellRendererText(),text=7)
-        column.set_sort_column_id(7)
-        treeview.append_column(column)
-        # Column for response time
-        column = gtk.TreeViewColumn(_('Time (ms)'), gtk.CellRendererText(),text=8)
-        column.set_sort_column_id(8)
-        treeview.append_column(column)
+        extColumns = [
+                (5, _('Code')),
+                (6, _('Message')),
+                (7, _('Content-Length')),
+                (8, _('Content-Type')),
+                (9, _('Time (ms)')),
+                ]
+        for n, title in extColumns:
+            column = gtk.TreeViewColumn(title, gtk.CellRendererText(),text=n)
+            column.set_sort_column_id(n)
+            treeview.append_column(column)
 
     def toggleBookmark(self, cell, path, model):
         """Toggle bookmark."""
@@ -255,62 +284,80 @@ class httpLogTab(entries.RememberingHPaned):
         historyItem.updateTag(new_text, True)
         return
 
-    def _showHideAdvancedBox(self, widget):
+    def _showHideFilterBox(self, widget):
         """Show/hide advanced options."""
         if not widget.get_active():
             self._advSearchBox.hide_all()
         else:
             self._advSearchBox.show_all()
 
-    def _showAllRequestResponses(self, widget=None):
+    def _showAllRequestResponses(self, widget=None, event=None):
         """Show all results."""
         self._searchText.set_text("")
-        self._codeEntry.set_text("")
-        self._codeCombo.set_active(0)
-        self._idEntry.set_text("")
-        self._idCombo.set_active(0)
         try:
-            self._findRequestResponse()
+            self.findRequestResponse()
         except w3afException, w3:
             self._emptyResults()
         return
 
     def refreshResults(self):
-        self._findRequestResponse(refresh=True)
+        self.findRequestResponse(refresh=True)
         return True
 
-    def _findRequestResponse(self, widget=None, refresh=False):
+    def findRequestResponse(self, widget=None, refresh=False):
         """Find entries (req/res)."""
         searchText = self._searchText.get_text()
         searchText = searchText.strip()
-        entryId = self._idEntry.get_text()
-        entryId = entryId.strip()
-        idOper = self._comboValues[self._idCombo.get_active()]
-        codeOper = self._comboValues[self._codeCombo.get_active()]
-        code = self._codeEntry.get_text()
-        code = code.strip()
-        searchData = {}
-
+        searchData = []
+        #  
+        #  Search part
+        #
         if searchText:
-            likePieces = {}
-            likePieces['url'] = ("%"+searchText+"%", 'like')
-            likePieces['tag'] = ("%"+searchText+"%", 'like')
-            searchData['or'] = likePieces
-
-        if entryId:
-            if idOper == ">" and refresh:
-                searchData['id'] = (int(self._lastId), ">")
-            elif refresh:
-                # We don't need to execute SQL request for refresh if searching for
-                # rows with id <= something
-                return
-            else:
-                searchData['id'] = (int(entryId), idOper)
-        elif refresh:
-            searchData['id'] = (int(self._lastId), ">")
-
-        if code:
-            searchData['code'] = (int(code), codeOper)
+            likePieces = []
+            likePieces.append(('url', "%"+searchText+"%", 'like'))
+            likePieces.append(('tag', "%"+searchText+"%", 'like'))
+            searchData.append((likePieces, 'OR'))
+        # 
+        # Filter part
+        #
+        # Codes
+        codes = self.pref.getOptions('codes')
+        filterCodes = []
+        for opt in codes:
+            if opt.getValue():
+                codef = opt.getName()
+                filterCodes.append(('codef', int(codef[0]), '='))
+        searchData.append((filterCodes, 'OR'))
+        # IDs
+        try:
+            minId = int(self.pref.getValue('trans_id', 'min'))
+        except:
+            minId = 0
+        try:
+            maxId = int(self.pref.getValue('trans_id', 'max'))
+        except:
+            maxId = 0
+        if maxId > 0:
+            searchData.append(('id', maxId, "<"))
+        if minId > 0:
+            searchData.append(('id', minId, ">"))
+        if refresh:
+            searchData.append(('id', self._lastId, ">"))
+        # Tags
+        if self.pref.getValue('commented', 'tag'):
+            searchData.append(('tag', '', "!="))
+        # Content type
+        filterTypes = []
+        for filterType in self._filterTypes:
+            if self.pref.getValue('types', filterType[0]):
+                filterTypes.append(('content_type', "%"+filterType[0]+"%", 'like'))
+        searchData.append((filterTypes, 'OR'))
+        # Method
+        filterMethods = []
+        for method in self._filterMethods:
+            if self.pref.getValue('methods', method[0]):
+                filterTypes.append(('method', method[0], '='))
+        searchData.append((filterMethods, 'OR'))
 
         try:
             # Please see the 5000 below
@@ -335,13 +382,39 @@ class httpLogTab(entries.RememberingHPaned):
             # show the results in the list view (when first row is selected 
             # that just triggers the req/resp filling.
             lastItem = searchResultObjects[-1]
-            self._lastId = lastItem.id
+            self._lastId = int(lastItem.id)
             self._showListView(searchResultObjects, appendMode=refresh)
             if not refresh:
                 self._sw.set_sensitive(True)
                 self._reqResViewer.set_sensitive(True)
                 self._lstoreTreeview.set_cursor((0,))
             return
+
+    def _emptyResults(self):
+        """Empty all panes."""
+        self._reqResViewer.request.clearPanes()
+        self._reqResViewer.response.clearPanes()
+        self._reqResViewer.set_sensitive(False)
+        self._sw.set_sensitive(False)
+        self._lstore.clear()
+
+    def _showListView(self, results, appendMode=False):
+        """Show the results of the search in a listview."""
+        # First I clear all old results...
+        if not appendMode:
+            self._lstore.clear()
+        for item in results:
+            self._lstore.append([item.id, item.mark, item.method, item.url,
+                item.tag, item.code, item.msg, item.responseSize,item.contentType,
+                item.time])
+        # Size search results
+        if len(results) < 10:
+            position = 13 + 48 * len(results)
+        else:
+            position = 13 + 120
+        #self._vpan.set_position(position)
+        if not appendMode:
+            self._sw.show_all()
 
     def _showMessage(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
         """Show message to user as GTK dialog."""
@@ -379,28 +452,60 @@ class httpLogTab(entries.RememberingHPaned):
             self._showMessage(_('Error'), _('The id ') + str(search_id) +\
                     _('is not inside the database.'))
 
-    def _emptyResults(self):
-        """Empty all panes."""
-        self._reqResViewer.request.clearPanes()
-        self._reqResViewer.response.clearPanes()
-        self._reqResViewer.set_sensitive(False)
-        self._sw.set_sensitive(False)
-        self._lstore.clear()
+class FilterOptions(gtk.HBox, Preferences):
+    def __init__(self, parentWidg):
+        gtk.HBox.__init__(self)
+        Preferences.__init__(self)
+        self.set_spacing(10)
+        self.parentWidg = parentWidg
 
-    def _showListView(self, results, appendMode=False):
-        """Show the results of the search in a listview."""
-        # First I clear all old results...
-        if not appendMode:
-            self._lstore.clear()
-        for item in results:
-            self._lstore.append([item.id, item.mark, item.request.getMethod(), item.request.getURI(),
-                item.tag, item.response.getCode(), item.response.getMsg(), len(item.response.getBody()),
-                item.response.getWaitTime()])
-        # Size search results
-        if len(results) < 10:
-            position = 13 + 48 * len(results)
-        else:
-            position = 13 + 120
-        #self._vpan.set_position(position)
-        if not appendMode:
-            self._sw.show_all()
+    def show(self):
+        # Init options
+        self._initOptionsView()
+        super(FilterOptions,self).show()
+
+    def _initOptionsView(self):
+        tooltips = gtk.Tooltips()
+        for section, optList in self.options.items():
+            frame = gtk.Frame()
+            label = gtk.Label('<b>%s</b>' % self.sections[section])
+            label.set_use_markup(True)
+            label.show()
+            frame.set_label_widget(label)
+            frame.set_shadow_type(gtk.SHADOW_OUT)
+            frame.show()
+            table = EasyTable(len(optList), 2)
+            for i, opt in enumerate(optList):
+                titl = gtk.Label(opt.getDesc())
+                titl.set_alignment(xalign=0.0, yalign=0.5)
+                widg = wrapperWidgets[opt.getType()](self._changedWidget, opt)
+                titl.set_mnemonic_widget(widg)
+                opt.widg = widg
+                tooltips.set_tip(widg, opt.getHelp())
+                table.autoAddRow(titl, widg)
+                table.show()
+            frame.add(table)
+            self.pack_start(frame, False, False)
+
+    def _changedWidget(self, widg, like_initial):
+        # check if all widgets are valid
+        invalid = []
+        for section, optList in self.options.items():
+            for opt in optList:
+                if hasattr(opt.widg, "isValid"):
+                    if not opt.widg.isValid():
+                        invalid.append(opt.getName())
+        if invalid:
+            msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
+            msg += "\n-".join(invalid)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg.set_title(_('Configuration error'))
+            dlg.run()
+            dlg.destroy()
+            return
+
+        # Get the value from the GTK widget and set it to the option object
+        for section, optList in self.options.items():
+            for opt in optList:
+                opt.setValue(opt.widg.getValue())
+        self.parentWidg.findRequestResponse()

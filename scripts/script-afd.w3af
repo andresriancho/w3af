@@ -20,7 +20,7 @@ discovery afd
 back
 
 target
-set target http://www.bancohipotecario.com.ar/
+set target http://www.santanderrio.com.ar/
 back
 
 start

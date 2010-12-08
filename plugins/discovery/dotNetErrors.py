@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.w3afException import w3afException
 
@@ -47,7 +47,7 @@ class dotNetErrors(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
 
         # Internal variables
-        self._already_tested = disk_list()
+        self._already_tested = ScalableBloomFilter()
 
     def discover(self, fuzzableRequest ):
         '''
@@ -55,10 +55,9 @@ class dotNetErrors(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-
         if fuzzableRequest.getURL() not in self._already_tested:
-            self._already_tested.append( fuzzableRequest.getURL() )
-            
+            self._already_tested.add( fuzzableRequest.getURL() )
+
             # Generate the URLs to GET
             to_test = self._generate_URLs( fuzzableRequest.getURL() )
             for url in to_test:

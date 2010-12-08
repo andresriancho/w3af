@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -46,6 +47,7 @@ class getMails(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         # User configured variables
         self._only_target_domain = True
+        self._already_inspected = ScalableBloomFilter()
 
     def grep(self, request, response):
         '''
@@ -55,11 +57,13 @@ class getMails(baseGrepPlugin):
         @parameter request: The HTTP response
         @return: None
         '''
-        self._grep_worker(request, response, 'mails', \
-                response.getURL().getRootDomain())
-
-        if not self._only_target_domain:
-            self._grep_worker(request, response, 'external_mails')
+        url = response.getURL()
+        if url not in self._already_inspected:
+            self._already_inspected.add(url)
+            self._grep_worker(request, response, 'mails', response.getURL().getRootDomain() )
+    
+            if not self._only_target_domain:
+                self._grep_worker(request, response, 'external_mails')
             
     def _grep_worker(self, request, response, kb_key, domain=None):
         '''

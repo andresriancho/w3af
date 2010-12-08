@@ -31,8 +31,13 @@ from core.data.parsers.urlParser import url_object
 import copy
 import urllib
 
+#CR = '\r'
+CR = ''
+LF = '\n'
+CRLF = CR + LF
+SP = ' '
 
-class fuzzableRequest:
+class fuzzableRequest(object):
     '''
     This class represents a fuzzable request. Fuzzable requests where created to allow w3af plugins
     to be much simpler and dont really care if the vulnerability is in the postdata, querystring, header, cookie
@@ -65,17 +70,21 @@ class fuzzableRequest:
         '''
         result_string = ''
         result_string += self.dumpRequestHead()
-        result_string += '\n'
+        result_string += CRLF
         if self.getData():
             result_string += str( self.getData() )
         return result_string
     
+    def getRequestLine(self):
+        '''Return request line.'''
+        return self.getMethod() + SP + self.getURI() + SP + 'HTTP/1.1' + CRLF
+
     def dumpRequestHead( self ):
         '''
         @return: A string with the head of the request
         '''
         res = ''
-        res += self.getMethod() + ' ' + self.getURI() + ' ' + 'HTTP/1.1\n'
+        res += self.getRequestLine()
         res += self.dumpHeaders()
         return res
     
@@ -85,7 +94,7 @@ class fuzzableRequest:
         '''
         result_string = ''
         for header in self._headers:
-            result_string += header + ': ' + self._headers[ header ] + '\n'
+            result_string += header + ': ' + self._headers[ header ] + CRLF
         return result_string
 
     def export( self ):

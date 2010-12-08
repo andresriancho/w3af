@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import re
 
@@ -45,7 +45,7 @@ class ajax(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = disk_list()
+        self._already_inspected = ScalableBloomFilter()
         
         # Create the regular expression to search for AJAX
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
@@ -59,12 +59,95 @@ class ajax(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
+
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> o = create_temp_dir()
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 0
+
+        Discover ajax!
+        >>> body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
+
+        Discover ajax with a broken script tag that doesn't close
+        >>> kb.kb.save('ajax','ajax',[])
+        >>> body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
+
+        Discover ajax with a broken script, head and html tags.
+        >>> kb.kb.save('ajax','ajax',[])
+        >>> body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
+
+        Another ajax function, no broken html.
+        >>> kb.kb.save('ajax','ajax',[])
+        >>> body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
+
+        Two functions, I only want one report for this page.
+        >>> kb.kb.save('ajax','ajax',[])
+        >>> body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> a = ajax()
+        >>> a.grep(request, response)
+        >>> len(kb.kb.getData('ajax', 'ajax'))
+        1
         '''
         url = response.getURL()
         if response.is_text_or_html() and url not in self._already_inspected:
             
             # Don't repeat URLs
-            self._already_inspected.append(url)
+            self._already_inspected.add(url)
             
             dom = response.getDOM()
             # In some strange cases, we fail to normalize the document
@@ -86,8 +169,6 @@ class ajax(baseGrepPlugin):
                             i.setId(response.id)
                             i.addToHighlight(res.group(0))
                             kb.kb.append(self, 'ajax', i)
-
-
 
     
     def setOptions( self, OptionList ):

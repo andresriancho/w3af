@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.w3afException import w3afRunOnce
 import core.data.constants.httpConstants as httpConstants
@@ -49,7 +49,7 @@ class allowedMethods(baseDiscoveryPlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = disk_list()
+        self._already_tested = ScalableBloomFilter()
         self._bad_codes = [ httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
                                     httpConstants.METHOD_NOT_ALLOWED, httpConstants.FORBIDDEN]
         
@@ -94,7 +94,7 @@ class allowedMethods(baseDiscoveryPlugin):
             
             domain_path = fuzzableRequest.getURL().getDomainPath()
             if domain_path not in self._already_tested:
-                self._already_tested.append( domain_path )
+                self._already_tested.add( domain_path )
                 self._check_methods( domain_path )
         return []
     
@@ -122,7 +122,7 @@ class allowedMethods(baseDiscoveryPlugin):
         if with_options:
             id_list.append( res.id )
 
-        if not with_options:
+        else:
             #
             #   Before doing anything else, I'll send a request with a non-existant method
             #   If that request succeds, then all will...

@@ -112,14 +112,10 @@ def httpRequestParser(head, postdata):
     headers = splittedHead[1:]
     headersDict = {}
     for header in headers:
-        oneSplittedHeader = header.split(':')
-        if len(oneSplittedHeader) == 2:
-            headersDict[oneSplittedHeader[0].strip()] = oneSplittedHeader[1].strip()
-        elif len(oneSplittedHeader) == 1:
+        oneSplittedHeader = header.split(':', 1)
+        if len(oneSplittedHeader) == 1:
             raise w3afException('The HTTP request has an invalid header: "' + header + '"')
-        elif len(oneSplittedHeader) > 2:
-            headerValue = ' '.join(oneSplittedHeader[1:]).strip()
-            headersDict[oneSplittedHeader[0].strip()] = headerValue
+        headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
     host = ''
     for headerName in headersDict:
         if headerName.lower() == 'host':

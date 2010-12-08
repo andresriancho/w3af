@@ -12,8 +12,13 @@ output config console
 set verbose False
 back
 back
+
 target
 set target http://moth/w3af/core/htmlParser/input_out_of_form_2.html
 back
+
 start
+
+assert len(w3af_core._fuzzableRequestList[1].getDc()) == 2
+
 exit

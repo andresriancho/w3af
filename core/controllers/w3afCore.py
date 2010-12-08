@@ -415,14 +415,12 @@ class w3afCore(object):
         try:
             self._realStart()
         except w3afMustStopException, wmse:
-            om.out.error('')
-            om.out.error('**IMPORTANT** The following error was detected by w3af and couldn\'t be resolved: ' + str(wmse) )
-            om.out.error('')
+            om.out.error('\n**IMPORTANT** The following error was detected ' \
+                         'by w3af and couldn\'t be resolved: %s\n' % wmse)
             self._end()
-        except Exception, e:
-            om.out.error('')
-            om.out.error( 'Unhandled error, traceback: ' + str( traceback.format_exc() ) )
-            om.out.error('')
+        except Exception:
+            om.out.error('\nUnhandled error, traceback: %s\n' % \
+                         traceback.format_exc()) 
             self.progress.stop()
             raise
         else:
@@ -494,7 +492,7 @@ class w3afCore(object):
                 if cf.cf.getData('exportFuzzableRequests') != '':
                     self.export.exportFuzzableRequestList(self._fuzzableRequestList)
                     
-                if len( self._fuzzableRequestList ) == 0:
+                if not self._fuzzableRequestList:
                     om.out.information('No URLs found by discovery.')
                 else:
                     # del() all the discovery and bruteforce plugins

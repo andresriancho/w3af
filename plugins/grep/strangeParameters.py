@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.w3afException import w3afException
 import core.data.parsers.dpCache as dpCache
@@ -51,7 +51,7 @@ class strangeParameters(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_reported = disk_list()
+        self._already_reported = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''
@@ -84,7 +84,7 @@ class strangeParameters(baseGrepPlugin):
                         if self._is_strange( request, param_name, qs[param_name][element_index] )\
                         and ref not in self._already_reported:
                             # Don't repeat findings
-                            self._already_reported.append(ref)
+                            self._already_reported.add(ref)
 
                             i = info.info()
                             i.setName('Strange parameter')
@@ -107,7 +107,7 @@ class strangeParameters(baseGrepPlugin):
                         and ref not in self._already_reported:
                             
                             # Don't repeat findings
-                            self._already_reported.append(ref)
+                            self._already_reported.add(ref)
                             
                             v = vuln.vuln()
                             v.setName('Parameter has SQL sentence')

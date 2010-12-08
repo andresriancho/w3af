@@ -34,7 +34,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 from core.data.parsers.urlParser import url_object
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.controllers.w3afException import w3afException
@@ -52,7 +52,7 @@ class dav(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested_dirs = disk_list()
+        self._already_tested_dirs = ScalableBloomFilter()
 
     def audit(self, freq ):
         '''
@@ -64,7 +64,7 @@ class dav(baseAuditPlugin):
         domain_path = freq.getURL().getDomainPath()
         if domain_path not in self._already_tested_dirs:
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
-            self._already_tested_dirs.append( domain_path )
+            self._already_tested_dirs.add( domain_path )
             
             self._PUT( domain_path )
             self._PROPFIND( domain_path )

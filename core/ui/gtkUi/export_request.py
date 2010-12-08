@@ -25,6 +25,7 @@ from . import entries
 from .encdec import SimpleTextView
 
 from core.data.export.ajax_export import ajax_export
+from core.data.export.html_export import html_export
 from core.data.export.python_export import python_export
 from core.data.export.ruby_export import ruby_export
 
@@ -50,7 +51,12 @@ class export_request(entries.RememberingWindow):
         self.w3af = w3af
 
         # different ways of exporting data
-        self._exporters = [('Ajax', ajax_export), ('Python', python_export), ('Ruby', ruby_export)]
+        self._exporters = [
+                ('HTML', html_export),
+                ('Ajax', ajax_export),
+                ('Python', python_export),
+                ('Ruby', ruby_export)
+                ]
 
         # splitted panes
         vpan = entries.RememberingVPaned(w3af, "pane-exportrequests")

@@ -26,6 +26,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -40,6 +41,8 @@ class httpInBody (baseGrepPlugin):
     """
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        self._already_inspected = ScalableBloomFilter()
         
         # re that searches for
         #GET / HTTP/1.0
@@ -57,11 +60,15 @@ class httpInBody (baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
+        uri = response.getURI()
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        if response.getCode() != 501 and response.is_text_or_html():
-            
+        if response.getCode() != 501 and uri not in self._already_inspected \
+            and response.is_text_or_html():
+            # Don't repeat URLs
+            self._already_inspected.add(uri)
+
             # First if, mostly for performance.
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
@@ -70,25 +77,25 @@ class httpInBody (baseGrepPlugin):
 
                 # Now, remove tags
                 body_without_tags = response.getClearTextBody()
-                
-                res = self._re_request.search( body_without_tags )
+
+                res = self._re_request.search(body_without_tags)
                 if res:
                     i = info.info()
                     i.setName('HTTP Request in HTTP body')
-                    i.setURI( response.getURI() )
-                    i.setId( response.id )
-                    i.setDesc( 'An HTTP request was found in the HTTP body of a response' )
+                    i.setURI(uri)
+                    i.setId(response.id)
+                    i.setDesc('An HTTP request was found in the HTTP body of a response')
                     i.addToHighlight(res.group(0))
-                    kb.kb.append( self, 'request', i )
-                    
-                res = self._re_response.search( body_without_tags )
+                    kb.kb.append(self, 'request', i)
+
+                res = self._re_response.search(body_without_tags)
                 if res:
                     i = info.info()
                     i.setName('HTTP Response in HTTP body')
-                    i.setURI( response.getURI() )
-                    i.setId( response.id )
-                    i.setDesc( 'An HTTP response was found in the HTTP body of a response' )
-                    kb.kb.append( self, 'response', i )
+                    i.setURI(uri)
+                    i.setId(response.id)
+                    i.setDesc('An HTTP response was found in the HTTP body of a response')
+                    kb.kb.append(self, 'response', i)
 
     def setOptions( self, optionsMap ):
         pass

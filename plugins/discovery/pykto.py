@@ -35,7 +35,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import os.path
@@ -53,7 +53,7 @@ class pykto(baseDiscoveryPlugin):
         
         # int_ernal variables
         self._exec = True
-        self._already_visited = disk_list()
+        self._already_visited = ScalableBloomFilter()
         self._first_time = True
         
         # User configured parameters
@@ -109,7 +109,7 @@ class pykto(baseDiscoveryPlugin):
                 url = fuzzableRequest.getURL().getDomainPath()
                 if url not in self._already_visited:
                     # Save the directories I already have tested
-                    self._already_visited.append( url )
+                    self._already_visited.add( url )
                     self.__run( url )
 
         return self._new_fuzzable_requests
@@ -243,13 +243,16 @@ class pykto(baseDiscoveryPlugin):
                 # A line could generate more than one request... 
                 # (think about @CGIDIRS)
                 for parameters in to_send:
+                    
+                    modified_url = url.copy()
+                    
                     (server, query , expected_response, method , desc) = parameters
                     
                     if self._generic_scan or self._server_match( server ):
                         #
                         # Avoid some special cases
                         #
-                        if url.endswith('/./') or url.endswith('/%2e/'):
+                        if url.getPath().endswith('/./') or url.getPath().endswith('/%2e/'):
                             # avoid directory self references
                             continue
                         #
@@ -265,19 +268,19 @@ class pykto(baseDiscoveryPlugin):
                         # But I do want is to avoid URLs like this one being generated:
                         # http://localhost//f00
                         # (please note the double //)
-                        if query[0] == '/' == url[-1]:
+                        if query[0] == '/' == url.getPath()[-1]:
                             query = query[1:]
                             
-                        final_url = url + query
+                        modified_url.setPath( modified_url.getPath() + query )
                         
                         lines_sent += len( to_send )
                         
                         # Send the request to the remote server and check the response.
-                        targs = (final_url, parameters)
+                        targs = (modified_url, parameters)
                         try:
                             # Performing this with different threads adds overhead, but works better now.
                             #   WithOUT threads:
-                            #self._send_and_check(final_url, parameters)
+                            #self._send_and_check(modified_url, parameters)
                             
                             #   With threads:
                             #           Performed 3630 requests in 13 seconds (279.230769 req/sec)
@@ -451,7 +454,7 @@ class pykto(baseDiscoveryPlugin):
             v.setDesc( vuln_desc )
             v.setId( response.id )
 
-            if not response.getURL().getPath().url_string.endswith('/'):
+            if not response.getURL().getPath().endswith('/'):
                 msg = 'Insecure file - ' + response.getURL().getPath()
             else:
                 msg = 'Insecure directory - ' + response.getURL().getPath()

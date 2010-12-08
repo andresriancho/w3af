@@ -23,6 +23,6 @@ set target http://moth/w3af/core/encoding/indéx.html
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) >= 9
+assert len(kb.kb.getData('urls','urlList')) == 7
 
 exit

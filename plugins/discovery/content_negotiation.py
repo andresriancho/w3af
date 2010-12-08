@@ -33,7 +33,8 @@ import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afRunOnce
 
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
+
 import os
 import re
 
@@ -53,8 +54,8 @@ class content_negotiation(baseDiscoveryPlugin):
         
         # Internal variables
         self._exec = True
-        self._already_tested_dir = disk_list()
-        self._already_tested_resource = disk_list()
+        self._already_tested_dir = ScalableBloomFilter()
+        self._already_tested_resource = ScalableBloomFilter()
         self._is_vulnerable_result = None
         self._to_bruteforce = []
         # I want to try 3 times to see if the remote host is vulnerable
@@ -132,7 +133,7 @@ class content_negotiation(baseDiscoveryPlugin):
             original_headers = fuzzableRequest.getHeaders()
             
             if alternate_resource not in self._already_tested_resource:
-                self._already_tested_resource.append( alternate_resource )
+                self._already_tested_resource.add( alternate_resource )
 
                 alternates = self._request_and_get_alternates( alternate_resource, original_headers)
            

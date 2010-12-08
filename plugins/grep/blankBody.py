@@ -25,7 +25,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -40,21 +40,71 @@ class blankBody(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_reported = disk_list()
+        self._already_reported = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''
         Plugin entry point, find the blank bodies and report them.
+
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
+
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> o = create_temp_dir()
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> b = blankBody()
+        >>> b.grep(request, response)
+        >>> assert len(kb.kb.getData('blankBody', 'blankBody')) == 1
+
+        With some content.
+        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> body = 'header body footer'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> b.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
+
+        Strange method, empty body.
+        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> body = ''
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'ARGENTINA' )
+        >>> b.grep(request, response)
+        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
+
+        Response codes,
+        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> body = ''
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(401, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> b.grep(request, response)
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        0
         '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
-        and response.getCode() not in [401, 304] and 'location' not in response.getLowerCaseHeaders()\
+        and response.getCode() not in [401, 304, 204] and 'location' not in response.getLowerCaseHeaders()\
         and response.getURL() not in self._already_reported:
             
             #   report these informations only once
-            self._already_reported.append( response.getURL() )
+            self._already_reported.add( response.getURL() )
             
             #   append the info object to the KB.
             i = info.info()

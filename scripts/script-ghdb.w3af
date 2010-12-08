@@ -10,10 +10,12 @@ output config console
 set verbose False
 back
 discovery ghdb
+dicovery config ghdb
+set resultLimit 10
 back
 
 target
-set target http://www.isibang.ac.in/
+set target http://www.ahorropticas.com
 back
 
 start

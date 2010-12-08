@@ -19,7 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('userDir','users')) >= 5
-assert len(kb.kb.getData('userDir','os')) >= 2
+assert len(kb.kb.getData('userDir','users')) == 1
 
 exit

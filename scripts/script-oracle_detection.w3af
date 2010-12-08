@@ -23,6 +23,6 @@ back
 
 start
 
-assert len(kb.kb.getData('oracle','oracle')) == 3
+assert len(kb.kb.getData('oracle','oracle')) == 1 
 
 exit
