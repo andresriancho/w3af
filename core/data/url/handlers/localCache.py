@@ -25,7 +25,7 @@ import os
 import urllib2
 import httplib
 import unittest
-import md5
+import hashlib
 from core.controllers.misc.homeDir import get_home_dir
 
 import StringIO
@@ -47,7 +47,10 @@ def getId( request ):
     id += request.get_full_url()
     for h in request.headers.keys():
         id += h + request.headers[h]
-    return md5.new(id).hexdigest()
+        
+    m = hashlib.md5()
+    m.update(id)
+    return m.hexdigest() 
 
 class CacheHandler(urllib2.BaseHandler):
     '''
