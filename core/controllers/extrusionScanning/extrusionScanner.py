@@ -32,7 +32,7 @@ import core.data.kb.config as cf
 
 import time
 import os
-import md5
+import hashlib
 import socket
 
 
@@ -73,7 +73,10 @@ class extrusionScanner:
         r += self._exec('uname -a')
         r += self._exec('env')
         r += self._exec('net user')
-        return md5.new(r).hexdigest()
+
+        m = hashlib.md5()
+        m.update(r)
+        return m.hexdigest()
     
     def isAvailable( self, port, proto ):
         try:
