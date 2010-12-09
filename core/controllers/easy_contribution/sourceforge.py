@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import string
 import time
-import md5
+import hashlib
 import urllib2, urllib
 import cookielib
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
@@ -112,10 +112,14 @@ $t_back
         @return: The new ticket URL if the bug report was successful, or None if something failed.
         '''
         
+        m = hashlib.md5()
+        m.update(time.ctime())
+        random = m.hexdigest() 
+
         # Handle the summary. Concat 'user_title'. If empty, append a random
         # token to avoid the double click protection added by sourceforge.
         summary = '[Auto-Generated] Bug Report - %s' % \
-            (user_title or md5.new(time.ctime()).hexdigest())
+            (user_title or random)
 
         user_desc = user_desc or ''
         
