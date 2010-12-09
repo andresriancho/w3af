@@ -42,7 +42,7 @@ Further Example:
 import urllib
 import urllib2
 import mimetools, mimetypes
-import os, stat
+import os, stat, hashlib
 from core.data.fuzzer.fuzzer import string_file
 
 class Callable:
