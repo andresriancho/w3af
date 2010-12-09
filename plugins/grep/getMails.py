@@ -57,9 +57,9 @@ class getMails(baseGrepPlugin):
         @parameter request: The HTTP response
         @return: None
         '''
-        url = response.getURL()
-        if url not in self._already_inspected:
-            self._already_inspected.add(url)
+        uri = response.getURI()
+        if uri not in self._already_inspected:
+            self._already_inspected.add(uri)
             self._grep_worker(request, response, 'mails', \
                     urlParser.getRootDomain(response.getURL()))
     
@@ -95,6 +95,7 @@ class getMails(baseGrepPlugin):
                 
             # Email address are case insensitive
             mail_address = mail_address.lower()
+            url = response.getURL()
 
             email_map = {}
             for info_obj in kb.kb.getData( 'mails', 'mails'):
@@ -104,18 +105,17 @@ class getMails(baseGrepPlugin):
             if mail_address not in email_map:
                 # Create a new info object, and report it
                 i = info.info()
-                i.setURL( response.getURL() )
+                i.setURL(url)
                 i.setId( response.id )
                 i.setName( mail_address )
                 desc = 'The mail account: "'+ mail_address + '" was found in: '
-                desc += '\n- ' + response.getURL() 
+                desc += '\n- ' + url
                 desc += ' - In request with id: '+ str(response.id)
                 i.setDesc( desc )
                 i['mail'] = mail_address
-                i['url_list'] = [ response.getURL(), ]
+                i['url_list'] = [url]
                 i['user'] = mail_address.split('@')[0]
                 i.addToHighlight( mail_address )
-                
                 kb.kb.append( 'mails', kb_key, i )
             
             else:
@@ -123,7 +123,7 @@ class getMails(baseGrepPlugin):
                 # Get the corresponding info object.
                 i = email_map[ mail_address ]
                 # And work
-                if response.getURL() not in i['url_list']:
+                if url not in i['url_list']:
                     # This email was already found in some other URL
                     # I'm just going to modify the url_list and the description message
                     # of the information object.
@@ -132,10 +132,10 @@ class getMails(baseGrepPlugin):
                     i.setId( id_list_of_info )
                     i.setURL('')
                     desc = i.getDesc()
-                    desc += '\n- ' + response.getURL() 
+                    desc += '\n- ' + url
                     desc += ' - In request with id: '+ str(response.id)
                     i.setDesc( desc )
-                    i['url_list'].append( response.getURL() )
+                    i['url_list'].append(url)
         
     def setOptions( self, optionsMap ):
         self._only_target_domain = optionsMap['onlyTargetDomain'].getValue()

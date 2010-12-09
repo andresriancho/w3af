@@ -74,12 +74,12 @@ class metaTags(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        url = response.getURL()
+        uri = response.getURI()
         
         if response.is_text_or_html() and not is_404( response ) and \
-            url not in self._already_inspected:
+            uri not in self._already_inspected:
 
-            self._already_inspected.add(url)
+            self._already_inspected.add(uri)
             
             try:
                 dp = dpCache.dpc.getDocumentParserFor( response )
