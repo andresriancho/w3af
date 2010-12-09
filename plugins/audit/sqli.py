@@ -216,8 +216,9 @@ class sqli(baseAuditPlugin):
             errors.append( ("Column count doesn't match", dbms.MYSQL ))
             errors.append( ("the used select statements have different number of columns", dbms.MYSQL ))
             errors.append( ("Table '[^']+' doesn't exist", dbms.MYSQL ))
+            errors.append( ("DBD::mysql::st execute failed", dbms.MYSQL ))
+            errors.append( ("DBD::mysql::db do failed:", dbms.MYSQL ))
 
-            
             # Informix
             errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
             errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))
