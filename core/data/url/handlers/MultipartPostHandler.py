@@ -42,7 +42,7 @@ Further Example:
 import urllib
 import urllib2
 import mimetools, mimetypes
-import os, stat, md5
+import os, stat
 from core.data.fuzzer.fuzzer import string_file
 
 class Callable:
@@ -102,7 +102,9 @@ class MultipartPostHandler(urllib2.BaseHandler):
             # '127.0.0.1.1000.6267.1173556103.828.1'
             # This contains my IP address, I dont like that...
             # Now:
-            boundary = md5.new(mimetools.choose_boundary()).hexdigest()
+            m = hashlib.md5()
+            m.update(mimetools.choose_boundary())
+            boundary = m.hexdigest()
         if buffer is None:
             buffer = ''
         
