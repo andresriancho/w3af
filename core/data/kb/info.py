@@ -39,6 +39,7 @@ class info(dict):
         self._variable = ''
         self._id = []
         self._name = ''
+        self._plugin_name = ''
         self._dc = None
         self._string_matches = set()
             
@@ -69,9 +70,15 @@ class info(dict):
     def setURL( self, url ):
         self._url = uri2url( url )
     
+    def getURL( self ):
+        return self._url
+    
     def setURI( self, uri ):
         self._uri = uri
         self._url = uri2url( uri )
+
+    def getURI( self ):
+        return self._uri
     
     def setMethod( self, method ):
         self._method = method.upper()
@@ -81,12 +88,7 @@ class info(dict):
         
     def setDesc( self, desc ):
         self._desc = desc
-        
-    def getURL( self ):
-        return self._url
-    
-    def getURI( self ):
-        return self._uri
+
         
     def getDesc( self ):
         if self._id is not None and self._id != 0:
@@ -105,6 +107,12 @@ class info(dict):
             return desc_to_return
         else:
             return self._desc
+    
+    def setPluginName(self, plugin_name):
+        self._plugin_name = plugin_name
+    
+    def getPluginName(self):
+        return self._plugin_name
     
     def _convert_to_range_wrapper(self, list_of_integers):
         '''
