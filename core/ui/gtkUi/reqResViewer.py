@@ -90,7 +90,7 @@ class reqResViewer(gtk.VBox):
         nb.append_page(self.request, gtk.Label(_("Request")))
         nb.append_page(self.response, gtk.Label(_("Response")))
         # Info
-        self.info = HttpEditor()
+        self.info = HttpEditor(self.w3af)
         self.info.set_editable(False)
         #self.info.show()
         nb.append_page(self.info, gtk.Label(_("Info")))
@@ -135,7 +135,6 @@ class reqResViewer(gtk.VBox):
                 self.response.childButtons.append(b)
                 b.show()
                 hbox.pack_start(b, False, False, padding=2)
-
         # I always can export requests
         b = SemiStockButton("", gtk.STOCK_COPY, _("Export Request"))
         b.connect("clicked", self._sendRequest, export_request)
@@ -221,8 +220,7 @@ class reqResViewer(gtk.VBox):
                 for itemId in result.getId():
                     historyItem = HistoryItem()
                     historyItem.load(itemId)
-                    print 'tagging', result.plugin_name
-                    historyItem.tag = result.plugin_name
+                    historyItem.updateTag(historyItem.tag + result.plugin_name)
                     historyItem.info = result.getDesc()
                     historyItem.save()
         else:

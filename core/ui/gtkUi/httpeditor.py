@@ -32,6 +32,7 @@ except Exception, e:
 
 from core.data.constants import severity
 from core.ui.gtkUi.common.searchable import Searchable
+from core.ui.gtkUi.encdec import EncodeDecode
 
 SEVERITY_TO_COLOR={
     severity.INFORMATION: 'green',
@@ -42,9 +43,10 @@ SEVERITY_TO_COLOR.setdefault('yellow')
 
 class HttpEditor(gtk.VBox, Searchable):
     """Special class for editing HTTP requests/responses."""
-    def __init__(self):
+    def __init__(self, w3af):
         gtk.VBox.__init__(self)
         self.is_request = True
+        self.w3af = w3af
         # Create the textview where the text is going to be shown
         self.textView = gtksourceview.View(gtksourceview.Buffer())
         # User controlled options
@@ -52,19 +54,17 @@ class HttpEditor(gtk.VBox, Searchable):
         self.textView.set_show_line_numbers(False)
         # Other options
         # Font
-        self.set_wrap(False)
+        self.set_wrap(True)
         self.textView.set_border_width(5)
         fontDesc = pango.FontDescription('monospace')
         if fontDesc:
             self.textView.modify_font(fontDesc)
         # Syntax highlight
-        lm = gtksourceview.LanguageManager()
-        foo = lm.get_search_path()
+        self._lm = gtksourceview.LanguageManager()
+        foo = self._lm.get_search_path()
         foo.append('core' + os.path.sep+ 'ui' + os.path.sep + 'gtkUi')
-        lm.set_search_path(foo)
-        lang = lm.get_language('http')
-        b = self.textView.get_buffer()
-        b.set_language(lang)
+        self._lm.set_search_path(foo)
+        self.set_language('http')
         #b.set_highlight_syntax(True)
 
         self.reset_bg_color()
@@ -83,10 +83,56 @@ class HttpEditor(gtk.VBox, Searchable):
 # 
 # Interface
 #
+    def set_language(self, name):
+        lang = self._lm.get_language(name)
+        b = self.textView.get_buffer()
+        b.set_language(lang)
+
+    def get_language(self, name):
+        b = self.textView.get_buffer()
+        l = b.get_language()
+        return l.get_id()
+
+    def get_languages(self):
+        return ['http', 'html', 'xml', 'css']
+        #return self._lm.get_language_ids()
+
+    def _activate_lang(self, widg, lang):
+        self.set_language(lang)
+
+    def _populate_popup(self, textview, menu):
+        menu.append(gtk.SeparatorMenuItem())
+        encdec = gtk.MenuItem(_('Send selected text to Encode/Decode tool'))
+        encdec.connect("activate", self._send2enc)
+        menu.append(encdec)
+        syntaxMenu = gtk.Menu()
+        for i in self.get_languages():
+            langItem = gtk.MenuItem(i)
+            langItem.connect("activate", self._activate_lang, i)
+            syntaxMenu.append(langItem)
+        opc = gtk.MenuItem(_("Syntax highlighting"))
+        opc.set_submenu(syntaxMenu)
+        menu.append(opc)
+        menu.show_all()
+        Searchable._populate_popup(self, textview, menu)
+
+    def _send2enc(self, w=None):
+        enc = EncodeDecode(self.w3af)
+        enc.paneup.setText(self.get_selected_text())
+        enc.panedn.setText(self.get_selected_text())
+
     def clear(self):
         buf = self.textView.get_buffer()
         start, end = buf.get_bounds()
         buf.delete(start, end)
+
+    def get_selected_text(self):
+        buf = self.textView.get_buffer()
+        sel = buf.get_selection_bounds()
+        if sel:
+            return buf.get_text(sel[0],sel[1])
+        else:
+            return ''
 
     def get_text(self, splitted=False):
         buf = self.textView.get_buffer()

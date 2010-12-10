@@ -87,7 +87,7 @@ class HttpHeadersView(RememberingVPaned):
         box.show()
         self.add(box)
 
-        self._raw = HttpEditor()
+        self._raw = HttpEditor(w3af)
         self._raw.show()
         self._raw.set_editable(editable)
         self._raw.set_wrap(True)
