@@ -86,6 +86,7 @@ class phishtank(baseDiscoveryPlugin):
             # Only create the vuln object once
             if phishtank_matches:
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( ptm.url )
                 v.setId( response.id )
                 v.setName( 'Phishing scam' )

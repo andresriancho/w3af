@@ -81,6 +81,7 @@ class ria_enumerator(baseDiscoveryPlugin):
                     if '"entries":' in http_response and not is_404( http_response ):
                         # Save it to the kb!
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('Gears Manifest')
                         i.setURL( manifest_url )
                         i.setId( http_response.id )
@@ -123,6 +124,7 @@ class ria_enumerator(baseDiscoveryPlugin):
             'cross-domain-policy' in response.getBody() or \
             'cross-domain-access' in response.getBody():
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Invalid ' + file_name)
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )
@@ -145,6 +147,7 @@ class ria_enumerator(baseDiscoveryPlugin):
 
                 if url == '*':
                     v = vuln.vuln()
+                    v.setPluginName(self.getName())
                     v.setURL( response.getURL() )
                     v.setMethod( 'GET' )
                     v.setName( 'Insecure "' + file_name + '" settings' )
@@ -157,6 +160,7 @@ class ria_enumerator(baseDiscoveryPlugin):
                     om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 else:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Crossdomain allow ACL')
                     i.setURL( response.getURL() )
                     i.setMethod( 'GET' )

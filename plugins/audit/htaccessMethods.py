@@ -89,6 +89,7 @@ class htaccessMethods(baseAuditPlugin):
         
         if len(allowed_methods)>0:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( url )
             v.setName( 'Misconfigured access control' )
             v.setSeverity(severity.MEDIUM)

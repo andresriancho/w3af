@@ -100,6 +100,7 @@ class creditCards(baseGrepPlugin):
             
             for card in found_cards:
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( response.getURL() )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)

@@ -105,6 +105,7 @@ class detectReverseProxy(baseDiscoveryPlugin):
         @parameter response: The response that triggered the detection
         '''
         i = info.info()
+        i.setPluginName(self.getName())
         i.setName('Reverse proxy')
         i.setId( response.getId() )
         i.setURL( response.getURL() )

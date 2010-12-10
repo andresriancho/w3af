@@ -81,6 +81,7 @@ class httpInBody (baseGrepPlugin):
                 res = self._re_request.search(body_without_tags)
                 if res:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('HTTP Request in HTTP body')
                     i.setURI(uri)
                     i.setId(response.id)
@@ -91,6 +92,7 @@ class httpInBody (baseGrepPlugin):
                 res = self._re_response.search(body_without_tags)
                 if res:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('HTTP Response in HTTP body')
                     i.setURI(uri)
                     i.setId(response.id)

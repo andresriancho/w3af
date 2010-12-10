@@ -63,6 +63,7 @@ class davShell(baseAttackPlugin):
             om.out.error('You have to configure the "url" parameter.')
         else:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( self._url )
             kb.kb.append( 'dav', 'dav', v )
     

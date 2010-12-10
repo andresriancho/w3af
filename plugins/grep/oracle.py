@@ -63,6 +63,7 @@ class oracle(baseGrepPlugin):
                 if msg in response:
                     
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Oracle application')
                     i.setURL(url)
                     i.setId( response.id )

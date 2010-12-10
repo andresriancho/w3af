@@ -76,6 +76,7 @@ class xsrf(baseAuditPlugin):
                 
                 # Vulnerable and not in list, add:
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( freq.getURL() )
                 v.setDc( freq.getDc() )
                 v.setName( 'Cross site request forgery vulnerability' )
@@ -94,6 +95,7 @@ class xsrf(baseAuditPlugin):
                 
                 # Vulnerable and not in list, add:
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( freq.getURL() )
                 v.setSeverity(severity.LOW)
                 v.setDc( freq.getDc() )

@@ -71,6 +71,7 @@ class robotsReader(baseDiscoveryPlugin):
             if not is_404( http_response ):
                 # Save it to the kb!
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('robots.txt file')
                 i.setURL( robots_url )
                 i.setId( http_response.id )

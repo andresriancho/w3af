@@ -76,6 +76,7 @@ class hashFind(baseGrepPlugin):
                         if self._has_hash_distribution( possible_hash ):
                             if (possible_hash, response.getURL()) not in self._already_reported:
                                 i = info.info()
+                                i.setPluginName(self.getName())
                                 i.setName( hash_type + 'hash in HTML content')
                                 i.setURL( response.getURL() )
                                 i.addToHighlight(possible_hash)

@@ -99,6 +99,7 @@ class domXss(baseGrepPlugin):
 
         for vulnCode in res:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.addToHighlight(vulnCode)
             v.setURL(response.getURL())
             v.setId(response.id)

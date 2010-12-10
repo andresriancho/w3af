@@ -84,6 +84,7 @@ class fingerprint_os(baseDiscoveryPlugin):
             if relative_distance_ge(original_response.getBody(),
                                     windows_response.getBody(), 0.98):
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Operating system')
                 i.setURL( windows_response.getURL() )
                 i.setMethod( 'GET' )
@@ -94,6 +95,7 @@ class fingerprint_os(baseDiscoveryPlugin):
                 om.out.information( i.getDesc() )
             else:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Operating system')
                 i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )

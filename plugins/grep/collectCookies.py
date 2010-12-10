@@ -77,6 +77,7 @@ class collectCookies(baseGrepPlugin):
                 
                 # Create the object to save the cookie in the kb
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
                 cookieStr = headers[key].strip()
@@ -172,6 +173,7 @@ class collectCookies(baseGrepPlugin):
                                     # The first statement of this if is to make this algorithm faster
                                     if len( parameter_value_i ) > 4 and parameter_value_i == cookie['cookie-object'][key]:
                                         v = vuln.vuln()
+                                        v.setPluginName(self.getName())
                                         v.setURL( response.getURL() )
                                         self._setCookieToRep(v, cobj=cookie)
                                         v.setSeverity(severity.HIGH)
@@ -192,6 +194,7 @@ class collectCookies(baseGrepPlugin):
             if cookie[0] in cookieObj.output(header=''):
                 if cookie[1] not in self._already_reported_server:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setId( response.id )
                     i.setName('Identified cookie')
                     i.setURL( response.getURL() )
@@ -221,6 +224,7 @@ class collectCookies(baseGrepPlugin):
         ### https://sourceforge.net/tracker2/?func=detail&aid=2139517&group_id=170274&atid=853655
         if 'secure' in cookieObj and response.getURL().startswith('http://'):
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( response.getURL() )
             v.setId( response.getId() )
             self._setCookieToRep(v, cookieObj)

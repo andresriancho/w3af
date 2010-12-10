@@ -93,6 +93,7 @@ class unSSL(baseAuditPlugin):
                 if http_response.getCode() == https_response.getCode():
                     if http_response.getBody() == https_response.getBody():
                         v = vuln.vuln( freq )
+                        v.setPluginName(self.getName())
                         v.setName( 'Secure content over insecure channel' )
                         v.setSeverity(severity.MEDIUM)
                         msg = 'Secure content can be accesed using the insecure protocol HTTP.'

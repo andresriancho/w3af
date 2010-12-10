@@ -85,6 +85,7 @@ class serverStatus(baseDiscoveryPlugin):
                 for version in re.findall('<dl><dt>Server Version: (.*?)</dt>', response.getBody()):
                     # Save the results in the KB so the user can look at it
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setURL( response.getURL() )
                     i.setId( response.id )
                     i.setName( 'Apache Server version' )
@@ -116,6 +117,7 @@ class serverStatus(baseDiscoveryPlugin):
                 # Now that we are outsite the for loop, we can report the possible vulns
                 if len( self._shared_hosting_hosts ):
                     v = vuln.vuln()
+                    v.setPluginName(self.getName())
                     v.setURL( fuzzableRequest.getURL() )
                     v.setId( response.id )
                     self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )

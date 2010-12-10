@@ -95,6 +95,7 @@ class sqli(baseAuditPlugin):
                     if not sql_regex.search( mutant.getOriginalResponseBody() ):
                         # Create the vuln,
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setName( 'SQL injection vulnerability' )
                         v.setSeverity(severity.HIGH)

@@ -88,6 +88,7 @@ class strangeParameters(baseGrepPlugin):
                             self._already_reported.add(ref)
 
                             i = info.info()
+                            i.setPluginName(self.getName())
                             i.setName('Strange parameter')
                             i.setURI( ref )
                             i.setId( response.id )
@@ -111,6 +112,7 @@ class strangeParameters(baseGrepPlugin):
                             self._already_reported.add(ref)
                             
                             v = vuln.vuln()
+                            v.setPluginName(self.getName())
                             v.setName('Parameter has SQL sentence')
                             v.setURI( ref )
                             v.setId( response.id )

@@ -78,6 +78,7 @@ class dotNetEventValidation(baseGrepPlugin):
                 if not self._eventvalidation.search(response.getBody()):
                     # Nice! We found a possible bug =)
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )
@@ -90,6 +91,7 @@ class dotNetEventValidation(baseGrepPlugin):
                 if not self._encryptedVs.search(response.getBody()):
                     # Nice! We can decode the viewstate! =)
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('.NET ViewState encryption is disabled')
                     i.setURL( response.getURL() )
                     i.setId( response.id )

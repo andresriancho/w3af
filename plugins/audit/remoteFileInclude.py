@@ -194,6 +194,7 @@ class remoteFileInclude(baseAuditPlugin):
                 
                 if self._rfi_result in response:
                     v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
                     v.setId(response.id)
                     v.setSeverity(severity.HIGH)
                     v.setName('Remote file inclusion vulnerability')
@@ -210,6 +211,7 @@ class remoteFileInclude(baseAuditPlugin):
                     for error in rfi_errors:
                         if error in response and not error in mutant.getOriginalResponseBody():
                             v = vuln.vuln( mutant )
+                            v.setPluginName(self.getName())
                             v.setId( response.id )
                             v.setSeverity(severity.MEDIUM)
                             v.addToHighlight(error)

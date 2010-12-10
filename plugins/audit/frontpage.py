@@ -153,6 +153,7 @@ class frontpage(baseAuditPlugin):
             # And it must be there
             if res.getBody() == randFile[::-1] and not is_404( res ):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( targetURL )
                 v.setId( [upload_id, res.id] )
                 v.setSeverity(severity.HIGH)

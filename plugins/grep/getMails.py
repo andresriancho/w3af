@@ -105,6 +105,7 @@ class getMails(baseGrepPlugin):
             if mail_address not in email_map:
                 # Create a new info object, and report it
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setURL(url)
                 i.setId( response.id )
                 i.setName( mail_address )

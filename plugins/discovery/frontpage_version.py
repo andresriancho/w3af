@@ -112,6 +112,7 @@ class frontpage_version(baseDiscoveryPlugin):
             self._exec = False
 
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName( 'FrontPage Configuration Information' )
             i.setURL( response.getURL() )
@@ -138,6 +139,7 @@ class frontpage_version(baseDiscoveryPlugin):
             # This is wierd... we found a _vti_inf file, but there is no frontpage
             # information in it... IPS? WAF? honeypot?                            
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName( 'Fake FrontPage Configuration Information' )
             i.setURL( response.getURL() )
@@ -157,6 +159,7 @@ class frontpage_version(baseDiscoveryPlugin):
         @return: None. All the info is saved to the kb.
         '''
         i = info.info()
+        i.setPluginName(self.getName())
         i.setId( response.id )
         i.setURL( response.getURL() )
         # Check for anomalies in the location of admin.exe
@@ -189,6 +192,7 @@ class frontpage_version(baseDiscoveryPlugin):
         @return: None. All the info is saved to the kb.
         '''
         i = info.info()
+        i.setPluginName(self.getName())
         i.setId( response.id )
         i.setURL( response.getURL() )
         # Check for anomalies in the location of author.exe

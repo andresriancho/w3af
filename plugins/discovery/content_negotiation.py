@@ -256,6 +256,7 @@ class content_negotiation(baseDiscoveryPlugin):
                 
                 # Save the result as an info in the KB, for the user to see it:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('HTTP Content Negotiation enabled')
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )

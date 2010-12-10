@@ -99,6 +99,7 @@ class mxInjection(baseAuditPlugin):
                 for mx_error_re, mx_error_string in mx_error_list:
                     if not mx_error_re.search( mutant.getOriginalResponseBody() ):
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setName( 'MX injection vulnerability' )
                         v.setSeverity(severity.MEDIUM)
                         v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )

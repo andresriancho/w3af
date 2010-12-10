@@ -158,6 +158,7 @@ class errorPages(baseGrepPlugin):
                 if msg in response:
                     
                     i = info.info()
+                    i.setPluginName(self.getName())
                     
                     # Set a nicer name for the vulnerability
                     name = 'Descriptive error page - "'
@@ -189,6 +190,7 @@ class errorPages(baseGrepPlugin):
                         if match_string not in self._already_reported_versions:
                             # Save the info obj
                             i = info.info()
+                            i.setPluginName(self.getName())
                             i.setName('Error page with information disclosure')
                             i.setURL( response.getURL() )
                             i.setId( response.id )

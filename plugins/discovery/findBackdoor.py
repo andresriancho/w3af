@@ -175,6 +175,7 @@ class findBackdoor(baseDiscoveryPlugin):
         else:
             if self._is_possible_backdoor(response):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId(response.id)
                 v.setName('Possible web backdoor')
                 v.setSeverity(severity.HIGH)

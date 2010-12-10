@@ -75,6 +75,7 @@ class objects(baseGrepPlugin):
                     
                     if element_list:
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName(tag_name.title() + ' tag')
                         i.setURL(url)
                         i.setId( response.id )

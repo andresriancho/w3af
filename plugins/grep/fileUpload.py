@@ -67,6 +67,7 @@ class fileUpload(baseGrepPlugin):
                 # Loop through file inputs tags                
                 for input_file in dom.xpath(FILE_INPUT_XPATH):
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('File upload form')
                     i.setURL(url)
                     i.setId(response.id)

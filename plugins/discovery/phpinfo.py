@@ -135,6 +135,7 @@ class phpinfo(baseDiscoveryPlugin):
 
                 if (php_version and sysinfo):
                     v = vuln.vuln()
+                    v.setPluginName(self.getName())
                     v.setId( response.id )
                     v.setName( 'phpinfo() file found' )
                     v.setSeverity(severity.MEDIUM)
@@ -171,6 +172,7 @@ class phpinfo(baseDiscoveryPlugin):
             rg = register_globals.group(1)            
             if(rg == 'On'):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'register_globals: On' )
                 v.setSeverity(severity.MEDIUM)
@@ -191,6 +193,7 @@ class phpinfo(baseDiscoveryPlugin):
         allow_url_fopen = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if allow_url_fopen:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'allow_url_fopen: On' )
             v.setSeverity(severity.MEDIUM)
@@ -206,6 +209,7 @@ class phpinfo(baseDiscoveryPlugin):
         allow_url_include = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if allow_url_include:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'allow_url_include: On' )
             v.setSeverity(severity.MEDIUM)
@@ -221,6 +225,7 @@ class phpinfo(baseDiscoveryPlugin):
         display_errors = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if display_errors:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'display_errors: On' )
             v.setSeverity(severity.MEDIUM)
@@ -236,6 +241,7 @@ class phpinfo(baseDiscoveryPlugin):
         expose_php = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if expose_php:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'expose_php: On' )
             v.setSeverity(severity.MEDIUM)
@@ -257,6 +263,7 @@ class phpinfo(baseDiscoveryPlugin):
             lpt_gid = lowest_privilege_test.group(3) 
             if( lpt_uid < 99 or lpt_gid < 99 or re.match('root|apache|daemon|bin|operator|adm',lpt_uname,re.IGNORECASE)):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'lowest_privilege_test:fail' )
                 v.setSeverity(severity.MEDIUM)
@@ -287,6 +294,7 @@ class phpinfo(baseDiscoveryPlugin):
             dfe = df.split(',')
             if(len(dfe) < secure_df):    
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'disable_functions:few' )
                 v.setSeverity(severity.MEDIUM)
@@ -328,6 +336,7 @@ class phpinfo(baseDiscoveryPlugin):
             
             if(curl_vuln == 1):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'curl_file_support:not_fixed' )
                 v.setSeverity(severity.MEDIUM)
@@ -347,6 +356,7 @@ class phpinfo(baseDiscoveryPlugin):
             utd = cgi_force_redirect.group(1) + ''
             if(utd != 'On'):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'cgi_force_redirect: Off' )
                 v.setSeverity(severity.MEDIUM)
@@ -362,6 +372,7 @@ class phpinfo(baseDiscoveryPlugin):
         session_cookie_httponly = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_cookie_httponly:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'session.cookie_httponly: Off' )
             v.setSeverity(severity.MEDIUM)
@@ -377,6 +388,7 @@ class phpinfo(baseDiscoveryPlugin):
         session_save_path = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_save_path:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'session_save_path:Everyone' )
             v.setSeverity(severity.LOW)
@@ -392,6 +404,7 @@ class phpinfo(baseDiscoveryPlugin):
         session_use_trans = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_use_trans:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'session_use_trans: On' )
             v.setSeverity(severity.MEDIUM)
@@ -407,6 +420,7 @@ class phpinfo(baseDiscoveryPlugin):
         default_charset = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if default_charset:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'default_charset: Off' )
             v.setSeverity(severity.MEDIUM)
@@ -426,6 +440,7 @@ class phpinfo(baseDiscoveryPlugin):
             rg = enable_dl.group(1)
             if(rg == 'On'):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'enable_dl: On' )
                 v.setSeverity(severity.MEDIUM)
@@ -449,6 +464,7 @@ class phpinfo(baseDiscoveryPlugin):
             ml = ml.replace('M','')
             if(ml > secure_ml):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'memory_limit:high' )
                 v.setSeverity(severity.MEDIUM)
@@ -469,6 +485,7 @@ class phpinfo(baseDiscoveryPlugin):
             pms = int(pms)
             if(pms > secure_pms):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'post_max_size:high' )
                 v.setSeverity(severity.LOW)
@@ -489,6 +506,7 @@ class phpinfo(baseDiscoveryPlugin):
             umf = int(umf)
             if(umf > secure_umf):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setName( 'post_max_size:high' )
                 v.setSeverity(severity.LOW)
@@ -504,6 +522,7 @@ class phpinfo(baseDiscoveryPlugin):
         upload_tmp_dir = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if upload_tmp_dir:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setId( response.id )
             v.setName( 'upload_tmp_dir:Everyone' )
             v.setSeverity(severity.LOW)
@@ -524,6 +543,7 @@ class phpinfo(baseDiscoveryPlugin):
         ### [privilege] ###
         if lpt_flag == 'info':
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName(lpt_name )            
             i.setURL( response.getURL() )                            
@@ -535,6 +555,7 @@ class phpinfo(baseDiscoveryPlugin):
         ### [register_globals]###
         if rg_flag=='info':
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName( rg_name )            
             i.setURL( response.getURL() )            
@@ -546,6 +567,7 @@ class phpinfo(baseDiscoveryPlugin):
         ### [enable_dl]###
         if ed_flag == 'info':
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName(ed_name )            
             i.setURL( response.getURL() )                            
@@ -559,6 +581,7 @@ class phpinfo(baseDiscoveryPlugin):
         file_uploads = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if file_uploads:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setName( 'file_uploads: On' )            
             i.setURL( response.getURL() )
@@ -574,6 +597,7 @@ class phpinfo(baseDiscoveryPlugin):
         if magic_quotes_gpc:
             mqg = magic_quotes_gpc.group(1)
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setURL( response.getURL() )
             if (mqg == 'On'):            
@@ -595,6 +619,7 @@ class phpinfo(baseDiscoveryPlugin):
         if open_basedir:
             obd = open_basedir.group(1)
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setURL( response.getURL() )
             
@@ -617,6 +642,7 @@ class phpinfo(baseDiscoveryPlugin):
         session_hash_function = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_hash_function:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setId( response.id )
             i.setURL( response.getURL() )
             if (session_hash_function.group(1) == 0 or session_hash_function.group(1) != 'no'):

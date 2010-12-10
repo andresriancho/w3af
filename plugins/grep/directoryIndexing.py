@@ -76,6 +76,7 @@ class directoryIndexing(baseGrepPlugin):
                 for indexing_regex in self._compiled_regex_list:
                     if indexing_regex.search( html_string ):
                         v = vuln.vuln()
+                        v.setPluginName(self.getName())
                         v.setURL( response.getURL() )
                         msg = 'The URL: "' + response.getURL() + '" has a directory '
                         msg += 'indexing vulnerability.'

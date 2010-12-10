@@ -125,6 +125,7 @@ class ssn(baseGrepPlugin):
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURI( uri )
                 v.setId( response.id )
                 v.setSeverity(severity.LOW)

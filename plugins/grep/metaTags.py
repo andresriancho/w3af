@@ -107,6 +107,7 @@ class metaTags(baseGrepPlugin):
                             if where:
                                 # The atribute is interesting!
                                 i = info.info()
+                                i.setPluginName(self.getName())
                                 i.setName('Interesting META tag')
                                 i.setURI( response.getURI() )
                                 i.setId( response.id )

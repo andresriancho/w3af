@@ -443,6 +443,7 @@ class pykto(baseDiscoveryPlugin):
             kb.kb.append( self, 'url', response.getURL() )
             
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURI( response.getURI() )
             v.setMethod( method )
             vuln_desc = 'pykto plugin found a vulnerability at URL: "' + v.getURL() + '". '

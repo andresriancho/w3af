@@ -111,6 +111,7 @@ class sharedHosting(baseDiscoveryPlugin):
                     if is_vulnerable:
                         severityOfThisVuln = severity.MEDIUM
                         v = vuln.vuln()
+                        v.setPluginName(self.getName())
                         v.setURL( fuzzableRequest.getURL() )
                         v.setId( 1 )
                         v['alsoInHosting'] = results

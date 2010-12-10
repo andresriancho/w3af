@@ -100,6 +100,7 @@ class findComments(baseGrepPlugin):
                     for word in self._interestingWords:
                         if word in comment and ( word, response.getURL() ) not in self._already_reported_interesting:
                             i = info.info()
+                            i.setPluginName(self.getName())
                             i.setName('HTML comment with "' + word + '" inside')
                             msg = 'A comment with the string "' + word + '" was found in: "'
                             msg += response.getURL() + '". This could be interesting.'
@@ -117,6 +118,7 @@ class findComments(baseGrepPlugin):
                     ( comment, response.getURL() ) not in self._already_reported_interesting:
                         # There is HTML code in the comment.
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('HTML comment contains HTML code')
                         desc = 'A comment with the string "' +comment + '" was found in: "'
                         desc += response.getURL() + '" . This could be interesting.'

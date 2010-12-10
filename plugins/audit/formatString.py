@@ -92,6 +92,7 @@ class formatString(baseAuditPlugin):
                         if not error not in mutant.getOriginalResponseBody():
                             # vuln, vuln!
                             v = vuln.vuln( mutant )
+                            v.setPluginName(self.getName())
                             v.setId( response.id )
                             v.setSeverity(severity.MEDIUM)
                             v.setName( 'Format string vulnerability' )

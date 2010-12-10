@@ -145,6 +145,7 @@ class ghdb(baseDiscoveryPlugin):
             response = self._urlOpener.GET(result.URL, useCache=True )
             if not is_404( response ):
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setURL( response.getURL() )
                 v.setMethod( 'GET' )
                 v.setName( 'Google hack database vulnerability' )

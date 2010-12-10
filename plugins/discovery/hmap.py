@@ -105,6 +105,7 @@ class hmap(baseDiscoveryPlugin):
                         server = results[0]
                     
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('Webserver Fingerprint')
                         desc = 'The most accurate fingerprint for this HTTP server is: "'
                         desc += str(server) + '".'

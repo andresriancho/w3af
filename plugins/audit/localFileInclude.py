@@ -172,6 +172,7 @@ class localFileInclude(baseAuditPlugin):
                 for file_pattern_regex, file_content in file_content_list:
                     if not file_pattern_regex.search( mutant.getOriginalResponseBody() ):
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setName( 'Local file inclusion vulnerability' )
                         v.setSeverity(severity.MEDIUM)
@@ -193,6 +194,7 @@ class localFileInclude(baseAuditPlugin):
                         #   We were able to read the source code of the file that is vulnerable to
                         #   local file read
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setName( 'Local file read vulnerability' )
                         v.setSeverity(severity.MEDIUM)
@@ -219,6 +221,7 @@ class localFileInclude(baseAuditPlugin):
                     if match and not \
                     regex.search( mutant.getOriginalResponseBody() ):
                         i = info.info( mutant )
+                        i.setPluginName(self.getName())
                         i.setId( response.id )
                         i.setName( 'File read error' )
                         i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )

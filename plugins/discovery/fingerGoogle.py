@@ -151,6 +151,7 @@ class fingerGoogle(baseDiscoveryPlugin):
                     self._accounts.append( mail )
                     
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName(mail)
                     i.setURL( response.getURI() )
                     msg = 'The mail account: "'+ mail + '" was found in: "'

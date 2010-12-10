@@ -113,6 +113,7 @@ class urlFuzzer(baseDiscoveryPlugin):
                     #
                     if response.getURL() not in self._already_reported and not response.getURL().endswith('/'):
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('Potentially interesting file')
                         i.setURL( response.getURL() )
                         i.setId( response.id )

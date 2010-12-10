@@ -129,6 +129,7 @@ class xssedDotCom(baseDiscoveryPlugin):
                 matches = re.findall("URL:.+", xss_report_response.getBody())
                 
                 v = vuln.vuln()
+                v.setPluginName(self.getName())
                 v.setName('Possible XSS vulnerability')
                 v.setURL( mirror_url )
                 

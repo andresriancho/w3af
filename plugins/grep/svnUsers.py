@@ -72,6 +72,7 @@ class svnUsers(baseGrepPlugin):
             for regex in self._regex_list:
                 for m in regex.findall(response.getBody()):
                     v = vuln.vuln()
+                    v.setPluginName(self.getName())
                     v.setURI(uri)
                     v.setId(response.id)
                     msg = 'The URL: "' + uri + '" contains a SVN versioning '

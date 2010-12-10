@@ -133,6 +133,7 @@ class redos(baseAuditPlugin):
                     if response.getWaitTime() > (first_wait_time * 1.5):
                         # Now I can be sure that I found a vuln, I control the time of the response.
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setName( 'ReDoS vulnerability' )
                         v.setSeverity(severity.MEDIUM)
                         v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
@@ -144,6 +145,7 @@ class redos(baseAuditPlugin):
                     else:
                         # The first delay existed... I must report something...
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('Possible ReDoS vulnerability')
                         i.setId( response.id )
                         i.setDc( mutant.getDc() )

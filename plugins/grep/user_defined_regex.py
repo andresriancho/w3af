@@ -85,6 +85,7 @@ class user_defined_regex(baseGrepPlugin):
                                 info_object.setId(ids)
                             else:
                                 info_object = info.info()
+                                info_object.setPluginName(self.getName())
                                 om.out.information('User defined regular expression "'+str(regex.pattern)+'" matched a response!')
                                 info_object.setURL( response.getURL() )
                                 msg = 'The response matches the user defined regular expression "'+str(regex.pattern)+'":\n'

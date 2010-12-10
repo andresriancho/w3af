@@ -92,6 +92,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         else:
             if modified_response.getBody() != original_response.getBody():
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Default domain')
                 i.setURL( modified_response.getURL() )
                 i.setMethod( 'GET' )
@@ -111,6 +112,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         except w3afException, w3:
             if 'Failed to resolve' in str(w3):
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('No DNS wildcard')
                 i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
@@ -120,6 +122,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         else:
             if modified_response.getBody() != original_response.getBody():
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('No DNS wildcard')
                 i.setURL( modified_response.getURL() )
                 i.setMethod( 'GET' )
@@ -132,6 +135,7 @@ class dnsWildcard(baseDiscoveryPlugin):
                 om.out.information( i.getDesc() )
             else:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('DNS wildcard')
                 i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
