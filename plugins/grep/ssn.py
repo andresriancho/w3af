@@ -74,21 +74,22 @@ class ssn(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = HTTPRequest(url)
-        >>> s = ssn()
+        >>> s = ssn(); s._already_inspected = set()
         >>> s.grep(request, response)
         >>> len(kb.kb.getData('ssn', 'ssn'))
         0
 
         With "-" separating the SSN parts
-        >>> kb.kb.save('ssn','ssn',[])
+        >>> kb.kb.cleanup(); s._already_inspected = set()
         >>> body = 'header 771-12-9876 footer'
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> s.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 1
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        1
 
         With HTML tags in the middle:
-        >>> kb.kb.save('ssn','ssn',[])
+        >>> kb.kb.cleanup(); s._already_inspected = set()
         >>> body = 'header <b>771</b>-<b>12</b>-<b>9876</b> footer'
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
@@ -97,7 +98,7 @@ class ssn(baseGrepPlugin):
         1
 
         All the numbers together:
-        >>> kb.kb.save('ssn','ssn',[])
+        >>> kb.kb.cleanup(); s._already_inspected = set()
         >>> body = 'header 771129876 footer'
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
@@ -106,7 +107,7 @@ class ssn(baseGrepPlugin):
         1
 
         One extra number at the end:
-        >>> kb.kb.save('ssn','ssn',[])
+        >>> kb.kb.cleanup(); s._already_inspected = set()
         >>> body = 'header 7711298761 footer'
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
@@ -121,7 +122,6 @@ class ssn(baseGrepPlugin):
             
             # Don't repeat URLs
             self._already_inspected.add(uri)
-
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
