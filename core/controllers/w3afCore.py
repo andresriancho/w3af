@@ -36,6 +36,7 @@ from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_di
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir, get_temp_dir
 from core.controllers.misc.factory import factory
 from core.controllers.misc.get_local_ip import get_local_ip
+from core.controllers.misc.number_generator import consecutive_number_generator
 
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
@@ -162,6 +163,8 @@ class w3afCore(object):
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         self._isRunning = False
         self._paused = False
+        # Reset global sequence number generator
+        consecutive_number_generator.reset()
         
         # This indicates if we are doing discovery/audit/exploit/etc...
         self._currentPhase = ''
