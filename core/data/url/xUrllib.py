@@ -45,6 +45,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.data.url.handlers.keepalive import URLTimeoutError
+from core.data.url.handlers import logHandler
 from core.data.url.httpResponse import httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
@@ -527,9 +528,11 @@ class xUrllib(object):
                 del self._errorCount[req_id]
             self._incrementGlobalErrorCount()
 
-            return httpResponse(http_constants.NO_CONTENT, '', {},
-                                original_url, original_url, msg='No Content',
-                                id=consecutive_number_generator.inc())
+            resp = httpResponse(http_constants.NO_CONTENT, '', {},
+                                original_url, original_url, msg='No Content')
+            # Save this response via the output plugins
+            logHandler.logHandler().http_response(req, resp)            
+            return resp
         else:
             # Everything went well!
             rdata = req.get_data()

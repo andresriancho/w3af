@@ -95,7 +95,7 @@ class serverHeader(baseDiscoveryPlugin):
                     i.setPluginName(self.getName())
                     i.setName('Omitted server header')
                     i.setId( response.getId() )
-                    msg = 'The remote HTTP Server omitted the "server" header in it\'s response.'
+                    msg = 'The remote HTTP Server omitted the "server" header in its response.'
                     i.setDesc( msg )
                     om.out.information( i.getDesc() )
                     
