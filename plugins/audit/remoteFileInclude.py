@@ -42,11 +42,13 @@ from core.controllers.w3afException import w3afException
 import core.controllers.daemons.webserver as webserver
 import core.data.constants.w3afPorts as w3afPorts
 
-import os, time
+import os
+import socket
 
 CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly ' \
-'configured to use. Please set the local address and port, or use the ' \
-'official w3af site as the target server for remote inclusions.'
+'configured to use. Please set the correct values for local address and ' \
+'port, or use the official w3af site as the target server for remote ' \
+'inclusions.'
 
 
 class remoteFileInclude(baseAuditPlugin):
@@ -95,10 +97,27 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         @return: True if the plugin is correctly configured to run.
         '''
-        if not self._use_w3af_site and self._listen_address == '':
-            return False
+        listen_address = self._listen_address
+        if not listen_address:
+            if not self._use_w3af_site:
+                return False
         else:
-            return True
+            with self._plugin_lock:
+                # If we have an active instance then we're OK!
+                if webserver.is_running(listen_address, 
+                                               self._listen_port):
+                    return True
+                else:
+                    # Now test if it's possible to bind the address
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    try:
+                        s.bind((listen_address, self._listen_port))
+                    except socket.error:
+                        return False
+                    finally:
+                        s.close()
+                        del s
+                    return True
     
     def _local_test_inclusion(self, freq):
         '''
@@ -290,9 +309,9 @@ class remoteFileInclude(baseAuditPlugin):
         self._listen_address = optionsMap['listenAddress'].getValue()
         self._listen_port = optionsMap['listenPort'].getValue()
         self._use_w3af_site = optionsMap['usew3afSite'].getValue()
-                
-        if self._listen_address == '' and not self._use_w3af_site:
-            om.out.error(CONFIG_ERROR_MSG)
+        
+        if not self._correctly_configured():
+            raise w3afException(CONFIG_ERROR_MSG)
 
     def getPluginDeps( self ):
         '''
