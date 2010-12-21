@@ -49,9 +49,6 @@ class xmlFile(baseOutputPlugin):
     def __init__(self):
         baseOutputPlugin.__init__(self)
         
-        # Internal variables
-        self._initialized = False
-        
         # These attributes hold the file pointers
         self._file = None
         
@@ -73,7 +70,6 @@ class xmlFile(baseOutputPlugin):
         self._scanInfo = self._xmldoc.createElement("scaninfo")
                                               
     def _init( self ):
-        self._initialized = True 
         try:
             self._file = open( self._file_name, "w" )
         except IOError, io:
@@ -202,9 +198,6 @@ class xmlFile(baseOutputPlugin):
         '''
         This method is called when the scan has finished.
         '''
-        if not self._initialized:
-            self._init()
-
         # Add the vulnerability results
         vulns = kb.kb.getAllVulns()
         for i in vulns:
@@ -239,10 +232,14 @@ class xmlFile(baseOutputPlugin):
             self._topElement.appendChild(node)
         
         # Write xml report
+        self._init()
         self._xmldoc.appendChild(self._topElement)
-        self._xmldoc.writexml(self._file, addindent=" "*4, newl="\n", encoding="UTF-8")
-        self._file.flush()
-        self._file.close()
+        try:
+            self._xmldoc.writexml(self._file, addindent=" "*4,
+                                  newl="\n", encoding="UTF-8")  
+            self._file.flush()
+        finally:
+            self._file.close()
               
     def getLongDesc( self ):
         '''
