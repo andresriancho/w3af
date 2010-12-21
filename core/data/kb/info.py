@@ -143,6 +143,8 @@ class info(dict):
         '1 to 3, 10, 20 and 30'
         >>> inf._convert_to_range([1, 3, 10, 20, 30])
         '1, 3, 10, 20 and 30'
+        >>> len(inf._convert_to_range(range(0, 30000, 2)).split())
+        15001
         '''
         first = last = seq[0]
         dist = 0
@@ -159,7 +161,7 @@ class info(dict):
                 else: # one-elem sequence
                     res.append(first)
                 if is_last_in_seq(num):
-                    res.append(_('and %s') % num)
+                    res.append(_('and') + ' %s' % num)
                     break
                 dist = 0
                 first = num
@@ -170,7 +172,8 @@ class info(dict):
                 dist += 1
             last = num
 
-        return ', '.join(str(ele) for ele in res).replace(', and', ' and')
+        res_str = ', '.join(str(ele) for ele in res)
+        return res_str.replace(', ' + _('and'), ' and')
     
     def __str__( self ):
         return self._desc
