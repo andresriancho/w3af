@@ -31,7 +31,8 @@ from core.controllers.misc.lru import LRU
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.memoryUsage import dumpMemoryUsage
 # This is a singleton that's used for assigning request IDs
-from core.controllers.misc.number_generator import consecutive_number_generator
+from core.controllers.misc.number_generator import \
+consecutive_number_generator as seq_gen
 
 from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 
@@ -44,6 +45,7 @@ import core.data.parsers.urlParser as urlParser
 from core.data.parsers.httpRequestParser import httpRequestParser
 
 from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.constants.httpConstants import NO_CONTENT
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers import logHandler
 from core.data.url.httpResponse import httpResponse as httpResponse
@@ -51,7 +53,6 @@ from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
-import core.data.constants.httpConstants as http_constants
 
 
 # For subclassing requests and other things
@@ -145,18 +146,19 @@ class xUrllib(object):
             # TODO: THIS SUCKS
             raise KeyboardInterrupt
     
-    def end( self ):
+    def end(self):
         '''
         This method is called when the xUrllib is not going to be used anymore.
         '''
+        sep = os.path.sep
         try:
-            cacheLocation = get_home_dir() + os.path.sep + 'urllib2cache' + os.path.sep + str(os.getpid())
+            cacheLocation = get_home_dir() + sep + 'urllib2cache' + sep + str(os.getpid())
             if os.path.exists(cacheLocation):
                 for f in os.listdir(cacheLocation):
-                    os.unlink( cacheLocation + os.path.sep + f)
+                    os.unlink(cacheLocation + sep + f)
                 os.rmdir(cacheLocation)
         except Exception, e:
-            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e) )
+            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e))
         else:
             om.out.debug('Cleared urllib2 local cache.')
     
@@ -275,8 +277,9 @@ class xUrllib(object):
         '''
         self._init()
 
-        if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
+        if self._isBlacklisted(uri):
+            return self._new_no_content_resp(uri, log_it=True)
+
         
         qs = urlParser.getQueryString( uri )
         if qs:
@@ -291,22 +294,47 @@ class xUrllib(object):
         req = self._addHeaders( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
-    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False ):
+    def _new_no_content_resp(self, uri, log_it=False):
         '''
-        POST's data to a uri using a proxy, user agents, and other settings that where set previously.
+        Return a new NO_CONTENT httpResponse object. Optionally call the
+        subscribed log handlers
+        
+        @param uri: URI string or request object
+        @param log_it: Boolean that indicated whether to log request
+            and response.        
+        '''
+        
+        nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
+        if log_it:
+            # accept a URI or a Request object
+            if isinstance(uri, basestring):
+                req = HTTPRequest(uri)
+            else:
+                req = uri
+            # This also assign a the id to both objects.
+            logHandler.logHandler().http_response(req, nc_resp)
+        else:
+            nc_resp.id = seq_gen.inc()
+        return nc_resp
+            
+    
+    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
+        '''
+        POST's data to a uri using a proxy, user agents, and other settings
+        that where set previously.
         
         @param uri: This is the url where to post.
         @param data: A string with the data for the POST.
         @return: An httpResponse object.
         '''
         self._init()
-        if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, msg='No Content', id=consecutive_number_generator.inc() )
-        
-        req = HTTPRequest(uri, data )
-        req = self._addHeaders( req, headers )
-        return self._send( req , grepResult=grepResult, useCache=useCache)
-    
+        if self._isBlacklisted(uri):
+            return self._new_no_content_resp(uri, log_it=True)
+
+        req = HTTPRequest(uri, data)
+        req = self._addHeaders(req, headers)
+        return self._send(req , grepResult=grepResult, useCache=useCache)
+
     def getRemoteFileSize( self, req, useCache=True ):
         '''
         This method was previously used in the framework to perform a HEAD request before each GET/POST (ouch!)
@@ -363,8 +391,8 @@ class xUrllib(object):
                 
                 self._xurllib._init()
                 
-                if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri, 'No Content', id=consecutive_number_generator.inc() )
+                if self._xurllib._isBlacklisted(uri):
+                    return self._new_no_content_resp(uri, log_it=True)
             
                 if data:
                     req = self.methodRequest( uri, data )
@@ -517,7 +545,7 @@ class xUrllib(object):
             # For the first N errors, I just return an empty response...
 
             msg = '%s %s returned HTTP code "%s"' % \
-            (req.get_method(), original_url, http_constants.NO_CONTENT)
+            (req.get_method(), original_url, NO_CONTENT)
             om.out.debug(msg)
             om.out.debug('Unhandled exception in xUrllib._send(): %s' % e)
             om.out.debug(traceback.format_exc())
@@ -527,12 +555,8 @@ class xUrllib(object):
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
             self._incrementGlobalErrorCount()
-
-            resp = httpResponse(http_constants.NO_CONTENT, '', {},
-                                original_url, original_url, msg='No Content')
-            # Save this response via the output plugins
-            logHandler.logHandler().http_response(req, resp)            
-            return resp
+            
+            return self._new_no_content_resp(original_url, log_it=True)
         else:
             # Everything went well!
             rdata = req.get_data()
