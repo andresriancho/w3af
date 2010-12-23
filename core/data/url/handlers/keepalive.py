@@ -167,6 +167,18 @@ class URLTimeoutError(urllib2.URLError):
     def __str__(self):
         return '<urlopen error timeout>'
 
+def closeonerror(read_meth):
+    '''
+    Decorator function. When calling decorated `read_meth` if an error occurs
+    we'll proceed to invoke `inst`'s close() method.
+    '''
+    def new_read_meth(inst):
+        try:
+            return read_meth(inst)
+        except httplib.HTTPException:
+            inst.close()
+            raise
+    return new_read_meth
 
 class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
@@ -262,6 +274,7 @@ class HTTPResponse(httplib.HTTPResponse):
     def geturl(self):
         return self._url
 
+    @closeonerror
     def read(self, amt=None):
         # w3af does always read all the content of the response...
         # and I also need to do multiple reads to this response...
@@ -307,6 +320,7 @@ class HTTPResponse(httplib.HTTPResponse):
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
         return data
 
+    @closeonerror
     def readlines(self, sizehint=0):
         total = 0
         list = []
@@ -685,6 +699,8 @@ class KeepAliveHandler:
             else:
                 conn.putrequest(req.get_method(), req.get_selector(),
                                 skip_host=1, skip_accept_encoding=1)
+        except httplib.ImproperConnectionState:
+            raise
         except (socket.error, httplib.HTTPException), err:
             raise urllib2.URLError(err)
 
