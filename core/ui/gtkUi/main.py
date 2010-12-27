@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
+import pprint
+import StringIO
 import sys
 
 # I perform the GTK UI dependency check here
@@ -34,6 +36,7 @@ dependencyCheck.gtkui_dependency_check()
 # Now that I know that I have them, import them!
 import pygtk
 import gtk, gobject
+
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"
@@ -588,14 +591,20 @@ class MainApp(object):
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
-#                print 'Ctrl+C found, exiting!'
+                # print 'Ctrl+C found, exiting!'
                 pass
-            except Exception, e:
+            except Exception:
                 gobject.idle_add(self._scan_stopfeedback)
-                exception_class = type(e)
-                exception_instance = e
-                exception_traceback = sys.exc_traceback
-                exception_handler.handle_crash(exception_class, exception_instance, exception_traceback)
+                # Lets create a pretty-printed string from the plugins dict
+                plugins = StringIO.StringIO()
+                pprint.pprint(self.w3af._pluginsOptions, plugins)
+                plugins_str = plugins.getvalue()
+                try:
+                    exc_class, exc_inst, exc_tb = sys.exc_info()
+                    exception_handler.handle_crash(exc_class, exc_inst,
+                                                   exc_tb, plugins=plugins_str)
+                finally:
+                    del exc_tb
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()

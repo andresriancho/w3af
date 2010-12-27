@@ -28,16 +28,14 @@ import gtk
 import tempfile
 from core.data.fuzzer.fuzzer import createRandAlNum
 import os
-import cgi
 
 # w3af crash handling
 from . import bug_report
 from . import helpers
-from core.controllers.easy_contribution.sourceforge import sourceforge
 from core.controllers.misc.get_w3af_version import get_w3af_version
 
 
-def handle_crash(type, value, tb):
+def handle_crash(type, value, tb, **data):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(type, KeyboardInterrupt ):
         helpers.endThreads()
@@ -69,7 +67,9 @@ def handle_crash(type, value, tb):
     
     # Create the dialog that allows the user to send the bug to sourceforge
     
-    bug_report_win = bug_report.bug_report_window(_('Bug detected!'), exception, versions, filename)
+    bug_report_win = bug_report.bug_report_window(_('Bug detected!'), 
+                                                  exception, versions,
+                                                  filename, **data)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

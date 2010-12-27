@@ -47,6 +47,10 @@ $w3af_v
 == Traceback: ==
 {{{
 $t_back
+}}}
+== Enabled Plugins: ==
+{{{
+$plugins
 }}}''')
     # Form token regex
     FORM_TOKEN_RE = 'name="__FORM_TOKEN"\svalue="(\w*?)"'
@@ -102,12 +106,13 @@ $t_back
             self.logged_in = 'Invalid username or password' not in resp.read()
             return self.logged_in
             
-    def report_bug(self, user_title, user_desc, w3af_version, traceback, filename):
+    def report_bug(self, user_title, filename, **body_data):
         '''
         I use urllib2 instead of the w3af wrapper, because the error may be in there!
         
         @parameter user_title: The title that the user wants to use in the bug report
         @parameter user_description: The description for the bug that was provided by the user
+        @parameter body_data: keyword args to be used to be used in report's body
         
         @return: The new ticket URL if the bug report was successful, or None if something failed.
         '''
@@ -120,13 +125,9 @@ $t_back
         # token to avoid the double click protection added by sourceforge.
         summary = '[Auto-Generated] Bug Report - %s' % \
             (user_title or random)
-
-        user_desc = user_desc or ''
         
         # Build details string
-        details = self.WIKI_DETAILS_TEMPLATE.substitute(user_desc=user_desc,
-                                                        w3af_v=w3af_version,
-                                                        t_back=traceback)
+        details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(body_data)
         resp = self._do_request(self.NEW_TKT_URL)
         form_token = self._get_match_from_response(resp, self.FORM_TOKEN_RE) or ''
         
