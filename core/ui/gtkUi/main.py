@@ -595,10 +595,25 @@ class MainApp(object):
                 pass
             except Exception:
                 gobject.idle_add(self._scan_stopfeedback)
-                # Lets create a pretty-printed string from the plugins dict
-                plugins = StringIO.StringIO()
-                pprint.pprint(self.w3af._pluginsOptions, plugins)
-                plugins_str = plugins.getvalue()
+                
+                def pprint_plugins():
+                    # Return a pretty-printed string from the plugins dicts
+                    import copy
+                    from itertools import chain
+                    plugs_opts = copy.deepcopy(self.w3af._pluginsOptions)
+                    plugs = self.w3af._strPlugins
+
+                    for ptype, plist in plugs.iteritems():
+                        for p in plist:
+                            if p not in chain(*(pt.keys() for pt in \
+                                                    plugs_opts.itervalues())):
+                                plugs_opts[ptype][p] = {}
+                    
+                    plugins = StringIO.StringIO()
+                    pprint.pprint(plugs_opts, plugins)
+                    return  plugins.getvalue()
+                
+                plugins_str = pprint_plugins()
                 try:
                     exc_class, exc_inst, exc_tb = sys.exc_info()
                     exception_handler.handle_crash(exc_class, exc_inst,
