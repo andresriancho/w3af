@@ -471,38 +471,42 @@ class PluginTree(gtk.TreeView):
         '''
         # can not play with this particular plugin
         treerow = self.treestore[path]
-        if treerow[0] == "gtkOutput":
+        plugin_fam = treerow[0]
+        banned_fams = ('discovery', 'evasion')
+        
+        if plugin_fam == "gtkOutput":
             return
 
         # invert the active state and make it consistant
         newvalue = not treerow[1]
         treerow[1] = newvalue
         treerow[2] = False
-
+    
         # path can be "?" if it's a father or "?:?" if it's a child
         if ":" not in path:
-            # father, lets check if it's the discovery plugin type
+            # father, lets check if it's the discovery/evasion plugin type
             # if yes, ask for confirmation
             user_response = gtk.RESPONSE_YES
             
-            if treerow[0] == 'discovery':
-                # The discovery family is enabled, and the user is disabling it
-                # we shouldn't ask this when disabling all the family
-                if treerow[1] == True:
-                    msg = _("Enabling all discovery plugins will result in a scan process of several")
-                    msg += _(" hours, and sometimes days. Are you sure that you want to do enable ALL")
-                    msg += _(" discovery plugins?")
-                    dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
-                    user_response = dlg.run()
-                    dlg.destroy()
-                    
-                    # If the user says NO, then remove the checkbox that was added when the
-                    # user clicked over the "enable all discovery plugins".
-                    if user_response != gtk.RESPONSE_YES:
-                        treerow[1] = False
-                
+            if plugin_fam in banned_fams and treerow[1] == True:
+                # The discovery/evasion family is enabled, and the user is
+                # disabling it we shouldn't ask this when disabling all the family
+                if plugin_fam == 'discovery':
+                    msg = _("Enabling all discovery plugins will result in a scan process of several" \
+                    " hours, and sometimes days. Are you sure that you want to do enable ALL" \
+                    " discovery plugins?")
+                else: # evasion family
+                    msg = _("Using any of the evasion plugins is highly " \
+                            "discouraged in our current version. Are you " \
+                            "sure that you want to enable ALL of them?")
 
-            if user_response == gtk.RESPONSE_YES or treerow[0] != 'discovery':
+                # If the user says NO, then remove the checkbox that was added when the
+                # user clicked over the "enable all discovery plugins".
+                user_response = self._askUser(msg)
+                if user_response != gtk.RESPONSE_YES:
+                    treerow[1] = False
+
+            if user_response == gtk.RESPONSE_YES or plugin_fam not in banned_fams:
                 # father: let's change the value of all children
                 for childtreerow in self._getChildren(path):
                     if childtreerow[0] == "gtkOutput":
@@ -514,10 +518,19 @@ class PluginTree(gtk.TreeView):
                     else:
                         childtreerow[1] = newvalue
         else:
-            # child: let's change the father status
-            vals = []
             pathfather = path.split(":")[0]
             father = self.treestore[pathfather]
+            plugin_fam = father[0]
+            
+            if plugin_fam == 'evasion' and treerow[1] == True:
+                msg = _("Using any of the evasion plugins is highly " \
+                        "discouraged in our current version. Are you sure " \
+                        "that you want to enable this plugin?")
+                if self._askUser(msg) != gtk.RESPONSE_YES:
+                    treerow[1] = False
+                
+            # child: let's change the father status
+            vals = []
             for treerow in self._getChildren(pathfather):
                 vals.append(treerow[1])
             if all(vals):
@@ -548,7 +561,16 @@ class PluginTree(gtk.TreeView):
             if plugins:
                 result.append((ptype, plugins))
         return result
-
+    
+    def _askUser(self, msg):
+        '''Displays `msg` on a modal dialog and returns the user's reponse
+        '''
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION,
+                                gtk.BUTTONS_YES_NO, msg)
+        user_response = dlg.run()
+        dlg.destroy()
+        return user_response
+        
 
 class PluginConfigBody(gtk.VBox):
     '''The main Plugin Configuration Body.
