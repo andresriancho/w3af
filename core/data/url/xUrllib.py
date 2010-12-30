@@ -30,6 +30,7 @@ from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.memoryUsage import dumpMemoryUsage
+from core.controllers.misc.datastructs import deque
 # This is a singleton that's used for assigning request IDs
 from core.controllers.misc.number_generator import \
 consecutive_number_generator as seq_gen
@@ -81,7 +82,7 @@ class xUrllib(object):
         
         # For error handling
         self._lastRequestFailed = False
-        self._consecutiveErrorCount = 0
+        self._last_errors = deque(maxlen=10)
         self._errorCount = {}
         
         self._dnsCache()
@@ -303,7 +304,6 @@ class xUrllib(object):
         @param log_it: Boolean that indicated whether to log request
             and response.        
         '''
-        
         nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
         if log_it:
             # accept a URI or a Request object
@@ -317,7 +317,6 @@ class xUrllib(object):
             nc_resp.id = seq_gen.inc()
         return nc_resp
             
-    
     def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
         '''
         POST's data to a uri using a proxy, user agents, and other settings
@@ -475,12 +474,13 @@ class xUrllib(object):
             geturl = e.geturl()
             read = self._readRespose(e)
             httpResObj = httpResponse(code, read, info, geturl, original_url,
-                                      id=e.id, time=time.time() - start_time,
+                                      id=e.id, time=time.time()-start_time,
                                       msg=e.msg)
             
             # Clear the log of failed requests; this request is done!
-            if id(req) in self._errorCount:
-                del self._errorCount[id(req)]
+            req_id = id(req)
+            if req_id in self._errorCount:
+                del self._errorCount[req_id]
 
             # Reset errors counter
             self._zeroGlobalErrorCount()
@@ -499,37 +499,36 @@ class xUrllib(object):
             # Timeouts are not intended to increment the global error counter.
             # They are part of the expected behaviour.
             if not isinstance(e, URLTimeoutError):
-                self._incrementGlobalErrorCount()
+                self._incrementGlobalErrorCount(e)
             try:
                 e.reason[0]
             except:
                 raise w3afException('Unexpected error in urllib2 : %s' \
                                      % repr(e.reason))
-            else:
-                if isinstance(e.reason, tuple): # Is it a tuple?
-                    msg = 'w3af failed to reach the server while requesting:' \
-                    ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
-                    % (original_url, e.reason[1], e.reason[0])
+            if isinstance(e.reason, tuple): # Is it a tuple?
+                msg = 'w3af failed to reach the server while requesting:' \
+                ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
+                % (original_url, e.reason[1], e.reason[0])
 
-                    # TODO: Which case is this one?
-                    # Terminate!
-                    if e.reason[0] in (-2, 111):
-                        raise w3afException(msg)
+                # TODO: Which case is this one?
+                # Terminate!
+                if e.reason[0] in (-2, 111):
+                    raise w3afException(msg)
 
-                else: # Not a tuple. It might a wrapped socket or httplib error
-                    # See `except` block in <keepalive.KeepAliveHandler.do_open>
-                    # method for details.
-                    msg = 'w3af failed to reach the server while requesting:' \
-                    ' "%s".\nReason: "%s"; going to retry.' % \
-                    (original_url, e.reason)
+            else: # Not a tuple. It might a wrapped socket or httplib error
+                # See `except` block in <keepalive.KeepAliveHandler.do_open>
+                # method for details.
+                msg = 'w3af failed to reach the server while requesting:' \
+                ' "%s".\nReason: "%s"; going to retry.' % \
+                (original_url, e.reason)
 
-                # Log the errors
-                om.out.debug(msg)
-                om.out.debug('Traceback for this error: %s' % \
-                             traceback.format_exc())
-                req._Request__original = original_url
-                # Then retry!
-                return self._retry(req, useCache)
+            # Log the errors
+            om.out.debug(msg)
+            om.out.debug('Traceback for this error: %s' % \
+                         traceback.format_exc())
+            req._Request__original = original_url
+            # Then retry!
+            return self._retry(req, useCache)
         except KeyboardInterrupt:
             # Correct control+c handling...
             raise
@@ -554,7 +553,7 @@ class xUrllib(object):
             req_id = id(req)
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
-            self._incrementGlobalErrorCount()
+            self._incrementGlobalErrorCount(e)
             
             return self._new_no_content_resp(original_url, log_it=True)
         else:
@@ -604,7 +603,6 @@ class xUrllib(object):
             raise k
         except Exception, e:
             om.out.error(str(e))
-            return read
         return read
         
     def _retry(self, req, useCache):
@@ -622,14 +620,11 @@ class xUrllib(object):
             error_amt = self._errorCount[req_id]
             # Clear the log of failed requests; this one definetly failed...
             del self._errorCount[req_id]
-            # No need to add this:
-            #self._incrementGlobalErrorCount()
-            # The global error count is already incremented by the _send method.
             msg = 'Too many retries (%s) while requesting: %s'  % \
                                             (error_amt, req.get_full_url())
             raise w3afException(msg)
     
-    def _incrementGlobalErrorCount(self):
+    def _incrementGlobalErrorCount(self, error):
         '''
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException"
@@ -639,19 +634,20 @@ class xUrllib(object):
 
         # All the logic follows:
         if self._lastRequestFailed:
-            self._consecutiveErrorCount += 1
+            self._last_errors.append(str(error))
         else:
             self._lastRequestFailed = True
         
-        om.out.debug('Incrementing global error count. GEC: %s' % \
-                     self._consecutiveErrorCount)
+        errtotal = len(self._last_errors)
         
-        if self._consecutiveErrorCount >= 10 and not self._mustStop:
+        om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
+        
+        if errtotal >= 10 and not self._mustStop:
             msg = 'The xUrllib found too much consecutive errors. The remote' \
             ' webserver doesn\'t seem to be reachable anymore; please verify' \
             ' manually.'
             self.stop()
-            raise w3afMustStopException(msg)
+            raise w3afMustStopException(msg, self._last_errors)
 
     def ignore_errors(self, yes_no):
         '''
@@ -664,11 +660,10 @@ class xUrllib(object):
         self._ignore_errors_conf = yes_no
             
     def _zeroGlobalErrorCount( self ):
-        if self._lastRequestFailed or self._consecutiveErrorCount:
+        if self._lastRequestFailed or self._last_errors:
             self._lastRequestFailed = False
-            self._consecutiveErrorCount = 0
-            om.out.debug('Decrementing global error count. GEC: %s' % \
-                         self._consecutiveErrorCount)
+            self._last_errors.clear()
+            om.out.debug('Resetting global error count. GEC: 0')
     
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins
