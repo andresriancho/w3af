@@ -241,8 +241,9 @@ def urlJoin( baseurl , relative ):
     the network location and (part of) the path, to provide missing components in the relative URL.
 
     Example:
-        >>> urljoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
-        'http://www.cwi.nl/%7Eguido/FAQ.html'
+    >>> urlJoin('http://www.cwi.nl/%7Eguido/Python.html', 'FAQ.html')
+    'http://www.cwi.nl/%7Eguido/FAQ.html'
+    
     For more information read RFC 1808 espeally section 5.
     
     @param baseurl: The base url to join
@@ -253,15 +254,15 @@ def urlJoin( baseurl , relative ):
     response = normalizeURL(response)
     return response
 
-def getDomain( url ):
+def getDomain(url):
     '''
-    Input: http://localhost:4444/f00_bar.html
-    Output: localhost
-
     @parameter url: The url to parse.
     @return: Returns the domain name for the url.
+    
+    >>> getDomain("http://localhost:4444/f00_bar.html")
+    'localhost'
     '''
-    scheme, domain, path, params, qs, fragment = _uparse.urlparse( url )
+    scheme, domain, path, params, qs, fragment = _uparse.urlparse(url)
     domain = domain.split(':')[0]
     return domain
 
@@ -286,8 +287,8 @@ def isValidURLDomain(url):
 
 def getNetLocation( url ):
     '''
-    Input: http://localhost:4444/f00_bar.html
-    Output: localhost:4444
+    >>> getNetLocation('http://localhost:4444/f00_bar.html')
+    'localhost:4444'
 
     @parameter url: The url to parse.
     @return: Returns the net location for the url.
