@@ -76,7 +76,7 @@ class remoteFileInclude(baseAuditPlugin):
         
         @param freq: A fuzzableRequest object
         '''
-        # Sanity check
+        # Sanity check 
         if not self._correctly_configured():
             # Report error to the user only once
             self._error_reported = True
@@ -289,7 +289,7 @@ class remoteFileInclude(baseAuditPlugin):
 
         d3 = 'Use w3af site to test for remote file inclusion'
         h3 =  'The plugin can use the w3af site to test for remote file inclusions, which is\
-        convinient when you are performing a test behind a NAT firewall.'
+        convenient when you are performing a test behind a NAT firewall.'
         o3 = option('usew3afSite', self._use_w3af_site, d3, 'boolean',  help=h3)
         
         ol = optionList()
