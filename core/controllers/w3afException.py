@@ -51,10 +51,18 @@ class w3afFileException(Exception):
     
 class w3afMustStopException(Exception):
     '''
-    If this exception is catched by the core, then it should stop the whole process. This exception is raised in
-    a few places. NOT to be used extensively.
+    If this exception is catched by the core, then it should stop the whole 
+    process. This exception is raised in a few places. NOT to be used
+    extensively.
     '''
-    pass
+    def __init__(self, msg, errs=[]):
+        self.msg = msg
+        self.errs = errs
+
+    def __str__(self):
+        return self.msg + '\n'.join(self.errs)
+    __repr__ = __str__
+
 
 class w3afProxyException(w3afException):
     '''
