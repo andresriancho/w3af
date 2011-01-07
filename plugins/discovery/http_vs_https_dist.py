@@ -22,32 +22,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 
 try:
+    # Try to use the scapy library that is installed in the system
     from scapy import traceroute
-except:
-    try:
-        from extlib.scapy.scapy import traceroute
-    except IOError, io:
-        import platform
-        from core.controllers.w3afException import w3afException
-        if 'windows' not in platform.platform().lower():
-            raise w3afException('Something strange happened while importing ' \
-                                'scapy, please solve this issue: %s' % io)
-        else:
-            # Windows system!
-            raise w3afException('scapy isn\'t installed in your windows ' \
-                    'system; please install it following this guide ' \
-                    'http://trac.secdev.org/scapy/wiki/WindowsInstallationGuide')
+except Exception:
+    from extlib.scapy.scapy import traceroute
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import \
     baseDiscoveryPlugin
 from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.parsers.urlParser import getDomain
-import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afRunOnce, w3afException
+import core.controllers.outputManager as om
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
+import core.data.parsers.urlParser as uparser
 
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin discovery.http_vs_https_dist." \
@@ -55,6 +44,7 @@ PERM_ERROR_MSG = "w3af won't be able to run plugin discovery.http_vs_https_dist.
 
 class http_vs_https_dist(baseDiscoveryPlugin):
     '''
+    Determines the network distance between the http and https ports for a target.
     @author: Javier Andalia <jandalia =at= gmail.com>
     '''
 
@@ -65,26 +55,47 @@ class http_vs_https_dist(baseDiscoveryPlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest):
         '''
-        Discovery task.
+        Discovery task. Uses scapy.traceroute function in order to determine
+        the distance between http and https ports for the target.
+        Intended to be executed once during the discovery process.
         '''
         if not self._has_permission():
             raise w3afException(PERM_ERROR_MSG) 
-        
-        http_port = self._http_port
-        https_port = self._https_port
         
         def set_info(name, desc):
             inf = info.info()
             inf.setPluginName(self.getName())
             inf.setName(name)
             inf.setDesc(desc)
-            kb.kb.append(self, 'httpVsHttpsDist', inf)
+            kb.kb.append(self, 'http_vs_https_dist', inf)
 
-        domain = getDomain(fuzzableRequest.getURL())
+        target_url = fuzzableRequest.getURL()
+        domain = uparser.getDomain(target_url)
+        http_port = self._http_port
+        https_port = self._https_port
+
+        # Use target port if specified
+        netloc = uparser.getNetLocation(target_url)
+        try:
+            port = int(netloc.split(':')[-1])
+        except ValueError:
+            pass # Nothing to do.
+        else:
+            protocol = uparser.getProtocol(target_url)
+            if protocol == 'https':
+                https_port = port
+            else: # it has to be 'http'
+                http_port = port
 
         # First try with httpS
-        https_troute = traceroute(domain, dport=https_port)
-        https_troute = https_troute[0].get_trace().values()[0]
+        https_troute = traceroute(domain, dport=https_port)[0].get_trace()
+        
+        # This destination was probably 'localhost' or a host reached through
+        # a vpn?
+        if not https_troute:
+            return []
+        
+        https_troute = https_troute.values()[0]
         https_ip_tuples = https_troute.values()
         last_https_ip = https_ip_tuples[-1]
         
@@ -113,8 +124,8 @@ class http_vs_https_dist(baseDiscoveryPlugin):
                 trc2 = header % (domain, https_port, trace_str(https_ip_tuples))
 
                 desc = _('Routes to target \'%s\' using ports \'%s\' and ' \
-                         '\'%s\' are different:\n%s\n%s') % \
-                         (domain, http_port, https_port, trc1, trc2)
+                '\'%s\' are different:\n%s\n%s') % (domain, http_port, 
+                                                    https_port, trc1, trc2)
                 set_info('HTTP vs. HTTPS Distance', desc)
                 om.out.information(desc)
         return []
@@ -135,11 +146,12 @@ class http_vs_https_dist(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         ol = optionList()
-        d1 = 'Target http port'
-        o1 = option('httpPort', self._http_port, d1, option.INT)
+        d1 = 'Destination http port number to analize'
+        o1 = option('httpPort', self._http_port, d1, option.INT, help=d1)
         ol.add(o1)
-        d2 = 'Target httpS port'
-        o2 = option('httpsPort', self._https_port, d2, option.INT)
+        
+        d2 = 'Destination httpS port number to analize'
+        o2 = option('httpsPort', self._https_port, d2, option.INT, help=d2)
         ol.add(o2)
         
         return ol
@@ -160,13 +172,13 @@ class http_vs_https_dist(baseDiscoveryPlugin):
         '''
         return '''
         This plugin analyzes the network distance between the HTTP and HTTPS ports
-        giving a detailed report of the traversed hosts in the transit to <target:port>.
+        giving a detailed report of the traversed hosts in transit to <target:port>.
+        You should have root/admin privileges in order to run this plugin succesfully.
         
-        Explicitly declared ports on the entered target override the ones specified
-        in the config fields.
-        
-        For example, if the user sets 'http://host.tld:8081' as target and the httpPort
-        value is 80; then '8081' will be used.
+        Explicitly declared ports on the entered target override those specified
+        in the config fields.        
+        For example, if the user sets 'https://host.tld:444' as target and the httpPort
+        value is 443; then '444' will be used.
         
         HTTP and HTTPS ports default to 80 and 443.
         '''
