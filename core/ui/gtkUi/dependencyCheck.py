@@ -68,3 +68,12 @@ def gtkui_dependency_check():
         print msg
         sys.exit( 1 )
 
+    try:
+        import gtksourceview2
+    except:
+        msg = 'You have to install python-gtksourceview2.\n'
+        msg += '    - On Debian based distributions: apt-get install python-gtksourceview2\n'
+        print msg
+        sys.exit( 1 )
+
+

@@ -24,11 +24,7 @@ import pango
 import os
 import sys
 
-try:
-    import gtksourceview2 as gtksourceview
-except Exception, e:
-    print e
-    sys.exit()
+import gtksourceview2 as gtksourceview
 
 from core.data.constants import severity
 from core.ui.gtkUi.common.searchable import Searchable
