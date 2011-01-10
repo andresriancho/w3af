@@ -1,0 +1,25 @@
+# webspider
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/discovery/spiderMan/
+back
+
+start
+
+exit

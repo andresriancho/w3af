@@ -1,0 +1,28 @@
+# webspider
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery allowedMethods,webSpider
+
+discovery config webSpider
+set ignoreRegex .*a.html
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/discovery/web_spider/ignore_regex/1.html
+back
+
+start
+
+assert len(kb.kb.getData('urls','urlList')) == 3
+
+exit

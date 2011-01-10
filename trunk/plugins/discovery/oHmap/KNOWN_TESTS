@@ -1,0 +1,182 @@
+Known Tests (request variations)
+======================================================================
+
+These are the Requests that are currently used for probing for
+characteristics from a target server.  All of them claim to be HTTP/1.0
+compliant unless otherwise indicated.
+
+BASIC_GET
+
+   A simple GET method
+
+BASIC_OPTIONS
+
+   A simple OPTIONS method
+
+UNKNOWN_METHOD
+
+   Try QWERTY as if it was a legal method
+
+UNAUTHORIZED_ACTIVITY
+
+   Try every known semantically legal method, many (most) of which won't be
+   allowed by most servers in the most common configurations.
+
+   ('OPTIONS', 'TRACE', 'GET', 'HEAD', 'DELETE', 'PUT', 'POST', 'COPY',
+    'MOVE', 'MKCOL', 'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK', 'SEARCH')
+
+NONEXISTANT_OBJECT
+
+   request a URL that won't be found.
+
+MALFORMED_METHOD_LINE
+
+   A legal request method line has the following syntax:
+
+   (nothing)METHOD(space)RELATIVE-URI(space)VERSION(line-sep)
+
+   There are many ways to create malformed variations of the method line:
+
+      - put something where nothing is expected
+      - put nothing where something is expected
+      - numbers where letters are expected or vice versa
+      - really LONG things
+      - invalid characters
+      - different file system conventions
+         - e.g. "/" vs. "\"
+      - illegal paths htm"../../../"
+      - url encoding (hex, unicode, invalid forms of each)
+      - uppercase/lowercase
+      - etc.
+
+   Examples from code:
+
+      'GET',
+      'GET /',
+      'GET / HTTP/999.99',
+      'GET / HHTP/1.0',
+      'GET / HTP/1.0',
+      'GET / HHTP/999.99',
+      'GET / hhtp/999.99',
+      'GET / http/999.99',
+      'GET / HTTP/Q.9',
+      'GET / HTTP/9.Q',
+      'GET / HTTP/Q.Q',
+      'GET / HTTP/1.X',
+      'GET / HTTP/1.10',
+      'GET / HTTP/1.1.0',
+      'GET / HTTP/1.2',
+      'GET / HTTP/2.1',
+      'GET / HTTP/1,0',
+      'GET / HTTP/1.0X',
+      'GET / HTTP/',
+      'GET/HTTP/1.0' ,
+      'GET/ HTTP/1.0' ,
+      'GET /HTTP/1.0' ,
+      'GET/HTTP /1.0' ,
+      'GET/HTTP/1 .0' ,
+      'GET/HTTP/1. 0' ,
+      'GET/HTTP/1.0 ' ,
+      'GET / HTTP /1.0',
+      'HEAD /.\\ HTTP/1.0',
+      'HEAD /asdfasdfasdfasdfasdf/../ HTTP/1.0',
+      'HEAD /asdfasdfasdfasdfasdf/.. HTTP/1.0',
+      'HEAD /./././././././././././././././ HTTP/1.0',
+      'HEAD /././././././qwerty/.././././././././ HTTP/1.0',
+      'HEAD /.. HTTP/1.0',
+      'HEAD /../ HTTP/1.0',
+      'HEAD /../../../../../ HTTP/1.0',
+      'HEAD .. HTTP/1.0',
+      'HEAD\t/\tHTTP/1.0',
+      'HEAD ///////////// HTTP/1.0',
+      'Head / HTTP/1.0',
+      '\nHEAD / HTTP/1.0',
+      ' \nHEAD / HTTP/1.0',
+      ' HEAD / HTTP/1.0',
+      'HEAD / HQWERTY/1.0', 
+      'HEAD %s HTTP/1.0' % url,
+      'HEAD %s' % url,
+      'HEAD http:// HTTP/1.0',
+      'HEAD http:/ HTTP/1.0',
+      'HEAD http: HTTP/1.0',
+      'HEAD http HTTP/1.0',
+      'HEAD h HTTP/1.0',
+      'HEAD HTTP://qwerty.asdfg.com/ HTTP/1.0',
+      'GET GET GET',
+      'HELLO',
+      'GET \0 / HTTP/1.0',
+      'GET / \0 HTTP/1.0',
+      'GET / HTTP/1.0\0',
+      'GET / H',
+      ' GET / HTTP/1.0',
+      ' '*1000 + 'GET / HTTP/1.0',
+      'GET'+' '*1000+'/ HTTP/1.0',
+      'GET '+'/'*1000+' HTTP/1.0',
+      'GET /'+' '*1000+'HTTP/1.0',
+      'GET / '+'H'*1000+'TTP/1.0',
+      'GET / '+'HTTP'+'/'*1000+'1.0',
+      'GET / '+'HTTP/'+'1'*1000+'.0',
+      'GET / '+'HTTP/1'+'.'*1000+'0',
+      'GET / '+'HTTP/1.'+'0'*1000,
+      'GET / HTTP/1.0' + ' ' * 1000,
+      '12345 GET / HTTP/1.0',
+      '12345 / HTTP/1.0',
+      '\0',#70
+      '\0'*1000,
+      '\0'+'GET / HTTP/1.0',
+      '\0'*1000+'GET / HTTP/1.0',
+      '\r\n'*1000+'GET / HTTP/1.0',
+      'Get / HTTP/1.0',
+      'GET\0/\0HTTP/1.0', 
+      'GET . HTTP/1.0',
+      'GET index.html HTTP/1.0',
+      'GET / HTTP/1.',
+      '',
+      ' ',
+      ' '*1000,
+      '/',
+      '/' * 1000,
+      'GET FTP://asdfasdf HTTP/1.0',
+      'GET / HTTP/1.0 X', 
+      '%47ET / HTTP/1.0',
+      '%47%45%54 / HTTP/1.0',
+      'GET %2f HTTP/1.0',
+      'GET %2F HTTP/1.0',
+      'GET%20/ HTTP/1.0',
+      'GET / FTP/1.0',
+      'GET \ HTTP/1.0',
+      'GET C:\ HTTP/1.0',
+      'HTTP/1.0 / GET',
+      'ALL YOUR BASE ARE BELONG TO US', 
+      'GET "/" HTTP/1.0',
+      "GET '/' HTTP/1.0",
+      'GET `/` HTTP/1.0', 
+      '"GET / HTTP/1.0"',
+      '"GET / HTTP/1.0',
+      '"GET" / HTTP/1.0',
+      '""GET / HTTP/1.0',
+      'GEX\bT / HTTP/1.0',
+
+LONG_URL_RANGES
+LONG_DEFAULT_RANGES
+MANY_HEADER_RANGES
+LARGE_HEADER_RANGES
+
+   each of the previous tests vary the length of some feature and find the
+   ranges over which certain characteristics are found.
+
+   e.g.
+
+      - the number of "a"s given in a URL
+      - number of "/"s used for the root
+      - number of headers added to a request
+      - the absolute size of data added to a header
+
+UNAVAILABLE_ACCEPT
+
+   Use an invalid value ('qwer/asdf') in an Accept header.
+
+FAKE_CONTENT_LENGTH
+
+   Use the wrong value for "Content-Length" when sending a body to a
+   server.

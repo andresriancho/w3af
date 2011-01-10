@@ -1,0 +1,27 @@
+
+plugins
+output console,textFile
+output config textFile
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+# There is no sense in enabling ALLL evasion plugins. IT WONT WORK
+# But i'm enabling them just to test if they raise any exceptions
+evasion all
+evasion
+back
+
+target
+# It is not working on Apache
+set target http://moth/w3af/audit/xss/simple_xss.php?text=1
+back
+
+start
+
+assert 1 == 1
+
+exit

@@ -1,0 +1,23 @@
+# Targets can be specified in a file like this:
+
+plugins
+discovery allowedMethods,webSpider
+discovery
+output console,textFile
+output
+output config textFile
+set fileName output-agfnet.txt
+set verbosity 10
+back
+output config console
+set verbosity 0
+back
+audit all
+audit
+back
+target
+set target file:///tmp/targets.txt
+back
+start
+
+

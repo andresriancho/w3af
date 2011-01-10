@@ -1,0 +1,26 @@
+# This scripts detects a transparent proxy on your ISP connection
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery detectTransparentProxy
+back
+
+target
+set target http://www.cybsec.com/
+back
+
+start
+
+# I can't assert anything, because this depends on the loca internet connection
+# I add this line to see if the plugin runs ok: without any stack traces.
+assert 1 == 1
+
+exit

@@ -1,0 +1,26 @@
+# This is the basic Auth Bruteforce demo
+
+plugins
+audit htaccessMethods
+bruteforce basicAuthBrute
+discovery allowedMethods
+grep httpAuthDetect,passwordProfiling
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+back
+
+target
+set target http://moth/w3af/bruteforce/basicAuthBrute/impossible_guess/
+back
+
+start
+
+assert len(kb.kb.getData('basicAuthBrute','auth')) == 0
+
+exit

@@ -1,0 +1,73 @@
+[profile]
+description = Perform a scan to only identify the vulnerabilities with higher risk, like SQL Injection, OS Commanding, Insecure File Uploads, etc.
+name = audit_high_risk
+
+[audit.eval]
+useTimeDelay = True
+useEcho = True
+
+[audit.dav]
+
+[audit.remoteFileInclude]
+usew3afSite = True
+listenAddress = 
+listenPort = 44449
+
+[output.gtkOutput]
+
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFormComboValues = tmb
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+fuzzCookie = False
+fuzzFileName = False
+fuzzFileContent = True
+maxDiscoveryTime = 120
+
+
+nonTargets = 
+
+[audit.sqli]
+
+[audit.osCommanding]
+
+[http-settings]
+proxyPort = 8080
+urlParameter = 
+never404 = 
+basicAuthDomain = 
+maxFileSize = 400000
+always404 = 
+headersFile = 
+proxyAddress = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
+ignoreSessCookies = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+byDirectoryAndExtension404 = False
+404string = 
+cookieJarFile = 
+
+[audit.blindSqli]
+equAlgorithm = setIntersection
+equalLimit = 0.9
+
+[output.console]
+verbose = True
+
+[discovery.webSpider]
+followRegex = .*
+ignoreRegex = 
+onlyForward = False
+
+[audit.fileUpload]
+extensions = gif,html,bmp,jpg,png,txt
+

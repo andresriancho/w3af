@@ -1,0 +1,19 @@
+# This is the MX injection demo
+
+plugins
+audit mxInjection
+output console
+output config console
+set verbose False
+back
+back
+
+target
+set target http://moth/w3af/audit/MX_injection/mxi.php?i=f00
+back
+
+start
+
+assert len( kb.kb.getData('mxInjection', 'mxInjection') ) == 1
+
+exit

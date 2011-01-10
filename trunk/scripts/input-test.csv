@@ -1,0 +1,3 @@
+GET,http://moth/w3af/,
+GET,http://moth/w4af/,
+POST,http://moth/w3af/audit/xss/dataReceptor.php,firstname=abc

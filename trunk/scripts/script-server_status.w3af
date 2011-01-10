@@ -1,0 +1,24 @@
+# This script shows how w3af reads a server-status file
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery serverStatus
+back
+
+target
+set target http://127.0.0.1/
+back
+
+start
+
+assert len( kb.kb.getData('serverStatus','server') ) == 1
+
+exit

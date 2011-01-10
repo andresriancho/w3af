@@ -1,0 +1,28 @@
+# webspider
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery allowedMethods,webSpider
+discovery config webSpider
+set onlyForward True
+back
+
+back
+
+target
+set target http://moth/w3af/core/htmlParser/urlRegex.html
+back
+
+start
+
+assert 'http://moth/w3af/core/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','urlList')
+
+exit

@@ -1,0 +1,34 @@
+# webspider - directory GET feature
+                # I also want to analyze all directories, if the URL I just fetched is:
+                # http://moth/a/b/c/f00.php I want to GET:
+                # http://moth/a/b/c/
+                # http://moth/a/b/
+                # http://moth/a/
+                # http://moth/
+                # And analyze the response...
+
+misc-settings
+set maxDiscoveryTime 2
+back
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery allowedMethods,webSpider
+back
+
+target
+set target http://moth/w3af/discovery/web_spider/a/b/c/d/
+back
+
+start
+
+assert len( kb.kb.getData('urls', 'urlList') ) >= 14
+
+exit

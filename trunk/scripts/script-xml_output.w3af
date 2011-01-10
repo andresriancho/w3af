@@ -1,0 +1,27 @@
+# This script is a test for the htmlFile output plugin
+
+plugins
+output console, xmlFile
+output config xmlFile
+set fileName output-w3af.xml
+set verbose True
+back
+
+discovery webSpider, allowedMethods
+discovery config webSpider
+set onlyForward True
+back
+
+audit xss
+
+back
+
+target
+set target http://moth/w3af/audit/xss/
+back
+
+start
+
+assert len(kb.kb.getData('urls','urlList')) >= 14
+
+exit

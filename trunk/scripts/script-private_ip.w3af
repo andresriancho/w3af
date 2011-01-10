@@ -1,0 +1,27 @@
+# grep demo for finding private ip addresses
+
+plugins
+
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+
+output config console
+set verbose False
+back
+
+grep privateIP
+
+back
+
+target
+set target http://moth/w3af/grep/private_ip.html
+back
+
+start
+
+assert len(kb.kb.getData('privateIP','html')) == 3
+
+exit

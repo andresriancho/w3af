@@ -1,0 +1,186 @@
+HTTP Server Identity Hiding Guide
+
+The following is a list of hiding tips (grouped by vendor).  Each section
+below is organized as follows:
+
+   - Configuration changes (easy to make)
+   - Source Code changes (harder to make)
+      - lexical
+      - syntactic
+      - semantic
+
+In this document I will focus on changes made to the server itself either
+through configuration options or source code changes.  Alternatively, one
+could in theory normalize the traffic going into and coming out of a
+server with some sort of intermediary proxy.
+
+Sections:
+
+   Apache
+   IIS
+
+######################################################################
+Apache
+######################################################################
+
+CONFIGURATION CHANGES
+
+   Apche has a number of ServerDirectives that can help hide a server's
+   identity.
+
+   LimitRequestBody
+   LimitRequestFields 
+   LimitRequestFieldsize
+   LimitRequestLine
+
+      These directives each give the system administrator the ability set
+      upper limits on the size of Request elements.  Several HMAP tests
+      check for the ranges of different errors and at what size these
+      errors are elicited.  By changing these limits to values different
+      from the defaults (which does not appear to be commonly done) these
+      errors will then occur at different ranges.  It is not clear if the
+      sequence of errors encountered will change however.
+
+   ServerTokens
+
+      This server directive allows you to truncate (but not completely
+      remove) the identity and characteristics of a server.
+
+      ServerTokens Prod[uctOnly] 
+	 Server sends (e.g.): Server: Apache 
+      ServerTokens Min[imal] 
+	 Server sends (e.g.): Server: Apache/1.3.0 
+      ServerTokens OS 
+	 Server sends (e.g.): Server: Apache/1.3.0 (Unix) 
+      ServerTokens Full (or not specified) 
+	 Server sends (e.g.): Server: Apache/1.3.0 (Unix) PHP/3.0
+
+    Header 
+   
+       The "Header" directive provides the ability to add, remove and
+       append to header entries in a Response.  Unfortunately these do not
+       apply to the Server header (see ServerTokens above).  Experiments
+       with adding and removing headers have been attempted.  Unless the
+       header is one that you have created yourself, they can have erratic
+       results (appending instead of replacing, replacing in addition to
+       appending, and so on).  But this method is worth investigating.
+       Adding headers will at least add some subterfuge.
+
+----------------------------------------------------------------------
+
+   SOURCE CODE MODIFICATIONS 
+      (note: this information was derived from Apache;/1.3.12 but should be
+      "mostly" true for other versions as well)
+
+   LEXICAL
+
+      Response Code Message Text
+
+         The file http_protocol.c contains an array of strings called
+         status_lines[RESPONSE_CODES] that hold the human readable
+         messages for each return code.  Each of these can be changed
+         synonymously to other phrases without changing the meaning of the
+         response.
+
+      Capitalization of Header Fields
+
+         The header fields must retain the same wording so that the client
+         will be able to interpret them, but most clients seem to
+         understand variations in capitalization style.  This technique
+         will require some hunting around the code since the headers tend
+         to be hard coded in many different places through out.  One good
+         concentration of them is in http_protocol.c in the function
+         ap_send_http_header(request_rec *r).  Here one could change
+         "Content-Type" to "Content-type" for instance.
+
+      Remove or Change Server Name
+
+         A simple technique that will frustrate the naive attacker is to
+         remove or alter the server's name.  There are several locations
+         where this could be accomplished.  The simplest is to simply use
+         the SERVER_BASEVERSION key word in httpd.h and change this to the
+         desired value (or simply leave as blank).
+
+         Other places you can play with the Server header:
+
+            http_protocol.c - where "Server:" gets added to header
+ 	       ap_send_header_field(r,"Server",ap_get_server_version());
+ 	       http_static int read_request_line(request_rec *r)
+            main.c
+ 	      ap_get_server_version -> static void ap_set_version(void)
+
+       Date Format
+
+         There are several different date formats that are permitted by the
+         HTTP/1.1 specification.  The format of the date returned from the
+         header could be modified to another of these legal formats.  A
+         convenient place to make this change would be in the function
+         ap_gm_timestr_822(pool *p, time_t sec).  It's possible that some
+         clients may be confused by alternate formats since the common
+         format (i.e. Date: Fri, 23 Feb 2001 22:06:03 GMT) is by far the
+         most common.
+
+   SYNTACTIC
+
+      Allow Header Options Order
+
+         In response to an OPTIONS method a server typically responds with
+         a message that includes an "Allow" header listing the methods that
+         can be used against the designated URI.  In the function
+         make_allow(request_rec *r) in http_protocol.c, the order that
+         these methods are listed can be rearranged.
+
+      Header Order
+
+         Here are some of the locations where the order of headers could be
+         rearranged:
+          
+            http_protocol.c:
+               ap_basic_http_header(request_rec *r),
+               ap_send_http_header(request_rec *r),
+               ap_send_error_response(request_rec *r, int recursive_error), 
+               ap_send_http_options(request_rec *r), etc.) 
+
+            alloc.c: 
+               ap_table_setn(table *t, const char *key, const char *val)).
+
+      ETags
+
+         Since the main function of the ETag is to provide a unique
+         identifier of a document one could easily change the format and
+         still provide distinct values.  These changes should be made in:
+
+         ap_make_etag(request_rec *r, int force_weak)
+
+   SEMANTIC
+
+      http_protocol.c 
+         static int read_request_line(request_rec *r) 
+
+      Changing the semantics of Apache would require a significant amount.
+      We can briefly discuss the sort of translation function that would be
+      needed to do this.  A straight forward way to achieve this would be
+      to create a "regularizing" function that pre-processes the request
+      and alters the content of any unusual requests so they match a more
+      generic format.  For instance, long URIs could be truncated to some
+      acceptable length before normal processing.  Another example would be
+      to check if the request line contains unknown methods or bad version
+      numbers.  A default "bad request" could be substituted for this
+      before processing.  In both of these scenarios a valid fingerprint
+      could not be generated since the core Apache engine never directly
+      interacts with the probing requests.
+
+      Time permitting I will put together an example of this at some
+      point. 
+
+
+######################################################################
+IIS (Microsoft)
+######################################################################
+
+Not much info yet.
+
+I haven't tried it yet, but you might want to check the following non-free
+tool.
+
+http://dfasdf.sadf.asdf

@@ -1,0 +1,20 @@
+nikto,2.00
+nikto_apacheusers.plugin,1.03
+nikto_core.plugin,1.39
+nikto_headers.plugin,1.13
+nikto_httpoptions.plugin,1.06
+nikto_msgs.plugin,1.04 
+nikto_mutate.plugin,1.07
+nikto_outdated.plugin,1.14
+nikto_passfiles.plugin,1.03
+nikto_plugin_order.txt,1.04
+nikto_realms.plugin,1.03
+nikto_robots.plugin,1.05
+nikto_user_enum_apache.plugin,1.02
+nikto_user_enum_cgiwrap.plugin,1.01
+outdated.db,1.128
+realms.db,1.006
+scan_database.db,1.219
+server_msgs.db,1.103
+servers.db,1.011
+msg,Nikto 2.0 is out--upgrade now!

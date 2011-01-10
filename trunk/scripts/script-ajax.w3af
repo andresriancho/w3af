@@ -1,0 +1,24 @@
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+grep ajax
+back
+
+target
+set target http://moth/w3af/grep/ajax/
+back
+
+start
+
+assert len(kb.kb.getData('ajax','ajax')) == 1
+
+exit

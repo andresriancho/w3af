@@ -1,0 +1,32 @@
+# This is a fuzz file name demo:
+
+#http-settings
+#set proxyAddress 127.0.0.1
+#set proxyPort 8080
+#back
+
+misc-settings
+set fuzzFileName true
+back
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+#audit xss
+audit blindSqli
+#audit sqli
+audit
+
+back
+target
+set target http://moth/w3af/xss/test
+back
+start

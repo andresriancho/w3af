@@ -1,0 +1,24 @@
+# check allowedMethods
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery allowedMethods
+back
+
+target
+set target http://moth/w3af/audit/dav/
+back
+
+start
+
+assert len( kb.kb.getData('allowedMethods', 'methods') ) == 0
+assert len( kb.kb.getData('allowedMethods', 'dav-methods') ) == 1
+
+exit

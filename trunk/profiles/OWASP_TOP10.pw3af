@@ -1,0 +1,242 @@
+[discovery.phpinfo]
+
+[discovery.yahooSiteExplorer]
+resultLimit = 300
+
+[audit.frontpage]
+stopOnFirst = True
+
+[audit.eval]
+useTimeDelay = True
+useEcho = True
+
+[grep.motw]
+withoutMOTW = False
+
+[grep.creditCards]
+
+[audit.blindSqli]
+equAlgorithm = setIntersection
+equalLimit = 0.8
+
+[discovery.allowedMethods]
+reportDavOnly = True
+execOneTime = False
+
+[grep.feeds]
+
+[discovery.halberd]
+
+[audit.phishingVector]
+
+
+[grep.pathDisclosure]
+
+[audit.xsrf]
+
+[grep.hashFind]
+
+[discovery.dnsWildcard]
+
+[discovery.detectTransparentProxy]
+
+[audit.mxInjection]
+
+[audit.preg_replace]
+
+[grep.strangeHeaders]
+
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFormComboValues = tmb
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+showProgressBar = True
+fuzzCookie = False
+
+fuzzFileContent = True
+fuzzFileName = False
+maxDiscoveryTime = 120
+
+nonTargets = 
+
+[discovery.fingerprint_os]
+
+[audit.localFileInclude]
+
+[discovery.afd]
+
+[audit.LDAPi]
+
+[discovery.dotNetErrors]
+
+[audit.unSSL]
+
+[discovery.sharedHosting]
+resultLimit = 300
+
+[discovery.webSpider]
+followRegex = .*
+ignoreRegex = None
+onlyForward = False
+
+[audit.sslCertificate]
+
+[audit.osCommanding]
+
+[audit.ssi]
+
+[discovery.serverHeader]
+execOneTime = True
+
+[audit.sqli]
+
+[grep.dotNetEventValidation]
+
+[audit.buffOverflow]
+
+[grep.directoryIndexing]
+
+[grep.collectCookies]
+
+[grep.getMails]
+onlyTargetDomain = True
+
+[grep.oracle]
+
+[grep.metaTags]
+search404 = False
+
+[grep.strangeHTTPCode]
+
+[audit.xpath]
+
+[audit.generic]
+diffRatio = 0.35
+
+[grep.httpInBody]
+
+[discovery.sitemapReader]
+
+[grep.fileUpload]
+
+[grep.ajax]
+
+[discovery.fingerprint_WAF]
+
+[grep.error500]
+
+[discovery.detectReverseProxy]
+
+[grep.lang]
+
+[discovery.serverStatus]
+
+[grep.objects]
+
+[discovery.hmap]
+genFpF = False
+
+[discovery.userDir]
+identifyOS = True
+identifyApplications = True
+
+[audit.htaccessMethods]
+
+[discovery.oracleDiscovery]
+
+[grep.domXss]
+
+[target]
+target = 
+
+[audit.remoteFileInclude]
+usew3afSite = True
+listenAddress = 
+listenPort = 44449
+
+[grep.wsdlGreper]
+
+[discovery.findvhost]
+
+[grep.httpAuthDetect]
+
+[audit.responseSplitting]
+
+[grep.svnUsers]
+
+[grep.passwordProfiling]
+
+[grep.blankBody]
+
+[grep.errorPages]
+
+[audit.dav]
+
+[output.console]
+verbose = True
+
+[audit.formatString]
+
+[discovery.phpEggs]
+
+[grep.strangeParameters]
+
+[discovery.robotsReader]
+
+[audit.globalRedirect]
+
+[audit.xst]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[profile]
+description = The Open Web Application Security Project (OWASP) is a worldwide free and open community focused on improving the security of application software. OWASP searched for and published the ten most common security flaws. This profile search for this top 10 security flaws. For more information about the security flaws: http://www.owasp.org/index.php/OWASP_Top_Ten_Project .
+name = OWASP_TOP10
+
+[grep.findComments]
+search404 = True
+
+[output.gtkOutput]
+
+[grep.ssn]
+
+[grep.codeDisclosure]
+
+[grep.privateIP]
+
+[discovery.phishtank]
+dbFile = plugins/discovery/phishtank/index.xml
+updateDB = False
+
+[http-settings]
+proxyPort = 8080
+urlParameter = 
+never404 = 
+headersFile = 
+maxFileSize = 400000
+proxyAddress = 
+basicAuthDomain = 
+always404 = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
+ignoreSessCookies = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+404string = 
+cookieJarFile = 
+
+[discovery.bing_spider]
+resultLimit = 300
+
+[audit.fileUpload]
+extensions = gif,html
+

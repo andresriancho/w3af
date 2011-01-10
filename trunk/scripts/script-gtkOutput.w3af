@@ -1,0 +1,30 @@
+# This script is a test for the gtkOutput plugin
+# I only add messages to the queue, I'm not enabling the gtkUi that
+# will read the messages from it.
+
+plugins
+output console,gtkOutput, textFile
+output
+
+output config textFile
+set verbose True
+back
+
+discovery pykto
+back
+
+target
+set target http://moth
+back
+
+start
+
+assert len(kb.kb.getData('pykto','vuln')) >= 3
+assert len(kb.kb.getData('urls','urlList')) >= 3
+
+# Check that message objects are stored here...
+assert kb.kb.getData('gtkOutput','queue').get().getMsg()
+assert kb.kb.getData('gtkOutput','queue').get().getType()
+assert kb.kb.getData('gtkOutput','queue').get().getNewLine()
+
+exit

@@ -1,0 +1,85 @@
+
+        Frequently Asked Questions (and Infrequently Asked Questions)
+
+   ======================================================================
+
+   Q: What's the use of fingerprinting a web server? Even if a hacker
+      couldn't precisely identify a server certainly he could just run his
+      full gamut of attacks?
+
+   A: Of course, but it's usually in a hackers interest to gather
+      information before an attack.  My guess would be that the more
+      sophiticated hackers will do sophisticated information gathering as a
+      prelude to an attack.
+
+   Q: How can I make my web server so that it can't be fingerprinted?
+
+   A: Do you really need to?
+      - if you are up to date on your patches and have locked it down 
+         as much as possible there may be better ways to spend
+         your time.
+
+      - If you are really gungho, I'm collecting server hiding techniques
+        in the HIDING_GUIDE document.
+
+   Q: I found a test you don't have.
+ 
+   A: Cool. I'd be surprised if I had found every possible test.  Before
+       you send it too me:
+        - Check my list (KNOWN_TESTS) of already identified tests to make
+          sure it's really new.
+        - If you are up to it, add it into the tool and make sure it works
+          the way you think it should.
+        - Show me which servers it discriminates.  Even if it doesn't
+          discriminate anything new, it still might be interesting for
+          other reasons (stealth, new direction to look for tests, etc.)
+        - Cool, lets add it to my battery of tests and now you are famous
+          (well at least i'll give you acknowledgements for it...)
+
+   Q: Why did you use python? Real hackers use perl.
+
+   A: If you say so.  Here's one hacker that thinks python is pretty cool
+      (http://www.linuxjournal.com/article.php?sid=3882).  I originally
+      wrote it all in perl then grew dissatisfied with the code.  I've been
+      much more productive with it in it's new form.
+
+   Q: Breaking into web servers and defacing them is no big deal why worry?
+      
+   A: Two reasons. 
+
+      (1) Go to securityfocus.com and look at some of the security issues
+          that web servers are open to.  Many of them are Denial of Service
+          (DoS) or running arbitrary code.  Those are prety serious issues.
+
+      (2) People are running alot more web (HTTP) servers than they might
+          know:
+          - printer configuration interfaces 
+          - help manuals
+          - WebDAV 
+	  - etc.
+
+   Q: Isn't hiding the identity of your server just security thru
+      obscurity?
+
+   A: Obscurity is only frowned upon when its the mechanism of the security
+      that is hidden.  For instance the lock on a door requires obscurity -
+      a key whose exact shape is known only to the key holder.  How locks
+      work is not hidden but the "secret" that opens a specific door is
+      kept obscure.  In otherwords if you see obscurity in a security
+      scenario it's not automatically bad.  Furthermore, why not use every
+      thing you have in your arsenal to defend your site?
+
+   Q: Wouldn't it be cool if, after determining the exact webserver, it then
+      gave list of vulnerablities for that server and scanned for them?
+
+   A: Lots of good scanners already exist that could be modified to work
+      that way (e.g. whisker).  Lots of smart people are already working 
+      on that.  I think this tool complements that work though.
+
+   Q: I have a server that's not on your list.
+
+   A: I'm looking for access to webservers with different vendor/version/OS
+      combos.  If you have a combination that I don't have already I'd be
+      interested in using it to create a profile and to test/verify
+      against.  I'll gladly add you to my acknowledgements list.
+

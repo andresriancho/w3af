@@ -1,0 +1,30 @@
+# generate a hmap fingerprint file
+
+plugins
+discovery serverHeader,hmap
+discovery config hmap
+set genFpF True
+back
+
+output console, textFile
+output config console
+set verbose False
+back
+output config textFile
+set verbose True
+back
+
+back
+
+http-settings
+set userAgent w3af!
+back
+
+target
+set target http://moth/
+back
+start
+
+assert 'apache' in kb.kb.getData('hmap','serverString').lower()
+
+exit

@@ -1,0 +1,26 @@
+# This is the blind sqli demo
+plugins
+audit blindSqli
+audit config blindSqli
+set equalLimit 0.89
+
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+back
+target
+set target http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php?id=1, http://moth/w3af/audit/blind_sql_injection/bsqli_string.php?email=a@b.com, http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php?email=a@b.com
+back
+start
+
+assert len( kb.kb.getData('blindSqli', 'blindSqli') ) == 3
+
+exit
+

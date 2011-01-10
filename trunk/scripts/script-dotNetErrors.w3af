@@ -1,0 +1,27 @@
+# grep demo for dotNetError detection
+
+plugins
+
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+
+output config console
+set verbose False
+back
+
+discovery dotNetErrors
+
+back
+
+target
+set target http://servicioswww.anses.gov.ar/ConstanciadeCuil2/Inicio.aspx
+back
+
+start
+
+print len(kb.kb.getData('dotNetErrors','dotNetErrors'))
+
+exit

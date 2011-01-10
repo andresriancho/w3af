@@ -1,0 +1,24 @@
+# grep demo of creditCards that shouldnt find anything
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+grep creditCards
+back
+
+target
+set target http://moth/w3af/grep/index.html
+back
+
+start
+
+assert len(kb.kb.getData('creditCards','creditCards')) == 0
+
+exit

@@ -1,0 +1,37 @@
+# This is a simple xss detection demo:
+
+#http-settings
+#set proxyAddress 127.0.0.1
+#set proxyPort 8080
+#back
+
+plugins
+
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+audit
+# There is no sense in enabling ALLL evasion plugins. IT WONT WORK
+# But i'm enabling them just to test if they raise any exceptions
+evasion modsecurity
+evasion
+back
+
+target
+set target http://moth/w3af/xss-forms/test-forms.html
+#set target http://172.16.1.132/index.asp?q=holaMundo
+back
+
+start
+
+assert 1 == 1
+
+exit

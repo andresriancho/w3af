@@ -1,0 +1,25 @@
+# grep demo for strangeHeader
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+grep strangeHeaders
+back
+
+target
+set target http://moth/w3af/grep/strange_headers/strange_header.php
+back
+
+start
+
+assert len(kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )) == 1
+
+exit
+

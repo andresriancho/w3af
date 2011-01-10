@@ -1,0 +1,317 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: w3af beta7\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-09-04 17:03+0400\n"
+"PO-Revision-Date: 2008-09-04 17:03+0400\n"
+"Last-Translator: Alexander Berezhnoy <alexander.berezhnoy@gmail.com>\n"
+"Language-Team: RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: core/ui/gtkUi/main.py:148
+msgid "About..."
+msgstr "О программе"
+
+#: core/ui/gtkUi/main.py:149
+msgid "Check the web site"
+msgstr "Сайт программы"
+
+#: core/ui/gtkUi/main.py:181
+msgid "BUG! The communicator was never initialized"
+msgstr "Ошибка! Коммуникатор не инициализирован."
+
+#: core/ui/gtkUi/main.py:233
+msgid "Loading..."
+msgstr "Загрузка..."
+
+#: core/ui/gtkUi/main.py:246
+msgid "Initializing core..."
+msgstr "Инициализация ядра..."
+
+#: core/ui/gtkUi/main.py:253
+msgid "Building the status bar..."
+msgstr "Создание окна статуса..."
+
+#: core/ui/gtkUi/main.py:255
+msgid "Program started ok"
+msgstr "Программа запущена успешно."
+
+#: core/ui/gtkUi/main.py:268
+msgid "Creating menu and toolbar..."
+msgstr "Создание меню и панели инструментов..."
+
+#: core/ui/gtkUi/main.py:277
+msgid "_New"
+msgstr "Создать"
+
+#: core/ui/gtkUi/main.py:277
+msgid "Create a new profile"
+msgstr "Создать новый профиль"
+
+#: core/ui/gtkUi/main.py:278
+msgid "_Save"
+msgstr "Сохранить"
+
+#: core/ui/gtkUi/main.py:278
+msgid "Save this configuration"
+msgstr "Сохранить конфигурацию"
+
+#: core/ui/gtkUi/main.py:279
+msgid "Save _as..."
+msgstr "Сохранить как..."
+
+#: core/ui/gtkUi/main.py:279
+msgid "Save this configuration in a new profile"
+msgstr "Сохранить конфигурацию в новом профиле"
+
+#: core/ui/gtkUi/main.py:280
+msgid "_Revert"
+msgstr "Откатить"
+
+#: core/ui/gtkUi/main.py:280
+msgid "Revert the profile to its saved state"
+msgstr "Откатить профиль к сохранённому состоянию"
+
+#: core/ui/gtkUi/main.py:281
+msgid "_Delete"
+msgstr "Удалить"
+
+#: core/ui/gtkUi/main.py:281
+msgid "Delete this profile"
+msgstr "Удалить профиль"
+
+#: core/ui/gtkUi/main.py:282
+msgid "_Profiles"
+msgstr "Профили"
+
+#: core/ui/gtkUi/main.py:283 core/ui/gtkUi/main.py:284
+msgid "_View"
+msgstr "Вид"
+
+#: core/ui/gtkUi/main.py:286
+msgid "_Edit plugin"
+msgstr "Редактировать профиль"
+
+#: core/ui/gtkUi/main.py:286
+msgid "Edit selected plugin"
+msgstr "Редактировать плагин"
+
+#: core/ui/gtkUi/main.py:287
+msgid "_Edit"
+msgstr "Редактировать"
+
+#: core/ui/gtkUi/main.py:287
+msgid "Edit"
+msgstr "Редактировать"
+
+#: core/ui/gtkUi/main.py:289
+msgid "_HTTP Config"
+msgstr "Настройки HTTP"
+
+#: core/ui/gtkUi/main.py:289
+msgid "HTTP configuration"
+msgstr "Настройки HTTP"
+
+#: core/ui/gtkUi/main.py:290
+msgid "_Miscellaneous"
+msgstr "Прочее"
+
+#: core/ui/gtkUi/main.py:290
+msgid "Miscellaneous configuration"
+msgstr "Прочие настройки"
+
+#: core/ui/gtkUi/main.py:291
+msgid "_Configuration"
+msgstr "Настройки"
+
+#: core/ui/gtkUi/main.py:293
+msgid "_Manual Request"
+msgstr "Произвольный запрос"
+
+#: core/ui/gtkUi/main.py:293
+msgid "Generate manual HTTP request"
+msgstr "Генерация произвольного запроса"
+
+#: core/ui/gtkUi/main.py:294
+msgid "_Fuzzy Request"
+msgstr "Fuzzy-запрос"
+
+#: core/ui/gtkUi/main.py:294
+msgid "Generate fuzzy HTTP requests"
+msgstr "Генерация fuzzy-запросов"
+
+#: core/ui/gtkUi/main.py:295
+msgid "_Encode/Decode"
+msgstr "Кодировать/декодировать"
+
+#: core/ui/gtkUi/main.py:295
+msgid "Encodes and Decodes in different ways"
+msgstr "(Де)кодирование данных различными способами"
+
+#: core/ui/gtkUi/main.py:296
+msgid "_Compare"
+msgstr "Сравнить"
+
+#: core/ui/gtkUi/main.py:296
+msgid "Compare different requests and responses"
+msgstr "Сравнить различные запросы и ответы"
+
+#: core/ui/gtkUi/main.py:297
+msgid "_Proxy"
+msgstr "Прокси"
+
+#: core/ui/gtkUi/main.py:297
+msgid "Proxies the HTTP requests, allowing their modification"
+msgstr "Перехват HTTP-запросов, позволяющий их изменение"
+
+#: core/ui/gtkUi/main.py:298
+msgid "_Tools"
+msgstr "Инструменты"
+
+#: core/ui/gtkUi/main.py:300
+msgid "_Wizards"
+msgstr "Мастера"
+
+#: core/ui/gtkUi/main.py:300
+msgid "Point & Click Penetration Test"
+msgstr "Быстрое тестирование"
+
+#: core/ui/gtkUi/main.py:301 core/ui/gtkUi/main.py:303
+msgid "_Help"
+msgstr "Помощь"
+
+#: core/ui/gtkUi/main.py:301
+msgid "Help regarding the framework"
+msgstr "Помощь по фреймворку"
+
+#: core/ui/gtkUi/main.py:302
+msgid "_About"
+msgstr "О программе"
+
+#: core/ui/gtkUi/main.py:302
+msgid "About the framework"
+msgstr "О фреймфорке"
+
+#: core/ui/gtkUi/main.py:305
+msgid "_Start"
+msgstr "Пуск"
+
+#: core/ui/gtkUi/main.py:305 core/ui/gtkUi/main.py:615
+msgid "Start scan"
+msgstr "Начать сканирование"
+
+#: core/ui/gtkUi/main.py:306
+msgid "_Multiple Exploit"
+msgstr ""
+
+#: core/ui/gtkUi/main.py:306
+msgid "Exploit all vulns"
+msgstr "Эксплойты и уязвимости"
+
+#: core/ui/gtkUi/main.py:311
+msgid "_Pause"
+msgstr "Пауза"
+
+#: core/ui/gtkUi/main.py:311
+msgid "Pause scan"
+msgstr "Приостановить сканирование"
+
+#: core/ui/gtkUi/main.py:332
+msgid "Toggle the plugins panel"
+msgstr "Включить/выключить панель плагинов"
+
+#: core/ui/gtkUi/main.py:334
+msgid "Toggle the shells and proxies window"
+msgstr "Включить/выключить окно оболочек и прокси"
+
+#: core/ui/gtkUi/main.py:379
+msgid "Building the throbber..."
+msgstr "Создание индикатора активности..."
+
+#: core/ui/gtkUi/main.py:389
+msgid "Building the main screen..."
+msgstr "Создание основного экрана..."
+
+#: core/ui/gtkUi/main.py:402
+msgid "Scan config"
+msgstr "Настройки сканирования"
+
+#: core/ui/gtkUi/main.py:408 core/ui/gtkUi/main.py:650
+msgid "Log"
+msgstr "Журнал"
+
+#: core/ui/gtkUi/main.py:408 core/ui/gtkUi/main.py:651
+msgid "Results"
+msgstr "Результаты"
+
+#: core/ui/gtkUi/main.py:408 core/ui/gtkUi/main.py:652
+#: core/ui/gtkUi/main.py:743
+msgid "Exploit"
+msgstr "Эксплойт"
+
+#: core/ui/gtkUi/main.py:464
+msgid "Do you really want to quit?"
+msgstr "Вы уверены, что хотите выйти?"
+
+#: core/ui/gtkUi/main.py:546
+msgid "The scan has started"
+msgstr "Сканирование началось"
+
+#: core/ui/gtkUi/main.py:550
+msgid "Stop scan"
+msgstr "Остановить сканирование"
+
+#: core/ui/gtkUi/main.py:574
+msgid "Resuming the scan..."
+msgstr "Сканирование возобновляется..."
+
+#: core/ui/gtkUi/main.py:578
+msgid "The scan is paused"
+msgstr "Сканирование приостановлено"
+
+#: core/ui/gtkUi/main.py:585
+msgid "Stopping the scan..."
+msgstr "Остановка сканирования..."
+
+#: core/ui/gtkUi/main.py:594
+msgid "Clear"
+msgstr "Очистить"
+
+#: core/ui/gtkUi/main.py:594
+msgid "Clear all the obtained results"
+msgstr "Очистить все полученные результаты"
+
+#: core/ui/gtkUi/main.py:600
+msgid "The scan has stopped by user request"
+msgstr "Сканирование остановлено пользователем"
+
+#: core/ui/gtkUi/main.py:602
+msgid "The scan has finished"
+msgstr "Сканирование завершено"
+
+#: core/ui/gtkUi/main.py:611
+msgid "Scan results cleared"
+msgstr "Результаты сканирования очищены"
+
+#: core/ui/gtkUi/main.py:615
+msgid "Start"
+msgstr "Пуск"
+
+#: core/ui/gtkUi/main.py:660
+msgid "The scan has not started: no info yet"
+msgstr "Скан не запущен: нет данных"
+
+#: core/ui/gtkUi/main.py:675
+msgid "Configure HTTP settings"
+msgstr "Настройки HTTP"
+
+#: core/ui/gtkUi/main.py:680
+msgid "Configure Misc settings"
+msgstr "Прочие настройки"

@@ -1,0 +1,21 @@
+# This is the xpath demo
+
+plugins
+audit xpath
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+back
+
+target
+set target http://moth/w3af/audit/xpath/xpath.php?i=a
+back
+start
+
+assert len(kb.kb.getData('xpath','xpath')) == 2
+
+exit
+

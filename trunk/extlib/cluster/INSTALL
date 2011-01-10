@@ -1,0 +1,44 @@
+INSTALLATION
+============
+
+Linux
+-----
+
+RPM-Installation
+~~~~~~~~~~~~~~~~
+
+I'm not familiar with RPM-distributions but as far as I know it should be
+something like::
+
+   rpm -i <filename.rpm>
+
+RPM-source Installation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This is something I don't know. If somebody can enlighten me, please do!
+
+Binary/Source installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Untar the package with you favourite archive tool. On the console it will be
+something along the lines::
+
+   tar xzf <filename.tar.gz>
+
+Next, go to the folder just created. It will have the same name as the package
+(for example "cluster-1.0.0b1") and run::
+
+   python setup.py install
+
+For this step you need root-priviledges
+
+Windows
+-------
+
+Execute the executable file and follow the instructions displayed. Default
+values will be fine in most cases.
+
+MacOS-X
+-------
+
+Simply follow the same instructions as with the Linux-Source installation.

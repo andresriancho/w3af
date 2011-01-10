@@ -1,0 +1,25 @@
+# permanent xss detection
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+back
+
+target
+set target http://moth/w3af/audit/xss/stored/reader.php?a=f00, http://moth/w3af/audit/xss/stored/writer.php?a=g99&b=00
+back
+
+start
+
+assert len(kb.kb.getData('xss','xss')) == 1
+
+exit
+

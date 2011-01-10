@@ -1,0 +1,31 @@
+# active filter detection demo
+
+http-settings
+set userAgent 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0; .NET CLR 1.0.3705)'
+set timeout 14
+back
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery afd
+
+back
+
+target
+set target http://www.santanderrio.com.ar/
+back
+
+start
+
+assert len(kb.kb.getData('afd','afd')) == 1
+
+exit
+

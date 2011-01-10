@@ -1,0 +1,28 @@
+# This is the phishingVector plugin demo
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit phishingVector
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/audit/phishing_vector/
+back
+
+start
+
+assert len( kb.kb.getData('phishingVector', 'phishingVector') ) == 3
+
+exit

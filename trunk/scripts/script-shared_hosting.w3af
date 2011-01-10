@@ -1,0 +1,23 @@
+# check if web app is in shared hosting
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery sharedHosting
+back
+
+target
+set target http://www.ipaddress.com.ar/
+back
+
+start
+
+assert len(kb.kb.getData('sharedHosting','sharedHosting')) == 1
+
+exit

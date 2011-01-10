@@ -1,0 +1,23 @@
+# webspider with javascript support
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery web20Spider
+discovery
+back
+
+target
+set target http://moth/w3af/web20Spider/2.html
+back
+
+start
+
+exit

@@ -1,0 +1,22 @@
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+discovery urllist_txt
+back
+
+target
+set target http://moth/
+back
+
+start
+
+assert len( kb.kb.getData('urls','urlList') ) == 3 
+
+exit

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Halberd.clues.Clue.Clue</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="Halberd-module.html">Package&nbsp;Halberd</a> ::
+        <a href="Halberd.clues-module.html">Package&nbsp;clues</a> ::
+        <a href="Halberd.clues.Clue-module.html">Module&nbsp;Clue</a> ::
+        Class&nbsp;Clue
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<a href="../private/Halberd.clues.Clue.Clue-class.html">show&nbsp;private</a>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="Halberd.clues.Clue.Clue-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Class Clue</h2>
+
+<hr/>
+
+<p>A clue is what we use to tell real servers behind a virtual IP.</p>
+Clues are gathered during several connections to a web server and they 
+allow us to try to identify patterns in its responses. Those patterns 
+could allow us to find out which real servers are behind a VIP
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="__init__"></a><span class="summary-sig"><span class="summary-sig-name">__init__</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="__eq__"></a><span class="summary-sig"><span class="summary-sig-name">__eq__</span>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>other</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="__ne__"></a><span class="summary-sig"><span class="summary-sig-name">__ne__</span>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>other</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="__repr__"></a><span class="summary-sig"><span class="summary-sig-name">__repr__</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        <code>int</code>.
+</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clues.Clue.Clue-class.html#getCount" class="summary-sig-name"><code>getCount</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Retrieve the number of times the clue has been found</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clues.Clue.Clue-class.html#incCount" class="summary-sig-name"><code>incCount</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>num</span>)</span></code>
+<br />
+Increase the times this clue has been found.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        <code>str</code>
+</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clues.Clue.Clue-class.html#normalize" class="summary-sig-name"><code>normalize</code></a>(<span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Normalize string.    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clues.Clue.Clue-class.html#parse" class="summary-sig-name"><code>parse</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>headers</span>)</span></code>
+<br />
+Extracts all relevant information from the MIME headers replied by the 
+target.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clues.Clue.Clue-class.html#setTimestamp" class="summary-sig-name"><code>setTimestamp</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>timestamp</span>)</span></code>
+<br />
+Sets the local clock attribute.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Instance Method Details</th></tr>
+</table>
+
+<a name="getCount"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">getCount</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Retrieve the number of times the clue has been found
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Number of hits.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>int</code>.)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="incCount"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">incCount</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>num</span>=<span class=sig-default>1</span>)</span>
+  </h3>
+  Increase the times this clue has been found.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>num</b></code> -
+         A positive non-zero number of hits to increase.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>int</code>)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>ValueError</b></code> -
+        in case <a href="Halberd.clues.Clue.Clue-class.html#incCount" 
+        class="link"><code>num</code></a> is less than or equal to 
+        zero.
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="parse"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">parse</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>headers</span>)</span>
+  </h3>
+  Extracts all relevant information from the MIME headers replied by 
+  the target.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>headers</b></code> -
+         A set of MIME headers (a string as replied by the webserver or 
+        a previously parsed sequence of name, value tuples).
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>str</code>, <code>list</code> or 
+              <code>tuple</code>)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Raises:</b></dt>
+      <dd><code><b>TypeError</b></code> -
+        If headers is neither a string nor a sequence.
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="setTimestamp"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">setTimestamp</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>timestamp</span>)</span>
+  </h3>
+  Sets the local clock attribute.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>timestamp</b></code> -
+         The local time (expressed in seconds since the Epoch) when the 
+        connection to the target was successfully completed.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>int</code>)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF STATIC METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Static Method Details</th></tr>
+</table>
+
+<a name="normalize"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">normalize</span>(<span class=sig-arg>name</span>)</span>
+  </h3>
+  <p>Normalize string.</p>
+  This method takes a string coming out of mime-fields and transforms 
+  it into a valid Python identifier. That's done by removing invalid 
+  non-alphanumeric characters and also numeric ones placed at the 
+  beginning of the string.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>name</b></code> -
+         String to be normalized.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>str</code>)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Normalized string.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>str</code>)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Wed Jul 18 22:25:57 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

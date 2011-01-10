@@ -1,0 +1,52 @@
+[profile]
+description = Use different online techniques to create a fast sitemap of the target web application. This plugin will only work if you've got Internet access and the target web application is being spidered by Yahoo!
+name = sitemap
+
+[discovery.sitemapReader]
+
+[output.gtkOutput]
+
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+fuzzCookie = False
+fuzzFileContent = True
+fuzzFileName = False
+maxDiscoveryTime = 120
+
+
+fuzzFormComboValues = tmb
+nonTargets = 
+
+[discovery.robotsReader]
+
+[http-settings]
+proxyPort = 8080
+urlParameter = 
+never404 = 
+headersFile = 
+maxFileSize = 400000
+proxyAddress = 
+basicAuthDomain = 
+always404 = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
+ignoreSessCookies = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+basicAuthPass = 
+404string = 
+cookieJarFile = 
+
+[output.console]
+verbose = False
+
+[discovery.yahooSiteExplorer]
+resultLimit = 300
+

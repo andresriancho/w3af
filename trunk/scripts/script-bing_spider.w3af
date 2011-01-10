@@ -1,0 +1,27 @@
+# This scripts tests the Bing Spider plugin
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose True
+back
+
+discovery bing_spider
+discovery config bing_spider
+set resultLimit 10
+back
+back
+
+target
+set target http://www.cybsec.com/
+back
+
+start
+
+assert len(kb.kb.getData('urls','urlList')) >= 12
+
+exit

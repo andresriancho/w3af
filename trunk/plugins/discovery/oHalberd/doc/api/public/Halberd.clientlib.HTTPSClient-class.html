@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Halberd.clientlib.HTTPSClient</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="Halberd-module.html">Package&nbsp;Halberd</a> ::
+        <a href="Halberd.clientlib-module.html">Module&nbsp;clientlib</a> ::
+        Class&nbsp;HTTPSClient
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<a href="../private/Halberd.clientlib.HTTPSClient-class.html">show&nbsp;private</a>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="Halberd.clientlib.HTTPSClient-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Class HTTPSClient</h2>
+
+<pre class="base-tree">
+<a href="Halberd.clientlib.HTTPClient-class.html"><code>HTTPClient</code></a> --+
+             |
+            <b>HTTPSClient</b>
+</pre><br />
+
+<hr/>
+
+Special-purpose HTTPS client.
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clientlib.HTTPSClient-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initializes the object.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from HTTPClient</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clientlib.HTTPClient-class.html#__del__" class="summary-sig-name"><code>__del__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        <code>tuple</code>
+</font></td>
+  <td><code><span class="summary-sig"><a href="Halberd.clientlib.HTTPClient-class.html#getHeaders" class="summary-sig-name"><code>getHeaders</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>address</span>,
+          <span class=summary-sig-arg>urlstr</span>)</span></code>
+<br />
+Talk to the target webserver and fetch MIME headers.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE VARIABLE SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Instance Variable Summary</th></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from HTTPClient</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><code>int</code></font></td>
+<td><b><a href="Halberd.clientlib.HTTPClient-class.html#bufsize"><code>bufsize</code></a></b>: Buffer size for network I/O.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><code>str</code></font></td>
+<td><b><a href="Halberd.clientlib.HTTPClient-class.html#template"><code>template</code></a></b>: Template of the HTTP request to be sent to the target.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><code>float</code></font></td>
+<td><b><a href="Halberd.clientlib.HTTPClient-class.html#timeout"><code>timeout</code></a></b>: Timeout for socket operations (expressed in seconds).</td></tr>
+</table><br />
+
+
+<!-- =========== START OF METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Method Details</th></tr>
+</table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+  Initializes the object.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="Halberd.clientlib.HTTPClient-class.html#__init__"><code>Halberd.clientlib.HTTPClient.__init__</code></a> <i>(inherited documentation)</i>
+</dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Wed Jul 18 22:25:57 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Module and Class Hierarchies</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th bgcolor="#70b0f0" class="navselect">&nbsp;&nbsp;&nbsp;Trees&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<a href="../private/trees.html">show&nbsp;private</a>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="trees.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF MODULE HIERARCHY =========== -->
+<h2>Module Hierarchy</h2>
+<ul>
+<li> <b><a href="Halberd-module.html"><code>Halberd</code></a></b>: <i>HTTP load balancer detector module.</i>
+  <ul>
+    <li> <b><a href="Halberd.clientlib-module.html"><code>clientlib</code></a></b>: <i>HTTP/HTTPS client module.</i>
+    <li> <b><a href="Halberd.clues-module.html"><code>clues</code></a></b>: <i>Clue management package</i>
+      <ul>
+        <li> <b><a href="Halberd.clues.analysis-module.html"><code>analysis</code></a></b>: <i>Utilities for clue analysis.</i>
+        <li> <b><a href="Halberd.clues.Clue-module.html"><code>Clue</code></a></b>: <i>Clue generation module.</i>
+        <li> <b><a href="Halberd.clues.file-module.html"><code>file</code></a></b>: <i>Utilities for clue storage.</i>
+      </ul>
+    <li> <b><a href="Halberd.conflib-module.html"><code>conflib</code></a></b>: <i>Configuration file management module.</i>
+    <li> <b><a href="Halberd.crew-module.html"><code>crew</code></a></b>: <i>A work crew is instantiated passing a ScanTask object as a parameter, 
+thus defining the target and the way the scanning should be done.</i>
+    <li> <b><a href="Halberd.logger-module.html"><code>logger</code></a></b>: <i>Logger singleton.</i>
+    <li> <b><a href="Halberd.reportlib-module.html"><code>reportlib</code></a></b>: <i>Output module.</i>
+    <li> <b><a href="Halberd.ScanTask-module.html"><code>ScanTask</code></a></b>: <i>Scanning tasks.</i>
+    <li> <b><a href="Halberd.shell-module.html"><code>shell</code></a></b>: <i>Provides scanning patterns to be used as building blocks for more 
+complex scans.</i>
+    <li> <b><a href="Halberd.util-module.html"><code>util</code></a></b>: <i>Miscellaneous functions.</i>
+  </ul>
+</ul>
+
+<!-- =========== START OF CLASS HIERARCHY =========== -->
+<h2>Class Hierarchy</h2>
+<ul>
+  <li> <b><a href="Halberd.ScanTask.ScanTask-class.html"><code>Halberd.ScanTask.ScanTask</code></a></b>: <i>
+Describes the way a scan should be performed.</i>
+  <li> <b><a href="Halberd.clientlib.HTTPClient-class.html"><code>Halberd.clientlib.HTTPClient</code></a></b>: <i>
+Special-purpose HTTP client.</i>
+    <ul>
+  <li> <b><a href="Halberd.clientlib.HTTPSClient-class.html"><code>Halberd.clientlib.HTTPSClient</code></a></b>: <i>
+Special-purpose HTTPS client.</i>
+    </ul>
+  <li> <b><a href="Halberd.clues.Clue.Clue-class.html"><code>Halberd.clues.Clue.Clue</code></a></b>: <i>
+A clue is what we use to tell real servers behind a virtual IP.</i>
+  <li> <b><a href="Halberd.clues.file.ClueDir-class.html"><code>Halberd.clues.file.ClueDir</code></a></b>: <i>
+Stores clues hierarchically using the underlying filesystem.</i>
+  <li> <b><a href="Halberd.conflib.ConfReader-class.html"><code>Halberd.conflib.ConfReader</code></a></b>: <i>
+Takes care of turning configuration files into meaningful 
+information.</i>
+  <li> <b><a href="Halberd.crew.WorkCrew-class.html"><code>Halberd.crew.WorkCrew</code></a></b>: <i>
+Pool of scanners working in parallel.</i>
+  <li> <b><a href="Halberd.shell.BaseStrategy-class.html"><code>Halberd.shell.BaseStrategy</code></a></b>: <i>
+Defines the strategy used to scan.</i>
+    <ul>
+  <li> <b><a href="Halberd.shell.ClueReaderStrategy-class.html"><code>Halberd.shell.ClueReaderStrategy</code></a></b>: <i>
+Clue reader strategy.</i>
+  <li> <b><a href="Halberd.shell.MultiScanStrategy-class.html"><code>Halberd.shell.MultiScanStrategy</code></a></b>: <i>
+Scan multiple URLs.</i>
+  <li> <b><a href="Halberd.shell.UniScanStrategy-class.html"><code>Halberd.shell.UniScanStrategy</code></a></b>: <i>
+Scan a single URL.</i>
+    </ul>
+  <li> <b><a href="__builtin__.object-class.html"><code>__builtin__.object</code></a></b>: <i>
+The most base type</i>
+    <ul>
+  <li> <b><a href="__builtin__.type-class.html"><code>__builtin__.type</code></a></b>: <i>
+type(object) -&gt; the object's type type(name, bases, dict) -&gt; a 
+new type</i>
+    <ul>
+    </ul>
+    </ul>
+  <li> <b><a href="exceptions.Exception-class.html"><code>exceptions.Exception</code></a></b>: <i>
+Common base class for all exceptions.</i>
+    <ul>
+  <li> <b><a href="Halberd.ScanTask.ConfError-class.html"><code>Halberd.ScanTask.ConfError</code></a></b>: <i>
+Error with configuration file(s)</i>
+  <li> <b><a href="Halberd.clientlib.HTTPError-class.html"><code>Halberd.clientlib.HTTPError</code></a></b>: <i>
+Generic HTTP exception</i>
+    <ul>
+  <li> <b><a href="Halberd.clientlib.ConnectionRefused-class.html"><code>Halberd.clientlib.ConnectionRefused</code></a></b>: <i>
+Unable to reach webserver</i>
+  <li> <b><a href="Halberd.clientlib.HTTPSError-class.html"><code>Halberd.clientlib.HTTPSError</code></a></b>: <i>
+Generic HTTPS exception</i>
+  <li> <b><a href="Halberd.clientlib.InvalidURL-class.html"><code>Halberd.clientlib.InvalidURL</code></a></b>: <i>
+Invalid or unsupported URL</i>
+  <li> <b><a href="Halberd.clientlib.TimedOut-class.html"><code>Halberd.clientlib.TimedOut</code></a></b>: <i>
+Operation timed out</i>
+  <li> <b><a href="Halberd.clientlib.UnknownReply-class.html"><code>Halberd.clientlib.UnknownReply</code></a></b>: <i>
+The remote host didn't return an HTTP reply</i>
+    </ul>
+  <li> <b><a href="Halberd.conflib.InvalidConfFile-class.html"><code>Halberd.conflib.InvalidConfFile</code></a></b>: <i>
+Invalid configuration file.</i>
+  <li> <b><a href="Halberd.clues.file.InvalidFile-class.html"><code>Halberd.clues.file.InvalidFile</code></a></b>: <i>
+The loaded file is not a valid clue file.</i>
+  <li> <b><a href="Halberd.shell.ScanError-class.html"><code>Halberd.shell.ScanError</code></a></b>: <i>
+Generic error during scanning.</i>
+    </ul>
+</ul>
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Wed Jul 18 22:25:58 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# This scripts tests the ghdb plugin
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery ghdb
+dicovery config ghdb
+set resultLimit 10
+back
+
+target
+set target http://www.ahorropticas.com
+back
+
+start
+
+assert 1 == 1
+
+exit

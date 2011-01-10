@@ -1,0 +1,28 @@
+# This is a demo of how w3af handles encodings.
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+back
+
+plugins
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/core/encoding/indéx.html
+back
+start
+
+assert len(kb.kb.getData('urls','urlList')) == 7
+
+exit

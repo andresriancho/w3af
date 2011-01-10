@@ -1,0 +1,15 @@
+# This script shows how w3af reads a crossdomain.xml file
+
+plugins
+discovery zone_h
+back
+
+target
+set target http://www.empnut.ufv.br/
+back
+
+start
+
+assert len( kb.kb.getData('zone_h', 'defacements') ) == 1
+
+exit

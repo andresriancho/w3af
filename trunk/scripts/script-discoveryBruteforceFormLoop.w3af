@@ -1,0 +1,22 @@
+# This is the form login bruteforce + discovery demo
+
+plugins
+audit htaccessMethods
+bruteforce formAuthBrute
+discovery allowedMethods,webSpider
+grep passwordProfiling
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+back
+target
+set target http://moth/w3af/form_login/
+back
+start
+exit

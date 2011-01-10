@@ -1,0 +1,237 @@
+==============================================
+SOAPpy - Simple to use SOAP library for Python 
+==============================================
+
+Current Maintainer: 	
+
+	Gregory R. Warnes <Gregory.R.Warnes@Pfizer.com>
+
+Original Authors: 
+
+	Cayce Ullman <c_ullman@yahoo.com>
+        Brian Matthews <blm@blmatthews.com>
+
+Contributions by:
+
+	Christopher Blunck <blunck2@gst.com>
+	Brad Knotwell <b.knotwell@f5.com>
+	Mark Bucciarelli <mark@hubcapconsulting.com> (ported WSDL
+             client from ZSI)
+	Ivan R. Judson 	<judson@mcs.anl.gov> (Globus support)
+	Kirk Strauser <kirk@daycos.com>
+	Antonio Beamud Montero <antonio.beamud@linkend.com> (patches
+  	     for integrating SOAPpy into Zope)
+	And others.
+
+Copyright (c) 2002-2005, Pfizer, Inc.
+Copyright (c) 2001, Cayce Ullman.
+Copyright (c) 2001, Brian Matthews.
+All rights reserved, see the file LICENSE for conditions of use.
+
+INTRODUCTION
+============
+
+    The goal of the SOAPpy team is to provide a full-featured SOAP library
+    for Python that is very simple to use and that fully supports dynamic
+    interaction between clients and servers.
+    
+    INCLUDED
+    --------
+
+    - General SOAP Parser based on sax.xml
+    - General SOAP Builder
+    - SOAP Proxy for RPC client code
+    - SOAP Server framework for RPC server code
+    
+    FEATURES
+    --------
+
+    - Handles all SOAP 1.0 types
+    - Handles faults 
+    - Allows namespace specification
+    - Allows SOAPAction specification
+    - Homogeneous typed arrays
+    - Supports multiple schemas
+    - Header support (mustUnderstand and actor)
+    - XML attribute support
+    - Multi-referencing support (Parser/Builder)
+    - Understands SOAP-ENC:root attribute
+    - Good interop, passes all client tests for Frontier, SOAP::LITE, SOAPRMI
+    - Encodings
+    - SSL clients (with Python compiled with OpenSSL support)
+    - SSL servers (with Python compiled with OpenSSL support and M2Crypto
+      installed)
+    - Encodes XML tags per SOAP 1.2 name mangling specification (Gregory Warnes)
+    - Automatic stateful SOAP server support (Apache v2.x) (blunck2)
+    - WSDL client support
+    - WSDL server support
+    
+    TODO (See RELEASE_INFO and CHANGELOG for recent changes)
+    ----
+
+    - Timeout on method calls
+    - Advanced arrays (sparse, multidimensional and partial)
+    - Attachments
+    - mod_python example
+    - medusa example
+    - Improved documentation
+    
+    MANIFEST
+    --------
+    
+    Files
+
+    
+        README	        This file
+        RELEASE_NOTES       General information about each release
+        ChangeLog           Detailed list of changes
+        TODO		List of tasks that need to be done
+    
+        setup.py            Python installation control files
+        MANIFEST
+        MANIFEST.in
+        
+        SOAPpy.spec*        RPM package control file
+    
+    Directories
+    
+        SOAPpy/*            Source code for the package
+        SOAPpy/wstools/*    Source code for WSDL tools
+        tests/*             unit tests and examples
+        validate/*          interop client and servers
+        bid/*		N+I interop client and server
+        doc/*		Documentation
+        contrib/		Contributed examples (also see test/)
+        docs/		Documentation
+        tools/              Misc tools useful for the SOAPpy developers
+        zope/               Patches to Zope allowing it to provide SOAP services
+    
+
+INSTALLATION
+============
+
+    REQUIRED PACKAGES:
+    -----------------
+
+    - fpconst 0.6.0 or later,
+      <http://research.warnes.net/projects/rzope/fpconst/>
+
+    - pyXML 0.8.3 or later, <http://pyxml.sourceforge.net>
+    
+    OPTIONAL PACKAGES
+    -----------------
+    
+    - pyGlobus, optional support for Globus,
+      <http://www-itg.lbl.gov/gtg/projects/pyGlobus/>
+    
+    - M2Crypto.SSL, optional support for server-side SSL
+      <http://sandbox.rulemaker.net/ngps/m2/>
+    
+    - If Python is compiled with SSL support (Python 2.3 does so by
+      default), client-side use of SSL is supported
+    
+    INSTALLATION STEPS
+    ------------------
+    
+    As of version 0.9.8 SOAPpy can be installed using the standard python
+    package installation tools.  
+    
+    To install:
+    
+      1) Unpack the distribution package:
+    
+         On Windows, use your favorite zip file uncompression tool.
+    
+         On Unix: 
+        
+             $ tar -xvzf SOAPpy-$VERSION$.tar.gz
+        
+             if you have gnu tar, otherwise
+        
+             $ gzcat SOAPpy-$VERSION$.tar.gz | tar -xvf -
+        
+      2) Change into the source directory
+    
+         $ cd SOAPpy-$VERSION$
+    
+      3) Compile the package 
+    
+         $ python setup.py build
+    
+      4) Install the package
+
+	 On Windows:
+
+	     $ python setup.py install
+
+	 On Unix install as the owner of the python directories
+	 (usally root):
+    
+	     $ su root
+             Password: XXXXXX
+             $ python setup.py install
+    
+    
+DOCUMENTATION
+=============
+
+    QUICK START
+    -----------
+
+    A simple "Hello World" http SOAP server:
+
+        import SOAPpy
+        def hello():
+	    return "Hello World"
+
+        server = SOAPpy.SOAPServer(("localhost", 8080))
+        server.registerFunction(hello)
+        server.serve_forever()
+
+    And the corresponding client:
+
+        import SOAPpy
+        server = SOAPpy.SOAPProxy("http://localhost:8080/")
+        print server.hello()
+
+    BASIC TUTORIAL
+    --------------
+
+    Mark Pilgrims' _Dive Into Python_, published in printed form by
+    Apress and online at at http://diveintopython.org provides a
+    nice tutorial for SOAPpy in Chapter 12, "SOAP Web Services".
+    See http://diveintopython.org/soap_web_services .
+
+    OTHER DOCUMENTATION
+    -------------------
+      
+    For further information see the files in the docs/ directory.
+
+    Note that documentation is one of SOAPpy's current weak points.
+    Please help us out!
+
+
+GETTING HELP
+============
+
+    REPORTING BUGS
+    --------------
+    
+    Please submit bug reports, feature requests, patches, etc at the
+    Python Web Services web site:  http://pywebsvcs.sourceforge.net.
+    
+    MAILING LIST
+    ============
+    
+    Please address questions and general discussion to the
+    pywebsvcs-talk mailing list, pywebsvcs-talk@lists.sourceforge.net.
+    
+    For subscription information visit
+    http://lists.sourceforge.net/lists/listinfo/pywebsvcs-talk.  
+    List archives are available at
+    http://sourceforge.net/mailarchive/forum.php?forum=pywebsvcs-talk
+
+    Please remember that the authors do have day jobs, so please try
+    the mailing list before contacting them directy.  
+        
+$Id: README,v 1.18 2005/02/22 15:58:35 warnes Exp $

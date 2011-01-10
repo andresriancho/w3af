@@ -1,0 +1,32 @@
+# grep demo for getting emails
+
+plugins
+
+output console,textFile
+
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+
+output config console
+set verbose False
+back
+
+grep getMails
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/grep/get_mails/index.html
+back
+
+start
+
+assert len(kb.kb.getData('mails','mails')) == 1 
+
+exit

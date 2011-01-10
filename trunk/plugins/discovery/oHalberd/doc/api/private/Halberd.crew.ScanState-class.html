@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Halberd.crew.ScanState</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="Halberd-module.html">Package&nbsp;Halberd</a> ::
+        <a href="Halberd.crew-module.html">Module&nbsp;crew</a> ::
+        Class&nbsp;ScanState
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<b>show&nbsp;private</b>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="../private/Halberd.crew.ScanState-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Class ScanState</h2>
+
+<hr/>
+
+Shared state among scanner threads.
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initializes shared state among scanning threads.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        <code>list</code>
+</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#getClues" class="summary-sig-name"><code>getClues</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Clue accessor.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#getError" class="summary-sig-name"><code>getError</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the reason of the error condition.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        <code>tuple</code>
+</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#getStats" class="summary-sig-name"><code>getStats</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Provides statistics about the scanning process.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#incMissed" class="summary-sig-name"><code>incMissed</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Increase the counter of missed replies.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#insertClue" class="summary-sig-name"><code>insertClue</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>clue</span>)</span></code>
+<br />
+Inserts a clue in the list if it is new.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/Halberd.crew.ScanState-class.html#setError" class="summary-sig-name"><code>setError</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>err</span>)</span></code>
+<br />
+Signal an error condition.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE VARIABLE SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Instance Variable Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><p><code>threading.Event</code></p>
+          caught with an exception).</font></td>
+<td><b><a href="../private/Halberd.crew.ScanState-class.html#shouldstop"><code>shouldstop</code></a></b>: Signals when the threads should stop scanning.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Method Details</th></tr>
+</table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+  Initializes shared state among scanning threads.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="getClues"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">getClues</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Clue accessor.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A copy of all obtained clues.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>list</code>)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="getError"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">getError</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the reason of the error condition.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="getStats"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">getStats</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Provides statistics about the scanning process.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Number of clues gathered so far, number of successful requests 
+        and number of unsuccessful ones (missed replies).
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=<code>tuple</code>)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="incMissed"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">incMissed</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Increase the counter of missed replies.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="insertClue"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">insertClue</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>clue</span>)</span>
+  </h3>
+  Inserts a clue in the list if it is new.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="setError"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">setError</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>err</span>)</span>
+  </h3>
+  Signal an error condition.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF INSTANCE VARIABLE DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Instance Variable Details</th></tr>
+</table>
+<table width="100%" class="var-details" bgcolor="#e0e0e0"><tr><td>
+<a name="shouldstop"></a>
+<h3>shouldstop</h3>
+Signals when the threads should stop scanning.
+<dl>
+  <dt></dt>
+  <dd>
+    <dl>
+      <dt><b>Type:</b></dt>
+      <dd>
+          <p><code>threading.Event</code></p>
+          caught with an exception).
+
+      </dd>
+    </dl>
+  </dd>
+</dl></td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="Halberd-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Wed Jul 18 22:25:57 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,208 @@
+[audit.preg_replace]
+
+[audit.responseSplitting]
+
+[grep.ssn]
+
+[grep.svnUsers]
+
+[grep.passwordProfiling]
+
+[grep.blankBody]
+
+[grep.lang]
+
+[audit.htaccessMethods]
+
+[audit.sqli]
+
+[grep.strangeHeaders]
+
+[output.console]
+verbose = False
+
+[audit.xpath]
+
+[discovery.spiderMan]
+listenPort = 44444
+listenAddress = 127.0.0.1
+
+[audit.LDAPi]
+
+[audit.generic]
+diffRatio = 0.35
+
+[audit.frontpage]
+stopOnFirst = True
+
+[audit.formatString]
+
+[grep.motw]
+withoutMOTW = False
+
+[audit.unSSL]
+
+[grep.strangeParameters]
+
+[audit.fileUpload]
+extensions = gif,html
+
+[grep.fileUpload]
+
+[grep.ajax]
+
+[grep.creditCards]
+
+[http-settings]
+proxyPort = 8080
+urlParameter = 
+never404 = 
+headersFile = 
+maxFileSize = 400000
+proxyAddress = 
+basicAuthDomain = 
+always404 = 
+maxRetrys = 2
+ntlmAuthUser = 
+ntlmAuthPass = 
+ignoreSessCookies = False
+timeout = 10
+userAgent = w3af.sourceforge.net
+basicAuthUser = 
+404string = 
+basicAuthPass = 
+cookieJarFile = 
+
+[audit.blindSqli]
+equAlgorithm = setIntersection
+equalLimit = 0.8
+
+[audit.globalRedirect]
+
+[discovery.webSpider]
+followRegex = .*
+ignoreRegex = None
+onlyForward = False
+
+[audit.xst]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[audit.sslCertificate]
+
+[profile]
+description = Perform a manual discovery using the spiderMan plugin, and afterwards scan the site for any known vulnerabilities.
+name = full_audit_manual_disc
+
+[grep.errorPages]
+
+[grep.findComments]
+search404 = False
+
+[audit.eval]
+useTimeDelay = True
+useEcho = True
+
+[audit.osCommanding]
+
+[audit.ssi]
+
+[output.gtkOutput]
+
+[grep.objects]
+
+[grep.dotNetEventValidation]
+
+[grep.metaTags]
+search404 = False
+
+[audit.phishingVector]
+
+[audit.localFileInclude]
+
+[audit.buffOverflow]
+
+[grep.oracle]
+
+
+[grep.httpInBody]
+
+[grep.feeds]
+
+[grep.directoryIndexing]
+
+[audit.remoteFileInclude]
+usew3afSite = True
+listenPort = 44449
+listenAddress = 
+
+[grep.error500]
+
+[grep.collectCookies]
+
+[grep.getMails]
+onlyTargetDomain = True
+
+[grep.privateIP]
+
+[grep.pathDisclosure]
+
+[audit.xsrf]
+
+[bruteforce.formAuthBrute]
+profilingNumber = 50
+useMails = True
+useLeetPasswd = True
+useProfiling = True
+passEqUser = True
+useMailUsers = True
+passwdFile = core/controllers/bruteforce/passwords.txt
+usersFile = core/controllers/bruteforce/users.txt
+stopOnFirst = True
+useSvnUsers = True
+
+[misc-settings]
+exportFuzzableRequests = 
+maxThreads = 15
+fuzzFormComboValues = tmb
+fuzzFCExt = txt
+autoDependencies = True
+demo = False
+fuzzableHeaders = 
+showProgressBar = True
+fuzzCookie = False
+
+fuzzFileContent = True
+fuzzFileName = False
+maxDiscoveryTime = 120
+
+nonTargets = 
+
+[grep.hashFind]
+
+[grep.wsdlGreper]
+
+[grep.codeDisclosure]
+
+[bruteforce.basicAuthBrute]
+profilingNumber = 50
+useMails = True
+useLeetPasswd = True
+useProfiling = True
+passEqUser = True
+useMailUsers = True
+passwdFile = core/controllers/bruteforce/passwords.txt
+usersFile = core/controllers/bruteforce/users.txt
+stopOnFirst = True
+useSvnUsers = True
+
+[audit.dav]
+
+[grep.domXss]
+
+[audit.mxInjection]
+
+[grep.httpAuthDetect]
+

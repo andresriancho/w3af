@@ -1,0 +1,23 @@
+# This is the responseSplitting demo:
+
+plugins
+audit responseSplitting
+
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+back
+
+target
+set target http://moth/w3af/audit/response_splitting/response_splitting.php?header=None
+back
+
+start
+
+assert len( kb.kb.getData('responseSplitting','responseSplitting') ) == 1
+
+exit
+
+

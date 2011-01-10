@@ -1,0 +1,35 @@
+1. Introduction
+1.1. Just_the_graphical_interface
+1.2. Running_the_program
+
+2. General_structure
+2.1. The_toolbar
+
+3. Scanning
+3.1. Configuring_the_scan
+3.2. Using_the_Profiles
+3.3. Running_the_scan
+
+4. Analyzing_the_results
+4.1. Browsing_the_Knowledge_Base
+4.2. Site_structure
+4.3. Requests_and_Responses
+
+5. Exploitation
+5.1. Executing_an_exploit
+5.2. Using_a_shell
+
+6. Other_tools
+6.1. Manual_Requests
+6.2. Fuzzy_Requests
+     ClusterResponseTool
+6.3. Encode_and_Decode
+6.4. Comparing_HTTP_traffic
+6.5. Using_the_Proxy
+6.6. Wizards
+
+7. Configurations
+7.1. HTTP_Configuration
+7.2. Miscellaneous_Configuration
+7.3. Advanced_target
+7.4. Proxy_Configuration

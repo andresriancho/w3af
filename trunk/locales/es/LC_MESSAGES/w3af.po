@@ -1,0 +1,317 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: w3af beta7\n"
+"POT-Creation-Date: 2008-08-30 20:36+ART\n"
+"PO-Revision-Date: 2008-08-30 20:50-0300\n"
+"Last-Translator: Andres Riancho <andres.riancho@gmail.com>\n"
+"Language-Team: ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Poedit-Language: Spanish\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: core/ui/gtkUi/main.py:143
+msgid "About..."
+msgstr "Sobre..."
+
+#: core/ui/gtkUi/main.py:144
+msgid "Check the web site"
+msgstr "Visita el sitio web"
+
+#: core/ui/gtkUi/main.py:176
+msgid "BUG! The communicator was never initialized"
+msgstr "BUG! El comunicador nunca fue inicializado"
+
+#: core/ui/gtkUi/main.py:228
+msgid "Loading..."
+msgstr "Cargando..."
+
+#: core/ui/gtkUi/main.py:241
+msgid "Initializing core..."
+msgstr "Inicializando el nucleo..."
+
+#: core/ui/gtkUi/main.py:248
+msgid "Building the status bar..."
+msgstr "Construyendo la barra de estado..."
+
+#: core/ui/gtkUi/main.py:250
+msgid "Program started ok"
+msgstr "Programa iniciado correctamente"
+
+#: core/ui/gtkUi/main.py:263
+msgid "Creating menu and toolbar..."
+msgstr "Creando menu y barra de opciones"
+
+#: core/ui/gtkUi/main.py:272
+msgid "Create a new profile"
+msgstr "Crear un nuevo perfil"
+
+#: core/ui/gtkUi/main.py:272
+msgid "_New"
+msgstr "_Nuevo"
+
+#: core/ui/gtkUi/main.py:273
+msgid "Save this configuration"
+msgstr "Guardar esta configuracion"
+
+#: core/ui/gtkUi/main.py:273
+msgid "_Save"
+msgstr "_Guardar"
+
+#: core/ui/gtkUi/main.py:274
+msgid "Save _as..."
+msgstr "Guardar _como..."
+
+#: core/ui/gtkUi/main.py:274
+msgid "Save this configuration in a new profile"
+msgstr "Guardar esta configuracion a un nuevo perfil"
+
+#: core/ui/gtkUi/main.py:275
+msgid "Revert the profile to its saved state"
+msgstr "Revertir el perfil a su estado original"
+
+#: core/ui/gtkUi/main.py:275
+msgid "_Revert"
+msgstr "_Revertir"
+
+#: core/ui/gtkUi/main.py:276
+msgid "Delete this profile"
+msgstr "Borrar este perfil"
+
+#: core/ui/gtkUi/main.py:276
+msgid "_Delete"
+msgstr "_Borrar"
+
+#: core/ui/gtkUi/main.py:277
+msgid "_Profiles"
+msgstr "_Perfiles"
+
+#: core/ui/gtkUi/main.py:278
+#: core/ui/gtkUi/main.py:279
+msgid "_View"
+msgstr "_Ver"
+
+#: core/ui/gtkUi/main.py:281
+msgid "Edit selected plugin"
+msgstr "Editar perfil seleccionado"
+
+#: core/ui/gtkUi/main.py:281
+msgid "_Edit plugin"
+msgstr "_Editar plugin"
+
+#: core/ui/gtkUi/main.py:282
+msgid "Edit"
+msgstr "Editar"
+
+#: core/ui/gtkUi/main.py:282
+msgid "_Edit"
+msgstr "_Editar"
+
+#: core/ui/gtkUi/main.py:284
+msgid "HTTP configuration"
+msgstr "Configuracion HTTP"
+
+#: core/ui/gtkUi/main.py:284
+msgid "_HTTP Config"
+msgstr "Configuracion _HTTP"
+
+#: core/ui/gtkUi/main.py:285
+msgid "Miscellaneous configuration"
+msgstr "Configuracion miscelanea"
+
+#: core/ui/gtkUi/main.py:285
+msgid "_Miscellaneous"
+msgstr "_Miscelaneos"
+
+#: core/ui/gtkUi/main.py:286
+msgid "_Configuration"
+msgstr "_Configuracion"
+
+#: core/ui/gtkUi/main.py:288
+msgid "Generate manual HTTP request"
+msgstr "Generar requerimiento HTTP manual"
+
+#: core/ui/gtkUi/main.py:288
+msgid "_Manual Request"
+msgstr "Pedido _Manual"
+
+#: core/ui/gtkUi/main.py:289
+msgid "Generate fuzzy HTTP requests"
+msgstr "Generar requests HTTP difusos"
+
+#: core/ui/gtkUi/main.py:289
+msgid "_Fuzzy Request"
+msgstr "Pedido _difuso"
+
+#: core/ui/gtkUi/main.py:290
+msgid "Encodes and Decodes in different ways"
+msgstr "Encode y Decode de diferentes maneras"
+
+#: core/ui/gtkUi/main.py:290
+msgid "_Encode/Decode"
+msgstr "_Encode/Decode"
+
+#: core/ui/gtkUi/main.py:291
+msgid "Compare different requests and responses"
+msgstr "Comparar diferentes pedidos y respuestas"
+
+#: core/ui/gtkUi/main.py:291
+msgid "_Compare"
+msgstr "_Comparar"
+
+#: core/ui/gtkUi/main.py:292
+msgid "Proxies the HTTP requests, allowing their modification"
+msgstr "Intercepta pedidos HTTP, permitiendo su modificacion"
+
+#: core/ui/gtkUi/main.py:292
+msgid "_Proxy"
+msgstr "_Proxy"
+
+#: core/ui/gtkUi/main.py:293
+msgid "_Tools"
+msgstr "_Herramientas"
+
+#: core/ui/gtkUi/main.py:295
+msgid "Help regarding the framework"
+msgstr "_Ayuda relacionada con la herramienta"
+
+#: core/ui/gtkUi/main.py:295
+#: core/ui/gtkUi/main.py:297
+msgid "_Help"
+msgstr "_Ayuda"
+
+#: core/ui/gtkUi/main.py:296
+msgid "About the framework"
+msgstr "Sobre la herramienta"
+
+#: core/ui/gtkUi/main.py:296
+msgid "_About"
+msgstr "Sobre"
+
+#: core/ui/gtkUi/main.py:299
+msgid "_Start"
+msgstr "Iniciar"
+
+#: core/ui/gtkUi/main.py:299
+#: core/ui/gtkUi/main.py:609
+msgid "Start scan"
+msgstr "Iniciar análisis"
+
+#: core/ui/gtkUi/main.py:300
+msgid "Exploit all vulns"
+msgstr "Explotar todas las vulns"
+
+#: core/ui/gtkUi/main.py:300
+msgid "_Multiple Exploit"
+msgstr "_Múltiple exploit"
+
+#: core/ui/gtkUi/main.py:305
+msgid "Pause scan"
+msgstr "Pausar análisis"
+
+#: core/ui/gtkUi/main.py:305
+msgid "_Pause"
+msgstr "_Pausa"
+
+#: core/ui/gtkUi/main.py:326
+msgid "Toggle the plugins panel"
+msgstr ""
+
+#: core/ui/gtkUi/main.py:328
+msgid "Toggle the shells and proxies window"
+msgstr ""
+
+#: core/ui/gtkUi/main.py:373
+msgid "Building the throbber..."
+msgstr "Construyendo la imagen de estado..."
+
+#: core/ui/gtkUi/main.py:383
+msgid "Building the main screen..."
+msgstr "Construyendo la pantalla principal..."
+
+#: core/ui/gtkUi/main.py:396
+msgid "Scan config"
+msgstr "Configuracion del análisis"
+
+#: core/ui/gtkUi/main.py:402
+#: core/ui/gtkUi/main.py:644
+msgid "Log"
+msgstr "Log"
+
+#: core/ui/gtkUi/main.py:402
+#: core/ui/gtkUi/main.py:645
+msgid "Results"
+msgstr "Resultados"
+
+#: core/ui/gtkUi/main.py:402
+#: core/ui/gtkUi/main.py:646
+#: core/ui/gtkUi/main.py:737
+msgid "Exploit"
+msgstr "Exploit"
+
+#: core/ui/gtkUi/main.py:458
+msgid "Do you really want to quit?"
+msgstr "Realmente quieres salir?"
+
+#: core/ui/gtkUi/main.py:540
+msgid "The scan has started"
+msgstr "El análisis ha iniciado"
+
+#: core/ui/gtkUi/main.py:544
+msgid "Stop scan"
+msgstr "Detener el análisis"
+
+#: core/ui/gtkUi/main.py:568
+msgid "Resuming the scan..."
+msgstr "Reiniciando el análisis..."
+
+#: core/ui/gtkUi/main.py:572
+msgid "The scan is paused"
+msgstr "El análisis esta pausado"
+
+#: core/ui/gtkUi/main.py:579
+msgid "Stopping the scan..."
+msgstr "Deteniendo el análisis"
+
+#: core/ui/gtkUi/main.py:588
+msgid "Clear"
+msgstr "Limpiar"
+
+#: core/ui/gtkUi/main.py:588
+msgid "Clear all the obtained results"
+msgstr "Limpiar los resultados obtenidos"
+
+#: core/ui/gtkUi/main.py:594
+msgid "The scan has stopped by user request"
+msgstr "El análisis se detuvo a pedido del usuario"
+
+#: core/ui/gtkUi/main.py:596
+msgid "The scan has finished"
+msgstr "El análisis ha terminado"
+
+#: core/ui/gtkUi/main.py:605
+msgid "Scan results cleared"
+msgstr "Se han limpiado los resultados del análisis"
+
+#: core/ui/gtkUi/main.py:609
+msgid "Start"
+msgstr "Iniciar"
+
+#: core/ui/gtkUi/main.py:654
+msgid "The scan has not started: no info yet"
+msgstr "El análisis no ha comenzado: no hay informacion."
+
+#: core/ui/gtkUi/main.py:669
+msgid "Configure HTTP settings"
+msgstr "Configuración HTTP"
+
+#: core/ui/gtkUi/main.py:674
+msgid "Configure Misc settings"
+msgstr "Configuración Miscelanea"
+

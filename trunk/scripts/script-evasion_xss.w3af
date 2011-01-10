@@ -1,0 +1,24 @@
+plugins
+
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+evasion selfReference
+back
+
+target
+set target http://moth/w3af/audit/xss/simple_xss.php?text=1
+back
+
+start
+
+assert len( kb.kb.getData('xss','xss') ) == 1
+
+exit

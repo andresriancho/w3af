@@ -1,0 +1,23 @@
+# This scripts detects an URLScan installation
+
+plugins
+output console,textFile
+output
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+discovery detectURLScan
+discovery
+back
+target
+set target http://www.microsoft.com/
+back
+start
+
+assert len(kb.kb.getData('detectURLScan','detectURLScan')) == 0
+
+exit

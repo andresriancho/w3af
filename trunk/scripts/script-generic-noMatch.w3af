@@ -1,0 +1,24 @@
+# This plugin should find most of the vulnerabilities
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit generic
+back
+
+target
+set target http://moth/w3af/xss/test-xss.php?a=099&b=whoami
+back
+
+start
+
+assert len(kb.kb.getData('generic','generic')) == 0
+
+exit
