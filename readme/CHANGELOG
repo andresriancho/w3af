@@ -8,9 +8,9 @@
     * Updated all scripts in order to pass the ./w3af_console -t test
     * Added new plugin to measure the number of hops for port 80 vs 443
 
-Details can be found @ Trac
+    Details can be found @ Trac:
 
-    * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-4
-    * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-5
-    * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-6
-    * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-7
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-4
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-5
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-6
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-7
