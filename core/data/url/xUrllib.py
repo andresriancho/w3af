@@ -391,7 +391,7 @@ class xUrllib(object):
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted(uri):
-                    return self._new_no_content_resp(uri, log_it=True)
+                    return self._xurllib._new_no_content_resp(uri, log_it=True)
             
                 if data:
                     req = self.methodRequest( uri, data )
