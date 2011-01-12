@@ -155,7 +155,7 @@ class url_object(object):
         '''
         Sets the query string for this URL.
         
-        @return: None.
+        @return: None, the infor is set and nothing is returned.
         '''
         if isinstance(qs, dict) and not isinstance(qs, queryString):
             qs = urllib.urlencode( qs )
