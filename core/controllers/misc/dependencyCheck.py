@@ -96,4 +96,17 @@ def dependencyCheck():
         print msg
         sys.exit( 1 )
 
+    try:
+        import scapy
+        import scapy.config
+    except:
+        msg = 'You have to install scapy. Debian based distributions: apt-get install python-scapy'
+        print msg
+        sys.exit( 1 )
+    else:
+        if not scapy.config.conf.version.startswith('2.'):
+            msg = 'Your version of scapy is not compatible with w3af. Please install scapy version >= 2.0 .'
+            print msg
+            sys.exit( 1 )
+        
 
