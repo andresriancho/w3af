@@ -42,11 +42,13 @@ from core.controllers.w3afException import w3afException
 import core.controllers.daemons.webserver as webserver
 import core.data.constants.w3afPorts as w3afPorts
 
-import os, time
+import os
+import socket
 
 CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly ' \
-'configured to use. Please set the local address and port, or use the ' \
-'official w3af site as the target server for remote inclusions.'
+'configured to use. Please set the correct values for local address and ' \
+'port, or use the official w3af site as the target server for remote ' \
+'inclusions.'
 
 
 class remoteFileInclude(baseAuditPlugin):
@@ -74,7 +76,7 @@ class remoteFileInclude(baseAuditPlugin):
         
         @param freq: A fuzzableRequest object
         '''
-        # Sanity check
+        # Sanity check 
         if not self._correctly_configured():
             # Report error to the user only once
             self._error_reported = True
@@ -95,10 +97,27 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         @return: True if the plugin is correctly configured to run.
         '''
-        if not self._use_w3af_site and self._listen_address == '':
-            return False
+        listen_address = self._listen_address
+        if not listen_address:
+            if not self._use_w3af_site:
+                return False
         else:
-            return True
+            with self._plugin_lock:
+                # If we have an active instance then we're OK!
+                if webserver.is_running(listen_address, 
+                                               self._listen_port):
+                    return True
+                else:
+                    # Now test if it's possible to bind the address
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    try:
+                        s.bind((listen_address, self._listen_port))
+                    except socket.error:
+                        return False
+                    finally:
+                        s.close()
+                        del s
+                    return True
     
     def _local_test_inclusion(self, freq):
         '''
@@ -194,6 +213,7 @@ class remoteFileInclude(baseAuditPlugin):
                 
                 if self._rfi_result in response:
                     v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
                     v.setId(response.id)
                     v.setSeverity(severity.HIGH)
                     v.setName('Remote file inclusion vulnerability')
@@ -210,6 +230,7 @@ class remoteFileInclude(baseAuditPlugin):
                     for error in rfi_errors:
                         if error in response and not error in mutant.getOriginalResponseBody():
                             v = vuln.vuln( mutant )
+                            v.setPluginName(self.getName())
                             v.setId( response.id )
                             v.setSeverity(severity.MEDIUM)
                             v.addToHighlight(error)
@@ -268,7 +289,7 @@ class remoteFileInclude(baseAuditPlugin):
 
         d3 = 'Use w3af site to test for remote file inclusion'
         h3 =  'The plugin can use the w3af site to test for remote file inclusions, which is\
-        convinient when you are performing a test behind a NAT firewall.'
+        convenient when you are performing a test behind a NAT firewall.'
         o3 = option('usew3afSite', self._use_w3af_site, d3, 'boolean',  help=h3)
         
         ol = optionList()
@@ -288,9 +309,9 @@ class remoteFileInclude(baseAuditPlugin):
         self._listen_address = optionsMap['listenAddress'].getValue()
         self._listen_port = optionsMap['listenPort'].getValue()
         self._use_w3af_site = optionsMap['usew3afSite'].getValue()
-                
-        if self._listen_address == '' and not self._use_w3af_site:
-            om.out.error(CONFIG_ERROR_MSG)
+        
+        if not self._correctly_configured():
+            raise w3afException(CONFIG_ERROR_MSG)
 
     def getPluginDeps( self ):
         '''

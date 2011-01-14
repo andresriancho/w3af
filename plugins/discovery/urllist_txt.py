@@ -70,6 +70,7 @@ class urllist_txt(baseDiscoveryPlugin):
             if not is_404( http_response ):
                 # Save it to the kb!
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('urllist.txt file')
                 i.setURL( urllist_url )
                 i.setId( http_response.id )

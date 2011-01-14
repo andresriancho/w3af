@@ -30,8 +30,10 @@ from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.memoryUsage import dumpMemoryUsage
+from core.controllers.misc.datastructs import deque
 # This is a singleton that's used for assigning request IDs
-from core.controllers.misc.number_generator import consecutive_number_generator
+from core.controllers.misc.number_generator import \
+consecutive_number_generator as seq_gen
 
 from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 
@@ -44,13 +46,14 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
 
 from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.constants.httpConstants import NO_CONTENT
 from core.data.url.handlers.keepalive import URLTimeoutError
+from core.data.url.handlers import logHandler
 from core.data.url.httpResponse import httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
-import core.data.constants.httpConstants as http_constants
 
 
 # For subclassing requests and other things
@@ -79,7 +82,7 @@ class xUrllib(object):
         
         # For error handling
         self._lastRequestFailed = False
-        self._consecutiveErrorCount = 0
+        self._last_errors = deque(maxlen=10)
         self._errorCount = {}
         
         self._dnsCache()
@@ -144,18 +147,19 @@ class xUrllib(object):
             # TODO: THIS SUCKS
             raise KeyboardInterrupt
     
-    def end( self ):
+    def end(self):
         '''
         This method is called when the xUrllib is not going to be used anymore.
         '''
+        sep = os.path.sep
         try:
-            cacheLocation = get_home_dir() + os.path.sep + 'urllib2cache' + os.path.sep + str(os.getpid())
+            cacheLocation = get_home_dir() + sep + 'urllib2cache' + sep + str(os.getpid())
             if os.path.exists(cacheLocation):
                 for f in os.listdir(cacheLocation):
-                    os.unlink( cacheLocation + os.path.sep + f)
+                    os.unlink(cacheLocation + sep + f)
                 os.rmdir(cacheLocation)
         except Exception, e:
-            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e) )
+            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e))
         else:
             om.out.debug('Cleared urllib2 local cache.')
     
@@ -290,9 +294,8 @@ class xUrllib(object):
 
         self._init()
 
-        if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
-                                 msg='No Content', id=consecutive_number_generator.inc() )
+        if self._isBlacklisted(uri):
+            return self._new_no_content_resp(uri, log_it=True)
         
         #
         #    Create and send the request
@@ -305,9 +308,32 @@ class xUrllib(object):
         req = self._add_headers( req, headers )
         return self._send( req , useCache=useCache, grepResult=grepResult)
     
-    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False ):
+    def _new_no_content_resp(self, uri, log_it=False):
         '''
-        POST's data to a uri using a proxy, user agents, and other settings that where set previously.
+        Return a new NO_CONTENT httpResponse object. Optionally call the
+        subscribed log handlers
+        
+        @param uri: URI string or request object
+        @param log_it: Boolean that indicated whether to log request
+            and response.        
+        '''
+        nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
+        if log_it:
+            # accept a URI or a Request object
+            if isinstance(uri, basestring):
+                req = HTTPRequest(uri)
+            else:
+                req = uri
+            # This also assign a the id to both objects.
+            logHandler.logHandler().http_response(req, nc_resp)
+        else:
+            nc_resp.id = seq_gen.inc()
+        return nc_resp
+            
+    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
+        '''
+        POST's data to a uri using a proxy, user agents, and other settings
+        that where set previously.
         
         @param uri: This is the url where to post.
         @param data: A string with the data for the POST.
@@ -321,9 +347,8 @@ class xUrllib(object):
 
         self._init()
 
-        if self._isBlacklisted( uri ):
-            return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
-                                 msg='No Content', id=consecutive_number_generator.inc() )
+        if self._isBlacklisted(uri):
+            return self._new_no_content_resp(uri, log_it=True)
         
         #
         #    Create and send the request
@@ -332,6 +357,7 @@ class xUrllib(object):
         req = self._add_headers( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
+
     def getRemoteFileSize( self, req, useCache=True ):
         '''
         This method was previously used in the framework to perform a HEAD request before each GET/POST (ouch!)
@@ -395,8 +421,7 @@ class xUrllib(object):
                 self._xurllib._init()
                 
                 if self._xurllib._isBlacklisted( uri ):
-                    return httpResponse( http_constants.NO_CONTENT, '', {}, uri, uri,
-                                         'No Content', id=consecutive_number_generator.inc() )
+                    return self._xurllib._new_no_content_resp(uri, log_it=True)
             
                 if data:
                     req = self.methodRequest( uri, data )
@@ -485,12 +510,13 @@ class xUrllib(object):
             original_url_instance = url_object( original_url )
             read = self._readRespose(e)
             httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
-                                      id=e.id, time=time.time() - start_time,
+                                      id=e.id, time=time.time()-start_time,
                                       msg=e.msg)
             
             # Clear the log of failed requests; this request is done!
-            if id(req) in self._errorCount:
-                del self._errorCount[id(req)]
+            req_id = id(req)
+            if req_id in self._errorCount:
+                del self._errorCount[req_id]
 
             # Reset errors counter
             self._zeroGlobalErrorCount()
@@ -509,37 +535,36 @@ class xUrllib(object):
             # Timeouts are not intended to increment the global error counter.
             # They are part of the expected behaviour.
             if not isinstance(e, URLTimeoutError):
-                self._incrementGlobalErrorCount()
+                self._incrementGlobalErrorCount(e)
             try:
                 e.reason[0]
             except:
                 raise w3afException('Unexpected error in urllib2 : %s' \
                                      % repr(e.reason))
-            else:
-                if isinstance(e.reason, tuple): # Is it a tuple?
-                    msg = 'w3af failed to reach the server while requesting:' \
-                    ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
-                    % (original_url, e.reason[1], e.reason[0])
+            if isinstance(e.reason, tuple): # Is it a tuple?
+                msg = 'w3af failed to reach the server while requesting:' \
+                ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
+                % (original_url, e.reason[1], e.reason[0])
 
-                    # TODO: Which case is this one?
-                    # Terminate!
-                    if e.reason[0] in (-2, 111):
-                        raise w3afException(msg)
+                # TODO: Which case is this one?
+                # Terminate!
+                if e.reason[0] in (-2, 111):
+                    raise w3afException(msg)
 
-                else: # Not a tuple. It might a wrapped socket or httplib error
-                    # See `except` block in <keepalive.KeepAliveHandler.do_open>
-                    # method for details.
-                    msg = 'w3af failed to reach the server while requesting:' \
-                    ' "%s".\nReason: "%s"; going to retry.' % \
-                    (original_url, e.reason)
+            else: # Not a tuple. It might a wrapped socket or httplib error
+                # See `except` block in <keepalive.KeepAliveHandler.do_open>
+                # method for details.
+                msg = 'w3af failed to reach the server while requesting:' \
+                ' "%s".\nReason: "%s"; going to retry.' % \
+                (original_url, e.reason)
 
-                # Log the errors
-                om.out.debug(msg)
-                om.out.debug('Traceback for this error: %s' % \
-                             traceback.format_exc())
-                req._Request__original = original_url
-                # Then retry!
-                return self._retry(req, useCache)
+            # Log the errors
+            om.out.debug(msg)
+            om.out.debug('Traceback for this error: %s' % \
+                         traceback.format_exc())
+            req._Request__original = original_url
+            # Then retry!
+            return self._retry(req, useCache)
         except KeyboardInterrupt:
             # Correct control+c handling...
             raise
@@ -554,7 +579,7 @@ class xUrllib(object):
             # the remote webserver might be unreachable.
             # For the first N errors, I just return an empty response...
             msg = '%s %s returned HTTP code "%s"' % \
-            (req.get_method(), original_url, http_constants.NO_CONTENT)
+            (req.get_method(), original_url, NO_CONTENT)
             om.out.debug(msg)
             om.out.debug('Unhandled exception in xUrllib._send(): %s' % e)
             om.out.debug(traceback.format_exc())
@@ -563,12 +588,11 @@ class xUrllib(object):
             req_id = id(req)
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
-            self._incrementGlobalErrorCount()
 
             original_url_instance = url_object(original_url)
-
-            return httpResponse( http_constants.NO_CONTENT, '', {}, original_url_instance, original_url_instance,
-                                 msg='No Content', id=consecutive_number_generator.inc() )
+            self._incrementGlobalErrorCount(e)
+            
+            return self._new_no_content_resp(original_url, log_it=True)
 
         else:
             # Everything went well!
@@ -619,7 +643,6 @@ class xUrllib(object):
             raise k
         except Exception, e:
             om.out.error(str(e))
-            return read
         return read
         
     def _retry(self, req, useCache):
@@ -637,14 +660,11 @@ class xUrllib(object):
             error_amt = self._errorCount[req_id]
             # Clear the log of failed requests; this one definetly failed...
             del self._errorCount[req_id]
-            # No need to add this:
-            #self._incrementGlobalErrorCount()
-            # The global error count is already incremented by the _send method.
             msg = 'Too many retries (%s) while requesting: %s'  % \
                                             (error_amt, req.get_full_url())
             raise w3afException(msg)
     
-    def _incrementGlobalErrorCount(self):
+    def _incrementGlobalErrorCount(self, error):
         '''
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException"
@@ -654,19 +674,20 @@ class xUrllib(object):
 
         # All the logic follows:
         if self._lastRequestFailed:
-            self._consecutiveErrorCount += 1
+            self._last_errors.append(str(error))
         else:
             self._lastRequestFailed = True
         
-        om.out.debug('Incrementing global error count. GEC: %s' % \
-                     self._consecutiveErrorCount)
+        errtotal = len(self._last_errors)
         
-        if self._consecutiveErrorCount >= 10 and not self._mustStop:
+        om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
+        
+        if errtotal >= 10 and not self._mustStop:
             msg = 'The xUrllib found too much consecutive errors. The remote' \
             ' webserver doesn\'t seem to be reachable anymore; please verify' \
             ' manually.'
             self.stop()
-            raise w3afMustStopException(msg)
+            raise w3afMustStopException(msg, self._last_errors)
 
     def ignore_errors(self, yes_no):
         '''
@@ -679,11 +700,10 @@ class xUrllib(object):
         self._ignore_errors_conf = yes_no
             
     def _zeroGlobalErrorCount( self ):
-        if self._lastRequestFailed or self._consecutiveErrorCount:
+        if self._lastRequestFailed or self._last_errors:
             self._lastRequestFailed = False
-            self._consecutiveErrorCount = 0
-            om.out.debug('Decrementing global error count. GEC: %s' % \
-                         self._consecutiveErrorCount)
+            self._last_errors.clear()
+            om.out.debug('Resetting global error count. GEC: 0')
     
     def setGrepPlugins(self, grepPlugins ):
         self._grepPlugins = grepPlugins

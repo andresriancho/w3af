@@ -60,6 +60,7 @@ class detectTransparentProxy(baseDiscoveryPlugin):
             
             if self._is_proxyed_conn( fuzzableRequest ):
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName( 'Transparent proxy detected' )
                 i.setURL( fuzzableRequest.getURL() )
                 msg = 'Your ISP seems to have a transparent proxy installed, this can influence'

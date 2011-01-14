@@ -22,14 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
-
 from core.data.dc.dataContainer import dataContainer as dc
 from core.data.dc.cookie import cookie as cookie
 import core.data.kb.config as cf
-from core.data.parsers.urlParser import url_object
-
+from core.data.parsers.urlParser import *
+#from core.controllers.misc.levenshtein import best_substring_relative_distance_ge
 import copy
 import urllib
+import string
 
 #CR = '\r'
 CR = ''
@@ -62,7 +62,7 @@ class fuzzableRequest(object):
         self._dc = dc()
 
         # Set the internal variables
-        self._sent_information = None
+        self._sent_information_comparable = None
     
     def dump( self ):
         '''
@@ -125,38 +125,51 @@ class fuzzableRequest(object):
                 str_res += str(self._dc)
         return str_res
                     
-    def sent(self, something_interesting):
+    def sent(self, smth_interesting):
         '''
-        Checks if the something_interesting was sent in the request.
+        Checks if something similar to smth_interesting was sent in the request.
 
-        @parameter something_interesting: The string
-        @return: True if it was sent
+        @parameter smth_interesting: The string
+        @return: True if something similar was sent
         '''
-        if self._sent_information is None:
-            self._sent_information = ''
-    
-            if self.getMethod().upper() == 'POST':
-                sent_data = self.getData()
-                
-                if sent_data is not None:
-                    
-                    # Save the information as-is, encoded.
-                    self._sent_information += ' ' + str(sent_data)
-                    
-                    # Save the decoded information
-                    sent_data = urllib.unquote( str(sent_data) )
-                    self._sent_information += ' ' + sent_data
-                    
-            
-            # Save the url as-is, encoded.
-            self._sent_information += ' ' + self.getURI()
-            # Save the decoded URL
-            self._sent_information += ' ' + urllib.unquote_plus( self.getURI().url_string )
-    
-        if something_interesting in self._sent_information:
+        
+        def makeComparable(heterogen_string):
+            '''
+            This basically removes characters that are hard to compare
+            '''
+            heterogen_characters = ['\\', '\'', '"','%0A', '%0D', '%00', chr(0), 
+                                    chr(int("0D",16)), chr(int("0A",16)) ]
+            #heterogen_characters.extend(string.whitespace)
+            for hetero_char in heterogen_characters:
+                if hetero_char in heterogen_string:
+                    heterogen_string = heterogen_string.replace(hetero_char,'')
+            return heterogen_string
+        
+        #This is the easy part. If it was exactly like this in the request
+        if smth_interesting in self._data or smth_interesting in self.getURI():
             return True
+        
+        #If this is not the case, let's set up something we can compare
+        if self._sent_information_comparable is None:
+            #Set up something comparable
+            data = self._uri + self._data
+            self._sent_information_comparable = makeComparable(data + urllib.unquote(data))
+        
+        smth_interesting_comparable = makeComparable(smth_interesting + urllib.unquote(smth_interesting))
+        
+        minLength = 5
+        #We don't want false negatives just because the string is short after making comparable
+        if len(smth_interesting_comparable) <= minLength:
+            return False
+        elif smth_interesting_comparable in self._sent_information_comparable:
+            return True
+        #elif best_substring_relative_distance_ge(smth_interesting_comparable, 
+            #                                    self._sent_information_comparable, 0.9):
+            ##TODO: Adjust magic number 0.9. 
+            ##High: More false positives, Low: More false negatives
+            #return True
         else:
-            # I didn't sent the something_interesting in any way
+            # I didn't sent the smth_interesting in any way
             return False
 
     def __str__( self ):
@@ -253,38 +266,12 @@ class fuzzableRequest(object):
         return not self.__eq__( other )
     
     def setURL( self , url ):
-        '''
-        >>> f = fuzzableRequest()
-        >>> f.setURL('http://www.google.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: The URL of a fuzzable request must be of urlParser.url_object type.
-        >>> f = fuzzableRequest()
-        >>> f.setURL( url_object('http://www.google.com/') )
-        >>>
-        '''
-        if not isinstance(url, url_object):
-            raise ValueError('The URL of a fuzzable request must be of urlParser.url_object type.')
-
-        self._url = url.uri2url()
-        self._uri = url
+        self._url = url.replace(' ', '%20')
+        self._uri = self._url
     
     def setURI( self, uri ):
-        '''
-        >>> f = fuzzableRequest()
-        >>> f.setURI('http://www.google.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: The URI of a fuzzable request must be of urlParser.url_object type.
-        >>> f = fuzzableRequest()
-        >>> f.setURI( url_object('http://www.google.com/') )
-        >>>
-        '''
-        if not isinstance(uri, url_object):
-            raise ValueError('The URI of a fuzzable request must be of urlParser.url_object type.')
-        
-        self._uri = uri
-        self._url = uri.uri2url()
+        self._uri = uri.replace(' ', '%20')
+        self._url = uri2url( uri )
         
     def setMethod( self , method ):
         self._method = method

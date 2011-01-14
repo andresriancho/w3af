@@ -32,6 +32,14 @@ class option:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    BOOL = 'boolean'
+    INT = 'integer'
+    FLOAT = 'float'
+    STRING = 'string'
+    IPPORT = 'ipport'
+    LIST = 'list'
+    REGEX = 'regex'
+    
     def __init__(self, name, defaultValue, desc, type, help='', tabid=''):
         '''
         @parameter name: The name of the option

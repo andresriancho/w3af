@@ -105,6 +105,7 @@ class xpath(baseAuditPlugin):
                 for xpath_error_re, xpath_error in xpath_error_list:
                     if not xpath_error_re.search( mutant.getOriginalResponseBody() ):
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setName( 'XPATH injection vulnerability' )
                         v.setSeverity(severity.MEDIUM)
                         v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )

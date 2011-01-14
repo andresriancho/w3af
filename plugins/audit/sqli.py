@@ -95,6 +95,7 @@ class sqli(baseAuditPlugin):
                     if not sql_regex.search( mutant.getOriginalResponseBody() ):
                         # Create the vuln,
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setName( 'SQL injection vulnerability' )
                         v.setSeverity(severity.HIGH)
@@ -182,7 +183,6 @@ class sqli(baseAuditPlugin):
             errors.append( ('SQLCODE', dbms.DB2 ) )
             errors.append( ('DB2 SQL error:', dbms.DB2 ) )
             errors.append( ('SQLSTATE', dbms.DB2 ) )
-            errors.append( ('\\[IBM\\]\\[CLI Driver\\]\\[DB2/6000\\]', dbms.DB2 ) )
             errors.append( ('\\[CLI Driver\\]', dbms.DB2 ) )
             errors.append( ('\\[DB2/6000\\]', dbms.DB2 ) )
             
@@ -217,8 +217,9 @@ class sqli(baseAuditPlugin):
             errors.append( ("Column count doesn't match", dbms.MYSQL ))
             errors.append( ("the used select statements have different number of columns", dbms.MYSQL ))
             errors.append( ("Table '[^']+' doesn't exist", dbms.MYSQL ))
+            errors.append( ("DBD::mysql::st execute failed", dbms.MYSQL ))
+            errors.append( ("DBD::mysql::db do failed:", dbms.MYSQL ))
 
-            
             # Informix
             errors.append( ('com\\.informix\\.jdbc', dbms.INFORMIX ))
             errors.append( ('Dynamic Page Generation Error:', dbms.INFORMIX ))

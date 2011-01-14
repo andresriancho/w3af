@@ -166,6 +166,7 @@ class osCommanding(baseAuditPlugin):
 
                         # Create the vuln obj
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setName( 'OS commanding vulnerability' )
                         v.setSeverity(severity.HIGH)
                         v['os'] = sentOs
@@ -266,6 +267,7 @@ class osCommanding(baseAuditPlugin):
                     response.getWaitTime() < (self._original_wait_time + self._second_wait_time+3):
                         # Now I can be sure that I found a vuln, I control the time of the response.
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setName( 'OS commanding vulnerability' )
                         v.setSeverity(severity.HIGH)
                         v['os'] = sentOs
@@ -279,6 +281,7 @@ class osCommanding(baseAuditPlugin):
                     else:
                         # The first delay existed... I must report something...
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('Possible OS commanding vulnerability')
                         i.setId( response.id )
                         i.setDc( mutant.getDc() )

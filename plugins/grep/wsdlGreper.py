@@ -70,6 +70,7 @@ class wsdlGreper(baseGrepPlugin):
                 
             if is_WSDL:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('WSDL file')
                 i.setURL( response.getURL() )
                 i.setId( response.id )
@@ -87,6 +88,7 @@ class wsdlGreper(baseGrepPlugin):
                 
             if is_Disco:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setURL( response.getURL() )
                 msg = 'The URL: "' +  i.getURL() + '" is a DISCO file that contains'
                 msg += ' references to WSDLs.'

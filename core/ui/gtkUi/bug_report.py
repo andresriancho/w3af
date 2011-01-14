@@ -20,18 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import sys
 import gtk
 
 # w3af crash File creation
 from core.controllers.easy_contribution.sourceforge import sourceforge
 import cgi
-import time
 import webbrowser
 from core.ui.gtkUi.helpers import endThreads
 
 
 class simple_base_window(gtk.Window):
+
     def __init__(self, type=None):
         '''
         One simple class to create other windows.
@@ -45,8 +44,10 @@ class simple_base_window(gtk.Window):
         self.destroy()
         #gtk.main_quit()
         #sys.exit(-1)
-        
+
+
 class bug_report_result(simple_base_window):
+
     def __init__(self, text, url):
         '''
         A class that shows the result of a bug report to the user.
@@ -104,8 +105,10 @@ class bug_report_result(simple_base_window):
         '''
         webbrowser.open( self.url )
 
+
 class bug_report_window(simple_base_window):
-    def __init__(self, title, exception_text, w3af_version, filename):
+    
+    def __init__(self, title, exception_text, w3af_version, filename, **data):
         '''
         The first window that the user sees when a bug was detected.
         '''
@@ -126,6 +129,7 @@ class bug_report_window(simple_base_window):
         self.exception_text = exception_text
         self.w3af_version = w3af_version
         self.filename = filename
+        self.data = data
         
         # the label for the title
         self.title_label = gtk.Label()
@@ -251,14 +255,11 @@ Please provide any additional information below:
         dialog.destroy()
         
         return summary, description
-        
 
     def _handle_send(self, widg):
         '''
         Handle the Ok button click. This is the "main" of this window.
         '''
-        # Ask for a bug title and description
-        summary, description = self._ask_bug_information()
         
         invalid_login = False
         while True:
@@ -275,10 +276,14 @@ Please provide any additional information below:
             
             if login_ok:
                 break
+
+        # Ask for a bug title and description
+        summary, description = self._ask_bug_information()
+        plugins = self.data.get('plugins', '')
         
-        self.bug_url = self.sourceforge.report_bug(summary, description,
-                                                        self.w3af_version, self.exception_text,
-                                                        self.filename)
+        data = dict(w3af_v=self.w3af_version, t_back=self.exception_text,
+                    user_desc=description, plugins=plugins)
+        self.bug_url = self.sourceforge.report_bug(summary, self.filename, **data)
                                                         
         if self.bug_url:
             # Show the tracking URL to the user

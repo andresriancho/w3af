@@ -331,6 +331,7 @@ class fingerprint_WAF(baseDiscoveryPlugin):
         @parameter protected_by: A more detailed description/version of the WAF
         '''
         i = info.info()
+        i.setPluginName(self.getName())
         i.setURL( response.getURL() )
         i.setId( response.id )
         msg = 'The remote web server seems to deploy a "'+name+'" WAF.'

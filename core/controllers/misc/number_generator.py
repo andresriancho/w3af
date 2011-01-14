@@ -51,5 +51,12 @@ class number_generator(object):
         @return: The current number
         '''
         return self._id
+    
+    def reset(self):
+        '''
+        Reset internal counter to 0.
+        '''
+        with self._lock:
+            self._id = 0
             
 consecutive_number_generator = number_generator()

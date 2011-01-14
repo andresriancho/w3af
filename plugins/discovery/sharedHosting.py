@@ -110,8 +110,10 @@ class sharedHosting(baseDiscoveryPlugin):
                     if is_vulnerable:
                         severityOfThisVuln = severity.MEDIUM
                         v = vuln.vuln()
-                        v.setURL( fuzzableRequest.getURL() )
-                        v.setId( 1 )
+                        v.setPluginName(self.getName())
+                        v.setURL(fuzzableRequest.getURL())
+                        v.setId(1)
+                        
                         v['alsoInHosting'] = results
                         msg = 'The web application under test seems to be in a shared hosting. '
                         msg += 'This list of domains, and the domain of the web application under '
@@ -127,7 +129,7 @@ class sharedHosting(baseDiscoveryPlugin):
                         kb.kb.append( self, 'sharedHosting', v )
                 
         return []
-    
+
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.

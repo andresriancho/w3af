@@ -156,6 +156,7 @@ class fileUpload(baseAuditPlugin):
                     # REAL file objects can't be picked
                     mutant.setModValue('<file_object>')
                     v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
                     v.setId([mutant_response.id, get_response.id])
                     v.setSeverity(severity.HIGH)
                     v.setName('Insecure file upload')

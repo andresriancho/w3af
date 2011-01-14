@@ -72,6 +72,7 @@ class fileUploadShell(baseAttackPlugin):
             om.out.error('You have to configure the plugin parameters.')
         else:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( self._url )
             v.setMethod( self._method )
             v.setDc( self._data )

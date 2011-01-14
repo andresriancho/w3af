@@ -50,17 +50,33 @@ def start_webserver(ip, port, webroot=None):
     else:
         WEBROOT = webroot # Override default
 
-    global _servers
-    address = ((ip, port))
-    web_server = _servers.get(address)
+    web_server = _get_inst(ip, port)
 
     if web_server is None or web_server.is_down():
         web_server = w3afHTTPServer((ip, port), w3afWebHandler)
-        _servers[address] = web_server
+        global _servers
+        _servers[(ip, port)] = web_server
         # Start server!
         server_thread = threading.Thread(target=web_server.serve_forever)
         server_thread.setDaemon(True)
         server_thread.start()
+
+def is_running(ip, port):
+    '''
+    Given `ip` and `port` determine if a there's a bound webserver instance
+    '''
+    web_server = _get_inst(ip, port)
+    if web_server is None:
+        return False
+    return not web_server.is_down()
+
+def _get_inst(ip, port):
+    '''
+    Return a previously created instance bound to `ip` and `port`. Otherwise
+    return None.
+    '''
+    return _servers.get((ip, port), None)
+
 
 class w3afHTTPServer(BaseHTTPServer.HTTPServer):
     '''Must of the behavior added here is included in 

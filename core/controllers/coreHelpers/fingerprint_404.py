@@ -105,7 +105,7 @@ class fingerprint_404:
         #   This is the most simple case, we don't even have to think about this.
         #
         #   If there is some custom website that always returns 404 codes, then we are
-        #   fucked, but this is open source, and the pentester working on that site can modify
+        #   screwed, but this is open source, and the pentester working on that site can modify
         #   these lines.
         #
         if http_response.getCode() == 404:
@@ -227,22 +227,23 @@ class fingerprint_404:
         try:
             # I don't use the cache, because the URLs are random and the only thing that
             # useCache does is to fill up disk space
-            response = self._urlOpener.GET( url404, useCache=False, grepResult=False )
+            response = self._urlOpener.GET(url404, useCache=False, grepResult=False)
         except w3afException, w3:
-            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3) )
+            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3))
         except w3afMustStopException, mse:
             # Someone else will raise this exception and handle it as expected
             # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException found by _send_404, someone else will handle it.')
+            raise w3afException('w3afMustStopException <%s> found by _send_404,' \
+                                ' someone else will handle it.' % mse)
         except Exception, e:
-            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e) )
+            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e))
             raise
-        
+
         else:
             # I don't want the random file name to affect the 404, so I replace it with a blank space
-            response_body = self._get_clean_body( response )
+            response_body = self._get_clean_body(response)
 
-            self._response_body_list.append( response_body )
+            self._response_body_list.append(response_body)
         
     #
     #

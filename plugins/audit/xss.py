@@ -352,6 +352,7 @@ class xss(baseAuditPlugin):
                 # Save it to the KB
                 if vulnerable:                
                     v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
                     v.setId( response.id )
                     v.setName( 'Cross site scripting vulnerability' )
                     v.setSeverity(severity.MEDIUM)
@@ -424,6 +425,7 @@ class xss(baseAuditPlugin):
                     if mutant.getModValue() in response:
                         
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setURL( fuzzable_request.getURL() )
                         v.setDc( fuzzable_request.getDc() )
                         v.setMethod( fuzzable_request.getMethod() )

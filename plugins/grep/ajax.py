@@ -163,6 +163,7 @@ class ajax(baseGrepPlugin):
                         res = self._ajax_regex_re.search(script_content)
                         if res:
                             i = info.info()
+                            i.setPluginName(self.getName())
                             i.setName('AJAX code')
                             i.setURL(url)
                             i.setDesc('The URL: "%s" has an AJAX code.' % url)

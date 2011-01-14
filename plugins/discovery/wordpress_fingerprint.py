@@ -102,6 +102,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
 
                     # Save it to the kb!
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('WordPress version')
                     i.setURL( wp_index_url )
                     i.setId( response.id )
@@ -141,6 +142,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
 
                 # Save it to the kb!
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('WordPress version')
                 i.setURL( test_url )
                 i.setId( response.id )

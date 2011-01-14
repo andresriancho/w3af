@@ -39,6 +39,7 @@ class info(dict):
         self._variable = ''
         self._id = []
         self._name = ''
+        self._plugin_name = ''
         self._dc = None
         self._string_matches = set()
             
@@ -81,6 +82,9 @@ class info(dict):
         
         self._url = url.uri2url()
     
+    def getURL( self ):
+        return self._url
+    
     def setURI( self, uri ):
         '''
         >>> i = info()
@@ -96,6 +100,9 @@ class info(dict):
         
         self._uri = uri
         self._url = uri.uri2url()
+
+    def getURI( self ):
+        return self._uri
     
     def setMethod( self, method ):
         self._method = method.upper()
@@ -105,12 +112,7 @@ class info(dict):
         
     def setDesc( self, desc ):
         self._desc = desc
-        
-    def getURL( self ):
-        return self._url
-    
-    def getURI( self ):
-        return self._uri
+
         
     def getDesc( self ):
         if self._id is not None and self._id != 0:
@@ -130,6 +132,12 @@ class info(dict):
         else:
             return self._desc
     
+    def setPluginName(self, plugin_name):
+        self._plugin_name = plugin_name
+    
+    def getPluginName(self):
+        return self._plugin_name
+    
     def _convert_to_range_wrapper(self, list_of_integers):
         '''
         Just a wrapper for _convert_to_range; please see documentation below!
@@ -140,60 +148,56 @@ class info(dict):
         if res.endswith(','):
             res = res[:-1]
         return res
-    
-    def _convert_to_range(self, list_of_integers):
+
+    def _convert_to_range(self, seq):
         '''
-        Convert a list of integers to a nicer "range like" string.
-        For example:
-            input: [1, 2, 3, 4, 5, 6]
-            output: '1 to 6'
+        Convert a list of integers to a nicer "range like" string. Assumed
+        that `seq` elems are ordered.
         
-        For example:
-            input: [1, 2]
-            output: '1 and 2'
-            
-        For example:
-            input: [1, 2, 3, 6]
-            output: '1 to 3 and 6'
-            
-        For example:
-            input: [1, 2, 3, 6, 7, 8]
-            output: '1 to 3 and 6 to 8'
-            
-        For example:
-            input: [1, 2, 3, 6, 7, 8, 10]
-            output: '1 to 3, 6 to 8 and 10'
+        >>> inf = info()
+        >>> inf._convert_to_range([1, 2, 3, 4, 5, 6])
+        '1 to 6'
+        >>> inf._convert_to_range([1, 2, 3, 6])
+        '1 to 3 and 6'
+        >>> inf._convert_to_range([1, 2, 3, 6, 7, 8])
+        '1 to 3, 6 to 8'
+        >>> inf._convert_to_range([1, 2, 3, 6, 7, 8, 10])
+        '1 to 3, 6 to 8 and 10'
+        >>> inf._convert_to_range([1, 2, 3, 10, 20, 30])
+        '1 to 3, 10, 20 and 30'
+        >>> inf._convert_to_range([1, 3, 10, 20, 30])
+        '1, 3, 10, 20 and 30'
+        >>> len(inf._convert_to_range(range(0, 30000, 2)).split())
+        15001
         '''
-        if len(list_of_integers) == 1:
-            return str(list_of_integers[0])
-        
-        elif len(list_of_integers) == 2:
-            return str(list_of_integers[0]) + ' and ' + str(list_of_integers[1])
-        
-        elif len(list_of_integers) > 2:
-            # Find the largest sequence like 1, 2, 3, 4...
-            start = list_of_integers[0]
-            for int_position, int_value in enumerate(list_of_integers[1:]):
-                if int_value == start + 1:
-                    start = int_value
-                else:
-                    # This item is the first one from a new sequence
+        first = last = seq[0]
+        dist = 0
+        res = []
+        last_in_seq = seq[-1]
+        is_last_in_seq = lambda num: num == last_in_seq
+
+        for num in seq[1:]:
+            # Is it a new subsequence?
+            is_new_seq = (num != last + 1)
+            if is_new_seq: # End of sequence
+                if dist: # multi-elems sequence
+                    res.append(_('%s to %s') % (first, last))
+                else: # one-elem sequence
+                    res.append(first)
+                if is_last_in_seq(num):
+                    res.append(_('and') + ' %s' % num)
                     break
-            
-            # Do we have a sequence?
-            if int_position != 0:
-                # We have a sequence.
-                # let's write the string for the current sequence
-                response_string = str(list_of_integers[0]) + ' to ' + str(start) + ','
-            if int_position == 0:
-                response_string = str(list_of_integers[0]) + ','
-            
-            if int_position + 2 != len(list_of_integers):
-                # Now work with the rest of the list:
-                response_string += ' ' + self._convert_to_range(list_of_integers[int_position+1:])
-            
-            # and return...
-            return response_string
+                dist = 0
+                first = num
+            else:
+                if is_last_in_seq(num):
+                    res.append(_('%s to %s') % (first, num))
+                    break
+                dist += 1
+            last = num
+
+        res_str = ', '.join(str(ele) for ele in res)
+        return res_str.replace(', ' + _('and'), ' and')
     
     def __str__( self ):
         return self._desc

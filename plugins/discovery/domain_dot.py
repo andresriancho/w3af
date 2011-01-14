@@ -88,6 +88,7 @@ class domain_dot(baseDiscoveryPlugin):
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
             i = info.info(resp)
+            i.setPluginName(self.getName())
             i.setId([original_resp.id, resp.id])
             i.setName('Responses differ')
             msg = '[Manual verification required] The response body for a ' \

@@ -27,11 +27,10 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-
-import re
 
 class feeds(baseGrepPlugin):
     '''
@@ -46,6 +45,7 @@ class feeds(baseGrepPlugin):
                               ('feed', 'version', 'OPML'),# <feed version="..."
                               ('opml', 'version', 'OPML') # <opml version="...">
                               ]
+        self._already_inspected = ScalableBloomFilter()
                 
     def grep(self, request, response):
         '''
@@ -56,10 +56,13 @@ class feeds(baseGrepPlugin):
         @return: None
         '''
         dom = response.getDOM()
+        uri = response.getURI()
         
         # In some strange cases, we fail to normalize the document
-        if dom is not None:
-            
+        if uri not in self._already_inspected and dom is not None:
+
+            self._already_inspected.add(uri)
+
             for tag_name, attr_name, feed_type in self._rss_tag_attr:
                 
                 # Find all tags with tag_name
@@ -71,9 +74,10 @@ class feeds(baseGrepPlugin):
                         
                         version = element.attrib[attr_name]                        
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName(feed_type +' feed')
-                        i.setURL( response.getURL() )
-                        msg = 'The URL: "' + i.getURL() + '" is a ' + feed_type + ' version "' 
+                        i.setURI(uri)
+                        msg = 'The URL: "' + uri + '" is a ' + feed_type + ' version "' 
                         msg += version + '" feed.'
                         i.setDesc( msg )
                         i.setId( response.id )

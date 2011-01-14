@@ -74,6 +74,7 @@ class serverHeader(baseDiscoveryPlugin):
                 
                 if server != '':
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Server header')
                     i.setId( response.getId() )
                     i.setDesc('The server header for the remote web server is: "' + server + '".' )
@@ -91,9 +92,10 @@ class serverHeader(baseDiscoveryPlugin):
                 else:
                     # strange !
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Omitted server header')
                     i.setId( response.getId() )
-                    msg = 'The remote HTTP Server omitted the "server" header in it\'s response.'
+                    msg = 'The remote HTTP Server omitted the "server" header in its response.'
                     i.setDesc( msg )
                     om.out.information( i.getDesc() )
                     
@@ -137,6 +139,7 @@ class serverHeader(baseDiscoveryPlugin):
                             #    I don't have it in the KB, so I need to add it,
                             #
                             i = info.info()
+                            i.setPluginName(self.getName())
                             i.setName('Powered by header')
                             i.setId( response.getId() )
                             msg = '"' + header_name + '" header for this HTTP server is: "'

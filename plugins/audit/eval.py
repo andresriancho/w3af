@@ -151,6 +151,7 @@ class eval(baseAuditPlugin):
                 for eval_error in eval_error_list:
                     if not re.search( eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE ):
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setSeverity(severity.HIGH)
                         v.setName( 'eval() input injection vulnerability' )
@@ -189,6 +190,7 @@ class eval(baseAuditPlugin):
                     response.getWaitTime() < (self._original_wait_time + self._second_wait_time + 3):
                         # Now I can be sure that I found a vuln, I control the time of the response.
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setSeverity(severity.HIGH)
                         v.setName( 'eval() input injection vulnerability' )
@@ -197,6 +199,7 @@ class eval(baseAuditPlugin):
                     else:
                         # The first delay existed... I must report something...
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setId( response.id )
                         i.setDc( mutant.getDc() )
                         i.setName( 'eval() input injection vulnerability' )

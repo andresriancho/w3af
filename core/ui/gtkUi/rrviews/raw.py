@@ -31,7 +31,7 @@ class HttpRawView(HttpEditor):
     '''Raw view with HTTP Editor.'''
     def __init__(self, w3af, parentView, editable=False):
         '''Make object.'''
-        HttpEditor.__init__(self)
+        HttpEditor.__init__(self, w3af)
         self.id = 'HttpRawView'
         self.label = 'Raw'
         self.parentView = parentView

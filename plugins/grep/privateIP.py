@@ -72,6 +72,7 @@ class privateIP(baseGrepPlugin):
                 # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
                 if match != response.getURL().getDomain():
                     v = vuln.vuln()
+                    v.setPluginName(self.getName())
                     v.setURL( response.getURL() )
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
@@ -109,6 +110,7 @@ class privateIP(baseGrepPlugin):
                     not request.sent( match ):
 
                         v = vuln.vuln()
+                        v.setPluginName(self.getName())
                         v.setURL( response.getURL() )
                         v.setId( response.id )
                         v.setSeverity(severity.LOW)

@@ -93,6 +93,7 @@ class preg_replace(baseAuditPlugin):
                 for preg_error_re, preg_error_string in preg_error_list:
                     if not preg_error_re.search( mutant.getOriginalResponseBody() ):
                         v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setSeverity(severity.HIGH)
                         v.setName( 'Unsafe usage of preg_replace' )

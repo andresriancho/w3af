@@ -25,16 +25,6 @@ from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afException
 
 
-def urlbuild(scheme, domain, path='/', params=None, qs=None, fragment=None):
-    '''
-    Build URL from fragments
-    >>> urlbuild('http', 'abc')
-    'http://abc/'
-    >>> urlbuild('http', 'abc:80', path='foo')
-    'http://abc:80/foo'
-    '''
-    return urlparse.urlunparse((scheme, domain, path, params, qs, fragment))
-
 def checkVersionSintax(version):
     '''
     @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
@@ -58,7 +48,6 @@ def checkURISintax(uri, host=None):
     '''
     @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
     '''
-    res = uri
     supportedSchemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
 
@@ -74,7 +63,7 @@ def checkURISintax(uri, host=None):
         msg += ' Invalid URI: ' + uri
         raise w3afException(msg)
 
-    res = urlbuild(scheme, domain, path, params, qs, fragment)
+    res = urlparse.urlunparse( (scheme, domain, path, params, qs, fragment) )
     return res
 
 def httpRequestParser(head, postdata):
@@ -88,10 +77,15 @@ def httpRequestParser(head, postdata):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     # Parse the request head
-    splittedHead = head.split('\n')
-    splittedHead = [h.strip() for h in splittedHead if h]
+    splitted_head = head.split('\n')
+    splitted_head = [h.strip() for h in splitted_head if h]
+    
+    if not splitted_head:
+        msg = 'The HTTP request is invalid.'
+        raise w3afException(msg)        
+    
     # Get method, uri, version
-    metUriVer = splittedHead[0]
+    metUriVer = splitted_head[0]
     firstLine = metUriVer.split(' ')
     if len(firstLine) == 3:
         # Ok, we have something like "GET /foo HTTP/1.0". This is the best case for us!
@@ -106,16 +100,18 @@ def httpRequestParser(head, postdata):
         method = firstLine[0]
         version = firstLine[-1]
         uri = ' '.join( firstLine[1:-1] )
+    
     checkVersionSintax(version)
+    
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
-    headers = splittedHead[1:]
+    headers = splitted_head[1:]
     headersDict = {}
     for header in headers:
-        oneSplittedHeader = header.split(':', 1)
-        if len(oneSplittedHeader) == 1:
+        one_splitted_header = header.split(':', 1)
+        if len(one_splitted_header) == 1:
             raise w3afException('The HTTP request has an invalid header: "' + header + '"')
-        headersDict[ oneSplittedHeader[0].strip() ] = oneSplittedHeader[1].strip()
+        headersDict[ one_splitted_header[0].strip() ] = one_splitted_header[1].strip()
     host = ''
     for headerName in headersDict:
         if headerName.lower() == 'host':

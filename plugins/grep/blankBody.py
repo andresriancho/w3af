@@ -108,6 +108,7 @@ class blankBody(baseGrepPlugin):
             
             #   append the info object to the KB.
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Blank body')
             i.setURL( response.getURL() )
             i.setId( response.id )

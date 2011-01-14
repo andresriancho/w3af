@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="w3afrun">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="scaninfo" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="vulnerability" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="information" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="error" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="start" use="required" type="xs:integer"/>
+      <xs:attribute name="startstr" use="required"/>
+      <xs:attribute name="xmloutputversion" use="required" type="xs:decimal"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="scaninfo">
+    <xs:complexType>
+      <xs:all>
+        <xs:element ref="audit"/>
+        <xs:element ref="bruteforce"/>
+        <xs:element ref="grep"/>
+        <xs:element ref="evasion"/>
+        <xs:element ref="output"/>
+        <xs:element ref="mangle"/>
+        <xs:element ref="discovery"/>
+      </xs:all>
+      <xs:attribute name="target" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+    <xs:complexType name="plugintype">  
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  
+  <xs:element name="audit">
+    <xs:complexType>  
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="bruteforce">
+    <xs:complexType>  
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="grep">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="evasion">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="output">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="mangle">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="discovery">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="vulnerability">
+    <xs:complexType mixed="true">
+      <xs:attribute name="id" use="optional"/>
+      <xs:attribute name="method" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" use="required"/>
+      <xs:attribute name="plugin" use="required"/>
+      <xs:attribute name="severity" use="required" type="xs:NCName"/>
+      <xs:attribute name="url" use="required" type="xs:string"/>
+      <xs:attribute name="var" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="information">
+    <xs:complexType mixed="true">
+      <xs:attribute name="id" use="optional" type="xs:string"/>
+      <xs:attribute name="name" use="required" type="xs:string"/>
+      <xs:attribute name="plugin" use="required"/>
+      <xs:attribute name="url" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="error">
+    <xs:complexType mixed="true">
+      <xs:attribute name="caller" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="plugin">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="config"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:attribute name="parameter" use="required" type="xs:NCName"/>
+      <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

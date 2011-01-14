@@ -105,6 +105,7 @@ class findGit(baseDiscoveryPlugin):
                 for line in f:
                     if regular_expression.match(line):
                         v = vuln.vuln()
+                        v.setPluginName(self.getName())
                         v.setId( response.id )
                         v.setName( 'Possible Git repository found' )
                         v.setSeverity(severity.LOW)

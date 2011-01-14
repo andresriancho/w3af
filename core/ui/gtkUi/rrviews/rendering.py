@@ -55,7 +55,7 @@ def getRenderingView(w3af, parentView):
         return MozRenderingView(w3af, parentView)
     if RENDERING_ENGINES['gtkhtml2']:
         return GtkHtmlRenderingView(w3af, parentView)
-    raise w3afException('You need to install at least one of rendering englines: \
+    raise w3afException('If you want to render HTML responses, you need to install at least one of rendering engines: \
                 python-webkit, python-gtkmozembed, python-gtkhtml2')
 
 class RenderingView(gtk.VBox):

@@ -133,6 +133,7 @@ class userDir(baseDiscoveryPlugin):
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.getData( 'userDir', 'users') ]:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('User directory: ' + response.getURL() )
                     i.setId( response.id )
                     i.setDesc( 'A user directory was found at: ' + response.getURL() )
@@ -242,6 +243,7 @@ class userDir(baseDiscoveryPlugin):
             for uDir, user in url_user_list:
                 if self._do_request( uDir, user ):
                     i = info.info()
+                    i.setPluginName(self.getName())
                     if ident == 'os':
                         msg = 'The remote OS can be identified as "' + data_related_to_user
                         msg += '" based on the remote user "'+ user +'".'

@@ -87,6 +87,7 @@ class dav(baseAuditPlugin):
         
         if content_matches and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( res.getURL() )
             v.setId( res.id )
             v.setSeverity(severity.MEDIUM)
@@ -114,6 +115,7 @@ class dav(baseAuditPlugin):
         # string in response               
         if "D:href" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( res.getURL() )
             v.setId( res.id )
             v.setSeverity(severity.MEDIUM)
@@ -137,6 +139,7 @@ class dav(baseAuditPlugin):
         res = self._urlOpener.GET( url , useCache=True )
         if res.getBody() == rndContent:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( url )
             v.setId( [put_response.id, res.id] )
             v.setSeverity(severity.HIGH)
@@ -150,6 +153,7 @@ class dav(baseAuditPlugin):
         # Report some common errors
         elif put_response.getCode() == 500:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setURL( url )
             i.setId( res.id )
             i.setName( 'DAV incorrect configuration' )
@@ -163,6 +167,7 @@ class dav(baseAuditPlugin):
         # Report some common errors
         elif put_response.getCode() == 403:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setURL( url )
             i.setId( [put_response.id, res.id] )
             i.setName( 'DAV insufficient privileges' )

@@ -97,6 +97,7 @@ class phishingVector(baseAuditPlugin):
                 if match:
                     # Vuln vuln!
                     v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
                     v.setId( response.id )
                     v.setSeverity(severity.LOW)
                     v.setName( 'Phishing vector' )

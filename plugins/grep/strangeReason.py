@@ -122,6 +122,7 @@ class strangeReason(baseGrepPlugin):
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Strange HTTP Reason message - ' + str(response.getMsg()))
                     i.setURL( response.getURL() )
                     i.setId( response.id )

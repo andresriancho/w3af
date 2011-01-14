@@ -136,6 +136,7 @@ class allowedMethods(baseDiscoveryPlugin):
                 if non_exist_response.getCode() not in self._bad_codes\
                 and get_response.getBody() == non_exist_response.getBody():
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName( 'Non existent methods default to GET' )
                     i.setURL( url )
                     i.setId( [non_exist_response.getId(), get_response.getId()] )
@@ -179,6 +180,7 @@ class allowedMethods(baseDiscoveryPlugin):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
             i.setId( id_list )
@@ -191,6 +193,7 @@ class allowedMethods(baseDiscoveryPlugin):
             # Save the results in the KB so that other plugins can use this information
             # Do not remove these information, other plugins REALLY use it !
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
             i.setId( id_list )

@@ -72,6 +72,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 
         for img_src in changed_images_list:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Captcha image detected')
             i.setURL( img_src )
             i.setMethod( 'GET' )

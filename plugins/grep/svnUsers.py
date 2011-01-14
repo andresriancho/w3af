@@ -63,26 +63,27 @@ class svnUsers(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        url = response.getURL()
-        if response.is_text_or_html() and url not in self._already_inspected:
-            
+        uri = response.getURI()
+        if response.is_text_or_html() and uri not in self._already_inspected:
+
             # Don't repeat URLs
-            self._already_inspected.add(url)
-            
+            self._already_inspected.add(uri)
+
             for regex in self._regex_list:
-                for m in regex.findall( response.getBody() ):
+                for m in regex.findall(response.getBody()):
                     v = vuln.vuln()
-                    v.setURL( response.getURL() )
-                    v.setId( response.id )
-                    msg = 'The URL: "'+ response.getURL()  + '" contains a SVN versioning '
-                    msg += 'signature with the username: "' + m[0] + '" .' 
-                    v.setDesc( msg )
+                    v.setPluginName(self.getName())
+                    v.setURI(uri)
+                    v.setId(response.id)
+                    msg = 'The URL: "' + uri + '" contains a SVN versioning '
+                    msg += 'signature with the username: "' + m[0] + '" .'
+                    v.setDesc(msg)
                     v['user'] = m[0]
                     v.setSeverity(severity.LOW)
-                    v.setName( 'SVN user disclosure vulnerability' )
-                    v.addToHighlight( m[0] )
-                    
-                    kb.kb.append( self, 'users', v )
+                    v.setName('SVN user disclosure vulnerability')
+                    v.addToHighlight(m[0])
+                    kb.kb.append(self, 'users', v)
+
         
     def setOptions( self, OptionList ):
         pass

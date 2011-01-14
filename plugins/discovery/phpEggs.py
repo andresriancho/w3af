@@ -268,6 +268,7 @@ class phpEggs(baseDiscoveryPlugin):
                     #
                     for response, egg_desc, egg_URL in GET_results:
                         i = info.info()
+                        i.setPluginName(self.getName())
                         i.setName('PHP Egg - ' + egg_desc)
                         i.setURL( egg_URL )
                         desc = 'The PHP framework running on the remote server has a "'
@@ -313,6 +314,7 @@ class phpEggs(baseDiscoveryPlugin):
             
             if matching_versions:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('PHP Egg')
                 msg = 'The PHP framework version running on the remote server was identified as:'
                 for m_ver in matching_versions:

@@ -116,6 +116,7 @@ class favicon_identification(baseDiscoveryPlugin):
                 if desc:
                     # Save it to the kb!
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Favicon identification')
                     i.setURL( def_favicon_url )
                     i.setId( response.id )
@@ -128,6 +129,7 @@ class favicon_identification(baseDiscoveryPlugin):
                     #   should be sent to the developers.
                     #
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Favicon identification failed')
                     i.setURL( def_favicon_url )
                     i.setId( response.id )

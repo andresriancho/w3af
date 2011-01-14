@@ -49,9 +49,6 @@ class xmlFile(baseOutputPlugin):
     def __init__(self):
         baseOutputPlugin.__init__(self)
         
-        # Internal variables
-        self._initialized = False
-        
         # These attributes hold the file pointers
         self._file = None
         
@@ -73,7 +70,6 @@ class xmlFile(baseOutputPlugin):
         self._scanInfo = self._xmldoc.createElement("scaninfo")
                                               
     def _init( self ):
-        self._initialized = True 
         try:
             self._file = open( self._file_name, "w" )
         except IOError, io:
@@ -198,16 +194,13 @@ class xmlFile(baseOutputPlugin):
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
 
-    def end (self ):
+    def end (self):
         '''
         This method is called when the scan has finished.
         '''
-        if not self._initialized:
-          self._init()
-          
-          # Add the vulnerability results
-          vulns = kb.kb.getAllVulns()
-          for i in vulns:
+        # Add the vulnerability results
+        vulns = kb.kb.getAllVulns()
+        for i in vulns:
             messageNode = self._xmldoc.createElement("vulnerability")
             messageNode.setAttribute("severity", str(i.getSeverity()))
             messageNode.setAttribute("method", str(i.getMethod()))
@@ -216,29 +209,37 @@ class xmlFile(baseOutputPlugin):
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
             messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("plugin", str(i.getPluginName()))
             description = self._xmldoc.createTextNode(i.getDesc())
             messageNode.appendChild(description)
             self._topElement.appendChild(messageNode)
         
-          # Add the information results
-          infos = kb.kb.getAllInfos()
-          for i in infos:
+        # Add the information results
+        infos = kb.kb.getAllInfos()
+        for i in infos:
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.getURL()))
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
             messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("plugin", str(i.getPluginName()))
             description = self._xmldoc.createTextNode(i.getDesc())
             messageNode.appendChild(description)
             self._topElement.appendChild(messageNode)
         
-          # Add additional information results
-          for node in self._errorXML:
+        # Add additional information results
+        for node in self._errorXML:
             self._topElement.appendChild(node)
         
-          # Write xml report
-          self._xmldoc.appendChild(self._topElement)
-          self._xmldoc.writexml(self._file, "", "", "\n", "UTF-8")
+        # Write xml report
+        self._init()
+        self._xmldoc.appendChild(self._topElement)
+        try:
+            self._xmldoc.writexml(self._file, addindent=" "*4,
+                                  newl="\n", encoding="UTF-8")  
+            self._file.flush()
+        finally:
+            self._file.close()
               
     def getLongDesc( self ):
         '''

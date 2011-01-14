@@ -68,6 +68,7 @@ class fingerPKS(baseDiscoveryPlugin):
             for result in results:
                 i = info.info()
                 i.setURL( url_object('http://pgp.mit.edu:11371/') )
+                i.setPluginName(self.getName())
                 i.setId( [] )
                 mail = result.username +'@' + root_domain
                 i.setName( mail )

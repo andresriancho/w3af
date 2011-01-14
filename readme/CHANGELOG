@@ -1,0 +1,16 @@
+(10 Jan 2011)    1.0 - release candidate 5     
+==========================================
+
+    * Using bloom filters instead of disk_list: increased performance ~15%
+    * Fixed most of the bugs that cause w3afMustStopExceptions
+    * Updated XML output plugin
+    * Added doctests and unittests with pymock
+    * Updated all scripts in order to pass the ./w3af_console -t test
+    * Added new plugin to measure the number of hops for port 80 vs 443
+
+    Details can be found @ Trac:
+
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-4
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-5
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-6
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=owls-sprint-7

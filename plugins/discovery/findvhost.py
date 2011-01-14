@@ -82,6 +82,7 @@ class findvhost(baseDiscoveryPlugin):
         # Report our findings
         for vhost, request_id in vhost_list:
             v = vuln.vuln()
+            v.setPluginName(self.getName())
             v.setURL( fuzzableRequest.getURL() )
             v.setMethod( 'GET' )
             v.setName( 'Shared hosting' )
@@ -190,6 +191,7 @@ class findvhost(baseDiscoveryPlugin):
                     socket.gethostbyname( domain )
                 except:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Internal hostname in HTML link')
                     i.setURL( fuzzableRequest.getURL() )
                     i.setMethod( 'GET' )

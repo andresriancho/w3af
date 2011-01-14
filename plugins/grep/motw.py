@@ -68,6 +68,7 @@ class motw (baseGrepPlugin):
                 # Create the info object
                 if motw_match or self._withoutMOTW:
                     i = info.info()
+                    i.setPluginName(self.getName())
                     i.setName('Mark of the web')
                     i.setURL( response.getURL() )
                     i.setId( response.id )

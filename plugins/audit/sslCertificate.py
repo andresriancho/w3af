@@ -105,6 +105,7 @@ class sslCertificate(baseAuditPlugin):
             desc += self._dump_X509(cert)
             om.out.information( desc )
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('SSL Certificate' )
             i.setDesc( desc )
             kb.kb.append( self, 'certificate', i )
@@ -136,6 +137,7 @@ class sslCertificate(baseAuditPlugin):
         # Check for expired
         if cert.has_expired():
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Expired SSL certificate' )
             i.setDesc( 'The certificate with MD5 digest: "' + server_digest_MD5 + '" has expired.' )
             kb.kb.append( self, 'expired', i )
@@ -143,6 +145,7 @@ class sslCertificate(baseAuditPlugin):
         # Check for SSL version
         if cert.get_version() < 3:
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Insecure SSL version' )
             desc = 'The certificate is using an old version of SSL (' + str(cert.get_version())
             desc += '), which is insecure.'
@@ -167,6 +170,7 @@ class sslCertificate(baseAuditPlugin):
 
             if wildcardinvalid:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Potential wildcard SSL manipulation')
                 desc = 'The certificate is not using wildcard(*) properly'
                 desc += 'Certificate wildcard: '
@@ -185,6 +189,7 @@ class sslCertificate(baseAuditPlugin):
 
         if certinvalid: 
             i = info.info()
+            i.setPluginName(self.getName())
             i.setName('Invalid name of the certificate')
             desc = 'The certificate presented by this website ('
             desc += host
@@ -197,6 +202,7 @@ class sslCertificate(baseAuditPlugin):
             # Check that the certificate is self issued
             if peer == issuer:
                 i = info.info()
+                i.setPluginName(self.getName())
                 i.setName('Self issued SSL certificate')
                 desc = 'The certificate is self issued'
                 i.setDesc( desc )

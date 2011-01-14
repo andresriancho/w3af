@@ -118,6 +118,7 @@ class buffOverflow(baseAuditPlugin):
             res = apply( functor, args, kwdargs )
         except (w3afException,w3afMustStopException):
             i = info.info( mutant )
+            i.setPluginName(self.getName())
             i.setName( 'Possible buffer overflow vulnerability' )
             if data:
                 msg = 'A possible (most probably a false positive than a bug) buffer overflow was'
@@ -159,6 +160,7 @@ class buffOverflow(baseAuditPlugin):
                 if not error not in mutant.getOriginalResponseBody():
                     # vuln, vuln!
                     v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
                     v.setId( response.id )
                     v.setSeverity(severity.MEDIUM)
                     v.setName( 'Buffer overflow vulnerability' )

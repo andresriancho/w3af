@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
+import pprint
+import StringIO
 import sys
 
 # I perform the GTK UI dependency check here
@@ -34,6 +36,7 @@ dependencyCheck.gtkui_dependency_check()
 # Now that I know that I have them, import them!
 import pygtk
 import gtk, gobject
+
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"
@@ -588,14 +591,35 @@ class MainApp(object):
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
-#                print 'Ctrl+C found, exiting!'
+                # print 'Ctrl+C found, exiting!'
                 pass
-            except Exception, e:
+            except Exception:
                 gobject.idle_add(self._scan_stopfeedback)
-                exception_class = type(e)
-                exception_instance = e
-                exception_traceback = sys.exc_traceback
-                exception_handler.handle_crash(exception_class, exception_instance, exception_traceback)
+                
+                def pprint_plugins():
+                    # Return a pretty-printed string from the plugins dicts
+                    import copy
+                    from itertools import chain
+                    plugs_opts = copy.deepcopy(self.w3af._pluginsOptions)
+                    plugs = self.w3af._strPlugins
+
+                    for ptype, plist in plugs.iteritems():
+                        for p in plist:
+                            if p not in chain(*(pt.keys() for pt in \
+                                                    plugs_opts.itervalues())):
+                                plugs_opts[ptype][p] = {}
+                    
+                    plugins = StringIO.StringIO()
+                    pprint.pprint(plugs_opts, plugins)
+                    return  plugins.getvalue()
+                
+                plugins_str = pprint_plugins()
+                try:
+                    exc_class, exc_inst, exc_tb = sys.exc_info()
+                    exception_handler.handle_crash(exc_class, exc_inst,
+                                                   exc_tb, plugins=plugins_str)
+                finally:
+                    del exc_tb
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()
