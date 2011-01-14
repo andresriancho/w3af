@@ -22,11 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 import sys
-import subprocess
 
-# Use w3af's 'extlib' modules first. By doing this we ensure that modules
-# in 'w3af/extlib/' are first imported over python installation 'site-packages/'
-sys.path.insert(0, "./extlib")
 
 def dependencyCheck():
     '''
@@ -57,8 +53,8 @@ def dependencyCheck():
     try:
         import nltk
     except Exception, e:
-        print 'You have to install the nltk lib. Please read the users guide.'
-        print 'Error: ' + str(e)
+        msg = 'You have to install nltk. \n'
+        msg += '    - On Debian based distributions: apt-get install python-nltk'
         sys.exit( 1 )
 
     try:
@@ -100,7 +96,8 @@ def dependencyCheck():
         import scapy
         import scapy.config
     except:
-        msg = 'You have to install scapy. Debian based distributions: apt-get install python-scapy'
+        msg = 'You have to install scapy. \n'
+        msg += '    - On Debian based distributions: apt-get install python-scapy'
         print msg
         sys.exit( 1 )
     else:
