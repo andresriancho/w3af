@@ -1,4 +1,4 @@
-# Dumb fastScan usage
+# Simple fast_scan usage
 
 profiles
 list
@@ -16,8 +16,6 @@ back
 target
 set target http://moth/w3af/
 back
-
-assert 1==1
 
 start
 exit
