@@ -139,7 +139,9 @@ def w3afTest():
 
     # Failed
     bad_list.sort()
-    om.out.console( '- ' + str(len(bad_list)) + ' Failed')
-    if bad_list:
+    om.out.console( '- ' + str(len(bad_list)) + ' Failed', newLine=False)
+    if not bad_list:
+        om.out.console('')
+    else:
         om.out.console(':\n    - ' + '\n    - '.join(bad_list))
     
