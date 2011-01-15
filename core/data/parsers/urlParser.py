@@ -741,11 +741,11 @@ class url_object(object):
     
     def urlDecode( self ):
         '''
-        >>> url_object('https://abc:443/xyz/file.asp?id=1').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1').urlDecode().url_string
         'https://abc:443/xyz/file.asp?id=1'
-        >>> url_object('https://abc:443/xyz/file.asp?id=1%202').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1%202').urlDecode().url_string
         'https://abc:443/xyz/file.asp?id=1 2'
-        >>> url_object('https://abc:443/xyz/file.asp?id=1+2').urlDecode()
+        >>> url_object('https://abc:443/xyz/file.asp?id=1+2').urlDecode().url_string
         'https://abc:443/xyz/file.asp?id=1 2'
 
         @return: An URL-Decoded version of the URL.
@@ -753,6 +753,7 @@ class url_object(object):
         res = None
         if type(self.url_string) == type(""):
             res = urllib.unquote(string.replace(self.url_string, "+", " "))
+            res = url_object( res )
         return res
     
     def getDirectories( self ):
