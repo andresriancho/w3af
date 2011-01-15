@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import socket
 from core.controllers.w3afException import w3afException
-try:
-    # Try to use the scapy library that is installed in the system
-    from scapy import *
-except Exception:
-    from extlib.scapy.scapy import *
 
+from scapy.all import sniff
+from scapy.all import get_if_addr
+from scapy.all import IP
+from scapy.all import TCP
+from scapy.all import UDP
             
 import core.controllers.outputManager as om
 import core.data.kb.config as cf

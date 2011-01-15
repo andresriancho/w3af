@@ -23,6 +23,6 @@ back
 
 start
 
-assert len(kb.kb.getData('ssn','ssn')) == 1 
+assert len(kb.kb.getData('ssn','ssn')) == 1
 
 exit

@@ -29,8 +29,7 @@ from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import re
 
-# The wordnet includes!
-from nltk.corpus import wordnet as wn
+from core.data.nltk_wrapper.nltk_wrapper import wn
 
 # options
 from core.data.options.option import option
@@ -110,19 +109,21 @@ class wordnet(baseDiscoveryPlugin):
         '''
         Search the wordnet for this word, based on user options.
         @return: A list of related words.
+        
+        
+        >>> wn.synsets('blue')[0].hypernyms()
+        [Synset('chromatic_color.n.01')]
+        >>> wn.synsets('blue')[0].hypernyms()[0].hyponyms()
+        [  Synset('orange.n.02'), Synset('brown.n.01'), Synset('green.n.01'), 
+           Synset('salmon.n.04'), Synset('red.n.01'), Synset('blue.n.01'), Synset('blond.n.02'), 
+           Synset('purple.n.01'), Synset('olive.n.05'), Synset('yellow.n.01'), Synset('pink.n.01'), 
+           Synset('pastel.n.01'), Synset('complementary_color.n.01')]
+        >>> 
+        
         '''
         result = []
         
         # Now the magic that gets me a lot of results:
-        #
-        #>>> wn.synsets('blue')[0].hypernyms()
-        #[Synset('chromatic_color.n.01')]
-        #>>> wn.synsets('blue')[0].hypernyms()[0].hyponyms()
-        #[  Synset('orange.n.02'), Synset('brown.n.01'), Synset('green.n.01'), 
-        #   Synset('salmon.n.04'), Synset('red.n.01'), Synset('blue.n.01'), Synset('blond.n.02'), 
-        #   Synset('purple.n.01'), Synset('olive.n.05'), Synset('yellow.n.01'), Synset('pink.n.01'), 
-        #   Synset('pastel.n.01'), Synset('complementary_color.n.01')]
-        #>>> 
         try:
             result.extend( wn.synsets(word)[0].hypernyms()[0].hyponyms() )
         except:
