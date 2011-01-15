@@ -50,10 +50,10 @@ class httpResponse(object):
         @parameter time: The time between the request and the response.
         '''
         if not isinstance(geturl, url_object):
-            raise ValueError('The geturl __init__ parameter of a httpResponse object must be of urlParser.url_object type.')
+            raise ValueError('The geturl.__init__() parameter of a httpResponse object must be of urlParser.url_object type.')
 
         if not isinstance(original_url, url_object):
-            raise ValueError('The original_url __init__ parameter of a httpResponse object must be of urlParser.url_object type.')
+            raise ValueError('The original_url.__init__() parameter of a httpResponse object must be of urlParser.url_object type.')
         
         # A nice and comfortable default
         self._charset = 'utf-8'
