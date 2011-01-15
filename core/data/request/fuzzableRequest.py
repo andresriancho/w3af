@@ -266,12 +266,22 @@ class fuzzableRequest(object):
         return not self.__eq__( other )
     
     def setURL( self , url ):
-        self._url = url.replace(' ', '%20')
+        if not isinstance(url, url_object):
+            msg = 'The "url" parameter of setURL @ fuzzableRequest'
+            msg += ' must be of urlParser.url_object type.'
+            raise ValueError( msg )
+
+        self._url = url_object( url.url_string.replace(' ', '%20') )
         self._uri = self._url
     
     def setURI( self, uri ):
-        self._uri = uri.replace(' ', '%20')
-        self._url = uri2url( uri )
+        if not isinstance(uri, url_object):
+            msg = 'The "url" parameter of setURL @ fuzzableRequest'
+            msg += ' must be of urlParser.url_object type.'
+            raise ValueError( msg )
+
+        self._uri = url_object( uri.url_string.replace(' ', '%20') )
+        self._url = self._uri.uri2url()
         
     def setMethod( self , method ):
         self._method = method
