@@ -1,14 +1,14 @@
 # webspider - directory GET feature
-                # I also want to analyze all directories, if the URL I just fetched is:
-                # http://moth/a/b/c/f00.php I want to GET:
-                # http://moth/a/b/c/
-                # http://moth/a/b/
-                # http://moth/a/
-                # http://moth/
-                # And analyze the response...
+# I also want to analyze all directories, if the URL I just fetched is:
+# http://moth/a/b/c/f00.php I want to GET:
+# http://moth/a/b/c/
+# http://moth/a/b/
+# http://moth/a/
+# http://moth/
+# And analyze the response...
 
 misc-settings
-set maxDiscoveryTime 2
+set maxDiscoveryTime 1
 back
 
 plugins
