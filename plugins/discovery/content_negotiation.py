@@ -162,7 +162,7 @@ class content_negotiation(baseDiscoveryPlugin):
         
         # Really bruteforce:
         for directory_url in to_analyze:
-            self._already_tested_dir.append( directory_url )
+            self._already_tested_dir.add( directory_url )
             
             for word in file(self._wordlist):
                 alternate_resource = directory_url.urlJoin( word.strip() )
