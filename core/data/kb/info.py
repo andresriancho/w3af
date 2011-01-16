@@ -32,14 +32,14 @@ class info(dict):
     def __init__(self, dataObj=None):
         
         # Default values
-        self._url = ''
-        self._uri = ''
-        self._desc = ''
-        self._method = ''
-        self._variable = ''
+        self._url = None
+        self._uri = None
+        self._desc = None
+        self._method = None
+        self._variable = None
         self._id = []
-        self._name = ''
-        self._plugin_name = ''
+        self._name = None
+        self._plugin_name = None
         self._dc = None
         self._string_matches = set()
             

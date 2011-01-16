@@ -913,8 +913,11 @@ class url_object(object):
         @return: True if the url_strings are equal
 
         '''
+        if other is None:
+            return False
+        
         if not isinstance(other, url_object):
-            raise ValueError('The urlParser.url class only knows how to __eq__ with objects of the same type.')
+            raise ValueError('The urlParser.url_object class only knows how to __eq__ with objects of the same type.')
 
         return self.url_string == other.url_string
     
@@ -946,6 +949,13 @@ class url_object(object):
         'http://abc:80/'
         '''
         return self.url_string
+
+    def __repr__(self):
+        '''
+        @return: A string representation of myself for debugging
+
+        '''
+        return '<url_object for "%s">' % self.url_string
 
     def __contains__(self, s):
         '''
