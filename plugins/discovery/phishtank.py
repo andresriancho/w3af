@@ -32,6 +32,7 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+from core.data.parsers.urlParser import url_object
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -138,7 +139,7 @@ class phishtank(baseDiscoveryPlugin):
         '''
         class phishTankMatch:
             '''
-            Represents a phish tank match between the site I'm scanning and
+            Represents a phishtank match between the site I'm scanning and
             something in the index.xml file.
             '''
             def __init__( self, url, more_info_URL ):
@@ -147,21 +148,21 @@ class phishtank(baseDiscoveryPlugin):
         
         class phishtankHandler(ContentHandler):
             '''
-                <entry>
-                    <url><![CDATA[http://cbisis.be/.,/www.paypal.com/login/user-information/paypal.support/]]></url>
-                    <phish_id>118884</phish_id>
-                    <phish_detail_url><![CDATA[http://www.phishtank.com/phish_detail.php?phish_id=118884]]></phish_detail_url>
-                    <submission>
-                        <submission_time>2007-03-03T21:01:19+00:00</submission_time>
-                    </submission>
-                    <verification>
-                        <verified>yes</verified>
-                        <verification_time>2007-03-04T01:58:05+00:00</verification_time>
-                    </verification>
-                    <status>
-                        <online>yes</online>
-                    </status>
-                </entry>
+            <entry>
+                <url><![CDATA[http://cbisis.be/.,/www.paypal.com/login/user-information/paypal.support/]]></url>
+                <phish_id>118884</phish_id>
+                <phish_detail_url><![CDATA[http://www.phishtank.com/phish_detail.php?phish_id=118884]]></phish_detail_url>
+                <submission>
+                    <submission_time>2007-03-03T21:01:19+00:00</submission_time>
+                </submission>
+                <verification>
+                    <verified>yes</verified>
+                    <verification_time>2007-03-04T01:58:05+00:00</verification_time>
+                </verification>
+                <status>
+                    <online>yes</online>
+                </status>
+            </entry>
             '''
             def __init__ (self, to_check_list):
                 self._to_check_list = to_check_list
@@ -197,15 +198,16 @@ class phishtank(baseDiscoveryPlugin):
                     #
                     #   Now I try to match the entry with an element in the to_check_list
                     #
-                    for host in self._to_check_list:
-                        if host in self.url:
+                    for target_host in self._to_check_list:
+                        if target_host in self.url:
                             phish_url = url_object( self.url )
-                            host_url = url_object( host )
+                            target_host_url = url_object( target_host )
                             
-                            if host_url.getDomain() == phish_url.getDomain() or \
-                            phish_url.getDomain().endswith('.' + host_url.getDomain() ):
+                            if target_host_url.getDomain() == phish_url.getDomain() or \
+                            phish_url.getDomain().endswith('.' + target_host_url.getDomain() ):
                             
-                                ptm = phishTankMatch( self.url, self.phish_detail_url )
+                                phish_detail_url = url_object( self.phish_detail_url )
+                                ptm = phishTankMatch( phish_url, phish_detail_url )
                                 self.matches.append( ptm )
         
         file_handler = None

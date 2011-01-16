@@ -105,8 +105,22 @@ class url_object(object):
         >>> u.getExtension()
         'txt'
         >>> 
+        >>> u = url_object('www.google.com')
+        >>> u.getDomain()
+        'www.google.com'
+        >>> u.getProtocol()
+        'http'
         '''
         self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
+        
+        #
+        #    This is the case when someone creates a url_object like this: url_object('www.w3af.com')
+        #
+        if self.scheme == '' and self.netloc == '' and self.path:
+            #    By default we set the protocol to "http"
+            self.scheme = 'http'
+            self.netloc = self.path
+            self.path = ''
 
     @property
     def url_string(self):
