@@ -317,17 +317,24 @@ class xUrllib(object):
         @param log_it: Boolean that indicated whether to log request
             and response.        
         '''
+        # accept a URI or a Request object
+        if isinstance(uri, url_object):
+            req = HTTPRequest(uri)
+        elif isinstance(uri, HTTPRequest):
+            req = uri
+        else:
+            msg = 'The uri parameter of xUrllib._new_content_resp() has to be of'
+            msg += ' HTTPRequest of url_object type.'
+            raise Exception( msg )
+
+        # Work,
         nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
         if log_it:
-            # accept a URI or a Request object
-            if isinstance(uri, basestring):
-                req = HTTPRequest(uri)
-            else:
-                req = uri
             # This also assign a the id to both objects.
             logHandler.logHandler().http_response(req, nc_resp)
         else:
             nc_resp.id = seq_gen.inc()
+            
         return nc_resp
             
     def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
@@ -592,7 +599,7 @@ class xUrllib(object):
             original_url_instance = url_object(original_url)
             self._incrementGlobalErrorCount(e)
             
-            return self._new_no_content_resp(original_url, log_it=True)
+            return self._new_no_content_resp(original_url_instance, log_it=True)
 
         else:
             # Everything went well!
