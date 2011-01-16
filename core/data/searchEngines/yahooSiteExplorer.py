@@ -78,7 +78,7 @@ class yahooSiteExplorer(searchEngine):
                 msg = 'Something went wrong while parsing the YSE result line: "' + body_line + '"'
                 om.out.debug( msg )
             else:
-                yse_result = yahooSiteExplorerResult( url_instance(url) )
+                yse_result = yahooSiteExplorerResult( url_object(url) )
                 results.append( yse_result )
         
         # cut the required results
