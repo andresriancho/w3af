@@ -226,9 +226,9 @@ class xUrllib(object):
         If the user configured w3af to ignore a URL, we are going to be applying that configuration here.
         This is the lowest layer inside w3af.
         '''
-        listOfNonTargets = cf.cf.getData('nonTargets') or []
-        for u in listOfNonTargets:
-            if uri.uri2url() == u.uri2url():
+        list_of_non_targets = cf.cf.getData('nonTargets') or []
+        for non_target in list_of_non_targets:
+            if uri.uri2url() == non_target.uri2url():
                 msg = 'The URL you are trying to reach was configured as a non-target. ( '
                 msg += uri +' ). Returning an empty response.'
                 om.out.debug( msg )

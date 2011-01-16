@@ -28,6 +28,8 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.data.parsers.urlParser import url_object
+
 # Raise errors
 from core.controllers.w3afException import w3afException
 
@@ -207,7 +209,12 @@ class miscSettings(configurable):
         cf.cf.save('interface', optionsMap['interface'].getValue() )
         cf.cf.save('localAddress', optionsMap['localAddress'].getValue() )
         cf.cf.save('demo', optionsMap['demo'].getValue()  )
-        cf.cf.save('nonTargets', optionsMap['nonTargets'].getValue() )
+        
+        url_list = []
+        for url_str in optionsMap['nonTargets'].getValue():
+            url_list.append( url_object( url_str ) )
+        cf.cf.save('nonTargets', url_list )
+        
         cf.cf.save('exportFuzzableRequests', optionsMap['exportFuzzableRequests'].getValue() )
         
         cf.cf.save('msf_location', optionsMap['msf_location'].getValue() )
