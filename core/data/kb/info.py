@@ -81,6 +81,7 @@ class info(dict):
             raise ValueError('The URL in the info object must be of urlParser.url_object type.')
         
         self._url = url.uri2url()
+        self._uri = url
     
     def getURL( self ):
         return self._url

