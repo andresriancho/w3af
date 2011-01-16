@@ -171,10 +171,17 @@ class url_object(object):
         
         @return: None, the infor is set and nothing is returned.
         '''
+        from core.data.dc.form import form
+        if isinstance(qs, form):
+            self.qs = str(qs)
+            return
+
         if isinstance(qs, dict) and not isinstance(qs, queryString):
             qs = urllib.urlencode( qs )
-            
-        self.qs = str(qs)        
+            self.qs = str(qs)
+            return
+        
+        self.qs = str(qs)
         
     def uri2url( self ):
         '''
