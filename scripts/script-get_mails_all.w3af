@@ -30,7 +30,6 @@ back
 
 start
 
-assert len(kb.kb.getData('mails','external_mails')) == 3
-assert len(kb.kb.getData('mails','mails')) == 1
+assert len(kb.kb.getData('mails','external_mails')) == 4
 
 exit

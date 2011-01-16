@@ -70,13 +70,11 @@ class getMails(baseGrepPlugin):
         Helper method for using in self.grep()
         
         @parameter request: The HTTP request
-        @parameter request: The HTTP response
+        @parameter response: The HTTP response
         @parameter kb_key: Knowledge base dict key
         @parameter domain: Target domain for getEmails filter
         @return: None
         '''
-        # Modified when I added the pdfParser
-        #if isTextOrHtml(response.getHeaders()):
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
@@ -130,7 +128,7 @@ class getMails(baseGrepPlugin):
                     id_list_of_info = i.getId()
                     id_list_of_info.append( response.id )
                     i.setId( id_list_of_info )
-                    i.setURL('')
+                    i.setURL( url )
                     desc = i.getDesc()
                     desc += '\n- ' + url
                     desc += ' - In request with id: '+ str(response.id)
