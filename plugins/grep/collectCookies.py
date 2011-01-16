@@ -65,6 +65,22 @@ class collectCookies(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
+
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.url.HTTPRequest import HTTPRequest
+        >>> from core.data.parsers.urlParser import url_object
+        
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = HTTPRequest(url)
+        >>> s = ssn(); s._already_inspected = set()
+        >>> s.grep(request, response)
+        >>> len(kb.kb.getData('ssn', 'ssn'))
+        0
+
         '''
         for key in response.getHeaders():  
             if key.upper() in self._cookieHeaders:
@@ -151,9 +167,9 @@ class collectCookies(baseGrepPlugin):
             Login is done over SSL
             The rest of the page is HTTP
         '''
-        if request.getURL().startswith('http://'):
+        if request.getURL().getProtocol() == 'http':
             for cookie in kb.kb.getData( 'collectCookies', 'cookies' ):
-                if cookie.getURL().startswith('https://') and \
+                if cookie.getURL().getProtocol() == 'https' and \
                 request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
                     # request, is using this values in the POSTDATA / QS / COOKIE
@@ -218,7 +234,7 @@ class collectCookies(baseGrepPlugin):
         ### code useless! The secure parameter is never parsed in the cookieObj
         ### http://bugs.python.org/issue1028088
         ### https://sourceforge.net/tracker2/?func=detail&aid=2139517&group_id=170274&atid=853655
-        if 'secure' in cookieObj and response.getURL().startswith('http://'):
+        if 'secure' in cookieObj and response.getURL().getProtocol() == 'http':
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( response.getURL() )
