@@ -669,9 +669,22 @@ class url_object(object):
         >>> u.url_string
         'https://abc:443/xyz/abc.pdf?id=1'
 
+        >>> u = url_object('https://abc:443/xyz/def.html?file=/etc/passwd')
+        >>> u.setFileName( 'abc.pdf' )
+        >>> u.url_string
+        'https://abc:443/xyz/abc.pdf?file=/etc/passwd'
+
+        >>> u = url_object('https://abc/')
+        >>> u.setFileName( 'abc.pdf' )
+        >>> u.url_string
+        'https://abc/abc.pdf'
         '''
-        last_slash = self.path.rfind('/')
-        self.path = self.path[:last_slash+1] + self.path[last_slash+1:].replace( self.getFileName(), new, 1)
+        if self.path == '/':
+            self.path = '/' + new
+        
+        else:
+            last_slash = self.path.rfind('/')
+            self.path = self.path[:last_slash+1] + new
     
     def getExtension( self ):
         '''
@@ -691,6 +704,46 @@ class url_object(object):
         else:
             return extension
     
+    def setExtension( self, extension ):
+        '''
+        @parameter extension: The new extension to set, without the '.'
+        @return: None. The extension is set. An exception is raised if the
+        original URL had no extension.
+        
+        >>> url_object('https://www.w3af.com/xyz/foo').setExtension('xml')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        Exception: You can only set a new extension to a URL that had one.
+
+        >>> u = url_object('https://abc:443/xyz/d.html')
+        >>> u.setExtension('xml')
+        >>> u.getExtension()
+        'xml'
+        
+        >>> u = url_object('https://abc:443/xyz/d.html?id=3')
+        >>> u.setExtension('xml')
+        >>> u.getExtension()
+        'xml'
+
+        >>> u = url_object('https://abc:443/xyz/d.html.foo?id=3')
+        >>> u.setExtension('xml')
+        >>> u.getExtension()
+        'xml'
+        >>> u.url_string
+        'https://abc:443/xyz/d.html.xml?id=3'
+
+        '''
+        if not self.getExtension():
+            raise Exception('You can only set a new extension to a URL that had one.')
+        
+        filename = self.getFileName()
+        
+        split_filename = filename.split('.')
+        split_filename[-1] = extension
+        new_filename = '.'.join(split_filename)
+        
+        self.setFileName(new_filename)
+
     def allButScheme( self ):
         '''
         >>> url_object('https://abc:443/xyz/').allButScheme()
