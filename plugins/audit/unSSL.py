@@ -61,7 +61,7 @@ class unSSL(baseAuditPlugin):
         else:            
             # Define some variables
             secure = freq.getURL()
-            insecure = secure.replace('https://', 'http://')
+            insecure = secure.setProtocol('http')
             
             if self._first_run:
                 try:
