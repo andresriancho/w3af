@@ -54,11 +54,12 @@ class blankBody(baseGrepPlugin):
         >>> from core.data.url.httpResponse import httpResponse
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
         >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> from core.data.parsers.urlParser import url_object
         >>> o = create_temp_dir()
 
         Simple test, empty string.
         >>> body = ''
-        >>> url = 'http://www.w3af.com/'
+        >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest()
