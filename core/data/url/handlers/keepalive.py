@@ -29,7 +29,8 @@
 >>> from keepalive import HTTPHandler
 >>> keepalive_handler = HTTPHandler()
 >>> opener = urllib2.build_opener(keepalive_handler)
->>> urllib2.install_opener(opener) 
+>>> urllib2.install_opener(opener)
+>>> 
 >>> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
@@ -836,4 +837,12 @@ class HTTPConnection(_HTTPConnection):
 class HTTPSConnection(httplib.HTTPSConnection):
     response_class = HTTPResponse
 
-
+    # TODO: In Python > 2.5 the timeout is a constructor parameter. The 
+    # socket.setdefaulttimeout(TIMEOUT) call will no longer be needed.
+    # CHANGE ME!!
+    def __init__(self, host, port=None, key_file=None, cert_file=None,
+                 strict=None):
+        httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
+                                        strict)
+        socket.setdefaulttimeout(TIMEOUT)
+        self.is_fresh = True
