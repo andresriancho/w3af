@@ -34,6 +34,8 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
+from core.data.parsers.urlParser import url_object
+
 import re
 
 
@@ -69,7 +71,8 @@ class zone_h(baseDiscoveryPlugin):
             # http://www.zone-h.org/archive/domain=cyprus-stones.com
         
             # TODO: Keep this URL updated!
-            zone_h_url = 'http://www.zone-h.org/archive/domain=' + target_domain
+            zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
+            zone_h_url = url_object( zone_h_url_str )
 
             try:
                 response = self._urlOpener.GET( zone_h_url )
