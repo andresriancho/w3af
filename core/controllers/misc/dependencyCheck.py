@@ -95,16 +95,27 @@ def dependencyCheck():
 
     try:
         import scapy
-        import scapy.config
     except:
         msg = 'You have to install scapy. \n'
         msg += '    - On Debian based distributions: apt-get install python-scapy'
         print msg
         sys.exit( 1 )
     else:
-        if not scapy.config.conf.version.startswith('2.'):
-            msg = 'Your version of scapy is not compatible with w3af. Please install scapy version >= 2.0 .'
+        try:
+            import scapy.config
+        except:
+            msg = 'Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .'
+            msg += 'You may issue the following commands in order to install the latest version of scapy in your system:'
+            msg += 'cd /tmp'
+            msg += 'wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz'
+            msg += 'cd scapy-2*'
+            msg += 'sudo python setup.py install'
             print msg
             sys.exit( 1 )
+        else:
+            if not scapy.config.conf.version.startswith('2.'):
+                msg = 'Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
+                print msg
+                sys.exit( 1 )
         
 
