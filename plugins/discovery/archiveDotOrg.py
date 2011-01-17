@@ -168,7 +168,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
                         
                         # Filter the ones I want
                         url_regex = 'http://web\.archive\.org/web/.*/http[s]?://' + domain + '/.*'
-                        new_urls = [ url_object(u) for u in parsed_references if re.match(url_regex, u ) ]
+                        new_urls = [ u for u in parsed_references if re.match(url_regex, u.url_string ) ]
                         
                         # Go recursive
                         if max_depth -1 > 0:
