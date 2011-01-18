@@ -55,6 +55,16 @@ def dependencyCheck():
     except Exception, e:
         msg = 'You have to install nltk. \n'
         msg += '    - On Debian based distributions: apt-get install python-nltk'
+        msg += '    - If that\'s not working for you, please try the following:'
+        msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz'
+        msg += '        tar -xzvf PyYAML-3.09.tar.gz'
+        msg += '        cd PyYAML-3.09'
+        msg += '        python setup.py install'
+        msg += '        cd ..'
+        msg += '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz'
+        msg += '        tar -xzvf nltk-2.0b9.tar.gz'
+        msg += '        cd nltk-2.0b9'
+        msg += '        python setup.py install'
         print msg
         sys.exit( 1 )
 
