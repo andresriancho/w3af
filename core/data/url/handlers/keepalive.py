@@ -569,6 +569,11 @@ class KeepAliveHandler:
             conn = self._cm.get_available_connection(host, conn_factory)
 
             if conn.is_fresh:
+                # First of all, call the request method. This is needed for
+                # HTTPS Proxy
+                if isinstance(conn, ProxyHTTPConnection):
+                    conn.proxy_setup(req.get_full_url())
+
                 conn.is_fresh = False
                 self._start_transaction(conn, req)
                 resp = conn.getresponse()
@@ -585,6 +590,7 @@ class KeepAliveHandler:
                     # HTTPS Proxy
                     if isinstance(conn, ProxyHTTPConnection):
                         conn.proxy_setup(req.get_full_url())
+
                     # Try again with the fresh one
                     conn.is_fresh = False
                     self._start_transaction(conn, req)

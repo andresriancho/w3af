@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os
 import commands
+import time
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-import time
+
 
 SCRIPT_DIR = 'scripts/'
+
 
 def getScripts():
     res = []
@@ -43,6 +45,7 @@ def getScripts():
     withOutAssert.sort()
     
     return res, withOutAssert
+
 
 def run_script( scriptName ):
     '''
@@ -77,6 +80,7 @@ def run_script( scriptName ):
         om.out.information('')
             
     return output
+
     
 def analyze_result( resultString ):
     lines = resultString.split('\n')
@@ -91,6 +95,7 @@ def analyze_result( resultString ):
     
     if error:
         raise w3afException('Error found in unit test.')
+
     
 def w3afTest():
     '''
@@ -116,11 +121,27 @@ def w3afTest():
     om.out.console( '')
     om.out.console( 'Results:')
     om.out.console( '========')
-    om.out.console( '- ' + str(len(ok_list) + len(bad_list)) + '/ ', newLine=False)
-    om.out.console( str(len(assert_script_list)) + ' scripts have been tested.')
+    
+    # Summary
+    msg = '- ' + str(len(ok_list) + len(bad_list)) + ' / ' 
+    msg += str(len(assert_script_list)) + ' scripts have been tested.'
+    om.out.console( msg )
+    
+    # Ok
     om.out.console( '- ' + str(len(ok_list)) + ' OK.')
-    om.out.console( '- ' + str(len(bad_list)) + ' Failed: ' + ', '.join(bad_list))
-    om.out.console( '- ' + str(len(scriptsWithoutAssert)) + ' scripts don\'t have', newLine=False)
-    om.out.console( ' assert statements. This is the list of scripts without assert statements:')
+    
+    # Without assert
     scriptsWithoutAssert.sort()
-    om.out.console( '- ' + ' , '.join(scriptsWithoutAssert) )
+    msg = '- ' + str(len(scriptsWithoutAssert)) + ' scripts don\'t have'
+    msg += ' assert statements. This is the list of scripts without assert statements:\n    - '
+    msg += '\n    - '.join(scriptsWithoutAssert)
+    om.out.console( msg )
+
+    # Failed
+    bad_list.sort()
+    om.out.console( '- ' + str(len(bad_list)) + ' Failed', newLine=False)
+    if not bad_list:
+        om.out.console('')
+    else:
+        om.out.console(':\n    - ' + '\n    - '.join(bad_list))
+    

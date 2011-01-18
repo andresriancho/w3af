@@ -67,11 +67,11 @@ class zone_h(baseDiscoveryPlugin):
             target_domain = urlParser.getRootDomain( fuzzableRequest.getURL() )
             
             # Example URL:
-            # http://www.zone-h.org/component/option,com_attacks/Itemid,44/filter_domain,empnut.ufv.br/
+            # http://www.zone-h.org/archive/domain=cyprus-stones.com
         
             # TODO: Keep this URL updated!
-            zone_h_url = 'http://www.zone-h.org/component/option,com_attacks/Itemid,44/'
-            zone_h_url += 'filter_domain,' + target_domain + '/'
+            zone_h_url = 'http://www.zone-h.org/archive/domain=' + target_domain
+
             try:
                 response = self._urlOpener.GET( zone_h_url )
             except w3afException, e:
@@ -106,12 +106,11 @@ class zone_h(baseDiscoveryPlugin):
             
             # This is the string I have to parse:
             # in the zone_h response, they are two like this, the first has to be ignored!
-            regex = 'Total attacks: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass defacements'
+            regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
             regex_result = re.findall( regex, response.getBody() )
 
             try:
-                attack_tuple = regex_result[1]
-                total_attacks = int(attack_tuple[0])
+                total_attacks = int(regex_result[0][0])
             except IndexError:
                 om.out.debug('An error was generated during the parsing of the zone_h website.')
             else:

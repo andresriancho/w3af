@@ -22,11 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 import sys
-import subprocess
 
-# Use w3af's 'extlib' modules first. By doing this we ensure that modules
-# in 'w3af/extlib/' are first imported over python installation 'site-packages/'
-sys.path.insert(0, "./extlib")
 
 def dependencyCheck():
     '''
@@ -57,8 +53,19 @@ def dependencyCheck():
     try:
         import nltk
     except Exception, e:
-        print 'You have to install the nltk lib. Please read the users guide.'
-        print 'Error: ' + str(e)
+        msg = 'You have to install nltk. \n'
+        msg += '    - On Debian based distributions: apt-get install python-nltk'
+        msg += '    - If that\'s not working for you, please try the following:'
+        msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz'
+        msg += '        tar -xzvf PyYAML-3.09.tar.gz'
+        msg += '        cd PyYAML-3.09'
+        msg += '        python setup.py install'
+        msg += '        cd ..'
+        msg += '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz'
+        msg += '        tar -xzvf nltk-2.0b9.tar.gz'
+        msg += '        cd nltk-2.0b9'
+        msg += '        python setup.py install'
+        print msg
         sys.exit( 1 )
 
     try:
@@ -96,4 +103,29 @@ def dependencyCheck():
         print msg
         sys.exit( 1 )
 
+    try:
+        import scapy
+    except:
+        msg = 'You have to install scapy. \n'
+        msg += '    - On Debian based distributions: apt-get install python-scapy'
+        print msg
+        sys.exit( 1 )
+    else:
+        try:
+            import scapy.config
+        except:
+            msg = 'Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .'
+            msg += 'You may issue the following commands in order to install the latest version of scapy in your system:'
+            msg += 'cd /tmp'
+            msg += 'wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz'
+            msg += 'cd scapy-2*'
+            msg += 'sudo python setup.py install'
+            print msg
+            sys.exit( 1 )
+        else:
+            if not scapy.config.conf.version.startswith('2.'):
+                msg = 'Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
+                print msg
+                sys.exit( 1 )
+        
 

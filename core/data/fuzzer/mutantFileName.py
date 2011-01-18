@@ -26,6 +26,7 @@ from core.data.parsers import urlParser as urlParser
 import urllib
 import core.controllers.outputManager as om
 
+
 class mutantFileName(mutant):
     '''
     This class is a filename mutant.

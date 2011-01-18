@@ -20,6 +20,4 @@ back
 
 start
 
-assert len( kb.kb.getData('pykto','vuln') ) > 1
-
 exit

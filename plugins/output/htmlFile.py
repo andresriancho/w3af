@@ -366,9 +366,11 @@ class htmlFile(baseOutputPlugin):
                     <td class=sub width="10%">Message type</td>
                     <td class=sub width="70%">Message</td>
                 </tr>''')
-        
-        self._aditional_info_fh.close()
-        self._aditional_info_fh = None
+
+        if self._aditional_info_fh is not None:
+            self._aditional_info_fh.close()
+            self._aditional_info_fh = None
+
         additional_info = file( self._aditional_info_fname ).read()
         os.unlink( self._aditional_info_fname )
         self._write_to_file( additional_info )

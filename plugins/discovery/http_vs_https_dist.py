@@ -21,11 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import socket
 
-try:
-    # Try to use the scapy library that is installed in the system
-    from scapy import traceroute
-except Exception:
-    from extlib.scapy.scapy import traceroute
+from scapy.all import traceroute
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import \
     baseDiscoveryPlugin
