@@ -51,7 +51,7 @@ def dependencyCheck():
     warnings.filterwarnings('ignore', '.*',)
 
     try:
-        import nltka
+        import nltk
     except Exception, e:
         msg = 'You have to install nltk. \n'
         msg += '    - On Debian based distributions: apt-get install python-nltk\n'
