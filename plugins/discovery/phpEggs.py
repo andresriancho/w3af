@@ -141,6 +141,11 @@ class phpEggs(baseDiscoveryPlugin):
                 ("5518a02af41478cfc492c930ace45ae5", "PHP Credits"), 
                 ("8ac5a686135b923664f64fe718ea55cd", "PHP Logo"), 
                 ("7675f1d01c927f9e6a4752cf182345a2", "Zend Logo") ]
+        self._egg_DB['5.1.2'] = [
+                ('b83433fb99d0bef643709364f059a44a', 'PHP Credits'),
+                ('8ac5a686135b923664f64fe718ea55cd', 'PHP Logo'),
+                ('4b2c92409cf0bcf465d199e93a15ac3f', 'PHP Logo 2'),
+                ('7675f1d01c927f9e6a4752cf182345a2', 'Zend Logo') ]
         self._egg_DB["5.1.6"] = [ 
                 ("4b689316409eb09b155852e00657a0ae", "PHP Credits"), 
                 ("c48b07899917dfb5d591032007041ae3", "PHP Logo"), 
