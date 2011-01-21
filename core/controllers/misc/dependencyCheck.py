@@ -51,19 +51,19 @@ def dependencyCheck():
     warnings.filterwarnings('ignore', '.*',)
 
     try:
-        import nltk
+        import nltka
     except Exception, e:
         msg = 'You have to install nltk. \n'
-        msg += '    - On Debian based distributions: apt-get install python-nltk'
-        msg += '    - If that\'s not working for you, please try the following:'
-        msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz'
-        msg += '        tar -xzvf PyYAML-3.09.tar.gz'
-        msg += '        cd PyYAML-3.09'
-        msg += '        python setup.py install'
-        msg += '        cd ..'
-        msg += '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz'
-        msg += '        tar -xzvf nltk-2.0b9.tar.gz'
-        msg += '        cd nltk-2.0b9'
+        msg += '    - On Debian based distributions: apt-get install python-nltk\n'
+        msg += '    - If that\'s not working for you, please try the following:\n'
+        msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n'
+        msg += '        tar -xzvf PyYAML-3.09.tar.gz\n'
+        msg += '        cd PyYAML-3.09\n'
+        msg += '        python setup.py install\n'
+        msg += '        cd ..\n'
+        msg += '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz\n'
+        msg += '        tar -xzvf nltk-2.0b9.tar.gz\n'
+        msg += '        cd nltk-2.0b9\n'
         msg += '        python setup.py install'
         print msg
         sys.exit( 1 )
