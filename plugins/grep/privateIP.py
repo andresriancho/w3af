@@ -31,6 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 import core.data.parsers.urlParser as urlParser
 import re
@@ -54,6 +55,8 @@ class privateIP(baseGrepPlugin):
         regex_str += '9]?)){2}(?!\d)(?!\.)'
         self._private_ip_address = re.compile(regex_str)
         self._regex_list = [self._private_ip_address ]
+
+        self._already_inspected = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''
@@ -64,52 +67,23 @@ class privateIP(baseGrepPlugin):
         @return: None, results are saved to the kb.
         '''
         
-        # Search for IP addresses in HTTP headers
-        # Get the headers string
-        headers_string = response.dumpHeaders()
-        
-        for regex in self._regex_list:
-            for match in regex.findall(headers_string):
-                # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                if match != urlParser.getDomain(response.getURL()):
-                    v = vuln.vuln()
-                    v.setPluginName(self.getName())
-                    v.setURL( response.getURL() )
-                    v.setId( response.id )
-                    v.setSeverity(severity.LOW)
-                    v.setName( 'Private IP disclosure vulnerability' )
-                    
-                    msg = 'The URL: "' + v.getURL() + '" returned an HTTP header '
-                    msg += 'with an IP address: "' +  match + '".'
-                    v.setDesc( msg )
-                    v['IP'] = match                            
-                    v.addToHighlight( match )
-                    kb.kb.append( self, 'header', v )       
-        
-        # Search for IP addresses on HTML
-        if response.is_text_or_html():
-            
-            # Performance improvement!
-            # Remember that httpResponse objects have a faster "__in__" than
-            # the one in strings; so string in response.getBody() is slower than
-            # string in response; and regular expression matching is way slower!
-            if not (('10.' in response) or ('172.' in response) or \
-                ('192.168.' in response) or ('169.254.' in response)):
-                return
-            
-            for regex in self._regex_list:
-                for match in regex.findall(response.getBody()):
-                    match = match.strip()
-                    
-                    # Some proxy servers will return errors that include headers in the body
-                    # along with the client IP which we want to ignore
-                    if re.search("^.*X-Forwarded-For: .*%s" % match, response.getBody(), re.M):
-                        continue
-                        
-                    # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                    if match != urlParser.getDomain(response.getURL()) and \
-                    not request.sent( match ):
+        if not ( request.getURL() , request.getData() ) in self._already_inspected:
 
+            #   Only run this once for each combination of URL and data sent to that URL
+            self._already_inspected.add( ( request.getURL() , request.getData() ) )
+
+            #
+            #   Search for IP addresses in HTTP headers
+            #   Get the headers string
+            #
+            headers_string = response.dumpHeaders()
+
+            #   Match the regular expressions
+            for regex in self._regex_list:
+                for match in regex.findall(headers_string):
+
+                    # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                    if match != urlParser.getDomain(response.getURL()):
                         v = vuln.vuln()
                         v.setPluginName(self.getName())
                         v.setURL( response.getURL() )
@@ -117,12 +91,52 @@ class privateIP(baseGrepPlugin):
                         v.setSeverity(severity.LOW)
                         v.setName( 'Private IP disclosure vulnerability' )
                         
-                        msg = 'The URL: "' + v.getURL() + '" returned an HTML document '
+                        msg = 'The URL: "' + v.getURL() + '" returned an HTTP header '
                         msg += 'with an IP address: "' +  match + '".'
                         v.setDesc( msg )
-                        v['IP'] = match
+                        v['IP'] = match                            
                         v.addToHighlight( match )
-                        kb.kb.append( self, 'html', v )     
+                        kb.kb.append( self, 'header', v )       
+
+            #
+            #   Search for IP addresses on HTML
+            #
+            if response.is_text_or_html():
+                
+                # Performance improvement!
+                # Remember that httpResponse objects have a faster "__in__" than
+                # the one in strings; so string in response.getBody() is slower than
+                # string in response; and regular expression matching is way slower!
+                if not (('10.' in response) or ('172.' in response) or \
+                    ('192.168.' in response) or ('169.254.' in response)):
+                    return
+                
+                for regex in self._regex_list:
+                    for match in regex.findall(response.getBody()):
+                        match = match.strip()
+                        
+                        # Some proxy servers will return errors that include headers in the body
+                        # along with the client IP which we want to ignore
+                        if re.search("^.*X-Forwarded-For: .*%s" % match, response.getBody(), re.M):
+                            continue
+                            
+                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                        if match != urlParser.getDomain(response.getURL()) and \
+                        not request.sent( match ):
+
+                            v = vuln.vuln()
+                            v.setPluginName(self.getName())
+                            v.setURL( response.getURL() )
+                            v.setId( response.id )
+                            v.setSeverity(severity.LOW)
+                            v.setName( 'Private IP disclosure vulnerability' )
+                            
+                            msg = 'The URL: "' + v.getURL() + '" returned an HTML document '
+                            msg += 'with an IP address: "' +  match + '".'
+                            v.setDesc( msg )
+                            v['IP'] = match
+                            v.addToHighlight( match )
+                            kb.kb.append( self, 'html', v )     
 
     def setOptions( self, OptionList ):
         pass
