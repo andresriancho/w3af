@@ -23,8 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 try:
     from shlex import *
-    import os.path
+    import os
+    import random
     import traceback
+
+    from core.controllers.auto_update import VersionMgr, SVNError
     from core.ui.consoleUi.rootMenu import *
     from core.ui.consoleUi.callbackMenu import *
     from core.ui.consoleUi.util import *
@@ -35,9 +38,9 @@ try:
     import core.controllers.outputManager as om
     import core.controllers.miscSettings as miscSettings
     from core.controllers.w3afException import w3afException
-    import random
 except KeyboardInterrupt:
     sys.exit(0)
+
 
 class consoleUi:
     '''
@@ -47,38 +50,62 @@ class consoleUi:
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def __init__(self, commands=[], parent=None):
+    def __init__(self, commands=[], parent=None, do_upd=None):
         self._commands = commands 
         self._line = [] # the line which is being typed
         self._position = 0 # cursor position
         self._history = historyTable() # each menu has array of (array, positionInArray)
         self._trace = []
+        self._upd_avail = False
 
-        self._handlers = { '\t' : self._onTab, \
-            '\r' : self._onEnter, \
-            term.KEY_BACKSPACE : self._onBackspace, \
-            term.KEY_LEFT : self._onLeft, \
-            term.KEY_RIGHT : self._onRight, \
-            term.KEY_UP : self._onUp, \
-            term.KEY_DOWN : self._onDown, \
-            '^C' : self._backOrExit, \
+        self._handlers = {
+            '\t' : self._onTab,
+            '\r' : self._onEnter,
+            term.KEY_BACKSPACE : self._onBackspace,
+            term.KEY_LEFT : self._onLeft,
+            term.KEY_RIGHT : self._onRight,
+            term.KEY_UP : self._onUp,
+            term.KEY_DOWN : self._onDown,
+            '^C' : self._backOrExit,
             '^D' : self._backOrExit,
             '^L' : self._clearScreen,
             '^W' : self._delWord,
             '^H' : self._onBackspace,
             '^A' : self._toLineStart,
-            '^E' : self._toLineEnd } 
+            '^E' : self._toLineEnd
+        }
 
         if parent:
             self.__initFromParent(parent)
         else:
-            self.__initRoot()
+            self.__initRoot(do_upd)
 
+    def __initRoot(self, do_upd):
+        '''
+        Root menu init routine.
+        '''        
+        if do_upd in (None, True):
+            log = om.out.console
+            # Get w3af install dir
+            splitpath = __file__.split(os.sep)
+            index = 4 # This file's depth
+            install_dir = os.sep.join(splitpath[:-index])
+            try:
+                vmgr = VersionMgr(localpath=install_dir, log=log)
+                msg = 'Checking if a new version is available in our SVN ' \
+                'repository. Please wait...'
+                vmgr.register(vmgr.ON_UPDATE, log, msg)
+                vmgr.update(force=do_upd, askvalue=raw_input,
+                            print_result=True, show_log=True)
+            except SVNError, e:
+                om.out.error('An error occured while updating:\n%s' % e.args)
+            except KeyboardInterrupt:
+                pass
 
-    def __initRoot(self):
+        # Core initialization
         self._w3af = core.controllers.w3afCore.w3afCore()
         self._w3af.setPlugins(['console'], 'output')
-       
+
     def __initFromParent(self, parent):
         self._context = parent._context
         self._w3af = parent._w3af
@@ -124,7 +151,6 @@ class consoleUi:
     def _executePending(self):
         while (self._commands):
             curCmd, self._commands = self._commands[0], self._commands[1:]
-
             self._paste(curCmd)
             self._onEnter()
 

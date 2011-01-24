@@ -102,6 +102,14 @@ def dependencyCheck():
         msg += '    - On Debian based distributions: apt-get install python-lxml'
         print msg
         sys.exit( 1 )
+    
+    try:
+        import pysvn
+    except:
+        msg = 'You have to install python pysvn lib. \n'
+        msg += '    - On Debian based distributions:  apt-get install python-svn'
+        print msg
+        sys.exit( 1 )
 
     try:
         import scapy
