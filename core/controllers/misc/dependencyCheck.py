@@ -122,12 +122,13 @@ def dependencyCheck():
         try:
             import scapy.config
         except:
-            msg = 'Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .'
-            msg += 'You may issue the following commands in order to install the latest version of scapy in your system:'
-            msg += 'cd /tmp'
-            msg += 'wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz'
-            msg += 'cd scapy-2*'
-            msg += 'sudo python setup.py install'
+            msg = 'Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
+            msg += 'You may issue the following commands in order to install the latest version of scapy in your system:\n'
+            msg += '    cd /tmp\n'
+            msg += '    wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n'
+            msg += '    tar -xzvf scapy-latest.tar.gz\n'
+            msg += '    cd scapy-2*\n'
+            msg += '    sudo python setup.py install\n'
             print msg
             sys.exit( 1 )
         else:

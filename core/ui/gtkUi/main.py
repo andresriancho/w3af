@@ -73,6 +73,7 @@ except ImportError:
 import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
+from core.controllers.auto_update import VersionMgr, SVNError
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
@@ -251,13 +252,55 @@ class MainApp(object):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
 
-    def __init__(self, profile):
+    def __init__(self, profile, do_upd):
+        w3af_icon = 'core/ui/gtkUi/data/w3af_icon.png'
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        self.window.set_icon_from_file(w3af_icon)
         self.window.connect("delete_event", self.quit)
         self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
+        
+        if do_upd in (None, True):
+            # Do SVN update stuff
+            vmgr = VersionMgr(log=splash.push)
+            
+            #  Set callbacks
+            def ask(msg):
+                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+                dlg.set_icon_from_file(w3af_icon)
+                opt = dlg.run()
+                dlg.destroy()
+                return opt == gtk.RESPONSE_YES
+            vmgr.callback_onupdate_confirm = ask
+            
+            #  Event registration
+            def notify(msg):
+                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                    gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK, msg)
+                dlg.set_icon_from_file(w3af_icon)
+                dlg.run()
+                dlg.destroy()
+            vmgr.register(VersionMgr.ON_ACTION_ERROR, notify, 'Error occured.')
+            msg = 'At least one new dependency was included in w3af. Please ' \
+            'update manually.'
+            vmgr.register(VersionMgr.ON_UPDATE_ADDED_DEP, notify, msg)
+            
+            #  If an error occurred and the error the result is None
+            resp = vmgr.update(force=do_upd)
+            if resp:
+                files, lrev, rrev = resp
+                if rrev:
+                    tabnames=("Updated Files", "Latest Changes")
+                    dlg = entries.TextDialog("Update report", 
+                                             tabnames=tabnames,
+                                             icon=w3af_icon)
+                    dlg.addMessage(str(files), page_num=0)
+                    dlg.addMessage(str(vmgr.show_summary(lrev, rrev)),
+                                   page_num=1)
+                    dlg.done()
+                    dlg.dialog_run()
 
         # title and positions
         self.window.set_title(MAINTITLE)
@@ -870,5 +913,5 @@ class MainApp(object):
         helpers.open_help(chapter)
 
     
-def main(profile):
-    MainApp(profile)
+def main(profile, do_upd):
+    MainApp(profile, do_upd)

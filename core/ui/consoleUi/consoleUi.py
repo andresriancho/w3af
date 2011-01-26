@@ -85,18 +85,22 @@ class consoleUi:
         Root menu init routine.
         '''        
         if do_upd in (None, True):
+            # Output function
             log = om.out.console
-            # Get w3af install dir
-            splitpath = __file__.split(os.sep)
-            index = 4 # This file's depth
-            install_dir = os.sep.join(splitpath[:-index])
+            # Ask user function
+            def ask(msg):
+                return raw_input(msg + '[y/N] ').lower() in ('y', 'yes')
+            # Show revisions logs function
+            def show_log(msg, get_logs):
+                if ask(msg):
+                    log(get_logs())
+            # Instantiate mgr.
+            vmgr = VersionMgr(log=log)
+            # Set callbacks
+            vmgr.callback_onupdate_confirm = ask
+            vmgr.callback_onupdate_show_log = show_log
             try:
-                vmgr = VersionMgr(localpath=install_dir, log=log)
-                msg = 'Checking if a new version is available in our SVN ' \
-                'repository. Please wait...'
-                vmgr.register(vmgr.ON_UPDATE, log, msg)
-                vmgr.update(force=do_upd, askvalue=raw_input,
-                            print_result=True, show_log=True)
+                vmgr.update(force=do_upd, print_result=True)
             except SVNError, e:
                 om.out.error('An error occured while updating:\n%s' % e.args)
             except KeyboardInterrupt:

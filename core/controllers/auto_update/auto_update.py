@@ -391,17 +391,52 @@ class SVNLogList(SVNList):
 # Use this class to perform svn actions on code
 SVNClientClass = w3afSVNClient
 
+# Get w3af install dir
+w3afLocalPath = os.sep.join(__file__.split(os.sep)[:-4])
 
 # Facade class. Intended to be used to interact with the module
 class VersionMgr(object): #TODO: Make it singleton?
+    '''
+    Perform SVN w3af code update and commit. When an instance is created loads
+    data from a .conf file that will be used when actions are executed.
+    Also provides some callbacks as well as events to register to.
+    
+    Callbacks on:
+        UPDATE:
+            * callback_onupdate_confirm(msg)
+                Return True/False
+                
+            * callback_onupdate_show_log(msg, log_func)
+                Displays 'msg' to the user and depending on user's answer
+                call 'log_func()' which returns a string with the summary of
+                the commit logs from the from local revision to repo's.
+            
+            * callback_onupdate_error
+                If an SVNError occurs this callback is called in order to the
+                client class handles the error. Probably notify the user.
+        COMMIT:
+            {implementation pending}
+    Events:
+        ON_UPDATE
+        ON_UPDATE_ADDED_DEP
+        ON_UPDATE_CHECK
+        ON_ACTION_ERROR
+    '''
 
     # Events constants
     ON_UPDATE = 1
-    ON_CONFIRM_UPDATE = 2
+    ON_UPDATE_ADDED_DEP = 2
     ON_UPDATE_CHECK = 3
-    ON_COMMIT = 4
+    ON_ACTION_ERROR = 4
+    ON_COMMIT = 6
+    
+    # Callbacks
+    callback_onupdate_confirm = None
+    callback_onupdate_show_log = None
+    callback_onupdate_error = None    
+    
 
-    def __init__(self, localpath, log):
+    def __init__(self, localpath=w3afLocalPath, log=None):
         '''
         w3af version manager class. Handles the logic concerning the 
         automatic update/commit process of the code.
@@ -410,56 +445,74 @@ class VersionMgr(object): #TODO: Make it singleton?
         @param log: Default output function
         '''
         self._localpath = localpath
-
+        
+        if not log:
+            import core.controllers.outputManager as om
+            log = om.out.console
         self._log = log
         self._client = SVNClientClass(localpath)
         # Registered functions
         self._reg_funcs = {}
         # Startup configuration
         self._start_cfg = StartUpConfig()
+        # Default events registration
+        msg = 'Checking if a new version is available in our SVN repository.' \
+        ' Please wait...'
+        self.register(VersionMgr.ON_UPDATE_CHECK, log, msg)
+        msg = 'w3af is updating from the official SVN server...'
+        self.register(VersionMgr.ON_UPDATE, log, msg)
+        msg = 'At least one new dependency was included in w3af. Please ' \
+        'update manually.'
+        self.register(VersionMgr.ON_UPDATE_ADDED_DEP, log, msg)
+    
+    def __getattribute__(self, name):
+        def new_meth(*args, **kwargs):
+            try:
+                return attr(*args, **kwargs)
+            except SVNError, err:
+                msg = 'An error occured while updating:\n%s' % err.args
+                self._notify(VersionMgr.ON_ACTION_ERROR, msg)
+        attr = object.__getattribute__(self, name)            
+        if callable(attr):
+            return new_meth                
+        return attr
 
-
-    def update(self, force=False, askvalue=None, print_result=False,
-               show_log=False):
+    def update(self, force=False, print_result=False):
         '''
-        Perform code update if necessary.
+        Perform code update if necessary. Return three elems tuple with the
+        SVNFilesList of the changed files, the local and the repo's revision.
         
-        @param askvalue: Callback function that will output the update 
-            confirmation response.
+        @param force: Force the update ignoring the startup config.
         @param print_result: If True print the result files using instance's
             log function.
-        @param show_log: If True interact with the user through `askvalue` and
-            show a summary of the log messages.
         '''
         client = self._client
         lrev = client.get_revision(local=True)
+        rrev = None
         files = SVNFilesList(rev=lrev)
 
         if force or self._has_to_update():
-            self._notify(VersionMgr.ON_UPDATE)
+            self._notify(VersionMgr.ON_UPDATE_CHECK)
             rrev = client.get_revision(local=False)
 
             # If local rev is not lt repo's then we got nothing to update.
             diff_rev = lrev < rrev
             if diff_rev:
+
                 proceed_upd = True
+                callback = self.callback_onupdate_confirm
                 # Call callback function
-                if askvalue:
-                    proceed_upd = askvalue(\
-                    'Your current w3af installation is r%s. Do you want to ' \
-                    'update to r%s [y/N]? ' % (lrev.number, rrev.number))
-                    proceed_upd = (proceed_upd.lower() == 'y')
+                if callback:
+                    proceed_upd = callback(\
+                        'Your current w3af installation is r%s. Do you want ' \
+                        'to update to r%s?' % (lrev.number, rrev.number))
     
                 if proceed_upd:
-                    msg = 'w3af is updating from the official SVN server...'
-                    self._notify(VersionMgr.ON_UPDATE, msg)
+                    self._notify(VersionMgr.ON_UPDATE)
                     # Find new deps.
                     newdeps = self._added_new_dependencies()
                     if newdeps:
-                        msg = 'At least one new dependency (%s) was included' \
-                        ' in w3af. Please update manually.' % \
-                        str(', '.join(newdeps))
-                        self._notify(VersionMgr.ON_UPDATE, msg)
+                        self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
                     else:
                         # Finally do the update!
                         files = client.update()
@@ -472,28 +525,40 @@ class VersionMgr(object): #TODO: Make it singleton?
             # requested.
             if print_result:
                 self._log(str(files))
+
+            callback = self.callback_onupdate_show_log
+            if diff_rev and callback:
+                log = lambda: str(self.show_summary(lrev, rrev))
+                callback('Do you want to see a summary of the new code ' \
+                         'commits log messages?', log)
+        return (files, lrev, rrev)
     
-            if show_log and diff_rev:
-                show_log = askvalue('Do you want to see a summary of the ' \
-                'new code commits log messages? [y/N]? ').lower() == 'y'
-                if show_log:
-                    self._log(str(self._client.log(lrev, rrev)))
-        return files
+    def show_summary(self, start_rev, end_rev):
+        '''
+        Return SVNLogList of log messages between `start_rev`  and `end_rev`
+        revisions.
+        
+        @param start_rev: Start Revision object
+        @param end_rev: End Revision object
+        '''
+        return self._client.log(start_rev, end_rev)
 
     def status(self, path=None):
         return self._client.status(path)
 
-    def register(self, eventname, func, msg):
-        funcs = self._reg_funcs.setdefault(eventname, [])
-        funcs.append((func, msg))
+    def register(self, event, func, msg):
+        '''
+        Register the caller to `event` so when it takes place call its `func`
+        with `msg` as param.
+        '''
+        self._reg_funcs[event] = (func, msg)
 
-    def _notify(self, event, msg=None):
+    def _notify(self, event, msg=''):
         '''
-        Call registered functions for event. If `msg` is not None then force
-        to call the registered functions with `msg`.
+        Call registered function for event. If `msg` is not empty use it.
         '''
-        for f, _msg in self._reg_funcs.get(event, []):
-            f(msg or _msg)
+        f, _msg = self._reg_funcs.get(event)
+        f(msg or _msg)
 
     def _added_new_dependencies(self):
         '''

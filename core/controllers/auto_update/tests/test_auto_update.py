@@ -24,7 +24,8 @@ from pymock import PyMockTestCase, method, override, dontcare, set_count
 from core.controllers.auto_update.auto_update import w3afSVNClient, Revision,\
     VersionMgr, SVNFilesList, StartUpConfig, FILE_UPD, FILE_NEW, FILE_DEL, \
     ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN
-#controllers.auto_update.auto_update.w3afSVNClient
+
+# Remive magic method as it generates some conficts with pymock
 del w3afSVNClient.__getattribute__
 
 REPO_URL = 'http://localhost/svn/w3af'

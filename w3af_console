@@ -54,7 +54,7 @@ Options:
         precedence over the 'auto-update' setting in 'startup.conf' file.
     
     -p <profile> or --profile=<profile>
-        Run with the selecte <profile>
+        Run with the selected <profile>
 
 For more info visit http://w3af.sourceforge.net/
 '''
