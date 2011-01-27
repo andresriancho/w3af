@@ -22,10 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-# Before doing anything, check if I have all needed dependencies
-from core.controllers.misc.dependencyCheck import dependencyCheck
-dependencyCheck()
-
 # Called here to init some variables in the config ( cf.cf.save() )
 # DO NOT REMOVE
 import core.controllers.miscSettings as miscSettings
