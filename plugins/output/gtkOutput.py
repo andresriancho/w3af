@@ -147,7 +147,7 @@ class gtkOutput(baseOutputPlugin):
         except Exception, e:
             msg = 'Exception while inserting request/response to the database: ' + str(e) + '\n'
             msg += 'The request/response that generated the error is: '+ str(response.getId())
-            msg += ' ' + request.getURI() + ' ' + response.getCode()
+            msg += ' ' + request.getURI() + ' ' + str(response.getCode())
             om.out.error( msg )
             raise e
     
