@@ -50,7 +50,7 @@ class consoleUi:
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 
-    def __init__(self, commands=[], parent=None, do_upd=None):
+    def __init__(self, commands=[], parent=None, do_upd=None, rev=0):
         self._commands = commands 
         self._line = [] # the line which is being typed
         self._position = 0 # cursor position
@@ -78,9 +78,9 @@ class consoleUi:
         if parent:
             self.__initFromParent(parent)
         else:
-            self.__initRoot(do_upd)
+            self.__initRoot(do_upd, rev)
 
-    def __initRoot(self, do_upd):
+    def __initRoot(self, do_upd, rev):
         '''
         Root menu init routine.
         '''        
@@ -100,7 +100,7 @@ class consoleUi:
             vmgr.callback_onupdate_confirm = ask
             vmgr.callback_onupdate_show_log = show_log
             try:
-                vmgr.update(force=do_upd, print_result=True)
+                vmgr.update(force=do_upd, rev=rev, print_result=True)
             except SVNError, e:
                 om.out.error('An error occured while updating:\n%s' % e.args)
             except KeyboardInterrupt:

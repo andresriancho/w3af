@@ -52,6 +52,9 @@ Options:
     -f or --force-update
         An update check will be made when starting. This option takes 
         precedence over the 'auto-update' setting in 'startup.conf' file.
+     
+    -r <rev number> or --revision <rev number>
+    	Force to update to <rev number>.
     
     -p <profile> or --profile=<profile>
         Run with the selected <profile>
@@ -65,8 +68,8 @@ def usage():
 def main():
     try:
         long_options = ['script=', 'help', 'test-all', 'no-update',
-                        'force-update', 'profile=']
-        opts, args = getopt.getopt(sys.argv[1:], "ehts:nfp:", long_options)
+                        'force-update', 'profile=', 'revision=']
+        opts, args = getopt.getopt(sys.argv[1:], "ehts:nfp:r:", long_options)
     except getopt.GetoptError, e:
         # print help information and exit:
         usage()
@@ -74,6 +77,7 @@ def main():
     scriptFile = None
     profile = None
     doupdate = None
+    rev = 0 # HEAD revision
     
     for o, a in opts:
         if o == "-e":
@@ -97,6 +101,17 @@ def main():
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
+        if o in ('-r', '--revision'):
+        	doupdate = True
+        	a = a.upper()
+        	if a in ('HEAD', 'PREV'):
+        		rev = 0 if (a == 'HEAD') else -1
+        	else:
+	        	try:
+	        		rev = int(a)
+	        	except ValueError:
+	        		om.out.error("Invalid value for revision number. Expected int.")
+	        		return -3
     
     # console
     from core.ui.consoleUi.consoleUi import consoleUi
@@ -118,7 +133,7 @@ def main():
     elif profile is not None:
         commandsToRun = ["profiles use %s" % profile]
 
-    console = consoleUi(commands=commandsToRun, do_upd=doupdate)
+    console = consoleUi(commands=commandsToRun, do_upd=doupdate, rev=rev)
     console.sh()
 
 

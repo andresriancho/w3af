@@ -61,9 +61,12 @@ class SVNClient(object):
         '''
         raise NotImplementedError
 
-    def update(self):
+    def update(self, rev=None):
         '''
-        Update local repo to last revision.
+        Update local repo to last revision if `rev` is None; otherwise update
+        to revision `rev`.
+        
+        @param revision: Revision to update to. If None assume HEAD.
         '''
         raise NotImplementedError
 
@@ -95,7 +98,6 @@ class SVNClient(object):
         `localpath`
         '''
         raise NotImplementedError
-
 
 
 import pysvn
@@ -185,17 +187,26 @@ class w3afSVNClient(SVNClient):
     def URL(self):
         return self._repourl
 
-    def update(self):
+    def update(self, rev=None):
         with self._actionlock:
+            kind = pysvn.opt_revision_kind
+            if rev is None:
+                rev = pysvn.Revision(kind.head)
+            elif type(rev) is int:
+                rev = pysvn.Revision(kind.number, rev)
+            else:
+                rev = pysvn.Revision(kind.number, rev.number)
+
             self._events = []
             try:
-                pysvn_rev = self._svnclient.update(self._localpath)[0]
+                pysvn_rev = \
+                    self._svnclient.update(self._localpath, revision=rev)[0]
             except pysvn.ClientError, ce:
                 raise SVNUpdateError(*ce.args)
-            else:
-                updfiles = self._filter_files(self.UPD_ACTIONS)
-                updfiles.rev = Revision(pysvn_rev.number, pysvn_rev.date)
-                return updfiles
+            
+            updfiles = self._filter_files(self.UPD_ACTIONS)
+            updfiles.rev = Revision(pysvn_rev.number, pysvn_rev.date)
+            return updfiles
 
     def status(self, localpath=None):
         with self._actionlock:
@@ -216,7 +227,7 @@ class w3afSVNClient(SVNClient):
     def diff(self, localpath, rev=None):
         with self._actionlock:
             path = os.path.join(self._localpath, localpath)
-            # If no rev is passed the compare to HEAD
+            # If no rev is passed then compare to HEAD
             if rev is None:
                 rev = pysvn.Revision(pysvn.opt_revision_kind.head)
             tempfile = os.tempnam()
@@ -233,14 +244,12 @@ class w3afSVNClient(SVNClient):
         '''
         with self._actionlock:
             # Expected by pysvn.Client.log method
-            pysvnstartrev = pysvn.Revision(pysvn.opt_revision_kind.number, 
+            _startrev = pysvn.Revision(pysvn.opt_revision_kind.number, 
                                start_rev.number)
-            pysvnendrev = pysvn.Revision(pysvn.opt_revision_kind.number,
+            _endrev = pysvn.Revision(pysvn.opt_revision_kind.number,
                                          end_rev.number)
-            logs = (l.message for l in self._svnclient.log(
-                                                self._localpath,
-                                                revision_start=pysvnstartrev,
-                                                revision_end=pysvnendrev))
+            logs = (l.message for l in self._svnclient.log(self._localpath, 
+                              revision_start=_startrev, revision_end=_endrev))
             rev = end_rev if (end_rev.number > start_rev.number) else start_rev
             return SVNLogList(logs, rev)
 
@@ -271,6 +280,7 @@ class w3afSVNClient(SVNClient):
     def _filter_files(self, filterbyactions=()):
         '''
         Filter... Return files-actions
+        
         @param filterby: 
         '''
         files = SVNFilesList()
@@ -303,6 +313,9 @@ class Revision(object):
     def __eq__(self, rev):
         return self._number == rev.number and \
                 self._date == rev.date
+    
+    def __ne__(self, rev):
+        return not self.__eq__(rev)
 
     def __lt__(self, rev):
         return self._number < rev.number
@@ -433,9 +446,12 @@ class VersionMgr(object): #TODO: Make it singleton?
     # Callbacks
     callback_onupdate_confirm = None
     callback_onupdate_show_log = None
-    callback_onupdate_error = None    
+    callback_onupdate_error = None
     
-
+    # Revision constants
+    HEAD = 0
+    PREVIOUS = -1
+    
     def __init__(self, localpath=w3afLocalPath, log=None):
         '''
         w3af version manager class. Handles the logic concerning the 
@@ -477,35 +493,43 @@ class VersionMgr(object): #TODO: Make it singleton?
             return new_meth                
         return attr
 
-    def update(self, force=False, print_result=False):
+    def update(self, force=False, rev=HEAD, print_result=False):
         '''
         Perform code update if necessary. Return three elems tuple with the
         SVNFilesList of the changed files, the local and the repo's revision.
         
-        @param force: Force the update ignoring the startup config.
+        @param force: Force update ignoring the startup config.
+        @param rev: Revision number. If != HEAD then update will be forced.
+            Also, if rev equals PREVIOUS (-1) assume revision number is the
+            last that worked.        
         @param print_result: If True print the result files using instance's
             log function.
         '''
         client = self._client
-        lrev = client.get_revision(local=True)
-        rrev = None
-        files = SVNFilesList(rev=lrev)
+        rev = int(rev)
+        localrev = client.get_revision(local=True)
+        files = SVNFilesList(rev=localrev)        
+        # If revision is not HEAD then force = True
+        if rev != VersionMgr.HEAD:
+            if rev == -1: # Use previous working revision
+                rev = self._start_cfg.last_rev
+            remrev = rev
+        else:
+            remrev = None
 
         if force or self._has_to_update():
             self._notify(VersionMgr.ON_UPDATE_CHECK)
-            rrev = client.get_revision(local=False)
-
-            # If local rev is not lt repo's then we got nothing to update.
-            diff_rev = lrev < rrev
-            if diff_rev:
-
+            remrev = remrev and Revision(remrev, None) or \
+                                            client.get_revision(local=False)
+            # If local and repo's rev are the same => Nothing to do.
+            if localrev != remrev:
                 proceed_upd = True
                 callback = self.callback_onupdate_confirm
                 # Call callback function
                 if callback:
                     proceed_upd = callback(\
                         'Your current w3af installation is r%s. Do you want ' \
-                        'to update to r%s?' % (lrev.number, rrev.number))
+                        'to update to r%s?' % (localrev.number, remrev.number))
     
                 if proceed_upd:
                     self._notify(VersionMgr.ON_UPDATE)
@@ -515,9 +539,11 @@ class VersionMgr(object): #TODO: Make it singleton?
                         self._notify(VersionMgr.ON_UPDATE_ADDED_DEP)
                     else:
                         # Finally do the update!
-                        files = client.update()
+                        files = client.update(rev=remrev)
+                        # Update last-rev.
+                        self._start_cfg.last_rev = min(localrev, remrev)
 
-            # Now save today as last-update date and persist it.
+            # Save today as last-update date and persist it.
             self._start_cfg.last_upd = date.today()
             self._start_cfg.save()
 
@@ -527,11 +553,12 @@ class VersionMgr(object): #TODO: Make it singleton?
                 self._log(str(files))
 
             callback = self.callback_onupdate_show_log
-            if diff_rev and callback:
-                log = lambda: str(self.show_summary(lrev, rrev))
+            # Skip downgrades
+            if remrev > localrev and callback:
+                log = lambda: str(self.show_summary(localrev, remrev))
                 callback('Do you want to see a summary of the new code ' \
                          'commits log messages?', log)
-        return (files, lrev, rrev)
+        return (files, localrev, remrev)
     
     def show_summary(self, start_rev, end_rev):
         '''
@@ -649,14 +676,16 @@ class StartUpConfig(object):
     FREQ_WEEKLY = 'W' # [W]eekly
     FREQ_MONTHLY = 'M' # [M]onthly
     # DEFAULT VALUES
-    DEFAULTS = {'auto-update': 'true', 'frequency': 'D', 'last-update': 'None'}
+    DEFAULTS = {'auto-update': 'true', 'frequency': 'D',
+                'last-update': 'None', 'last-rev': 0}
 
     def __init__(self):
         
         self._start_cfg_file = os.path.join(get_home_dir(), 'startup.conf')
         self._start_section = 'STARTUP_CONFIG'
         self._config = ConfigParser.ConfigParser()
-        self._autoupd, self._freq, self._lastupd = self._load_cfg()
+        configs = self._load_cfg()
+        self._autoupd, self._freq, self._lastupd, self._lastrev = configs
 
     ### PROPERTIES #
 
@@ -673,10 +702,19 @@ class StartUpConfig(object):
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
-
-    # TODO: Cannot use *full* decorators as we're still on py2.5
     # Read/Write property
+    # @property - Cannot use *full* decorators as we're still on py2.5
     last_upd = property(_get_last_upd, _set_last_upd)
+    
+    def _get_last_rev(self):
+        return self._lastrev
+    
+    def _set_last_rev(self, rev):
+        self._lastrev = rev.number
+        self._config.set(self._start_section, 'last-rev', self._lastrev)
+    # Read/Write property
+    # @property
+    last_rev = property(_get_last_rev, _set_last_rev)
 
     @property
     def freq(self):
@@ -700,7 +738,7 @@ class StartUpConfig(object):
             config.set(startsection, 'auto-update', defaults['auto-update'])
             config.set(startsection, 'frequency', defaults['frequency'])
             config.set(startsection, 'last-update', defaults['last-update'])
-            
+            config.set(startsection, 'last-rev', defaults['last-rev'])
 
         # Read from file
         config.read(self._start_cfg_file)
@@ -722,7 +760,11 @@ class StartUpConfig(object):
         except:
             # Provide default value that enforces the update to happen
             lastupd = date.today() - timedelta(days=31)
-        return (auto_upd, freq, lastupd)
+        try:
+            lastrev = config.getint(startsection, 'last-rev')
+        except TypeError:
+            lastrev = 0
+        return (auto_upd, freq, lastupd, lastrev)
 
     def save(self):
         '''

@@ -27,6 +27,7 @@ from core.controllers.auto_update.auto_update import w3afSVNClient, Revision,\
 
 # Remive magic method as it generates some conficts with pymock
 del w3afSVNClient.__getattribute__
+del VersionMgr.__getattribute__
 
 REPO_URL = 'http://localhost/svn/w3af'
 LOCAL_PATH = '/home/user/w3af'
@@ -65,21 +66,26 @@ class Testw3afSVNClient(PyMockTestCase):
 
     def test_upd(self):
         client = self.client
-        method(client._svnclient, 'update').expects(LOCAL_PATH).returns([self.rev])
+        import pysvn
+        override(pysvn, 'Revision', self.mock())
+        pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
+        method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead).returns([self.rev])
         override(client, '_filter_files').expects(client.UPD_ACTIONS)
         self.returns(self.upd_files)
         ## Stop recording. Play!
         self.replay()
-        self.assertEquals(self.upd_files, client.update())
+        self.assertEquals(self.upd_files, client.update(rev=None))
         ## Verify ##
         self.verify()
 
     def test_upd_fail(self):
-        from pysvn import ClientError
+        import pysvn
+        override(pysvn, 'Revision', self.mock())
+        pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
         from core.controllers.auto_update.auto_update import SVNUpdateError
         client = self.client
-        method(client._svnclient, 'update').expects(LOCAL_PATH)
-        self.raises(ClientError('file locked'))
+        method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead)
+        self.raises(pysvn.ClientError('file locked'))
         ## Stop recording. Play!
         self.replay()
         self.assertRaises(SVNUpdateError, client.update)
