@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from __future__ import with_statement
+
 import urlOpenerSettings
 
 #
@@ -37,7 +39,8 @@ consecutive_number_generator as seq_gen
 
 from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 
-from core.controllers.w3afException import w3afMustStopException, w3afException
+from core.controllers.w3afException import w3afMustStopException, \
+    w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc, w3afException
 
 #
 #   Data imports
@@ -60,8 +63,10 @@ import core.data.kb.knowledgeBase as kb
 import urllib2
 import urllib
 
-import time
 import os
+import socket
+import threading
+import time
 
 # for better debugging of handlers
 import traceback
@@ -84,6 +89,7 @@ class xUrllib(object):
         self._lastRequestFailed = False
         self._last_errors = deque(maxlen=10)
         self._errorCount = {}
+        self._countLock = threading.RLock()
         
         self._dnsCache()
         self._tm = thread_manager
@@ -181,7 +187,7 @@ class xUrllib(object):
         #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
         '''
         om.out.debug('Enabling _dnsCache()')
-        import socket
+        
         if not hasattr( socket, 'already_configured' ):
             socket._getaddrinfo = socket.getaddrinfo
         
@@ -270,7 +276,8 @@ class xUrllib(object):
         
     def GET(self, uri, data='', headers={}, useCache=False, grepResult=True):
         '''
-        Gets a uri using a proxy, user agents, and other settings that where set previously.
+        Gets a uri using a proxy, user agents, and other settings that where
+        set previously.
         
         @param uri: This is the url to GET
         @param data: Only used if the uri parameter is really a URL.
@@ -280,20 +287,18 @@ class xUrllib(object):
 
         if self._isBlacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-
         
-        qs = urlParser.getQueryString( uri )
+        qs = urlParser.getQueryString(uri)
         if qs:
-            req = HTTPRequest( uri )
+            req = HTTPRequest(uri)
         else:
             if data:
-                req = HTTPRequest( uri + '?' + data )
+                req = HTTPRequest(uri + '?' + data)
             else:
                 # It's really an url...
-                req = HTTPRequest( uri )
-            
-        req = self._addHeaders( req, headers )
-        return self._send( req , useCache=useCache, grepResult=grepResult)
+                req = HTTPRequest(uri)
+        req = self._addHeaders(req, headers)
+        return self._send(req, useCache=useCache, grepResult=grepResult)
     
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -488,8 +493,9 @@ class xUrllib(object):
             if grepResult:
                 self._grepResult(req, httpResObj)
             else:
-                om.out.debug('No grep for: "%s", the plugin sent ' \
-                             'grepResult=False.' % geturl)
+                om.out.debug(
+                ('No grep for: "%s", the plugin sent grepResult=False.'
+                  % geturl))
             return httpResObj
         except urllib2.URLError, e:
             # I get to this section of the code if a 400 error is returned
@@ -503,28 +509,16 @@ class xUrllib(object):
             try:
                 e.reason[0]
             except:
-                raise w3afException('Unexpected error in urllib2 : %s' \
+                raise w3afException('Unexpected error in urllib2 : %s'
                                      % repr(e.reason))
-            if isinstance(e.reason, tuple): # Is it a tuple?
-                msg = 'w3af failed to reach the server while requesting:' \
-                ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
-                % (original_url, e.reason[1], e.reason[0])
 
-                # TODO: Which case is this one?
-                # Terminate!
-                if e.reason[0] in (-2, 111):
-                    raise w3afException(msg)
-
-            else: # Not a tuple. It might a wrapped socket or httplib error
-                # See `except` block in <keepalive.KeepAliveHandler.do_open>
-                # method for details.
-                msg = 'w3af failed to reach the server while requesting:' \
-                ' "%s".\nReason: "%s"; going to retry.' % \
-                (original_url, e.reason)
+            msg = ('w3af failed to reach the server while requesting:'
+                  ' "%s".\nReason: "%s"; going to retry.' % 
+                  (original_url, e.reason))
 
             # Log the errors
             om.out.debug(msg)
-            om.out.debug('Traceback for this error: %s' % \
+            om.out.debug('Traceback for this error: %s' %
                          traceback.format_exc())
             req._Request__original = original_url
             # Then retry!
@@ -535,13 +529,9 @@ class xUrllib(object):
         except w3afMustStopException:
             raise
         except Exception, e:
-            # This except clause will catch errors like 
-            # "(-3, 'Temporary failure in name resolution')"
-            # "(-2, 'Name or service not known')"
-            # The handling of these errors is complex... if I get a lot of 
-            # errors in a row, I'll raise a 'w3afMustStopException' because 
-            # the remote webserver might be unreachable.
-            # For the first N errors, I just return an empty response...
+            # This except clause will catch unexpected errors
+            # For the first N errors, return an empty response...
+            # Then a w3afMustStopException will be raised
 
             msg = '%s %s returned HTTP code "%s"' % \
             (req.get_method(), original_url, NO_CONTENT)
@@ -627,27 +617,37 @@ class xUrllib(object):
     def _incrementGlobalErrorCount(self, error):
         '''
         Increment the error count, and if we got a lot of failures raise a
-        "w3afMustStopException"
+        "w3afMustStopException" subtype.
+        
+        @param error: Exception object.
         '''
         if self._ignore_errors_conf:
             return
+        
+        last_errors = self._last_errors
 
-        # All the logic follows:
         if self._lastRequestFailed:
-            self._last_errors.append(str(error))
+            last_errors.append(str(error))
         else:
             self._lastRequestFailed = True
         
-        errtotal = len(self._last_errors)
+        errtotal = len(last_errors)
         
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
         
-        if errtotal >= 10 and not self._mustStop:
-            msg = 'The xUrllib found too much consecutive errors. The remote' \
-            ' webserver doesn\'t seem to be reachable anymore; please verify' \
-            ' manually.'
-            self.stop()
-            raise w3afMustStopException(msg, self._last_errors)
+        with self._countLock:
+            if errtotal >= 10 and not self._mustStop:
+                self.stop()
+                
+                msg = ('xUrllib found too much consecutive errors. The '
+                'remote webserver doesn\'t seem to be reachable anymore.')
+                
+                if isinstance(error, urllib2.URLError) and \
+                    isinstance(error.reason, socket.error):
+                    reason = error.reason
+                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
+                else:
+                    raise w3afMustStopByUnknownReasonExc(msg, errs=last_errors)                    
 
     def ignore_errors(self, yes_no):
         '''
@@ -679,7 +679,8 @@ class xUrllib(object):
         
     def _evasion( self, request ):
         '''
-        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugins
+        @parameter request: HTTPRequest instance that is going to be modified
+        by the evasion plugins
         '''
         for eplugin in self._evasionPlugins:
             try:

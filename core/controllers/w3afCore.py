@@ -36,7 +36,8 @@ from core.controllers.misc.number_generator import consecutive_number_generator
 
 from core.data.url.xUrllib import xUrllib
 import core.data.parsers.urlParser as urlParser
-from core.controllers.w3afException import w3afException, w3afRunOnce, w3afFileException, w3afMustStopException
+from core.controllers.w3afException import w3afException, w3afRunOnce, \
+    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc
 from core.controllers.targetSettings import targetSettings as targetSettings
 
 import traceback
@@ -407,23 +408,39 @@ class w3afCore(object):
 
     def start(self):
         '''
-        The user interfaces call this method to start the whole scanning process.
-        
-        This method raises almost every possible exception, so please do your error handling!
+        The user interfaces call this method to start the whole scanning
+        process.
+        This method raises almost every possible exception, so please do your
+        error handling!
         '''
         try:
-            self._realStart()
-        except w3afMustStopException, wmse:
-            om.out.error('\n**IMPORTANT** The following error was detected ' \
-                         'by w3af and couldn\'t be resolved: %s\n' % wmse)
-            self._end()
-        except Exception:
-            om.out.error('\nUnhandled error, traceback: %s\n' % \
-                         traceback.format_exc()) 
+            try:
+                self._realStart()
+            except w3afMustStopByUnknownReasonExc:
+                #
+                # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
+                # purpose so we can find out the *really* unknown error
+                # conditions.
+                #
+                raise
+            except w3afMustStopException, wmse:
+                om.out.error('\n**IMPORTANT** The following error was ' \
+                 'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
+                try:
+                    self._end()
+                except:
+                    # FIXME: Threads shouldn't raise any exception while being
+                    # stopped. In the other hand, we don't really care what
+                    # errors occur here. I'm sure we had a good reason to stop.
+                    pass
+            except Exception:
+                om.out.error('\nUnhandled error, traceback: %s\n' % \
+                             traceback.format_exc()) 
+                raise
+            else:
+                om.out.information('Finished scanning process.')
+        finally:
             self.progress.stop()
-            raise
-        else:
-            om.out.information('Finished scanning process.')
             
     def _realStart(self):
         '''
@@ -443,7 +460,7 @@ class w3afCore(object):
             self.verifyEnvironment()
         except Exception,e:
             error = 'verifyEnvironment() raised an exception: "' + str(e) + '". This should never'
-            error += ' happend, are *you* user interface coder sure that you called'
+            error += ' happen, are *you* user interface coder sure that you called'
             error += ' verifyEnvironment() *before* start() ?'
             om.out.error( error )
             raise e
@@ -453,8 +470,8 @@ class w3afCore(object):
                 ###### This is the main section ######
                 # Create the first fuzzableRequestList
 
-                # We only want to scan pages that are in scope
-                get_curr_scope_pages = lambda fr:\
+                # We only want to scan pages that in current scope
+                get_curr_scope_pages = lambda fr: \
                     urlParser.getDomain(fr.getURL())==urlParser.getDomain(url)
 
                 for url in cf.cf.getData('targets'):
@@ -464,6 +481,8 @@ class w3afCore(object):
                             get_curr_scope_pages, createFuzzableRequests(response))
                     except KeyboardInterrupt:
                         self._end()
+                        raise
+                    except w3afMustStopException:
                         raise
                     except w3afException, w3:
                         om.out.error('The target URL: ' + url + ' is unreachable.')

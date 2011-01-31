@@ -120,7 +120,8 @@ import sys
 import time
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException, \
+    w3afMustStopByKnownReasonExc
 from core.controllers.misc.datastructs import deque
 import core.data.kb.config as cf
 from core.data.constants.httpConstants import NO_CONTENT
@@ -561,9 +562,10 @@ class KeepAliveHandler:
             # a w3afMustStopException if this is the case.
             if len(resp_statuses) == self._curr_check_failures and \
                 all(st == RESP_TIMEOUT for st in resp_statuses):
-                msg = 'w3af found too much consecutive timeouts. The remote ' \
-                'webserver seems to be unresponsive; please verify manually.'
-                raise w3afMustStopException(msg)
+                msg = ('w3af found too much consecutive timeouts. The remote '
+                'webserver seems to be unresponsive; please verify manually.')
+                reason = 'Timeout while trying to reach target.'
+                raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
@@ -604,6 +606,8 @@ class KeepAliveHandler:
                 _err = URLTimeoutError()
             else:
                 resp_statuses.append(RESP_BAD)
+                if isinstance(err, httplib.HTTPException):
+                    err = repr(err)
                 _err = urllib2.URLError(err)
             raise _err
 
