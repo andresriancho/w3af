@@ -440,7 +440,7 @@ class sqlShellObj(shell):
     def _showPrompt( self ):
         om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
         
-    def help( self ):
+    def help( self, command ):
         '''
         Print the help to the user.
         '''
