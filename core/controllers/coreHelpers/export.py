@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 import core.data.request.wsPostDataRequest as wsPostDataRequest
 import core.data.request.httpPostDataRequest as httpPostDataRequest
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException
 
 class export:
     """

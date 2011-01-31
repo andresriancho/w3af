@@ -37,7 +37,7 @@ try:
     import core.controllers.w3afCore
     import core.controllers.outputManager as om
     import core.controllers.miscSettings as miscSettings
-    from core.controllers.w3afException import w3afException
+    from core.controllers.w3afException import w3afException, w3afMustStopException
 except KeyboardInterrupt:
     sys.exit(0)
 
@@ -263,7 +263,7 @@ class consoleUi:
                 # If None, the menu is not changed.
                 params = self.inRawLineMode() and line or self._parseLine(line)
                 menu = self._context.execute(params)
-            except w3afMustStopException, wmse:
+            except w3afMustStopException:
                 menu = None
                 self.exit()
 
