@@ -18,9 +18,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
-import thread
-import sys
-import re
 import os
 
 try:
@@ -39,6 +36,7 @@ import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.db import DB, WhereHelper
+
 
 class HistoryItem:
     '''Represents history item.'''
