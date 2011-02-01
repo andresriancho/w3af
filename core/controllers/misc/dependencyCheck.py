@@ -105,11 +105,24 @@ def dependencyCheck():
     
     try:
         import pysvn
-    except:
-        msg = 'You have to install python pysvn lib. \n'
-        msg += '    - On Debian based distributions:  apt-get install python-svn'
+    except Exception, e:
+        if e.message.startswith('pysvn was built'):
+            msg = 'It looks like your pysvn library installation is broken'
+            msg += ' (are you using BT4 R2?). The error we get when importing'
+            msg += ' the pysvn library is "%s". \n\n' % e.message
+            
+            msg += 'This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)'
+            msg += ' that we reported to their forum. We\'re waiting for an answer,'
+            msg += ' if you have contacts, use them to get this fixed soon :) \n\n'
+            
+            msg += 'While we find a solution, please use w3af\'s revision 3981. \n'
+            msg += 'svn update -r 3981'
+        else:
+            # e.message == 'No module named pysvn' and all the others fall here!
+            msg = 'You have to install python pysvn lib. \n'
+            msg += '    - On Debian based distributions:  apt-get install python-svn'
         print msg
-        sys.exit( 1 )
+        sys.exit( 1 )            
 
     try:
         import scapy
