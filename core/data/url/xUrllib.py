@@ -63,6 +63,7 @@ import core.data.kb.knowledgeBase as kb
 import urllib2
 import urllib
 
+import errno
 import os
 import socket
 import threading
@@ -165,7 +166,7 @@ class xUrllib(object):
                     os.unlink(cacheLocation + sep + f)
                 os.rmdir(cacheLocation)
         except Exception, e:
-            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e))
+            om.out.error('Error while cleaning urllib2 cache, exception: ' + str(e))
         else:
             om.out.debug('Cleared urllib2 local cache.')
     
@@ -637,13 +638,22 @@ class xUrllib(object):
         
         with self._countLock:
             if errtotal >= 10 and not self._mustStop:
+                # Stop using xUrllib instance
                 self.stop()
+                # Known reason errors. See errno module for more info on these
+                # errors.
+                from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
+                    ENETDOWN
+                EUNKNSERV = -2 # Name or service not known error
+                known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
+                                ECONNRESET, ENETDOWN)
                 
                 msg = ('xUrllib found too much consecutive errors. The '
                 'remote webserver doesn\'t seem to be reachable anymore.')
                 
                 if isinstance(error, urllib2.URLError) and \
-                    isinstance(error.reason, socket.error):
+                    isinstance(error.reason, socket.error) and \
+                    error.reason[0] in known_errors:
                     reason = error.reason
                     raise w3afMustStopByKnownReasonExc(msg, reason=reason)
                 else:

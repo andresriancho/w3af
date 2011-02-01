@@ -426,13 +426,7 @@ class w3afCore(object):
             except w3afMustStopException, wmse:
                 om.out.error('\n**IMPORTANT** The following error was ' \
                  'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
-                try:
-                    self._end()
-                except:
-                    # FIXME: Threads shouldn't raise any exception while being
-                    # stopped. In the other hand, we don't really care what
-                    # errors occur here. I'm sure we had a good reason to stop.
-                    pass
+                self._end(wmse)
             except Exception:
                 om.out.error('\nUnhandled error, traceback: %s\n' % \
                              traceback.format_exc()) 
@@ -683,31 +677,40 @@ class w3afCore(object):
         '''
         This method is called when the process ends normally or by an error.
         '''
-        # End the xUrllib (clear the cache)
-        self.uriOpener.end()
-        # Create a new one, so it can be used by exploit plugins.
-        self.uriOpener = xUrllib()
-        
-        # Let the progress module know our status.
-        self.progress.stop()
-        
-        if exceptionInstance:
-            om.out.error( str(exceptionInstance) )
-
-        tm.join( joinAll=True )
-        tm.stopAllDaemons()
-        
-        for plugin in self._plugins['grep']:
-            plugin.end()
-        
-        # Now I'm definitly not running:
-        self._isRunning = False
-        
-        # Finally, close the output manager.
-        om.out.endOutputPlugins()
-        
-        # No targets to be scanned.
-        cf.cf.save('targets', [] )
+        try:
+            # End the xUrllib (clear the cache)
+            self.uriOpener.end()
+            # Create a new one, so it can be used by exploit plugins.
+            self.uriOpener = xUrllib()
+            
+            # Let the progress module know our status.
+            self.progress.stop()
+            
+            if exceptionInstance:
+                om.out.error( str(exceptionInstance) )
+            
+            # FIXME: Feb 1, 2011. Next block is potentialy a real source of
+            # errors that turns into crashes if called when w3af has to stop
+            # bc of a previous error. I think it is fine to ignore them in 
+            # those cases; otherwise let the exception pass.
+            try:
+                tm.join(joinAll=True)
+                tm.stopAllDaemons()
+            except:
+                if not exceptionInstance:
+                    raise
+            
+            for plugin in self._plugins['grep']:
+                plugin.end()
+            
+            # Also, close the output manager.
+            om.out.endOutputPlugins()
+        finally:
+            # Now I'm definitly not running:
+            self._isRunning = False
+            
+            # No targets to be scanned.
+            cf.cf.save('targets', [])
         
     def isRunning( self ):
         '''
