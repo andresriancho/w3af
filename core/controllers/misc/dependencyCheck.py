@@ -112,8 +112,9 @@ def dependencyCheck():
             msg += ' the pysvn library is "%s". \n\n' % e.message
             
             msg += 'This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)'
-            msg += ' that we reported to their forum. We\'re waiting for an answer,'
-            msg += ' if you have contacts, use them to get this fixed soon :) \n\n'
+            msg += ' that we reported to their forum [0]. We\'re waiting for an answer,'
+            msg += ' if you have contacts, use them to get this fixed soon :) '
+            msg += 'http://www.backtrack-linux.org/forums/backtrack-bugs/37289-pysvn-bug-incorrect-libsvn1-current-python-svn-package.html \n\n'
             
             msg += 'While we find a solution, please use w3af\'s revision 3981. \n'
             msg += 'svn update -r 3981'
