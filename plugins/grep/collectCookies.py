@@ -227,7 +227,7 @@ class collectCookies(baseGrepPlugin):
             v.setPluginName(self.getName())
             v.setURL( response.getURL() )
             v.setId( response.getId() )
-            self._setCookieToRep(v, cookieObj)
+            self._setCookieToRep(v, cobj=cookieObj)
             v.setSeverity(severity.HIGH)
             v.setName( 'Secure cookies over insecure channel' )
             msg = 'A cookie marked as secure was sent over an insecure channel'
