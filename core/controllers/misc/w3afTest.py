@@ -187,6 +187,7 @@ class XunitGen(object):
     '''
     
     outputfile = 'w3aftestscripts.xml'
+    sep = os.path.sep
     
     def __init__(self, outputfile=None):
         if outputfile:
@@ -225,13 +226,15 @@ class XunitGen(object):
         self._stats['fail'] += 1
         faillines = fail.split('\n')
         quoteattr = saxutils.quoteattr
+        pkg, _, id = test.rpartition(self.sep)
         
         self.results.append(
-            '<testcase name=%(name)s time="%(took)d">'
+            '<testcase classname=%(pkg)s name=%(name)s time="%(took)d">'
             '<failure type=%(errtype)s message="">'
             '<![CDATA[%(fail)s]]></failure>'
             '</testcase>' %
-            {'name': quoteattr(test),
+            {'name': quoteattr(id),
+             'pkg': quoteattr(pkg),
              'took': took,
              'errtype': quoteattr(faillines[-1]),
              'fail': '\n'.join(faillines[:-1]),
@@ -249,12 +252,14 @@ class XunitGen(object):
             self._stats['error'] += 1
         quoteattr = saxutils.quoteattr
         errlinedets = err.split('\n')[-1].split(':', 1)
+        pkg, _, id = test.rpartition(self.sep)
 
         self.results.append(
-            '<testcase name=%(name)s time="%(took)d">'
+            '<testcase classname=%(pkg)s name=%(name)s time="%(took)d">'
             '<error type=%(errtype)s message=%(message)s><![CDATA[%(tb)s]]>'
             '</error></testcase>' %
-            {'name': quoteattr(test),
+            {'name': quoteattr(id),
+             'pkg': quoteattr(pkg),
              'took': took,
              'errtype': quoteattr(errlinedets[0]),
              'message': quoteattr(errlinedets[-1]),
@@ -267,6 +272,8 @@ class XunitGen(object):
         @param took: Time that took the test to run.
         '''
         self._stats['pass'] += 1
-        self.results.append('<testcase name=%s time="%d" />'
-                              % (saxutils.quoteattr(test), took))
+        pkg, _, id = map(saxutils.quoteattr, test.rpartition(self.sep))
+        
+        self.results.append('<testcase classname=%s name=%s time="%d" />'
+                              % (pkg, id, took))
     
