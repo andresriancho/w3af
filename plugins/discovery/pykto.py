@@ -581,7 +581,7 @@ class pykto(baseDiscoveryPlugin):
         self._cgi_dirs = optionsMap['cgiDirs'].getValue()
         self._admin_dirs = optionsMap['adminDirs'].getValue()
         self._nuke = optionsMap['nukeDirs'].getValue()
-        self._db_file = optionsMap['extra_db_file'].getValue()
+        self._extra_db_file = optionsMap['extra_db_file'].getValue()
         self._db_file = optionsMap['dbFile'].getValue()
         self._mutate_tests = optionsMap['mutateTests'].getValue()
         self._generic_scan = optionsMap['genericScan'].getValue()
