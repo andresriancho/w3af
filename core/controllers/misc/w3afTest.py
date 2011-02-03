@@ -122,18 +122,23 @@ def w3afTest():
         try:
             result, took = run_script(assert_script)
             res_code, msg = analyze_result(result)
+            # Get qualified name for test case
+            sep = os.path.sep
+            test_script = (assert_script.split(sep)[-1]).replace('.w3af', '')
+            test_qname = '.'.join([SCRIPT_DIR[:-1].replace(sep, '.'), test_script,
+                                   'test_' + test_script.split('-')[-1]])
 
             if res_code == SUCC:
                 ok_list.append(assert_script)
-                xunit_gen.add_success(assert_script, took)
+                xunit_gen.add_success(test_qname, took)
                 
             elif res_code == FAIL:
                 bad_list.append(assert_script)
-                xunit_gen.add_failure(assert_script, msg, took)
+                xunit_gen.add_failure(test_qname, msg, took)
                 
             elif res_code in (ERROR, SKIP):
                 bad_list.append(assert_script)
-                xunit_gen.add_error(assert_script, msg, took, 
+                xunit_gen.add_error(test_qname, msg, took, 
                                     skipped=(res_code==SKIP))
 
         except KeyboardInterrupt:

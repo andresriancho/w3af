@@ -69,7 +69,12 @@ class XunitGen(object):
 
     def add_failure(self, test, fail, took):
         '''
-        @param test: Name of the script test file
+        @param test: Qualified name for test case. 
+            Should have next format:
+                {packagename}.{path.to.class.in.module}.{testcase}.
+            Examples:
+                scripts.script-afd.test_afd
+                core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
         @param fail: Failure string
         @param took: Time that took the test to run.
         '''
@@ -77,7 +82,7 @@ class XunitGen(object):
         self._stats['fail'] += 1
         faillines = fail.split('\n')
         quoteattr = saxutils.quoteattr
-        pkg, _, id = test.rpartition(self.sep)
+        pkg, _, id = test.rpartition('.')
         
         self.results.append(
             '<testcase classname=%(pkg)s name=%(name)s time="%(took)d">'
@@ -93,7 +98,12 @@ class XunitGen(object):
     
     def add_error(self, test, err, took, skipped=False):
         '''
-        @param test: Name of the script test file
+        @param test: Qualified name for test case. 
+            Should have next format:
+                {packagename}.{path.to.class.in.module}.{testcase}.
+            Examples:
+                scripts.script-afd.test_afd
+                core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
         @param err: Error string
         @param took: Time that took the test to run.
         '''
@@ -103,7 +113,7 @@ class XunitGen(object):
             self._stats['error'] += 1
         quoteattr = saxutils.quoteattr
         errlinedets = err.split('\n')[-1].split(':', 1)
-        pkg, _, id = test.rpartition(self.sep)
+        pkg, _, id = test.rpartition('.')
 
         self.results.append(
             '<testcase classname=%(pkg)s name=%(name)s time="%(took)d">'
@@ -119,11 +129,17 @@ class XunitGen(object):
     
     def add_success(self, test, took):
         '''
-        @param test: Name of the script test file
+        @param test: Qualified name for test case. 
+            Should have next format:
+                {packagename}.{path.to.class.in.module}.{testcase}.
+            Examples:
+                scripts.script-afd.test_afd
+                core.controllers.auto_update.tests.test_autoupd.TesVMgr.testXXX
         @param took: Time that took the test to run.
         '''
         self._stats['pass'] += 1
-        pkg, _, id = map(saxutils.quoteattr, test.rpartition(self.sep))
+        quoteattr = saxutils.quoteattr
+        pkg, _, id = test.rpartition('.')
         self.results.append('<testcase classname=%s name=%s time="%d" />'
-                              % (pkg, id, took))
+                              % (quoteattr(pkg), quoteattr(id), took))
     
