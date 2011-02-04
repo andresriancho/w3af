@@ -34,12 +34,21 @@ def dependencyCheck():
     
     # Check python version
     major, minor, micro, releaselevel, serial = sys.version_info
-    if major == 2 and minor <= 4:
-        print 'Error: Python 2.' +str(minor)+' was found and Python >= 2.5 is required.'
-        sys.exit( 1 )
+    if major == 2:
+        if minor <= 4:
+            print 'Error: Python 2.' +str(minor)+' was found and Python >= 2.5 is required.'
+            sys.exit( 1 )
+        if minor >= 6:
+            print 'W3af is officially supported under Python 2.5\n'
     elif major > 2:
         print 'It seems that you are running python 3k, please let us know if w3af works ok =)'
         sys.exit( 1 )
+        
+    reasonForExit = False
+    packages = []
+    packages_debian = []
+    packages_mac_ports = []
+    additional_information = []
     
     # nltk raises a warning... which I want to ignore...
     # This is the original warning:
@@ -53,9 +62,11 @@ def dependencyCheck():
     try:
         import nltk
     except Exception, e:
-        msg = 'You have to install nltk. \n'
-        msg += '    - On Debian based distributions: apt-get install python-nltk\n'
-        msg += '    - If that\'s not working for you, please try the following:\n'
+        packages.append('nltk')
+        packages_debian.append('python-nltk')
+        #TODO
+        #packages_mac_port.append()
+        msg  = '    If you can not install nltk, please try the following:\n'
         msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n'
         msg += '        tar -xzvf PyYAML-3.09.tar.gz\n'
         msg += '        cd PyYAML-3.09\n'
@@ -65,8 +76,8 @@ def dependencyCheck():
         msg += '        tar -xzvf nltk-2.0b9.tar.gz\n'
         msg += '        cd nltk-2.0b9\n'
         msg += '        python setup.py install'
-        print msg
-        sys.exit( 1 )
+        additional_information.append(msg)
+        reasonForExit = True
 
     try:
         import extlib.SOAPpy.SOAPpy as SOAPpy
@@ -74,8 +85,11 @@ def dependencyCheck():
         try:
             import SOAPpy
         except:
-            print 'You have to install SOAPpy lib. Debian based distributions: apt-get install python-soappy'
-            sys.exit( 1 )
+            packages.append('SOAPpy')
+            packages_debian.append('python-soappy')
+            #TODO
+            #packages_mac_port.append()
+            reasonForExit = True
     
     try:
         import extlib.pyPdf.pyPdf as pyPdf
@@ -83,72 +97,97 @@ def dependencyCheck():
         try:
             import pyPdf
         except:
-            print 'You have to install pyPdf lib. Debian based distributions: apt-get install python-pypdf'
-            sys.exit( 1 )
+            packages.append('pyPdf')
+            packages_debian.append('python-pypdf')
+            #TODO
+            #packages_mac_port.append()
+            reasonForExit = True
             
     try:
         from OpenSSL import SSL
     except:
-        msg = 'You have to install pyOpenSSL library. \n'
-        msg += '    - On Debian based distributions: sudo apt-get install python-pyopenssl\n'
-        msg += '    - On Mac: sudo port install py25-socket-ssl , or py25-openssl'
-        print msg
-        sys.exit( 1 )
+        packages.append('pyOpenSSL')
+        packages_debian.append('python-pyopenssl')
+        packages_mac_ports.extend(['py25-socket-ssl','py25-openssl'])
+        reasonForExit = True
 
     try:
         from lxml import etree
     except:
-        msg = 'You have to install python libxml2 wrapper. \n'
-        msg += '    - On Debian based distributions: apt-get install python-lxml'
-        print msg
-        sys.exit( 1 )
+        packages.append('libxml2')
+        packages_debian.append('python-lxml')
+        #TODO
+        #packages_mac_port.append()
+        reasonForExit = True
     
     try:
         import pysvn
     except Exception, e:
         if e.message.startswith('pysvn was built'):
-            msg = 'It looks like your pysvn library installation is broken'
-            msg += ' (are you using BT4 R2?). The error we get when importing'
-            msg += ' the pysvn library is "%s". \n\n' % e.message
+            msg  = '    It looks like your pysvn library installation is broken\n'
+            msg += '    (are you using BT4 R2?). The error we get when importing\n'
+            msg += '    the pysvn library is "%s". \n\n' % e.message
             
-            msg += 'This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)'
-            msg += ' that we reported to their forum [0]. We\'re waiting for an answer,'
-            msg += ' if you have contacts, use them to get this fixed soon :) '
-            msg += 'http://www.backtrack-linux.org/forums/backtrack-bugs/37289-pysvn-bug-incorrect-libsvn1-current-python-svn-package.html \n\n'
+            msg += '    This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)\n'
+            msg += '    that we reported to their forum [0]. We\'re waiting for an answer,\n'
+            msg += '    if you have contacts, use them to get this fixed soon :) \n'
+            msg += '    http://www.backtrack-linux.org/forums/backtrack-bugs/37289-pysvn-bug-incorrect-libsvn1-current-python-svn-package.html \n\n'
             
-            msg += 'While we find a solution, please use w3af\'s revision 3981. \n'
-            msg += 'svn update -r 3981'
-        else:
-            # e.message == 'No module named pysvn' and all the others fall here!
-            msg = 'You have to install python pysvn lib. \n'
-            msg += '    - On Debian based distributions:  apt-get install python-svn'
-        print msg
-        sys.exit( 1 )            
+            msg += '    While we find a solution, please use w3af\'s revision 3981. \n'
+            msg += '    svn update -r 3981'
+            additional_information.append(msg)
+        packages.append('pysvn')
+        packages_debian.append('python-svn')
+        #TODO
+        #packages_mac_port.append()
+        reasonForExit = True       
 
     try:
         import scapy
     except:
-        msg = 'You have to install scapy. \n'
-        msg += '    - On Debian based distributions: apt-get install python-scapy'
-        print msg
-        sys.exit( 1 )
+        packages.append('scapy')
+        packages_debian.append('python-scapy')
+        #TODO
+        #packages_mac_port.append()
+        reasonForExit = True
     else:
         try:
             import scapy.config
         except:
-            msg = 'Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
-            msg += 'You may issue the following commands in order to install the latest version of scapy in your system:\n'
-            msg += '    cd /tmp\n'
-            msg += '    wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n'
-            msg += '    tar -xzvf scapy-latest.tar.gz\n'
-            msg += '    cd scapy-2*\n'
-            msg += '    sudo python setup.py install\n'
-            print msg
-            sys.exit( 1 )
+            msg  = '    Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
+            msg += '    You may issue the following commands in order to install the latest version of scapy in your system:\n'
+            msg += '        cd /tmp\n'
+            msg += '        wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n'
+            msg += '        tar -xzvf scapy-latest.tar.gz\n'
+            msg += '        cd scapy-2*\n'
+            msg += '        sudo python setup.py install\n'
+            additional_information.append(msg)
+            reasonForExit = True
         else:
             if not scapy.config.conf.version.startswith('2.'):
-                msg = 'Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
-                print msg
-                sys.exit( 1 )
+                msg = '    Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
+                additional_information.append(msg)
+                reasonForExit = True
+        
+    #Now output the results of the dependency check
+    if packages:
+        msg = 'Your python installation needs the following packages:\n'
+        msg += '    '+' '.join(packages)
+        print msg, '\n'
+    if packages_debian:
+        msg = 'On debian based systems:\n'
+        msg += '    sudo apt-get install '+' '.join(packages_debian)
+        print msg, '\n'
+    if packages_mac_ports:
+        msg = 'On a mac with mac ports installed:\n'
+        msg += '    sudo port install '+' '.join(packages_mac_ports)
+        print msg, '\n'
+    if additional_information:
+        msg = 'Additional information:\n'
+        msg += '\n'.join(additional_information)
+        print msg
+    #Now exit if necessary
+    if reasonForExit:
+        exit(1)
         
 
