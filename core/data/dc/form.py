@@ -313,6 +313,25 @@ class form(dataContainer):
                 rand = random.Random()
                 rand.seed(self.SEED)
 
+                #   xrange in python2 has the following issue:
+                #   >>> xrange(10**10)
+                #   Traceback (most recent call last):
+                #   File "<stdin>", line 1, in <module>
+                #   OverflowError: long int too large to convert to int
+                #
+                #   Which was amazingly reported by one of our users
+                #   http://sourceforge.net/apps/trac/w3af/ticket/161481
+                #
+                #   Given that we want to test SOME of the combinations we're going to settle with
+                #   a rand.sample from the first 10**9 items (that works in python2)
+                #
+                #   >>> xrange(10**9)
+                #   xrange(1000000000)
+                #   >>>
+
+                if variants_total > 10**9:
+                    variants_total = 10 ** 9    # w0w.
+
                 for path in rand.sample(xrange(variants_total),
                                             self.TOP_VARIANTS):
                     yield self._decodePath(path, matrix)
