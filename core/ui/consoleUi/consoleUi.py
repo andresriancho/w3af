@@ -101,8 +101,8 @@ class consoleUi:
             vmgr.callback_onupdate_show_log = show_log
             try:
                 vmgr.update(force=do_upd, rev=rev, print_result=True)
-            except SVNError, e:
-                om.out.error('An error occured while updating:\n%s' % e.args)
+            except Exception, e:
+                om.out.error('An error occured while updating: %s' % e.args)
             except KeyboardInterrupt:
                 pass
 
