@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 import os
+from shutil import rmtree
 
 try:
     from cPickle import Pickler, Unpickler
@@ -71,15 +72,24 @@ class HistoryItem:
             self._db = kb.kb.getData('gtkOutput', 'db')
         else:
             raise w3afException('The database is not initialized yet.')
+        self._sessionDir = os.path.join(get_home_dir() , 'sessions', self._db.getFileName() + '_traces')
 
-        self._sessionDir = os.path.join(get_home_dir() , 'sessions', cf.cf.getData('sessionName'))
+    def initStructure(self):
+        '''Init history structure.'''
+        # Init tables
+        self._db.createTable(
+                self.getTableName(),
+                self.getColumns(),
+                self.getPrimaryKeyColumns()
+                )
+        # Init dirs
         try:
             os.mkdir(self._sessionDir)
         except OSError, oe:
             # [Errno 17] File exists
             if oe.errno != 17:
                 msg = 'Unable to write to the user home directory: ' + get_home_dir()
-                raise w3afException( msg )
+                raise w3afException(msg)
 
     def find(self, searchData, resultLimit=-1, orderData=[], full=False):
         '''Make complex search.
@@ -243,3 +253,13 @@ class HistoryItem:
         self.mark = not self.mark
         if forceDb:
             self._updateField('mark', int(self.mark))
+
+    def clear(self):
+        '''Clear history and delete all trace files.'''
+        if not self._db:
+            raise w3afException('The database is not initialized yet.')
+        # Clear DB
+        sql = 'DELETE FROM ' + self._dataTable
+        self._db.execute(sql)
+        # Delete files
+        rmtree(self._sessionDir)

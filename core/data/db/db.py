@@ -58,6 +58,10 @@ class DB(object):
             raise w3afException('Failed to create the database in file "'\
                     + filenameUtf8 +'". Exception: ' + str(e) )
 
+    def getFileName(self):
+        '''Return DB filename.'''
+        return self._filename
+
     def _commitIfNeeded( self ):
         '''Once every N calls to this method, the data is commited to disk.'''
         self._insertionCount += 1

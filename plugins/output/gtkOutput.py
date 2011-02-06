@@ -83,13 +83,11 @@ class gtkOutput(baseOutputPlugin):
 
             # Create DB!
             self._db.open(dbName)
-            # Create table
+            # Init history
             historyItem = HistoryItem(self._db)
-            self._db.createTable(historyItem.getTableName(),
-                    historyItem.getColumns(),
-                    historyItem.getPrimaryKeyColumns())
+            historyItem.initStructure()
             kb.kb.save('gtkOutput', 'db', self._db)
-    
+
     def debug(self, msgString, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -178,7 +176,7 @@ class gtkOutput(baseOutputPlugin):
     
     def setOptions( self, OptionList ):
         pass
-        
+ 
 class message:
     def __init__( self, msg_type, msg , msg_time, newLine=True ):
         '''
