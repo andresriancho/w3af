@@ -39,7 +39,7 @@ def dependencyCheck():
             print 'Error: Python 2.' +str(minor)+' was found and Python >= 2.5 is required.'
             sys.exit( 1 )
         if minor >= 6:
-            print 'W3af is officially supported under Python 2.5\n'
+            print 'w3af is officially supported under Python 2.5'
     elif major > 2:
         print 'It seems that you are running python 3k, please let us know if w3af works ok =)'
         sys.exit( 1 )
