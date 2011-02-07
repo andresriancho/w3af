@@ -132,7 +132,7 @@ def dependencyCheck():
             msg += '    that was fixed by them in their devel repositories, in order to\n'
             msg += '    enable them you need to follow these steps:\n'
             msg += '        1. vim /etc/apt/sources.list\n'
-            msg += '        2. Un-comment the BackTrack Devel Repository line (deb http://archive.offensive-security.com/repotest/ ./)
+            msg += '        2. Un-comment the BackTrack Devel Repository line (deb http://archive.offensive-security.com/repotest/ ./)'
             msg += '        3. apt-get update && apt-get dist-upgrade'
 
             additional_information.append(msg)
