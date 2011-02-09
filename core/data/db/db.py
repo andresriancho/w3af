@@ -110,6 +110,10 @@ class DB(object):
 
     def createTable(self, name, columns=[], primaryKeyColumns=[]):
         '''Create table in convenient way.'''
+
+        #
+        # Lets create the table
+        #
         sql = 'CREATE TABLE ' + name + '('
         for columnData in columns:
             columnName, columnType = columnData
@@ -117,6 +121,16 @@ class DB(object):
         # Finally the PK
         sql += 'PRIMARY KEY (' + ','.join(primaryKeyColumns) + '))'
         c = self._db.cursor()
+
+        c.execute(sql)
+        self._db.commit()
+
+        #
+        # And the INDEX
+        #
+        sql = 'CREATE INDEX %s_index ON %s( %s )' % (name, name, ','.join(primaryKeyColumns) )
+        c = self._db.cursor()
+
         c.execute(sql)
         self._db.commit()
 
