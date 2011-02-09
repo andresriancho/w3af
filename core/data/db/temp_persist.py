@@ -98,7 +98,10 @@ class disk_list(object):
                 self._conn.text_factory = self._text_factory
 
                 # Create table
-                self._conn.execute('''create table data (index_ real, information text)''')
+                self._conn.execute('''CREATE TABLE data (index_ real, information text)''')
+
+                # Create index
+                self._conn.execute('''CREATE INDEX data_index ON data( information )''')
 
             except Exception,  e:
                 
@@ -134,7 +137,9 @@ class disk_list(object):
     def __contains__(self, value):
         with self._db_lock:
             t = (value, )
-            cursor = self._conn.execute('select count(*) from data where information=?', t)
+            # Adding the "limit 1" to the query makes it faster, as it won't have to scan through all
+            # the table/index, it just stops on the first match.
+            cursor = self._conn.execute('select count(*) from data where information=? limit 1', t)
             return cursor.fetchone()[0]
     
     def append(self, value):
