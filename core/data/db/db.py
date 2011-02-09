@@ -125,10 +125,14 @@ class DB(object):
         c.execute(sql)
         self._db.commit()
 
-        #
-        # And the INDEX
-        #
-        sql = 'CREATE INDEX %s_index ON %s( %s )' % (name, name, ','.join(primaryKeyColumns) )
+    def createIndex(self, table, columns ):
+        '''
+        Create index for speed and performance
+
+        @parameter table: The table from which you want to create an index from
+        @parameter columns: A list of column names.
+        '''
+        sql = 'CREATE INDEX %s_index ON %s( %s )' % (table, table, ','.join(columns) )
         c = self._db.cursor()
 
         c.execute(sql)

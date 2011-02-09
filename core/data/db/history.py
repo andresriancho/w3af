@@ -82,6 +82,9 @@ class HistoryItem:
                 self.getColumns(),
                 self.getPrimaryKeyColumns()
                 )
+
+        self._db.createIndex( self.getTableName() , self.getPrimaryKeyColumns() )
+
         # Init dirs
         try:
             os.mkdir(self._sessionDir)
