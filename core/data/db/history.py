@@ -83,7 +83,7 @@ class HistoryItem:
                 self.getPrimaryKeyColumns()
                 )
 
-        self._db.createIndex( self.getTableName() , self.getPrimaryKeyColumns() )
+        # self._db.createIndex( self.getTableName() , self.getPrimaryKeyColumns() )
 
         # Init dirs
         try:
