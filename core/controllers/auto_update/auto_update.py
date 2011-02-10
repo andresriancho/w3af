@@ -141,8 +141,12 @@ class w3afSVNClient(SVNClient):
         self._svnclient = pysvn.Client()
         # Call parent's __init__
         super(w3afSVNClient, self).__init__(localpath)
-        # Set callback function
+        # Set callbacks
         self._svnclient.callback_notify = self._register
+        # Callback to be called when there's an error in the certificate 
+        # validation and svn doesn't know what to do.
+        self._svnclient.callback_ssl_server_trust_prompt = \
+            lambda trustdata: (True, trustdata['failures'], True)
         # Events occurred in current action
         self._events = []
     
