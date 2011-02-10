@@ -57,21 +57,18 @@ class htmlParser(sgmlParser):
         
     def _preParse( self, httpResponse ):
         '''
-        @parameter httpResponse: The HTTP response document that contains the HTML
-        document inside its body.
+        @parameter httpResponse: The HTTP response document that contains the
+        HTML document inside its body.
         '''
-        assert self._baseUrl != '', 'The base URL must be setted.'
+        assert self._baseUrl, 'The base URL must be set.'
         
         HTMLDocument = httpResponse.getBody()
-        
+    
         if self._normalizeMarkup:
-            # In some cases, the parsing library could fail.
-            dom = httpResponse.getDOM()
-            if dom is not None:
-                HTMLDocument = etree.tostring(dom)
+            HTMLDocument = httpResponse.getNormalizedBody() or ''
 
         # Now we are ready to work
-        self._parse ( HTMLDocument )
+        self._parse (HTMLDocument)
         
     def _findForms(self, tag, attrs):
         '''

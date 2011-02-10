@@ -129,12 +129,13 @@ class httpResponse(object):
                 return self._clear_text_body
 
     
-    def getDOM( self ):
+    def getDOM(self):
         '''
-        I don't want to calculate the soup for all responses, only for those which are needed.
-        This method will first calculate the soup, and then save it for other calls to this method.
+        I don't want to calculate the DOM for all responses, only for those
+        which are needed. This method will first calculate the DOM, and then
+        save it for upcoming calls.
         
-        @return: The soup, or None if the HTML normalization failed.
+        @return: The DOM, or None if the HTML normalization failed.
         '''
         if self._dom is None:
             try:
@@ -150,9 +151,9 @@ class httpResponse(object):
         '''
         @return: A normalized body
         '''
-        if self._dom is not None:
-            return etree.tostring( self._dom )
-        
+        dom = self.getDOM()
+        if dom is not None:
+            return etree.tostring(dom, encoding=self._charset)
         return None
     
     def getHeaders( self ): return self._headers
