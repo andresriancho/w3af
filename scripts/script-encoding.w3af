@@ -19,10 +19,10 @@ back
 back
 
 target
-set target http://moth/w3af/core/encoding/indéx.html
+set target http://moth/w3af/core/encoding/index.html
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 7
+assert len(kb.kb.getData('urls','urlList')) == 9 
 
 exit
