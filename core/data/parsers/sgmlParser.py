@@ -29,9 +29,7 @@ from core.data.parsers.abstractParser import abstractParser as abstractParser
 
 from sgmllib import SGMLParser
 import traceback
-import string
 import re
-import urllib
 
 
 class sgmlParser(abstractParser, SGMLParser):
@@ -244,7 +242,6 @@ class sgmlParser(abstractParser, SGMLParser):
             # The user will call getEmails, getReferences, etc and will get all the information
             # that the parser could find before dieing
             om.out.debug('Exception found while parsing document. Exception: ' + str(e) + '. Document head: "' + s[0:20] +'".' )
-            import traceback
             om.out.debug( 'Traceback for this error: ' + str( traceback.format_exc() ) )
         else:
             # Saves A LOT of memory
