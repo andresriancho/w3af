@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 '''
 abstractParser.py
 
@@ -223,8 +223,8 @@ class abstractParser(object):
         to get "http://host.tld/é".
         
         Something small to remember:
-        >>> print urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8')
-        indéx.html
+        >>> urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8') == 'ind\xc3\xa9x.html'
+        True
         '''
         
         # Avoid the double decoding performed by httpResponse._charset_handling() and

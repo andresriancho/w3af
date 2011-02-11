@@ -25,13 +25,13 @@
 
 """An HTTP handler for urllib2 that supports HTTP 1.1 and keepalive.
 
->>> import urllib2
->>> from keepalive import HTTPHandler
->>> keepalive_handler = HTTPHandler()
->>> opener = urllib2.build_opener(keepalive_handler)
->>> urllib2.install_opener(opener)
->>> 
->>> fo = urllib2.urlopen('http://www.python.org')
+>> import urllib2
+>> from keepalive import HTTPHandler
+>> keepalive_handler = HTTPHandler()
+>> opener = urllib2.build_opener(keepalive_handler)
+>> urllib2.install_opener(opener)
+>> 
+>> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
 connections are still in use, another connection will be opened.  If
@@ -55,7 +55,7 @@ should be done with care when using multiple threads.
     connections immediately after connections are closed
   * no checks are done to prevent in-use connections from being closed
 
->>> keepalive_handler.close_all()
+>> keepalive_handler.close_all()
 
 EXTRA ATTRIBUTES AND METHODS
 
@@ -71,7 +71,7 @@ EXTRA ATTRIBUTES AND METHODS
   If you want the best of both worlds, use this inside an
   AttributeError-catching try:
 
-    >>> try:
+    >> try:
     ...     status = fo.status
     ... except AttributeError:
     ...     status = None

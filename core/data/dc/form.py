@@ -120,8 +120,8 @@ class form(dataContainer):
             tmp[i] = self._submitMap[i]
         
         #
-        #   FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.
-        #   Maybe we need another for?
+        # FIXME: hmmm I think that we are missing something here... what about
+        # self._select values. See FIXME below. Maybe we need another for?
         #
 
         return urlencode(tmp)
