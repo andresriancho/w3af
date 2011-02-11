@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.data.kb.vuln import vuln as vuln
-from core.controllers.misc.commonAttackMethods import commonAttackMethods
 from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
@@ -32,7 +31,7 @@ import core.controllers.outputManager as om
 
 
 
-class shell(vuln, exploitResult, commonAttackMethods):
+class shell(vuln, exploitResult):
     '''
     This class represents the output of an attack plugin that gives a shell to the w3af user.
     
@@ -95,7 +94,6 @@ class shell(vuln, exploitResult, commonAttackMethods):
         case, I forward the request to the specific_user_input method which should be implemented by all shellAttackPlugins.
         '''
         # Get the command and the parameters
-        original_command = command
         parameters = command.split(' ')[1:]
         command = command.split(' ')[0]
         
