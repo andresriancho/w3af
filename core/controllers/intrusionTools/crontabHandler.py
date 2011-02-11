@@ -25,7 +25,6 @@ from core.controllers.w3afException import *
 from core.data.fuzzer.fuzzer import *
 from core.controllers.intrusionTools.delayedExecution import delayedExecution
 from core.controllers.intrusionTools.execMethodHelpers import *
-import time
 
 
 class crontabHandler( delayedExecution ):
@@ -76,7 +75,7 @@ class crontabHandler( delayedExecution ):
         # new lines are \n and with gpc magic quotes that fails
         for line in newCron.split('\n'):
             self._exec( '/bin/echo ' + line + ' >> ' + self._cronFile )
-        applyNewCronRes = self._exec( 'crontab ' + self._cronFile )
+        self._exec( 'crontab ' + self._cronFile )
         self._exec( '/bin/rm ' + self._cronFile )
         
         filename = commandToExec.split(' ')[0]
