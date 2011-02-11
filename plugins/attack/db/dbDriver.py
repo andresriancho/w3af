@@ -27,23 +27,6 @@ from core.controllers.basePlugin.basePlugin import basePlugin
 from plugins.attack.db.dump import SQLMapDump
 from core.data.fuzzer.fuzzer import *
 
-class args:
-    '''
-    This is a helper class to store all parameters in a way sqlmap understands it.
-    '''
-    tbl = None
-    db = None
-    injectionMethod = None
-    trueResult = None
-    exaustiveFp = None
-    col = None
-    getBanner = None
-    unionUse = None
-    string = None
-    injParameter = None
-    resumedQueries = {}
-    verbose = True
-    
 
 class dbDriver(dbDriverFunctions, basePlugin):
     '''
@@ -51,17 +34,15 @@ class dbDriver(dbDriverFunctions, basePlugin):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self , urlOpener, cmpFunction, vuln ):
-        dbDriverFunctions.__init__( self, cmpFunction )
-        
-        self._urlOpener = urlOpener
-        self._cmpFunction = cmpFunction
-        self._vuln = vuln
-        
-        self.args = args()
+    def __init__(self, urlOpener, cmpFunction, vuln):
+        dbDriverFunctions.__init__(self, cmpFunction)
+        # Params initialization
         self.args.injectionMethod = vuln['type']
         self.args.injParameter = vuln.getVar()
         self.args.httpMethod = vuln.getMethod()
+        
+        self._urlOpener = urlOpener
+        self._vuln = vuln
         
         mutant = vuln.getMutant()
         url = mutant.getURI()       
@@ -122,3 +103,21 @@ class dbDriver(dbDriverFunctions, basePlugin):
             
         if not found:
             raise w3afException('Failed to find a false value for the injection.')
+
+    def getTables(self):
+        '''
+        To be implemented by subclasses.
+        '''
+        pass
+    
+    def getColumns(self):
+        '''
+        To be implemented by subclasses.
+        '''        
+        pass
+    
+    def dumpTable(self):
+        '''
+        To be implemented by subclasses.
+        '''
+        pass

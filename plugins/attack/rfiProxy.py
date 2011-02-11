@@ -67,6 +67,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         baseAttackPlugin.__init__(self)
         w3afThread.__init__( self )
         
+        self._shell = None
         self._proxyAddress = '127.0.0.1'
         self._proxyPort = w3afPorts.RFIPROXY
         self._rfiConnGenerator = ''
@@ -90,8 +91,6 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         @parameter data: A string containing data to send with a mark that defines
         which is the vulnerable parameter ( aa=notMe&bb=almost&cc=[VULNERABLE] )
         '''
-        pass
-        
         return self._shell
     
     def getAttackType(self):

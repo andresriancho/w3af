@@ -500,6 +500,9 @@ class KeepAliveHandler:
     _cm = connMgr
 
     def __init__(self):
+        # Typically a urllib2.OpenerDirector instance. Set by the
+        # urllib2 mechanism.
+        self.parent = None
         self._pool_lock = threading.RLock()
         # Map hosts to a `collections.deque` of response status.
         self._hostresp = {}

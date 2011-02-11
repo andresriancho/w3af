@@ -81,13 +81,13 @@ class Preferences(object):
     def removeOption(self, section, option):
         '''Remove the specified option from the specified section.
         If the section does not exist, raise NoSectionError.'''
-        if self.sectons.has_key(section):
+        if self.sections.has_key(section):
             del self.sections[section][option]
 
     def removeSection(self, section):
         '''Remove the specified section from the configuration. 
         If the section in fact existed, return True. Otherwise return False.'''
-        if self.sectons.has_key(section):
+        if self.sections.has_key(section):
             del self.sections[section]
             del self.options[section]
             return True
