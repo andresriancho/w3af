@@ -1,7 +1,6 @@
 import random
 import unittest
 import string
-import time
 
 from guppy import hpy
 
