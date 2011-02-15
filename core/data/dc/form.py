@@ -306,8 +306,10 @@ class form(dataContainer):
             if variants_total > self.TOP_VARIANTS:
                 
                 # Inform user
-                om.out.information("Form variants leads to combinatoric " \
-                    "explosion. Generating %s randomly distributed variants." \
+                om.out.information("w3af found an HTML form that has several checkbox, radio" \
+                    " and select input tags inside. Testing all combinations of those values" \
+                    " would take too much time, the framework will only test" \
+                    " %s randomly distributed variants."
                     % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed.
