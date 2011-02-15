@@ -77,7 +77,13 @@ class w3afMustStopByKnownReasonExc(w3afMustStopException):
 
 
 class w3afMustStopByUnknownReasonExc(w3afMustStopException):
-    pass
+    def __str__(self):
+        _str = self.msg
+
+        for error_str, parsed_traceback in self.errs:
+            _str += '\n' + error_str + ' ' + str(parsed_traceback)
+
+        return _str
 
 class w3afProxyException(w3afException):
     '''

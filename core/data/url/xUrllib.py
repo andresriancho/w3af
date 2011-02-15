@@ -71,6 +71,7 @@ import time
 
 # for better debugging of handlers
 import traceback
+import re
 
     
 class xUrllib(object):
@@ -544,7 +545,15 @@ class xUrllib(object):
             req_id = id(req)
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
-            self._incrementGlobalErrorCount(e)
+
+            trace_str = traceback.format_exc()
+            parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)', trace_str )
+            # Returns something similar to:
+            #   [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'), ('trace_test.py', '5', 'abc')]
+            #
+            # Where ('filename', 'line-number', 'function-name')
+
+            self._incrementGlobalErrorCount(e, parsed_traceback)
             
             return self._new_no_content_resp(original_url, log_it=True)
         else:
@@ -615,12 +624,17 @@ class xUrllib(object):
                                             (error_amt, req.get_full_url())
             raise w3afException(msg)
     
-    def _incrementGlobalErrorCount(self, error):
+    def _incrementGlobalErrorCount(self, error, parsed_traceback=[]):
         '''
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException" subtype.
         
         @param error: Exception object.
+
+        @param parsed_traceback: A list with the following format:
+            [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'), ('trace_test.py', '5', 'abc')]
+            Where ('filename', 'line-number', 'function-name')
+
         '''
         if self._ignore_errors_conf:
             return
@@ -628,7 +642,7 @@ class xUrllib(object):
         last_errors = self._last_errors
 
         if self._lastRequestFailed:
-            last_errors.append(str(error))
+            last_errors.append( ( str(error) , parsed_traceback ) )
         else:
             self._lastRequestFailed = True
         
