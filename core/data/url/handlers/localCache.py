@@ -75,10 +75,23 @@ class CacheHandler(urllib2.BaseHandler):
         
         method = request.get_method().upper()
         if ( ( method in CACHE_METHODS ) and 
-            (CachedResponse.ExistsInCache(self.cacheLocation, getId( request ) ))):
-            return CachedResponse(self.cacheLocation, request ) 
+             ( CachedResponse.ExistsInCache(self.cacheLocation, getId( request )) )):
+            try:
+                cache_response_obj = CachedResponse(self.cacheLocation, request )
+            except:
+                # Sometimes the cache gets corrupted, or the initial HTTP request
+                # that's saved to disk doesn't completely respect the RFC and
+                # when we try to read it, it crashes.
+
+                # Send None to the urllib2 framework, which means that we don't
+                # know how to handle the request, and we forward it to the next
+                # handler in the list.
+                return None 
+            else:
+                return cache_response_obj
         else:
-            return None # let the next handler try to handle the request
+            # Let the next handler try to handle the request
+            return None 
 
     def http_response(self, request, response):
         method = request.get_method().upper()
@@ -138,6 +151,11 @@ class CachedResponse(StringIO.StringIO):
             
         try:
             f = open(cacheLocation + os.path.sep + id + ".code", "w")
+
+            # minimal validation before storing the data to disk
+            int(response.code)
+
+            # store data to disk
             f.write(str(response.code))
             f.close()
         except KeyboardInterrupt, e:
