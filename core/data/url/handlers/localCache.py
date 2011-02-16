@@ -196,7 +196,7 @@ class CachedResponse(StringIO.StringIO):
         except KeyboardInterrupt, e:
             raise e
         except Exception, e:
-            om.out.error('localCache.py : Could not open cache for request.')
+            om.out.error('localCache.py : Could not open cache for request. Error: ' + str(e) )
             raise e
         else:
             self.url = request.get_full_url()
