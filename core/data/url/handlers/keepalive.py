@@ -792,7 +792,7 @@ class ProxyHTTPConnection(_HTTPConnection):
             except KeyError:
                 raise ValueError, "unknown protocol for: %s" % url
         else:
-            self._real_port = port
+            self._real_port = int(port)
 
     def connect(self):
         httplib.HTTPConnection.connect(self)
