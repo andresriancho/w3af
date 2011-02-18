@@ -657,10 +657,10 @@ class xUrllib(object):
                 # Known reason errors. See errno module for more info on these
                 # errors.
                 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-                    ENETDOWN
+                    ENETDOWN, ENETUNREACH
                 EUNKNSERV = -2 # Name or service not known error
                 known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
-                                ECONNRESET, ENETDOWN)
+                                ECONNRESET, ENETDOWN, ENETUNREACH)
                 
                 msg = ('xUrllib found too much consecutive errors. The '
                 'remote webserver doesn\'t seem to be reachable anymore.')
