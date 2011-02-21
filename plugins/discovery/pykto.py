@@ -309,11 +309,13 @@ class pykto(baseDiscoveryPlugin):
         if kb.kb.getData( 'hmap' , 'serverString' ) != []:
             kb_server = kb.kb.getData( 'hmap' , 'serverString' )
             self._source = 'hmap'
+
         elif kb.kb.getData( 'serverHeader' , 'serverString' ) != []:
             # Get the server type from the serverHeader plugin. It gets this info
             # by reading the "server" header of request responses.
             kb_server = kb.kb.getData( 'serverHeader' , 'serverString' )
             self._source = 'serverHeader'
+
         else:
             self._source = 'not available'
             kb_server = 'not available'
