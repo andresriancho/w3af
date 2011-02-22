@@ -111,9 +111,9 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         # Some servers (incorrectly) return multiple Location headers
         # (so probably same goes for URI).  Use first header.
         if 'location' in headers:
-            newurl = headers.get('location')[0]
+            newurl = headers.get('location')
         elif 'uri' in headers:
-            newurl = headers.get('uri')[0]
+            newurl = headers.get('uri')
         else:
             return
         newurl = urlparse.urljoin(req.get_full_url(), newurl)
