@@ -121,7 +121,7 @@ class strangeParameters(baseGrepPlugin):
                             v.setDesc( msg )
                             v.setVar( param_name )
                             v['parameterValue'] = qs[param_name][element_index]
-                            i.addToHighlight(qs[param_name][element_index])
+                            v.addToHighlight(qs[param_name][element_index])
                             kb.kb.append( self , 'strangeParameters' , v )
     
     def setOptions( self, OptionList ):
