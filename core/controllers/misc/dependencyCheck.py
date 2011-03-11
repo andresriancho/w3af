@@ -35,11 +35,11 @@ def dependencyCheck():
     # Check python version
     major, minor, micro, releaselevel, serial = sys.version_info
     if major == 2:
-        if minor <= 4:
-            print 'Error: Python 2.' +str(minor)+' was found and Python >= 2.5 is required.'
+        if minor <= 5:
+            print 'Error: Python 2.' +str(minor)+' was found and Python = 2.6 is required.'
             sys.exit( 1 )
-        if minor >= 6:
-            print 'w3af is officially supported under Python 2.5'
+        if minor >= 7:
+            print 'w3af is officially supported under Python 2.6'
     elif major > 2:
         print 'It seems that you are running python 3k, please let us know if w3af works ok =)'
         sys.exit( 1 )
@@ -108,7 +108,7 @@ def dependencyCheck():
     except:
         packages.append('pyOpenSSL')
         packages_debian.append('python-pyopenssl')
-        packages_mac_ports.extend(['py25-socket-ssl','py25-openssl'])
+        packages_mac_ports.extend(['py26-socket-ssl','py26-openssl'])
         reasonForExit = True
 
     try:

@@ -35,7 +35,7 @@ def gtkui_dependency_check():
     except:
         msg = 'You have to install python sqlite3 library. \n'
         msg += '    - On Debian based distributions: apt-get install python-pysqlite2\n'
-        msg += '    - On Mac: sudo port install py25-sqlite3'        
+        msg += '    - On Mac: sudo port install py26-sqlite3'        
         print msg
         sys.exit( 1 )
 
@@ -64,7 +64,7 @@ def gtkui_dependency_check():
     except:
         msg = 'You have to install GTK and PyGTK versions >=2.12 to be able to run the GTK user interface.\n'
         msg += '    - On Debian based distributions: apt-get install python-gtk2\n'
-        msg += '    - On Mac: sudo port install py25-gtk'        
+        msg += '    - On Mac: sudo port install py26-gtk'        
         print msg
         sys.exit( 1 )
 
