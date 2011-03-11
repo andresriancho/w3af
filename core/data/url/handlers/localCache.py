@@ -19,12 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
-import re
-import os
 import urllib2
 import httplib
-import unittest
 import hashlib
 from core.controllers.misc.homeDir import get_home_dir
 

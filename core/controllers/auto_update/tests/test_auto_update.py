@@ -25,7 +25,7 @@ from core.controllers.auto_update.auto_update import w3afSVNClient, Revision,\
     VersionMgr, SVNFilesList, StartUpConfig, FILE_UPD, FILE_NEW, FILE_DEL, \
     ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN
 
-# Remive magic method as it generates some conficts with pymock
+# Remove magic method as it generates some conficts with pymock
 del w3afSVNClient.__getattribute__
 del VersionMgr.__getattribute__
 
