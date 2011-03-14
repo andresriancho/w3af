@@ -84,7 +84,7 @@ class get_source_code(base_payload):
             rows.append( ['Remote file','Local file',] ) 
             rows.append( [] )
             
-            for remote_filename, local_filename in api_result.items():
+            for url, (remote_filename, local_filename) in api_result.items():
                 rows.append( [remote_filename,local_filename] )
                 
             result_table = table( rows )
