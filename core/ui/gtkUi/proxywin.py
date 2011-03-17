@@ -84,6 +84,8 @@ class ProxiedRequests(entries.RememberingWindow):
         self.bt_send = toolbar.get_nth_item(3)
         self.bt_next = toolbar.get_nth_item(4)
         self.bt_next.set_sensitive(False)
+        self.bt_send.set_sensitive(False)
+        self.bt_drop.set_sensitive(False)
         separat = toolbar.get_nth_item(5)
         separat.set_draw(False)
         separat.set_expand(True)
@@ -254,6 +256,7 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.reqresp.request.set_sensitive(True)
                 self.reqresp.request.showObject(req)
                 self.bt_drop.set_sensitive(True)
+                self.bt_send.set_sensitive(True)
                 self.bt_next.set_sensitive(True)
         return self.keepChecking
 
@@ -273,6 +276,9 @@ class ProxiedRequests(entries.RememberingWindow):
         @param widget: who sent the signal.
         """
         request = self.reqresp.request.getObject()
+        # if nothing to send
+        if not request:
+            return
         headers = request.dumpRequestHead()
         data = request.getData()
         if data:
@@ -294,9 +300,9 @@ class ProxiedRequests(entries.RememberingWindow):
 
         @param widget: who sent the signal.
         """
-        head, data = self.reqresp.response.getBothTexts()
+        resp = self.reqresp.response.getObject()
         # If there is request to send, let's send it first
-        if not head:
+        if not resp:
             self._send(None)
         self.reqresp.request.clearPanes()
         self.reqresp.request.set_sensitive(False)
@@ -325,10 +331,10 @@ class ProxiedRequests(entries.RememberingWindow):
         self.proxy.setTrap(trapactive)
         # Send all requests in queue if Intercept is switched off
         if not trapactive:
-            resHead, resData = self.reqresp.response.getBothTexts()
-            reqHead, reqData = self.reqresp.request.getBothTexts()
+            res = self.reqresp.response.getObject()
+            req = self.reqresp.request.getObject()
             # If there is request to send, let's send it first
-            if reqHead and not resHead:
+            if req and not res:
                 self._send(None)
 
     def _help(self, action):
