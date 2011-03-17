@@ -262,6 +262,20 @@ class TestPHPSCA(PyMockTestCase):
         self.assertEquals([], sys1.vulntypes)
         self.assertTrue('XSS' in echo.vulntypes)
         self.assertTrue('OS_COMMANDING' in sys2.vulntypes)
+    
+    def test_vuln_functions_5(self):
+        code = '''<?
+        $foo = 1;
+        if ( $spam == $eggs ){
+             $foo = $_GET['foo'];
+        }
+        else{
+             $foo = 1;
+        }
+        include($foo);
+        ?>'''
+        inccall = PhpSCA(code).get_func_calls()[0]
+        self.assertTrue('FILE_INCLUDE' in inccall.vulntypes)
         
     def test_syntax_error(self):
         invalidcode = '''
@@ -277,6 +291,10 @@ class TestScope(PyMockTestCase):
     def setUp(self):
         PyMockTestCase.setUp(self)
         self.scope = Scope(None, parent_scope=None)
+    
+    def test_has_builtin_container(self):
+        self.assertEquals(
+                    dict, type(getattr(self.scope, '_builtins', None)))
     
     def test_add_var(self):
         self.assertRaises(ValueError, self.scope.add_var, None)
