@@ -28,6 +28,13 @@ import ConfigParser
 import threading
 
 
+def is_working_copy():
+    '''
+    Test whether current's w3af instance a svn working copy.
+    '''
+    return SVNClientClass.is_working_copy(localpath=w3afLocalPath)
+
+
 class SVNError(Exception):
     pass
 
@@ -76,7 +83,7 @@ class SVNClient(object):
         '''
         raise NotImplementedError
 
-    def status(self, path=None):
+    def status(self, localpath=None):
         '''
         Return a SVNFilesList object.
         
@@ -96,6 +103,13 @@ class SVNClient(object):
         '''
         Return string with the differences between `rev` and HEAD revision for
         `localpath`
+        '''
+        raise NotImplementedError
+    
+    @staticmethod
+    def is_working_copy(localpath):
+        '''
+        Test whether `localpath` is a svn working copy.
         '''
         raise NotImplementedError
 
@@ -256,6 +270,15 @@ class w3afSVNClient(SVNClient):
                               revision_start=_startrev, revision_end=_endrev))
             rev = end_rev if (end_rev.number > start_rev.number) else start_rev
             return SVNLogList(logs, rev)
+    
+    @staticmethod
+    def is_working_copy(localpath):
+        try:
+            pysvn.Client().status(localpath, recurse=False)
+        except Exception, ex:
+            return False
+        else:
+            return True
 
     def _get_repourl(self):
         '''

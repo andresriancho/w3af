@@ -73,7 +73,7 @@ except ImportError:
 import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
-from core.controllers.auto_update import VersionMgr, SVNError
+from core.controllers.auto_update import VersionMgr, is_working_copy
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 import core.data.parsers.urlParser as urlParser
@@ -261,7 +261,7 @@ class MainApp(object):
         self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
         
-        if do_upd in (None, True):
+        if do_upd in (None, True) and is_working_copy():
             # Do SVN update stuff
             vmgr = VersionMgr(log=splash.push)
             

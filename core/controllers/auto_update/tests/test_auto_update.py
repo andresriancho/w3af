@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from pymock import PyMockTestCase, method, override, dontcare, set_count
+import pysvn
 
 from core.controllers.auto_update.auto_update import w3afSVNClient, Revision,\
     VersionMgr, SVNFilesList, StartUpConfig, FILE_UPD, FILE_NEW, FILE_DEL, \
     ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN
+from core.controllers import auto_update
 
 # Remove magic method as it generates some conficts with pymock
 del w3afSVNClient.__getattribute__
@@ -66,29 +68,31 @@ class Testw3afSVNClient(PyMockTestCase):
 
     def test_upd(self):
         client = self.client
-        import pysvn
         override(pysvn, 'Revision', self.mock())
         pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
         method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead).returns([self.rev])
         override(client, '_filter_files').expects(client.UPD_ACTIONS)
         self.returns(self.upd_files)
+        
         ## Stop recording. Play!
         self.replay()
         self.assertEquals(self.upd_files, client.update(rev=None))
+        
         ## Verify ##
         self.verify()
 
     def test_upd_fail(self):
-        import pysvn
         override(pysvn, 'Revision', self.mock())
         pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
         from core.controllers.auto_update.auto_update import SVNUpdateError
         client = self.client
         method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead)
         self.raises(pysvn.ClientError('file locked'))
+        
         ## Stop recording. Play!
         self.replay()
         self.assertRaises(SVNUpdateError, client.update)
+        
         ## Verify ##
         self.verify()
         
@@ -104,7 +108,6 @@ class Testw3afSVNClient(PyMockTestCase):
         pass
 
     def test_filter_files(self):
-        import pysvn
         from pysvn import wc_notify_action as wcna
         from pysvn import Revision
         from core.controllers.auto_update.auto_update import os
@@ -168,6 +171,24 @@ class Testw3afSVNClient(PyMockTestCase):
         self.assertEquals(expected_res, client.status())
         ## Verify ##
         self.verify()
+    
+    def test_working_copy(self):
+
+        cli = self.mock()
+        override(pysvn, 'Client').expects().returns(cli)
+        
+        # NOT A WORKING COPY
+        method(cli, 'status').expects(LOCAL_PATH, recurse=False).raises(Exception())
+        self.replay()
+        self.assertFalse(w3afSVNClient.is_working_copy(LOCAL_PATH))
+        
+        # IS A WORKING COPY
+        self.reset()
+        cli = self.mock()
+        override(pysvn, 'Client').expects().returns(cli)
+        method(cli, 'status').expects(LOCAL_PATH, recurse=False).returns(1)
+        self.replay()
+        self.assertTrue(w3afSVNClient.is_working_copy(LOCAL_PATH))
 
     def test_commit(self):
         pass

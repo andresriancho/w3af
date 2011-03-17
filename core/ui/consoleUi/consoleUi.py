@@ -27,7 +27,8 @@ try:
     import random
     import traceback
 
-    from core.controllers.auto_update import VersionMgr, SVNError
+    from core.controllers.auto_update import VersionMgr, SVNError, \
+        is_working_copy
     from core.ui.consoleUi.rootMenu import *
     from core.ui.consoleUi.callbackMenu import *
     from core.ui.consoleUi.util import *
@@ -37,7 +38,8 @@ try:
     import core.controllers.w3afCore
     import core.controllers.outputManager as om
     import core.controllers.miscSettings as miscSettings
-    from core.controllers.w3afException import w3afException, w3afMustStopException
+    from core.controllers.w3afException import w3afException, \
+        w3afMustStopException
 except KeyboardInterrupt:
     sys.exit(0)
 
@@ -84,7 +86,7 @@ class consoleUi:
         '''
         Root menu init routine.
         '''        
-        if do_upd in (None, True):
+        if do_upd in (None, True) and is_working_copy():
             # Output function
             log = om.out.console
             # Ask user function
