@@ -44,21 +44,31 @@ class profilesMenu(menu):
 
 
     def _cmd_use(self, params):
-        if len(params) != 1:
-            om.out.console('Parameter is missed, please see the help:')
+        '''
+        @param params: A two-elems list containing the name of the profile to
+            load and the original working directory.
+        '''
+        if not params:
+            om.out.console('Parameter missing, please see the help:')
             self._cmd_help(['use'])
         else:
             profile = params[0]
-            if profile not in self._profiles:
+            if not profile:
                 raise w3afException('Unknown profile: ' + profile)
-
-            self._w3af.useProfile(profile)
-            om.out.console('The plugins configured by the scan profile have been enabled, and their options configured.')
+            
+            try:
+                workdir = params[1] 
+            except IndexError:
+                workdir = None            
+            
+            self._w3af.useProfile(profile, workdir=workdir)
+            
+            om.out.console('The plugins configured by the scan profile have '
+                           'been enabled, and their options configured.')
             om.out.console('Please set the target URL(s) and start the scan.')
-                    
 
     def _cmd_list(self, params):
-        if len(params) != 0:
+        if params:
             om.out.console('No parameters expected')
         else:
             table = [['Profile', 'Description'],[]]
@@ -68,12 +78,9 @@ class profilesMenu(menu):
             self._console.drawTable(table)
 
     def _para_use(self, params, part):
-        if len(params)==0:
-#        profiles = [str(p.getName()) for p in self._w3af.getProfileList()]
-            return suggest (self._profiles.keys(), part)
-
+        if not params:
+            return suggest(self._profiles.keys(), part)
         return []
-
             
        
 

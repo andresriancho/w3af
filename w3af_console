@@ -117,7 +117,7 @@ def main():
     from core.ui.consoleUi.consoleUi import consoleUi
     
     commandsToRun = []
-    if scriptFile != None:
+    if scriptFile is not None:
         try:
             fd = open( scriptFile )
         except:
@@ -131,7 +131,7 @@ def main():
                     commandsToRun.append( line )
             fd.close() 
     elif profile is not None:
-        commandsToRun = ["profiles use %s" % profile]
+        commandsToRun = ["profiles use %s %s" % (profile, currentDir)]
 
     console = consoleUi(commands=commandsToRun, do_upd=doupdate, rev=rev)
     console.sh()

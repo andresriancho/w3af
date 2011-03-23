@@ -1219,14 +1219,14 @@ class w3afCore(object):
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
         '''
-        profile_home = get_home_dir() + os.path.sep + 'profiles' + os.path.sep
-        str_profile_list = self._getListOfFiles( profile_home, extension='.pw3af' )
+        profile_home = os.path.join(get_home_dir(), 'profiles')
+        str_profile_list = self._getListOfFiles(profile_home, extension='.pw3af')
         
         instance_list = []
         invalid_profiles = []
         
         for profile_name in str_profile_list:
-            profile_filename = profile_home + profile_name + '.pw3af'
+            profile_filename = os.path.join(profile_home, profile_name + '.pw3af')
             try:
                 profile_instance = profile( profile_filename )
             except:
@@ -1239,10 +1239,13 @@ class w3afCore(object):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        fileList = [ f for f in os.listdir( directory ) ]
-        strFileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == extension ]
-        if '__init__' in strFileList:
-            strFileList.remove ( '__init__' )
+        strFileList = []
+        
+        for f in os.listdir(directory):
+            fname, ext = os.path.splitext(f)
+            if ext == extension and fname != '__init__':
+                strFileList.append(fname)
+
         strFileList.sort()
         return strFileList
         
@@ -1327,7 +1330,7 @@ class w3afCore(object):
         profileInstance.remove()
         return True
         
-    def useProfile( self, profile_name ):
+    def useProfile(self, profile_name, workdir=None):
         '''
         Gets all the information from the profile, and runs it.
         Raise a w3afException if the profile to load has some type of problem.
@@ -1338,10 +1341,10 @@ class w3afCore(object):
             return
         
         try:            
-            profileInstance = profile( profile_name ) 
-        except w3afException, w3:
+            profileInstance = profile(profile_name, workdir) 
+        except w3afException:
             # The profile doesn't exist!
-            raise w3
+            raise
         else:
             # It exists, work with it!
             for pluginType in self._plugins.keys():
