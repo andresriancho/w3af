@@ -52,14 +52,14 @@ class profile:
         
         if profname:
             # Get profile name's complete path
-            rprofname = self._get_real_profile_name(profname, workdir)
+            profname = self._get_real_profile_name(profname, workdir)
             try:
                 self._config.read(rprofname)
             except:
-                raise w3afException('Unknown format in profile: %s' % rprofname)
+                raise w3afException('Unknown format in profile: %s' % profname)
         
         # Save the rprofname variable
-        self._profile_file_name = rprofname
+        self._profile_file_name = profname
     
     def _get_real_profile_name(self, profilename, workdir):
         '''
