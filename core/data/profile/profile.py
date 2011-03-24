@@ -81,11 +81,12 @@ class profile:
         found = pathexists(profname)
         
         if not (ospath.isabs(profname) or found):
-            found = pathexists(ospath.join(
-                                get_home_dir(), 'profiles', profname))
+            profname = ospath.join(get_home_dir(), 'profiles', profilename)
+            found = pathexists(profname)
             # Ok, let's try to find it in the passed working directory.
             if not found and workdir:
-                found = pathexists(ospath.join(workdir, profname))
+                profname = ospath.join(workdir, profilename)
+                found = pathexists(profname)
                         
         if not found:
             raise w3afException('The profile "%s" wasn\'t found.' % profilename)
