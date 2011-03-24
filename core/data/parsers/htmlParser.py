@@ -230,6 +230,8 @@ class htmlParser(sgmlParser):
             self._insideTextarea = False
         else:
             self._insideTextarea = True
+            form_obj = self._forms[-1]
+            form_obj.addInput([('name', self._textareaTagName), ('value', '')])
 
     def handle_data(self, data):
         """
@@ -249,16 +251,12 @@ class htmlParser(sgmlParser):
         Handler for textarea end tag
         """
         sgmlParser._handle_textarea_endtag(self)
-
-        attrs = []
-        attrs.append( ('name', self._textareaTagName) )
-        attrs.append( ('value', self._textareaData) )
-
         if not self._forms:
             self._saved_inputs.append( ('input', attrs) )
         else:
             form_obj = self._forms[-1]
-            form_obj.addInput( attrs )
+            # Replace with real value
+            form_obj[self._textareaTagName][-1] = self._textareaData
 
     def _handle_select_tag_inside_form(self, tag, attrs):
         """

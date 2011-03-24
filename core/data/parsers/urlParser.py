@@ -83,12 +83,11 @@ def getQueryString( url, ignoreExceptions=True ):
             #
             #   (please note the lack of [0]) , and that if the value isn't a list... 
             #    I create an artificial list
-            for i in parsedQs.keys():
-                if isinstance( parsedQs[ i ], list ):
-                    result[ i ] = parsedQs[ i ]
-                else:
-                    result[ i ] = [parsedQs[ i ], ]
-
+            for p, v in parsedQs.iteritems():
+                if type(v) is not list:
+                    v = [v]
+                result[p] = v
+                
     return result
 
 def uri2url( url):
