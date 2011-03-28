@@ -54,8 +54,8 @@ class profile:
             # Get profile name's complete path
             profname = self._get_real_profile_name(profname, workdir)
             try:
-                self._config.read(rprofname)
-            except:
+                self._config.read(profname)
+            except Exception:
                 raise w3afException('Unknown format in profile: %s' % profname)
         
         # Save the rprofname variable
