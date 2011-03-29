@@ -58,7 +58,7 @@ class profile:
             except Exception:
                 raise w3afException('Unknown format in profile: %s' % profname)
         
-        # Save the rprofname variable
+        # Save the profname variable
         self._profile_file_name = profname
     
     def _get_real_profile_name(self, profilename, workdir):
@@ -368,18 +368,19 @@ class profile:
         # Something went wrong
         return None
     
-    def save( self, file_name = '' ):
+    def save(self, file_name=''):
         '''
         Saves the profile to file_name.
         
         @return: None
         '''
-        if file_name == '' and self._profile_file_name is None:
-            raise w3afException('Error while saving profile, you didn\'t specified the file name.')
-        elif file_name != '' and self._profile_file_name is None:
-            # The user is specifiyng a file_name!
-            if not file_name.endswith('.pw3af'):
-                file_name += '.pw3af'
+        if not self._profile_file_name:
+            if not file_name:
+                raise w3afException('Error while saving profile, you didn\'t '
+                                    'specified the file name.')
+            else: # The user's specified a file_name!
+                if not file_name.endswith('.pw3af'):
+                    file_name += '.pw3af'
                 
             if os.path.sep not in file_name:
                 file_name = os.path.join(get_home_dir(), 'profiles', file_name )

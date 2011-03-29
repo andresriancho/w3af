@@ -1281,32 +1281,34 @@ class w3afCore(object):
         # Save current to profile
         return self.saveCurrentToProfile( profile_name, profileDesc )
 
-    def saveCurrentToProfile( self, profile_name, profileDesc='' ):
+    def saveCurrentToProfile(self, profile_name, prof_desc='', prof_path=''):
         '''
-        Save the current configuration of the core to the profile called profile_name.
+        Save the current configuration of the core to the profile called 
+        profile_name.
         
-        @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
+        @return: The new profile instance if the profile was successfully saved.
+            otherwise raise a w3afException.
         '''
         # Open the already existing profile
-        new_profile = profile(profile_name)
+        new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
         
         # Config the enabled plugins
         for pType in self.getPluginTypes():
             enabledPlugins = []
             for pName in self.getEnabledPlugins(pType):
                 enabledPlugins.append( pName )
-            new_profile.setEnabledPlugins( pType, enabledPlugins )
+            new_profile.setEnabledPlugins(pType, enabledPlugins)
         
         # Config the profile options
         for pType in self.getPluginTypes():
             for pName in self.getEnabledPlugins(pType):
-                pOptions = self.getPluginOptions( pType, pName )
+                pOptions = self.getPluginOptions(pType, pName)
                 if pOptions:
-                    new_profile.setPluginOptions( pType, pName, pOptions )
+                    new_profile.setPluginOptions(pType, pName, pOptions)
                 
         # Config the profile target
         if cf.cf.getData('targets'):
-            new_profile.setTarget( ' , '.join(cf.cf.getData('targets')) )
+            new_profile.setTarget(' , '.join(cf.cf.getData('targets')))
         
         # Config the misc and http settings
         misc_settings = miscSettings.miscSettings()
@@ -1314,11 +1316,11 @@ class w3afCore(object):
         new_profile.setHttpSettings(self.uriOpener.settings.getOptions())
         
         # Config the profile name and description
-        new_profile.setDesc( profileDesc )
-        new_profile.setName( profile_name )
+        new_profile.setDesc(prof_desc)
+        new_profile.setName(profile_name)
         
         # Save the profile to the file
-        new_profile.save( profile_name )
+        new_profile.save(profile_name)
         
         return new_profile
         
