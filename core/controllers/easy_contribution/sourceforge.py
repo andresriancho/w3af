@@ -19,12 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import cookielib
+import hashlib
 import re
 import string
 import time
-import hashlib
 import urllib2, urllib
-import cookielib
+
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 
 
@@ -106,28 +107,41 @@ $plugins
             self.logged_in = 'Invalid username or password' not in resp.read()
             return self.logged_in
             
-    def report_bug(self, user_title, filename, **body_data):
+    def report_bug(self, summary, userdesc, tback='', fname=None,
+                   plugins='', autogen=True, user=None):
         '''
         I use urllib2 instead of the w3af wrapper, because the error may be in there!
         
-        @parameter user_title: The title that the user wants to use in the bug report
-        @parameter user_description: The description for the bug that was provided by the user
-        @parameter body_data: keyword args to be used to be used in report's body
+        @param summary: The title that the user wants to use in the bug report
+        @param userdesc: The description for the bug that was provided by the
+            user
+        @param tback: Error traceback string.
+        @param fname: File containing useful error data. To be attached to the
+            bug report.
+        @param plugins: Formatted string with the activated plugins.
+        @param autogen: Whether this bug was automatically generated, i.e.,
+            w3af crashed.
         
-        @return: The new ticket URL if the bug report was successful, or None if something failed.
+        @return: The new ticket URL if the bug report was successful, or None
+            if something failed.
         '''
         
         m = hashlib.md5()
         m.update(time.ctime())
-        random = m.hexdigest() 
+        random = m.hexdigest()
+        from core.ui.gtkUi.exception_handler import VERSIONS
+        
+        bdata = {'plugins': plugins, 't_back': tback,
+                 'user_desc': userdesc, 'w3af_v': VERSIONS}
 
         # Handle the summary. Concat 'user_title'. If empty, append a random
         # token to avoid the double click protection added by sourceforge.
-        summary = '[Auto-Generated] Bug Report - %s' % \
-            (user_title or random)
+        summary = '%sBug Report - %s' % (
+                    autogen and '[Auto-Generated] ' or '',
+                    summary or random)
         
         # Build details string
-        details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(body_data)
+        details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
         resp = self._do_request(self.NEW_TKT_URL)
         form_token = self._get_match_from_response(resp, self.FORM_TOKEN_RE) or ''
         
@@ -139,18 +153,22 @@ $plugins
             'field_priority': 'major',
             'field_summary': summary,
             'field_description': details,
+            'author': user or 'anonymous',
             '__FORM_TOKEN': form_token,
-            'attachment': 'on',
+            'attachment': fname and 'on' or 'off',
+            'attachment': 'off',
             'submit': 'Create ticket'}
 
         resp = self._do_request(self.NEW_TKT_URL, values)
-        # If evrything went weel a ticket_id must be present        
+        # If evrything went well a ticket_id must be present        
         ticket_id = self._get_match_from_response(resp, self.NEW_TICKET_RE)
 
         if ticket_id:
-            attach_file_url = resp.geturl()
-            self._attach_file(attach_file_url, ticket_id, filename, form_token)
+            if fname:
+                attach_file_url = resp.geturl()
+                self._attach_file(attach_file_url, ticket_id, fname, form_token)
             return self.CREATED_TKT + ticket_id
+        
         return None
         
     def _attach_file(self, url, ticket_id, filename, form_token):

@@ -128,6 +128,7 @@ ui_menu = """
     <menu action="HelpMenu">
       <menuitem action="Help"/>
       <menuitem action="Wizards"/>
+      <menuitem action="ReportBug"/>
       <separator name="s4"/>
       <menuitem action="About"/>
     </menu>
@@ -347,7 +348,7 @@ class MainApp(object):
         accelgroup = uimanager.get_accel_group()
         self.window.add_accel_group(accelgroup)
         self._actiongroup = actiongroup = gtk.ActionGroup('UIManager')
-
+            
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
@@ -377,6 +378,7 @@ class MainApp(object):
             ('ToolsMenu', None, _('_Tools')),
 
             ('Wizards', gtk.STOCK_SORT_ASCENDING, _('_Wizards'), None, _('Point & Click Penetration Test'), self._wizards),
+            ('ReportBug', gtk.STOCK_SORT_ASCENDING, _('_Report a Bug'), None, _('Report a Bug'), self.report_bug),
             ('Help', gtk.STOCK_HELP, _('_Help'), None, _('Help regarding the framework'), self.menu_help),
             ('About', gtk.STOCK_ABOUT, _('_About'), None, _('About the framework'), self.menu_about),
             ('HelpMenu', None, _('_Help')),
@@ -867,6 +869,12 @@ class MainApp(object):
         '''Shows the about message.'''
         dlg = AboutDialog(self.w3af)
         dlg.run()
+    
+    def report_bug(self, action):
+        '''Report bug to Sourceforge'''
+        from .bug_report import sourceforge_bug_report
+        sfbr = sourceforge_bug_report()
+        sfbr.report_bug()
 
     def _exploit_all(self, action):
         '''Exploits all vulns.'''
