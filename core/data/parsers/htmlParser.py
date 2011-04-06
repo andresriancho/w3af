@@ -230,8 +230,9 @@ class htmlParser(sgmlParser):
             self._insideTextarea = False
         else:
             self._insideTextarea = True
-            form_obj = self._forms[-1]
-            form_obj.addInput([('name', self._textareaTagName), ('value', '')])
+            if self._forms:
+                form_obj = self._forms[-1]
+                form_obj.addInput([('name', self._textareaTagName), ('value', '')])
 
     def handle_data(self, data):
         """
