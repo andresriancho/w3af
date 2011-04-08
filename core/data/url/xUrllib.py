@@ -295,7 +295,7 @@ class xUrllib(object):
             req = HTTPRequest(uri)
         else:
             if data:
-                req = HTTPRequest(uri + '?' + data)
+                req = HTTPRequest(uri + '?' + str(data))
             else:
                 # It's really an url...
                 req = HTTPRequest(uri)
