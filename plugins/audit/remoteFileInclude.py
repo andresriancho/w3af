@@ -180,7 +180,7 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         oResponse = self._sendMutant(freq, analyze=False).getBody()
         
-        rfi_url_list = [self._rfi_url]
+        rfi_url_list = [self._rfi_url, self._rfi_url + "\0"]
         mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
         for mutant in mutants:
