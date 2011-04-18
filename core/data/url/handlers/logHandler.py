@@ -76,7 +76,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
-        or code in (301, 302, 303) and m == "POST"):
+            or code in (301, 302, 303) and m == "POST"):
             # Strictly (according to RFC 2616), 301 or 302 in response
             # to a POST MUST NOT cause a redirection without confirmation
             # from the user (of urllib2, in this case).  In practice,
@@ -169,7 +169,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             e.id = id_for_error
             raise e
         
-    http_error_301 = http_error_303 = http_error_307 = http_error_302 = http_error_302
+    http_error_301 = http_error_303 = http_error_307 = http_error_302
     
     def http_request(self, request):
         '''
@@ -185,19 +185,26 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             request.add_unredirected_header('Accept-Encoding', 'identity' )
         
         return request
+    
+    def http_response(self, request, response):
+        self._log_request_response(request, response)
+        return response
 
-    def _log_request_response( self, request, response ):
+    https_request = http_request
+    https_response = http_response
+
+    def _log_request_response(self, request, response):
         '''
         Send the request and the response to the output manager.
         '''
-        method = request.get_method()
-        url =  request.get_full_url()
-        headers = request.headers
-        postData = request.get_data()
-
-        for i in request.unredirected_hdrs.keys():
-            headers[ i ] = request.unredirected_hdrs[ i ]
-        fr = createFuzzableRequestRaw(method, url, postData, headers)
+        
+        headers = dict(request.headers)
+        headers.update(request.unredirected_hdrs)
+    
+        fr = createFuzzableRequestRaw(method=request.get_method(),
+                                      url=request.get_full_url(),
+                                      postData=request.get_data(),
+                                      headers=headers)
 
         if isinstance(response, httpResponse.httpResponse):
             res = response
@@ -207,15 +214,6 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             body = response.read()
             id = response.id
             # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
-            res = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg, id=id)
-        om.out.logHttp( fr, res )
-    
-    def http_response(self, request, response):
-        response.id = self.inc_counter()
-        self._log_request_response( request, response )
-        request.id = response.id
-        return response
-
-    https_request = http_request
-    https_response = http_response
-
+            res = httpResponse.httpResponse(code, body, hdrs, url, url, msg=msg, id=id)
+        
+        om.out.logHttp(fr, res)

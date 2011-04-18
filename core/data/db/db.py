@@ -27,6 +27,7 @@ import sys
 
 from core.controllers.w3afException import w3afException
 
+
 class DB(object):
     """Simple W3AF DB interface"""
 
@@ -125,7 +126,7 @@ class DB(object):
         c.execute(sql)
         self._db.commit()
 
-    def createIndex(self, table, columns ):
+    def createIndex(self, table, columns):
         '''
         Create index for speed and performance
 
@@ -146,6 +147,7 @@ class DB(object):
         '''Commit changes and close the connection to the underlaying db.'''
         self._db.close()
         self._filename = None
+
 
 class WhereHelper(object):
     '''Simple WHERE condition maker.'''

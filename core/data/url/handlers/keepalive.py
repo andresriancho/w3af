@@ -258,6 +258,10 @@ class HTTPResponse(httplib.HTTPResponse):
     def info(self):
         return self.headers
 
+    @property
+    def URL(self):
+        return self.geturl()
+
     def geturl(self):
         return self._url
 

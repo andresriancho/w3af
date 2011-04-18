@@ -125,6 +125,7 @@ class mangleHandler(urllib2.BaseHandler):
         kaRes.code = mangledResponse.getCode()
         kaRes._url = mangledResponse.getURI()
         kaRes.msg = originalResponse.msg
+        kaRes.id = originalResponse.id
         return kaRes
     
     https_request = http_request

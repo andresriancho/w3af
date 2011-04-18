@@ -84,7 +84,6 @@ class xUrllib(object):
     def __init__(self):
         self.settings = urlOpenerSettings.urlOpenerSettings()
         self._opener = None
-        self._cacheOpener = None
         self._memoryUsageCounter = 0
         
         # For error handling
@@ -212,13 +211,11 @@ class xUrllib(object):
             socket.already_configured = True
     
     def _init( self ):
-        if self.settings.needUpdate or \
-        self._opener is None or self._cacheOpener is None:
+        if self.settings.needUpdate or self._opener is None:
         
             self.settings.needUpdate = False
             self.settings.buildOpeners()
             self._opener = self.settings.getCustomUrlopen()
-            self._cacheOpener = self.settings.getCachedUrlopen()
 
     def getHeaders( self, uri ):
         '''
@@ -463,10 +460,11 @@ class xUrllib(object):
         
         start_time = time.time()
         res = None
-        the_opener = self._cacheOpener if useCache else self._opener
+
+        req.get_from_cache = True if useCache else False
         
         try:
-            res = the_opener.open(req)
+            res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
             msg = '%s %s returned HTTP code "%s" - id: %s' % \
@@ -592,7 +590,8 @@ class xUrllib(object):
             if grepResult:
                 self._grepResult(req, httpResObj)
             else:
-                om.out.debug('No grep for : ' + geturl + ' , the plugin sent grepResult=False.')
+                om.out.debug('No grep for : %s , the plugin sent '
+                             'grepResult=False.' % geturl)
             return httpResObj
 
     def _readRespose( self, res ):

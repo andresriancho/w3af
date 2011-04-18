@@ -47,7 +47,8 @@ SP = ' '
 
 class httpResponse(object):
     
-    def __init__( self, code, read , info, geturl, originalUrl, msg='OK', id=None, time=0.2):
+    def __init__(self, code, read, info, geturl, originalUrl,
+                 msg='OK', id=None, time=0.2, alias=None):
         '''
         @parameter time: The time between the request and the response.
         '''
@@ -61,6 +62,8 @@ class httpResponse(object):
         # The URL that we really GET'ed
         self._realurl = uri2url( originalUrl )
         self._uri = originalUrl
+        # Set the info
+        self._info = info
         # The URL where we were redirected (may be the same as originalUrl when no redirect)
         self._redirectedURL = geturl
         self._redirectedURI = uri2url( geturl )
@@ -80,6 +83,7 @@ class httpResponse(object):
         self.setBody(read)
         self._msg = msg
         self._time = time
+        self._alias = alias
         
         # A unique id identifier for the response
         self.id = id
@@ -91,7 +95,9 @@ class httpResponse(object):
     def getRedirURL( self ): return self._redirectedURL
     def getRedirURI( self ): return self._redirectedURI
     def getCode( self ): return self._code
+    def getAlias(self): return self._alias
     def getBody( self ): return self._body
+    def info(self): return self._info
 
     def getClearTextBody(self):
         '''
@@ -319,8 +325,6 @@ class httpResponse(object):
                 #   Image?
                 if self._content_type.lower().count('image'):
                     self._is_image_response = True
-                
-                return
 
     def getContentType( self ):
         '''

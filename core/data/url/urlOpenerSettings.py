@@ -318,6 +318,7 @@ class urlOpenerSettings( configurable ):
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
         self._kAHTTPS = kAHTTPS(self.getProxy())
+        self._cache_hdler = localCache.CacheHandler()
         
         # Prepare the list of handlers
         handlers = []
@@ -326,7 +327,8 @@ class urlOpenerSettings( configurable ):
                         MultipartPostHandler.MultipartPostHandler,
                         self._kAHTTP, self._kAHTTPS, logHandler.logHandler,
                         mangleHandler.mangleHandler(self._manglePlugins),
-                        HTTPGzipProcessor, self._urlParameterHandler]:
+                        HTTPGzipProcessor, self._urlParameterHandler, 
+                        self._cache_hdler]:
             if handler:
                 handlers.append(handler)
         
@@ -335,22 +337,8 @@ class urlOpenerSettings( configurable ):
         # Prevent the urllib from putting his user-agent header
         self._nonCacheOpener.addheaders = [ ('Accept', '*/*') ]
         
-        # Add the local cache to the list of handlers
-        handlers.append(localCache.CacheHandler())
-        self._cacheOpener = self._ulib.build_opener(*handlers)
-        
-        # Prevent the urllib from putting his user-agent header
-        self._cacheOpener.addheaders = [ ('Accept', '*/*') ]
-        
-        # Use this if you want to "bypass" the cache opener
-        # debugging purposes only
-        #self._cacheOpener = self._nonCacheOpener
-        
     def getCustomUrlopen(self):
         return self._nonCacheOpener
-        
-    def getCachedUrlopen(self):
-        return self._cacheOpener
 
     def setManglePlugins( self, mp ):
         '''
