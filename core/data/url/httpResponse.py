@@ -46,7 +46,7 @@ SP = ' '
 class httpResponse(object):
     
 
-    def __init__(self, code, read, info, geturl, originalUrl,
+    def __init__(self, code, read, info, geturl, original_url,
                  msg='OK', id=None, time=0.2, alias=None):
         '''
         @parameter time: The time between the request and the response.
@@ -69,7 +69,7 @@ class httpResponse(object):
         self._uri = original_url
         # Set the info
         self._info = info
-        # The URL where we were redirected (may be the same as originalUrl when no redirect)
+        # The URL where we were redirected (may be the same as original_url when no redirect)
         self._redirectedURL = geturl
         self._redirectedURI = geturl.uri2url()
         

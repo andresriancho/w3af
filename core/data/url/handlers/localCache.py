@@ -31,8 +31,10 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.request.frFactory import createFuzzableRequestRaw
+
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
+from core.data.parsers.urlParser import url_object
 
 # TODO: Rethink this: why not POST?
 CACHE_METHODS = ('GET', 'HEAD')
@@ -335,7 +337,7 @@ class SQLCachedResponse(CachedResponse):
         headers.update(request.unredirected_hdrs)
     
         req = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.get_full_url(),
+                                      url=url_object(request.get_full_url()),
                                       postData=request.get_data(),
                                       headers=headers)
         hi.request = req
@@ -346,8 +348,9 @@ class SQLCachedResponse(CachedResponse):
                                           resp.geturl(), resp.read(), resp.id)
         # BUGBUG: This is where I create/log the responses that always have
         # 0.2 as the time!
-        resp = httpResponse.httpResponse(code, body, hdrs, url,
-                                         url, msg=msg, id=id,
+        url_instance = url_object( url )        
+        resp = httpResponse.httpResponse(code, body, hdrs, url_instance,
+                                         url_instance, msg=msg, id=id,
                                          alias=gen_hash(request))
         hi.response = resp
         

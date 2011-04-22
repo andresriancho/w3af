@@ -23,13 +23,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import urlparse
 
+from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
 import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.request.frFactory import createFuzzableRequestRaw
 
@@ -202,7 +202,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         headers.update(request.unredirected_hdrs)
     
         fr = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.get_full_url(),
+                                      url=url_object(request.get_full_url()),
                                       postData=request.get_data(),
                                       headers=headers)
 
@@ -214,6 +214,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             body = response.read()
             id = response.id
             # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
-            res = httpResponse.httpResponse(code, body, hdrs, url, url, msg=msg, id=id)
+            url_instance = url_object( url )
+            res = httpResponse.httpResponse(code, body, hdrs, url_instance, url_instance, msg=msg, id=id)
         
         om.out.logHttp(fr, res)
