@@ -165,7 +165,7 @@ class fuzzableRequest(object):
         if smth_interesting in self._data or \
             smth_interesting in self.getURI() or \
             smth_interesting in urllib.unquote(self._data) or \
-            smth_interesting in urllib.unquote(self.getURI()):
+            smth_interesting in urllib.unquote(self.getURI().url_string):
             return True
         
         # Ok, it's not in it but maybe something similar
