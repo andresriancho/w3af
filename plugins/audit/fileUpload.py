@@ -148,12 +148,12 @@ class fileUpload(baseAuditPlugin):
                               mutant.getURL(), mutant.getVar()):        
                 
                 # Gen expr for directories where I can search for the uploaded file
-                domain_path_list = set(urlParser.getDomainPath(i) for i in 
+                domain_path_list = set(u.getDomainPath() for u in 
                                        kb.kb.getData('urls' , 'urlList'))
         
                 # Try to find the file!
                 for url in domain_path_list:
-                    for path in self._generate_paths(url, mutant.uploaded_file_name):
+                    for path in self._generate_urls(url, mutant.uploaded_file_name):
         
                         get_response = self._urlOpener.GET(path, useCache=False)
                         if not is_404(get_response):
