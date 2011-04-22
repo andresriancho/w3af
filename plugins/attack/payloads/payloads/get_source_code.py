@@ -49,11 +49,12 @@ class get_source_code(base_payload):
                         file_content = self.shell.read(remote_full_path)
                         if file_content:
                             #
-                            #    Now I write the file to the local disk
-                            #    I have to maintain the remote file structure
+                            # Now I write the file to the local disk
+                            # I have to maintain the remote file structure
                             #
                             
-                            #    Create the file path to be written to disk
+                            # Create the file path to be written to disk
+                            # FIXME: The webroot[1:] only works in Linux. For windows with C:\ it won't work
                             local_full_path = os.path.join(output_directory, webroot[1:], relative_path_file)
                             
                             #    Create the local directories (if needed)
@@ -66,7 +67,7 @@ class get_source_code(base_payload):
                             fh.write(file_content)
                             fh.close()
                             
-                            self.result[ remote_full_path ] = local_full_path
+                            self.result[url] = (remote_full_path, local_full_path)
                         
         
         return self.result
@@ -82,7 +83,7 @@ class get_source_code(base_payload):
             rows.append( ['Remote file','Local file',] ) 
             rows.append( [] )
             
-            for remote_filename, local_filename in api_result.items():
+            for url, (remote_filename, local_filename) in api_result.items():
                 rows.append( [remote_filename,local_filename] )
                 
             result_table = table( rows )

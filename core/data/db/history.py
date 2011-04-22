@@ -18,10 +18,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
-import thread
-import sys
-import re
 import os
+from shutil import rmtree
 
 try:
     from cPickle import Pickler, Unpickler
@@ -40,18 +38,22 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.db import DB, WhereHelper
 
-class HistoryItem:
+
+class HistoryItem(object):
     '''Represents history item.'''
 
     _db = None
     _dataTable = 'data_table'
-    _columns = [('id','integer'), ('url', 'text'), ('code', 'integer'), ('tag', 'text'),
-            ('mark', 'integer'), ('info', 'text'), ('time', 'float'), ('msg', 'text'), ('content_type', 'text'), 
-            ('method', 'text'), ('response_size', 'integer'), ('codef', 'integer')]
-    _primaryKeyColumns = ['id',]
+    _columns = [('id','integer'), ('url', 'text'), ('code', 'integer'),
+        ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
+        ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
+        ('method', 'text'), ('response_size', 'integer'), ('codef', 'integer'),
+        ('alias', 'text')]
+    _primaryKeyColumns = ('id',)
+    _indexColumns = ('alias',)
     id = None
-    request = None
-    response = None
+    _request = None
+    _response = None
     info = None
     mark = False
     tag = ''
@@ -73,15 +75,52 @@ class HistoryItem:
             self._db = kb.kb.getData('gtkOutput', 'db')
         else:
             raise w3afException('The database is not initialized yet.')
+        self._sessionDir = os.path.join(get_home_dir() , 'sessions', self._db.getFileName() + '_traces')
+        
+    @property
+    def response(self):
+        resp = self._response
+        if not resp and self.id:
+            self._request, resp = self._loadFromFile(self.id)
+            self._response = resp
+        return resp
+    
+    @response.setter
+    def response(self, resp):
+        self._response = resp
+    
+    @property
+    def request(self):
+        req = self._request
+        if not req and self.id:
+            req, self._response = self._loadFromFile(self.id)
+            self._request = req
+        return req
+    
+    @request.setter
+    def request(self, req):
+        self._request = req    
+    
+    def initStructure(self):
+        '''Init history structure.'''
+        tablename = self.getTableName()
+        # Init tables
+        self._db.createTable(
+                tablename,
+                self.getColumns(),
+                self.getPrimaryKeyColumns()
+                )
 
-        self._sessionDir = os.path.join(get_home_dir() , 'sessions', cf.cf.getData('sessionName'))
+        self._db.createIndex(tablename, self.getIndexColumns())
+
+        # Init dirs
         try:
             os.mkdir(self._sessionDir)
         except OSError, oe:
             # [Errno 17] File exists
             if oe.errno != 17:
                 msg = 'Unable to write to the user home directory: ' + get_home_dir()
-                raise w3afException( msg )
+                raise w3afException(msg)
 
     def find(self, searchData, resultLimit=-1, orderData=[], full=False):
         '''Make complex search.
@@ -129,7 +168,6 @@ class HistoryItem:
         self.contentType = row[8]
         self.method = row[9]
         self.responseSize = int(row[10])
-        self.request, self.response = self._loadFromFile(self.id)
 
     def _loadFromFile(self, id):
         with open(os.path.join(self._sessionDir, str(id) + self._ext), 'rb') as rrfile:
@@ -180,31 +218,34 @@ class HistoryItem:
 
     def save(self):
         '''Save object into DB.'''
+        resp = self.response
         values = []
-        values.append(self.response.getId())
+        values.append(resp.getId())
         values.append(self.request.getURI().url_string)
-        values.append(self.response.getCode())
+        values.append(resp.getCode())
         values.append(self.tag)
         values.append(int(self.mark))
-        values.append(self.info)
-        values.append(self.response.getWaitTime())
-        values.append(self.response.getMsg())
-        values.append(self.response.getContentType())
+        values.append(str(resp.info()))
+        values.append(resp.getWaitTime())
+        values.append(resp.getMsg())
+        values.append(resp.getContentType())
         values.append(self.request.getMethod())
-        values.append(len(self.response.getBody()))
-        code = int(self.response.getCode()) / 100
+        values.append(len(resp.getBody()))
+        code = int(resp.getCode()) / 100
         values.append(code)
+        values.append(resp.getAlias())
 
         if not self.id:
-            sql = 'INSERT INTO ' + self._dataTable + ' (id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef)'
-            sql += ' VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+            sql = ('INSERT INTO %s '
+            '(id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef, alias) '
+            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
             values.append(self.id)
             sql = 'UPDATE ' + self._dataTable
             sql += ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
-            sql += ', method = ?, response_size = ?, codef = ? '
+            sql += ', method = ?, response_size = ?, codef = ?, alias = ? '
             sql += ' WHERE id = ?'
             self._db.execute(sql, values)
         # 
@@ -226,6 +267,9 @@ class HistoryItem:
 
     def getPrimaryKeyColumns(self):
         return self._primaryKeyColumns
+    
+    def getIndexColumns(self):
+        return self._indexColumns
 
     def _updateField(self, name, value):
         '''Update custom field in DB.'''
@@ -245,3 +289,13 @@ class HistoryItem:
         self.mark = not self.mark
         if forceDb:
             self._updateField('mark', int(self.mark))
+
+    def clear(self):
+        '''Clear history and delete all trace files.'''
+        if not self._db:
+            raise w3afException('The database is not initialized yet.')
+        # Clear DB
+        sql = 'DELETE FROM ' + self._dataTable
+        self._db.execute(sql)
+        # Delete files
+        rmtree(self._sessionDir)

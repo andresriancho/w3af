@@ -57,21 +57,18 @@ class htmlParser(sgmlParser):
         
     def _preParse( self, httpResponse ):
         '''
-        @parameter httpResponse: The HTTP response document that contains the HTML
-        document inside its body.
+        @parameter httpResponse: The HTTP response document that contains the
+        HTML document inside its body.
         '''
-        assert self._baseUrl is not None, 'The base URL must be set.'
+        assert self._baseUrl, 'The base URL must be set.'
         
         HTMLDocument = httpResponse.getBody()
-        
+    
         if self._normalizeMarkup:
-            # In some cases, the parsing library could fail.
-            dom = httpResponse.getDOM()
-            if dom is not None:
-                HTMLDocument = etree.tostring(dom)
+            HTMLDocument = httpResponse.getNormalizedBody() or ''
 
         # Now we are ready to work
-        self._parse ( HTMLDocument )
+        self._parse (HTMLDocument)
         
     def _findForms(self, tag, attrs):
         '''
@@ -233,6 +230,9 @@ class htmlParser(sgmlParser):
             self._insideTextarea = False
         else:
             self._insideTextarea = True
+            if self._forms:
+                form_obj = self._forms[-1]
+                form_obj.addInput([('name', self._textareaTagName), ('value', '')])
 
     def handle_data(self, data):
         """
@@ -252,16 +252,12 @@ class htmlParser(sgmlParser):
         Handler for textarea end tag
         """
         sgmlParser._handle_textarea_endtag(self)
-
-        attrs = []
-        attrs.append( ('name', self._textareaTagName) )
-        attrs.append( ('value', self._textareaData) )
-
         if not self._forms:
             self._saved_inputs.append( ('input', attrs) )
         else:
             form_obj = self._forms[-1]
-            form_obj.addInput( attrs )
+            # Replace with real value
+            form_obj[self._textareaTagName][-1] = self._textareaData
 
     def _handle_select_tag_inside_form(self, tag, attrs):
         """

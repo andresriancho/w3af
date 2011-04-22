@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 '''
 abstractParser.py
 
@@ -314,6 +314,10 @@ class abstractParser(object):
         So, when we use _decode_URL() we take as input "http://host.tld/%05%44", we decode the
         URL encoding to get "http://host.tld/\x05\x44" and finally we decode that with the xyz encoding
         to get "http://host.tld/é".
+
+        Something small to remember:
+        >>> urllib.unquote('ind%c3%a9x.html').decode('utf-8').encode('utf-8') == 'ind\xc3\xa9x.html'
+        True
         
         Init,
         >>> from core.data.url.httpResponse import httpResponse as httpResponse
@@ -336,6 +340,7 @@ class abstractParser(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: The "url_object_to_decode" parameter @ _decode_URL of an abstractParser must be of urlParser.url_object type.
+
         '''
         if not isinstance(url_object_to_decode, url_object):
             msg = 'The "url_object_to_decode" parameter @ _decode_URL of an abstractParser'

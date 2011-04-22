@@ -35,6 +35,7 @@ class question:
     def __init__(self):
         self._questionId = ''
         self._questionString = ''
+        self.w3af_core = None
 
         self._previously_answered_values = None
 

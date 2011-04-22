@@ -34,8 +34,19 @@ from . import bug_report
 from . import helpers
 from core.controllers.misc.get_w3af_version import get_w3af_version
 
+# String containing the versions for python, gtk and pygtk
+VERSIONS = '''
+Python version:\n%s\n
+GTK version:%s
+PyGTK version:%s\n\n
+%s
+''' % \
+    (sys.version,
+    ".".join(str(x) for x in gtk.gtk_version),
+    ".".join(str(x) for x in gtk.pygtk_version),
+    get_w3af_version())
 
-def handle_crash(type, value, tb, **data):
+def handle_crash(type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(type, KeyboardInterrupt ):
         helpers.endThreads()
@@ -49,27 +60,17 @@ def handle_crash(type, value, tb, **data):
     exception = "".join(exception)
     print exception
 
-    # get version info for python, gtk and pygtk
-    versions = _("\nPython version:\n%s\n\n") % sys.version
-    versions += _("GTK version:%s\n") % ".".join(str(x) for x in gtk.gtk_version)
-    versions += _("PyGTK version:%s\n\n") % ".".join(str(x) for x in gtk.pygtk_version)
-
-    # get the version info for w3af
-    versions += '\n' + get_w3af_version()
-
     # save the info to a file
     filename = tempfile.gettempdir() + os.path.sep + "w3af_crash-" + createRandAlNum(5) + ".txt"
     arch = file(filename, "w")
     arch.write(_('Submit this bug here: https://sourceforge.net/apps/trac/w3af/newticket \n'))
-    arch.write(versions)
+    arch.write(VERSIONS)
     arch.write(exception)
     arch.close()
     
     # Create the dialog that allows the user to send the bug to sourceforge
-    
-    bug_report_win = bug_report.bug_report_window(_('Bug detected!'), 
-                                                  exception, versions,
-                                                  filename, **data)
+    bug_report_win = bug_report.bug_report_window(
+                            _('Bug detected!'), exception, filename, plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

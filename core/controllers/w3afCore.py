@@ -22,10 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-# Before doing anything, check if I have all needed dependencies
-from core.controllers.misc.dependencyCheck import dependencyCheck
-dependencyCheck()
-
 # Called here to init some variables in the config ( cf.cf.save() )
 # DO NOT REMOVE
 import core.controllers.miscSettings as miscSettings
@@ -40,7 +36,8 @@ from core.controllers.misc.number_generator import consecutive_number_generator
 
 from core.data.url.xUrllib import xUrllib
 from core.data.parsers.urlParser import url_object
-from core.controllers.w3afException import w3afException, w3afRunOnce, w3afFileException, w3afMustStopException
+from core.controllers.w3afException import w3afException, w3afRunOnce, \
+    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc
 from core.controllers.targetSettings import targetSettings as targetSettings
 
 import traceback
@@ -411,23 +408,33 @@ class w3afCore(object):
 
     def start(self):
         '''
-        The user interfaces call this method to start the whole scanning process.
-        
-        This method raises almost every possible exception, so please do your error handling!
+        The user interfaces call this method to start the whole scanning
+        process.
+        This method raises almost every possible exception, so please do your
+        error handling!
         '''
         try:
-            self._realStart()
-        except w3afMustStopException, wmse:
-            om.out.error('\n**IMPORTANT** The following error was detected ' \
-                         'by w3af and couldn\'t be resolved: %s\n' % wmse)
-            self._end()
-        except Exception:
-            om.out.error('\nUnhandled error, traceback: %s\n' % \
-                         traceback.format_exc()) 
+            try:
+                self._realStart()
+            except w3afMustStopByUnknownReasonExc:
+                #
+                # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
+                # purpose so we can find out the *really* unknown error
+                # conditions.
+                #
+                raise
+            except w3afMustStopException, wmse:
+                om.out.error('\n**IMPORTANT** The following error was ' \
+                 'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
+                self._end(wmse)
+            except Exception:
+                om.out.error('\nUnhandled error, traceback: %s\n' % \
+                             traceback.format_exc()) 
+                raise
+            else:
+                om.out.information('Finished scanning process.')
+        finally:
             self.progress.stop()
-            raise
-        else:
-            om.out.information('Finished scanning process.')
             
     def _realStart(self):
         '''
@@ -447,7 +454,7 @@ class w3afCore(object):
             self.verifyEnvironment()
         except Exception,e:
             error = 'verifyEnvironment() raised an exception: "' + str(e) + '". This should never'
-            error += ' happend, are *you* user interface coder sure that you called'
+            error += ' happen, are *you* user interface coder sure that you called'
             error += ' verifyEnvironment() *before* start() ?'
             om.out.error( error )
             raise e
@@ -457,8 +464,8 @@ class w3afCore(object):
                 ###### This is the main section ######
                 # Create the first fuzzableRequestList
 
-                # We only want to scan pages that are in scope
-                get_curr_scope_pages = lambda fr:\
+                # We only want to scan pages that in current scope
+                get_curr_scope_pages = lambda fr: \
                     fr.getURL().getDomain() == url.getDomain()
 
                 for url in cf.cf.getData('targets'):
@@ -468,6 +475,8 @@ class w3afCore(object):
                             get_curr_scope_pages, createFuzzableRequests(response))
                     except KeyboardInterrupt:
                         self._end()
+                        raise
+                    except w3afMustStopException:
                         raise
                     except w3afException, w3:
                         om.out.error('The target URL: ' + url + ' is unreachable.')
@@ -668,31 +677,40 @@ class w3afCore(object):
         '''
         This method is called when the process ends normally or by an error.
         '''
-        # End the xUrllib (clear the cache)
-        self.uriOpener.end()
-        # Create a new one, so it can be used by exploit plugins.
-        self.uriOpener = xUrllib()
-        
-        # Let the progress module know our status.
-        self.progress.stop()
-        
-        if exceptionInstance:
-            om.out.error( str(exceptionInstance) )
-
-        tm.join( joinAll=True )
-        tm.stopAllDaemons()
-        
-        for plugin in self._plugins['grep']:
-            plugin.end()
-        
-        # Now I'm definitly not running:
-        self._isRunning = False
-        
-        # Finally, close the output manager.
-        om.out.endOutputPlugins()
-        
-        # No targets to be scanned.
-        cf.cf.save('targets', [] )
+        try:
+            # End the xUrllib (clear the cache)
+            self.uriOpener.end()
+            # Create a new one, so it can be used by exploit plugins.
+            self.uriOpener = xUrllib()
+            
+            # Let the progress module know our status.
+            self.progress.stop()
+            
+            if exceptionInstance:
+                om.out.error( str(exceptionInstance) )
+            
+            # FIXME: Feb 1, 2011. Next block is potentialy a real source of
+            # errors that turns into crashes if called when w3af has to stop
+            # bc of a previous error. I think it is fine to ignore them in 
+            # those cases; otherwise let the exception pass.
+            try:
+                tm.join(joinAll=True)
+                tm.stopAllDaemons()
+            except:
+                if not exceptionInstance:
+                    raise
+            
+            for plugin in self._plugins['grep']:
+                plugin.end()
+            
+            # Also, close the output manager.
+            om.out.endOutputPlugins()
+        finally:
+            # Now I'm definitly not running:
+            self._isRunning = False
+            
+            # No targets to be scanned.
+            cf.cf.save('targets', [])
         
     def isRunning( self ):
         '''
@@ -1201,14 +1219,14 @@ class w3afCore(object):
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
         '''
-        profile_home = get_home_dir() + os.path.sep + 'profiles' + os.path.sep
-        str_profile_list = self._getListOfFiles( profile_home, extension='.pw3af' )
+        profile_home = os.path.join(get_home_dir(), 'profiles')
+        str_profile_list = self._getListOfFiles(profile_home, extension='.pw3af')
         
         instance_list = []
         invalid_profiles = []
         
         for profile_name in str_profile_list:
-            profile_filename = profile_home + profile_name + '.pw3af'
+            profile_filename = os.path.join(profile_home, profile_name + '.pw3af')
             try:
                 profile_instance = profile( profile_filename )
             except:
@@ -1221,10 +1239,13 @@ class w3afCore(object):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        fileList = [ f for f in os.listdir( directory ) ]
-        strFileList = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == extension ]
-        if '__init__' in strFileList:
-            strFileList.remove ( '__init__' )
+        strFileList = []
+        
+        for f in os.listdir(directory):
+            fname, ext = os.path.splitext(f)
+            if ext == extension and fname != '__init__':
+                strFileList.append(fname)
+
         strFileList.sort()
         return strFileList
         
@@ -1260,32 +1281,34 @@ class w3afCore(object):
         # Save current to profile
         return self.saveCurrentToProfile( profile_name, profileDesc )
 
-    def saveCurrentToProfile( self, profile_name, profileDesc='' ):
+    def saveCurrentToProfile(self, profile_name, prof_desc='', prof_path=''):
         '''
-        Save the current configuration of the core to the profile called profile_name.
+        Save the current configuration of the core to the profile called 
+        profile_name.
         
-        @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
+        @return: The new profile instance if the profile was successfully saved.
+            otherwise raise a w3afException.
         '''
         # Open the already existing profile
-        new_profile = profile(profile_name)
+        new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
         
         # Config the enabled plugins
         for pType in self.getPluginTypes():
             enabledPlugins = []
             for pName in self.getEnabledPlugins(pType):
                 enabledPlugins.append( pName )
-            new_profile.setEnabledPlugins( pType, enabledPlugins )
+            new_profile.setEnabledPlugins(pType, enabledPlugins)
         
         # Config the profile options
         for pType in self.getPluginTypes():
             for pName in self.getEnabledPlugins(pType):
-                pOptions = self.getPluginOptions( pType, pName )
+                pOptions = self.getPluginOptions(pType, pName)
                 if pOptions:
-                    new_profile.setPluginOptions( pType, pName, pOptions )
+                    new_profile.setPluginOptions(pType, pName, pOptions)
                 
         # Config the profile target
         if cf.cf.getData('targets'):
-            new_profile.setTarget( ' , '.join(cf.cf.getData('targets')) )
+            new_profile.setTarget(' , '.join(cf.cf.getData('targets')))
         
         # Config the misc and http settings
         misc_settings = miscSettings.miscSettings()
@@ -1293,11 +1316,11 @@ class w3afCore(object):
         new_profile.setHttpSettings(self.uriOpener.settings.getOptions())
         
         # Config the profile name and description
-        new_profile.setDesc( profileDesc )
-        new_profile.setName( profile_name )
+        new_profile.setDesc(prof_desc)
+        new_profile.setName(profile_name)
         
         # Save the profile to the file
-        new_profile.save( profile_name )
+        new_profile.save(profile_name)
         
         return new_profile
         
@@ -1309,7 +1332,7 @@ class w3afCore(object):
         profileInstance.remove()
         return True
         
-    def useProfile( self, profile_name ):
+    def useProfile(self, profile_name, workdir=None):
         '''
         Gets all the information from the profile, and runs it.
         Raise a w3afException if the profile to load has some type of problem.
@@ -1320,10 +1343,10 @@ class w3afCore(object):
             return
         
         try:            
-            profileInstance = profile( profile_name ) 
-        except w3afException, w3:
+            profileInstance = profile(profile_name, workdir) 
+        except w3afException:
             # The profile doesn't exist!
-            raise w3
+            raise
         else:
             # It exists, work with it!
             for pluginType in self._plugins.keys():

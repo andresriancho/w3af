@@ -23,25 +23,48 @@ try:
 except w3afException, w3:
     print 'Something went wrong, w3af failed to init the output manager. Exception: ', str(w3)
     sys.exit(-9)
+
+usage_doc = '''
+w3af - Web Application Attack and Audit Framework
+
+Usage:
+
+    ./w3af_console -h
+    ./w3af_console -f
+    ./w3af_console [-s <script_file>]
+
+Options:
+
+    -h or --help
+        Display this help message.
+
+    -n or --no-update
+        No update check will be made when starting. This option takes 
+        precedence over the 'auto-update' setting in 'startup.conf' file.
+     
+    -f or --force-update
+        An update check will be made when starting. This option takes 
+        precedence over the 'auto-update' setting in 'startup.conf' file.
     
+    -p <profile> or --profile=<profile>
+        Run with the selected <profile>
+
+For more info visit http://w3af.sourceforge.net/
+'''    
 
 def usage():
-    om.out.information('w3af - Web Application Attack and Audit Framework')
-    om.out.information('')
-    om.out.information('Options:')
-    om.out.information('    -h              Print this help message.')
-    om.out.information('    -p <filename>   Run with the selected profile')
-    om.out.information('')
-    om.out.information('http://w3af.sourceforge.net/')
+    om.out.information(usage_doc)
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:i:he", [] )
+        long_options = ['help', 'no-update', 'force-update', 'profile=']
+        opts, args = getopt.getopt(sys.argv[1:], "ehnfp:", long_options)
     except getopt.GetoptError:
         # print help information and exit:
         usage()
         return -3
     profile = None
+    doupdate = None
     for o, a in opts:
         if o in ( "-e"  ):
             # easter egg
@@ -55,6 +78,10 @@ def main():
         if o == "-h":
             usage()
             return 0
+        if o in ('-f', '--force-update'):
+            doupdate = True
+        elif o in ('-n', '--no-update'):
+            doupdate = False
     
 
     # go with GTK, but first check about DISPLAY environment variable
@@ -64,7 +91,7 @@ def main():
             om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
             return -1
     import core.ui.gtkUi.main
-    core.ui.gtkUi.main.main(profile)
+    core.ui.gtkUi.main.main(profile, doupdate)
 
 if __name__ == "__main__":
     errCode = main()

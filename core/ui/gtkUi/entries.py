@@ -582,26 +582,34 @@ class EntryDialog(gtk.Dialog):
 
 
 class TextDialog(gtk.Dialog):
-    '''A dialog with a textview, fillable from outside
+    '''A dialog with  a textview, fillable from outside
 
     @param title: The title of the window
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, title):
+    def __init__(self, title, tabnames=(), icon=None):
         super(TextDialog,self).__init__(title, None, gtk.DIALOG_MODAL,
                                             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        # the textview inside scrollbars
-        sw = gtk.ScrolledWindow()
-        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.textview = gtk.TextView()
-        self.textview.set_editable(False)
-        self.textview.set_cursor_visible(False)
-        self.textview.set_wrap_mode(gtk.WRAP_WORD)
-        self.textbuffer = self.textview.get_buffer()
-        sw.add(self.textview)
-        self.vbox.pack_start(sw)
+        
+        self.textviews = []
+        if len(tabnames) > 1:
+            # The notebook
+            nb = gtk.Notebook()
+            for tabname in tabnames:
+                sw, textview = self._newTextView()
+                self.textviews.append(textview)
+                nb.append_page(sw, gtk.Label(tabname))
+                nb.set_current_page(0)
+            self.vbox.pack_start(nb)
+        else: # No netbook
+            sw, textview = self._newTextView()
+            self.textviews.append(textview)
+            self.vbox.pack_start(sw)
+
+        # the win icon
+        if icon:
+            self.set_icon_from_file(icon)
 
         # the ok button
         self.butt_ok = self.action_area.get_children()[0]
@@ -621,15 +629,34 @@ class TextDialog(gtk.Dialog):
         Handle the Ok button click.
         '''
         self.wait = False
+    
+    def _newTextView(self):
+        '''
+        Return a scrollable window containing a new textview.
+        '''
+        # the textview inside scrollbars
+        sw = gtk.ScrolledWindow()
+        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        textview = gtk.TextView()
+        textview.set_editable(False)
+        textview.set_cursor_visible(False)
+        textview.set_wrap_mode(gtk.WRAP_WORD)
+        sw.add(textview)
+        return (sw, textview)
 
-    def addMessage(self, text):
+    def addMessage(self, text, page_num=0):
         '''Adds a message to the textview.
 
         @param text: the message to add.
         '''
-        iterl = self.textbuffer.get_end_iter()
-        self.textbuffer.insert(iterl, text)
-        self.textview.scroll_to_mark(self.textbuffer.get_insert(), 0)
+        textview = self.textviews[page_num]
+        textbuffer = textview.get_buffer()
+        iterl = textbuffer.get_end_iter()
+        
+        textbuffer.insert(iterl, text)
+        textview.scroll_to_mark(textbuffer.get_insert(), 0)
+
         
     def done(self):
         '''Actives the OK button, waits for user, and close self.'''

@@ -181,12 +181,13 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     #   Parse the content
     #   Case #1, multipart form data
     #
-    if 'content-type' in headers.keys() and headers['content-type'].startswith('multipart/form-data'):
-        tmp, pdict = cgi.parse_header(headers['content-type'])
+    conttype = headers.get('content-type', '')
+    if conttype and conttype.startswith('multipart/form-data'):
+        tmp, pdict = cgi.parse_header(conttype)
         try:
             dc = cgi.parse_multipart(StringIO(postData), pdict)
         except:
-            om.out.debug('Multipart form data is invalid, the browser sent something wierd.')
+            om.out.debug('Multipart form data is invalid, the browser sent something weird.')
         else:
             resultDc = queryString()
             for i in dc.keys():

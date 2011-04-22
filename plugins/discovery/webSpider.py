@@ -67,7 +67,9 @@ class webSpider(baseDiscoveryPlugin):
         self._brokenLinks = []
         self._fuzzableRequests = []
         self._first_run = True
-        self._already_crawled = disk_list()
+        # TODO: param 'text_factory' *MUST* be removed when the toolkit fully
+        # supports unicode
+        self._already_crawled = disk_list(text_factory=str)
         self._already_filled_form = ScalableBloomFilter()
 
         # User configured variables

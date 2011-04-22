@@ -25,7 +25,7 @@ from core.ui.gtkUi.entries import RememberingWindow
 from core.ui.gtkUi.entries import SemiStockButton
 from core.ui.gtkUi.httpeditor import HttpEditor
 from core.data.parsers.httpRequestParser import httpRequestParser
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException
 
 class HttpRawView(HttpEditor):
     '''Raw view with HTTP Editor.'''

@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import *
 from core.data.fuzzer.fuzzer import *
 from core.controllers.intrusionTools.delayedExecution import delayedExecution
-import time
+
 
 class atHandler( delayedExecution ):
     '''

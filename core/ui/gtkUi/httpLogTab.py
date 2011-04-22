@@ -208,6 +208,9 @@ class httpLogTab(entries.RememberingHPaned):
         for filterType in self._filterTypes:
             filterTypes.add(Option(filterType[0], filterType[2], filterType[1], "boolean"))
         self.pref.addSection('types', _('Response Content Type'), filterTypes)
+        filterSize = optionList()
+        filterSize.add(Option("resp_size", False, "Not Null", "boolean"))
+        self.pref.addSection('sizes', _('Response Size'), filterSize)
         self.pref.show()
         self._advSearchBox.pack_start(self.pref, False, False)
         self._advSearchBox.hide_all()
@@ -343,6 +346,9 @@ class httpLogTab(entries.RememberingHPaned):
             searchData.append(('id', minId, ">"))
         if refresh:
             searchData.append(('id', self._lastId, ">"))
+        # Sizes
+        if self.pref.getValue('sizes', 'resp_size'):
+            searchData.append(('response_size', 0, ">"))
         # Tags
         if self.pref.getValue('commented', 'tag'):
             searchData.append(('tag', '', "!="))

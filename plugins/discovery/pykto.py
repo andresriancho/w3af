@@ -311,11 +311,13 @@ class pykto(baseDiscoveryPlugin):
         if kb.kb.getData( 'hmap' , 'serverString' ) != []:
             kb_server = kb.kb.getData( 'hmap' , 'serverString' )
             self._source = 'hmap'
+
         elif kb.kb.getData( 'serverHeader' , 'serverString' ) != []:
             # Get the server type from the serverHeader plugin. It gets this info
             # by reading the "server" header of request responses.
             kb_server = kb.kb.getData( 'serverHeader' , 'serverString' )
             self._source = 'serverHeader'
+
         else:
             self._source = 'not available'
             kb_server = 'not available'
@@ -558,7 +560,7 @@ class pykto(baseDiscoveryPlugin):
         self._cgi_dirs = optionsMap['cgiDirs'].getValue()
         self._admin_dirs = optionsMap['adminDirs'].getValue()
         self._nuke = optionsMap['nukeDirs'].getValue()
-        self._db_file = optionsMap['extra_db_file'].getValue()
+        self._extra_db_file = optionsMap['extra_db_file'].getValue()
         self._db_file = optionsMap['dbFile'].getValue()
         self._mutate_tests = optionsMap['mutateTests'].getValue()
         self._generic_scan = optionsMap['genericScan'].getValue()

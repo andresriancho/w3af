@@ -73,6 +73,7 @@ except ImportError:
 import threading, shelve, os
 import core.controllers.w3afCore
 import core.controllers.miscSettings
+from core.controllers.auto_update import VersionMgr, is_working_copy
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 from core.data.parsers.urlParser import url_object
@@ -127,6 +128,7 @@ ui_menu = """
     <menu action="HelpMenu">
       <menuitem action="Help"/>
       <menuitem action="Wizards"/>
+      <menuitem action="ReportBug"/>
       <separator name="s4"/>
       <menuitem action="About"/>
     </menu>
@@ -251,13 +253,55 @@ class MainApp(object):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
 
-    def __init__(self, profile):
+    def __init__(self, profile, do_upd):
+        w3af_icon = 'core/ui/gtkUi/data/w3af_icon.png'
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        self.window.set_icon_from_file(w3af_icon)
         self.window.connect("delete_event", self.quit)
         self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
+        
+        if do_upd in (None, True) and is_working_copy():
+            # Do SVN update stuff
+            vmgr = VersionMgr(log=splash.push)
+            
+            #  Set callbacks
+            def ask(msg):
+                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+                dlg.set_icon_from_file(w3af_icon)
+                opt = dlg.run()
+                dlg.destroy()
+                return opt == gtk.RESPONSE_YES
+            vmgr.callback_onupdate_confirm = ask
+            
+            #  Event registration
+            def notify(msg):
+                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                    gtk.MESSAGE_QUESTION, gtk.BUTTONS_OK, msg)
+                dlg.set_icon_from_file(w3af_icon)
+                dlg.run()
+                dlg.destroy()
+            vmgr.register(VersionMgr.ON_ACTION_ERROR, notify, 'Error occured.')
+            msg = 'At least one new dependency was included in w3af. Please ' \
+            'update manually.'
+            vmgr.register(VersionMgr.ON_UPDATE_ADDED_DEP, notify, msg)
+            
+            #  If an error occurred and the error the result is None
+            resp = vmgr.update(force=do_upd)
+            if resp:
+                files, lrev, rrev = resp
+                if rrev:
+                    tabnames=("Updated Files", "Latest Changes")
+                    dlg = entries.TextDialog("Update report", 
+                                             tabnames=tabnames,
+                                             icon=w3af_icon)
+                    dlg.addMessage(str(files), page_num=0)
+                    dlg.addMessage(str(vmgr.show_summary(lrev, rrev)),
+                                   page_num=1)
+                    dlg.done()
+                    dlg.dialog_run()
 
         # title and positions
         self.window.set_title(MAINTITLE)
@@ -304,7 +348,7 @@ class MainApp(object):
         accelgroup = uimanager.get_accel_group()
         self.window.add_accel_group(accelgroup)
         self._actiongroup = actiongroup = gtk.ActionGroup('UIManager')
-
+            
         # Create actions
         actiongroup.add_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback
@@ -334,6 +378,7 @@ class MainApp(object):
             ('ToolsMenu', None, _('_Tools')),
 
             ('Wizards', gtk.STOCK_SORT_ASCENDING, _('_Wizards'), None, _('Point & Click Penetration Test'), self._wizards),
+            ('ReportBug', gtk.STOCK_SORT_ASCENDING, _('_Report a Bug'), None, _('Report a Bug'), self.report_bug),
             ('Help', gtk.STOCK_HELP, _('_Help'), None, _('Help regarding the framework'), self.menu_help),
             ('About', gtk.STOCK_ABOUT, _('_About'), None, _('About the framework'), self.menu_about),
             ('HelpMenu', None, _('_Help')),
@@ -825,6 +870,12 @@ class MainApp(object):
         '''Shows the about message.'''
         dlg = AboutDialog(self.w3af)
         dlg.run()
+    
+    def report_bug(self, action):
+        '''Report bug to Sourceforge'''
+        from .bug_report import sourceforge_bug_report
+        sfbr = sourceforge_bug_report()
+        sfbr.report_bug()
 
     def _exploit_all(self, action):
         '''Exploits all vulns.'''
@@ -871,5 +922,5 @@ class MainApp(object):
         helpers.open_help(chapter)
 
     
-def main(profile):
-    MainApp(profile)
+def main(profile, do_upd):
+    MainApp(profile, do_upd)

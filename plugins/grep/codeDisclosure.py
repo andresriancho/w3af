@@ -60,13 +60,48 @@ class codeDisclosure(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
+
+        Init
+        >>> import codeDisclosure
+        >>> codeDisclosure.is_404 = lambda x: False
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> o = create_temp_dir()
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> c = codeDisclosure.codeDisclosure()
+        >>> c.grep(request, response)
+        >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))
+        0
+        
+        Disclose some PHP code,
+        >>> kb.kb.cleanup()
+        >>> body = 'header <? echo "a"; ?> footer'
+        >>> url = 'http://www.w3af.com/'
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> c = codeDisclosure.codeDisclosure()
+        >>> c.grep(request, response)
+        >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))
+        1
+
         '''
         if response.is_text_or_html() and response.getURL() not in self._already_added:
             
-            match, lang  = is_source_file( response.getBody() )
+            match, lang  = is_source_file(response.getBody())
             
             if match:
-                
                 # Check also for 404
                 if not is_404( response ):
                     v = vuln.vuln()
@@ -82,7 +117,6 @@ class codeDisclosure(baseGrepPlugin):
                     self._already_added.add( response.getURL() )
                 
                 else:
-                    
                     self._first_404 = False
                     v = vuln.vuln()
                     v.setPluginName(self.getName())

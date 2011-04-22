@@ -34,49 +34,65 @@ class profile:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )    
     '''
-    def __init__( self, profile_file_name=None ):
+    def __init__(self, profname='', workdir=None):
         '''
-        Creating a profile instance like p = profile() is done in order to be able to create a new profile from scratch and then
-        call save( profile_file_name ).
+        Creating a profile instance like p = profile() is done in order to be
+        able to create a new profile from scratch and then call
+        save(profname).
         
-        When reading a profile, you should use p = profile( profile_file_name ).
+        When reading a profile, you should use p = profile(profname).
         '''
-        # The default optionxform transforms the option to lower case; w3af needs the value as it is
-        def optionxform( option ):
-            return option
+        # The default optionxform transforms the option to lower case;
+        # w3af needs the value as it is
+        optionxform = lambda opt: opt
             
         self._config = ConfigParser.ConfigParser()
         # Set the new optionxform function
         self._config.optionxform = optionxform
         
-        # Save the profile_file_name variable
-        self._profile_file_name = profile_file_name
-    
-        if profile_file_name is not None:
-            # Verify if I can find the file
-            if not os.path.exists(profile_file_name):
-
-                # The file isn't there, let's try with a .pw3af ...
-                if not profile_file_name.endswith('.pw3af'):
-                    profile_file_name += '.pw3af'
-                
-                if not os.path.exists(profile_file_name):
-                    
-                    # Search in the default path...
-                    profile_home = get_home_dir() + os.path.sep + 'profiles' + os.path.sep
-                    profile_file_name = profile_home + profile_file_name
-                    
-                    if not os.path.exists(profile_file_name):
-                        raise w3afException('The profile "' + profile_file_name + '" wasn\'t found.')
-           
+        if profname:
+            # Get profile name's complete path
+            profname = self._get_real_profile_name(profname, workdir)
             try:
-                self._config.read(profile_file_name)
-            except:
-                raise w3afException('Unknown format in profile: ' + profile_file_name )
-            else:
-                # Save the profile_file_name variable
-                self._profile_file_name = profile_file_name
+                self._config.read(profname)
+            except Exception:
+                raise w3afException('Unknown format in profile: %s' % profname)
+        
+        # Save the profname variable
+        self._profile_file_name = profname
     
+    def _get_real_profile_name(self, profilename, workdir):
+        '''
+        Return the complete path for `profilename`.
+        
+        @raise w3afException: If no existing profile file is found this
+            exception is raised with the proper desc message.
+        '''
+        # Alias for os.path. Minor optimization
+        ospath = os.path
+        pathexists = os.path.exists
+        
+        # Add extension if necessary
+        if not profilename.endswith('.pw3af'):
+            profilename += '.pw3af'
+        profname = profilename
+        
+        # Try to find the file
+        found = pathexists(profname)
+        
+        if not (ospath.isabs(profname) or found):
+            profname = ospath.join(get_home_dir(), 'profiles', profilename)
+            found = pathexists(profname)
+            # Ok, let's try to find it in the passed working directory.
+            if not found and workdir:
+                profname = ospath.join(workdir, profilename)
+                found = pathexists(profname)
+                        
+        if not found:
+            raise w3afException('The profile "%s" wasn\'t found.' % profilename)
+        return profname
+    
+
     def get_profile_file(self):
         '''
         @return: The path and name of the file that contains the profile definition.
@@ -352,18 +368,19 @@ class profile:
         # Something went wrong
         return None
     
-    def save( self, file_name = '' ):
+    def save(self, file_name=''):
         '''
         Saves the profile to file_name.
         
         @return: None
         '''
-        if file_name == '' and self._profile_file_name is None:
-            raise w3afException('Error while saving profile, you didn\'t specified the file name.')
-        elif file_name != '' and self._profile_file_name is None:
-            # The user is specifiyng a file_name!
-            if not file_name.endswith('.pw3af'):
-                file_name += '.pw3af'
+        if not self._profile_file_name:
+            if not file_name:
+                raise w3afException('Error while saving profile, you didn\'t '
+                                    'specified the file name.')
+            else: # The user's specified a file_name!
+                if not file_name.endswith('.pw3af'):
+                    file_name += '.pw3af'
                 
             if os.path.sep not in file_name:
                 file_name = os.path.join(get_home_dir(), 'profiles', file_name )

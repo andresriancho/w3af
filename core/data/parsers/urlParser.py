@@ -71,12 +71,11 @@ def parse_qs( url_encoded_string, ignoreExceptions=True ):
             #
             #   (please note the lack of [0]) , and that if the value isn't a list... 
             #    I create an artificial list
-            for i in parsed_qs.keys():
-                if isinstance( parsed_qs[ i ], list ):
-                    result[ i ] = parsed_qs[ i ]
-                else:
-                    result[ i ] = [parsed_qs[ i ], ]
-
+            for p, v in parsedQs.iteritems():
+                if type(v) is not list:
+                    v = [v]
+                result[p] = v
+                
     return result
 
 

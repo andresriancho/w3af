@@ -45,7 +45,9 @@ SP = ' '
 
 class httpResponse(object):
     
-    def __init__( self, code, read , info, geturl, original_url, msg='OK', id=None, time=0.2):
+
+    def __init__(self, code, read, info, geturl, originalUrl,
+                 msg='OK', id=None, time=0.2, alias=None):
         '''
         @parameter time: The time between the request and the response.
         '''
@@ -65,6 +67,8 @@ class httpResponse(object):
         # The URL that we really GET'ed
         self._realurl = original_url.uri2url()
         self._uri = original_url
+        # Set the info
+        self._info = info
         # The URL where we were redirected (may be the same as originalUrl when no redirect)
         self._redirectedURL = geturl
         self._redirectedURI = geturl.uri2url()
@@ -84,6 +88,7 @@ class httpResponse(object):
         self.setBody(read)
         self._msg = msg
         self._time = time
+        self._alias = alias
         
         # A unique id identifier for the response
         self.id = id
@@ -95,7 +100,9 @@ class httpResponse(object):
     def getRedirURL( self ): return self._redirectedURL
     def getRedirURI( self ): return self._redirectedURI
     def getCode( self ): return self._code
+    def getAlias(self): return self._alias
     def getBody( self ): return self._body
+    def info(self): return self._info
 
     def getClearTextBody(self):
         '''
@@ -133,12 +140,13 @@ class httpResponse(object):
                 return self._clear_text_body
 
     
-    def getDOM( self ):
+    def getDOM(self):
         '''
-        I don't want to calculate the soup for all responses, only for those which are needed.
-        This method will first calculate the soup, and then save it for other calls to this method.
+        I don't want to calculate the DOM for all responses, only for those
+        which are needed. This method will first calculate the DOM, and then
+        save it for upcoming calls.
         
-        @return: The soup, or None if the HTML normalization failed.
+        @return: The DOM, or None if the HTML normalization failed.
         '''
         if self._dom is None:
             try:
@@ -154,9 +162,9 @@ class httpResponse(object):
         '''
         @return: A normalized body
         '''
-        if self._dom is not None:
-            return etree.tostring( self._dom )
-        
+        dom = self.getDOM()
+        if dom is not None:
+            return etree.tostring(dom, encoding=self._charset)
         return None
     
     def getHeaders( self ): return self._headers
@@ -322,8 +330,6 @@ class httpResponse(object):
                 #   Image?
                 if self._content_type.lower().count('image'):
                     self._is_image_response = True
-                
-                return
 
     def getContentType( self ):
         '''

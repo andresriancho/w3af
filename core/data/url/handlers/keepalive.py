@@ -25,13 +25,13 @@
 
 """An HTTP handler for urllib2 that supports HTTP 1.1 and keepalive.
 
->>> import urllib2
->>> from keepalive import HTTPHandler
->>> keepalive_handler = HTTPHandler()
->>> opener = urllib2.build_opener(keepalive_handler)
->>> urllib2.install_opener(opener)
->>> 
->>> fo = urllib2.urlopen('http://www.python.org')
+>> import urllib2
+>> from keepalive import HTTPHandler
+>> keepalive_handler = HTTPHandler()
+>> opener = urllib2.build_opener(keepalive_handler)
+>> urllib2.install_opener(opener)
+>> 
+>> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
 connections are still in use, another connection will be opened.  If
@@ -55,7 +55,7 @@ should be done with care when using multiple threads.
     connections immediately after connections are closed
   * no checks are done to prevent in-use connections from being closed
 
->>> keepalive_handler.close_all()
+>> keepalive_handler.close_all()
 
 EXTRA ATTRIBUTES AND METHODS
 
@@ -71,7 +71,7 @@ EXTRA ATTRIBUTES AND METHODS
   If you want the best of both worlds, use this inside an
   AttributeError-catching try:
 
-    >>> try:
+    >> try:
     ...     status = fo.status
     ... except AttributeError:
     ...     status = None
@@ -120,7 +120,8 @@ import sys
 import time
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException, \
+    w3afMustStopByKnownReasonExc
 from core.controllers.misc.datastructs import deque
 import core.data.kb.config as cf
 from core.data.constants.httpConstants import NO_CONTENT
@@ -256,6 +257,10 @@ class HTTPResponse(httplib.HTTPResponse):
 
     def info(self):
         return self.headers
+
+    @property
+    def URL(self):
+        return self.geturl()
 
     def geturl(self):
         return self._url
@@ -499,6 +504,9 @@ class KeepAliveHandler:
     _cm = connMgr
 
     def __init__(self):
+        # Typically a urllib2.OpenerDirector instance. Set by the
+        # urllib2 mechanism.
+        self.parent = None
         self._pool_lock = threading.RLock()
         # Map hosts to a `collections.deque` of response status.
         self._hostresp = {}
@@ -561,14 +569,20 @@ class KeepAliveHandler:
             # a w3afMustStopException if this is the case.
             if len(resp_statuses) == self._curr_check_failures and \
                 all(st == RESP_TIMEOUT for st in resp_statuses):
-                msg = 'w3af found too much consecutive timeouts. The remote ' \
-                'webserver seems to be unresponsive; please verify manually.'
-                raise w3afMustStopException(msg)
+                msg = ('w3af found too much consecutive timeouts. The remote '
+                'webserver seems to be unresponsive; please verify manually.')
+                reason = 'Timeout while trying to reach target.'
+                raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
             conn_factory = self._get_connection
             conn = self._cm.get_available_connection(host, conn_factory)
 
             if conn.is_fresh:
+                # First of all, call the request method. This is needed for
+                # HTTPS Proxy
+                if isinstance(conn, ProxyHTTPConnection):
+                    conn.proxy_setup(req.get_full_url())
+
                 conn.is_fresh = False
                 self._start_transaction(conn, req)
                 resp = conn.getresponse()
@@ -585,6 +599,7 @@ class KeepAliveHandler:
                     # HTTPS Proxy
                     if isinstance(conn, ProxyHTTPConnection):
                         conn.proxy_setup(req.get_full_url())
+
                     # Try again with the fresh one
                     conn.is_fresh = False
                     self._start_transaction(conn, req)
@@ -598,6 +613,8 @@ class KeepAliveHandler:
                 _err = URLTimeoutError()
             else:
                 resp_statuses.append(RESP_BAD)
+                if isinstance(err, httplib.HTTPException):
+                    err = repr(err)
                 _err = urllib2.URLError(err)
             raise _err
 
@@ -779,7 +796,7 @@ class ProxyHTTPConnection(_HTTPConnection):
             except KeyError:
                 raise ValueError, "unknown protocol for: %s" % url
         else:
-            self._real_port = port
+            self._real_port = int(port)
 
     def connect(self):
         httplib.HTTPConnection.connect(self)

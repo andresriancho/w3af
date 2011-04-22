@@ -24,6 +24,6 @@ back
 
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 7
+assert len( kb.kb.getData('urls', 'urlList') ) == 10
 
 exit

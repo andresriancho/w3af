@@ -148,3 +148,9 @@ class read_shell(shell):
         return '<shell object (rsystem: "'+self._rOS+'")>'
                     
     __str__ = __repr__
+
+    def read(self, filename):
+        '''
+        To be overriden by subclasses.
+        '''
+        pass

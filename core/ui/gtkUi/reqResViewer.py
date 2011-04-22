@@ -297,6 +297,7 @@ class requestResponsePart(gtk.Notebook):
                 widg(bool(len(self._obj.getHeaders())))
 
     def clearPanes(self):
+        self._obj = None
         for view in self._views:
             view.initial = True
             view.clear()

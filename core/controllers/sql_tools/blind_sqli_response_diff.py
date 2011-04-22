@@ -241,7 +241,7 @@ class blind_sqli_response_diff(basePlugin):
         
         totalLen = float( len( setb1 ) + len( setb2 ) )
         if totalLen == 0:
-            om.out.error( 'The length of both pages are zero. Cant work with this.' )
+            om.out.debug( 'The length of both pages is zero. Cant apply setIntersection.' )
             return False
         equal = ( 2 * len(intersection) ) / totalLen 
         

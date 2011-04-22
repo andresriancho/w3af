@@ -158,8 +158,14 @@ class WebKitRenderingView(RenderingView):
         '''Show object in view.'''
         mimeType = 'text/html'
         # mimeType = obj.getContentType()
-        if obj.is_text_or_html():
-            self._renderingWidget.load_string(obj.getBody(), mimeType, obj.getCharset(),obj.getURI())
+        try:
+            if obj.is_text_or_html():
+                self._renderingWidget.load_string(obj.getBody(), mimeType, 
+                        obj.getCharset(),obj.getURI())
+            else:
+                raise
+        except:
+            self._renderingWidget.load_string(_("Can't render response"), mimeType, 'UTF-8', 'error')
 
     def clear(self):
         '''Clear view.'''

@@ -21,19 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from __future__ import with_statement
-import sqlite3
-
-import threading
-import os
-import sys
-
 from random import choice
+import os
+import sqlite3
 import string
-
-try:
-   import cPickle as pickle
-except:
-   import pickle
+import sys
+import threading
 
 from core.controllers.misc.temp_dir import get_temp_dir
 
@@ -64,7 +57,6 @@ class disk_list(object):
         Create the sqlite3 database and the thread lock.
         
         @param text_factory: A callable object to handle strings.
-        @return: None
         '''
         # Init some attributes
         self._conn = None
@@ -84,27 +76,30 @@ class disk_list(object):
             filename = ''.join([choice(string.letters) for i in range(12)]) + '.w3af.temp_db'
             self._filename = os.path.join(tempdir, filename)
             
-            # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
-            if (sys.platform=='win32') or (sys.platform=='cygwin'):
-                self._filename = self._filename.decode( "MBCS" ).encode("utf-8" )
+            if sys.platform in ('win32', 'cygwin'):
+                self._filename = self._filename.decode("MBCS").encode("utf-8")
 
             try:
                 # Create the database
                 self._conn = sqlite3.connect(self._filename, check_same_thread=False)
                 
                 # Set up the text_factory to the connection
-                # See http://sourceforge.net/tracker/?func=detail&aid=3045048&group_id=170274&atid=853652
                 self._conn.text_factory = self._text_factory
 
                 # Create table
-                self._conn.execute('''create table data (index_ real, information text)''')
+                self._conn.execute(
+                    '''CREATE TABLE data (index_ real, information text)''')
+
+                # Create index
+                self._conn.execute(
+                    '''CREATE INDEX data_index ON data(information)''')
 
             except Exception,  e:
                 
                 fail_count += 1
                 if fail_count == 5:
-                    msg = 'Failed to create database file. Original exception: "%s %s"' % (e, self._filename)
-                    raise Exception( msg )
+                    raise Exception('Failed to create database file. '
+                        'Original exception: "%s %s"' % (e, self._filename))
 
                 self._filename = None
 
@@ -136,7 +131,11 @@ class disk_list(object):
         '''
         with self._db_lock:
             t = (str(value), )
-            cursor = self._conn.execute('select count(*) from data where information=?', t)
+            # Adding the "limit 1" to the query makes it faster, as it won't 
+            # have to scan through all the table/index, it just stops on the
+            # first match.
+            cursor = self._conn.execute(
+                    'SELECT count(*) FROM data WHERE information=? limit 1', t)
             return cursor.fetchone()[0]
     
     def append(self, value):
@@ -150,7 +149,7 @@ class disk_list(object):
         # thread safe here!
         with self._db_lock:
             t = (self._current_index, str(value))
-            self._conn.execute("insert into data values (?, ?)", t)
+            self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
             self._current_index += 1
     
     def __iter__(self):
@@ -163,13 +162,13 @@ class disk_list(object):
                 r = self._cursor.next()
                 return r[0]
         
-        cursor = self._conn.execute('select information from data')
+        cursor = self._conn.execute('SELECT information FROM data')
         mc = my_cursor(cursor)
         return mc
         
     def __len__(self):
         with self._db_lock:
-            cursor = self._conn.execute('select count(*) from data')
+            cursor = self._conn.execute('SELECT count(*) FROM data')
             return cursor.fetchone()[0]
 
 import unittest

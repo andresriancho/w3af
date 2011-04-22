@@ -86,13 +86,11 @@ class gtkOutput(baseOutputPlugin):
 
             # Create DB!
             self._db.open(dbName)
-            # Create table
+            # Init history
             historyItem = HistoryItem(self._db)
-            self._db.createTable(historyItem.getTableName(),
-                    historyItem.getColumns(),
-                    historyItem.getPrimaryKeyColumns())
+            historyItem.initStructure()
             kb.kb.save('gtkOutput', 'db', self._db)
-    
+
     def debug(self, msgString, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -140,19 +138,7 @@ class gtkOutput(baseOutputPlugin):
         self.queue.put( m )
     
     def logHttp( self, request, response):
-        historyItem = HistoryItem()
-        try:
-            historyItem.request = request
-            historyItem.response = response
-            historyItem.save()
-        except KeyboardInterrupt, k:
-            raise k
-        except Exception, e:
-            msg = 'Exception while inserting request/response to the database: ' + str(e) + '\n'
-            msg += 'The request/response that generated the error is: '+ str(response.getId())
-            msg += ' ' + request.getURI() + ' ' + str(response.getCode())
-            om.out.error( msg )
-            raise e
+        pass
     
     def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
         '''
@@ -181,7 +167,8 @@ class gtkOutput(baseOutputPlugin):
     
     def setOptions( self, OptionList ):
         pass
-        
+
+
 class message:
     def __init__( self, msg_type, msg , msg_time, newLine=True ):
         '''

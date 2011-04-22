@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from __future__ import with_statement
+
 import urlOpenerSettings
 
 #
@@ -37,7 +39,8 @@ consecutive_number_generator as seq_gen
 
 from core.controllers.threads.threadManager import threadManagerObj as thread_manager
 
-from core.controllers.w3afException import w3afMustStopException, w3afException
+from core.controllers.w3afException import w3afMustStopException, \
+    w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc, w3afException
 
 #
 #   Data imports
@@ -60,11 +63,15 @@ import core.data.kb.knowledgeBase as kb
 import urllib2
 import urllib
 
-import time
+import errno
 import os
+import socket
+import threading
+import time
 
 # for better debugging of handlers
 import traceback
+import re
 
     
 class xUrllib(object):
@@ -77,13 +84,13 @@ class xUrllib(object):
     def __init__(self):
         self.settings = urlOpenerSettings.urlOpenerSettings()
         self._opener = None
-        self._cacheOpener = None
         self._memoryUsageCounter = 0
         
         # For error handling
         self._lastRequestFailed = False
         self._last_errors = deque(maxlen=10)
         self._errorCount = {}
+        self._countLock = threading.RLock()
         
         self._dnsCache()
         self._tm = thread_manager
@@ -159,7 +166,7 @@ class xUrllib(object):
                     os.unlink(cacheLocation + sep + f)
                 os.rmdir(cacheLocation)
         except Exception, e:
-            om.out.debug('Error while cleaning urllib2 cache, exception: ' + str(e))
+            om.out.error('Error while cleaning urllib2 cache, exception: ' + str(e))
         else:
             om.out.debug('Cleared urllib2 local cache.')
     
@@ -181,7 +188,7 @@ class xUrllib(object):
         #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
         '''
         om.out.debug('Enabling _dnsCache()')
-        import socket
+        
         if not hasattr( socket, 'already_configured' ):
             socket._getaddrinfo = socket.getaddrinfo
         
@@ -204,13 +211,11 @@ class xUrllib(object):
             socket.already_configured = True
     
     def _init( self ):
-        if self.settings.needUpdate or \
-        self._opener is None or self._cacheOpener is None:
+        if self.settings.needUpdate or self._opener is None:
         
             self.settings.needUpdate = False
             self.settings.buildOpeners()
             self._opener = self.settings.getCustomUrlopen()
-            self._cacheOpener = self.settings.getCachedUrlopen()
 
     def getHeaders( self, uri ):
         '''
@@ -270,7 +275,8 @@ class xUrllib(object):
         
     def GET(self, uri, data=None, headers={}, useCache=False, grepResult=True):
         '''
-        Gets a uri using a proxy, user agents, and other settings that where set previously.
+        Gets a uri using a proxy, user agents, and other settings that where
+        set previously.
         
         >>> x = xUrllib()
         >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
@@ -296,7 +302,7 @@ class xUrllib(object):
 
         if self._isBlacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-        
+
         #
         #    Create and send the request
         #
@@ -498,10 +504,11 @@ class xUrllib(object):
         
         start_time = time.time()
         res = None
-        the_opener = self._cacheOpener if useCache else self._opener
+
+        req.get_from_cache = True if useCache else False
         
         try:
-            res = the_opener.open(req)
+            res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
             msg = '%s %s returned HTTP code "%s" - id: %s' % \
@@ -533,6 +540,7 @@ class xUrllib(object):
             else:
                 om.out.debug('No grep for: "%s", the plugin sent ' \
                              'grepResult=False.' % geturl_instance)
+
             return httpResObj
         except urllib2.URLError, e:
             # I get to this section of the code if a 400 error is returned
@@ -546,28 +554,16 @@ class xUrllib(object):
             try:
                 e.reason[0]
             except:
-                raise w3afException('Unexpected error in urllib2 : %s' \
+                raise w3afException('Unexpected error in urllib2 : %s'
                                      % repr(e.reason))
-            if isinstance(e.reason, tuple): # Is it a tuple?
-                msg = 'w3af failed to reach the server while requesting:' \
-                ' "%s".\nReason: "%s", error code: "%s"; going to retry.' \
-                % (original_url, e.reason[1], e.reason[0])
 
-                # TODO: Which case is this one?
-                # Terminate!
-                if e.reason[0] in (-2, 111):
-                    raise w3afException(msg)
-
-            else: # Not a tuple. It might a wrapped socket or httplib error
-                # See `except` block in <keepalive.KeepAliveHandler.do_open>
-                # method for details.
-                msg = 'w3af failed to reach the server while requesting:' \
-                ' "%s".\nReason: "%s"; going to retry.' % \
-                (original_url, e.reason)
+            msg = ('w3af failed to reach the server while requesting:'
+                  ' "%s".\nReason: "%s"; going to retry.' % 
+                  (original_url, e.reason))
 
             # Log the errors
             om.out.debug(msg)
-            om.out.debug('Traceback for this error: %s' % \
+            om.out.debug('Traceback for this error: %s' %
                          traceback.format_exc())
             req._Request__original = original_url
             # Then retry!
@@ -578,13 +574,9 @@ class xUrllib(object):
         except w3afMustStopException:
             raise
         except Exception, e:
-            # This except clause will catch errors like 
-            # "(-3, 'Temporary failure in name resolution')"
-            # "(-2, 'Name or service not known')"
-            # The handling of these errors is complex... if I get a lot of 
-            # errors in a row, I'll raise a 'w3afMustStopException' because 
-            # the remote webserver might be unreachable.
-            # For the first N errors, I just return an empty response...
+            # This except clause will catch unexpected errors
+            # For the first N errors, return an empty response...
+            # Then a w3afMustStopException will be raised
             msg = '%s %s returned HTTP code "%s"' % \
             (req.get_method(), original_url, NO_CONTENT)
             om.out.debug(msg)
@@ -597,7 +589,16 @@ class xUrllib(object):
                 del self._errorCount[req_id]
 
             original_url_instance = url_object(original_url)
-            self._incrementGlobalErrorCount(e)
+
+            trace_str = traceback.format_exc()
+            parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)', trace_str )
+            # Returns something similar to:
+            #   [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'), ('trace_test.py', '5', 'abc')]
+            #
+            # Where ('filename', 'line-number', 'function-name')
+
+            self._incrementGlobalErrorCount(e, parsed_traceback)
+
             
             return self._new_no_content_resp(original_url_instance, log_it=True)
 
@@ -639,7 +640,8 @@ class xUrllib(object):
             if grepResult:
                 self._grepResult(req, httpResObj)
             else:
-                om.out.debug('No grep for : ' + geturl + ' , the plugin sent grepResult=False.')
+                om.out.debug('No grep for : %s , the plugin sent '
+                             'grepResult=False.' % geturl)
             return httpResObj
 
     def _readRespose( self, res ):
@@ -671,30 +673,54 @@ class xUrllib(object):
                                             (error_amt, req.get_full_url())
             raise w3afException(msg)
     
-    def _incrementGlobalErrorCount(self, error):
+    def _incrementGlobalErrorCount(self, error, parsed_traceback=[]):
         '''
         Increment the error count, and if we got a lot of failures raise a
-        "w3afMustStopException"
+        "w3afMustStopException" subtype.
+        
+        @param error: Exception object.
+
+        @param parsed_traceback: A list with the following format:
+            [('trace_test.py', '9', 'one'), ('trace_test.py', '17', 'two'), ('trace_test.py', '5', 'abc')]
+            Where ('filename', 'line-number', 'function-name')
+
         '''
         if self._ignore_errors_conf:
             return
+        
+        last_errors = self._last_errors
 
-        # All the logic follows:
         if self._lastRequestFailed:
-            self._last_errors.append(str(error))
+            last_errors.append( ( str(error) , parsed_traceback ) )
         else:
             self._lastRequestFailed = True
         
-        errtotal = len(self._last_errors)
+        errtotal = len(last_errors)
         
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
         
-        if errtotal >= 10 and not self._mustStop:
-            msg = 'The xUrllib found too much consecutive errors. The remote' \
-            ' webserver doesn\'t seem to be reachable anymore; please verify' \
-            ' manually.'
-            self.stop()
-            raise w3afMustStopException(msg, self._last_errors)
+        with self._countLock:
+            if errtotal >= 10 and not self._mustStop:
+                # Stop using xUrllib instance
+                self.stop()
+                # Known reason errors. See errno module for more info on these
+                # errors.
+                from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
+                    ENETDOWN, ENETUNREACH
+                EUNKNSERV = -2 # Name or service not known error
+                known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
+                                ECONNRESET, ENETDOWN, ENETUNREACH)
+                
+                msg = ('xUrllib found too much consecutive errors. The '
+                'remote webserver doesn\'t seem to be reachable anymore.')
+                
+                if isinstance(error, urllib2.URLError) and \
+                    isinstance(error.reason, socket.error) and \
+                    error.reason[0] in known_errors:
+                    reason = error.reason
+                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
+                else:
+                    raise w3afMustStopByUnknownReasonExc(msg, errs=last_errors)                    
 
     def ignore_errors(self, yes_no):
         '''
@@ -726,7 +752,8 @@ class xUrllib(object):
         
     def _evasion( self, request ):
         '''
-        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugins
+        @parameter request: HTTPRequest instance that is going to be modified
+        by the evasion plugins
         '''
         for eplugin in self._evasionPlugins:
             try:

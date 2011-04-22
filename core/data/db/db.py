@@ -27,6 +27,7 @@ import sys
 
 from core.controllers.w3afException import w3afException
 
+
 class DB(object):
     """Simple W3AF DB interface"""
 
@@ -57,6 +58,10 @@ class DB(object):
         except Exception, e:
             raise w3afException('Failed to create the database in file "'\
                     + filenameUtf8 +'". Exception: ' + str(e) )
+
+    def getFileName(self):
+        '''Return DB filename.'''
+        return self._filename
 
     def _commitIfNeeded( self ):
         '''Once every N calls to this method, the data is commited to disk.'''
@@ -106,6 +111,10 @@ class DB(object):
 
     def createTable(self, name, columns=[], primaryKeyColumns=[]):
         '''Create table in convenient way.'''
+
+        #
+        # Lets create the table
+        #
         sql = 'CREATE TABLE ' + name + '('
         for columnData in columns:
             columnName, columnType = columnData
@@ -113,6 +122,20 @@ class DB(object):
         # Finally the PK
         sql += 'PRIMARY KEY (' + ','.join(primaryKeyColumns) + '))'
         c = self._db.cursor()
+
+        c.execute(sql)
+        self._db.commit()
+
+    def createIndex(self, table, columns):
+        '''
+        Create index for speed and performance
+
+        @parameter table: The table from which you want to create an index from
+        @parameter columns: A list of column names.
+        '''
+        sql = 'CREATE INDEX %s_index ON %s( %s )' % (table, table, ','.join(columns) )
+        c = self._db.cursor()
+
         c.execute(sql)
         self._db.commit()
 
@@ -124,6 +147,7 @@ class DB(object):
         '''Commit changes and close the connection to the underlaying db.'''
         self._db.close()
         self._filename = None
+
 
 class WhereHelper(object):
     '''Simple WHERE condition maker.'''

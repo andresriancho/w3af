@@ -112,7 +112,7 @@ class googleSearchEngine(searchEngine):
         Performs a google set search.
         http://labs.google.com/sets
         '''
-        google_search_set = self.GSetSearch(self, word_list)
+        google_search_set = GSetSearch(self, word_list)
         return google_search_set.set
 
 

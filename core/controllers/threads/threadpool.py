@@ -105,9 +105,9 @@ class WorkerThread(threading.Thread):
             try:
                 self.resultQueue.put( (request, request.callable(*request.args, **request.kwds)) )
             except Exception, e:
-                om.out.error('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
-                om.out.error('Exception: ' + str( e ) )
-                om.out.error( 'Traceback: ' + str( traceback.format_exc() ) )
+                om.out.debug('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
+                om.out.debug('Exception: ' + str( e ) )
+                om.out.debug( 'Traceback: ' + str( traceback.format_exc() ) )
                 self.resultQueue.put( (request, e) )
         
         if DEBUG:

@@ -1,0 +1,34 @@
+
+plugins
+audit localFileInclude
+output console,textFile
+output config console
+set verbose True
+back
+
+back
+
+target
+set target http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt
+back
+
+start
+
+assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 1 
+
+exploit
+exploit localFileReader
+interact 0
+
+payload php_sca 
+
+exit
+#exploit osCommandingShell
+
+exit
+back
+
+assert len(kb.kb.getData('xss','xss')) == 2
+
+exit
+exit

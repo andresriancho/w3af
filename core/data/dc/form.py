@@ -38,6 +38,7 @@ class form(dataContainer):
     '''
     # Max
     TOP_VARIANTS = 150
+    MAX_VARIANTS_TOTAL = 10**9
     SEED = 1
     
     def __init__(self, init_val=(), strict=False):
@@ -133,8 +134,8 @@ class form(dataContainer):
             tmp[i] = self._submitMap[i]
         
         #
-        #   FIXME: hmmm I think that we are missing something here... what about self._select values. See FIXME below.
-        #   Maybe we need another for?
+        # FIXME: hmmm I think that we are missing something here... what about
+        # self._select values. See FIXME below. Maybe we need another for?
         #
 
         return urlencode(tmp)
@@ -319,13 +320,34 @@ class form(dataContainer):
             if variants_total > self.TOP_VARIANTS:
                 
                 # Inform user
-                om.out.information("Form variants leads to combinatoric " \
-                    "explosion. Generating %s randomly distributed variants." \
+                om.out.information("w3af found an HTML form that has several checkbox, radio" \
+                    " and select input tags inside. Testing all combinations of those values" \
+                    " would take too much time, the framework will only test" \
+                    " %s randomly distributed variants."
                     % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed.
                 rand = random.Random()
                 rand.seed(self.SEED)
+
+                # xrange in python2 has the following issue:
+                # >>> xrange(10**10)
+                # Traceback (most recent call last):
+                # File "<stdin>", line 1, in <module>
+                # OverflowError: long int too large to convert to int
+                #
+                # Which was amazingly reported by one of our users
+                # http://sourceforge.net/apps/trac/w3af/ticket/161481
+                #
+                # Given that we want to test SOME of the combinations we're 
+                # going to settle with a rand.sample from the first 
+                # MAX_VARIANTS_TOTAL (=10**9) items (that works in python2)
+                #
+                # >>> xrange(10**9)
+                # xrange(1000000000)
+                # >>>
+
+                variants_total = min(variants_total, self.MAX_VARIANTS_TOTAL)
 
                 for path in rand.sample(xrange(variants_total),
                                             self.TOP_VARIANTS):

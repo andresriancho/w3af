@@ -12,9 +12,26 @@ import core.data.kb.config as cf
 
 import urllib
 import time
-import md5
 import os
 import random
+
+
+class args:
+    '''
+    This is a helper class to store all parameters in a way sqlmap understands.
+    '''
+    tbl = None
+    db = None
+    injectionMethod = None
+    trueResult = None
+    exaustiveFp = None
+    col = None
+    getBanner = None
+    unionUse = None
+    string = None
+    injParameter = None
+    resumedQueries = {}
+    verbose = True
 
 
 class dbDriverFunctions:
@@ -25,6 +42,7 @@ class dbDriverFunctions:
     '''
     def __init__(self, cmpFunction):
         self._cmpFunction = cmpFunction
+        self.args = args()
         
         # All needed for the good samaritan
         self._goodSamaritan = []

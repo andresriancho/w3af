@@ -25,6 +25,7 @@ import commands
 import time
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
+from .xunit import XunitGen, ERROR, SKIP, SUCC, FAIL
 
 
 SCRIPT_DIR = 'scripts/'
@@ -44,7 +45,7 @@ def getScripts():
     res.sort()
     withOutAssert.sort()
     
-    return res, withOutAssert
+    return (res, withOutAssert)
 
 
 def run_script( scriptName ):
@@ -56,11 +57,10 @@ def run_script( scriptName ):
 
     om.out.information('Running: ' + scriptName + ' ...', newLine=False )
     try:
-        output = commands.getoutput('python w3af_console -s ' + scriptName)
+        output = commands.getoutput('python w3af_console -n -s ' + scriptName)
     except KeyboardInterrupt, k:
-        output = ''
-        msg = 'User cancelled the script. Hit Ctrl+C again to cancel all the test or wait two'
-        msg += ' seconds to continue with the next script.'
+        msg = ('User cancelled the script. Hit Ctrl+C again to cancel all '
+           'the test or wait two seconds to continue with the next script.')
         om.out.information( msg )
         try:
             time.sleep(2)
@@ -69,7 +69,7 @@ def run_script( scriptName ):
             raise k
         else:
             om.out.information('Continuing with the next script..., please wait.')
-            return output
+            return (None, time.time() - start_time)
 
     end_time = time.time()
     took = end_time - start_time
@@ -79,44 +79,73 @@ def run_script( scriptName ):
     else:
         om.out.information('')
             
-    return output
+    return (output, took)
 
     
-def analyze_result( resultString ):
-    lines = resultString.split('\n')
-    error = False
-    for line in lines:
-        if 'Assert **FAILED**' in line:
-            om.out.error( line )
-            error = True
-        elif 'Traceback (most recent call last):' in line:
-            om.out.error( 'An unhandled exception was raised during the execution of this script!' )
-            error = True
+def analyze_result(resultString):
     
-    if error:
-        raise w3afException('Error found in unit test.')
+    if resultString is None:
+        res_code = SKIP
+        msg = "Skipped by user.\nKeyboardInterrupt"
+    else:
+        res_code = SUCC
+        msg = ""
+    lines = resultString.split('\n') if resultString else []
 
+    for num, line in enumerate(lines):
+        if 'Traceback (most recent call last):' in line:
+            om.out.error('An unhandled exception was raised during the '
+                         'execution of this script!')
+            res_code = ERROR
+            msg = "\n".join(lines[num:])
+            break        
+        elif 'Assert **FAILED**' in line:
+            om.out.error(line)
+            res_code = FAIL
+            msg = "Assert failed:\n%s\nAssertionError" % (line)
+            break
+
+    return (res_code, msg)
     
 def w3afTest():
     '''
     Test all scripts that have an assert call.
     '''
     assert_script_list, scriptsWithoutAssert = getScripts()
+    xunit_gen = XunitGen()
     bad_list = []
     ok_list = []
     
-    om.out.console( 'Going to test '+ str(len(assert_script_list)) + ' scripts.' )
+    om.out.console('Going to test %s scripts.' % len(assert_script_list))
     
     for assert_script in assert_script_list:
         try:
-            result = run_script( assert_script )
-            analyze_result( result )
+            result, took = run_script(assert_script)
+            res_code, msg = analyze_result(result)
+            # Get qualified name for test case
+            sep = os.path.sep
+            test_script = (assert_script.split(sep)[-1]).replace('.w3af', '')
+            test_qname = '.'.join([SCRIPT_DIR[:-1].replace(sep, '.'), test_script,
+                                   'test_' + test_script.split('-')[-1]])
+
+            if res_code == SUCC:
+                ok_list.append(assert_script)
+                xunit_gen.add_success(test_qname, took)
+                
+            elif res_code == FAIL:
+                bad_list.append(assert_script)
+                xunit_gen.add_failure(test_qname, msg, took)
+                
+            elif res_code in (ERROR, SKIP):
+                bad_list.append(assert_script)
+                xunit_gen.add_error(test_qname, msg, took, 
+                                    skipped=(res_code==SKIP))
+
         except KeyboardInterrupt:
             break
-        except w3afException:
-            bad_list.append(assert_script)
-        else:
-            ok_list.append(assert_script)
+    
+    # Generate xunit file
+    xunit_gen.genfile()
     
     om.out.console( '')
     om.out.console( 'Results:')
@@ -144,4 +173,3 @@ def w3afTest():
         om.out.console('')
     else:
         om.out.console(':\n    - ' + '\n    - '.join(bad_list))
-    
