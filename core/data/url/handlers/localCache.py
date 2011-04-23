@@ -336,8 +336,9 @@ class SQLCachedResponse(CachedResponse):
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
+        request_url_obj = url_object(request.get_full_url())
         req = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=url_object(request.get_full_url()),
+                                      url=request_url_obj,
                                       postData=request.get_data(),
                                       headers=headers)
         hi.request = req
@@ -348,9 +349,9 @@ class SQLCachedResponse(CachedResponse):
                                           resp.geturl(), resp.read(), resp.id)
         # BUGBUG: This is where I create/log the responses that always have
         # 0.2 as the time!
-        url_instance = url_object( url )        
+        url_instance = url_object( url )
         resp = httpResponse.httpResponse(code, body, hdrs, url_instance,
-                                         url_instance, msg=msg, id=id,
+                                         request_url_obj, msg=msg, id=id,
                                          alias=gen_hash(request))
         hi.response = resp
         

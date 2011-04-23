@@ -53,7 +53,7 @@ class fuzzableRequest(object):
         # Internal variables
         self._url = ''
         self._method = 'GET'
-        self._uri = ''
+        self._uri = None
         self._data = ''
         self._headers = {}
         self._cookie = None
@@ -134,6 +134,9 @@ class fuzzableRequest(object):
         
         The following example shows that we sent d'z"0 but d\'z"0 will
         as well be recognised as sent
+
+        TODO: This function is called MANY times, and under some circumstances it's
+        performance REALLY matters. We need to review this function.
         
         >>> f = fuzzableRequest()
         >>> f._uri = """http://example.com/a?p=d'z"0&paged=2"""
@@ -185,7 +188,6 @@ class fuzzableRequest(object):
             if len(smth_interesting_comparable) >= minLength and \
             smth_interesting_comparable in self._sent_information_comparable:
                 return True
-        print str(smth_interesting_comparables), "not in", self._sent_information_comparable
         # I didn't sent the smth_interesting in any way
         return False
 

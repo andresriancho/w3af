@@ -69,7 +69,7 @@ class httpResponse(object):
         self._uri = original_url
         # Set the info
         self._info = info
-        # The URL where we were redirected (may be the same as original_url when no redirect)
+        # The URL where we were redirected to (equal to original_url when no redirect)
         self._redirectedURL = geturl
         self._redirectedURI = geturl.uri2url()
         

@@ -105,7 +105,9 @@ class mangleHandler(urllib2.BaseHandler):
             body = response.read()
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
-            httpRes = httpResponse.httpResponse( code, body, hdrs, url_instance, url_instance, msg=msg)
+
+            request_url_obj = url_object(request.get_full_url())
+            httpRes = httpResponse.httpResponse( code, body, hdrs, url_instance, request_url_obj, msg=msg)
             
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
