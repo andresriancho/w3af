@@ -185,7 +185,6 @@ class fuzzableRequest(object):
             if len(smth_interesting_comparable) >= minLength and \
             smth_interesting_comparable in self._sent_information_comparable:
                 return True
-        print str(smth_interesting_comparables), "not in", self._sent_information_comparable
         # I didn't sent the smth_interesting in any way
         return False
 
