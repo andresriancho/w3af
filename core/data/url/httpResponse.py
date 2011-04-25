@@ -27,9 +27,7 @@ import httplib
 from lxml import etree
 
 import core.controllers.outputManager as om
-from core.data.parsers.urlParser import uri2url
-
-
+from core.data.parsers.urlParser import url_object
 
 # Handle codecs
 import codecs
@@ -47,11 +45,18 @@ SP = ' '
 
 class httpResponse(object):
     
-    def __init__(self, code, read, info, geturl, originalUrl,
+
+    def __init__(self, code, read, info, geturl, original_url,
                  msg='OK', id=None, time=0.2, alias=None):
         '''
         @parameter time: The time between the request and the response.
         '''
+        if not isinstance(geturl, url_object):
+            raise ValueError('The geturl.__init__() parameter of a httpResponse object must be of urlParser.url_object type.')
+
+        if not isinstance(original_url, url_object):
+            raise ValueError('The original_url.__init__() parameter of a httpResponse object must be of urlParser.url_object type.')
+        
         # A nice and comfortable default
         self._charset = 'utf-8'
         self._content_type = ''
@@ -60,13 +65,13 @@ class httpResponse(object):
         
         # Set the URL variables
         # The URL that we really GET'ed
-        self._realurl = uri2url( originalUrl )
-        self._uri = originalUrl
+        self._realurl = original_url.uri2url()
+        self._uri = original_url
         # Set the info
         self._info = info
-        # The URL where we were redirected (may be the same as originalUrl when no redirect)
+        # The URL where we were redirected to (equal to original_url when no redirect)
         self._redirectedURL = geturl
-        self._redirectedURI = uri2url( geturl )
+        self._redirectedURI = geturl.uri2url()
         
         # Set the rest
         self.setCode(code)
@@ -356,8 +361,41 @@ class httpResponse(object):
         '''
         return self._is_image_response
             
-    def setURL( self, url ): self._realurl = url
-    def setURI( self, uri ): self._uri = uri
+    def setURL( self, url ):
+        '''
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL of a httpResponse object must be of urlParser.url_object type.
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURL( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL of a httpResponse object must be of urlParser.url_object type.')
+        
+        self._realurl = url.uri2url()
+    
+    def setURI( self, uri ):
+        '''
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURI('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URI of a httpResponse object must be of urlParser.url_object type.
+        >>> u = url_object('http://www.google.com')
+        >>> r = httpResponse(200, '' , {}, u, u)
+        >>> r.setURI( url_object('http://www.google.com/') )
+        '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The URI of a httpResponse object must be of urlParser.url_object type.')
+        
+        self._uri = uri
+        self._realurl = uri.uri2url()
+        
     def setWaitTime( self, t ): self._time = t
 
     def getFromCache(self):
@@ -373,7 +411,7 @@ class httpResponse(object):
         self._fromCache = fcache
 
     def __repr__( self ):
-        res = '< httpResponse | ' + str(self.getCode()) + ' | ' + self.getURL()
+        res = '< httpResponse | %s | %s ' % ( self.getCode() , self.getURL() )
 
         # extra info
         if self.id is not None:

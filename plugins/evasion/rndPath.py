@@ -22,15 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
+
 from core.data.fuzzer.fuzzer import createRandAlNum
-import core.data.parsers.urlParser as urlParser
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 import re
-import urllib2
 
 
 class rndPath(baseEvasionPlugin):
@@ -46,19 +46,51 @@ class rndPath(baseEvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @return: The modified request
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> import re
+        >>> rp = rndPath()
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../', url_string) is not None
+        True
+
+        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/', url_string) is not None
+        True
+
+        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm', url_string) is not None
+        True
+
+        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None
+        True
+        
         '''
         # We mangle the URL
-        path = urlParser.getPathQs( request.get_full_url() )
+        path = request.url_object.getPath()
         if re.match('^/', path):
             random_alnum = createRandAlNum()
             path = '/' + random_alnum + '/..' + path
+
+        # Finally, we set all the mutants to the request in order to return it
+        new_url = request.url_object.copy()
+        new_url.setPath( path )
         
         # Finally, we set all the mutants to the request in order to return it
-        url = urlParser.getProtocol( request.get_full_url() )
-        url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path        
-        new_req = urllib2.Request( url , request.get_data(), request.headers,
-                                                request.get_origin_req_host() )
+        new_req = HTTPRequest( new_url , request.data, request.headers, 
+                               request.get_origin_req_host() )
         
         return new_req
     

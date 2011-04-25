@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -105,7 +104,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 pass
             else:
                 image_list = document_parser.getReferencesOfTag('img')
-                image_list = [ urlParser.uri2url(i) for i in image_list]
+                image_list = [ i.uri2url() for i in image_list]
                 for img_src in image_list:
                     # TODO: Use self._tm.startFunction
                     try:

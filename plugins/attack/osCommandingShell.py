@@ -20,9 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -116,12 +113,6 @@ class osCommandingShell(baseAttackPlugin):
         # The vuln was saved to the kb as:
         # kb.kb.append( self, 'osCommanding', v )
         exploitDc = vuln.getDc()
-        
-        if exploitDc is None:
-            om.out.error('You hitted bug #1948260. Please report how to reproduce it here:')
-            bug_URL = 'https://sourceforge.net/tracker/index.php?func=detail&aid=1948260'
-            bug_URL += '&group_id=170274&atid=853652'
-            om.out.error( bug_URL )
             
         # Define a test command:
         rand = createRandAlpha( 8 )
@@ -246,10 +237,10 @@ class osShell(exec_shell):
         @return: The result of the command.
         '''
         functionReference = getattr( self._urlOpener , self.getMethod() )
-        exploitDc = self.getDc()
-        exploitDc[ self.getVar() ] = self['separator'] + command
+        exploit_dc = self.getDc()
+        exploit_dc[ self.getVar() ] = self['separator'] + command
         try:
-            response = functionReference( self.getURL() , str(exploitDc) )
+            response = functionReference( self.getURL() , str(exploit_dc) )
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:

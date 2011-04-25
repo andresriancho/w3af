@@ -28,7 +28,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -55,7 +55,7 @@ class xssedDotCom(baseDiscoveryPlugin):
         #
         #   Could change in time,
         #
-        self._xssed_url = "http://www.xssed.com"
+        self._xssed_url = url_object("http://www.xssed.com")
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
         
     def discover(self, fuzzableRequest ):
@@ -73,10 +73,10 @@ class xssedDotCom(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
                         
-            target_domain = urlParser.getRootDomain( fuzzableRequest.getURL() )
+            target_domain = fuzzableRequest.getURL().getRootDomain()
 
             try:
-                response = self._urlOpener.GET( self._xssed_url + "/search?key=." + target_domain )
+                response = self._urlOpener.GET( self._xssed_url.urlJoin("/search?key=." + target_domain) )
             except w3afException, e:
                 msg = 'An exception was raised while running xssedDotCom plugin. Exception: '
                 msg += '"' + str(e) + '".'
@@ -124,7 +124,7 @@ class xssedDotCom(baseDiscoveryPlugin):
             regex_many_vulns = re.findall("<a href='(/mirror/\d*/)' target='_blank'>", html_body)
             for mirror_relative_link in regex_many_vulns:
                 
-                mirror_url = urlParser.urlJoin( self._xssed_url , mirror_relative_link )
+                mirror_url = self._xssed_url.urlJoin( mirror_relative_link )
                 xss_report_response = self._urlOpener.GET( mirror_url )
                 matches = re.findall("URL:.+", xss_report_response.getBody())
                 

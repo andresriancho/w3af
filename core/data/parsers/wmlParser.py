@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
 from core.data.parsers.sgmlParser import sgmlParser
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 
 import core.data.dc.form as form
 
@@ -47,10 +47,55 @@ class wmlParser(sgmlParser):
         '''
         @parameter httpResponse: The HTTP response document that contains the WML
         document inside its body.
+
+        Init,
+        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> u = url_object('http://www.w3af.com/')
+        
+        Parse a simple form,
+        >>> form = """
+        ...    <go method="post" href="dataReceptor.php">
+        ...        <postfield name="clave" value="$(clave)"/>
+        ...        <postfield name="cuenta" value="$(cuenta)"/>
+        ...        <postfield name="tipdat" value="D"/>
+        ...    </go>"""
+        >>> response = httpResponse( 200, form, {}, u, u )
+        >>> w = wmlParser(response)
+        >>> w.getForms()
+        [{'tipdat': ['D'], 'clave': ['$(clave)'], 'cuenta': ['$(cuenta)']}]
+
+        Get the simplest link
+        >>> response = httpResponse( 200, '<a href="/index.aspx">ASP.NET</a>', {}, u, u )
+        >>> w = wmlParser( response )
+        >>> re, parsed = w.getReferences()
+        
+        #
+        #    TODO:
+        #        I don't really understand why I'm getting results @ the "re".
+        #        They should really be inside the "parsed" list.
+        #
+        #    >>> re
+        #    []
+        #    >>> parsed[0].url_string
+        #    'http://www.w3af.com/index.aspx'
+
+        Get a link by applying regular expressions
+        >>> response = httpResponse( 200, 'header /index.aspx footer', {}, u, u )
+        >>> w = wmlParser( response )
+        >>> re, parsed = w.getReferences()
+        >>> #
+        >>> # TODO: Shouldn't this be the other way around?!
+        >>> #
+        >>> re
+        []
+        >>> parsed[0].url_string
+        'http://www.w3af.com/index.aspx'
+
         '''
-        assert self._baseUrl != '', 'The base URL must be setted.'
+        
+        assert self._baseUrl is not None, 'The base URL must be set.'
         # Now we are ready to work
-        self._parse ( httpResponse.getBody() )
+        self._parse( httpResponse.getBody() )
         
     def unknown_endtag(self, tag):         
         '''
@@ -68,14 +113,13 @@ class wmlParser(sgmlParser):
     def _findForms(self, tag, attrs):
         '''
         This method finds forms inside an WML document.
-        '''
-        
-        '''
-        <go method="post" href="dataReceptor.php">
-            <postfield name="clave" value="$(clave)"/>
-            <postfield name="cuenta" value="$(cuenta)"/>
-            <postfield name="tipdat" value="D"/>
-        </go>
+
+        This is a WML form example:
+            <go method="post" href="dataReceptor.php">
+                <postfield name="clave" value="$(clave)"/>
+                <postfield name="cuenta" value="$(cuenta)"/>
+                <postfield name="tipdat" value="D"/>
+            </go>        
         '''
         if tag == 'go' :
             #Find the method
@@ -93,8 +137,8 @@ class wmlParser(sgmlParser):
             foundAction = False
             for attr in attrs:
                 if attr[0] == 'href':
-                    decoded_action = self._decode_URL(attr[1], self._encoding)
-                    action = urlParser.urlJoin( self._baseUrl , decoded_action)
+                    action = self._baseUrl.urlJoin( attr[1] )
+                    action = self._decode_URL( action , self._encoding)
                     foundAction = True
                     
             if not foundAction:

@@ -55,10 +55,11 @@ class codeDisclosure(baseGrepPlugin):
         '''
         Plugin entry point, search for the code disclosures.
         
+        Unit tests are available at plugins/grep/tests.
+        
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
         Init
         >>> import codeDisclosure
         >>> codeDisclosure.is_404 = lambda x: False
@@ -93,6 +94,7 @@ class codeDisclosure(baseGrepPlugin):
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))
         1
+
         '''
         if response.is_text_or_html() and response.getURL() not in self._already_added:
             

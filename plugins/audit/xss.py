@@ -407,7 +407,7 @@ class xss(baseAuditPlugin):
     def end( self ):
         '''
         This method is called to check for permanent Xss. 
-        Many times a xss aint on the page we get after the GET/POST of the xss string.
+        Many times a xss isn't on the page we get after the GET/POST of the xss string.
         This method searches for the xss string on all the pages that are available.
         
         @return: None, vulns are saved to the kb.

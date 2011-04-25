@@ -24,7 +24,6 @@ from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 
 
 class baseAuditPlugin(basePlugin):
@@ -107,16 +106,16 @@ class baseAuditPlugin(basePlugin):
         @parameter plugin_name: The name of the plugin that supposingly reported the vulnerability
         @parameter kb_name: The name of the variable in the kb, where the vulnerability was saved.
         
-        @parameter uri: The uri where we should search for bugs.
-        @parameter variable: The variable that is queryed for bugs.
+        @parameter uri: The url object where we should search for bugs.
+        @parameter variable: The variable that is queried for bugs.
         
         @return: True if the (uri, variable) has NO vulnerabilities reported.
         '''
         vuln_list = kb.kb.getData( plugin_name , kb_name )
-        url = urlParser.uri2url( uri )
+        url = uri.uri2url()
         
         for vuln in vuln_list:
-            if vuln.getVar() == variable and urlParser.uri2url( vuln.getURL() ) == url:
+            if vuln.getVar() == variable and vuln.getURL().uri2url() == url:
                 return False
                 
         return True

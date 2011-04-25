@@ -33,7 +33,6 @@ import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from core.controllers.misc.temp_dir import get_temp_dir
@@ -143,18 +142,17 @@ class fileUpload(baseAuditPlugin):
         In this case, check if the file was uploaded to any of the known directories,
         or one of the "default" ones like "upload" or "files".
         '''
-        
         with self._plugin_lock:
             if self._hasNoBug('fileUpload', 'fileUpload', 
                               mutant.getURL(), mutant.getVar()):        
                 
                 # Gen expr for directories where I can search for the uploaded file
-                domain_path_list = set(urlParser.getDomainPath(i) for i in 
+                domain_path_list = set(u.getDomainPath() for u in 
                                        kb.kb.getData('urls' , 'urlList'))
         
                 # Try to find the file!
                 for url in domain_path_list:
-                    for path in self._generate_paths(url, mutant.uploaded_file_name):
+                    for path in self._generate_urls(url, mutant.uploaded_file_name):
         
                         get_response = self._urlOpener.GET(path, useCache=False)
                         if not is_404(get_response):
@@ -186,7 +184,7 @@ class fileUpload(baseAuditPlugin):
         for tmp_file, tmp_file_name in self._file_list:
             tmp_file.close()
         
-    def _generate_paths(self, url, uploaded_file_name):
+    def _generate_urls( self, url, uploaded_file_name ):
         '''
         @parameter url: A URL where the uploaded_file_name could be
         @parameter uploaded_file_name: The name of the file that was uploaded to the server
@@ -196,9 +194,10 @@ class fileUpload(baseAuditPlugin):
                'download', 'up', 'down']
 
         for default_path in tmp:
-            for path in urlParser.getDirectories(url):
-                possible_loc = path + default_path + '/'  + uploaded_file_name
-                yield possible_loc
+            for sub_url in url.getDirectories():
+                possible_location = sub_url.urlJoin( default_path + '/' )
+                possible_location = possible_location.urlJoin( uploaded_file_name )
+                yield possible_location
         
     def getOptions( self ):
         '''

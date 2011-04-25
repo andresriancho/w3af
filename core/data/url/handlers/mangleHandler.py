@@ -26,10 +26,10 @@ import core.data.request.fuzzableRequest as fuzzableRequest
 
 import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.parsers.urlParser import url_object
 
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 import core.data.url.handlers.logHandler
-from core.data.parsers.urlParser import getDomain
 
 
 class mangleHandler(urllib2.BaseHandler):
@@ -52,7 +52,7 @@ class mangleHandler(urllib2.BaseHandler):
         @return: A fuzzableRequest.
         '''
         fr = fuzzableRequest.fuzzableRequest()
-        fr.setURI( request.get_full_url() )
+        fr.setURI( request.url_object )
         fr.setMethod( request.get_method() )
         
         headers = request.headers
@@ -74,14 +74,16 @@ class mangleHandler(urllib2.BaseHandler):
         @parameter fuzzableRequest: A fuzzableRequest.
         @return: A urllib2 request obj.
         '''
-        host = getDomain( fuzzableRequest.getURL() )
+        host = fuzzableRequest.getURL().getDomain()
         
         if fuzzableRequest.getMethod().upper() == 'GET':
             data = None
         else:
             data = fuzzableRequest.getData()
-        req = HTTPRequest( fuzzableRequest.getURI(), data=data\
-        , headers=fuzzableRequest.getHeaders(), origin_req_host=host )
+            
+        req = HTTPRequest( fuzzableRequest.getURI(), data=data,
+                           headers=fuzzableRequest.getHeaders(),
+                           origin_req_host=host )
         return req
         
     def http_request(self, request):
@@ -99,11 +101,13 @@ class mangleHandler(urllib2.BaseHandler):
         if len( self._pluginList ) and response._connection.sock is not None:
             # Create the httpResponse object
             code, msg, hdrs = response.code, response.msg, response.info()
-            url = response.geturl()
+            url_instance = url_object( response.geturl() )
             body = response.read()
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
-            httpRes = httpResponse.httpResponse( code, body, hdrs, url, url, msg=msg)
+
+            request_url_obj = url_object(request.get_full_url())
+            httpRes = httpResponse.httpResponse( code, body, hdrs, url_instance, request_url_obj, msg=msg)
             
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
@@ -123,7 +127,7 @@ class mangleHandler(urllib2.BaseHandler):
         kaRes.setBody( mangledResponse.getBody() )
         kaRes.headers = mangledResponse.getHeaders()
         kaRes.code = mangledResponse.getCode()
-        kaRes._url = mangledResponse.getURI()
+        kaRes._url = mangledResponse.getURI().url_string
         kaRes.msg = originalResponse.msg
         kaRes.id = originalResponse.id
         return kaRes

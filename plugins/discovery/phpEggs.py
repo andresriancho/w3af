@@ -29,7 +29,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.w3afException import w3afRunOnce, w3afException
-import core.data.parsers.urlParser as urlParser
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
@@ -227,7 +226,7 @@ class phpEggs(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             # Get the extension of the URL (.html, .php, .. etc)
-            ext = urlParser.getExtension( fuzzableRequest.getURL() )
+            ext = fuzzableRequest.getURL().getExtension()
             
             # Only perform this analysis if we haven't already analyzed this type of extension
             # OR if we get an URL like http://f00b5r/4/     (Note that it has no extension)
@@ -242,7 +241,7 @@ class phpEggs(baseDiscoveryPlugin):
                 
                 # Perform the GET requests to see if we have a phpegg
                 for egg, egg_desc in self._get_eggs():
-                    egg_URL = urlParser.uri2url( fuzzableRequest.getURL() ) + egg
+                    egg_URL = fuzzableRequest.getURL().uri2url().urlJoin( egg )
                     try:
                         response = self._urlOpener.GET( egg_URL, useCache=True )
                     except KeyboardInterrupt,e:

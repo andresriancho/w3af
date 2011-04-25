@@ -21,9 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
+from core.data.parsers.urlParser import url_object
+
 import urllib
 import re
+
 
 
 class yahooSiteExplorer(searchEngine):
@@ -58,8 +62,9 @@ class yahooSiteExplorer(searchEngine):
         # https://siteexplorer.search.yahoo.com/export?p=http%3A%2F%2Fwww.cybsec.com%2F
         url = 'https://siteexplorer.search.yahoo.com/export?p=http://'
         url += query
-
-        response = self._urlOpener.GET(url, headers=self._headers, useCache=True, grepResult=False)
+        url_instance = url_object(url)
+        
+        response = self._urlOpener.GET(url_instance, headers=self._headers, useCache=True, grepResult=False)
         
         results = []
 
@@ -73,7 +78,7 @@ class yahooSiteExplorer(searchEngine):
                 msg = 'Something went wrong while parsing the YSE result line: "' + body_line + '"'
                 om.out.debug( msg )
             else:
-                yse_result = yahooSiteExplorerResult( url )
+                yse_result = yahooSiteExplorerResult( url_object(url) )
                 results.append( yse_result )
         
         # cut the required results
@@ -85,6 +90,11 @@ class yahooSiteExplorerResult:
     This is a dummy class that represents a search engine result.
     '''
     def __init__( self, url ):
+        if not isinstance(url, url_object):
+            msg = 'The url __init__ parameter of a yahooSiteExplorerResult object must'
+            msg += ' be of urlParser.url_object type.'
+            raise ValueError( msg )
+
         self.URL = url
         
     def __repr__(self):

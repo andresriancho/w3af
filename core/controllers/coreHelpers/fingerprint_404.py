@@ -25,8 +25,6 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
-import core.data.parsers.urlParser as urlParser
-
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance_ge
@@ -97,7 +95,7 @@ class fingerprint_404:
         #
         #   First we handle the user configured exceptions:
         #
-        domain_path = urlParser.getDomainPath(http_response.getURL())
+        domain_path = http_response.getURL().getDomainPath()
         if domain_path in cf.cf.getData('always404'):
             return True
         elif domain_path in cf.cf.getData('never404'):
@@ -171,8 +169,7 @@ class fingerprint_404:
         @return: A list with 404 bodies.
         '''
         # Get the filename extension and create a 404 for it
-        extension = urlParser.getExtension( url )
-        domain_path = urlParser.getDomainPath( url )
+        extension = url.getExtension()
         
         # the result
         self._response_body_list = []
@@ -189,7 +186,7 @@ class fingerprint_404:
 
             rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
                 
-            url404 = urlParser.urlJoin(  domain_path , rand_alnum_file )
+            url404 = url.getDomainPath().urlJoin( rand_alnum_file )
 
             #   Send the requests using threads:
             targs = ( url404,  )
@@ -271,8 +268,8 @@ class fingerprint_404:
         '''
         original_body = response.getBody()
         url = response.getURL()
-        to_replace = url.split('/')
-        to_replace.append( url )
+        to_replace = url.url_string.split('/')
+        to_replace.append( url.url_string )
         
         for i in to_replace:
             if len(i) > 6:

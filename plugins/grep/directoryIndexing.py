@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -62,13 +61,13 @@ class directoryIndexing(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if urlParser.getDomainPath(response.getURL()) in self._already_visited:
+        if response.getURL().getDomainPath() in self._already_visited:
             # Already worked for this URL, no reason to work twice
             return
         
         else:
             # Save it,
-            self._already_visited.add( urlParser.getDomainPath(response.getURL()) )
+            self._already_visited.add( response.getURL().getDomainPath() )
             
             # Work,
             if response.is_text_or_html():
@@ -83,7 +82,7 @@ class directoryIndexing(baseGrepPlugin):
                         v.setDesc( msg )
                         v.setId( response.id )
                         v.setSeverity(severity.LOW)
-                        path = urlParser.getPath( response.getURL() )
+                        path = response.getURL().getPath()
                         v.setName( 'Directory indexing - ' + path )
                         
                         kb.kb.append( self , 'directory' , v )

@@ -29,9 +29,8 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-
+from core.data.parsers.urlParser import parse_qs, url_object
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 
 import os
 
@@ -76,7 +75,7 @@ class webDiff(baseDiscoveryPlugin):
             om.out.debug( 'webDiff plugin is testing: ' + fuzzableRequest.getURL() )
             self._run = False
                     
-            if self._local_dir != '' and self._remote_path != '':
+            if self._local_dir != '' and self._remote_path:
                 os.path.walk( self._local_dir, self._compare_dir, None )
                 self._generate_report()
                 return self._fuzzableRequests
@@ -160,7 +159,7 @@ class webDiff(baseDiscoveryPlugin):
         
         for fname in flist:
             if os.path.isfile( directory + os.path.sep + fname ):
-                url = urlParser.urlJoin( path, fname )
+                url = path.urlJoin( fname )
                 response = self._easy_GET( url )
             
                 if not is_404( response ):
@@ -219,7 +218,7 @@ class webDiff(baseDiscoveryPlugin):
         d3 = 'The remote directory used in the comparison.'
         o3 = option('remotePath', self._remote_path, d3, 'string')
 
-        d4 = 'When comparing content of two files, ignore files with this extensions.'
+        d4 = 'When comparing content of two files, ignore files with these extensions.'
         o4 = option('banUrl', self._ban_url, d4, 'list')
         
         ol = optionList()
@@ -239,7 +238,8 @@ class webDiff(baseDiscoveryPlugin):
         ''' 
         self._content = optionsMap['content'].getValue()
         self._ban_url = optionsMap['banUrl'].getValue()
-        self._remote_path = urlParser.getDomainPath( optionsMap['remotePath'].getValue() )
+        url = url_object( optionsMap['remotePath'].getValue() )
+        self._remote_path = url.getDomainPath()
         self._local_dir = optionsMap['localDir'].getValue()
 
     def getPluginDeps( self ):

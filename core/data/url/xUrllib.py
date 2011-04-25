@@ -45,8 +45,8 @@ from core.controllers.w3afException import w3afMustStopException, \
 #
 #   Data imports
 #
-import core.data.parsers.urlParser as urlParser
 from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.urlParser import url_object
 
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.data.constants.httpConstants import NO_CONTENT
@@ -223,7 +223,7 @@ class xUrllib(object):
         to the remote server.
         '''
         req = HTTPRequest( uri )
-        req = self._addHeaders( req )
+        req = self._add_headers( req )
         return req.headers
     
     def _isBlacklisted( self, uri ):
@@ -231,14 +231,14 @@ class xUrllib(object):
         If the user configured w3af to ignore a URL, we are going to be applying that configuration here.
         This is the lowest layer inside w3af.
         '''
-        listOfNonTargets = cf.cf.getData('nonTargets') or []
-        for u in listOfNonTargets:
-            if urlParser.uri2url( uri ) == urlParser.uri2url( u ):
+        list_of_non_targets = cf.cf.getData('nonTargets') or []
+        for non_target in list_of_non_targets:
+            if uri.uri2url() == non_target.uri2url():
                 msg = 'The URL you are trying to reach was configured as a non-target. ( '
                 msg += uri +' ). Returning an empty response.'
                 om.out.debug( msg )
                 return True
-        
+
         return False
     
     def sendRawRequest( self, head, postdata, fixContentLength=True):
@@ -273,31 +273,46 @@ class xUrllib(object):
         return function_reference( fuzzReq.getURI(), data=fuzzReq.getData(), headers=fuzzReq.getHeaders(),
                                                 useCache=False, grepResult=False)
         
-    def GET(self, uri, data='', headers={}, useCache=False, grepResult=True):
+    def GET(self, uri, data=None, headers={}, useCache=False, grepResult=True):
         '''
         Gets a uri using a proxy, user agents, and other settings that where
         set previously.
         
-        @param uri: This is the url to GET
-        @param data: Only used if the uri parameter is really a URL.
+        >>> x = xUrllib()
+        >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
+        True
+        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=abc')).getBody()
+        True
+        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def')).getBody()
+        False
+        
+
+        @param uri: This is the URI to GET, with the query string included.
+        @param data: Only used if the uri parameter is really a URL. The data will be
+        converted into a string and set as the URL object query string before sending.
         @return: An httpResponse object.
         '''
+        #
+        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        #
+        if not isinstance(uri, url_object):
+            raise ValueError('The uri parameter of xUrllib.GET() must be of urlParser.url_object type.')
+
         self._init()
 
         if self._isBlacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-        
-        qs = urlParser.getQueryString(uri)
-        if qs:
-            req = HTTPRequest(uri)
-        else:
-            if data:
-                req = HTTPRequest(uri + '?' + str(data))
-            else:
-                # It's really an url...
-                req = HTTPRequest(uri)
-        req = self._addHeaders(req, headers)
-        return self._send(req, useCache=useCache, grepResult=grepResult)
+
+        #
+        #    Create and send the request
+        #
+        if data is not None:
+            uri = uri.copy()
+            uri.setQueryString(str(data))
+            
+        req = HTTPRequest( uri )
+        req = self._add_headers( req, headers )
+        return self._send( req , useCache=useCache, grepResult=grepResult)
     
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -308,17 +323,24 @@ class xUrllib(object):
         @param log_it: Boolean that indicated whether to log request
             and response.        
         '''
+        # accept a URI or a Request object
+        if isinstance(uri, url_object):
+            req = HTTPRequest(uri)
+        elif isinstance(uri, HTTPRequest):
+            req = uri
+        else:
+            msg = 'The uri parameter of xUrllib._new_content_resp() has to be of'
+            msg += ' HTTPRequest of url_object type.'
+            raise Exception( msg )
+
+        # Work,
         nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
         if log_it:
-            # accept a URI or a Request object
-            if isinstance(uri, basestring):
-                req = HTTPRequest(uri)
-            else:
-                req = uri
             # This also assign a the id to both objects.
             logHandler.logHandler().http_response(req, nc_resp)
         else:
             nc_resp.id = seq_gen.inc()
+            
         return nc_resp
             
     def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
@@ -330,13 +352,24 @@ class xUrllib(object):
         @param data: A string with the data for the POST.
         @return: An httpResponse object.
         '''
+        #
+        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        #
+        if not isinstance(uri, url_object):
+            raise ValueError('The uri parameter of xUrllib.POST() must be of urlParser.url_object type.')
+
         self._init()
+
         if self._isBlacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-
-        req = HTTPRequest(uri, data)
-        req = self._addHeaders(req, headers)
-        return self._send(req , grepResult=grepResult, useCache=useCache)
+        
+        #
+        #    Create and send the request
+        #
+        req = HTTPRequest( uri, data )
+        req = self._add_headers( req, headers )
+        return self._send( req , grepResult=grepResult, useCache=useCache)
+    
 
     def getRemoteFileSize( self, req, useCache=True ):
         '''
@@ -391,10 +424,16 @@ class xUrllib(object):
                 self._method = method
             
             def __call__( self, uri, data='', headers={}, useCache=False, grepResult=True ):
+                '''
+                @return: An httpResponse object that's the result of sending the request
+                with a method which is different from "GET" or "POST".
+                '''
+                if not isinstance(uri, url_object):
+                    raise ValueError('The uri parameter of anyMethod.__call__() must be of urlParser.url_object type.')
                 
                 self._xurllib._init()
                 
-                if self._xurllib._isBlacklisted(uri):
+                if self._xurllib._isBlacklisted( uri ):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
             
                 if data:
@@ -405,19 +444,19 @@ class xUrllib(object):
                 req.set_method( self._method )
 
                 if headers:
-                    req = self._xurllib._addHeaders( req, headers )
+                    req = self._xurllib._add_headers( req, headers )
                 else:
                     # This adds the default headers like the user-agent,
                     # and any headers configured by the user
                     # https://sourceforge.net/tracker/?func=detail&aid=2788341&group_id=170274&atid=853652
-                    req = self._xurllib._addHeaders( req, {} )
+                    req = self._xurllib._add_headers( req, {} )
                 
                 return self._xurllib._send( req, useCache=useCache, grepResult=grepResult )
         
         am = anyMethod( self, method_name )
         return am
 
-    def _addHeaders( self , req, headers={} ):
+    def _add_headers( self , req, headers={} ):
         # Add all custom Headers if they exist
         for i in self.settings.HeaderList:
             req.add_header( i[0], i[1] )
@@ -445,8 +484,13 @@ class xUrllib(object):
         '''
         Actually send the request object.
         
+        @param req: The HTTPRequest object that represents the request.
         @return: An httpResponse object.
         '''
+        if not isinstance(req, HTTPRequest):
+            msg = 'xUrllib._send() req parameter has to be of HTTPRequest type.'
+            raise ValueError( msg )
+        
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
         self._callBeforeSend()
@@ -476,9 +520,10 @@ class xUrllib(object):
             # Return this info to the caller
             code = int(e.code)
             info = e.info()
-            geturl = e.geturl()
+            geturl_instance = url_object( e.geturl() )
+            original_url_instance = url_object( original_url )
             read = self._readRespose(e)
-            httpResObj = httpResponse(code, read, info, geturl, original_url,
+            httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
                                       id=e.id, time=time.time()-start_time,
                                       msg=e.msg)
             
@@ -493,9 +538,9 @@ class xUrllib(object):
             if grepResult:
                 self._grepResult(req, httpResObj)
             else:
-                om.out.debug(
-                ('No grep for: "%s", the plugin sent grepResult=False.'
-                  % geturl))
+                om.out.debug('No grep for: "%s", the plugin sent ' \
+                             'grepResult=False.' % geturl_instance)
+
             return httpResObj
         except urllib2.URLError, e:
             # I get to this section of the code if a 400 error is returned
@@ -532,7 +577,6 @@ class xUrllib(object):
             # This except clause will catch unexpected errors
             # For the first N errors, return an empty response...
             # Then a w3afMustStopException will be raised
-
             msg = '%s %s returned HTTP code "%s"' % \
             (req.get_method(), original_url, NO_CONTENT)
             om.out.debug(msg)
@@ -544,6 +588,8 @@ class xUrllib(object):
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
 
+            original_url_instance = url_object(original_url)
+
             trace_str = traceback.format_exc()
             parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)', trace_str )
             # Returns something similar to:
@@ -552,8 +598,10 @@ class xUrllib(object):
             # Where ('filename', 'line-number', 'function-name')
 
             self._incrementGlobalErrorCount(e, parsed_traceback)
+
             
-            return self._new_no_content_resp(original_url, log_it=True)
+            return self._new_no_content_resp(original_url_instance, log_it=True)
+
         else:
             # Everything went well!
             rdata = req.get_data()
@@ -573,10 +621,12 @@ class xUrllib(object):
             code = int(res.code)
             info = res.info()
             geturl = res.geturl()
-            read = self._readRespose(res)
-            httpResObj = httpResponse(code, read, info, geturl, original_url,
-                                      id=res.id, time=time.time() - start_time,
-                                      msg=res.msg)
+            geturl_instance = url_object(geturl) 
+            original_url_instance = url_object(original_url)
+            read = self._readRespose( res )
+            httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
+                                      id=res.id, time=time.time() - start_time, msg=res.msg )
+
             # Let the upper layers know that this response came from the local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
@@ -709,7 +759,8 @@ class xUrllib(object):
             try:
                 request = eplugin.modifyRequest( request )
             except w3afException, e:
-                om.out.error('Evasion plugin "'+eplugin.getName()+'" failed to modify the request. Exception: ' + str(e) )
+                msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"' % (eplugin.getName(), e)
+                om.out.error( msg )
             except Exception, e:
                 raise e
                 
@@ -718,10 +769,13 @@ class xUrllib(object):
     def _grepResult(self, request, response):
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
-        if len( self._grepPlugins ) and urlParser.getDomain( request.get_full_url() ) in cf.cf.getData('targetDomains'):
+        url_instance = url_object( request.get_full_url() )
+        domain = url_instance.getDomain()
+        
+        if len( self._grepPlugins ) and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
-            fuzzReq = createFuzzableRequestRaw( request.get_method(), request.get_full_url(), request.get_data(), request.headers )
+            fuzzReq = createFuzzableRequestRaw( request.get_method(), url_instance, request.get_data(), request.headers )
             
             for grep_plugin in self._grepPlugins:
                 #

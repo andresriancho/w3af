@@ -27,16 +27,15 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+from core.data.db.temp_persist import disk_list
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-
 
 # By aungkhant. Lists are taken from underground shell repositories and
 # common sense
@@ -131,7 +130,7 @@ class findBackdoor(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = []
+        self._analyzed_dirs = disk_list()
         self._fuzzable_requests_to_return = []
 
     def discover(self, fuzzableRequest):
@@ -141,7 +140,7 @@ class findBackdoor(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
         (among other things) the URL to test.
         '''
-        domain_path = urlParser.getDomainPath(fuzzableRequest.getURL())
+        domain_path = fuzzableRequest.getURL().getDomainPath()
         self._fuzzable_requests_to_return = []
 
         if domain_path not in self._analyzed_dirs:
@@ -149,8 +148,7 @@ class findBackdoor(baseDiscoveryPlugin):
 
             # Search for the web shells
             for web_shell_filename in WEB_SHELLS:
-                web_shell_url = urlParser.urlJoin(domain_path , 
-                                                  web_shell_filename)
+                web_shell_url = domain_path.urlJoin(web_shell_filename)
                 # Perform the check in different threads
                 targs = (web_shell_url,)
                 self._tm.startFunction(target=self._check_if_exists, 

@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.kb.vuln import vuln as vuln
 from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
-from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
-import core.data.parsers.urlParser as urlParser
 
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om

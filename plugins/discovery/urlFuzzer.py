@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -36,6 +35,7 @@ import core.data.kb.info as info
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.parsers.urlParser import url_object
 
 
 class urlFuzzer(baseDiscoveryPlugin):
@@ -68,7 +68,7 @@ class urlFuzzer(baseDiscoveryPlugin):
             self._first_time = False
         
         # First we need to delete fragments and query strings from URL.
-        url = urlParser.uri2url( url )
+        url = url.uri2url()
 
         # And we mark this one as a "do not return" URL, because the core already
         # found it using another technique.
@@ -82,7 +82,7 @@ class urlFuzzer(baseDiscoveryPlugin):
 
         if response.is_text_or_html() or self._fuzzImages:
             mutants = self._mutate( url )
-            om.out.debug('urlFuzzer is testing ' + url )
+            om.out.debug('urlFuzzer is testing "%s"' % url )
             for mutant in mutants :
                 targs = ( url, mutant )
                 self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
@@ -111,7 +111,7 @@ class urlFuzzer(baseDiscoveryPlugin):
                     #
                     #   Save it to the kb (if new)!
                     #
-                    if response.getURL() not in self._already_reported and not response.getURL().endswith('/'):
+                    if response.getURL() not in self._already_reported and response.getURL().getFileName():
                         i = info.info()
                         i.setPluginName(self.getName())
                         i.setName('Potentially interesting file')
@@ -129,20 +129,17 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         This method tries to lower the false positives. 
         '''     
-        if urlParser.getDomainPath( uri ) == uri:
+        if not uri.hasQueryString():
             return False
         
-        url = urlParser.uri2url( uri )
-        url += createRandAlNum( 7 )
-        if urlParser.getQueryString( uri ):
-            url = url + '?' + str( urlParser.getQueryString( uri ) )
+        uri.setFileName( uri.getFileName() + createRandAlNum( 7 ) )
             
         try:
-            response = self._urlOpener.GET( url, useCache=True, headers=self._headers )
+            response = self._urlOpener.GET( uri, useCache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         except w3afException,e:
-            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
+            msg = 'An exception was raised while requesting "'+uri+'" , the error message is: '
             msg += str(e)
             om.out.error( msg )
         else:
@@ -173,28 +170,67 @@ class urlFuzzer(baseDiscoveryPlugin):
             - http://www.foobar.com/www.foobar.rar
             - etc...
         
-        @return: A list of mutants.
-        '''
-        domain = urlParser.getDomain( url )
-        domainPath = urlParser.getDomainPath( url )
+        @parameter url: An url_object to transform.
+        @return: A list of url_object's that mutate the original url passed as parameter.
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> u = urlFuzzer()
+        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_domain_name( url )
+        >>> url_object( 'http://www.w3af.com/www.tar.gz' ) in mutants
+        True
+
+        >>> url_object( 'http://www.w3af.com/www.w3af.tar.gz' ) in mutants
+        True
+
+        >>> url_object( 'http://www.w3af.com/www.w3af.com.tar.gz' ) in mutants
+        True
+
+        >>> len(mutants) > 20
+        True
         
-        splittedDomain = domain.split('.')
+        '''
+        domain = url.getDomain()
+        domain_path = url.getDomainPath()
+        
+        splitted_domain = domain.split('.')
         res = []
-        for i in xrange( len ( splittedDomain ) ):
-            filename = '.'.join(splittedDomain[0: i+1])
+        for i in xrange( len ( splitted_domain ) ):
+            filename = '.'.join(splitted_domain[0: i+1])
+            
             for extension in self._get_backup_extensions():
-                res.append( domainPath + filename + '.' + extension )
-                ### TODO: review this code !!
+                filename_ext = filename  + '.' + extension
+                
+                domain_path_copy = domain_path.copy()
+                domain_path_copy.setFileName( filename_ext )
+                res.append( domain_path_copy )
+
         return res
         
     def _mutate_by_appending( self, url ):
         '''
         Adds something to the end of the url (mutate the file being requested)
         
-        @return: A list of mutants.
+        @parameter url: An url_object to transform.
+        @return: A list of url_object's that mutate the original url passed as parameter.
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> u = urlFuzzer()
+        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_by_appending( url )
+        >>> mutants
+        []
+        
+        >>> url = url_object( 'http://www.w3af.com/foo.html' )
+        >>> mutants = u._mutate_by_appending( url )
+        >>> url_object( 'http://www.w3af.com/foo.html~' ) in mutants
+        True
+        >>> len(mutants) > 20
+        True
+
         '''
         mutants = []
-        if not url.endswith('/') and url.count('/') >= 3:
+        if not url.url_string.endswith('/') and url.url_string.count('/') >= 3:
             #
             #   Only get here on these cases:
             #       - http://host.tld/abc
@@ -205,27 +241,52 @@ class urlFuzzer(baseDiscoveryPlugin):
             #       - http://host.tld/abc/
             #
             for to_append in self._get_to_append():
-                mutants.append ( url + to_append )
+                url_copy = url.copy()
+                filename = url_copy.getFileName()
+                filename += to_append
+                url_copy.setFileName( filename )
+                mutants.append( url_copy )
+                
         return mutants
     
     def _mutate_file_type( self, url ):
         '''
-        Mutates a URL by changing its filetype, example :
-        url = http://g.ar/foo.php
-        result = http://g.ar/foo.zip , http://g.ar/foo.tgz , etc...
+        If the url is : "http://www.foobar.com/asd.txt" this method returns:
+            - http://www.foobar.com/asd.zip
+            - http://www.foobar.com/asd.tgz
+            - etc...
         
-        @return: A mutant list.
+        @parameter url: An url_object to transform.
+        @return: A list of url_object's that mutate the original url passed as parameter.
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> u = urlFuzzer()
+        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_file_type( url )
+        >>> mutants
+        []
+        
+        >>> url = url_object( 'http://www.w3af.com/foo.html' )
+        >>> mutants = u._mutate_file_type( url )
+        >>> url_object( 'http://www.w3af.com/foo.tar.gz' ) in mutants
+        True
+        >>> url_object( 'http://www.w3af.com/foo.disco' ) in mutants
+        True
+        >>> len(mutants) > 20
+        True
+
         '''
         mutants = []
         
-        extension = urlParser.getExtension( url )
+        extension = url.getExtension()
         if extension:
             
-            if url.rfind('.') > url.rfind('/'):
-                url = url[ : url.rfind('.')+1 ]
-                filetypes = self._get_file_types()
-                for filetype in filetypes:
-                    mutants.append ( url + filetype )
+            filetypes = self._get_file_types()
+            
+            for filetype in filetypes:
+                url_copy = url.copy()
+                url_copy.setExtension(filetype)
+                mutants.append( url_copy )
                     
         return mutants
 
@@ -233,19 +294,45 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         Mutate the path instead of the file.
         
-        @return: A list of mutants.
+        @parameter url: An url_object to transform.
+        @return: A list of url_object's that mutate the original url passed as parameter.
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> u = urlFuzzer()
+        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_path( url )
+        >>> mutants
+        []
+        
+        >>> url = url_object( 'http://www.w3af.com/foo.html' )
+        >>> mutants = u._mutate_path( url )
+        >>> mutants
+        []
+        
+        >>> url = url_object( 'http://www.w3af.com/foo/bar.html' )
+        >>> mutants = u._mutate_path( url )
+        >>> url_object( 'http://www.w3af.com/foo.tar.gz' ) in mutants
+        True
+        
+        >>> url_object( 'http://www.w3af.com/foo.old' ) in mutants
+        True
+
+        >>> url_object( 'http://www.w3af.com/foo.zip' ) in mutants
+        True
         '''
         mutants = []
-        if url.count('/') > 3:
-            url = url[: url.rfind('/') ]
-            toAppendList = self._get_to_append()
-            for toAppend in toAppendList:
-                mutants.append ( url + toAppend )
+        
+        url_string = url.url_string
+        
+        if url_string.count('/') > 3:
             
-            if not url.endswith('/'):
-                url += '/'
-            mutants.append( url )
-            
+            #    Create the new path
+            url_string = url_string[: url_string.rfind('/') ]
+            to_append_list = self._get_to_append()
+            for to_append in to_append_list:
+                url_instance = url_object( url_string + to_append )
+                mutants.append ( url_instance )
+                        
         return mutants
     
     def _get_backup_extensions( self ):

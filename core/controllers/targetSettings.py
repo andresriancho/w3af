@@ -25,7 +25,7 @@ import urllib2
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
 
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 from core.controllers.w3afException import w3afException
 
 # options
@@ -93,21 +93,30 @@ class targetSettings(configurable):
         ol.add(o3)
         return ol
     
-    def _verifyURL(self, targetUrl, fileTarget=True):
+    def _verifyURL(self, target_url, fileTarget=True):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't support it.
+
+        >>> ts = targetSettings()
+        >>> ts._verifyURL( url_object('http://www.google.com/') )
+        >>> ts._verifyURL( url_object('ftp://www.google.com/') )
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        w3afException: Invalid format for target URL "ftp://www.google.com/", you have to specify the protocol (http/https/file) and a domain or IP address. Examples: http://host.tld/ ; https://127.0.0.1/ .
+        
+        @param target_url: The target URL object to check if its valid or not.
+        @return: None. A w3afException is raised on error.
         '''
-        protocol = urlParser.getProtocol(targetUrl)
-        domain = urlParser.getDomain(targetUrl) or ''
+        protocol = target_url.getProtocol()
+        domain = target_url.getDomain() or ''
         
         aFile = fileTarget and protocol == 'file' and domain
-        aHTTP = protocol in ['http', 'https'] and \
-                    urlParser.isValidURLDomain(targetUrl)
+        aHTTP = protocol in ['http', 'https'] and target_url.is_valid_domain()
 
         if not (aFile or aHTTP):
             msg = 'Invalid format for target URL "%s", you have to specify ' \
             'the protocol (http/https/file) and a domain or IP address. ' \
-            'Examples: http://host.tld/ ; https://127.0.0.1/ .' % targetUrl
+            'Examples: http://host.tld/ ; https://127.0.0.1/ .' % target_url
             raise w3afException( msg )
     
     def setOptions( self, optionsMap ):
@@ -118,41 +127,44 @@ class targetSettings(configurable):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        targetUrls = optionsMap['target'].getValue()
+        target_urls_strings = optionsMap['target'].getValue()
         
-        for targetUrl in targetUrls:
-            self._verifyURL(targetUrl)
+        for target_url_string in target_urls_strings:
+            self._verifyURL( url_object(target_url_string) )
 
-        for targetUrl in targetUrls:
-            if targetUrl.count('file://'):
+        for target_url_string in target_urls_strings:
+            if target_url_string.count('file://'):
                 try:
-                    f = urllib2.urlopen(targetUrl)
+                    f = urllib2.urlopen(target_url_string)
                 except:
-                    raise w3afException('Cannot open target file: ' + targetUrl )
+                    raise w3afException('Cannot open target file: "%s"' % target_url_string )
                 else:
                     for line in f:
                         target_in_file = line.strip()
-                        self._verifyURL(target_in_file, fileTarget=False)
-                        targetUrls.append(target_in_file)
+                        self._verifyURL( url_object(target_in_file) , fileTarget=False)
+                        target_urls_strings.append(target_in_file)
                     f.close()
-                targetUrls.remove( targetUrl )
+                target_urls_strings.remove( target_url_string )
+        
+        # Convert to objects
+        target_url_objects = [ url_object(u) for u in target_urls_strings]
         
         # Now we perform a check to see if the user has specified more than one target
         # domain, for example: "http://google.com, http://yahoo.com".
-        domainList = [urlParser.getNetLocation(targetURL) for targetURL in targetUrls]
-        domainList = list( set(domainList) )
-        if len( domainList ) > 1:
-            msg = 'You specified more than one target domain: ' + ','.join(domainList)
+        domain_list = [target_url.getNetLocation() for target_url in target_url_objects]
+        domain_list = list( set(domain_list) )
+        if len( domain_list ) > 1:
+            msg = 'You specified more than one target domain: ' + ','.join(domain_list)
             msg += ' . And w3af only supports one target domain at the time.'
             raise w3afException(msg)
         
         # Save in the config, the target URLs, this may be usefull for some plugins.
-        cf.cf.save('targets', targetUrls)
-        cf.cf.save('targetDomains', [ urlParser.getNetLocation( i ) for i in targetUrls ] )
-        cf.cf.save('baseURLs', [ urlParser.baseUrl( i ) for i in targetUrls ] )
+        cf.cf.save('targets', target_url_objects)
+        cf.cf.save('targetDomains', [ i.getNetLocation() for i in target_url_objects ] )
+        cf.cf.save('baseURLs', [ i.baseUrl() for i in target_url_objects ] )
         
-        if targetUrls:
-            sessName = [ urlParser.getNetLocation(x) for x in targetUrls ]
+        if target_url_objects:
+            sessName = [ x.getNetLocation() for x in target_url_objects ]
             sessName = '-'.join(sessName)
         else:
             sessName = 'noTarget'

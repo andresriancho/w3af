@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
-import core.data.parsers.urlParser as urlParser
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb
@@ -64,8 +63,8 @@ class urllist_txt(baseDiscoveryPlugin):
             dirs = []
             self._new_fuzzable_requests = []         
             
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
-            urllist_url = urlParser.urlJoin(  base_url , 'urllist.txt' )
+            base_url = fuzzableRequest.getURL().baseUrl()
+            urllist_url = base_url.urlJoin( 'urllist.txt' )
             http_response = self._urlOpener.GET( urllist_url, useCache=True )
             
             if not is_404( http_response ):
@@ -85,7 +84,7 @@ class urllist_txt(baseDiscoveryPlugin):
                 for line in http_response.getBody().split('\n'):
                     if not line.startswith('#'):
                         url = line.strip()
-                        url = urlParser.urlJoin(  base_url , url )
+                        url = base_url.urlJoin( url )
                         dirs.append( url )
 
             for url in dirs:

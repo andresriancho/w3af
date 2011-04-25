@@ -25,7 +25,6 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
-import core.data.parsers.urlParser as urlParser
 from core.data.kb.shell import shell as shell
 
 from core.controllers.w3afException import w3afException
@@ -118,7 +117,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         @return: True if the user can start using the proxy.
         '''
         # Set proxy parameters
-        self._url = urlParser.uri2url( vuln.getURL() )
+        self._url = vuln.getURL().uri2url()
         self._method = vuln.getMethod()
         self._exploitData = vuln.getDc()
         self._variable = vuln.getVar()

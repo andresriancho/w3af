@@ -32,7 +32,6 @@ import core.data.kb.info as info
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache
 from core.controllers.w3afException import w3afRunOnce
 
@@ -66,8 +65,8 @@ class fingerGoogle(baseDiscoveryPlugin):
             self._run = False
             
             self._google = google(self._urlOpener)
-            self._domain = domain = urlParser.getDomain( fuzzableRequest.getURL() )
-            self._domain_root = urlParser.getRootDomain( domain )
+            self._domain = domain = fuzzableRequest.getURL().getDomain()
+            self._domain_root = fuzzableRequest.getURL().getRootDomain()
             
             if self._fast_search:
                 self._do_fast_search( domain )
@@ -119,7 +118,7 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         try:
             om.out.debug('Searching for mails in: ' + googlePage.getURI() )
-            if self._domain == urlParser.getDomain( googlePage.getURI() ):
+            if self._domain == googlePage.getURI().getDomain():
                 response = self._urlOpener.GET( googlePage.getURI(), useCache=True, \
                                                                 grepResult=True )
             else:

@@ -37,7 +37,6 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants
 
 import re
@@ -69,7 +68,7 @@ class localFileInclude(baseAuditPlugin):
         
         #   What payloads do I want to send to the remote end?
         local_files = []
-        local_files.append( urlParser.getFileName( freq.getURL() ) )
+        local_files.append( freq.getURL().getFileName() )
         if not self._open_basedir:
             local_files.extend( self._get_local_file_list(freq.getURL()) )
         
@@ -99,7 +98,7 @@ class localFileInclude(baseAuditPlugin):
         '''
         local_files = []
 
-        extension = urlParser.getExtension(origUrl)
+        extension = origUrl.getExtension()
 
         # I will only try to open these files, they are easy to identify of they 
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
@@ -188,7 +187,7 @@ class localFileInclude(baseAuditPlugin):
                 #   (note that this is run if no vulns were identified)
                 #
                 #   http://host.tld/show_user.php?id=show_user.php
-                if mutant.getModValue() == urlParser.getFileName( mutant.getURL() ):
+                if mutant.getModValue() == mutant.getURL().getFileName():
                     match, lang = is_source_file( response.getBody() )
                     if match:
                         #   We were able to read the source code of the file that is vulnerable to

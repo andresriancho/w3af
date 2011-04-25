@@ -29,8 +29,8 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+from core.data.parsers.urlParser import parse_qs
 
 # Advanced shell stuff
 from core.data.kb.exec_shell import exec_shell as exec_shell
@@ -113,7 +113,7 @@ class eval(baseAttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # Get the shells
-        extension = urlParser.getExtension( vuln_obj.getURL() )
+        extension = vuln_obj.getURL().getExtension()
         # I get a list of tuples with code and extension to use
         shell_code_list = shell_handler.get_shell_code( extension )
         
@@ -181,7 +181,7 @@ class eval(baseAttackPlugin):
         self._changeToPost = optionsMap['changeToPost'].getValue()
         self._url = optionsMap['url'].getValue()
         self._method = optionsMap['method'].getValue()
-        self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
+        self._data = parse_qs( optionsMap['data'].getValue() )
         self._inj_var = optionsMap['injvar'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
             

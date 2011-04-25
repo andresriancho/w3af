@@ -23,10 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import httpQsRequest
-import core.data.parsers.urlParser as urlParser
 from core.data.request.frFactory import createFuzzableRequestRaw
 import core.controllers.outputManager as om
 from core.controllers.w3afException import *
+
 
 class baseManglePlugin(basePlugin):
     '''

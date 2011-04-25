@@ -28,8 +28,6 @@ from core.data.searchEngines.googleSearchEngine import googleSearchEngine, \
     GAjaxSearch, GStandardSearch, GMobileSearch, GSetSearch
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
-from core.data.parsers import urlParser
-
 
 # Global vars
 HEADERS = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
@@ -56,7 +54,7 @@ class test_googleSearchEngine(unittest.TestCase):
     def test_get_links_results_unique(self):
         # URLs should be unique
         results = self.gse.getNResults(self.query, self.limit)
-        self.assertTrue(len(results) == len(set(r.URL for r in results)))
+        self.assertTrue(len(results) == len(set([r.URL for r in results])))
     
     def test_page_body(self):
         # Verify that responses' body contains at least one word in query
@@ -103,7 +101,7 @@ class test_GoogleAPISearch(unittest.TestCase):
         for searcher in self._get_google_searchers(query, start, self.count):
             # returned URLs' domain should be the expected
             for link in searcher.links:
-                link_domain = urlParser.getDomain(link.URL)
+                link_domain = link.URL.getDomain()
                 self.assertTrue(link_domain == domain, 
                                 "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain))
     
@@ -113,7 +111,7 @@ class test_GoogleAPISearch(unittest.TestCase):
         start = 0
         for searcher in self._get_google_searchers(query, start, self.count):
             for link in searcher.links:
-                self.assertTrue(URL_REGEX.match(link.URL) is not None)
+                self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
         
     
     def test_pages_results_type(self):

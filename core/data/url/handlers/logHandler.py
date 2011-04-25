@@ -23,13 +23,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import urlparse
 
+from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
 import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as urlParser
 from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.request.frFactory import createFuzzableRequestRaw
 
@@ -83,15 +83,16 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             # essentially all clients do redirect in this case, so we
             # do the same.
             
-            # This path correctly assigns a id for the request/response
-            newurl = newurl.replace(' ', '%20')
+            # This path correctly assigns an id for the request/response
+            #newurl = newurl.replace(' ', '%20')
+            new_url_obj = url_object(newurl)
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')
             
-            new_request = HTTPRequest(newurl,
-            headers=req.headers,
-            origin_req_host=req.get_origin_req_host(),
-            unverifiable=True)
+            new_request = HTTPRequest(new_url_obj,
+                            headers=req.headers,
+                            origin_req_host=req.get_origin_req_host(),
+                            unverifiable=True)
             
             return new_request
         else:
@@ -196,13 +197,13 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
     def _log_request_response(self, request, response):
         '''
         Send the request and the response to the output manager.
-        '''
-        
+        '''        
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
+        request_url_obj = url_object(request.get_full_url())
         fr = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.get_full_url(),
+                                      url=request_url_obj,
                                       postData=request.get_data(),
                                       headers=headers)
 
@@ -214,6 +215,8 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             body = response.read()
             id = response.id
             # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
-            res = httpResponse.httpResponse(code, body, hdrs, url, url, msg=msg, id=id)
+            url_instance = url_object( url )
+            res = httpResponse.httpResponse(code, body, hdrs, request_url_obj, url_instance, msg=msg, id=id)
         
         om.out.logHttp(fr, res)
+

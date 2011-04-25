@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -58,7 +57,7 @@ class findGit(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+        domain_path = fuzzableRequest.getURL().getDomainPath()
         self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
@@ -67,8 +66,8 @@ class findGit(baseDiscoveryPlugin):
             #
             #   First we check if the .git/HEAD file exists
             #
-            url, regular_expression = self._compiled_git_info[0]
-            git_url = urlParser.urlJoin(domain_path, url)
+            relative_url, regular_expression = self._compiled_git_info[0]
+            git_url = domain_path.urlJoin(relative_url)
             try:
                 response = self._urlOpener.GET( git_url, useCache=True )
             except w3afException:
@@ -78,8 +77,8 @@ class findGit(baseDiscoveryPlugin):
                     #
                     #   It looks like we have a GIT repository!
                     #
-                    for url, regular_expression in self._compiled_git_info:
-                        git_url = urlParser.urlJoin(domain_path, url)
+                    for relative_url, regular_expression in self._compiled_git_info:
+                        git_url = domain_path.urlJoin(relative_url)
                         targs = (domain_path, git_url, regular_expression)
                         # Note: The .git/HEAD request is only sent once. We use the cache.
                         self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         

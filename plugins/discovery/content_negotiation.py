@@ -31,7 +31,6 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afRunOnce
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
@@ -115,7 +114,7 @@ class content_negotiation(baseDiscoveryPlugin):
         result = []
         
         # Get the file name
-        filename = urlParser.getFileName( fuzzableRequest.getURL() )
+        filename = fuzzableRequest.getURL().getFileName()
         if filename == '':
             # We need a filename to work with!
             return []
@@ -130,7 +129,7 @@ class content_negotiation(baseDiscoveryPlugin):
             filename = filename.split('.')[0]
             
             # Now I simply perform the request:
-            alternate_resource = urlParser.urlJoin(fuzzableRequest.getURL(), filename)
+            alternate_resource = fuzzableRequest.getURL().urlJoin(filename)
             original_headers = fuzzableRequest.getHeaders()
             
             if alternate_resource not in self._already_tested_resource:
@@ -155,20 +154,20 @@ class content_negotiation(baseDiscoveryPlugin):
         
         # Create the list of directories to analyze:
         for url in self._to_bruteforce:
-            directories = urlParser.getDirectories(url)
+            directories = url.getDirectories()
             
-            for directory in directories:
-                if directory not in to_analyze and directory not in self._already_tested_dir:
-                    to_analyze.append( directory )
+            for directory_url in directories:
+                if directory_url not in to_analyze and directory_url not in self._already_tested_dir:
+                    to_analyze.append( directory_url )
         
         # Really bruteforce:
-        for directory in to_analyze:
-            self._already_tested_dir.add( directory )
+        for directory_url in to_analyze:
+            self._already_tested_dir.add( directory_url )
             
             for word in file(self._wordlist):
-                alternate_resource = urlParser.urlJoin( directory, word.strip() )
+                alternate_resource = directory_url.urlJoin( word.strip() )
                 alternates = self._request_and_get_alternates( alternate_resource, {})
-                result = self._create_new_fuzzablerequests( directory,  alternates )
+                result = self._create_new_fuzzablerequests( directory_url,  alternates )
         
         # I already analyzed them, zeroing.
         self._to_bruteforce = []
@@ -214,7 +213,7 @@ class content_negotiation(baseDiscoveryPlugin):
         result = []
         for alternate in alternates:
             # Get the new resource
-            full_url = urlParser.urlJoin( base_url, alternate)
+            full_url = base_url.urlJoin(alternate)
             response = self._urlOpener.GET( full_url )
                 
             result.extend( self._createFuzzableRequests( response ) )
@@ -235,14 +234,14 @@ class content_negotiation(baseDiscoveryPlugin):
         else:
             # We perform the test, for this we need a URL that has a filename, URL's
             # that don't have a filename can't be used for this.
-            filename = urlParser.getFileName( fuzzableRequest.getURL() )
+            filename = fuzzableRequest.getURL().getFileName()
             if filename == '':
                 return None
         
             filename = filename.split('.')[0]
             
             # Now I simply perform the request:
-            alternate_resource = urlParser.urlJoin(fuzzableRequest.getURL(), filename)
+            alternate_resource = fuzzableRequest.getURL().urlJoin(filename)
             headers = fuzzableRequest.getHeaders()
             headers['Accept'] = 'w3af/bar'
             response = self._urlOpener.GET( alternate_resource, headers = headers )

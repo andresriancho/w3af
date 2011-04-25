@@ -94,7 +94,7 @@ class globalRedirect(baseAuditPlugin):
         This method checks if the browser was redirected ( using a 302 code ) 
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
         '''
-        if response.getRedirURL().startswith( self._test_site ):
+        if response.getRedirURL().url_string.startswith( self._test_site ):
             # The script sent a 302, and w3af followed the redirection
             # so the URL is now the test site
             return True

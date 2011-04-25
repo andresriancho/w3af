@@ -34,7 +34,8 @@ import threading
 
 # For testing
 from core.data.url.httpResponse import httpResponse as httpResponse
-    
+
+
 class clusterCellWindow(entries.RememberingWindow):
     def __init__ ( self, w3af, data=[] ):
         '''
@@ -423,13 +424,17 @@ def main():
     gtk.main()
 
 if __name__ == "__main__":
-    # We create the data
+    
+    import core.data.parsers.urlParser as url_object
+    url_instance = url_object('http://a/index.html')
+    
+    #    We create the data
     data = [
-        httpResponse(200, 'my data1 looks like this and has no errors', {}, 'http://a/index.html', 'http://a/index.html', id=1),
-        httpResponse(200, 'errors? i like errors like this one: SQL', {}, 'http://a/index.html', 'http://a/index.html', id=2),
-        httpResponse(200, 'my data is really happy', {}, 'http://a/index.html', 'http://a/index.html', id=3),
-        httpResponse(200, 'my data1 loves me', {}, 'http://a/index.html', 'http://a/index.html', id=4),
-        httpResponse(200, 'my data likes me', {}, 'http://a/index.html', 'http://a/index.html', id=5)
+        httpResponse(200, 'my data1 looks like this and has no errors', {}, url_instance, url_instance, id=1),
+        httpResponse(200, 'errors? i like errors like this one: SQL', {}, url_instance, url_instance, id=2),
+        httpResponse(200, 'my data is really happy', {}, url_instance, url_instance, id=3),
+        httpResponse(200, 'my data1 loves me', {}, url_instance, url_instance, id=4),
+        httpResponse(200, 'my data likes me', {}, url_instance, url_instance, id=5)
         ]
             
     cl_win = clusterCellWindow( data=data )

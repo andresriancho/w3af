@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
@@ -67,7 +66,7 @@ class sharedHosting(baseDiscoveryPlugin):
             
             bing_wrapper = bing( self._urlOpener )
             
-            domain = urlParser.getDomain( fuzzableRequest.getURL() )
+            domain = fuzzableRequest.getURL().getDomain()
             if is_private_site( domain ):
                 msg = 'sharedHosting plugin is not checking for subdomains for domain: '
                 msg += domain + ' because its a private address.' 
@@ -87,7 +86,7 @@ class sharedHosting(baseDiscoveryPlugin):
                 for ip_address in ip_address_list:
                     results = bing_wrapper.getNResults('ip:'+ ip_address, self._result_limit )
                     
-                    results = [ urlParser.baseUrl( r.URL ) for r in results ]
+                    results = [ r.URL.baseUrl() for r in results ]
                     results = list( set( results ) )
                     
                     # not vuln by default
@@ -103,8 +102,8 @@ class sharedHosting(baseDiscoveryPlugin):
                             # [Mon 09 Jun 2008 01:08:26 PM ART] - http://www.business.com/
                             # Where www.business.com resolves to 216.244.147.14; so we don't really
                             # have more than one domain in the same server.
-                            res0 = socket.gethostbyname( urlParser.getDomain( results[0] ) )
-                            res1 = socket.gethostbyname( urlParser.getDomain( results[1] ) )
+                            res0 = socket.gethostbyname( results[0].getDomain() )
+                            res1 = socket.gethostbyname( results[1].getDomain() )
                             if res0 == res1:
                                 is_vulnerable = False
                     
@@ -120,7 +119,7 @@ class sharedHosting(baseDiscoveryPlugin):
                         msg += 'This list of domains, and the domain of the web application under '
                         msg += 'test, all point to the same IP address (%s):\n' % ip_address
                         for url in results:
-                            domain = urlParser.getDomain(url)
+                            domain = url.getDomain()
                             msg += '- %s\n' % url
                             kb.kb.append( self, 'domains', domain)
                         v.setDesc( msg )

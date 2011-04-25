@@ -7,7 +7,6 @@ License: GPL v2.
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 from core.controllers.threads.threadManager import threadManagerObj as tm
 import core.data.kb.config as cf
 
@@ -107,8 +106,8 @@ class dbDriverFunctions:
         mutant = self._vuln.getMutant()
         mutant.setModValue( self._vuln['falseValue'] + newValue )
         
-        if mutant.getDc() != '':
-            baseUrl = urlParser.uri2url( mutant.getURL() ) + '?' + urllib.unquote_plus( str( mutant.getDc() ) )
+        if mutant.getDc():
+            baseUrl = mutant.getURL().uri2url() + '?' + urllib.unquote_plus( str( mutant.getDc() ) )
         else:
             baseUrl = mutant.getURL()
         return baseUrl
@@ -119,8 +118,8 @@ class dbDriverFunctions:
         url page.
         """
         m = self._vuln.getMutant()
-        m.setDc( urlParser.getQueryString( url ) )
-        m.setURL( urlParser.uri2url( url ) )
+        m.setDc( url.getQueryString() )
+        m.setURL( url.uri2url() )
         response = self._sendMutant( m , analyze=False )
         if response.getCode() in range( 500, 599 ):
             raise w3afException('getPage request returned an HTTP error 500.')

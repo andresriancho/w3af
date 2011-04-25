@@ -35,7 +35,6 @@ import core.data.kb.vuln as vuln
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.controllers.w3afException import w3afException
 
@@ -61,7 +60,7 @@ class frontpage(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         # Set some value
-        domain_path = urlParser.getDomainPath( freq.getURL() )
+        domain_path = freq.getURL().getDomainPath()
         
         # Start
         if self._stop_on_first and kb.kb.getData('frontpage', 'frontpage'):
@@ -80,7 +79,7 @@ class frontpage(baseAuditPlugin):
                 found404 = False
                 for i in xrange(3):
                     randFile = createRandAlpha( 5 ) + '.html'
-                    randPathFile = urlParser.urlJoin(domain_path,  randFile)
+                    randPathFile = domain_path.urlJoin(randFile)
                     res = self._urlOpener.GET( randPathFile )
                     if is_404( res ):
                         found404 = True
@@ -101,7 +100,7 @@ class frontpage(baseAuditPlugin):
         @parameter domain_path: http://localhost/f00/
         @parameter randFile: fj01afka.html
         '''
-        file_path = urlParser.getPath(domain_path) + randFile
+        file_path = domain_path.getPath() + randFile
         
         # TODO: The frontpage version should be obtained from the information saved in the kb
         # by the discovery.frontpage_version plugin!
@@ -117,7 +116,7 @@ class frontpage(baseAuditPlugin):
         
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
         # inside the discovery.frontpage_version plugin, and then used here
-        targetURL = urlParser.urlJoin( domain_path, '_vti_bin/_vti_aut/author.dll' )
+        targetURL = domain_path.urlJoin( '_vti_bin/_vti_aut/author.dll' )
 
         try:
             res = self._urlOpener.POST( targetURL , data=content )
@@ -140,7 +139,7 @@ class frontpage(baseAuditPlugin):
         @parameter randFile: The filename that was supposingly uploaded
         @parameter upload_id: The id of the POST request to author.dll
         '''        
-        targetURL = urlParser.urlJoin( domain_path, randFile )
+        targetURL = domain_path.urlJoin( randFile )
         
         try:
             res = self._urlOpener.GET( targetURL )

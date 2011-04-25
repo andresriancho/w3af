@@ -34,7 +34,6 @@ import core.data.kb.info as info
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 import core.data.constants.httpConstants as httpConstants
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
@@ -93,7 +92,7 @@ class allowedMethods(baseDiscoveryPlugin):
             if self._exec_one_time:
                 self._exec = False
             
-            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            domain_path = fuzzableRequest.getURL().getDomainPath()
             if domain_path not in self._already_tested:
                 self._already_tested.add( domain_path )
                 self._check_methods( domain_path )

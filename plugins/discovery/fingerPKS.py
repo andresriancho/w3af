@@ -34,7 +34,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.searchEngines.pks import pks as pks
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
 
 
 class fingerPKS(baseDiscoveryPlugin):
@@ -62,16 +62,15 @@ class fingerPKS(baseDiscoveryPlugin):
             
             pks_se = pks( self._urlOpener)
             
-            url = fuzzableRequest.getURL()
-            domain_root = urlParser.getRootDomain( url )
+            root_domain = fuzzableRequest.getURL().getRootDomain()
             
-            results = pks_se.search( domain_root )
+            results = pks_se.search( root_domain )
             for result in results:
                 i = info.info()
+                i.setURL( url_object('http://pgp.mit.edu:11371/') )
                 i.setPluginName(self.getName())
-                i.setURL( 'http://pgp.mit.edu:11371/' )
                 i.setId( [] )
-                mail = result.username +'@' + domain_root
+                mail = result.username +'@' + root_domain
                 i.setName( mail )
                 i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
                 i['mail'] = mail

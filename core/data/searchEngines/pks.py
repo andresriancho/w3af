@@ -23,8 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 from core.data.searchEngines.searchEngine import searchEngine as searchEngine
-import core.data.parsers.urlParser as urlParser
-import urllib
+from core.data.parsers.urlParser import url_object
 import re
 
 
@@ -47,7 +46,7 @@ class pks(searchEngine):
         '''
         if hostname.count('//'):
             msg = 'You must provide the pks search engine with a root domain name (as returned by'
-            msg += ' urlParser.getRootDomain).'
+            msg += ' url_object.getRootDomain).'
             raise w3afException( msg )
     
         res = self.met_search( hostname )
@@ -68,10 +67,10 @@ class pks(searchEngine):
                 self.name = name
                 self.username = username
                 
-        url = 'http://pgp.mit.edu:11371/pks/lookup?'
-        _query = urllib.urlencode({'op':'index', 'search':query})
+        url = url_object('http://pgp.mit.edu:11371/pks/lookup')
+        url.setQueryString( {'op':'index', 'search':query} )
 
-        response = self._urlOpener.GET(url + _query, headers=self._headers, useCache=True, grepResult=False )
+        response = self._urlOpener.GET( url , headers=self._headers, useCache=True, grepResult=False )
         content = response.getBody()
         
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)

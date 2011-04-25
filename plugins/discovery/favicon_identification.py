@@ -39,7 +39,6 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
 import re
@@ -80,9 +79,9 @@ class favicon_identification(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
 
-            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            domain_path = fuzzableRequest.getURL().getDomainPath()
             
-            def_favicon_url = urlParser.urlJoin( domain_path, 'favicon.ico' )
+            def_favicon_url = domain_path.urlJoin('favicon.ico' )
             response = self._urlOpener.GET( def_favicon_url, useCache=True )
 
             if not is_404( response ):

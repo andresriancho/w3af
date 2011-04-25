@@ -46,7 +46,7 @@ def checkVersionSintax(version):
 
 def checkURISintax(uri, host=None):
     '''
-    @return: True if the sintax of the URI section of HTTP is valid; else raise an exception.
+    @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
     '''
     supportedSchemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)

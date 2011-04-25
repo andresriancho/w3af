@@ -126,8 +126,11 @@ class disk_list(object):
                 pass
     
     def __contains__(self, value):
+        '''
+        @return: True if the str(value) is in our list.
+        '''
         with self._db_lock:
-            t = (value, )
+            t = (str(value), )
             # Adding the "limit 1" to the query makes it faster, as it won't 
             # have to scan through all the table/index, it just stops on the
             # first match.
@@ -136,9 +139,16 @@ class disk_list(object):
             return cursor.fetchone()[0]
     
     def append(self, value):
+        '''
+        Append a value to the disk_list.
+        
+        @param value: The value to append. In all cases we're going to store the str()
+        representation of the value. In order to be consistent, in __contains__ we also
+        perform a str(). 
+        '''
         # thread safe here!
         with self._db_lock:
-            t = (self._current_index, value)
+            t = (self._current_index, str(value))
             self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
             self._current_index += 1
     
@@ -160,5 +170,39 @@ class disk_list(object):
         with self._db_lock:
             cursor = self._conn.execute('SELECT count(*) FROM data')
             return cursor.fetchone()[0]
+
+import unittest
+class disk_list_test(unittest.TestCase):
+
+    def setUp(self):
+        global get_temp_dir
+        def get_temp_dir():
+            return '/tmp/'
+
+    def test_string_add_contains(self):
+        dl = disk_list()
+        for i in xrange(5000):
+            r = self.create_string()
+            dl.append( r )
+        self.assertTrue( len(dl) == 5000 )
+        self.assertTrue( r in dl )
+        self.assertTrue( 'abc' not in dl )
+
+    def test_string_add_contains(self):
+        dl = disk_list()
+        for i in xrange(5000):
+            dl.append( i )
+        self.assertTrue( len(dl) == 5000 )
+        self.assertTrue( 500 in dl )        
+        self.assertTrue( False not in dl )
+        self.assertTrue( 'abc' not in dl )
         
+        # TODO: This is not very nice... but for now we can bare with it.
+        self.assertTrue( '500' in dl )
+
+    def create_string():
+        strr = ''
+        for i in xrange(300):
+            strr += choice(string.letters)
+        return strr
 

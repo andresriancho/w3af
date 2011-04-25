@@ -34,10 +34,11 @@ from core.ui.gtkUi.entries import SemiStockButton
 from core.ui.gtkUi.httpeditor import HttpEditor
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
-from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.data.parsers.httpRequestParser import httpRequestParser
-from core.data.parsers.urlParser import getQueryString
 from core.data.dc.queryString import queryString
+
+from core.controllers.w3afException import w3afException, w3afMustStopException
+
 import core.controllers.outputManager as om
 from .export_request import export_request
 # import the throbber for the audit plugin analysis

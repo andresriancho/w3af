@@ -32,7 +32,6 @@ import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.data.fuzzer.fuzzer import createRandAlNum
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
@@ -98,8 +97,8 @@ class pykto(baseDiscoveryPlugin):
             # Run the basic scan (only once)
             if self._first_time:
                 self._first_time = False
-                url = urlParser.baseUrl( fuzzableRequest.getURL() )
                 self._exec = False
+                url = fuzzableRequest.getURL().baseUrl()
                 self.__run( url )
             
             # And now mutate if the user configured it...
@@ -109,7 +108,7 @@ class pykto(baseDiscoveryPlugin):
                 self._exec = True
                 
                 # Tests are to be mutated
-                url = urlParser.getDomainPath( fuzzableRequest.getURL() )
+                url = fuzzableRequest.getURL().getDomainPath()
                 if url not in self._already_visited:
                     # Save the directories I already have tested
                     self._already_visited.add( url )
@@ -121,7 +120,7 @@ class pykto(baseDiscoveryPlugin):
         '''
         Really run the plugin.
         
-        @parameter url: The URL I have to test.
+        @parameter url: The URL object I have to test.
         '''
         try:
             # read the nikto database.
@@ -246,13 +245,16 @@ class pykto(baseDiscoveryPlugin):
                 # A line could generate more than one request... 
                 # (think about @CGIDIRS)
                 for parameters in to_send:
+                    
+                    modified_url = url.copy()
+                    
                     (server, query , expected_response, method , desc) = parameters
                     
                     if self._generic_scan or self._server_match( server ):
                         #
                         # Avoid some special cases
                         #
-                        if url.endswith('/./') or url.endswith('/%2e/'):
+                        if url.getPath().endswith('/./') or url.getPath().endswith('/%2e/'):
                             # avoid directory self references
                             continue
                         #
@@ -268,19 +270,19 @@ class pykto(baseDiscoveryPlugin):
                         # But I do want is to avoid URLs like this one being generated:
                         # http://localhost//f00
                         # (please note the double //)
-                        if query[0] == '/' == url[-1]:
+                        if query[0] == '/' == url.getPath()[-1]:
                             query = query[1:]
                             
-                        final_url = url + query
+                        modified_url.setPath( modified_url.getPath() + query )
                         
                         lines_sent += len( to_send )
                         
                         # Send the request to the remote server and check the response.
-                        targs = (final_url, parameters)
+                        targs = (modified_url, parameters)
                         try:
                             # Performing this with different threads adds overhead, but works better now.
                             #   WithOUT threads:
-                            #self._send_and_check(final_url, parameters)
+                            #self._send_and_check(modified_url, parameters)
                             
                             #   With threads:
                             #           Performed 3630 requests in 13 seconds (279.230769 req/sec)
@@ -457,10 +459,10 @@ class pykto(baseDiscoveryPlugin):
             v.setDesc( vuln_desc )
             v.setId( response.id )
 
-            if not urlParser.getPath(response.getURL()).endswith('/'):
-                msg = 'Insecure file - ' + urlParser.getPath(response.getURL())
+            if not response.getURL().getPath().endswith('/'):
+                msg = 'Insecure file - ' + response.getURL().getPath()
             else:
-                msg = 'Insecure directory - ' + urlParser.getPath(response.getURL())
+                msg = 'Insecure directory - ' + response.getURL().getPath()
             v.setName( msg )
             v.setSeverity(severity.LOW)
 
@@ -485,32 +487,7 @@ class pykto(baseDiscoveryPlugin):
             # If the content is found, and it's not in a 404 page, then we have a vuln.
             return True
         
-        return False
-    
-    def _return_without_eval( self, parameters, uri ):
-        if urlParser.getDomainPath( uri ) == uri:
-            return False
-        
-        (server, query , expected_response, method , desc) = parameters
-        function_reference = getattr( self._urlOpener , method )
-        
-        url = urlParser.uri2url( uri )
-        url += createRandAlNum( 7 )
-        if urlParser.getQueryString( query ):
-            url = url + '?' + str( urlParser.getQueryString( query ) )
-            
-        try:
-            response = function_reference( url )
-        except KeyboardInterrupt,e:
-            raise e
-        except w3afException,e:
-            msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
-            msg += str(e)
-            om.out.error( msg )
-        else:
-            if not is_404( response ):
-                return True
-        return False
+        return False    
 
     def getOptions( self ):
         '''

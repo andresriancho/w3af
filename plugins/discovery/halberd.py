@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 
 import core.data.kb.knowledgeBase as kb
@@ -84,7 +83,7 @@ class halberd(baseDiscoveryPlugin):
             msg += ' http://halberd.superadditive.com/'
             om.out.information( msg )
             
-            self._main( urlParser.baseUrl( fuzzableRequest.getURL() ) )
+            self._main( fuzzableRequest.getURL().baseUrl().url_string )
             
         return []
         

@@ -29,7 +29,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
-import core.data.parsers.urlParser as urlParser
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
@@ -128,11 +127,11 @@ class digitSum(baseDiscoveryPlugin):
         '''
         res = []
         # First i'll mangle the digits in the URL file
-        filename = urlParser.getFileName( fuzzableRequest.getURL() )
-        domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+        filename = fuzzableRequest.getURL().getFileName()
+        domain_path = fuzzableRequest.getURL().getDomainPath()
         for fname in self._do_combinations( filename ):
             fr_copy = fuzzableRequest.copy()
-            fr_copy.setURL( domain_path + fname)
+            fr_copy.setURL( domain_path.urlJoin(fname) )
             res.append( fr_copy )
         
         # Now i'll mangle the query string variables

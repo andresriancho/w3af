@@ -35,7 +35,6 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
@@ -74,10 +73,10 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
             
             self._fuzzableRequests = []  
             
-            domain_path = urlParser.getDomainPath( fuzzableRequest.getURL() )
+            domain_path = fuzzableRequest.getURL().getDomainPath()
             
             # Main scan URL passed from w3af + unique wp file
-            wp_unique_url = urlParser.urlJoin( domain_path, 'wp-login.php' )
+            wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
             response = self._urlOpener.GET( wp_unique_url, useCache=True )
 
             # If wp_unique_url is not 404, wordpress = true
@@ -89,7 +88,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
                 ##############################
             
                 # Main scan URL passed from w3af + wp index page
-                wp_index_url = urlParser.urlJoin( domain_path, 'index.php' )
+                wp_index_url = domain_path.urlJoin( 'index.php' )
                 response = self._urlOpener.GET( wp_index_url, useCache=True )
 
                 # Find the string in the response html
@@ -129,7 +128,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
                         ('wp-app.php','200','2.2')]
 
                 for row in self._wp_fingerprint:
-                    test_url = urlParser.urlJoin(  domain_path, row[0] )
+                    test_url = domain_path.urlJoin( row[0] )
                     response = self._urlOpener.GET( test_url, useCache=True )
 
                     if row[1] == '200' and not is_404(response):

@@ -35,6 +35,7 @@ except ImportError:
 
 import xml.parsers.expat as expat
 
+
 class wsdlParser:
     '''
     This class parses WSDL documents.

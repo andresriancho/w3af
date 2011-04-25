@@ -25,7 +25,6 @@ import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.xUrllib import xUrllib
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -47,9 +46,9 @@ class basicAuthBrute(baseBruteforcePlugin):
         
         @param freq: A fuzzableRequest
         '''
-        auth_url_list = [ urlParser.getDomainPath( i.getURL() ) for i in kb.kb.getData( 'httpAuthDetect', 'auth' )]
+        auth_url_list = [ i.getURL().getDomainPath() for i in kb.kb.getData( 'httpAuthDetect', 'auth' )]
         
-        domain_path = urlParser.getDomainPath( freq.getURL() )
+        domain_path = freq.getURL().getDomainPath()
         
         if domain_path in auth_url_list:
             if domain_path not in self._alreadyTested:

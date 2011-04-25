@@ -27,7 +27,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.mutant import mutant
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
@@ -65,7 +64,7 @@ class xst(baseAuditPlugin):
             # It is really important to use A COPY of the fuzzable request, and not the original.
             # The reason: I'm changing the method and the URL !
             fr_copy = freq.copy()
-            fr_copy.setURL( urlParser.getDomainPath( fr_copy.getURL() ) )
+            fr_copy.setURL( fr_copy.getURL().getDomainPath() )
             fr_copy.setMethod('TRACE')
             # Add a header. I search for this value to determine if XST is valid
             original_headers = freq.getHeaders()

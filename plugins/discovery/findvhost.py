@@ -27,7 +27,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.fuzzer.fuzzer import createRandAlNum
@@ -89,7 +88,7 @@ class findvhost(baseDiscoveryPlugin):
             v.setName( 'Shared hosting' )
             v.setSeverity(severity.LOW)
             
-            domain = urlParser.getDomain(fuzzableRequest.getURL())
+            domain = fuzzableRequest.getURL().getDomain()
             
             msg = 'Found a new virtual host at the target web server, the virtual host name is: "'
             msg += vhost + '". To access this site you might need to change your DNS resolution'
@@ -112,7 +111,7 @@ class findvhost(baseDiscoveryPlugin):
         res = []
         
         # Get some responses to compare later
-        base_url = urlParser.baseUrl(fuzzableRequest.getURL())
+        base_url = fuzzableRequest.getURL().baseUrl()
         original_response = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True)
         base_response = self._urlOpener.GET(base_url, useCache=True)
         base_resp_body = base_response.getBody()
@@ -142,7 +141,7 @@ class findvhost(baseDiscoveryPlugin):
         parsed_references.extend(re_references)
         
         for link in parsed_references:
-            domain = urlParser.getDomain(link)
+            domain = link.getDomain()
             
             #
             # First section, find internal hosts using the HTTP Host header:
@@ -228,9 +227,9 @@ class findvhost(baseDiscoveryPlugin):
         Test some generic virtual hosts, only do this once.
         '''
         res = []
-        base_url = urlParser.baseUrl(fuzzableRequest.getURL())
+        base_url = fuzzableRequest.getURL().baseUrl()
         
-        common_vhost_list = self._get_common_virtualhosts(urlParser.getDomain(base_url))
+        common_vhost_list = self._get_common_virtualhosts(base_url)
         
         # Get some responses to compare later
         original_response = self._urlOpener.GET(base_url, useCache=True)
@@ -256,13 +255,18 @@ class findvhost(baseDiscoveryPlugin):
         
         return res
     
-    def _get_common_virtualhosts( self, domain ):
+    def _get_common_virtualhosts( self, base_url ):
         '''
-        @parameter domain: The original domain name.
+        
+        @parameter base_url: The target URL object. 
+        
         @return: A list of possible domain names that could be hosted in the same web
         server that "domain".
+                
         '''
         res = []
+        domain = base_url.getDomain()
+        root_domain = base_url.getRootDomain()
         
         common_virtual_hosts = ['intranet', 'intra', 'extranet', 'extra' , 'test' , 'test1'
         'old' , 'new' , 'admin', 'adm', 'webmail', 'services', 'console', 'apps', 'mail', 
@@ -274,10 +278,10 @@ class findvhost(baseDiscoveryPlugin):
             # intranet.www.targetsite.com
             res.append( subdomain + '.' + domain )
             # intranet.targetsite.com
-            res.append( subdomain + '.' + urlParser.getRootDomain( domain ) )
+            res.append( subdomain + '.' + root_domain )
             # This is for:
             # intranet.targetsite
-            res.append( subdomain + '.' + urlParser.getRootDomain( domain ).split('.')[0] )
+            res.append( subdomain + '.' + root_domain.split('.')[0] )
         
         return res
 

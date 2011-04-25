@@ -25,7 +25,6 @@ from string import letters, digits
 from random import choice, randint
 
 import core.data.kb.config as cf
-from core.data.parsers import urlParser as urlParser
 
 # Common modules
 import copy
@@ -266,7 +265,7 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
     @return: Mutants that have the filename URL changed with the strings at mutant_str_list
     '''
     res = []
-    fileName = urlParser.getFileName( freq.getURL() )
+    fileName = freq.getURL().getFileName()
     splittedFileName = [ x for x in re.split( r'([a-zA-Z0-9]+)', fileName ) if x != '' ]
     for i in xrange( len( splittedFileName ) ):
         for mutant_str in mutant_str_list:

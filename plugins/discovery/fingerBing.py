@@ -34,7 +34,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.searchEngines.bing import bing as bing
-import core.data.parsers.urlParser as urlParser
 import core.data.parsers.dpCache as dpCache
 
 
@@ -64,10 +63,10 @@ class fingerBing(baseDiscoveryPlugin):
         # This plugin will only run one time. 
         self._run = False
         bingSE = bing(self._urlOpener)
-        self._domain = domain = urlParser.getDomain(fuzzableRequest.getURL())
-        self._domainRoot = urlParser.getRootDomain(domain)
+        self._domain = domain = fuzzableRequest.getURL().getDomain()
+        self._domain_root = fuzzableRequest.getURL().getRootDomain()
 
-        results = bingSE.getNResults('@'+self._domainRoot, self._resultLimit)
+        results = bingSE.getNResults('@'+self._domain_root, self._resultLimit)
 
         for result in results:
             targs = (result,)
@@ -85,7 +84,7 @@ class fingerBing(baseDiscoveryPlugin):
         '''
         try:
             om.out.debug('Searching for mails in: ' + page.URL)
-            if self._domain == urlParser.getDomain(page.URL):
+            if self._domain == page.URL.getDomain():
                 response = self._urlOpener.GET(page.URL, useCache=True, grepResult=True)
             else:
                 response = self._urlOpener.GET(page.URL, useCache=True, grepResult=False)
@@ -104,7 +103,7 @@ class fingerBing(baseDiscoveryPlugin):
                 pass
             else:
                 # Search for email addresses
-                for mail in document_parser.getEmails(self._domainRoot):
+                for mail in document_parser.getEmails(self._domain_root):
                     if mail not in self._accounts:
                         self._accounts.append( mail )
 

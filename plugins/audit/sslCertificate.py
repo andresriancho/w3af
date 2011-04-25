@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import getProtocol, getNetLocation, getDomain
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
@@ -61,16 +60,16 @@ class sslCertificate(baseAuditPlugin):
         '''
         url = freq.getURL()
         
-        if 'HTTPS' != getProtocol( url ).upper():
+        if 'HTTPS' != url.getProtocol().upper():
             return
 
-        domain = getDomain(url)
+        domain = url.getDomain()
         # We need to check certificate only once per host
         if domain in self._already_tested_domains:
             return
 
         # Parse the domain:port
-        splited = getNetLocation(url).split(':')
+        splited = url.getNetLocation().split(':')
         port = 443
         host = splited[0]
 

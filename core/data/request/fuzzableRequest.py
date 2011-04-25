@@ -53,7 +53,7 @@ class fuzzableRequest(object):
         # Internal variables
         self._url = ''
         self._method = 'GET'
-        self._uri = ''
+        self._uri = None
         self._data = ''
         self._headers = {}
         self._cookie = None
@@ -134,6 +134,9 @@ class fuzzableRequest(object):
         
         The following example shows that we sent d'z"0 but d\'z"0 will
         as well be recognised as sent
+
+        TODO: This function is called MANY times, and under some circumstances it's
+        performance REALLY matters. We need to review this function.
         
         >>> f = fuzzableRequest()
         >>> f._uri = """http://example.com/a?p=d'z"0&paged=2"""
@@ -165,7 +168,7 @@ class fuzzableRequest(object):
         if smth_interesting in self._data or \
             smth_interesting in self.getURI() or \
             smth_interesting in urllib.unquote(self._data) or \
-            smth_interesting in urllib.unquote(self.getURI()):
+            smth_interesting in urllib.unquote(self.getURI().url_string):
             return True
         
         # Ok, it's not in it but maybe something similar
@@ -282,12 +285,22 @@ class fuzzableRequest(object):
         return not self.__eq__( other )
     
     def setURL( self , url ):
-        self._url = url.replace(' ', '%20')
+        if not isinstance(url, url_object):
+            msg = 'The "url" parameter of setURL @ fuzzableRequest'
+            msg += ' must be of urlParser.url_object type.'
+            raise ValueError( msg )
+
+        self._url = url_object( url.url_string.replace(' ', '%20') )
         self._uri = self._url
     
     def setURI( self, uri ):
-        self._uri = uri.replace(' ', '%20')
-        self._url = uri2url( uri )
+        if not isinstance(uri, url_object):
+            msg = 'The "url" parameter of setURL @ fuzzableRequest'
+            msg += ' must be of urlParser.url_object type.'
+            raise ValueError( msg )
+
+        self._uri = url_object( uri.url_string.replace(' ', '%20') )
+        self._url = self._uri.uri2url()
         
     def setMethod( self , method ):
         self._method = method

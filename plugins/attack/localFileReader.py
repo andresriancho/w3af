@@ -33,8 +33,7 @@ import core.data.kb.vuln as vuln
 from core.data.kb.read_shell import read_shell as read_shell
 
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
-
+from core.data.parsers.urlParser import parse_qs
 
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -197,7 +196,7 @@ class localFileReader(baseAttackPlugin):
         self._changeToPost = optionsMap['changeToPost'].getValue()
         self._url = optionsMap['url'].getValue()
         self._method = optionsMap['method'].getValue()
-        self._data = urlParser.getQueryString( optionsMap['data'].getValue() )
+        self._data = parse_qs( optionsMap['data'].getValue() )
         self._file_pattern = optionsMap['file_pattern'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         

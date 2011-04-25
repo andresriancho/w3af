@@ -33,8 +33,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 import core.data.parsers.dpCache as dpCache
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
+
 
 class getMails(baseGrepPlugin):
     '''
@@ -60,8 +60,7 @@ class getMails(baseGrepPlugin):
         uri = response.getURI()
         if uri not in self._already_inspected:
             self._already_inspected.add(uri)
-            self._grep_worker(request, response, 'mails', \
-                    urlParser.getRootDomain(response.getURL()))
+            self._grep_worker(request, response, 'mails', response.getURL().getRootDomain() )
     
             if not self._only_target_domain:
                 self._grep_worker(request, response, 'external_mails')
@@ -71,13 +70,11 @@ class getMails(baseGrepPlugin):
         Helper method for using in self.grep()
         
         @parameter request: The HTTP request
-        @parameter request: The HTTP response
+        @parameter response: The HTTP response
         @parameter kb_key: Knowledge base dict key
         @parameter domain: Target domain for getEmails filter
         @return: None
         '''
-        # Modified when I added the pdfParser
-        #if isTextOrHtml(response.getHeaders()):
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
@@ -131,7 +128,7 @@ class getMails(baseGrepPlugin):
                     id_list_of_info = i.getId()
                     id_list_of_info.append( response.id )
                     i.setId( id_list_of_info )
-                    i.setURL('')
+                    i.setURL( url )
                     desc = i.getDesc()
                     desc += '\n- ' + url
                     desc += ' - In request with id: '+ str(response.id)

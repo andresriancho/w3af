@@ -72,7 +72,7 @@ class sed(baseManglePlugin):
         header_dict = stringToHeaders( header_string )
         
         request = createFuzzableRequestRaw( request.getMethod() , request.getURL(), 
-                                                                    data, header_dict )
+                                            data, header_dict )
         
         return request
     

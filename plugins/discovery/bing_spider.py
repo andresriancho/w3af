@@ -33,7 +33,7 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.is_private_site import is_private_site
 
 from core.data.searchEngines.bing import bing as bing
-import core.data.parsers.urlParser as urlParser
+
 
 class bing_spider(baseDiscoveryPlugin):
     '''
@@ -61,7 +61,7 @@ class bing_spider(baseDiscoveryPlugin):
         # I will only run this one time. All calls to bing_spider return the same url's
         self._run = False
         bingSE = bing(self._urlOpener)
-        domain = urlParser.getDomain(fuzzableRequest.getURL())
+        domain = fuzzableRequest.getURL().getDomain()
 
         if is_private_site(domain):
             msg = 'There is no point in searching Bing for "site:'+ domain + '".'

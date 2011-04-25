@@ -29,12 +29,12 @@ from core.data.url.xUrllib import xUrllib
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
-from core.data.parsers.urlParser import getExtension
 from core.data.parsers.httpRequestParser import httpRequestParser
 
 import time
 import re
 import Queue
+
 
 class w3afLocalProxyHandler(w3afProxyHandler):
     '''

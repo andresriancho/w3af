@@ -29,7 +29,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
 from core.data.exchangableMethods import isExchangable
-from core.data.parsers.urlParser import hasQueryString
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -68,7 +67,7 @@ class xsrf(baseAuditPlugin):
         om.out.debug( 'xsrf plugin is testing: ' + freq.getURL() )
 
         # Vulnerable by definition
-        if freq.getMethod() == 'GET' and hasQueryString( freq.getURI() ):
+        if freq.getMethod() == 'GET' and freq.getURI().hasQueryString():
             
             # Now check if we already added this target URL to the list
             already_added = [ v.getURL() for v in self._vuln_simple ]

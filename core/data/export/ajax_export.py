@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.data.parsers.httpRequestParser import httpRequestParser
-import core.data.parsers.urlParser as urlParser
 
 
 def ajax_escape_string( str_in ):

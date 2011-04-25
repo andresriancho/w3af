@@ -33,7 +33,6 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 from core.data.constants.common_directories import get_common_directories
 
-import core.data.parsers.urlParser as urlParser
 import re
 
 
@@ -95,6 +94,24 @@ class pathDisclosure(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, the result is saved in the kb.
+        
+        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest as fuzzableRequest
+        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> u = url_object('http://www.w3af.com/')
+        >>> req = fuzzableRequest()
+        >>> req.setURL( u )
+        >>> pd = pathDisclosure()
+        
+        >>> res = httpResponse(200, 'header body footer' , {'Content-Type':'text/html'}, u, u)
+        >>> pd.grep( req, res )
+        >>> kb.kb.getData('pathDisclosure', 'pathDisclosure')
+        []
+
+        >>> res = httpResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, u, u)
+        >>> pd.grep( req, res )
+        >>> kb.kb.getData('pathDisclosure', 'pathDisclosure')[0]['path']
+        '/etc/passwd'
         '''
         if response.is_text_or_html():
             
@@ -106,7 +123,7 @@ class pathDisclosure(baseGrepPlugin):
                 match_list = path_disc_regex.findall( html_string  )
 
                 # Decode the realurl
-                realurl = urlParser.urlDecode( response.getURL() )
+                realurl = response.getURL().urlDecode()
 
                 
                 #   Sort by the longest match, this is needed for filtering out some false positives
@@ -143,7 +160,7 @@ class pathDisclosure(baseGrepPlugin):
                             self._already_added.append( (realurl, match) )
                             
                             v = vuln.vuln()
-                            v.setPluginName(self.getName())
+                            v.setPluginName( self.getName() )
                             v.setURL( realurl )
                             v.setId( response.id )
                             msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
@@ -209,7 +226,7 @@ class pathDisclosure(baseGrepPlugin):
             longest_path_disc_vuln = None
             for path_disc_vuln in path_disc_vulns:
                 for url in url_list:
-                    path_and_file = urlParser.getPath( url )
+                    path_and_file = url.getPath()
 
                     if path_disc_vuln['path'].endswith( path_and_file ):
                         if len(longest_match) < len(path_and_file):
@@ -243,7 +260,7 @@ class pathDisclosure(baseGrepPlugin):
                     # Create the remote locations
                     remote_locations = []
                     for url in url_list:
-                        remote_path = urlParser.getPath( url ).replace('/', path_sep)
+                        remote_path = url.getPath().replace('/', path_sep)
                         remote_locations.append( webroot + remote_path )
                     remote_locations = list( set( remote_locations ) )
                     

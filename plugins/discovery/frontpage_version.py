@@ -25,7 +25,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -66,7 +65,7 @@ class frontpage_version(baseDiscoveryPlugin):
             # Run the plugin.
             self._exec = False
 
-        for domain_path in urlParser.getDirectories(fuzzableRequest.getURL() ):
+        for domain_path in fuzzableRequest.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
 
@@ -74,7 +73,7 @@ class frontpage_version(baseDiscoveryPlugin):
                 self._analyzed_dirs.add( domain_path )
 
                 # Request the file
-                frontpage_info_url = urlParser.urlJoin(  domain_path , "_vti_inf.html" )
+                frontpage_info_url = domain_path.urlJoin( "_vti_inf.html" )
                 try:
                     response = self._urlOpener.GET( frontpage_info_url, useCache=True )
                     om.out.debug( '[frontpage_version] Testing "' + frontpage_info_url + '".' )
@@ -174,7 +173,7 @@ class frontpage_version(baseDiscoveryPlugin):
             name = 'FrontPage FPAdminScriptUrl'
 
             desc = 'The FPAdminScriptUrl is at: "'
-            desc += urlParser.getDomainPath(i.getURL())  + frontpage_admin.group(1)
+            desc += i.getURL().getDomainPath().urlJoin( frontpage_admin.group(1) )
             desc += '".'
 
         i.setName( name )
@@ -207,7 +206,7 @@ class frontpage_version(baseDiscoveryPlugin):
             name = 'FrontPage FPAuthorScriptUrl'
 
             desc = 'The FPAuthorScriptUrl is at: "'
-            desc += urlParser.getDomainPath(i.getURL())  + frontpage_author.group(1)
+            desc += i.getURL().getDomainPath().urlJoin( frontpage_author.group(1) )
             desc += '".'
             
         i.setName( name )

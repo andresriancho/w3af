@@ -32,12 +32,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+from core.data.parsers.urlParser import url_object
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 
 
@@ -61,7 +61,7 @@ class dav(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         # Start
-        domain_path = urlParser.getDomainPath( freq.getURL() )
+        domain_path = freq.getURL().getDomainPath()
         if domain_path not in self._already_tested_dirs:
             om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
             self._already_tested_dirs.add( domain_path )
@@ -131,7 +131,7 @@ class dav(baseAuditPlugin):
         Tests PUT method.
         '''
         # upload
-        url = urlParser.urlJoin( domain_path, createRandAlpha( 5 ) )
+        url = domain_path.urlJoin( createRandAlpha( 5 ) )
         rndContent = createRandAlNum(6)
         put_response = self._urlOpener.PUT( url , data=rndContent )
         

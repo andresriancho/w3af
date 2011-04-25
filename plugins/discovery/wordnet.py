@@ -25,7 +25,6 @@ import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
-import core.data.parsers.urlParser as urlParser
 from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
@@ -97,7 +96,7 @@ class wordnet(baseDiscoveryPlugin):
         # The result
         result = []
 
-        query_string = urlParser.getQueryString( fuzzableRequest.getURI() )
+        query_string = fuzzableRequest.getURI().getQueryString()
         for parameter_name in query_string:
             # this for loop was added to address the repeated parameter name issue
             for element_index in xrange(len(query_string[parameter_name])):
@@ -193,7 +192,7 @@ class wordnet(baseDiscoveryPlugin):
         '''
         @return: The filename, without the extension
         '''
-        fname = urlParser.getFileName( url )
+        fname = url.getFileName()
         splitted_fname = fname.split('.')
         name = ''
         if len(splitted_fname) != 0:
@@ -214,8 +213,8 @@ class wordnet(baseDiscoveryPlugin):
         if analyzed_variable is None:
             # The URL was analyzed
             url = fuzzableRequest.getURL()
-            fname = urlParser.getFileName( url )
-            dp = urlParser.getDomainPath( url )
+            fname = url.getFileName()
+            domain_path = url.getDomainPath()
             
             # The result
             result = []
@@ -231,7 +230,7 @@ class wordnet(baseDiscoveryPlugin):
             for set_item in result_set:
                 new_fname = fname.replace( name, set_item )
                 frCopy = fuzzableRequest.copy()
-                frCopy.setURL( urlParser.urlJoin( dp, new_fname ) )
+                frCopy.setURL( domain_path.urlJoin( new_fname ) )
                 result.append( frCopy )
                 
             return result

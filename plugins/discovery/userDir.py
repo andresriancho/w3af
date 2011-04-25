@@ -29,7 +29,6 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -72,12 +71,12 @@ class userDir(baseDiscoveryPlugin):
             self._run = False
             self._fuzzable_requests = []
                 
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
-            self._headers = {'Referer': base_url }
+            base_url = fuzzableRequest.getURL().baseUrl()
+            self._headers = {'Referer': base_url.url_string }
             
             # Create a response body to compare with the others
             non_existant_user = '~_w_3_a_f_/'
-            test_URL = urlParser.urlJoin( base_url, non_existant_user )
+            test_URL = base_url.urlJoin( non_existant_user )
             try:
                 response = self._urlOpener.GET( test_URL, useCache=True, \
                                                                     headers=self._headers )
@@ -89,7 +88,7 @@ class userDir(baseDiscoveryPlugin):
             
             # Check the users to see if they exist
             url_user_list = self._create_dirs( base_url )
-            for url, user in url_user_list :
+            for url, user in url_user_list:
                 om.out.debug('userDir is testing ' + url )
                 
                 #   Send the requests using threads:
@@ -126,7 +125,7 @@ class userDir(baseDiscoveryPlugin):
         except KeyboardInterrupt,e:
             raise e
         else:
-            path = mutant.replace( urlParser.baseUrl( mutant ) , '' )
+            path = mutant.getPath()
             response_body = response.getBody().replace( path, '')
             
             if relative_distance_lt(response_body, self._non_existant, 0.7):
@@ -240,7 +239,7 @@ class userDir(baseDiscoveryPlugin):
             toTest = get_users_by_app()
         
         for data_related_to_user, user in toTest:
-            url_user_list = self._create_dirs( url, userList=[ user, ] )
+            url_user_list = self._create_dirs( url, user_list=[ user, ] )
             for uDir, user in url_user_list:
                 if self._do_request( uDir, user ):
                     i = info.info()
@@ -294,21 +293,21 @@ class userDir(baseDiscoveryPlugin):
             msg += ' available in the userDir plugin database.'
             om.out.information(msg)
     
-    def _create_dirs(self, url , userList = None ):
+    def _create_dirs(self, url , user_list = None ):
         '''
         Append the users to the URL.
         
         @param url: The original url
-        @return: A list of URL's with the username appended.
+        @return: A list of URL objects with the username appended.
         '''
         res = []
         
-        if userList is None:
-            userList = self._get_users()
+        if user_list is None:
+            user_list = self._get_users()
             
-        for user in userList:
-            res.append( (urlParser.urlJoin( url , '/'+user+'/' ) , user ) )
-            res.append( (urlParser.urlJoin( url , '/~'+user+'/' ) , user ) )
+        for user in user_list:
+            res.append( (url.urlJoin( '/'+user+'/' ) , user ) )
+            res.append( (url.urlJoin( '/~'+user+'/' ) , user ) )
         return res
     
     def _get_users( self ):

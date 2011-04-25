@@ -26,12 +26,14 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
 import core.data.parsers.dpCache as dpCache
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
+
 from core.controllers.misc.levenshtein import relative_distance_ge
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.config as cf
 from core.data.fuzzer.formFiller import smartFill
+from core.data.fuzzer.fuzzer import createRandAlpha
 import core.data.dc.form as form
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 from core.data.request.variant_identification import are_variants
@@ -87,8 +89,8 @@ class webSpider(baseDiscoveryPlugin):
         if self._first_run:
             # I have to set some variables, in order to be able to code the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [ urlParser.getDomainPath(i) for i in cf.cf.getData('targets') ]
-            self._target_domain = urlParser.getDomain( cf.cf.getData('targets')[0] )
+            self._target_urls = [ i.getDomainPath() for i in cf.cf.getData('targets') ]
+            self._target_domain = cf.cf.getData('targets')[0].getDomain()
         
         # If its a form, then smartFill the Dc.
         original_dc = fuzzableRequest.getDc()
@@ -169,7 +171,7 @@ class webSpider(baseDiscoveryPlugin):
                     # http://localhost/a/
                     # http://localhost/
                     # And analyze the responses...
-                    directories = urlParser.getDirectories( response.getURL() )
+                    directories = response.getURL().getDirectories()
                     parsed_references.extend( directories )
                     parsed_references = list( set( parsed_references ) )
 
@@ -178,11 +180,11 @@ class webSpider(baseDiscoveryPlugin):
                     
                     # Filter only the references that are inside the target domain
                     # I don't want w3af sending request to 3rd parties!
-                    references = [ r for r in references if urlParser.getDomain( r ) == self._target_domain]
+                    references = [ r for r in references if r.getDomain() == self._target_domain]
                             
                     # Filter the URL's according to the configured regular expressions
-                    references = [ r for r in references if self._compiled_follow_re.match( r ) ]
-                    references = [ r for r in references if not self._compiled_ignore_re.match( r )]
+                    references = [ r for r in references if self._compiled_follow_re.match( r.url_string ) ]
+                    references = [ r for r in references if not self._compiled_ignore_re.match( r.url_string )]
                                           
                     # work with the parsed references and report broken links
                     # then work with the regex references and DO NOT report broken links
@@ -222,8 +224,11 @@ class webSpider(baseDiscoveryPlugin):
         start ignoring all those variants.
         '''
         number_of_variants = 0
+        #    TODO: The self._already_crawled should be an ORM instead of a simple
+        #    disk_list, so I could iterate through all the results and avoid having
+        #    to create the url_object() using parsing again.
         for reference in self._already_crawled:
-            if are_variants(reference, new_reference):
+            if are_variants( url_object(reference) , new_reference):
                 number_of_variants += 1
                 
             if number_of_variants > MAX_VARIANTS:
@@ -248,8 +253,8 @@ class webSpider(baseDiscoveryPlugin):
             #
             #   But this does not, and it is friendlier that simply ignoring the referer
             #
-            referer = urlParser.getDomainPath(originalURL).replace( urlParser.getPath(originalURL), '' )
-            if not referer.endswith('/'):
+            referer = originalURL.baseUrl()
+            if not referer.url_string.endswith('/'):
                 referer += '/'
             headers = { 'Referer': referer }
             
@@ -296,14 +301,14 @@ class webSpider(baseDiscoveryPlugin):
                         /ga.js/google-analytics.com/ga.js/google-analytics.com/
                         /ga.js/google-analytics.com/ga.js/google-analytics.com/google-analytics.com/ga.js
                         '''
-                        filename = urlParser.getFileName(reference)
+                        filename = reference.getFileName()
                         if filename:
-                            rindex = reference.rindex(filename)
-                            # 'ar9k' is just a random string to get a 404
-                            new_reference = reference[:rindex] + 'ar9k' + reference[rindex:]
+                            
+                            new_reference = reference.copy()
+                            new_reference.setFileName( createRandAlpha(3) + filename )
                             
                             check_response = self._urlOpener.GET( new_reference, useCache=True,
-                                                                                        headers= headers)
+                                                                  headers= headers)
                             resp_body = response.getBody()
                             check_resp_body = check_response.getBody()
 
@@ -352,7 +357,7 @@ class webSpider(baseDiscoveryPlugin):
             # I have to work :S
         is_forward = False
         for domain_path in self._target_urls:
-            if reference.startswith(domain_path):
+            if reference.url_string.startswith( domain_path.url_string ):
                 is_forward = True
                 break
         return is_forward

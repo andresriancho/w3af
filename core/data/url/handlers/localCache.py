@@ -31,8 +31,11 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.request.frFactory import createFuzzableRequestRaw
+
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
+from core.data.parsers.urlParser import url_object
+
 
 # TODO: Rethink this: why not POST?
 CACHE_METHODS = ('GET', 'HEAD')
@@ -334,23 +337,25 @@ class SQLCachedResponse(CachedResponse):
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
+        request_url_obj = url_object(request.get_full_url())
         req = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.get_full_url(),
+                                      url=request_url_obj,
                                       postData=request.get_data(),
                                       headers=headers)
         hi.request = req
-        
+
         # Set the response
         resp = response
         code, msg, hdrs, url, body, id = (resp.code, resp.msg, resp.info(),
                                           resp.geturl(), resp.read(), resp.id)
         # BUGBUG: This is where I create/log the responses that always have
         # 0.2 as the time!
-        resp = httpResponse.httpResponse(code, body, hdrs, url,
-                                         url, msg=msg, id=id,
+        url_instance = url_object( url )
+        resp = httpResponse.httpResponse(code, body, hdrs, url_instance,
+                                         request_url_obj, msg=msg, id=id,
                                          alias=gen_hash(request))
         hi.response = resp
-        
+
         # Now save them
         try:
             hi.save()
@@ -376,3 +381,4 @@ CacheClass = SQLCachedResponse
 
 if not os.path.exists(CACHE_LOCATION) and CacheClass == DiskCachedResponse:
     os.makedirs(CACHE_LOCATION)
+

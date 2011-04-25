@@ -26,9 +26,10 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.data.parsers.urlParser import url_object
+
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
 
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
@@ -53,16 +54,19 @@ class wsdlFinder(baseDiscoveryPlugin):
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
-        url = urlParser.uri2url( fuzzableRequest.getURL() )
-        if url not in self._already_tested:
-            self._already_tested.add( url )
+        url = fuzzableRequest.getURL().uri2url()
+        url_string = url.url_string
+        
+        if url_string not in self._already_tested:
+            self._already_tested.add( url_string )
             
             # perform the requests
             for wsdl_parameter in self._get_WSDL():
-                url_to_request = url + wsdl_parameter
+                url_to_request = url_string + wsdl_parameter
+                url_instance = url_object(url_to_request)
                 
                 #   Send the requests using threads:
-                targs = ( url_to_request, )
+                targs = ( url_instance, )
                 self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
         
             # Wait for all threads to finish

@@ -30,6 +30,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+from core.data.parsers.urlParser import url_object
 
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
@@ -84,12 +85,13 @@ class afd(baseDiscoveryPlugin):
         '''
         rnd_param = createRandAlNum(7)
         rnd_value = createRandAlNum(7)
-        originalURL = fuzzableRequest.getURL() + '?' + rnd_param + '=' + rnd_value
+        original_url_str = fuzzableRequest.getURL() + '?' + rnd_param + '=' + rnd_value
+        original_url = url_object(original_url_str)
         
         try:
-            original_response_body = self._urlOpener.GET( originalURL , useCache=True ).getBody()
+            original_response_body = self._urlOpener.GET( original_url , useCache=True ).getBody()
         except Exception:
-            msg = 'Active filter detection plugin failed to recieve a '
+            msg = 'Active filter detection plugin failed to receive a '
             msg += 'response for the first request. Can not perform analysis.'
             raise w3afException( msg )
         else:

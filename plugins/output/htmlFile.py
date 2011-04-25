@@ -27,8 +27,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
-import core.data.parsers.urlParser as urlParser
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -172,7 +170,7 @@ class htmlFile(baseOutputPlugin):
                                                                     options_dict[plugin_type])
         
         # And now the target information
-        str_targets = ', '.join( cf.cf.getData('targets') )
+        str_targets = ', '.join( [u.url_string for u in cf.cf.getData('targets')] )
         to_print += 'target\n'
         to_print += '    set target ' + str_targets + '\n'
         to_print += '    back'
@@ -287,9 +285,9 @@ class htmlFile(baseOutputPlugin):
                 </tr>''')       
 
         # Writes the targets to the HTML
-        for i in cf.cf.getData('targets'):
+        for t in cf.cf.getData('targets'):
             self._write_to_file('''<tr><td class=default width="100%">''')
-            self._write_to_file( cgi.escape( i ) + '<br/>\n')
+            self._write_to_file( cgi.escape( t.url_string ) + '<br/>\n')
             self._write_to_file('</td></tr>')
 
         self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br>')
@@ -317,7 +315,7 @@ class htmlFile(baseOutputPlugin):
             #
             #   Get the port
             #
-            port = str( urlParser.getPort( i.getURL() ) )
+            port = str( i.getURL().getPort() )
             
             self._write_to_file(
                 '''<tr>
@@ -327,7 +325,7 @@ class htmlFile(baseOutputPlugin):
                 )
 
             desc = cgi.escape( i.getDesc() ) + '<br/><br/><b>URL :</b> '
-            desc += cgi.escape (i.getURL()) + '<br>\n'
+            desc += cgi.escape (i.getURL().url_string) + '<br>\n'
             self._write_to_file( desc )
 
             if i.getSeverity() !=  None:
@@ -347,7 +345,7 @@ class htmlFile(baseOutputPlugin):
                 )
 
             desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/><b>URL :</b> '
-            desc += cgi.escape (i.getURL()) + '<br> \n </td></tr>'
+            desc += cgi.escape (i.getURL().url_string) + '<br> \n </td></tr>'
             self._write_to_file( desc )
 
         # Close the upper table

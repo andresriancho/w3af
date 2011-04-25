@@ -29,8 +29,8 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.data.parsers.urlParser import url_object
 
 
 class sitemapReader(baseDiscoveryPlugin):
@@ -60,8 +60,8 @@ class sitemapReader(baseDiscoveryPlugin):
             self._exec = False
             self._new_fuzzable_requests = []
             
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
-            sitemap_url = urlParser.urlJoin(  base_url , 'sitemap.xml' )
+            base_url = fuzzableRequest.getURL().baseUrl()
+            sitemap_url = base_url.urlJoin( 'sitemap.xml' )
             response = self._urlOpener.GET( sitemap_url, useCache=True )
             
             # Remember that httpResponse objects have a faster "__in__" than
@@ -80,9 +80,10 @@ class sitemapReader(baseDiscoveryPlugin):
                     raise w3afException('Error while parsing sitemap.xml')
                 urlList = dom.getElementsByTagName("loc")
                 for url in urlList:
-                    url = url.childNodes[0].data 
+                    url = url.childNodes[0].data
+                    url_instance = url_object( url )
                     #   Send the requests using threads:
-                    targs = ( url,  )
+                    targs = ( url_instance,  )
                     self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
             
                 # Wait for all threads to finish

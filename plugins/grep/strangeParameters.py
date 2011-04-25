@@ -36,7 +36,6 @@ from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 from core.controllers.w3afException import w3afException
 import core.data.parsers.dpCache as dpCache
-import core.data.parsers.urlParser as urlParser
 
 import re
 
@@ -77,7 +76,7 @@ class strangeParameters(baseGrepPlugin):
             
             for ref in parsed_references:
                 
-                qs = urlParser.getQueryString( ref )
+                qs = ref.getQueryString()
                 
                 for param_name in qs:
                     # This for loop is to address the repeated parameter name issue

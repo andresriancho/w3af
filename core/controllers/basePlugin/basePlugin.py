@@ -95,6 +95,15 @@ class basePlugin(configurable):
     def getDesc( self ):
         '''
         @return: A description of the plugin.
+        
+        >>> b = basePlugin()
+        >>> b.__doc__ = 'abc'
+        >>> b.getDesc()
+        'abc'
+        >>> b = basePlugin()
+        >>> b.__doc__ = '    abc\t'
+        >>> b.getDesc()
+        'abc'
         '''
         if self.__doc__ is not None:
             res2 = self.__doc__.replace( '\t' , '' )
@@ -119,6 +128,14 @@ class basePlugin(configurable):
             - 'URL': The URL must be unique
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
+            
+        >>> b = basePlugin()
+        >>> v1 = vuln.vuln()
+        >>> v1.setDesc('hello')
+        >>> v2 = vuln.vuln()
+        >>> v2.setDesc('world')
+        >>> info_obj = [ v1, v2 ]
+        >>> b.printUniq( info_obj, None )
         '''
 
         # Create the list of things to inform

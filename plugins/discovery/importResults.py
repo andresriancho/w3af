@@ -27,8 +27,9 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afRunOnce
+from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.parsers.urlParser import url_object
 
 import csv
 import re
@@ -121,7 +122,9 @@ class importResults(baseDiscoveryPlugin):
             om.out.error( msg )
         else:
             # Create the obj based on the information
-            return createFuzzableRequestRaw( method, uri, postdata, {} )
+            uri = url_object( uri )
+            if uri.is_valid_domain():
+                return createFuzzableRequestRaw( method, uri, postdata, {} )
             
     def _objs_from_log( self, req_file ):
         '''

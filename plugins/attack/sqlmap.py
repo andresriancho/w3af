@@ -31,12 +31,11 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.w3afException import w3afException
 
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
-
+from core.data.parsers.urlParser import parse_qs, url_object
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # options
@@ -97,7 +96,7 @@ class sqlmap(baseAttackPlugin):
                 raise w3afException('Method not supported.')
             
             freq.setURL( self._url )
-            freq.setDc( urlParser.getQueryString( 'http://a/a.txt?' + self._data ) )
+            freq.setDc( parse_qs( self._data ) )
             freq.setHeaders( {} )
             
             bsql = blind_sqli_response_diff()
@@ -290,7 +289,7 @@ class sqlmap(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = urlParser.uri2url( optionsMap['url'].getValue() )
+        self._url = url_object( optionsMap['url'].getValue() ).uri2url()
             
         if optionsMap['method'].getValue() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')

@@ -22,14 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
+
 from core.data.fuzzer.fuzzer import createRandAlNum
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import parse_qs
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-import urllib2
 
 
 class rndParam(baseEvasionPlugin):
@@ -44,44 +44,71 @@ class rndParam(baseEvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @return: The modified request
+        
+        >>> from core.data.parsers.urlParser import url_object
+        >>> rp = rndParam()
+        
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u )
+        >>> qs = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> len(qs)
+        1
+
+        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> r = HTTPRequest( u )
+        >>> qs = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> len(qs)
+        2
+
+        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> r = HTTPRequest( u, data='a=b' )
+        >>> data = parse_qs( rp.modifyRequest( r ).get_data() )
+        >>> len(data)
+        2
+        
+        >>> data = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> len(data)
+        2
+
         '''
         # First we mangle the URL        
-        path = urlParser.getPathQs( request.get_full_url() )
-        path = self._mutate( path )
+        qs = request.url_object.getQueryString()
+        qs = self._mutate(qs)
         
-        # Now we mangle the postdata
-        data = request.get_data()
-        if data:
-            # Only mangle the postdata if it is a url encoded string
+        # Finally, we set all the mutants to the request in order to return it
+        new_url = request.url_object.copy()
+        new_url.setQueryString( qs )
+        
+        # Mangle the postdata
+        post_data = request.get_data()
+        if post_data:
+            
             try:
-                urlParser.getQueryString('http://w3af/?' + data )
+                # Only mangle the postdata if it is a url encoded string
+                post_data = parse_qs( post_data )
             except:
                 pass
             else:
-                data = self._mutate( data )            
+                post_data = str( self._mutate(post_data) ) 
         
-        # Finally, we set all the mutants to the request in order to return it
-        url = urlParser.getProtocol( request.get_full_url() )
-        url += '://' + urlParser.getNetLocation( request.get_full_url() ) + path
-        
-        new_req = urllib2.Request( url , data, request.headers, request.get_origin_req_host() )
+        new_req = HTTPRequest( new_url , post_data, request.headers, 
+                               request.get_origin_req_host() )
         
         return new_req
+    
     
     def _mutate( self, data ):
         '''
         Add a random parameter.
         
-        @return: a string.
+        @param data: A dict-like object.
+        @return: The same object with one new key-value.
         '''
-        var = createRandAlNum()
+        key = createRandAlNum()
         value = createRandAlNum()
-        to_append_str = var + "=" + value
-        if data.count('?'):
-            data += '&' + to_append_str
-        else:
-            data += '?' + to_append_str
+        data[key] = value
         return data
         
     def getOptions( self ):

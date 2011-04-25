@@ -20,10 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.urlParser as urlParser
 import core.data.request.httpQsRequest as httpQsRequest
-import core.data.parsers.urlParser as urlParser
-
+from core.data.parsers.urlParser import url_object
 
 def are_variants( url_a ,  url_b ):
     '''
@@ -37,14 +35,24 @@ def are_variants( url_a ,  url_b ):
     @parameter url_b: The other URL we want to analyze
     @return: True if the URLs are variants.
     '''
-    qs_a = urlParser.getQueryString( url_a )
+    if not isinstance(url_a, url_object):
+        msg = 'The "url_a" parameter in "are_variants" '
+        msg += ' must be of urlParser.url_object type.'
+        raise ValueError( msg )
+
+    if not isinstance(url_b, url_object):
+        msg = 'The "url_b" parameter in "are_variants" '
+        msg += ' must be of urlParser.url_object type.'
+        raise ValueError( msg )
+    
+    qs_a = url_a.getQueryString()
     qsr_a = httpQsRequest.httpQsRequest()
-    qsr_a.setURL( urlParser.uri2url(url_a) )
+    qsr_a.setURL( url_a.uri2url() )
     qsr_a.setDc( qs_a )
 
-    qs_b = urlParser.getQueryString( url_b )
+    qs_b = url_b.getQueryString()
     qsr_b = httpQsRequest.httpQsRequest()
-    qsr_b.setURL( urlParser.uri2url(url_b) )
+    qsr_b.setURL( url_b.uri2url() )
     qsr_b.setDc( qs_b )
     return qsr_a.is_variant_of( qsr_b )
 

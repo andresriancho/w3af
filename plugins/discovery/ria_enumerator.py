@@ -28,7 +28,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb
@@ -68,14 +67,15 @@ class ria_enumerator(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
 
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
+            base_url = fuzzableRequest.getURL().baseUrl()
             
             ### Google Gears
             for ext in self._extensions:
                 for word in file(self._wordlist):
-                    manifest_url = urlParser.urlJoin(  base_url , word.strip() )
-                    manifest_url = manifest_url + ext
-                    om.out.debug( 'Google Gears Manifest Testing ' + manifest_url )
+
+                    manifest_url = base_url.urlJoin( word.strip() + ext )
+
+                    om.out.debug( 'Google Gears Manifest Testing "%s"' % (manifest_url)  )
                     http_response = self._urlOpener.GET( manifest_url, useCache=True )
                         
                     if '"entries":' in http_response and not is_404( http_response ):
@@ -93,7 +93,7 @@ class ria_enumerator(baseDiscoveryPlugin):
                         om.out.information( i.getDesc() )
                             
             ### CrossDomain.XML
-            cross_domain_url = urlParser.urlJoin(  base_url , 'crossdomain.xml' )
+            cross_domain_url = base_url.urlJoin( 'crossdomain.xml' )
             om.out.debug( 'Checking crossdomain.xml file')
             response = self._urlOpener.GET( cross_domain_url, useCache=True )
 
@@ -101,7 +101,7 @@ class ria_enumerator(baseDiscoveryPlugin):
                 self._checkResponse(response, 'crossdomain.xml')
 
             ### CrossAccessPolicy.XML
-            client_access_url = urlParser.urlJoin(  base_url , 'clientaccesspolicy.xml' )
+            client_access_url = base_url.urlJoin( 'clientaccesspolicy.xml' )
             om.out.debug( 'Checking clientaccesspolicy.xml file')
             response = self._urlOpener.GET( client_access_url, useCache=True )
 

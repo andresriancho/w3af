@@ -119,7 +119,7 @@ class httpAuthDetect(baseGrepPlugin):
 
         for url in url_list:
                 
-            if self._auth_uri_regex.match(url):
+            if self._auth_uri_regex.match(url.url_string):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL(response.getURL())

@@ -27,6 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 import core.data.kb.knowledgeBase as kb
+from core.data.parsers.urlParser import url_object
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
@@ -79,10 +80,14 @@ class slash( baseDiscoveryPlugin ):
         '''
         fr = fuzzableRequest.copy()
         
-        if ( fuzzableRequest.getURL().endswith( '/' ) ):
-            fr.setURL( fuzzableRequest.getURL().rstrip( '/' ) )
-        else:    
-            fr.setURL( fuzzableRequest.getURL() + '/' )
+        url_string = fuzzableRequest.getURL().url_string 
+        
+        if ( url_string.endswith( '/' ) ):
+            new_url = url_object( url_string.rstrip( '/' ) )
+            fr.setURL( new_url )
+        else:
+            new_url = url_object( url_string + '/' )
+            fr.setURL( new_url )
             
         return fr
         

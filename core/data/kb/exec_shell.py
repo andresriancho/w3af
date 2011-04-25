@@ -25,7 +25,6 @@ import time
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
 from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
-import core.data.parsers.urlParser as urlParser
 
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om

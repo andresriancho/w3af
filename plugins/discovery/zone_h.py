@@ -28,12 +28,13 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
-import core.data.parsers.urlParser as urlParser
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+
+from core.data.parsers.urlParser import url_object
 
 import re
 
@@ -64,13 +65,14 @@ class zone_h(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
                         
-            target_domain = urlParser.getRootDomain( fuzzableRequest.getURL() )
+            target_domain = fuzzableRequest.getURL().getRootDomain()
             
             # Example URL:
             # http://www.zone-h.org/archive/domain=cyprus-stones.com
         
             # TODO: Keep this URL updated!
-            zone_h_url = 'http://www.zone-h.org/archive/domain=' + target_domain
+            zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
+            zone_h_url = url_object( zone_h_url_str )
 
             try:
                 response = self._urlOpener.GET( zone_h_url )

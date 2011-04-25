@@ -32,8 +32,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+from core.data.parsers.urlParser import url_object
 
-import core.data.parsers.urlParser as urlParser
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afRunOnce
 
@@ -69,8 +69,8 @@ class serverStatus(baseDiscoveryPlugin):
             # Only run once
             self._exec = False
             
-            base_url = urlParser.baseUrl( fuzzableRequest.getURL() )
-            server_status_url = urlParser.urlJoin(  base_url , 'server-status' )
+            base_url = fuzzableRequest.getURL().baseUrl()
+            server_status_url = base_url.urlJoin( 'server-status' )
             response = self._urlOpener.GET( server_status_url, useCache=True )
             
             if not is_404( response ) and response.getCode() not in range(400, 404):
@@ -101,15 +101,17 @@ class serverStatus(baseDiscoveryPlugin):
                 for domain, path in re.findall(regex, response.getBody() ):
                     
                     if 'unavailable' in domain:
-                        domain = urlParser.getDomain( response.getURL() )
-                        
-                    foundURL = urlParser.getProtocol( response.getURL() ) + '://' + domain + path
-                    # Check if the requested domain and the found one are equal.
-                    if urlParser.getDomain( foundURL ) == urlParser.getDomain( response.getURL() ):
+                        domain = response.getURL().getDomain()
+                    
+                    # Check if the requested domain and the found one are equal.    
+                    if domain == response.getURL().getDomain():
+                        found_url = response.getURL().getProtocol() + '://' + domain + path
+                        found_url = url_object(found_url)
+                    
                         # They are equal, request the URL and create the fuzzable requests
-                        tmpRes = self._urlOpener.GET( foundURL, useCache=True )
-                        if not is_404( tmpRes ):
-                            res.extend( self._createFuzzableRequests( tmpRes ) )
+                        tmp_res = self._urlOpener.GET( found_url, useCache=True )
+                        if not is_404( tmp_res ):
+                            res.extend( self._createFuzzableRequests( tmp_res ) )
                     else:
                         # This is a shared hosting server
                         self._shared_hosting_hosts.append( domain )

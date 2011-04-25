@@ -34,7 +34,7 @@ from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
-from core.data.parsers.urlParser import uri2url, getQueryString
+from core.data.parsers.urlParser import url_object
 from core.data.request.fuzzableRequest import fuzzableRequest
 
 class proxy(w3afThread):
@@ -296,8 +296,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             
         else:
             # most likely a GET request
-            url = uri2url( path )
-            qs = getQueryString( self.path )
+            uri_instance = url_object( path )
+            url_instance = uri_instance.uri2url()
+            path = url_instance.getPath() 
+            qs = url_instance.getQueryString()
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
                 res = httpCommandMethod( url, data=str(qs), headers=self.headers,  grepResult=grep )

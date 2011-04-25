@@ -23,7 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.request.fuzzableRequest import fuzzableRequest
-import core.data.parsers.urlParser as urlParser
+from core.data.parsers.urlParser import url_object
+
 
 class httpQsRequest(fuzzableRequest):
     '''
@@ -38,20 +39,46 @@ class httpQsRequest(fuzzableRequest):
         self._method = 'GET'
     
     def setURL( self , url ):
-        url = urlParser.uri2url( url )
-        self._url = url.replace(' ', '%20')
-        self._uri = self._url
+        '''
+        >>> r = httpQsRequest()
+        >>> r.setURL('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URL of a httpQsRequest must be of urlParser.url_object type.
+        >>> r = httpQsRequest()
+        >>> r.setURL( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(url, url_object):
+            raise ValueError('The URL of a httpQsRequest must be of urlParser.url_object type.')
+        
+        self._url = url.uri2url()
+        self._uri = url
     
     def setURI( self, uri ):
-        self._dc = urlParser.getQueryString(uri)
-        self._uri = uri.replace(' ', '%20')
-        self._url = urlParser.uri2url( uri )
+        '''
+        >>> r = httpQsRequest()
+        >>> r.setURI('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The URI of a httpQsRequest must be of urlParser.url_object type.
+        >>> r = httpQsRequest()
+        >>> r.setURI( url_object('http://www.google.com/') )
+        >>>
+        '''
+        if not isinstance(uri, url_object):
+            raise ValueError('The URI of a httpQsRequest must be of urlParser.url_object type.')
+        
+        self._dc = uri.getQueryString()
+        self._uri = uri
+        self._url = uri.uri2url()
         
     def getURI( self ):
         if self._dc:
-            res = self._url + '?' + str(self._dc)
+            res = self._url.copy()
+            res.setQueryString( self._dc )
         else:
-            res = self._url
+            res = self._url.copy()
         return res
     
     def setData( self, d=None ):

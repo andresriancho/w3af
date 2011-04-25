@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.urlParser as urlParser
+
+from core.data.parsers.urlParser import parse_qs
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
@@ -46,14 +48,35 @@ class modsecurity(baseEvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @return: The modified request
+        
+        >>> from core.data.parsers.urlParser import url_object
+        >>> modsec = modsecurity()
+        
+        >>> u = url_object('http://www.google.com/')
+        >>> r = HTTPRequest( u )
+        >>> modsec.modifyRequest( r ).url_object.url_string
+        'http://www.google.com/'
+
+        >>> u = url_object('http://www.google.com/')
+        >>> r = HTTPRequest( u, data='' )
+        >>> modsec.modifyRequest( r ).get_data()
+        ''
+
+        >>> u = url_object('http://www.google.com/')
+        >>> r = HTTPRequest( u, data='a=b' )
+        >>> modsec.modifyRequest( r ).get_data()
+        '\\x00a=b'
+
         '''
         # Mangle the postdata
         data = request.get_data()
         if data:
-            # Only mangle the postdata if it is a url encoded string
+            
             try:
-                urlParser.getQueryString('http://w3af/?' + data )
+                # Only mangle the postdata if it is a url encoded string
+                parse_qs( data )
             except:
                 pass
             else:
@@ -61,8 +84,8 @@ class modsecurity(baseEvasionPlugin):
                 headers_copy = copy.deepcopy(request.headers)
                 headers_copy['content-length'] = str(len(data))
                 
-                request = urllib2.Request( request.get_full_url() , data, 
-                                                    headers_copy, request.get_origin_req_host() )
+                request = HTTPRequest( request.url_object , data, headers_copy, 
+                                       request.get_origin_req_host() )
                 
         return request
 

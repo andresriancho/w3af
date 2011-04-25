@@ -221,7 +221,7 @@ class HistoryItem(object):
         resp = self.response
         values = []
         values.append(resp.getId())
-        values.append(self.request.getURI())
+        values.append(self.request.getURI().url_string)
         values.append(resp.getCode())
         values.append(self.tag)
         values.append(int(self.mark))

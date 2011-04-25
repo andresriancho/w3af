@@ -26,8 +26,8 @@ import copy
 
 class dataContainer(dict):
     '''
-    This class represents a data container. This is a simple class that is made so form and queryString 
-    classes inherit from it.
+    This class represents a data container. It's basically the way query string
+    and post-data is stored when using url-encoding.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
