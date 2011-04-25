@@ -191,7 +191,7 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        url_without_qs = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, None, self.fragment) )
+        url_without_qs = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, None, None) )
         return url_object(url_without_qs)
     
     def getFragment(self):
