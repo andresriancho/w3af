@@ -87,7 +87,7 @@ class url_object(object):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    def __init__(self, url_string ):
+    def __init__(self, url_string=None ):
         '''
         @param url_string: A string with a URL.
         @return: True if the url_string was successfully parsed into an URL object.
@@ -110,16 +110,86 @@ class url_object(object):
         >>> u.getProtocol()
         'http'
         '''
-        self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
+
+        if url_string is not None:
+
+            self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
+            
+            #
+            #    This is the case when someone creates a url_object like this: url_object('www.w3af.com')
+            #
+            if self.scheme == '' and self.netloc == '' and self.path:
+                #    By default we set the protocol to "http"
+                self.scheme = 'http'
+                self.netloc = self.path
+                self.path = ''
+
+    @classmethod
+    def from_parts( cls, scheme, netloc, path, params, qs, fragment ):
+        '''
+        @param scheme: http/https
+        @param netloc: domain and port
+        @param path: directory
+        @param params: URL params
+        @param qs: query string
+        @param fragment: #fragments
+        @return: An instance of url_object.
+
+        This is a "constructor" for the url_object class.
         
-        #
-        #    This is the case when someone creates a url_object like this: url_object('www.w3af.com')
-        #
-        if self.scheme == '' and self.netloc == '' and self.path:
-            #    By default we set the protocol to "http"
-            self.scheme = 'http'
-            self.netloc = self.path
-            self.path = ''
+        >>> u = url_object.from_parts('http', 'www.google.com', '/foo/bar.txt', None, 'a=b', 'frag')
+        >>> u.path
+        '/foo/bar.txt'
+        >>> u.scheme
+        'http'
+        >>> u.getFileName()
+        'bar.txt'
+        >>> u.getExtension()
+        'txt'
+        >>> 
+
+        '''
+        cls.scheme = scheme
+        cls.netloc = netloc
+        cls.path = path
+        cls.params = params
+        cls.qs = qs
+        cls.fragment = fragment
+        return cls()
+
+    @classmethod
+    def from_url_object( cls, original_url_object ):
+        '''
+        @param original_url_object: The url object to use as "template" for the new one
+        @return: An instance of url_object with the same data as original_url_object
+
+        This is a "constructor" for the url_object class.
+        
+        >>> o = url_object('http://www.google.com/foo/bar.txt')
+        >>> u = url_object.from_url_object( o )
+        >>> u.path
+        '/foo/bar.txt'
+        >>> u.scheme
+        'http'
+        >>> u.getFileName()
+        'bar.txt'
+        >>> u.getExtension()
+        'txt'
+        >>> 
+        >>> u = url_object('www.google.com')
+        >>> u.getDomain()
+        'www.google.com'
+        >>> u.getProtocol()
+        'http'
+
+        '''
+        cls.scheme = original_url_object.getProtocol()
+        cls.netloc = original_url_object.getDomain()
+        cls.path = original_url_object.getPath()
+        cls.params = original_url_object.getParams()
+        cls.qs = original_url_object.getQueryString()
+        cls.fragment = original_url_object.getFragment()
+        return cls()
 
     @property
     def url_string(self):
@@ -191,10 +261,12 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        url_without_qs = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, None, None) )
-        return url_object(url_without_qs)
+        return url_object.from_parts( self.scheme, self.netloc, self.path, None, None, None )
     
     def getFragment(self):
+        '''
+        @return: Returns the #fragment of the URL.
+        '''
         return self.fragment
     
     def removeFragment( self ):
@@ -208,8 +280,7 @@ class url_object(object):
         >>> u.removeFragment().url_string
         'http://www.google.com/foo/bar.txt'
         '''
-        url_without_frag = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, self.qs, None) )
-        return url_object(url_without_frag)
+        return url_object.from_parts( self.scheme, self.netloc, self.path, self.params, self.qs, None )
     
     def baseUrl( self ):
         '''
@@ -916,8 +987,7 @@ class url_object(object):
         'http://abc/xyz.txt?file=2'
 
         '''
-        url_without_params = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, self.qs, self.fragment) )
-        return url_object(url_without_params)
+        return url_object.from_parts( self.scheme, self.netloc, self.path, None, self.qs, self.fragment )
     
     def setParam( self, param_string ):
         '''
