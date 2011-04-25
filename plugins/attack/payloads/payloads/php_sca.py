@@ -54,14 +54,24 @@ class php_sca(base_payload):
                 v.setSeverity(vulndata['severity'])
                 v.setName(vulndata['name'])
                 v.setURL(url)
+                v.setURI(url)
                 v.setVar(f.vulnsources[0])
                 v.setDesc(vulndata['name'])
                 args = list(vulndata['kb_key']) + [v]
+
+                # TODO: Extract the method from the PHP code
+                #     $_GET == GET
+                #     $_POST == POST
+                #     $_REQUEST == GET
+                v.setMethod('GET')
+                
+                # TODO: Extract all the other variables that are
+                # present in the PHP file using the SCA
+                v.setDc(dataContainer())
+                
                 #
                 ## TODO: This needs to be checked! OS Commanding specific
                 ### parameters
-                v.setMethod('GET')
-                v.setDc(dataContainer())
                 v['os'] = 'unix'
                 v['separator'] = ''
                 ###
