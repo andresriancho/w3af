@@ -75,7 +75,8 @@ class HistoryItem(object):
             self._db = kb.kb.getData('gtkOutput', 'db')
         else:
             raise w3afException('The database is not initialized yet.')
-        self._sessionDir = os.path.join(get_home_dir() , 'sessions', self._db.getFileName() + '_traces')
+        self._sessionDir = os.path.join(get_home_dir() , 'sessions',
+                                        self._db.getFileName() + '_traces')
         
     @property
     def response(self):
@@ -146,7 +147,7 @@ class HistoryItem(object):
 
         sql += ' LIMIT '  + str(resultLimit)
         try:
-            rawResult = self._db.retrieveAll(sql, where.values())
+            rawResult = self._db.retrieve(sql, where.values(), all=True)
             for row in rawResult:
                 item = self.__class__(self._db)
                 item._loadFromRow(row, full)
@@ -243,10 +244,10 @@ class HistoryItem(object):
             self.id = self.response.getId()
         else:
             values.append(self.id)
-            sql = 'UPDATE ' + self._dataTable
-            sql += ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
-            sql += ', method = ?, response_size = ?, codef = ?, alias = ? '
-            sql += ' WHERE id = ?'
+            sql = ('UPDATE %s' 
+            ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
+            ', method = ?, response_size = ?, codef = ?, alias = ? '
+            ' WHERE id = ?' % self._dataTable)
             self._db.execute(sql, values)
         # 
         # Save raw data to file

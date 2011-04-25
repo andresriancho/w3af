@@ -85,7 +85,7 @@ class gtkOutput(baseOutputPlugin):
                         break
 
             # Create DB!
-            self._db.open(dbName)
+            self._db.connect(dbName)
             # Init history
             historyItem = HistoryItem(self._db)
             historyItem.initStructure()
