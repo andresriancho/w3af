@@ -1308,7 +1308,8 @@ class w3afCore(object):
                 
         # Config the profile target
         if cf.cf.getData('targets'):
-            new_profile.setTarget(' , '.join(cf.cf.getData('targets')))
+            new_profile.setTarget(' , '.join(str(t) for t in 
+                                             cf.cf.getData('targets')))
         
         # Config the misc and http settings
         misc_settings = miscSettings.miscSettings()

@@ -161,10 +161,10 @@ class WebKitRenderingView(RenderingView):
         try:
             if obj.is_text_or_html():
                 self._renderingWidget.load_string(obj.getBody(), mimeType, 
-                        obj.getCharset(),obj.getURI())
+                        obj.getCharset(), str(obj.getURI()))
             else:
                 raise
-        except:
+        except Exception:
             self._renderingWidget.load_string(_("Can't render response"), mimeType, 'UTF-8', 'error')
 
     def clear(self):

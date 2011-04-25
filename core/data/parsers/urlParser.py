@@ -194,6 +194,9 @@ class url_object(object):
         url_without_qs = urlparse.urlunparse( (self.scheme, self.netloc, self.path, None, None, self.fragment) )
         return url_object(url_without_qs)
     
+    def getFragment(self):
+        return self.fragment
+    
     def removeFragment( self ):
         '''
         @return: Returns a url_object containing the URL without the fragment. Example:
