@@ -1,4 +1,4 @@
 This directory stores templates of files. A template is a simple file with
 the corresponding "magic cookie" that identifies it.
 
-Files have comments filled with 'A'*240. This is for exploiting porpuses.
+Files have comments filled with 'A'*240. This is for exploiting purposes.

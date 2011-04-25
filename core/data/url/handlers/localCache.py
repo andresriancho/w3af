@@ -371,9 +371,11 @@ class SQLCachedResponse(CachedResponse):
     
     @staticmethod
     def exists_in_cache(req):
-        #alias = gen_hash(req)
-        #histitem = HistoryItem()
-        #return bool(histitem.find([('alias', alias, "=")]))
+        '''
+        alias = gen_hash(req)
+        histitem = HistoryItem()
+        return bool(histitem.find([('alias', alias, "=")]))
+        '''
         return True
 
 
