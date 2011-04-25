@@ -97,6 +97,11 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         '''
         vulnCopy = copy.deepcopy( vuln )
         mutant = vulnCopy.getMutant()
+        
+        #    Sometimes there is no mutant (php_sca).
+        if mutant is None:
+            return vulnCopy
+        
         if mutant.getMethod() == 'POST':
             # No need to work !
             return vulnCopy
