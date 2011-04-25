@@ -421,7 +421,14 @@ class URLsTree(gtk.TreeView):
             if url is None:
                 yield True
                 continue
-            (scheme, netloc, path, params, query, fragment) = urllib2.urlparse.urlparse(url)
+            
+            path = url.getPath()
+            params = url.getParamsString()
+            query = str(url.getQueryString())
+            fragment = url.getFragment()
+            scheme = url.getProtocol()
+            netloc = url.getDomain()
+
             ini = "%s://%s" % (scheme, netloc)
             end = ""
             if params:
@@ -431,17 +438,12 @@ class URLsTree(gtk.TreeView):
             if fragment:
                 end += "#" + fragment
 
-            # AR:
-            # This was the old way of doing it:
-            #nodes = path.split("/")[1:]
-            # But it generated this bug:    http://sourceforge.net/tracker/index.php?func=detail&aid=1963947&group_id=170274&atid=853652
-            # So I changed it to this:
             splittedPath = re.split('(\\\\|/)', path )
             nodes = []
             for i in splittedPath:
                 if i not in ['\\','/']:
                     nodes.append(i)
-            # Ok, now we continue with the code from Facundo
+
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]

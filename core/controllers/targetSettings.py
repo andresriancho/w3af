@@ -67,7 +67,8 @@ class targetSettings(configurable):
         @return: A list of option objects for this plugin.
         '''        
         d1 = 'A comma separated list of URLs'
-        o1 = option('target', ','.join(cf.cf.getData('targets')), d1, 'list')
+        o1 = option('target', ','.join(str(tar) for tar in 
+                                       cf.cf.getData('targets')), d1, 'list')
         
         d2 = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
         h2 = 'This setting is here to enhance w3af performance.'

@@ -686,7 +686,7 @@ class MainApp(object):
         # sets the title 
         targets = cf.cf.getData('targets')
         if targets:
-            target_domain_obj = url_object( targets[0] )
+            target_domain_obj = targets[0]
             target_domain = target_domain_obj.getDomain()
             self.window.set_title("w3af - " + target_domain)
 

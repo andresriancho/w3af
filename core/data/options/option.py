@@ -102,8 +102,8 @@ class option:
                 res = []
                 # Yes, we are regex dummies
                 value += ','
-                tmp = re.findall('(".*?"|\'.*?\'|.*?),', value)
-                if tmp != []:
+                tmp = re.findall('(".*?"|\'.*?\'|.*?),', str(value))
+                if tmp:
                     tmp = [y.strip() for y in tmp if y != '']
                     
                     # Now I check for single and double quotes
