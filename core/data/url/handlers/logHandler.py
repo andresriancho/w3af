@@ -201,9 +201,8 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
-        request_url_obj = url_object(request.get_full_url())
         fr = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request_url_obj,
+                                      url=request.url_object,
                                       postData=request.get_data(),
                                       headers=headers)
 
@@ -216,7 +215,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
             id = response.id
             # BUGBUG: This is where I create/log the responses that always have 0.2 as the time!
             url_instance = url_object( url )
-            res = httpResponse.httpResponse(code, body, hdrs, request_url_obj, url_instance, msg=msg, id=id)
+            res = httpResponse.httpResponse(code, body, hdrs, request.url_object, url_instance, msg=msg, id=id)
         
         om.out.logHttp(fr, res)
 

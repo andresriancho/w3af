@@ -337,9 +337,8 @@ class SQLCachedResponse(CachedResponse):
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
-        request_url_obj = url_object(request.get_full_url())
         req = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request_url_obj,
+                                      url=request.url_object,
                                       postData=request.get_data(),
                                       headers=headers)
         hi.request = req
@@ -352,7 +351,7 @@ class SQLCachedResponse(CachedResponse):
         # 0.2 as the time!
         url_instance = url_object( url )
         resp = httpResponse.httpResponse(code, body, hdrs, url_instance,
-                                         request_url_obj, msg=msg, id=id,
+                                         request.url_object, msg=msg, id=id,
                                          alias=gen_hash(request))
         hi.response = resp
 
