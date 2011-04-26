@@ -500,6 +500,7 @@ class xUrllib(object):
         
         # Evasion
         original_url = req._Request__original
+        original_url_instance = req.url_object
         req = self._evasion(req)
         
         start_time = time.time()
@@ -521,7 +522,6 @@ class xUrllib(object):
             code = int(e.code)
             info = e.info()
             geturl_instance = url_object( e.geturl() )
-            original_url_instance = url_object( original_url )
             read = self._readRespose(e)
             httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
                                       id=e.id, time=time.time()-start_time,
@@ -621,8 +621,7 @@ class xUrllib(object):
             code = int(res.code)
             info = res.info()
             geturl = res.geturl()
-            geturl_instance = url_object(geturl) 
-            original_url_instance = url_object(original_url)
+            geturl_instance = url_object(geturl)
             read = self._readRespose( res )
             httpResObj = httpResponse(code, read, info, geturl_instance, original_url_instance,
                                       id=res.id, time=time.time() - start_time, msg=res.msg )
