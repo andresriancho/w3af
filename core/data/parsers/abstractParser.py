@@ -353,11 +353,12 @@ class abstractParser(object):
         #   http://host.tld/é.html
         #
         # Which is written without URL encoding.
-        if urllib.unquote(url_object_to_decode.url_string) == url_object_to_decode.url_string:
+        url_string = url_object_to_decode.url_string
+        if urllib.unquote(url_string) == url_string:
             return url_object_to_decode
             
         try:
-            decoded = urllib.unquote(url_object_to_decode.url_string).decode(encoding).encode('utf-8')
+            decoded = urllib.unquote(url_string).decode(encoding).encode('utf-8')
             return url_object(decoded)
         except UnicodeDecodeError, ude:
             # This error could have been produced by the buggy choice of encoding
@@ -365,14 +366,14 @@ class abstractParser(object):
             # or "selected by default". So, now we are going to test something different
             if encoding == 'utf-8':
                 # Test an encoding that only uses one byte:
-                decoded = urllib.unquote(url_object_to_decode.url_string).decode('iso-8859-1').encode('utf-8')
+                decoded = urllib.unquote(url_string).decode('iso-8859-1').encode('utf-8')
                 return url_object(decoded)
             elif encoding != 'utf-8':
                 # Sometimes, the web app developers, their editors, or some other component
                 # makes a mistake, and they are really encoding it with utf-8 and they say they are
                 # doing it with some other encoding; this is why I perform this last test:
                 try:
-                    decoded = urllib.unquote(url_object_to_decode.url_string).decode('utf-8').encode('utf-8')
+                    decoded = urllib.unquote(url_string).decode('utf-8').encode('utf-8')
                     return url_object(decoded)
                 except UnicodeDecodeError, ude:
                     msg = 'Failed to _decode_URL: "' + url_object_to_decode +'" using encoding: "' + encoding + '".'
