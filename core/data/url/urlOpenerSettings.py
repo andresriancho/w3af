@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
+from core.data.parsers.urlParser import url_object
 
 # Handler imports
 import core.data.url.handlers.localCache as localCache
@@ -257,19 +258,15 @@ class urlOpenerSettings( configurable ):
         om.out.debug( 'Called SetBasicAuth')
         
         if not hasattr( self, '_password_mgr' ):
-            # create a new password manager
+            # Create a new password manager
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
-        # add the username and password
-        if url.getProtocol() in ['http', 'https']:
-            domain = url.getDomain()
-            protocol = url.getProtocol()
-            self._password_mgr.add_password(None, domain, username, password)
-        else:
-            domain = url.getDomain()
-            protocol = 'http'
-            self._password_mgr.add_password(None, domain, username, password)
-
+        # Add the username and password
+        url = url_object(url)
+        domain = url.getDomain()
+        protocol = url.getProtocol()
+        protocol = protocol if protocol in ('http', 'https') else 'http'
+        self._password_mgr.add_password(None, domain, username, password)
         self._basicAuthHandler = FastHTTPBasicAuthHandler(self._password_mgr)
 
         # Only for w3af, no usage in urllib2
