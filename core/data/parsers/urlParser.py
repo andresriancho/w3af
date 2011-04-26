@@ -187,7 +187,7 @@ class url_object(object):
         cls.netloc = original_url_object.getDomain()
         cls.path = original_url_object.getPath()
         cls.params = original_url_object.getParams()
-        cls.qs = original_url_object.getQueryString()
+        cls.qs = copy.deepcopy( original_url_object.getQueryString() )
         cls.fragment = original_url_object.getFragment()
         return cls()
 
@@ -261,7 +261,9 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        return url_object.from_parts( self.scheme, self.netloc, self.path, None, None, None )
+        u = url_object.from_parts( self.scheme, self.netloc, self.path, None, None, None )
+        u = url_object( urlparse.urlunparse( ( self.scheme, self.netloc, self.path, None, None, None ) ) )
+        return u
     
     def getFragment(self):
         '''
