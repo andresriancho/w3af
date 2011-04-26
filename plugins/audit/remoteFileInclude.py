@@ -157,6 +157,9 @@ class remoteFileInclude(baseAuditPlugin):
                 
                 # Wait for threads to finish
                 self._tm.join(self)
+            except Exception,e:
+                msg = 'An error occurred while running local webserver: "%s"' % str(e)
+                om.out.error( msg )
             finally:
                 self._rm_file()
             
@@ -180,7 +183,7 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         oResponse = self._sendMutant(freq, analyze=False).getBody()
         
-        rfi_url_list = [self._rfi_url, self._rfi_url + "\0"]
+        rfi_url_list = [self._rfi_url, self._rfi_url.urlJoin("\0")]
         mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
         for mutant in mutants:
@@ -262,8 +265,9 @@ class remoteFileInclude(baseAuditPlugin):
         file_handler.close()
         
         # Define the required parameters
-        self._rfi_url = url_object('http://' + self._listen_address +':' + str(self._listen_port) + '/')
-        self._rfi_url = self._rfi_url.urlJoin( filename )
+        netloc = self._listen_address +':' + str(self._listen_port)
+        path = '/'+filename
+        self._rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
         self._rfi_result = rand1 + rand2
         
     def _rm_file(self):
