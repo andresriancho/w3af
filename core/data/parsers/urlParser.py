@@ -291,7 +291,7 @@ class url_object(object):
         >>> u.baseUrl().url_string
         'http://www.google.com/'
         '''
-        return url_object( self.scheme + '://' + self.netloc + '/' )
+        return url_object.from_parts( self.scheme, self.netloc, None, None, None, None )
     
     
     def normalizeURL( self ):
