@@ -296,10 +296,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             
         else:
             # most likely a GET request
+
+            # TODO: Test, is this really working?!
             uri_instance = url_object( path )
-            url_instance = uri_instance.uri2url()
-            path = url_instance.getPath() 
-            qs = url_instance.getQueryString()
+            path = uri_instance.getPath() 
+            qs = uri_instance.getQueryString()
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
                 res = httpCommandMethod( url, data=str(qs), headers=self.headers,  grepResult=grep )
