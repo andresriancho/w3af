@@ -167,9 +167,9 @@ class collectCookies(baseGrepPlugin):
             Login is done over SSL
             The rest of the page is HTTP
         '''
-        if request.getURL().getProtocol() == 'http':
+        if request.getURL().getProtocol().lower() == 'http':
             for cookie in kb.kb.getData( 'collectCookies', 'cookies' ):
-                if cookie.getURL().getProtocol() == 'https' and \
+                if cookie.getURL().getProtocol().lower() == 'https' and \
                 request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
                     # request, is using this values in the POSTDATA / QS / COOKIE
@@ -234,7 +234,7 @@ class collectCookies(baseGrepPlugin):
         ### code useless! The secure parameter is never parsed in the cookieObj
         ### http://bugs.python.org/issue1028088
         ### https://sourceforge.net/tracker2/?func=detail&aid=2139517&group_id=170274&atid=853655
-        if 'secure' in cookieObj and response.getURL().getProtocol() == 'http':
+        if 'secure' in cookieObj and response.getURL().getProtocol().lower() == 'http':
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( response.getURL() )
