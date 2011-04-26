@@ -87,10 +87,11 @@ class url_object(object):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    def __init__(self, url_string=None ):
+    def __init__(self, data):
         '''
-        @param url_string: A string with a URL.
-        @return: True if the url_string was successfully parsed into an URL object.
+        @param data: Either a string representing a URL or a 6-elems tuple
+            representing the URL components:
+            <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
 
         Simple generic test, more detailed tests in each method!
         
@@ -110,22 +111,31 @@ class url_object(object):
         >>> u.getProtocol()
         'http'
         '''
-
-        if url_string is not None:
-
-            self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment = urlparse.urlparse( url_string )
+        
+        if type(data) is tuple:
+            scheme, netloc, path, params, qs, fragment = data
+        else:
+            scheme, netloc, path, params, qs, fragment = \
+                                        urlparse.urlparse(data)
+            #
+            # This is the case when someone creates a url_object like
+            # this: url_object('www.w3af.com')
+            #
+            if scheme == netloc == '' and path:
+                # By default we set the protocol to "http"
+                scheme = 'http'
+                netloc = path
+                path = ''
             
-            #
-            #    This is the case when someone creates a url_object like this: url_object('www.w3af.com')
-            #
-            if self.scheme == '' and self.netloc == '' and self.path:
-                #    By default we set the protocol to "http"
-                self.scheme = 'http'
-                self.netloc = self.path
-                self.path = ''
+        self.scheme = scheme or ''
+        self.netloc = netloc or ''
+        self.path = path or ''
+        self.params = params or ''
+        self.qs = qs or ''
+        self.fragment = fragment or ''
 
     @classmethod
-    def from_parts( cls, scheme, netloc, path, params, qs, fragment ):
+    def from_parts(cls, scheme, netloc, path, params, qs, fragment):
         '''
         @param scheme: http/https
         @param netloc: domain and port
@@ -149,13 +159,7 @@ class url_object(object):
         >>> 
 
         '''
-        cls.scheme = scheme
-        cls.netloc = netloc
-        cls.path = path or ''
-        cls.params = params or ''
-        cls.qs = qs or ''
-        cls.fragment = fragment or ''
-        return cls()
+        return cls((scheme, netloc, path, params, qs, fragment))
 
     @classmethod
     def from_url_object( cls, original_url_object ):
@@ -183,13 +187,13 @@ class url_object(object):
         'http'
 
         '''
-        cls.scheme = original_url_object.getProtocol()
-        cls.netloc = original_url_object.getDomain()
-        cls.path = original_url_object.getPath()
-        cls.params = original_url_object.getParams()
-        cls.qs = copy.deepcopy( original_url_object.getQueryString() )
-        cls.fragment = original_url_object.getFragment()
-        return cls()
+        scheme = original_url_object.getProtocol()
+        netloc = original_url_object.getDomain()
+        path = original_url_object.getPath()
+        params = original_url_object.getParams()
+        qs = copy.deepcopy( original_url_object.getQueryString() )
+        fragment = original_url_object.getFragment()
+        return cls((scheme, netloc, path, params, qs, fragment))
 
     @property
     def url_string(self):
@@ -261,9 +265,8 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt'
         >>> 
         '''
-        u = url_object.from_parts( self.scheme, self.netloc, self.path, None, None, None )
-        u = url_object( urlparse.urlunparse( ( self.scheme, self.netloc, self.path, None, None, None ) ) )
-        return u
+        return url_object.from_parts(self.scheme, self.netloc,
+                                     self.path, None, None, None)
     
     def getFragment(self):
         '''
