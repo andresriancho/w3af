@@ -78,7 +78,6 @@ class archiveDotOrg(baseDiscoveryPlugin):
             
             start_url = 'http://web.archive.org/web/*/' + fuzzableRequest.getURL()
             start_url = url_object( start_url )
-            domain = fuzzableRequest.getURL().getDomain()
             references = self._spider_archive( [ start_url, ] , self._max_depth, domain )
             
             return self._analyze_urls( references )
