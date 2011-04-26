@@ -151,10 +151,10 @@ class url_object(object):
         '''
         cls.scheme = scheme
         cls.netloc = netloc
-        cls.path = path
-        cls.params = params
-        cls.qs = qs
-        cls.fragment = fragment
+        cls.path = path or ''
+        cls.params = params or ''
+        cls.qs = qs or ''
+        cls.fragment = fragment or ''
         return cls()
 
     @classmethod
