@@ -96,7 +96,12 @@ class gtkOutput(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for debug messages.
         '''
-        m = message( 'debug', self._cleanString(msgString), time.time(), newLine )
+        #
+        #   I don't really want to add debug messages to the queue, as they are only used
+        #   in the time graph that's displayed under the log. In order to save some memory
+        #   I'm only creating the object, but without any msg.
+        #
+        m = message( 'debug', '', time.time(), newLine )
         self._addToQueue( m )
     
     def information(self, msgString , newLine = True ):
