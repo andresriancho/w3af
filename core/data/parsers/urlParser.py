@@ -571,13 +571,21 @@ class url_object(object):
         True
         >>> url_object("http://abc").is_valid_domain()
         True
+        >>> url_object("http://abc:39").is_valid_domain()
+        True
+        >>> url_object("http://abc:").is_valid_domain()
+        False
+        >>> url_object("http://abc:3932").is_valid_domain()
+        True
+        >>> url_object("http://abc:3932322").is_valid_domain()
+        False
         >>> url_object("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
         True
         
         @parameter url: The url to parse.
         @return: Returns a boolean that indicates if <url>'s domain is valid
         '''
-        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*$', self.netloc ) is not None
+        return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$', self.netloc ) is not None
     
     def getNetLocation( self ):
         '''

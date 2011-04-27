@@ -100,6 +100,7 @@ class targetSettings(configurable):
 
         >>> ts = targetSettings()
         >>> ts._verifyURL( url_object('http://www.google.com/') )
+        >>> ts._verifyURL( url_object('http://www.google.com:39/') )
         >>> ts._verifyURL( url_object('ftp://www.google.com/') )
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
