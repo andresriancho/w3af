@@ -170,7 +170,9 @@ class proxy(w3afThread):
         # I have to do this to actually KILL the HTTPServer, and free the TCP port
         del self._server
 
-class w3afProxyHandler(BaseHTTPRequestHandler):    
+
+class w3afProxyHandler(BaseHTTPRequestHandler):
+    
     def handle_one_request(self):
         """Handle a single HTTP request.
 
@@ -235,7 +237,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             path = self.path
 
         fuzzReq = fuzzableRequest()
-        fuzzReq.setURI(path)
+        fuzzReq.setURI(url_object(path))
         fuzzReq.setHeaders(self.headers.dict)
         fuzzReq.setMethod(self.command)
         postData = self._getPostData()
@@ -297,13 +299,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             # most likely a GET request
 
-            # TODO: Test, is this really working?!
-            uri_instance = url_object( path )
-            path = uri_instance.getPath() 
+            uri_instance = url_object(path) 
             qs = uri_instance.getQueryString()
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod( url, data=str(qs), headers=self.headers,  grepResult=grep )
+                res = httpCommandMethod(uri_instance, data=str(qs), headers=self.headers,  grepResult=grep )
             except w3afException, w:
                 traceback.print_exc()
                 om.out.error('The proxy request failed, error: ' + str(w) )

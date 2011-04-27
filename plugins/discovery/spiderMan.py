@@ -32,8 +32,6 @@ from core.data.parsers.urlParser import url_object
 
 import cStringIO
 
-from core.data.request.frFactory import createFuzzableRequestRaw
-
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 from core.controllers.w3afException import w3afException, w3afRunOnce
 import core.data.constants.w3afPorts as w3afPorts
@@ -41,7 +39,7 @@ import core.data.constants.w3afPorts as w3afPorts
 # Cohny changed the original http://w3af/spiderMan?terminate
 # to http://127.7.7.7/spiderMan?terminate because in Opera we got
 # an error if we used the original one! Thanks Cohny!
-TERMINATE_URL = 'http://127.7.7.7/spiderMan?terminate'
+TERMINATE_URL = url_object('http://127.7.7.7/spiderMan?terminate')
 
 
 class spiderMan(baseDiscoveryPlugin):
@@ -107,10 +105,10 @@ class spiderMan(baseDiscoveryPlugin):
             self._proxy.targetDomain = freq.getURL().getDomain()
             
             # Inform the user
-            msg = 'spiderMan proxy is running on ' + self._listenAddress + ':'
-            msg += str(self._listenPort) + '.\nPlease configure your browser to use these proxy'
-            msg += ' settings and navigate the target site.\nTo exit spiderMan plugin please'
-            msg += ' navigate to ' + TERMINATE_URL + ' .'
+            msg = ('spiderMan proxy is running on %s:%s.\nPlease configure '
+               'your browser to use these proxy settings and navigate the '
+               'target site.\nTo exit spiderMan plugin please navigate to %s .'
+               % (self._listenAddress, self._listenPort, TERMINATE_URL))
             om.out.information( msg )
             
             # Run the server
@@ -194,21 +192,22 @@ class proxyHandler(w3afProxyHandler):
         if global_firstRequest:
             global_firstRequest = False
             om.out.information('The user is navigating through the spiderMan proxy.')
+        
+        # Convert to url_object
+        path = url_object(self.path)
             
-        if self.path == TERMINATE_URL:
+        if path == TERMINATE_URL:
             om.out.information('The user terminated the spiderMan session.')
             self._sendEnd()
             self._spiderMan.stopProxy()
         else:
-            om.out.debug("[spiderMan] Handling request: " + self.command + ' ' + self.path)
+            om.out.debug("[spiderMan] Handling request: %s %s" %
+                                                    (self.command, path))
             #   Send this information to the plugin so it can send it to the core
             freq = self._createFuzzableRequest()
             self._spiderMan.append_fuzzable_request( freq )
             
-            grep = False
-            url = url_object(self.path)
-            if url.getDomain() == self.server.w3afLayer.targetDomain:
-                grep = True
+            grep = True if path == self.server.w3afLayer.targetDomain else False
                 
             try:
                 response = self._sendToServer(grep=grep)
@@ -220,9 +219,10 @@ class proxyHandler(w3afProxyHandler):
                 
                 for h in response.getHeaders():
                     if 'cookie' in h.lower():
-                        msg = 'The remote web application sent the following cookie: "'
-                        msg += str(response.getHeaders()[h]) + '".\nw3af will use it during the'
-                        msg += ' rest of the process in order to maintain the session.'
+                        msg = ('The remote web application sent the following'
+                           ' cookie: "%s".\nw3af will use it during the rest '
+                           'of the process in order to maintain the session.'
+                           % response.getHeaders()[h])
                         om.out.information( msg )
                 self._sendToBrowser(response)
             return self._spiderMan._fuzzableRequests
@@ -235,6 +235,7 @@ class proxyHandler(w3afProxyHandler):
         '''
         html = '<html>spiderMan plugin finished its execution.</html>'
         headers = {'Content-Length': str(len(html))}
+        
         r = httpResponse.httpResponse( 200, html, headers, 
             TERMINATE_URL, TERMINATE_URL,)
         self._sendToBrowser(r)
