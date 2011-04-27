@@ -78,6 +78,16 @@ def parse_qs( url_encoded_string, ignoreExceptions=True ):
                 
     return result
 
+def set_changed(meth):
+    '''
+    Function to decorate methods in order to set the "self._changed" attribute of 
+    the object to True.
+    '''
+    def wrapper(self, *args, **kwargs):
+        self._changed = True
+        return meth(self, *args, **kwargs)
+
+    return wrapper
 
 class url_object(object):
     '''
@@ -111,7 +121,9 @@ class url_object(object):
         >>> u.getProtocol()
         'http'
         '''
-        
+        self._already_calculated_url = None
+        self._changed = True
+
         if type(data) is tuple:
             scheme, netloc, path, params, qs, fragment = data
         else:
@@ -197,8 +209,14 @@ class url_object(object):
 
     @property
     def url_string(self):
-        return urlparse.urlunparse( (self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment) )
-        
+        if self._changed or self._already_calculated_url is None:
+            self._already_calculated_url = urlparse.urlunparse( (self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment) )
+            self._changed = False
+            return self._already_calculated_url
+        else:
+            return self._already_calculated_url
+
+       
     def hasQueryString( self ):
         '''
         Analyzes the uri to check for a query string.
@@ -238,6 +256,7 @@ class url_object(object):
         '''
         return parse_qs( self.qs, ignoreExceptions=True )
     
+    @set_changed
     def setQueryString(self, qs):
         '''
         Sets the query string for this URL.
@@ -294,7 +313,7 @@ class url_object(object):
         
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3#foobar')
         >>> u.baseUrl().url_string
-        'http://www.google.com/'
+        'http://www.google.com'
         '''
         return url_object.from_parts( self.scheme, self.netloc, None, None, None, None )
     
@@ -494,6 +513,7 @@ class url_object(object):
         domain = self.netloc.split(':')[0]
         return domain
 
+    @set_changed
     def setDomain( self, new_domain ):
         '''
         >>> u = url_object('http://abc/def/jkl/')
@@ -584,7 +604,8 @@ class url_object(object):
         @return: Returns the domain name for the url.
         '''
         return self.scheme
-    
+
+    @set_changed    
     def setProtocol( self, protocol ):
         '''
         >>> u = url_object("http://1.2.3.4")
@@ -738,6 +759,7 @@ class url_object(object):
         '''
         return self.path[self.path.rfind('/')+1:]
 
+    @set_changed
     def setFileName( self, new ):
         '''
         @return: Sets the filename name for the given URL.
@@ -788,7 +810,8 @@ class url_object(object):
             return ''
         else:
             return extension
-    
+
+    @set_changed    
     def setExtension( self, extension ):
         '''
         @parameter extension: The new extension to set, without the '.'
@@ -852,7 +875,8 @@ class url_object(object):
         @return: Returns the path for the url:
         '''
         return self.path
-    
+
+    @set_changed    
     def setPath(self, path):
         self.path = path
 
@@ -994,6 +1018,7 @@ class url_object(object):
         '''
         return url_object.from_parts( self.scheme, self.netloc, self.path, None, self.qs, self.fragment )
     
+    @set_changed
     def setParam( self, param_string ):
         '''
         >>> u = url_object('http://abc/;id=1')
