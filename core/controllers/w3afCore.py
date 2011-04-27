@@ -44,6 +44,7 @@ import traceback
 import copy
 import Queue
 import time
+import datetime
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -432,7 +433,33 @@ class w3afCore(object):
                              traceback.format_exc()) 
                 raise
             else:
-                om.out.information('Finished scanning process.')
+
+                time_diff = time.time() - self._discovery_start_time_epoch
+                time_delta = datetime.timedelta(seconds=time_diff)
+
+                weeks, days = divmod(time_delta.days, 7)
+
+                minutes, seconds = divmod(time_delta.seconds, 60)
+                hours, minutes = divmod(minutes, 60)
+
+                msg =  'Scan finished in '
+
+                if weeks == days == hours == minutes == seconds == 0:
+                    msg += '0 seconds.'
+                else:
+                    if weeks:
+                        msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
+                    if days:
+                        msg += str(days) + ' day%s ' % ('s' if days > 1 else '')
+                    if hours:
+                        msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
+                    if minutes:
+                        msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+                    if seconds:
+                        msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
+                    msg += '.'
+
+                om.out.information( msg )
         finally:
             self.progress.stop()
             
@@ -976,6 +1003,7 @@ class w3afCore(object):
             # And now remove it to free some memory, the valuable information was
             # saved to the kb, so this is clean and harmless
             del(plugin)
+
                 
     def _bruteforce(self, fuzzableRequestList):
         '''
