@@ -37,9 +37,9 @@ class w3afThread(threading.Thread):
         
     def stop(self):
         '''
-        w3af w3afThreads MUST implment a stop method.
+        w3af w3afThreads MUST implement a stop method.
         '''
-        raise w3afException('w3af w3afThreads MUST implment a stop method.')
+        raise w3afException('w3af w3afThreads MUST implement a stop method.')
         
     def start2( self ):
         '''

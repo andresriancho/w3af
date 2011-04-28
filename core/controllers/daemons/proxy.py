@@ -180,7 +180,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         __doc__ string for information on how to handle specific HTTP
         commands such as GET and POST.
         
-        I overrid this becuse I'm going to use ONE handler for all the methods (except CONNECT).
+        I override this because I'm going to use ONE handler for all the methods (except CONNECT).
         """
         self.raw_requestline = self.rfile.readline()
         if not self.raw_requestline:
