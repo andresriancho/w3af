@@ -36,8 +36,10 @@ __date__ = "2005-07-19"
 
 import threading, Queue
 import core.controllers.outputManager as om
+import sys
 import traceback
 import time
+import types
 
 DEBUG = False
 
@@ -105,10 +107,12 @@ class WorkerThread(threading.Thread):
             try:
                 self.resultQueue.put( (request, request.callable(*request.args, **request.kwds)) )
             except Exception, e:
-                om.out.debug('The thread: ' + str(self) + ' raised an exception while running the request: ' + str(request.callable) )
-                om.out.debug('Exception: ' + str( e ) )
-                om.out.debug( 'Traceback: ' + str( traceback.format_exc() ) )
-                self.resultQueue.put( (request, e) )
+                om.out.debug('The thread: %s raised an exception while running'
+                             ' the request: %s' % (self, request.callable))
+                om.out.debug('Exception: %s' % e)
+                om.out.debug('Traceback: %s' % traceback.format_exc())
+                self.resultQueue.put((request, sys.exc_info()))
+
         
         if DEBUG:
             om.out.debug('[worker] Ending!')
@@ -236,19 +240,23 @@ class ThreadPoolImplementation(object):
                 request, result = self.resultsQueue.get(block=block, timeout=1)
 
                 if id(request.ownerObj) == id(ownerObj) or joinAll:
-                    # and hand them to the callback, if any
-                    if request.callback:
-                        request.callback(request, result)
-                    del self.workRequests[request.requestID]
-
-                    # Raised here so I can handle it in the main thread...
-                    # TODO: Remove this. No part of the code handles errors 
-                    # from tm.join()
-                    if isinstance(result, Exception):
-                        raise result
-                    
+                    try:
+                        # and hand them to the callback, if any
+                        if request.callback:
+                            request.callback(request, result)
+                        
+                        # Probably a sys.exc_info tuple of the form 
+                        # (type, value, traceback) 
+                        if type(result) is tuple and len(result) == 3:
+                            exc_type, exc_val, tb = result
+                            if type(exc_type) == types.TypeType and \
+                                issubclass(exc_type, Exception):
+                                # Raise here and handle it in the main thread
+                                raise exc_type, exc_val, tb
+                    finally:
+                        del self.workRequests[request.requestID]
                 else:
-                    self.resultsQueue.put( (request,result) )
+                    self.resultsQueue.put((request, result))
                 
             except Queue.Empty:
                 if DEBUG:
