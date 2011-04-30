@@ -35,6 +35,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
+from core.data.parsers.urlParser import url_object
 from core.data.bloomfilter.pybloom import ScalableBloomFilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
@@ -172,7 +173,8 @@ class pykto(baseDiscoveryPlugin):
         om.out.debug('Local version of pykto scan_database.db is: ' + local_version)
         
         # fetching remote version
-        res_version = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
+        versions_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
+        res_version = self._urlOpener.GET( versions_url )
         
         fetched_version = False
         for line in res_version.getBody().split():
@@ -200,7 +202,8 @@ class pykto(baseDiscoveryPlugin):
             else:
                 msg = 'Updating to scan_database version: "' + str(remote_version) + '".'
                 om.out.information( msg )
-                res = self._urlOpener.GET('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
+                scan_database_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
+                res = self._urlOpener.GET( scan_database_url )
                 try:
                     # Write new scan_database
                     os.unlink( self._db_file )
