@@ -95,7 +95,7 @@ class eval(baseAttackPlugin):
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln_obj ):
+        if self._verify_vuln( vuln_obj ):
             # Create the shell object
             shell_obj = eval_shell( vuln_obj )
             shell_obj.setUrlOpener( self._urlOpener )
@@ -105,7 +105,7 @@ class eval(baseAttackPlugin):
         else:
             return None
 
-    def _verifyVuln( self, vuln_obj ):
+    def _verify_vuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work!
 
