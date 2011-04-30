@@ -344,8 +344,12 @@ class htmlFile(baseOutputPlugin):
                     <td class=default width="80%">'''
                 )
 
-            desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/><b>URL :</b> '
-            desc += cgi.escape (i.getURL().url_string) + '<br> \n </td></tr>'
+            if i.getURL() is not None:
+                desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/><b>URL :</b> '
+                desc += cgi.escape (i.getURL().url_string) + '<br> \n </td></tr>'
+            else:
+                desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/> Unknown URL <br> \n </td></tr>'
+
             self._write_to_file( desc )
 
         # Close the upper table
