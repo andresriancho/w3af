@@ -68,11 +68,32 @@ class htmlParser(sgmlParser):
             HTMLDocument = httpResponse.getNormalizedBody() or ''
 
         # Now we are ready to work
-        self._parse (HTMLDocument)
+        self._parse(HTMLDocument)
         
     def _findForms(self, tag, attrs):
         '''
         This method finds forms inside an HTML document.
+
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.parsers.urlParser import url_object
+        >>> url = url_object('http://www.w3af.com/')
+        >>> h = httpResponse(200, '<html>...</html>', {}, url, url)
+        >>> p = htmlParser(h)
+
+        One form with all things inside
+        >>> p._findForms('form',[('action','post-handler.php')])
+        >>> p._findForms('input',[('type','text'), ('name','foo_text'), ('value', 'hi!')])
+        >>> p._findForms('input',[('type','file'), ('name','foo_file')])
+        >>> p._findForms('input',[('type','radio'), ('name','foo_radio')])
+        >>> p._findForms('input',[('type','checkbox'), ('name','foo_checkbox')])
+        >>> p._findForms('input',[('type','textarea'), ('name','foo_textarea')])
+        >>> form_list = p.getForms()
+        >>> form = form_list[0]
+        >>> form.getAction()
+        <url_object for "http://www.w3af.com/post-handler.php">
+        >>> form
+        {'foo_file': [''], 'foo_text': ['hi!'], 'foo_checkbox': [''], 'foo_radio': [''], 'foo_textarea': ['']}
+
         '''
 
         '''
@@ -90,7 +111,6 @@ class htmlParser(sgmlParser):
         </P>
         </FORM>
         '''
-
         if tag.lower() == 'form' :
             self._handle_form_tag(tag, attrs)
 
