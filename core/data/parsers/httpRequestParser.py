@@ -29,6 +29,24 @@ from core.controllers.w3afException import w3afException
 def checkVersionSintax(version):
     '''
     @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
+
+    >>> checkVersionSintax('HTTP/1.0')
+    True
+
+    >>> checkVersionSintax('HTTPS/1.0')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: The HTTP request has an invalid HTTP token in the version specification: "HTTPS/1.0"
+
+    >>> checkVersionSintax('HTTP/1.00000000000000')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: HTTP request version "HTTP/1.00000000000000" is unsupported
+
+    >>> checkVersionSintax('ABCDEF')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: The HTTP request has an invalid version token: "ABCDEF"
     '''
     supportedVersions = ['1.0', '1.1']
     splittedVersion = version.split('/')
@@ -48,6 +66,14 @@ def checkVersionSintax(version):
 def checkURISintax(uri, host=None):
     '''
     @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
+
+    >>> checkURISintax('http://abc/def.html')
+    'http://abc/def.html'
+
+    >>> checkURISintax('ABCDEF')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: ABCDEF
     '''
     supportedSchemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
@@ -76,6 +102,27 @@ def httpRequestParser(head, postdata):
     @return: A fuzzableRequest object with all the corresponding information that was sent in head and postdata
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
+
+    >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', 'foo=bar')
+    <postdata fuzzable request | 200 | http://www.w3af.com/ >
+
+    >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', '')
+    <QS fuzzable request | 200 | http://www.w3af.com/ >
+
+    >>> httpRequestParser('200 / HTTP/1.0', '')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: /
+
+    >>> httpRequestParser('ABCDEF', '')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    w3afException: The HTTP request has an invalid <method> <uri> <version> token: "ABCDEF".
+
+    >>> head = "200 http://www.w3af.com/ HTTP/1.0"
+    >>> head += '\\nHost: www.w3af.com'
+    >>> httpRequestParser( head, 'foo=bar')
+    <postdata fuzzable request | 200 | http://www.w3af.com/ >
     '''
     # Parse the request head
     splitted_head = head.split('\n')
