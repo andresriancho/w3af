@@ -36,7 +36,7 @@ def dependencyCheck():
     major, minor, micro, releaselevel, serial = sys.version_info
     if major == 2:
         if minor <= 5:
-            print 'Error: Python 2.' +str(minor)+' was found and Python = 2.6 is required.'
+            print 'Error: Python 2.' +str(minor)+' was found and Python 2.6 is required.'
             sys.exit( 1 )
         if minor >= 7:
             print 'w3af is officially supported under Python 2.6'
@@ -142,6 +142,9 @@ def dependencyCheck():
         #TODO
         #packages_mac_port.append()
         reasonForExit = True       
+
+    import logging
+    logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
     try:
         import scapy
