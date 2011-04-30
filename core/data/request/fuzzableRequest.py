@@ -25,7 +25,8 @@ import core.controllers.outputManager as om
 from core.data.dc.dataContainer import dataContainer as dc
 from core.data.dc.cookie import cookie as cookie
 import core.data.kb.config as cf
-from core.data.parsers.urlParser import *
+from core.data.parsers.urlParser import url_object
+
 import copy
 import urllib
 
