@@ -25,6 +25,8 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
+import core.data.parsers.urlParser as urlParser
+
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance_ge
@@ -46,12 +48,14 @@ class fingerprint_404:
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self, uriOpener):
+    _instance = None
+    
+    def __init__( self, test_db=False ):
         #
-        #   Set the opener, I need it to perform some tests and gain the knowledge about the
-        #   server's 404 response bodies.
+        #   Set the opener, I need it to perform some tests and gain 
+        #   the knowledge about the server's 404 response bodies.
         #
-        self._urlOpener =  uriOpener
+        self._urlOpener =  None
 
         #
         #   Internal variables
@@ -59,18 +63,112 @@ class fingerprint_404:
         self._already_analyzed = False
         self._404_bodies = []
         self._lock = thread.allocate_lock()
-        # it is OK to store 200 here, I'm only storing int as the key, and bool as the value.
-        self._is_404_LRU = LRU(200)
         
+        # it is OK to store 500 here, I'm only storing int as the key, and bool as the value.
+        self.is_404_LRU = LRU(500)
+        
+        self._test_db = test_db
+
+    def set_urlopener(self, urlopener):
+        self._urlOpener = urlopener
+            
+    def generate_404_knowledge( self, url ):
+        '''
+        Based on a URL, request something that we know is going to be a 404.
+        Afterwards analyze the 404's and summarise them.
+        
+        @return: A list with 404 bodies.
+        '''
         #
-        #   Here I create a is_404 "singleton" that I use in most plugins.
+        #    This is the case when nobody has properly configured
+        #    the object in order to use it.
         #
-        global is_404
-        is_404 = self.is_404
-        #
-        #   In the plugins, I'll just do something like "from core.controllers.coreHelpers.fingerprint_404 import is_404"
-        #   and then "is_404( response )"
-        #
+        if self._urlOpener is None:
+            raise w3afException('404 fingerprint database was incorrectly initialized.')
+        
+        with self._lock:        
+            # Get the filename extension and create a 404 for it
+            extension = url.getExtension()
+            domain_path = url.getDomainPath()
+            
+            # the result
+            self._response_body_list = []
+            
+            #
+            #   This is a list of the most common handlers, in some configurations, the 404
+            #   depends on the handler, so I want to make sure that I catch the 404 for each one
+            #
+            handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm', extension]
+            handlers += ['pl', 'cgi', 'xhtml', 'htmls']
+            handlers = list(set(handlers))
+            
+            for extension in handlers:
+    
+                rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+                    
+                url404 = domain_path.urlJoin( rand_alnum_file )
+    
+                #   Send the requests using threads:
+                targs = ( url404,  )
+                tm.startFunction( target=self._send_404, args=targs , ownerObj=self )
+                
+            # Wait for all threads to finish sending the requests.
+            tm.join( self )
+            
+            #
+            #   I have the bodies in self._response_body_list , but maybe they all look the same, so I'll
+            #   filter the ones that look alike.
+            #
+            result = [ self._response_body_list[0], ]
+            for i in self._response_body_list:
+                for j in self._response_body_list:
+                    
+                    if relative_distance_ge(i, j, IS_EQUAL_RATIO):
+                        # They are equal, we are ok with that
+                        continue
+                    else:
+                        # They are no equal, this means that we'll have to add this to the list
+                        result.append(j)
+            
+            # I don't need these anymore
+            self._response_body_list = None
+            
+            # And I return the ones I need
+            result = list(set(result))
+            om.out.debug('The 404 body result database has a length of ' + str(len(result)) +'.')
+        
+        self._404_bodies = result 
+        self._already_analyzed = True
+        
+        
+    def need_analysis(self):
+        return not self._already_analyzed
+    
+    def _send_404(self, url404):
+        '''
+        Sends a GET request to url404 and saves the response in self._response_body_list .
+        @return: None.
+        '''
+        try:
+            # I don't use the cache, because the URLs are random and the only thing that
+            # useCache does is to fill up disk space
+            response = self._urlOpener.GET(url404, useCache=False, grepResult=False)
+        except w3afException, w3:
+            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3))
+        except w3afMustStopException, mse:
+            # Someone else will raise this exception and handle it as expected
+            # whenever the next call to GET is done
+            raise w3afException('w3afMustStopException <%s> found by _send_404,' \
+                                ' someone else will handle it.' % mse)
+        except Exception, e:
+            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e))
+            raise
+
+        else:
+            # I don't want the random file name to affect the 404, so I replace it with a blank space
+            response_body = get_clean_body(response)
+
+            self._response_body_list.append(response_body)
 
     def is_404(self, http_response):
         '''
@@ -88,10 +186,10 @@ class fingerprint_404:
         
         @parameter http_response: The HTTP response which we want to know if it is a 404 or not.
         '''
-
+    
         #   This is here for testing.
         #return False
-        
+
         #
         #   First we handle the user configured exceptions:
         #
@@ -121,19 +219,15 @@ class fingerprint_404:
         #   Before actually working, I'll check if this response is in the LRU, if it is I just return
         #   the value stored there.
         #
-        if http_response.id in self._is_404_LRU:
-            return self._is_404_LRU[ http_response.id ]
-            
-        with self._lock:
-            if not self._already_analyzed:
-                # Generate a 404 and save it
-                self._404_bodies = self._generate_404_knowledge( http_response.getURL() )
-                self._already_analyzed = True
-
+        if http_response.id in self.is_404_LRU:
+            return self.is_404_LRU[ http_response.id ]
         
-        # self._404_body was already cleaned inside self._generate_404_knowledge
+        if self.need_analysis():
+            self.generate_404_knowledge( http_response.getURL() )
+        
+        # self._404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one.
-        html_body = self._get_clean_body( http_response )
+        html_body = get_clean_body( http_response )
         
         #
         #   Compare this response to all the 404's I have in my DB
@@ -144,7 +238,7 @@ class fingerprint_404:
                 msg = '"%s" is a 404. [similarity_index > %s]' % \
                     (http_response.getURL(), IS_EQUAL_RATIO)
                 om.out.debug(msg)
-                self._is_404_LRU[ http_response.id ] = True
+                self.is_404_LRU[ http_response.id ] = True
                 return True
             else:
                 # If it is not eq to one of the 404 responses I have in my DB, that does not means
@@ -158,126 +252,53 @@ class fingerprint_404:
             msg = '"%s" is NOT a 404. [similarity_index < %s]' % \
             (http_response.getURL(), IS_EQUAL_RATIO)
             om.out.debug(msg)
-            self._is_404_LRU[ http_response.id ] = False
+            self.is_404_LRU[ http_response.id ] = False
             return False
+
+def fingerprint_404_singleton():
+    if not fingerprint_404._instance:
+        fingerprint_404._instance = fingerprint_404()
+    return fingerprint_404._instance
+
+
+#
+#
+#       Some helper functions
+#
+#
+def is_404(http_response):
+    #    Get an instance of the 404 database
+    fp_404_db = fingerprint_404_singleton()
+    return fp_404_db.is_404(http_response)
+
+def get_clean_body(response):
+    '''
+    Definition of clean in this method:
+        - input:
+            - response.getURL() == http://host.tld/aaaaaaa/
+            - response.getBody() == 'spam aaaaaaa eggs'
             
-    def _generate_404_knowledge( self, url ):
-        '''
-        Based on a URL, request something that we know is going to be a 404.
-        Afterwards analyze the 404's and summarise them.
-        
-        @return: A list with 404 bodies.
-        '''
-        # Get the filename extension and create a 404 for it
-        extension = url.getExtension()
-        
-        # the result
-        self._response_body_list = []
-        
-        #
-        #   This is a list of the most common handlers, in some configurations, the 404
-        #   depends on the handler, so I want to make sure that I catch the 404 for each one
-        #
-        handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm', extension]
-        handlers += ['pl', 'cgi', 'xhtml', 'htmls']
-        handlers = list(set(handlers))
-        
-        for extension in handlers:
+        - output:
+            - self._clean_body( response ) == 'spam  eggs'
+    
+    The same works with filenames.
+    All of them, are removed encoded and "as is".
+    
+    @parameter response: The httpResponse object to clean
+    @return: A string that represents the "cleaned" response body of the response.
+    '''
+    original_body = response.getBody()
+    url = response.getURL()
+    to_replace = url.url_string.split('/')
+    to_replace.append( url.url_string )
+    
+    for i in to_replace:
+        if len(i) > 6:
+            original_body = original_body.replace(i, '')
+            original_body = original_body.replace(urllib.unquote_plus(i), '')
+            original_body = original_body.replace(cgi.escape(i), '')
+            original_body = original_body.replace(cgi.escape(urllib.unquote_plus(i)), '')
 
-            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
-                
-            url404 = url.getDomainPath().urlJoin( rand_alnum_file )
-
-            #   Send the requests using threads:
-            targs = ( url404,  )
-            tm.startFunction( target=self._send_404, args=targs , ownerObj=self )
-            
-        # Wait for all threads to finish sending the requests.
-        tm.join( self )
-        
-        #
-        #   I have the bodies in self._response_body_list , but maybe they all look the same, so I'll
-        #   filter the ones that look alike.
-        #
-        result = [ self._response_body_list[0], ]
-        for i in self._response_body_list:
-            for j in self._response_body_list:
-                
-                if relative_distance_ge(i, j, IS_EQUAL_RATIO):
-                    # They are equal, we are ok with that
-                    continue
-                else:
-                    # They are no equal, this means that we'll have to add this to the list
-                    result.append(j)
-        
-        # I don't need these anymore
-        self._response_body_list = None
-        
-        # And I return the ones I need
-        result = list(set(result))
-        om.out.debug('The 404 body result database has a lenght of ' + str(len(result)) +'.')
-        
-        return result
-
-    def _send_404(self, url404):
-        '''
-        Sends a GET request to url404 and saves the response in self._response_body_list .
-        @return: None.
-        '''
-        try:
-            # I don't use the cache, because the URLs are random and the only thing that
-            # useCache does is to fill up disk space
-            response = self._urlOpener.GET(url404, useCache=False, grepResult=False)
-        except w3afException, w3:
-            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3))
-        except w3afMustStopException, mse:
-            # Someone else will raise this exception and handle it as expected
-            # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException <%s> found by _send_404,' \
-                                ' someone else will handle it.' % mse)
-        except Exception, e:
-            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e))
-            raise
-
-        else:
-            # I don't want the random file name to affect the 404, so I replace it with a blank space
-            response_body = self._get_clean_body(response)
-
-            self._response_body_list.append(response_body)
-        
-    #
-    #
-    #       Some helper functions
-    #
-    #
-    def _get_clean_body(self, response):
-        '''
-        Definition of clean in this method:
-            - input:
-                - response.getURL() == http://host.tld/aaaaaaa/
-                - response.getBody() == 'spam aaaaaaa eggs'
-                
-            - output:
-                - self._clean_body( response ) == 'spam  eggs'
-        
-        The same works with filenames.
-        All of them, are removed encoded and "as is".
-        
-        @parameter response: The httpResponse object to clean
-        @return: A string that represents the "cleaned" response body of the response.
-        '''
-        original_body = response.getBody()
-        url = response.getURL()
-        to_replace = url.url_string.split('/')
-        to_replace.append( url.url_string )
-        
-        for i in to_replace:
-            if len(i) > 6:
-                original_body = original_body.replace(i, '')
-                original_body = original_body.replace(urllib.unquote_plus(i), '')
-                original_body = original_body.replace(cgi.escape(i), '')
-                original_body = original_body.replace(cgi.escape(urllib.unquote_plus(i)), '')
-
-        return original_body
+    return original_body
 
 

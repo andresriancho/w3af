@@ -52,7 +52,7 @@ from core.data.request.frFactory import createFuzzableRequests
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # 404 detection
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404
+from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
 
 # Progress tracking
 from core.controllers.coreHelpers.progress import progress
@@ -90,7 +90,8 @@ class w3afCore(object):
         self.export = export()
         
         # I init the 404 detection for the whole framework
-        fingerprint_404( self.uriOpener )
+        fp_404_db = fingerprint_404_singleton()
+        fp_404_db.set_urlopener( self.uriOpener )
 
     def _home_directory(self):
         '''
