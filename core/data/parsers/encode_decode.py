@@ -34,11 +34,14 @@ def htmldecode(text, use_repr=False):
 
     >>> htmldecode('hola mundo')
     'hola mundo'
-    >>> htmldecode('hólá múndó')
-    'h\\xc3\\xb3l\\xc3\\xa1 m\\xc3\\xband\\xc3\\xb3'
-    >>> htmldecode('hola mundo &#0443')
-    'hola mundo \\xc6\\xbb'
-
+    >>> print htmldecode('hólá múndó')
+    hólá múndó
+    >>> print htmldecode('hola mundo &#0443')
+    hola mundo ƻ
+    >>> htmldecode('hola mundo &#x41')
+    'hola mundo A'
+    >>> print htmldecode('&aacute;')
+    á
     """
     # This pattern matches a character entity reference (a decimal numeric
     # references, a hexadecimal numeric reference, or a named reference).
@@ -97,6 +100,12 @@ def urlencode(query, doseq=0, safe='/<>"\'=:()'):
     'a=1&a=c'
     >>> urlencode( cgi.parse_qs('a=1&b=c') )
     'a=1&b=c'
+    >>> urlencode( cgi.parse_qs('a=á&a=2') )
+    'a=%C3%A1&a=2'
+    >>> urlencode( 'a=b&c=d' )
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    TypeError: not a valid non-string sequence or mapping object
     '''
 
     if hasattr(query,"items"):
