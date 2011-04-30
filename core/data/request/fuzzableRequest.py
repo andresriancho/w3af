@@ -139,14 +139,14 @@ class fuzzableRequest(object):
         performance REALLY matters. We need to review this function.
         
         >>> f = fuzzableRequest()
-        >>> f._uri = """http://example.com/a?p=d'z"0&paged=2"""
+        >>> f._uri = url_object("""http://example.com/a?p=d'z"0&paged=2""")
         >>> f.sent('d%5C%27z%5C%220')
         True
         >>> f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
         >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
         True
         >>> f = fuzzableRequest()
-        >>> f._uri = 'http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'
+        >>> f._uri = url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>')
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
