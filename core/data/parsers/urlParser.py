@@ -881,6 +881,8 @@ class url_object(object):
         '/xyz/'
         >>> url_object('https://abc:443/xyz/123/456/789/').getPath()
         '/xyz/123/456/789/'
+        >>> url_object('https://abc:443/').getPath()
+        '/'
 
         @return: Returns the path for the url:
         '''
@@ -946,27 +948,38 @@ class url_object(object):
         '''
         Get a list of all directories and subdirectories.
         
+        Test different path levels
+
         >>> [i.url_string for i in url_object('http://abc/xyz/def/123/').getDirectories()]
-        ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/', 'http://abc/xyz/def/123/']
+        ['http://abc/xyz/def/123/', 'http://abc/xyz/def/', 'http://abc/xyz/', 'http://abc/']
         >>> [i.url_string for i in url_object('http://abc/xyz/def/').getDirectories()]
-        ['http://abc/', 'http://abc/xyz/', 'http://abc/xyz/def/']
+        ['http://abc/xyz/def/', 'http://abc/xyz/', 'http://abc/']
         >>> [i.url_string for i in url_object('http://abc/xyz/').getDirectories()]
-        ['http://abc/', 'http://abc/xyz/']
+        ['http://abc/xyz/', 'http://abc/']
         >>> [i.url_string for i in url_object('http://abc/').getDirectories()]
         ['http://abc/']
 
+
+        Test with a filename
+
+        >>> [i.url_string for i in url_object('http://abc/def.html').getDirectories()]
+        ['http://abc/']
+
+        Test with a filename and a QS
+
+        >>> [i.url_string for i in url_object('http://abc/def.html?id=5').getDirectories()]
+        ['http://abc/']
+        >>> [i.url_string for i in url_object('http://abc/def.html?id=/').getDirectories()]
+        ['http://abc/']
         '''
         res = []
         
-        dp = self.getDomainPath().url_string
-        bu = self.baseUrl().url_string
-        directories = dp.replace( bu, '' )
-        splitted_dirs = directories.split('/')
-        for i in xrange( len(splitted_dirs) ):
-            url = bu + '/'.join( splitted_dirs[:i] )
-            if url[len( url )-1] != '/':
-                url += '/'
-            res.append( url_object(url) )
+        current_url = self.copy()
+        res.append( current_url.getDomainPath() )
+
+        while current_url.getPath().count('/') != 1:
+            current_url = current_url.urlJoin( '../' )
+            res.append( current_url )
         
         return res
     
