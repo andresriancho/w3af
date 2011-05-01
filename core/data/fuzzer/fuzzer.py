@@ -303,6 +303,48 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
     An auxiliary function to createMutants.
     
     @return: A list of mutants.
+
+    >>> from core.data.request.fuzzableRequest import fuzzableRequest
+    >>> from core.data.parsers.urlParser import url_object
+    >>> from core.data.dc.dataContainer import dataContainer as dc
+
+    Mutant creation
+    >>> freq = fuzzableRequest()
+    >>> u = url_object('http://www.w3af.com/')
+    >>> d = dc()
+    >>> d['a'] = ['1',]
+    >>> d['b'] = ['2',]
+    >>> freq.setURL( u )
+    >>> freq.setDc( d )
+    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> [ i.getDc() for i in f ]
+    [{'a': ['abc'], 'b': ['2']}, {'a': ['def'], 'b': ['2']}, {'a': ['1'], 'b': ['abc']}, {'a': ['1'], 'b': ['def']}]
+
+    Repeated parameters
+    >>> freq = fuzzableRequest()
+    >>> u = url_object('http://www.w3af.com/')
+    >>> d = dc()
+    >>> d['a'] = ['1','2','3']
+    >>> freq.setURL( u )
+    >>> freq.setDc( d )
+    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> [ i.getDc() for i in f ]
+    [{'a': ['abc', '2', '3']}, {'a': ['def', '2', '3']}, {'a': ['1', 'abc', '3']}, {'a': ['1', 'def', '3']}, {'a': ['1', '2', 'abc']}, {'a': ['1', '2', 'def']}]
+
+    SmartFill of parameters
+    >>> from core.data.dc.form import form
+    >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
+    >>> pdr = httpPostDataRequest()
+    >>> u = url_object('http://www.w3af.com/')
+    >>> f = form()
+    >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
+    >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
+    >>> pdr.setURL( u )
+    >>> pdr.setDc( f )
+    >>> f = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
+    >>> [ i.getDc() for i in f ]
+    [{'foo': ['abc'], 'address': ['Bonsai Street 123']}, {'foo': ['def'], 'address': ['Bonsai Street 123']}, {'foo': ['56'], 'address': ['abc']}, {'foo': ['56'], 'address': ['def']}]
+
     '''
     result = []
     if not dataContainer:
@@ -401,6 +443,19 @@ def createRandAlpha( length=0 ):
     Create a random string ONLY with letters
     
     @return: A random string only composed by letters.
+
+    >>> x = createRandAlpha( length=10 )
+    >>> len(x) == 10
+    True
+    >>> x = createRandAlpha( length=20 )
+    >>> len(x) == 20
+    True
+    >>> x = createRandAlpha( length=5 )
+    >>> y = createRandAlpha( length=5 )
+    >>> z = createRandAlpha( length=5 )
+    >>> w = createRandAlpha( length=5 )
+    >>> x != y != z != w
+    True
     '''
     if length == 0:
         jibber = ''.join([letters])
@@ -415,6 +470,19 @@ def createRandAlNum( length=0):
     Create a random string with random length
     
     @return: A random string of with length > 10 and length < 30.
+
+    >>> x = createRandNum( length=10 )
+    >>> len(x) == 10
+    True
+    >>> x = createRandNum( length=20 )
+    >>> len(x) == 20
+    True
+    >>> x = createRandNum( length=5 )
+    >>> y = createRandNum( length=5 )
+    >>> z = createRandNum( length=5 )
+    >>> w = createRandNum( length=5 )
+    >>> x != y != z != w
+    True
     '''
     if length == 0:
         jibber = ''.join([letters, digits])
@@ -429,6 +497,16 @@ def createRandNum( length=0, excludeNumbers=[] ):
     Create a random string ONLY with numbers
     
     @return: A random string only composed by numbers.
+
+    >>> x = createRandNum( length=1 )
+    >>> int(x) in range(10)
+    True
+    >>> x = createRandNum( length=2 )
+    >>> int(x) in range(100)
+    True
+    >>> x = createRandNum( length=3 )
+    >>> int(x) in range(1000)
+    True
     '''
     if length == 0:
         jibber = ''.join([digits])
