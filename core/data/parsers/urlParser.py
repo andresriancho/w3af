@@ -70,7 +70,7 @@ def parse_qs( url_encoded_string, ignoreExceptions=True ):
             parsed_qs = cgi.parse_qs( url_encoded_string ,keep_blank_values=True,strict_parsing=False)
         except Exception, e:
             if not ignoreExceptions:
-                raise w3afException('Strange things found when parsing query string: "' + qs + '"')
+                raise w3afException('Strange things found when parsing query string: "' + url_encoded_string + '"')
         else:
             #
             #   Before we had something like this:
@@ -1087,7 +1087,7 @@ class url_object(object):
                 parsedData = cgi.parse_qs( self.params, keep_blank_values=True, strict_parsing=True)
             except Exception, e:
                 if not ignoreExceptions:
-                    raise w3afException('Strange things found when parsing params string: ' + params)
+                    raise w3afException('Strange things found when parsing params string: ' + self.params)
             else:
                 for i in parsedData.keys():
                     result[ i ] = parsedData[ i ][0]
