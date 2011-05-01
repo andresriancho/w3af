@@ -30,8 +30,8 @@ class vuln(info):
     This class represents a web vulnerability.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self, dataObj=None ):
-        info.__init__( self, dataObj )
+    def __init__( self, data_obj=None ):
+        info.__init__( self, data_obj )
         
         # Default values
         self._method = None
@@ -41,15 +41,13 @@ class vuln(info):
         self._variable = None
         self._mutant = None
         
-        if isinstance( dataObj, mutant ) or isinstance( dataObj, vuln):
-            self.setMethod( dataObj.getMethod() )
-            # mutants dont have an ID, and sometimes I want to
-            # create an instance of a vuln based on a mutant
-            #self.setId( response.getId() )
-            self.setDc( dataObj.getDc() )
-            self.setVar( dataObj.getVar() )
-            self.setURI( dataObj.getURI() )
-            self.setMutant( dataObj )
+        if isinstance( data_obj, mutant ) or \
+        isinstance( data_obj, vuln ):
+            self.setMethod( data_obj.getMethod() )
+            self.setDc( data_obj.getDc() )
+            self.setVar( data_obj.getVar() )
+            self.setURI( data_obj.getURI() )
+            self.setMutant( data_obj )
 
     def setMutant( self, mutant ):
         '''

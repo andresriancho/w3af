@@ -29,11 +29,9 @@ class info(dict):
     This class represents an information that is saved to the kb.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, dataObj=None):
-        
+    def __init__(self, data_obj=None):
+
         # Default values
-        self._url = None
-        self._uri = None
         self._desc = None
         self._method = None
         self._variable = None
@@ -45,16 +43,16 @@ class info(dict):
         self._string_matches = set()
             
         # Clone the info object!
-        if isinstance( dataObj, info ):
-            self.setURI( dataObj.getURI() )
-            self.setDesc( dataObj.getDesc() )
-            self.setMethod( dataObj.getMethod() )
-            self.setVar( dataObj.getVar() )
-            self.setId( dataObj.getId() )
-            self.setName( dataObj.getName() )
-            self.setDc( dataObj.getDc() )
-            for k in dataObj.keys():
-                self[ k ] = dataObj[ k ]
+        if isinstance( data_obj, info ):
+            self.setURI( data_obj.getURI() )
+            self.setDesc( data_obj.getDesc() )
+            self.setMethod( data_obj.getMethod() )
+            self.setVar( data_obj.getVar() )
+            self.setId( data_obj.getId() )
+            self.setName( data_obj.getName() )
+            self.setDc( data_obj.getDc() )
+            for k in data_obj.keys():
+                self[ k ] = data_obj[ k ]
     
     def getSeverity( self ):
         '''
@@ -102,9 +100,6 @@ class info(dict):
         
         self._uri = uri
         self._url = uri.uri2url()
-
-    def getURI( self ):
-        return self._uri
 
     def getURI( self ):
         return self._uri
