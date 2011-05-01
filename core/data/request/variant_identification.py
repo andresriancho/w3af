@@ -34,6 +34,39 @@ def are_variants( url_a ,  url_b ):
     @parameter url_a: The URL we want to analyze
     @parameter url_b: The other URL we want to analyze
     @return: True if the URLs are variants.
+
+    >>> from core.data.parsers.urlParser import url_object
+    >>> a = url_object('http://www.w3af.com/foo.php')
+    >>> b = url_object('http://www.w3af.com/foo.php')
+    >>> are_variants( a, b )
+    True
+
+    >>> a = url_object('http://www.w3af.com/foo.php?id=1')
+    >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
+    >>> are_variants( a, b )
+    False
+
+    >>> a = url_object('http://www.w3af.com/bar.php?id=1')
+    >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
+    >>> are_variants( a, b )
+    False
+
+    >>> a = url_object('http://www.w3af.com/foo.php?id=1')
+    >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
+    >>> are_variants( a, b )
+    False
+
+    >>> a = url_object('http://www.w3af.com/foo.php?id=1&foo=bar')
+    >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
+    >>> are_variants( a, b )
+    False
+
+    >>> a = 'http://www.w3af.com/foo.php?id=1'
+    >>> b = 'http://www.rapid7.com/foo.php?id=1'
+    >>> are_variants( a, b )
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    ValueError: The "url_a" parameter in "are_variants"  must be of urlParser.url_object type.
     '''
     if not isinstance(url_a, url_object):
         msg = 'The "url_a" parameter in "are_variants" '
