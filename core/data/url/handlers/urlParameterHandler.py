@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import urllib2
-import core.data.parsers.urlParser as url_object
+from core.data.parsers.urlParser import url_object
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
