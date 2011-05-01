@@ -313,19 +313,27 @@ class htmlFile(baseOutputPlugin):
         for i in vulns:
             
             #
-            #   Get the port
+            #   Get all the information I'll be using
             #
-            port = str( i.getURL().getPort() )
+            if i.getURL() is not None:
+                port = str( i.getURL().getPort() )
+                port = 'tcp/' + port
+                escaped_url = cgi.escape (i.getURL().url_string)
+                
+            else:
+                # There is no URL associated with this vuln object
+                port = 'Undefined'
+                escaped_url = 'Undefined'
             
             self._write_to_file(
                 '''<tr>
                 <td valign=top class=default width="10%"><font color=red>Vulnerability</font></td>
-                <td valign=top class=default width="10%">tcp/''' + port + '''</td>
+                <td valign=top class=default width="10%">''' + port + '''</td>
                 <td class=default width="80%">'''
                 )
 
             desc = cgi.escape( i.getDesc() ) + '<br/><br/><b>URL :</b> '
-            desc += cgi.escape (i.getURL().url_string) + '<br>\n'
+            desc += escaped_url + '<br>\n'
             self._write_to_file( desc )
 
             if i.getSeverity() !=  None:
@@ -335,20 +343,31 @@ class htmlFile(baseOutputPlugin):
         # Writes the Information results Table
         infos = kb.kb.getAllInfos()     
         for i in infos:
+
+            #
+            #   Get all the information I'll be using
+            #
+            if i.getURL() is not None:
+                port = str( i.getURL().getPort() )
+                port = 'tcp/' + port
+                escaped_url = cgi.escape (i.getURL().url_string)
+                
+            else:
+                # There is no URL associated with this vuln object
+                port = 'Undefined'
+                escaped_url = 'Undefined'
+
             self._write_to_file(
                 '''<tr>
                     <td valign=top class=default width="10%">
                         <font color=blue>Information</font>
                     </td>
-                    <td valign=top class=default width="10%">tcp/80</td>
+                    <td valign=top class=default width="10%">''' + port + '''</td>
                     <td class=default width="80%">'''
                 )
 
-            if i.getURL() is not None:
-                desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/><b>URL :</b> '
-                desc += cgi.escape (i.getURL().url_string) + '<br> \n </td></tr>'
-            else:
-                desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/> Unknown URL <br> \n </td></tr>'
+            desc = cgi.escape( i.getDesc() ) + '<br>\n' + '<br/><b>URL :</b> '
+            desc += escaped_url + '<br> \n </td></tr>'
 
             self._write_to_file( desc )
 
