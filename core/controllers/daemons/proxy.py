@@ -247,7 +247,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
     def doAll( self ):
         '''
-        This method handles EVERY request that were send by the browser.
+        This method handles EVERY request that was send by the browser.
         '''
         try:
             # Send the request to the remote webserver
@@ -275,11 +275,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.headers['Connection'] = 'close'
 
         path = self.path
+        uri_instance = url_object(path)
 
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
             basePath = "https://" + self.server.chainedHandler.path
             path = basePath + path
+            uri_instance = url_object(path)
         
         # Do the request to the remote server
         if self.headers.dict.has_key('content-length'):
@@ -288,7 +290,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod( path, data=postData, headers=self.headers )
+                res = httpCommandMethod( uri_instance, data=postData, headers=self.headers )
             except w3afException, w:
                 om.out.error('The proxy request failed, error: ' + str(w) )
             except Exception, e:
@@ -297,9 +299,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 return res
             
         else:
-            # most likely a GET request
 
-            uri_instance = url_object(path) 
+            # most likely a GET request
             qs = uri_instance.getQueryString()
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
