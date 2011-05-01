@@ -32,7 +32,6 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.controllers.outputManager as om
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
-import core.data.parsers.urlParser as uparser
 
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin discovery.http_vs_https_dist." \
@@ -66,18 +65,18 @@ class http_vs_https_dist(baseDiscoveryPlugin):
             kb.kb.append(self, 'http_vs_https_dist', inf)
 
         target_url = fuzzableRequest.getURL()
-        domain = uparser.getDomain(target_url)
+        domain = target_url.getDomain()
         http_port = self._http_port
         https_port = self._https_port
 
         # Use target port if specified
-        netloc = uparser.getNetLocation(target_url)
+        netloc = target_url.getNetLocation()
         try:
             port = int(netloc.split(':')[-1])
         except ValueError:
             pass # Nothing to do.
         else:
-            protocol = uparser.getProtocol(target_url)
+            protocol = target_url.getProtocol()
             if protocol == 'https':
                 https_port = port
             else: # it has to be 'http'
