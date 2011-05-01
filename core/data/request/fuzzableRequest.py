@@ -36,6 +36,7 @@ LF = '\n'
 CRLF = CR + LF
 SP = ' '
 
+
 class fuzzableRequest(object):
     '''
     This class represents a fuzzable request. Fuzzable requests where created to allow w3af plugins
@@ -66,6 +67,24 @@ class fuzzableRequest(object):
     def dump( self ):
         '''
         @return: a DETAILED str representation of this fuzzable request.
+
+        >>> fr = fuzzableRequest()
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> fr.setURL( u )
+        >>> fr.dump()
+        'GET http://www.w3af.com/ HTTP/1.1\\n\\n'
+
+        >>> fr.setHeaders( {'Host':'www.w3af.com'} )
+        >>> fr.dump()
+        'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
+
+
+        >>> fr.setHeaders( {'Host':'www.w3af.com'} )
+        >>> fr.setMethod('POST')
+        >>> fr.setData('D474')
+        >>> fr.dump()
+        'POST http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\nD474'
+
         '''
         result_string = ''
         result_string += self.dumpRequestHead()
@@ -98,12 +117,31 @@ class fuzzableRequest(object):
 
     def export( self ):
         '''
-        METHOD,URL,DC
-        Examples:
-        GET,http://localhost/index.php?abc=123&def=789,
-        POST,http://localhost/index.php,abc=123&def=789
+        Generic version of how they are exported:
+            METHOD,URL,DC
+    
+        Example:
+            GET,http://localhost/index.php?abc=123&def=789,
+            POST,http://localhost/index.php,abc=123&def=789
         
         @return: a csv str representation of the request
+
+        >>> from core.data.dc.dataContainer import dataContainer as dc
+        >>> fr = fuzzableRequest()
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> fr.setURL( u )
+        >>> fr.export()
+        'GET,http://www.w3af.com/,'
+
+        >>> fr = fuzzableRequest()
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> d = dc()
+        >>> d['a'] = ['1',]
+        >>> fr.setURL( u )
+        >>> fr.setDc( d )
+        >>> fr.export()
+        'GET,http://www.w3af.com/?a=1,'
+
         '''
         #
         #   FIXME: What if a comma is inside the URL or DC?
@@ -194,7 +232,17 @@ class fuzzableRequest(object):
 
     def __str__( self ):
         '''
-        Return a str representation of this fuzzable request.
+        @return: A string representation of this fuzzable request.
+
+        >>> fr = fuzzableRequest()
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> fr.setURL( u )
+        >>> str( fr )
+        'http://www.w3af.com/ | Method: GET'
+
+        >>> repr( fr )
+        '<fuzzable request | GET | http://www.w3af.com/ >'
+
         '''
         result_string = ''
         result_string += self._url
@@ -231,6 +279,34 @@ class fuzzableRequest(object):
             - The values for each parameter is equal
         
         @return: True if the requests are equal.
+
+
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> fr1 = fuzzableRequest()
+        >>> fr2 = fuzzableRequest()
+        >>> fr1.setURL( u )
+        >>> fr2.setURL( u )
+        >>> fr1 == fr2
+        True
+
+        >>> u1 = url_object("""http://www.w3af.com/a""")
+        >>> u2 = url_object("""http://www.w3af.com/b""")
+        >>> fr1 = fuzzableRequest()
+        >>> fr2 = fuzzableRequest()
+        >>> fr1.setURL( u1 )
+        >>> fr2.setURL( u2 )
+        >>> fr1 == fr2
+        False
+
+        >>> u = url_object("""http://www.w3af.com/""")
+        >>> fr1 = fuzzableRequest()
+        >>> fr2 = fuzzableRequest()
+        >>> fr1.setMethod( 'POST' )
+        >>> fr1.setURL( u )
+        >>> fr2.setURL( u )
+        >>> fr1 == fr2
+        False
+
         '''
         if self._uri == other._uri and\
         self._method == other._method and\
