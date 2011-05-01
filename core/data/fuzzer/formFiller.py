@@ -103,6 +103,17 @@ def smartFill( variable_name ):
     This helps A LOT with server side validation.
     
     @return: The "most likely to be validated as a good value" string, OR '5672' if no match is found.
+
+    >>> smartFill('address')
+    'Bonsai Street 123'
+    >>> smartFill('ip')
+    '127.0.0.1'
+    >>> smartFill('IP')
+    '127.0.0.1'
+    >>> smartFill('street_address')
+    'Bonsai Street 123'
+    >>> smartFill('foobar')
+    '56'
     '''
     variable_name = variable_name.lower()
 
