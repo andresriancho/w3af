@@ -207,7 +207,7 @@ class proxyHandler(w3afProxyHandler):
             freq = self._createFuzzableRequest()
             self._spiderMan.append_fuzzable_request( freq )
             
-            grep = True if path == self.server.w3afLayer.targetDomain else False
+            grep = True if path.getDomain() == self.server.w3afLayer.targetDomain else False
                 
             try:
                 response = self._sendToServer(grep=grep)
