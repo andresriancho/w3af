@@ -76,8 +76,9 @@ class fileUpload(baseAuditPlugin):
                 file_handlers = [ i[0] for i in self._file_list ]
                 mutants = createMutants( freq, file_handlers, fuzzableParamList=[file_parameter, ] )
 
-                for i, mutant in enumerate(mutants):
-                    mutant.uploaded_file_name = self._file_list[i][1]
+                for mutant in mutants:
+                    _, filename = os.path.split( mutant.getModValue().name )
+                    mutant.uploaded_file_name = filename
        
                 for mutant in mutants:
                     targs = (mutant,)
