@@ -32,6 +32,8 @@ class info(dict):
     def __init__(self, data_obj=None):
 
         # Default values
+        self._url = None
+        self._uri = None
         self._desc = None
         self._method = None
         self._variable = None
