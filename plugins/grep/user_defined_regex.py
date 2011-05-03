@@ -61,6 +61,29 @@ class user_defined_regex(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
+
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.parsers.urlParser import url_object
+        
+        >>> body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> request.setMethod( 'GET' )
+        >>> udr = user_defined_regex()
+        >>> options = udr.getOptions()
+        >>> options['single_regex'].setValue('".*?"')
+        >>> udr.setOptions( options )
+        >>> udr.grep(request, response)
+        >>> assert len(kb.kb.getData('user_defined_regex', 'user_defined_regex')) == 1        
+        >>> info_obj = kb.kb.getData('user_defined_regex', 'user_defined_regex')[0]
+        >>> info_obj.getDesc()
+        'The response matches the user defined regular expression "".*?"":\\n"data.txt"\\n. This information was found in the request with id None.'
+        
         '''
         if self._all_in_one is None:
             return
@@ -86,7 +109,14 @@ class user_defined_regex(baseGrepPlugin):
                             else:
                                 info_object = info.info()
                                 info_object.setPluginName(self.getName())
-                                om.out.information('User defined regular expression "'+str(regex.pattern)+'" matched a response!')
+                                
+                                msg = 'User defined regular expression "%s" matched a response!' % regex.pattern
+                                str_match = match_object.group(0)
+                                if len(str_match) > 20:
+                                    str_match = str_match[:20] + '...'
+                                msg += 'Matched string is: "%s".' % str_match
+                                
+                                om.out.information( msg )
                                 info_object.setURL( response.getURL() )
                                 msg = 'The response matches the user defined regular expression "'+str(regex.pattern)+'":\n'
                                 msg += str(match_object.group(0))
@@ -176,7 +206,7 @@ class user_defined_regex(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        pass
+        self.printUniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
             
     def getPluginDeps( self ):
         '''
