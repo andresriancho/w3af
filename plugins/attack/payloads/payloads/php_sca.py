@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import tempfile
 
-from core.controllers.sca.sca import PhpSCA
 from core.data.dc.dataContainer import dataContainer as dataContainer
 from core.ui.consoleUi.tables import table
 from plugins.attack.payloads.base_payload import base_payload
@@ -46,6 +45,15 @@ class php_sca(base_payload):
         @param localtmpdir: Local temporary directory where to save
             the remote code.
         '''
+        # TODO: This import should be moved to the head of the module when phply
+        # is a dependency of the framework
+        try:
+            from core.controllers.sca.sca import PhpSCA
+        except ImportError, ie:
+            import core.controllers.outputManager as om
+            om.out.console('You have to install phply lib in order to use this'
+            ' payload. Download it from <https://github.com/ramen/phply>\n')
+            return
         
         def write_vuln_to_kb(vulnty, url, funcs):
             vulndata = php_sca.KB_DATA[vulnty]
@@ -95,8 +103,7 @@ class php_sca(base_payload):
                     [{'loc': url, 'lineno': fc.lineno, 'funcname': fc.name,
                       'vulnsrc': str(fc.vulnsources[0])} for fc in funcs])
         return res
-        
-    
+
     def run_read(self, parameters):
 
         api_res = self.api_read()
