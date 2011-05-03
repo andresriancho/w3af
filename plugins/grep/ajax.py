@@ -59,6 +59,7 @@ class ajax(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
+        
         Init
         >>> from core.data.url.httpResponse import httpResponse
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
