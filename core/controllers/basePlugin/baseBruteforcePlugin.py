@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.bruteforce.bruteforcer import bruteforcer
-from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.request.frFactory import createFuzzableRequests
 import core.data.kb.knowledgeBase as kb
@@ -82,7 +81,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        raise w3afException('Bruteforce plugins MUST override method _fuzzRequests.')
+        raise NotImplementedError, ('Bruteforce plugins MUST override '
+                                    'method _fuzzRequests.')
     
     def bruteforce_wrapper( self, fuzzable_request ):
         self.audit_wrapper( fuzzable_request.copy() )
@@ -112,7 +112,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @parameter url: A string representation of an URL
         @parameter combinations: A list of tuples with (user,pass)
         '''
-        raise w3afException('Bruteforce plugins MUST override method _bruteWorker.')            
+        raise NotImplementedError, ('Bruteforce plugins MUST override method'
+                                    ' _bruteWorker.')
         
     def getOptions( self ):
         '''
