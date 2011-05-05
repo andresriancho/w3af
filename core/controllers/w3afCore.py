@@ -37,7 +37,8 @@ from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.url.xUrllib import xUrllib
 from core.data.parsers.urlParser import url_object
 from core.controllers.w3afException import w3afException, w3afRunOnce, \
-    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc
+    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc, \
+    w3afMustStopOnUrlError
 from core.controllers.targetSettings import targetSettings as targetSettings
 
 import traceback
@@ -107,8 +108,8 @@ class w3afCore(object):
 
             # We have a problem!
             # The home directory isn't writable, we can't create .w3af ...
-            msg = 'The w3af home directory "' + get_home_dir() + '" is not writable. '
-            msg += 'Please set the correct permissions and ownership.'
+            msg = ('The w3af home directory "%s" is not writable. Please set '
+            'the correct permissions and ownership.' % get_home_dir())
             print msg
             sys.exit(-3)
             
@@ -120,8 +121,8 @@ class w3afCore(object):
         try:
             create_temp_dir()
         except:
-            msg = 'The w3af tmp directory "' + get_temp_dir() + '" is not writable. '
-            msg += 'Please set the correct permissions and ownership.'
+            msg = ('The w3af tmp directory "%s" is not writable. Please set '
+            'the correct permissions and ownership.' % get_temp_dir())
             print msg
             sys.exit(-3)            
 
@@ -208,9 +209,10 @@ class w3afCore(object):
                 try:
                     depType, depPlugin = dep.split('.')
                 except:
-                    msg = 'Plugin dependencies must be indicated using pluginType.pluginName'
-                    msg += ' notation. This is an error in ' + pluginName +'.getPluginDeps().'
-                    raise w3afException( msg )
+                    msg = ('Plugin dependencies must be indicated using '
+                    'pluginType.pluginName notation. This is an error in '
+                    '%s.getPluginDeps().' % pluginName)
+                    raise w3afException(msg)
                 if depType == pluginType:
                     if depPlugin not in strReqPlugins:
                         if cf.cf.getData('autoDependencies'):
@@ -219,9 +221,9 @@ class w3afCore(object):
                             # nice recursive call, this solves the "dependency of dependency" problem =)
                             return self._rPlugFactory( strReqPlugins, depType )
                         else:
-                            msg = 'Plugin "'+ pluginName +'" depends on plugin "' + dep + '" and "'
-                            msg += dep + '" is not enabled.'
-                            raise w3afException( msg )
+                            msg = ('Plugin "%s" depends on plugin "%s" and '
+                            '"%s" is not enabled.' % (pluginName, dep, dep))
+                            raise w3afException(msg)
                 else:
                     if depPlugin not in self._strPlugins[depType]:
                         if cf.cf.getData('autoDependencies'):
@@ -232,9 +234,9 @@ class w3afCore(object):
                                 self._strPlugins[depType].append( depPlugin )
                             om.out.information('Auto-enabling plugin: ' + depType + '.' + depPlugin)
                         else:
-                            msg = 'Plugin "'+ pluginName +'" depends on plugin "' + dep + '" and "'
-                            msg += dep + '" is not enabled.'
-                            raise w3afException( msg )
+                            msg = ('Plugin "%s" depends on plugin "%s" and '
+                            '"%s" is not enabled.' % (pluginName, dep, dep))
+                            raise w3afException(msg)
                     else:
                         # if someone in another planet depends on me... run first
                         self._strPlugins[depType].remove( depPlugin )
@@ -269,15 +271,16 @@ class w3afCore(object):
         
         # This should never happend.
         if len(orderedPluginList) != len(requestedPluginsList):
-            error_msg = 'There is an error in the way w3afCore orders plugins. The ordered plugin'
-            error_msg += ' list length is not equal to the requested plugin list.'
+            error_msg = ('There is an error in the way w3afCore orders '
+            'plugins. The ordered plugin list length is not equal to the '
+            'requested plugin list.')
             om.out.error( error_msg, newLine=False)
             
             om.out.error('The error was found sorting plugins of type: '+ pluginType +'.')
             
-            error_msg = 'Please report this bug to the developers including a complete list of'
-            error_msg += ' commands that you run to get to this error.'
-            om.out.error( error_msg )
+            error_msg = ('Please report this bug to the developers including a '
+            'complete list of commands that you run to get to this error.')
+            om.out.error(error_msg)
 
             om.out.error('Ordered plugins:')
             for plugin in orderedPluginList:
@@ -293,8 +296,8 @@ class w3afCore(object):
     
     def initPlugins( self ):
         '''
-        The user interfaces should run this method *before* calling start(). If they don't do it, an exception is
-        raised.
+        The user interfaces should run this method *before* calling start(). 
+        If they don't do it, an exception is raised.
         '''
         self._initialized = True
         
@@ -426,15 +429,14 @@ class w3afCore(object):
                 #
                 raise
             except w3afMustStopException, wmse:
-                om.out.error('\n**IMPORTANT** The following error was ' \
-                 'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
                 self._end(wmse)
+                om.out.error('\n**IMPORTANT** The following error was '
+                 'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
             except Exception:
-                om.out.error('\nUnhandled error, traceback: %s\n' % \
+                om.out.error('\nUnhandled error, traceback: %s\n' %
                              traceback.format_exc()) 
                 raise
             else:
-
                 time_diff = time.time() - self._discovery_start_time_epoch
                 time_delta = datetime.timedelta(seconds=time_diff)
 
@@ -467,7 +469,8 @@ class w3afCore(object):
     def _realStart(self):
         '''
         Starts the work.
-        User interface coders: Please remember that you have to call initPlugins() method before calling start.
+        User interface coders: Please remember that you have to call 
+        initPlugins() method before calling start.
         
         @return: No value is returned.
         ''' 
@@ -480,12 +483,12 @@ class w3afCore(object):
         try:
             # Just in case the gtkUi / consoleUi forgot to do this...
             self.verifyEnvironment()
-        except Exception,e:
-            error = 'verifyEnvironment() raised an exception: "' + str(e) + '". This should never'
-            error += ' happen, are *you* user interface coder sure that you called'
-            error += ' verifyEnvironment() *before* start() ?'
-            om.out.error( error )
-            raise e
+        except Exception, e:
+            error = ('verifyEnvironment() raised an exception: "%s". This'
+                ' should never happen. Are *you* user interface coder sure'
+                ' that you called verifyEnvironment() *before* start() ?' % e)
+            om.out.error(error)
+            raise
         else:
             self._isRunning = True
             try:
@@ -504,15 +507,18 @@ class w3afCore(object):
                     except KeyboardInterrupt:
                         self._end()
                         raise
+                    except (w3afMustStopOnUrlError, w3afException), w3:
+                        om.out.error('The target URL: %s is unreachable.' % url)
+                        om.out.error('Error description: %s' % w3)
                     except w3afMustStopException:
                         raise
-                    except w3afException, w3:
-                        om.out.error('The target URL: ' + url + ' is unreachable.')
-                        om.out.error('Error description: ' + str(w3))
                     except Exception, e:
-                        om.out.error('The target URL: ' + url + ' is unreachable because of an unhandled exception.')
-                        om.out.error('Error description: "' + str(e) + '". See debug output for more information.')
-                        om.out.error('Traceback for this error: ' + str(traceback.format_exc()))
+                        om.out.error('The target URL: %s is unreachable '
+                                     'because of an unhandled exception.' % url)
+                        om.out.error('Error description: "%s". See debug '
+                                     'output for more information.' % e)
+                        om.out.error('Traceback for this error: %s' % 
+                                     traceback.format_exc())
                     else:
                         #
                         # NOTE: I need to perform this test here in order to avoid some weird
@@ -555,8 +561,9 @@ class w3afCore(object):
                     
                     # Filter out the fuzzable requests that aren't important (and will be ignored
                     # by audit plugins anyway...)
-                    msg = 'Found ' + str(len( tmp_url_list )) + ' URLs and '
-                    msg += str(len( self._fuzzableRequestList)) + ' different points of injection.'
+                    msg = ('Found %s URLs and %s different points of '
+                           'injection.' % 
+                           (len(tmp_url_list), len(self._fuzzableRequestList)))
                     om.out.information( msg )
                     
                     # print the URLs
@@ -639,21 +646,23 @@ class w3afCore(object):
                 ###########################
             
             except w3afFileException, e:
-                self._end( e )
+                self._end(e)
                 om.out.setOutputPlugins( ['console'] )
             except w3afException, e:
-                self._end( e )
-                raise e
+                self._end(e)
+                raise
             except KeyboardInterrupt, e:
                 self._end()
                 # I wont handle this. 
                 # The user interface must know what to do with it
-                raise e
+                raise
     
     def cleanup( self ):
         '''
-        The GTK user interface calls this when a scan has been stopped (or ended successfully) and the user wants
-        to start a new scan. All data from the kb is deleted.
+        The GTK user interface calls this when a scan has been stopped 
+        (or ended successfully) and the user wants to start a new scan.
+        All data from the kb is deleted.
+        
         @return: None
         '''
         # Clean all data that is stored in the kb
@@ -742,8 +751,8 @@ class w3afCore(object):
         
     def isRunning( self ):
         '''
-        @return: If the user has called start, and then wants to know if the core is still working, it should call
-        isRunning to know that.
+        @return: If the user has called start, and then wants to know if the
+        core is still working, it should call isRunning to know that.
         '''
         return self._isRunning
     
@@ -757,7 +766,8 @@ class w3afCore(object):
         try:
             result = self._discoverWorker( toWalk )
         except KeyboardInterrupt:
-            om.out.information('The user interrupted the discovery phase, continuing with audit.')
+            om.out.information('The user interrupted the discovery phase, '
+                               'continuing with audit.')
             result = self._alreadyWalked
         
         # Let the plugins know that they won't be used anymore
@@ -773,11 +783,13 @@ class w3afCore(object):
             try:
                 p.end()
             except Exception, e:
-                om.out.error('The plugin "'+ p.getName() + '" raised an exception in the end() method: ' + str(e) )
+                om.out.error('The plugin "%s" raised an exception in the '
+                             'end() method: %s' % (p.getName(), e))
     
     def get_discovery_time(self):
         '''
-        @return: The time between now and the start of the discovery phase. In minutes.
+        @return: The time between now and the start of the discovery phase in
+            minutes.
         '''
         now = time.time()
         diff = now - self._discovery_start_time_epoch
@@ -912,6 +924,7 @@ class w3afCore(object):
         return self._alreadyWalked
     
     ######## These methods are here to show a detailed information of what the core is doing ############
+    
     def getCoreStatus( self ):
         if self._paused:
             return 'Paused.'
@@ -1005,7 +1018,6 @@ class w3afCore(object):
             # saved to the kb, so this is clean and harmless
             del(plugin)
 
-                
     def _bruteforce(self, fuzzableRequestList):
         '''
         @parameter fuzzableRequestList: A list of fr's to be analyzed by the bruteforce plugins
@@ -1399,12 +1411,13 @@ class w3afCore(object):
                     except Exception, e:
                         # This is because of an invalid plugin, or something like that...
                         # Added as a part of the fix of bug #1937272
-                        msg = 'The profile you are trying to load seems to be outdated, one of'
-                        msg += ' the enabled plugins has a bug or an plugin option that was valid'
-                        msg += ' when you created the profile was now removed from the framework.'
-                        msg += ' The plugin that triggered this exception is "' + pluginName + '",'
-                        msg += ' and the original exception is: "' + str(e) +'".'
-                        om.out.error( msg )
+                        msg = ('The profile you are trying to load seems to be'
+                        ' outdated, one of the enabled plugins has a bug or an'
+                        ' plugin option that was valid when you created the '
+                        'profile was now removed from the framework. The plugin'
+                        ' that triggered this exception is "%s", and the '
+                        'original exception is: "%s"' % (pluginName, e))
+                        om.out.error(msg)
                     
             # Set the target settings of the profile to the core
             self.target.setOptions( profileInstance.getTarget() )
@@ -1422,6 +1435,5 @@ class w3afCore(object):
             misc_settings.setOptions( profile_misc_settings )
             self.uriOpener.settings.setOptions( profileInstance.getHttpSettings() )
     
-# """"Singleton""""
+# Singleton
 wCore = w3afCore()
-
