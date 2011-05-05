@@ -116,9 +116,9 @@ class basicAuthBrute(baseBruteforcePlugin):
                     if response.getCode() == 200:
                         self._found = True
                         v = vuln.vuln()
+                        v.setId(response.id)
                         v.setPluginName(self.getName())
                         v.setURL( url )
-                        v.setId(response.id)
                         v.setDesc( 'Found authentication credentials to: "'+ url +
                         '". A correct user and password combination is: ' + user + '/' + passwd)
                         v['user'] = user

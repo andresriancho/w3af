@@ -327,9 +327,9 @@ class formAuthBrute(baseBruteforcePlugin):
                             self._found = True
                             freq_url = freq.getURL()
                             v = vuln.vuln()
+                            v.setId(resp.id)
                             v.setPluginName(self.getName())
                             v.setURL(freq.getURL())
-                            v.setId(resp.id)
                             if self._user_field_name is not None:
                                 msg = 'Found authentication credentials to: ' \
                                 '"%s". A correct user and password combination ' \
