@@ -20,27 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.url.httpResponse as httpResponse
-from core.data.parsers.urlParser import url_object
-
 import cStringIO
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
+import core.controllers.outputManager as om
+import core.data.url.httpResponse as httpResponse
 import core.data.constants.w3afPorts as w3afPorts
 
 # Cohny changed the original http://w3af/spiderMan?terminate
 # to http://127.7.7.7/spiderMan?terminate because in Opera we got
 # an error if we used the original one! Thanks Cohny!
 TERMINATE_URL = url_object('http://127.7.7.7/spiderMan?terminate')
-
 
 class spiderMan(baseDiscoveryPlugin):
     '''
@@ -89,31 +85,24 @@ class spiderMan(baseDiscoveryPlugin):
             return proxyHandler(request, client_addr, server, self)
 
         return constructor
-        
+    
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, freq ):
-
+        # Create the proxy server
+        self._proxy = proxy(self._listenAddress, self._listenPort,
+                            self._urlOpener, self.createPH())
+        self._proxy.targetDomain = freq.getURL().getDomain()
         
-        if not self._run:
-            # This will remove the plugin from the discovery plugins to be runned.
-            raise w3afRunOnce()
-        else:
-            self._run = False
-            
-            # Create the proxy server
-            self._proxy = proxy( self._listenAddress, self._listenPort, self._urlOpener, \
-                                            self.createPH())
-            self._proxy.targetDomain = freq.getURL().getDomain()
-            
-            # Inform the user
-            msg = ('spiderMan proxy is running on %s:%s.\nPlease configure '
-               'your browser to use these proxy settings and navigate the '
-               'target site.\nTo exit spiderMan plugin please navigate to %s .'
-               % (self._listenAddress, self._listenPort, TERMINATE_URL))
-            om.out.information( msg )
-            
-            # Run the server
-            self._proxy.run()
-            
+        # Inform the user
+        msg = ('spiderMan proxy is running on %s:%s.\nPlease configure '
+           'your browser to use these proxy settings and navigate the '
+           'target site.\nTo exit spiderMan plugin please navigate to %s .'
+           % (self._listenAddress, self._listenPort, TERMINATE_URL))
+        om.out.information( msg )
+        
+        # Run the server
+        self._proxy.run()
+        
         return self._fuzzableRequests
     
     def getOptions( self ):
@@ -173,7 +162,9 @@ class spiderMan(baseDiscoveryPlugin):
             - listenPort
         '''
 
+
 global_firstRequest = True
+
 class proxyHandler(w3afProxyHandler):
 
     def __init__(self, request, client_address, server, spiderMan=None):
