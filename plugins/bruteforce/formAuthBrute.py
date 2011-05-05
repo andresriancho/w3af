@@ -24,7 +24,7 @@ from __future__ import with_statement
 import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.data.dc import form
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.fuzzer.fuzzer import createRandAlNum
@@ -73,14 +73,14 @@ class formAuthBrute(baseBruteforcePlugin):
                 self._idFailedLoginPage(freq)
             
                 # Let the user know what we are doing
-                om.out.information('Found a form login. The action of the ' \
+                om.out.information('Found a form login. The action of the '
                                    'form is: "%s".' % freq_url)
                 if self._user_field_name is not None:
-                    om.out.information('The username field to be used is: ' \
+                    om.out.information('The username field to be used is: '
                                        '"%s".' % self._user_field_name)
-                om.out.information('The password field to be used is: "%s".' \
+                om.out.information('The password field to be used is: "%s".'
                                    % self._passwd_field_name)
-                om.out.information('Starting form authentication bruteforce' \
+                om.out.information('Starting form authentication bruteforce'
                                    ' on URL: "%s".' % freq_url)
                 
                 # Work until something is found, or no more passwords
@@ -106,7 +106,7 @@ class formAuthBrute(baseBruteforcePlugin):
                         else:
                             # password only form:
                             try:
-                                c = ['dummy-placeholder', \
+                                c = ['dummy-placeholder',
                                         self._bruteforcer.getNextPassword()]
                                 combinations.append(c)
                             except w3afException:
@@ -119,7 +119,7 @@ class formAuthBrute(baseBruteforcePlugin):
                 self._tm.join(self)
                 
                 # Report that we've finished.
-                msg = 'Finished bruteforcing "'+ freq_url + '".'
+                msg = 'Finished bruteforcing "%s".' % freq_url
                 om.out.information( msg )
 
 
@@ -179,7 +179,7 @@ class formAuthBrute(baseBruteforcePlugin):
             body = body.replace(passwd, '')
             
             if not self._matchesFailedLogin(body):
-                raise w3afException('Failed to generate a response that ' \
+                raise w3afException('Failed to generate a response that '
                                     'matches the failed login page.')
     
     def _matchesFailedLogin(self, resp_body):
@@ -195,14 +195,12 @@ class formAuthBrute(baseBruteforcePlugin):
         else:
             # I'm happy! The response_body *IS NOT* a failed login page.
             return False
-        
+
     def _isLoginForm(self, freq):
         '''
         @return: True if this fuzzableRequest is a loginForm.
         '''
-        passwd = 0
-        text = 0
-        other = 0        
+        passwd = text = other = 0
         data_container = freq.getDc()
         
         if isinstance(data_container, form.form):
@@ -231,16 +229,16 @@ class formAuthBrute(baseBruteforcePlugin):
             #   These we don't
             #
             elif passwd == 2:
-                om.out.information( freq.getURL() + ' is a registration form.')
+                om.out.information(freq.getURL() + ' is a registration form.')
             elif passwd == 3:
-                om.out.information( freq.getURL() + ' is a password change form.')
+                om.out.information(freq.getURL() + ' is a password change form.')
             return False
                 
     def _getLoginFieldNames(self, freq):
         '''
-        @return: The names of the form fields where to input the user and the password.
-        Please remember that maybe user_parameter might be None, since we support
-        password only login forms.
+        @return: The names of the form fields where to input the user and the 
+            password. Please remember that maybe user_parameter might be None,
+            since we support password only login forms.
         '''
         data_container = freq.getDc()
         passwd_parameter = None
@@ -248,33 +246,34 @@ class formAuthBrute(baseBruteforcePlugin):
         
         for parameter_name in data_container:
                 
-            if data_container.getType( parameter_name ).lower() == 'password':
+            if data_container.getType(parameter_name).lower() == 'password':
                 passwd_parameter = parameter_name
             
-            elif data_container.getType( parameter_name ).lower() == 'text':
+            elif data_container.getType(parameter_name).lower() == 'text':
                 user_parameter = parameter_name
 
         return user_parameter, passwd_parameter
     
     def _true_extra_fields(self, data_container):
         '''
-        Some login forms have "extra" parameters. In some cases I've seen login forms
-        that have an "I agree with the terms and conditions" checkbox. If w3af does not
-        set that extra field to "true", even if I have the correct username and password
-        combination, it won't perform a successful login.
+        Some login forms have "extra" parameters. In some cases I've seen 
+        login forms that have an "I agree with the terms and conditions" 
+        checkbox. If w3af does not set that extra field to "true", even if 
+        I have the correct username and password combination, it won't 
+        perform a successful login.
         
-        @return: A data_container that has all fields (other than the username and password)
-        set to 1,
+        @return: A data_container that has all fields (other than the username
+            and password) set to 1,
         '''
         for parameter_name in data_container:
-            if parameter_name not in [self._user_field_name, self._passwd_field_name]:
+            if parameter_name not in (self._user_field_name, self._passwd_field_name):
                 data_container[parameter_name ][0] = 1
         return data_container
         
     def _bruteWorker(self, freq, combinations):
         '''
         @parameter freq: A fuzzableRequest
-        @parameter combinations: A list of tuples with (user,pass)
+        @parameter combinations: A list of tuples with (user, pass)
         '''
         
         def _doPOSTWithoutCookies(urlOpener, fuzz_req):
@@ -306,7 +305,10 @@ class formAuthBrute(baseBruteforcePlugin):
                 # TODO: This is a *hack*. This logic shouldn't be implemented
                 # in the plugin but in xUrllib,
                 urlOpener = xUrllib()
-                resp = _doPOSTWithoutCookies(urlOpener, freq)
+                try:
+                    resp = _doPOSTWithoutCookies(urlOpener, freq)
+                except w3afMustStopOnUrlError:
+                    return
                 
                 body = resp.getBody()
                 body = body.replace(username, '').replace(userpwd, '')
@@ -331,14 +333,14 @@ class formAuthBrute(baseBruteforcePlugin):
                             v.setPluginName(self.getName())
                             v.setURL(freq.getURL())
                             if self._user_field_name is not None:
-                                msg = 'Found authentication credentials to: ' \
-                                '"%s". A correct user and password combination ' \
-                                'is: %s/%s' % (freq_url, username, userpwd)
+                                msg = ('Found authentication credentials to: '
+                                '"%s". A correct user and password combination'
+                                ' is: %s/%s' % (freq_url, username, userpwd))
                             else:
                                 # There is no user field!
-                                msg = 'Found authentication credentials to: ' \
-                                '"%s". The correct password is: "%s".' \
-                                % (freq_url, userpwd)
+                                msg = ('Found authentication credentials to: '
+                                '"%s". The correct password is: "%s".'
+                                % (freq_url, userpwd))
         
                             v.setDesc(msg)
                             v['user'] = username

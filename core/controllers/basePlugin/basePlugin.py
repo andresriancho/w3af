@@ -20,13 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
-from core.controllers.threads.threadManager import threadManagerObj as tm
-from core.controllers.configurable import configurable
-import core.data.kb.vuln as vuln
-
+import sys
 import threading
+
+from core.controllers.configurable import configurable
+from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
+import core.controllers.outputManager as om
+import core.data.kb.vuln as vuln
 
 
 class basePlugin(configurable):
@@ -64,7 +65,7 @@ class basePlugin(configurable):
         
         @return: No value is returned.
         '''
-        self._urlOpener = urlOpener
+        self._urlOpener = UrlOpenerProxy(urlOpener, self)
         
 
     def setOptions( self, optionsMap ):
@@ -167,8 +168,8 @@ class basePlugin(configurable):
             else:
                 om.out.information( i.getDesc() )
             
-    def _sendMutant(self, mutant, analyze=True, grepResult=True, 
-                     analyze_callback=None, useCache=True):
+    def _sendMutant(self, mutant, analyze=True, grepResult=True,
+                    analyze_callback=None, useCache=True):
         '''
         Sends a mutant to the remote web server.
         '''
@@ -191,9 +192,8 @@ class basePlugin(configurable):
         
         functor = getattr( self._urlOpener , method )
         # run functor , run !   ( forest gump flash )
-        res = apply(functor, args,
-                    {'data': data, 'headers': headers,
-                     'grepResult': grepResult, 'useCache': useCache})
+        res = functor(*args, data=data, headers=headers,
+                      grepResult=grepResult, useCache=useCache)
         
         if analyze:
             if analyze_callback:
@@ -233,3 +233,39 @@ class basePlugin(configurable):
 
     def getName( self ):
         return self.__class__.__name__
+
+    def handleUrlError(self, url_error):
+        '''
+        Handle UrlError exceptions raised when requests are made. Subclasses
+        should redefine this method for a more refined behavior.
+        
+        @param url_error: w3afMustStopOnUrlError exception instance
+        @return: True if the exception should be stopped by the caller.
+        '''
+        om.out.error('There was an error while requesting "%s". Reason: %s' % 
+                     (url_error.req.get_full_url(), url_error.msg))
+
+
+class UrlOpenerProxy(object):
+    '''
+    Proxy class for urlopener objects such as xUrllib instances.
+    '''
+    
+    def __init__(self, url_opener, plugin_inst):
+        self._url_opener = url_opener
+        self._plugin_inst = plugin_inst
+    
+    def __getattr__(self, name):
+        def meth(*args, **kwargs):
+            try:
+                return attr(*args, **kwargs)
+            except w3afMustStopOnUrlError, w3aferr:
+                try:
+                    exc_info = sys.exc_info()
+                    if not self._plugin_inst.handleUrlError(w3aferr):
+                        raise exc_info[0], exc_info[1], exc_info[2]
+                finally:
+                    del exc_info
+        attr = getattr(self._url_opener, name)
+        return meth if callable(attr) else attr
+    

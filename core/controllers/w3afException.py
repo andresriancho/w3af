@@ -32,6 +32,7 @@ class w3afException(Exception):
     def __str__(self):
         return self.value
 
+
 class w3afRunOnce(Exception):
     '''
     A small class that defines an exception to be raised by plugins that dont want to be runned anymore.
@@ -42,16 +43,18 @@ class w3afRunOnce(Exception):
     
     def __str__(self):
         return self.value
+
         
 class w3afFileException(Exception):
     '''
     A small class that defines a w3af File Exception.
     '''
     pass
-    
+
+
 class w3afMustStopException(Exception):
     '''
-    If this exception is catched by the core, then it should stop the whole 
+    If this exception is caught by the core, then it should stop the whole 
     process. This exception is raised in a few places. NOT to be used
     extensively.
     '''
@@ -62,6 +65,21 @@ class w3afMustStopException(Exception):
     def __str__(self):
         return self.msg + '\n'.join(self.errs)
     __repr__ = __str__
+
+
+class w3afMustStopOnUrlError(w3afMustStopException):
+    
+    def __init__(self, urlerr, req):
+        reason = urlerr.reason
+        if type(reason) is str:
+            ec, em = None, reason
+        else:
+            ec, em = reason[0], reason[1]
+        # Call parent's __init__
+        w3afMustStopException.__init__(self, em)
+        self.errcode = ec
+        self.req = req
+
 
 class w3afMustStopByKnownReasonExc(w3afMustStopException):
 
@@ -77,6 +95,7 @@ class w3afMustStopByKnownReasonExc(w3afMustStopException):
 
 
 class w3afMustStopByUnknownReasonExc(w3afMustStopException):
+    
     def __str__(self):
         _str = self.msg
 
@@ -84,6 +103,7 @@ class w3afMustStopByUnknownReasonExc(w3afMustStopException):
             _str += '\n' + error_str + ' ' + str(parsed_traceback)
 
         return _str
+
 
 class w3afProxyException(w3afException):
     '''
