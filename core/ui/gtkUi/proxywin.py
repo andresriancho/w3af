@@ -279,8 +279,10 @@ class ProxiedRequests(entries.RememberingWindow):
         # if nothing to send
         if not request:
             return
+
         headers = request.dumpRequestHead()
         data = request.getData()
+        
         if data:
             data = str(data)
         try:
