@@ -273,8 +273,9 @@ class pykto(baseDiscoveryPlugin):
                         # But I do want is to avoid URLs like this one being generated:
                         # http://localhost//f00
                         # (please note the double //)
-                        if query[0] == '/' == url.getPath()[-1]:
-                            query = query[1:]
+                        if len( query ) != 0 and len( url.getPath() ) != 0:
+                            if query[0] == '/' == url.getPath()[-1]:
+                                query = query[1:]
                             
                         modified_url.setPath( modified_url.getPath() + query )
                         
