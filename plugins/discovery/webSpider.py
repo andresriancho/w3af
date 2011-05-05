@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 
 import core.data.parsers.dpCache as dpCache
 from core.data.parsers.urlParser import url_object
@@ -238,14 +238,16 @@ class webSpider(baseDiscoveryPlugin):
             
         return True
     
-    def _verify_reference( self, reference, original_request, originalURL, possibly_broken ):
+    def _verify_reference(self, reference, original_request,
+                          originalURL, possibly_broken):
         '''
-        This method GET's every new link and parses it in order to get new links and forms.
+        This method GET's every new link and parses it in order to get
+        new links and forms.
         '''
         fuzzable_request_list = []
         is_forward = self._is_forward(reference)
         if not self._only_forward or is_forward:
-            response = None
+            resp = None
             #
             #   Remember that this "breaks" the useCache=True in most cases!
             #
@@ -259,22 +261,22 @@ class webSpider(baseDiscoveryPlugin):
             headers = { 'Referer': referer }
             
             try:
-                response = self._urlOpener.GET( reference, useCache=True, headers= headers)
+                resp = self._urlOpener.GET(reference, useCache=True, headers=headers)
             except KeyboardInterrupt,e:
                 raise e
-            except w3afException,w3:
-                om.out.error( str(w3) )
+            except w3afMustStopOnUrlError:
+                pass
             else:
                 # Note: I WANT to follow links that are in the 404 page, but if the page
                 # I fetched is a 404... I should ignore it.
-                if is_404( response ):
+                if is_404(resp):
                     #
                     # add_self == False, because I don't want to return a 404 to the core
                     #
-                    fuzzable_request_list = self._createFuzzableRequests( response, 
-                                                                request=original_request, add_self = False)
+                    fuzzable_request_list = self._createFuzzableRequests(resp,
+                                     request=original_request, add_self=False)
                     if not possibly_broken:
-                        self._brokenLinks.append( (response.getURL(), original_request.getURI()) )
+                        self._brokenLinks.append((resp.getURL(), original_request.getURI()))
                 else:
                     if possibly_broken:
                         #
@@ -309,7 +311,7 @@ class webSpider(baseDiscoveryPlugin):
                             
                             check_response = self._urlOpener.GET( new_reference, useCache=True,
                                                                   headers= headers)
-                            resp_body = response.getBody()
+                            resp_body = resp.getBody()
                             check_resp_body = check_response.getBody()
 
                             if relative_distance_ge(resp_body,
@@ -321,11 +323,11 @@ class webSpider(baseDiscoveryPlugin):
                             else:
                                 # The URL was possibly_broken, but after testing we found out that
                                 # it was not, so not we use it!
-                                om.out.debug('Adding relative reference "' + reference + '" to the response.')
-                                fuzzable_request_list.extend( self._createFuzzableRequests( response, request=original_request ) )
+                                om.out.debug('Adding relative reference "' + reference + '" to the resp.')
+                                fuzzable_request_list.extend( self._createFuzzableRequests( resp, request=original_request ) )
                 
                     else: # Not possibly_broken:
-                        fuzzable_request_list = self._createFuzzableRequests( response, request=original_request )
+                        fuzzable_request_list = self._createFuzzableRequests( resp, request=original_request )
                 
                 # Process the list.
                 for fuzzableRequest in fuzzable_request_list:
