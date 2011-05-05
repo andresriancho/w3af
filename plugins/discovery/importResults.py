@@ -215,7 +215,9 @@ class importResults(baseDiscoveryPlugin):
                     scheme = None
                     port   = None
 
-                res.append( createFuzzableRequestRaw( method, url, postdata, headers ) )
+                url_instance = url_object(url)
+
+                res.append( createFuzzableRequestRaw( method, url_instance, postdata, headers ) )
                 
         return res
         
