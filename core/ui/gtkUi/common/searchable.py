@@ -194,6 +194,14 @@ class Searchable(object):
 
     def highlight(self, text, tag='yellow-background', case_sensitive=True):
         """Find the text, and handle highlight."""
+        
+        # Before searching, I clean the text parameter, as it might contain
+        # null bytes, which will trigger an error like:
+        # TypeError: GtkTextIter.forward_search() argument 1 must be string without null bytes, not str
+        text = text.replace('\x00','')
+        # TODO: Will the highlighting succeed? How's the text with \0's actually
+        # printed in the textview? 
+        
         flags = gtk.TEXT_SEARCH_VISIBLE_ONLY
         startIter =  self.textbuf.get_start_iter()
         # find the positions where the phrase is found
