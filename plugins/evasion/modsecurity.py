@@ -71,7 +71,7 @@ class modsecurity(baseEvasionPlugin):
 
         '''
         # Mangle the postdata
-        data = request.get_data()
+        data = str(request.get_data())
         if data:
             
             try:
@@ -84,7 +84,7 @@ class modsecurity(baseEvasionPlugin):
                 headers_copy = copy.deepcopy(request.headers)
                 headers_copy['content-length'] = str(len(data))
                 
-                request = HTTPRequest( request.url_object , data, headers_copy, 
+                request = HTTPRequest( request.url_object, data, headers_copy, 
                                        request.get_origin_req_host() )
                 
         return request
