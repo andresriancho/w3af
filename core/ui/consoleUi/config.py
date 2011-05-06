@@ -88,15 +88,16 @@ class configMenu(menu):
 
             self._options[name].setValue( value )
             self._plainOptions[name] = value
-            
-            if value not in self._memory[name]:
-                self._memory[name].append(value)
-                
+                            
             if isinstance( self._configurable, basePlugin ):
                 self._w3af.setPluginOptions( self._configurable.getType(), self._configurable.getName(), self._options )
+                if value not in self._memory[name]:
+                    self._memory[name].append(value)                
             else:
                 try:
                     self._configurable.setOptions( self._options )
+                    if value not in self._memory[name]:
+                        self._memory[name].append(value)                    
                 except w3afException, w3:
                     om.out.error( str(w3) )
 
