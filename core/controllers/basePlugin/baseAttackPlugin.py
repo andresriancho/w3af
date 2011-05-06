@@ -22,11 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
-import core.controllers.outputManager as om
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-import copy
-import core.data.kb.knowledgeBase as kb
 from core.controllers.misc.commonAttackMethods import commonAttackMethods
+import core.controllers.outputManager as om
+
+from core.data.parsers.urlParser import url_object
+import core.data.request.httpPostDataRequest as httpPostDataRequest
+import core.data.kb.knowledgeBase as kb
+
+import copy
+
 
 class baseAttackPlugin(basePlugin, commonAttackMethods):
     '''
@@ -155,6 +159,9 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
             if vulnToExploit is not None:
                 if vulnToExploit != vuln.getId():
                     continue
+                
+            if not isinstance( vuln.getURL(), url_object):
+                continue
                     
             # Try to get a shell using a vuln
             s = self._generateShell(vuln)
