@@ -88,9 +88,10 @@ class configMenu(menu):
 
             self._options[name].setValue( value )
             self._plainOptions[name] = value
-            mem = self._memory[name]
-            if value not in mem:
-                mem.append(value)
+            
+            if value not in self._memory[name]:
+                self._memory[name].append(value)
+                
             if isinstance( self._configurable, basePlugin ):
                 self._w3af.setPluginOptions( self._configurable.getType(), self._configurable.getName(), self._options )
             else:
