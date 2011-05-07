@@ -220,7 +220,7 @@ class xssBeef(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._beefURL = optionsMap['beefURL'].getValue()
+        self._beefURL = url_object( optionsMap['beefURL'].getValue() )
         self._beefPasswd = optionsMap['beefPasswd'].getValue()
 
         if self._beefPasswd == '':
