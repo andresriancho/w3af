@@ -127,6 +127,18 @@ class form(dataContainer):
     def __str__( self ):
         '''
         This method returns a string representation of the form Object.
+        
+        >>> f = form()
+        >>> _ = f.addInput( [("type", "text") , ("name", "abc") , ("value", "123")] )
+        >>> str(f)
+        'abc=123'
+
+        >>> f = form()
+        >>> _ = f.addInput( [("type", "text") , ("name", "abc") , ("value", "123")] )
+        >>> _ = f.addInput( [("type", "text") , ("name", "def") , ("value", "000")] )        
+        >>> str(f)
+        'abc=123&def=000'
+
         @return: string representation of the form Object.
         '''
         tmp = self.copy()

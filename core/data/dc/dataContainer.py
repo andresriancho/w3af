@@ -55,6 +55,14 @@ class dataContainer(dict):
         '''
         This method returns a string representation of the dataContainer Object.
         
+        >>> dc = dataContainer( [('a','1') , ('b', ['2','3']) ] )
+        >>> str(dc)
+        'a=1&b=2&b=3'
+        
+        >>> dc = dataContainer( [('a','1') , ('b', '2') ] )
+        >>> str(dc)
+        'a=1&b=2'
+
         @return: string representation of the dataContainer Object.
         '''
         return urlencode( self )
