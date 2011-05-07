@@ -100,10 +100,7 @@ class proxy(w3afThread):
         try:
             self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
         except socket.error, se:
-            if se[0] == 98:
-                raise w3afProxyException('Address already in use ' + self._ip + ':' + str(self._port))
-            else:
-                raise w3afException(str(se))
+            raise w3afProxyException('Socket error while starting proxy: "%s"' % se.strerror)
     
     def getBindIP( self ):
         '''
