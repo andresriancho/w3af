@@ -329,6 +329,9 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def _toggle_trap(self, widget):
         """Toggle the trap flag."""
+        if self.proxy is None:
+            return
+        
         trapactive = widget.get_active()
         self.proxy.setTrap(trapactive)
         # Send all requests in queue if Intercept is switched off
