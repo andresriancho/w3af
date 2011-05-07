@@ -53,9 +53,9 @@ class fuzzableRequest(object):
     def __init__(self):
         
         # Internal variables
-        self._url = ''
-        self._method = 'GET'
+        self._url = None
         self._uri = None
+        self._method = 'GET'
         self._data = ''
         self._headers = {}
         self._cookie = None
