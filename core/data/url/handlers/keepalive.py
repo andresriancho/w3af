@@ -690,6 +690,7 @@ class KeepAliveHandler:
         try:
             if req.has_data():
                 data = req.get_data()
+                data = str(data)
                 conn.putrequest(req.get_method(), req.get_selector(),
                                 skip_host=1, skip_accept_encoding=1)
 
