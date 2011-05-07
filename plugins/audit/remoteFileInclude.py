@@ -97,11 +97,13 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         @return: True if the plugin is correctly configured to run.
         '''
+        if self._use_w3af_site:
+            return True
+        
         listen_address = self._listen_address
-        if not listen_address:
-            if not self._use_w3af_site:
-                return False
-        else:
+        listen_port = self._listen_port
+        
+        if listen_address and listen_port:
             with self._plugin_lock:
                 # If we have an active instance then we're OK!
                 if webserver.is_running(listen_address, 
