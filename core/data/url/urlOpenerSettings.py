@@ -245,6 +245,8 @@ class urlOpenerSettings( configurable ):
         return cf.cf.getData('proxyAddress') + ':' + str(cf.cf.getData('proxyPort'))
         
     def setBasicAuth( self, url, username, password ):
+        om.out.debug( 'Called SetBasicAuth')
+        
         if not url:
             msg = 'To properly configure the basic authentication settings, you'
             msg += ' should also set the auth domain. If you are unsure, you can'
@@ -253,16 +255,13 @@ class urlOpenerSettings( configurable ):
         
         cf.cf.save('basicAuthPass',  password)
         cf.cf.save('basicAuthUser', username )
-        cf.cf.save('basicAuthDomain', url )            
-        
-        om.out.debug( 'Called SetBasicAuth')
+        cf.cf.save('basicAuthDomain', url )
         
         if not hasattr( self, '_password_mgr' ):
             # Create a new password manager
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
         # Add the username and password
-        url = url_object(url)
         domain = url.getDomain()
         protocol = url.getProtocol()
         protocol = protocol if protocol in ('http', 'https') else 'http'
@@ -491,15 +490,16 @@ class urlOpenerSettings( configurable ):
         if optionsMap['basicAuthDomain'].getValue() != cf.cf.getData('basicAuthDomain') or\
         optionsMap['basicAuthUser'].getValue() != cf.cf.getData('basicAuthUser') or\
         optionsMap['basicAuthPass'].getValue() != cf.cf.getData('basicAuthPass'):
-            self.setBasicAuth( optionsMap['basicAuthDomain'].getValue(),
-                                        optionsMap['basicAuthUser'].getValue(),
-                                        optionsMap['basicAuthPass'].getValue()  )
+            self.setBasicAuth( url_object( optionsMap['basicAuthDomain'].getValue() ),
+                               optionsMap['basicAuthUser'].getValue(),
+                               optionsMap['basicAuthPass'].getValue() )
         
         if optionsMap['ntlmAuthUser'].getValue() != cf.cf.getData('ntlmAuthUser') or\
         optionsMap['ntlmAuthPass'].getValue() != cf.cf.getData('ntlmAuthPass') or\
         optionsMap['ntlmAuthURL'].getValue() != cf.cf.getData('ntlmAuthURL'):
-            self.setNtlmAuth( optionsMap['ntlmAuthURL'].getValue(), optionsMap['ntlmAuthUser'].getValue() ,
-                              optionsMap['ntlmAuthPass'].getValue())
+            self.setNtlmAuth( optionsMap['ntlmAuthURL'].getValue(),
+                              optionsMap['ntlmAuthUser'].getValue(),
+                              optionsMap['ntlmAuthPass'].getValue() )
 
         # Only apply changes if they exist
         if optionsMap['proxyAddress'].getValue() != cf.cf.getData('proxyAddress') or\
