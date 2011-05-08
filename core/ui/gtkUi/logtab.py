@@ -26,6 +26,7 @@ from . import messages, entries
 import core.data.constants.severity as severity
 import time
 import pango
+import itertools
 
 # margins (they have to be > 10)
 MIZQ = 20
@@ -169,7 +170,7 @@ class LogGraph(gtk.DrawingArea):
         pixelQuant = 0
         mesind = 0
         while True:
-            for (mmseg, mtype, sever) in self.all_messages[mesind:]:
+            for (mmseg, mtype, sever) in itertools.islice( self.all_messages, mesind, None, None ):
                 mesind += 1
                 pixel = (mmseg - self.timeBase) // self.timeGrouping
                 posx = self.realLeftMargin + pixel
