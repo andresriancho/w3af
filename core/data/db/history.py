@@ -171,10 +171,9 @@ class HistoryItem(object):
         self.responseSize = int(row[10])
 
     def _loadFromFile(self, id):
-        with open(os.path.join(self._sessionDir, str(id) + self._ext), 'rb') as rrfile:
-            data = rrfile.read()
-        f = StringIO(data)
-        req, res = Unpickler(f).load()
+        rrfile = open(os.path.join(self._sessionDir, str(id) + self._ext), 'rb')
+        req, res = Unpickler(rrfile).load()
+        rrfile.close()
         return (req, res)
 
     def delete(self, id=None):
@@ -252,12 +251,10 @@ class HistoryItem(object):
         # 
         # Save raw data to file
         # 
-        f = StringIO()
-        p = Pickler(f)
+        rrfile = open(os.path.join(self._sessionDir, str(self.response.id) + self._ext), 'wb')
+        p = Pickler(rrfile)
         p.dump((self.request, self.response))
-        with open(os.path.join(self._sessionDir, str(self.response.id) + self._ext), 'wb') as rrfile:
-            rrfile.write(f.getvalue())
-            rrfile.flush()
+        rrfile.close()
         return True
 
     def getColumns(self):
