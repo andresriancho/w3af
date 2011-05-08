@@ -411,6 +411,39 @@ class w3afCore(object):
         self.uriOpener.pause( pauseYesNo )
         om.out.debug('The user paused/unpaused the scan.')
 
+    def _get_time_string(self):
+        '''
+        @return: A string that represents in weeks/days/hours/minutes/seconds
+        how much time the scan lasted.
+        '''
+        time_diff = time.time() - self._discovery_start_time_epoch
+        time_delta = datetime.timedelta(seconds=time_diff)
+
+        weeks, days = divmod(time_delta.days, 7)
+
+        minutes, seconds = divmod(time_delta.seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+
+        msg = ''
+
+        if weeks == days == hours == minutes == seconds == 0:
+            msg += '0 seconds.'
+        else:
+            if weeks:
+                msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
+            if days:
+                msg += str(days) + ' day%s ' % ('s' if days > 1 else '')
+            if hours:
+                msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
+            if minutes:
+                msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+            if seconds:
+                msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
+            msg += '.'
+        
+        return msg
+
+        
     def start(self):
         '''
         The user interfaces call this method to start the whole scanning
@@ -421,6 +454,12 @@ class w3afCore(object):
         try:
             try:
                 self._realStart()
+            except MemoryError:
+                msg = 'Python threw a MemoryError, this means that your'
+                msg += ' OS is running very low in memory. w3af is going'
+                msg += ' to stop.'
+                om.out.error( msg )
+                raise
             except w3afMustStopByUnknownReasonExc:
                 #
                 # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
@@ -437,32 +476,9 @@ class w3afCore(object):
                              traceback.format_exc()) 
                 raise
             else:
-                time_diff = time.time() - self._discovery_start_time_epoch
-                time_delta = datetime.timedelta(seconds=time_diff)
-
-                weeks, days = divmod(time_delta.days, 7)
-
-                minutes, seconds = divmod(time_delta.seconds, 60)
-                hours, minutes = divmod(minutes, 60)
-
-                msg =  'Scan finished in '
-
-                if weeks == days == hours == minutes == seconds == 0:
-                    msg += '0 seconds.'
-                else:
-                    if weeks:
-                        msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
-                    if days:
-                        msg += str(days) + ' day%s ' % ('s' if days > 1 else '')
-                    if hours:
-                        msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
-                    if minutes:
-                        msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
-                    if seconds:
-                        msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
-                    msg += '.'
-
+                msg =  'Scan finished in ' + self._get_time_string()
                 om.out.information( msg )
+                
         finally:
             self.progress.stop()
             
