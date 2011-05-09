@@ -366,6 +366,7 @@ class bug_report_window(simple_base_window, sourceforge_bug_report):
         self.label.select_region(0, 0)
     
     def report_bug(self, widg):
+        self.butt_send.set_sensitive(False)
         sourceforge_bug_report.report_bug(self)
     
     def _display_result(self, bug_url):

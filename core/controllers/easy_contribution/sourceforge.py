@@ -32,9 +32,13 @@ import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 class sourceforge(object):
     
     # URLs
+    LOGGED_IN_PROTOCOL = 'https'
+    ANON_PROTOCOL = 'http'
+    
     LOGIN_PAGE = 'https://sourceforge.net/account/login.php'
-    NEW_TKT_URL = 'https://sourceforge.net/apps/trac/w3af/newticket'
-    CREATED_TKT = 'https://sourceforge.net/apps/trac/w3af/ticket/'
+    NEW_TKT_URL = '://sourceforge.net/apps/trac/w3af/newticket'
+    CREATED_TKT = 'http://sourceforge.net/apps/trac/w3af/ticket/'
+    
     # Error report body
     WIKI_DETAILS_TEMPLATE = string.Template(
 '''== User description: ==
@@ -56,7 +60,8 @@ $plugins
     # Form token regex
     FORM_TOKEN_RE = 'name="__FORM_TOKEN"\svalue="(\w*?)"'
     # Created ticket regex
-    NEW_TICKET_RE = 'Add\sAttachment\sto\s<a href="/apps/trac/w3af/ticket/(\d*?)">Ticket'
+    NEW_TICKET_RE = '://sourceforge.net/apps/trac/w3af/attachment/ticket/(\d*?)\?action=new'
+    NEW_ATTACHMENT_URL_FORMAT = 'http://sourceforge.net/apps/trac/w3af/attachment/ticket/%s/?action=new&attachfilebutton=Attach+file'
     
     def __init__(self):
         '''
@@ -67,10 +72,23 @@ $plugins
         '''
         # Internal variables
         self.logged_in = False
+        self.logged_in_user = 'anonymous'
         
         # Init the urllib2 module
         self._init_urllib2_handlers()
-        
+    
+    def get_new_ticket_url(self):
+        if self.logged_in:
+            return self.LOGGED_IN_PROTOCOL + self.NEW_TKT_URL
+        else:
+            return self.ANON_PROTOCOL + self.NEW_TKT_URL
+    
+    def get_ticket_re(self):
+        if self.logged_in:
+            return self.LOGGED_IN_PROTOCOL + self.NEW_TICKET_RE
+        else:
+            return self.ANON_PROTOCOL + self.NEW_TICKET_RE
+    
     def _init_urllib2_handlers(self):
         # Build the cookie handler
         cj = cookielib.LWPCookieJar()
@@ -78,9 +96,9 @@ $plugins
         
         # Build the multipart post handler
         multi_handler = MultipartPostHandler.MultipartPostHandler()
+        redir_handler = urllib2.HTTPRedirectHandler()
         
-        opener = apply(urllib2.build_opener, (multi_handler,cookie_handler) )
-        urllib2.install_opener(opener)
+        self.opener = apply(urllib2.build_opener, (multi_handler,cookie_handler,redir_handler) )
 
     def login(self, user, passwd):
         '''
@@ -93,6 +111,13 @@ $plugins
         @parameter passwd: The password
         
         @return: True if successful login, false otherwise.
+        
+        >>> sf = sourceforge()
+        >>> sf.login('fake','12345')
+        False
+        >>> sf.login('unittest','unittest12345')
+        True
+           
         '''
         values = {'return_to': '',
             'ssl_status': '',
@@ -105,7 +130,10 @@ $plugins
             return False
         else:
             self.logged_in = 'Invalid username or password' not in resp.read()
+            if self.logged_in:
+                self.logged_in_user = user
             return self.logged_in
+        
             
     def report_bug(self, summary, userdesc, tback='', fname=None,
                    plugins='', autogen=True, user=None):
@@ -124,11 +152,41 @@ $plugins
         
         @return: The new ticket URL if the bug report was successful, or None
             if something failed.
+        
+        Without logging in:
+        >>> sf = sourceforge()
+        >>> summary = 'Unittest bug report'
+        >>> userdesc = 'Please mark this ticket as invalid' 
+        >>> ticket_url = sf.report_bug(summary,userdesc)
+        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
+        True
+
+        Logged in:
+        >>> sf = sourceforge()
+        >>> sf.login('unittest','unittest12345')
+        True
+        >>> summary = 'Unittest bug report'
+        >>> userdesc = 'Please mark this ticket as invalid' 
+        >>> ticket_url = sf.report_bug(summary,userdesc)
+        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
+        True
+
         '''
         
-        m = hashlib.md5()
-        m.update(time.ctime())
-        random = m.hexdigest()
+        # Which summary should I use?
+        if summary:
+            bug_summary = summary
+        else:
+            # Try to extract the last line from the traceback:
+            if tback:
+                bug_summary = tback.split('\n')[-2]
+            else:
+                # Failed... lets generate something random!
+                m = hashlib.md5()
+                m.update(time.ctime())
+                bug_summary = m.hexdigest()
+        
+        
         from core.ui.gtkUi.exception_handler import VERSIONS
         
         bdata = {'plugins': plugins, 't_back': tback,
@@ -138,12 +196,12 @@ $plugins
         # token to avoid the double click protection added by sourceforge.
         summary = '%sBug Report - %s' % (
                     autogen and '[Auto-Generated] ' or '',
-                    summary or random)
+                    bug_summary)
         
         # Build details string
         details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
-        resp = self._do_request(self.NEW_TKT_URL)
-        form_token = self._get_match_from_response(resp, self.FORM_TOKEN_RE) or ''
+        resp = self._do_request( self.get_new_ticket_url() )
+        form_token = self._get_match_from_response(resp.read(), self.FORM_TOKEN_RE) or ''
         
         values = {
             'field_component': 'automatic-bug-report',
@@ -159,20 +217,24 @@ $plugins
             'attachment': 'off',
             'submit': 'Create ticket'}
 
-        resp = self._do_request(self.NEW_TKT_URL, values)
-        # If evrything went well a ticket_id must be present        
-        ticket_id = self._get_match_from_response(resp, self.NEW_TICKET_RE)
+        resp = self._do_request( self.get_new_ticket_url(), values)
+        
+        # If everything went well a ticket_id must be present
+        match = re.search( self.get_ticket_re() , resp.geturl() )
+        if match:
+            ticket_id = match.group(1)
 
-        if ticket_id:
             if fname:
-                attach_file_url = resp.geturl()
-                self._attach_file(attach_file_url, ticket_id, fname, form_token)
+                NEW_ATTACHMENT_URL = self.NEW_ATTACHMENT_URL_FORMAT % ticket_id
+                self._attach_file(NEW_ATTACHMENT_URL, ticket_id, fname, form_token)
+                
             return self.CREATED_TKT + ticket_id
         
         return None
         
     def _attach_file(self, url, ticket_id, filename, form_token):
-        '''Attach file to ticket <ticket_id>
+        '''
+        Attach file to ticket <ticket_id>
         '''
         values = {
             'attachment': [file(filename)],
@@ -181,26 +243,29 @@ $plugins
             'realm': ['ticket'],
             '__FORM_TOKEN': [form_token],
             'id': [ticket_id],
+            'author': [self.logged_in_user],
             'submit': ['Add attachment']}
         
         req = urllib2.Request(url, values)
-        urllib2.urlopen(req)
+        req.add_header( 'Referer', url )
+        self.opener.open(req)
+        
     
-    def _get_match_from_response(self, response, pattern):
+    def _get_match_from_response(self, response_body, pattern):
         '''Try to match <pattern> in the response's body. Return the 
         matched string. If no match is found return None.
         '''
-        the_page = response.read()
-        mo = re.search(pattern, the_page)
+        mo = re.search(pattern, response_body)
         return (mo.groups()[0] if mo else None)
 
     def _do_request(self, url, data=None):
-        '''Do request to <url> using <data>.
+        '''
+        Perform request to <url> using <data>.
         Raises URLError on errors.
         '''
         if data:
             data = urllib.urlencode(data)
 
         req = urllib2.Request(url, data)
-        resp = urllib2.urlopen(req)
+        resp = self.opener.open(req)
         return resp
