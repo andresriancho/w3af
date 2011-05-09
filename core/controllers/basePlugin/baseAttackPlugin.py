@@ -56,13 +56,13 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
     def fastExploit(self, url ):
         '''
         '''
-        raise w3afException('Plugin is not implementing required method fastExploit' )
+        raise NotImplementedError('Plugin is not implementing required method fastExploit' )
         
     def _generateShell( self, vuln ):
         '''
         @parameter vuln: The vulnerability object to exploit.
         '''
-        raise w3afException('Plugin is not implementing required method _generateShell' )
+        raise NotImplementedError('Plugin is not implementing required method _generateShell' )
         
     def getExploitableVulns(self):
         return kb.kb.getData( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
@@ -92,7 +92,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''
-        raise w3afException('Plugin is not implementing required method getAttackType' )
+        raise NotImplementedError('Plugin is not implementing required method getAttackType' )
 
     def GET2POST( self, vuln ):
         '''
@@ -126,7 +126,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
         return a root shell.
         '''
-        raise w3afException( 'Plugin is not implementing required method getRootProbability' )
+        raise NotImplementedError( 'Plugin is not implementing required method getRootProbability' )
         
     def getType( self ):
         return 'attack'
@@ -141,7 +141,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
         return 'osCommanding' in this method.
         '''
-        raise w3afException( 'Plugin is not implementing required method getVulnName2Exploit' )
+        raise NotImplementedError( 'Plugin is not implementing required method getVulnName2Exploit' )
     
     def exploit( self, vulnToExploit=None):
         '''
@@ -160,7 +160,17 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
                 if vulnToExploit != vuln.getId():
                     continue
                 
+            #
+            #   A couple of minor verifications before continuing to exploit a vulnerability
+            #                
             if not isinstance( vuln.getURL(), url_object):
+                msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an URL.'
+                om.out.debug( msg % (self.getName(), vuln.getId()) )
+                continue
+
+            if not isinstance( vuln.getMethod(), basestring):
+                msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an HTTP method.'
+                om.out.debug( msg % (self.getName(), vuln.getId()) )
                 continue
                     
             # Try to get a shell using a vuln
