@@ -200,6 +200,7 @@ class eval(baseAuditPlugin):
                         # The first delay existed... I must report something...
                         i = info.info()
                         i.setPluginName(self.getName())
+                        i.setMethod( mutant.getMethod() )
                         i.setURI( mutant.getURI() )
                         i.setId( response.id )
                         i.setDc( mutant.getDc() )
