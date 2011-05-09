@@ -339,7 +339,7 @@ class SQLCachedResponse(CachedResponse):
     
         req = createFuzzableRequestRaw(method=request.get_method(),
                                       url=request.url_object,
-                                      postData=request.get_data(),
+                                      postData=str(request.get_data()),
                                       headers=headers)
         hi.request = req
 
