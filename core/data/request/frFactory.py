@@ -32,7 +32,7 @@ except:
 
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.urlParser import url_object, parse_qs
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 import core.data.request.httpQsRequest as httpQsRequest
 import core.data.request.wsPostDataRequest as wsPostDataRequest
@@ -241,8 +241,7 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     # NOT a JSON or XMLRPC request!, let's try the simple url encoded post data...
     #
     try:
-        tmp_url = url_object('http://w3af/?' + postData)
-        dc = tmp_url.getQueryString()
+        dc = parse_qs(postData)
         pdr.setDc( dc )
     except:
         om.out.debug('Failed to create a data container that can store this data: "' + postData + '".')
