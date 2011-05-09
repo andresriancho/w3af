@@ -211,6 +211,16 @@ class url_object(object):
 
     @property
     def url_string(self):
+        '''
+        @return: A string representation of the URL
+        
+        >>> u = url_object('http://www.google.com/foo/bar.txt?id=1')
+        >>> u.url_string
+        'http://www.google.com/foo/bar.txt?id=1'
+        >>> u.url_string
+        'http://www.google.com/foo/bar.txt?id=1'
+        
+        '''
         if self._changed or self._already_calculated_url is None:
             self._already_calculated_url = urlparse.urlunparse( (self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment) )
             self._changed = False
