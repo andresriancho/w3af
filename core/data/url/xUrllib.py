@@ -310,7 +310,7 @@ class xUrllib(object):
         #
         #    Create and send the request
         #
-        if data is not None:
+        if data:
             uri = uri.copy()
             uri.setQueryString(str(data))
             

@@ -128,17 +128,16 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         Sends a fuzzable request to the remote web server.
         '''
-        url = fuzzReq.getURI()
+        uri = fuzzReq.getURI()
         data = fuzzReq.getData()
         headers = fuzzReq.getHeaders()
+        method = fuzzReq.getMethod()
         # Also add the cookie header.
         cookie = fuzzReq.getCookie()
         if cookie:
             headers['Cookie'] = str(cookie)
 
-        args = ( url, )
-        method = fuzzReq.getMethod()
-        
+        args = ( uri, )
         functor = getattr( self._urlOpener , method )
         # run functor , run !   ( forest gump flash )
         res = apply( functor, args, {'data': data, 'headers': headers, 'grepResult': True } ) 
