@@ -36,6 +36,7 @@ from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption
 from core.data.options.optionList import optionList
 
+
 class httpLogTab(entries.RememberingHPaned):
     '''A tab that shows all HTTP requests and responses made by the framework.
     @author: Andres Riancho ( andres.riancho@gmail.com )

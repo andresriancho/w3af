@@ -37,6 +37,7 @@ import core.controllers.outputManager as om
 from core.data.parsers.urlParser import url_object
 from core.data.request.fuzzableRequest import fuzzableRequest
 
+
 class proxy(w3afThread):
     '''
     This class defines a simple HTTP proxy, it is mainly used for "complex" plugins.
@@ -298,10 +299,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
 
             # most likely a GET request
-            qs = uri_instance.getQueryString()
             try:
                 httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod(uri_instance, data=str(qs), headers=self.headers,  grepResult=grep )
+                res = httpCommandMethod(uri_instance, data=None, headers=self.headers,  grepResult=grep )
             except w3afException, w:
                 traceback.print_exc()
                 om.out.error('The proxy request failed, error: ' + str(w) )

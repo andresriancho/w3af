@@ -34,6 +34,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 import time
 import re
 import Queue
+import traceback
 
 
 class w3afLocalProxyHandler(w3afProxyHandler):
@@ -54,7 +55,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 # Send the request to the remote webserver
                 res = self._sendFuzzableRequest(fuzzReq)
         except Exception, e:
-            self._sendError( e )
+            self._sendError( e, trace=str(traceback.format_exc()) )
         else:
             try:
                 self._sendToBrowser( res )
@@ -162,10 +163,10 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 fuzzReq.getMethod() not in self.server.w3afLayer._methodsToTrap:
             return False
 
-        if self.server.w3afLayer._whatNotToTrap.search(fuzzReq.getURL()):
+        if self.server.w3afLayer._whatNotToTrap.search( fuzzReq.getURL().url_string ):
             return False
 
-        if not self.server.w3afLayer._whatToTrap.search(fuzzReq.getURL()):
+        if not self.server.w3afLayer._whatToTrap.search( fuzzReq.getURL().url_string ):
             return False
 
         return True
