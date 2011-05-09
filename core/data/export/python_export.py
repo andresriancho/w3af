@@ -46,7 +46,7 @@ def python_export( request_string ):
     # Now I do the real magic...
     res = 'import urllib2\n\n'
     
-    res += 'url = "' + python_escape_string(http_request.getURI()) + '"\n'
+    res += 'url = "' + python_escape_string(http_request.getURI().url_string) + '"\n'
     
     if http_request.getData() != '\n' and http_request.getData() is not None:
         escaped_data = python_escape_string(str(http_request.getData()) )

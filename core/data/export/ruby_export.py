@@ -46,7 +46,7 @@ def ruby_export( request_string ):
     # Now I do the real magic...
     res = 'require \'net/https\'\n\n'
     
-    res += 'url = URI.parse("' + ruby_escape_string(http_request.getURI()) + '")\n'
+    res += 'url = URI.parse("' + ruby_escape_string(http_request.getURI().url_string) + '")\n'
     
     if http_request.getData() != '\n' and http_request.getData() is not None:
         escaped_data = ruby_escape_string( str(http_request.getData()) )
@@ -67,7 +67,7 @@ def ruby_export( request_string ):
     method = http_request.getMethod()
     res += 'res = Net::HTTP.start(url.host, url.port) do |http|\n'
     res += '\thttp.use_ssl = '
-    if http_request.getURL()[:5] == 'https':
+    if http_request.getURL().getProtocol().lower() == 'https':
         res += 'true\n'
     else:
         res += 'false\n'

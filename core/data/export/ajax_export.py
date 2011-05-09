@@ -83,7 +83,7 @@ if (!xmlhttp && window.createRequest) {
     
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.getMethod() + '", "'
-    res +=  ajax_escape_string( http_request.getURI() ) + '",true);\n'
+    res +=  ajax_escape_string( http_request.getURI().url_string ) + '",true);\n'
 
     # For debugging
     res += '''
