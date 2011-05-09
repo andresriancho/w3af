@@ -264,7 +264,10 @@ class url_object(object):
         >>> u = url_object('http://www.google.com/foo/bar.txt?id=3&ff=4&id=5')
         >>> u.getQueryString()
         {'id': ['3', '5'], 'ff': ['4']}
-        
+        >>> qs = u.getQueryString()
+        >>> qs2 = parse_qs( str(qs) )
+        >>> qs == qs2
+        True
         '''
         return parse_qs( self.qs, ignoreExceptions=True )
     
