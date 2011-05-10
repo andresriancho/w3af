@@ -102,7 +102,7 @@ class FileLock(object):
         """
         self.release()
         
-class FileLockRead(object):
+class FileLockRead(FileLock):
     """ A file locking mechanism that has context-manager support so 
         you can use it in a with statement. This should be relatively cross
         compatible as it doesn't rely on msvcrt or fcntl for the locking.
@@ -112,6 +112,8 @@ class FileLockRead(object):
         Original recipe:
         http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/
     """
+    def __init__(self, file_name, timeout=10, delay=.05):
+        FileLock.__init__( self, file_name, timeout, delay )
   
     def acquire(self):
         """ 
