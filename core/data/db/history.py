@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 import os
+import time
 from shutil import rmtree
 
 try:
@@ -36,6 +37,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.FileLock import FileLock
 from core.data.db.db import DB, WhereHelper
 
 
@@ -171,10 +173,30 @@ class HistoryItem(object):
         self.responseSize = int(row[10])
 
     def _loadFromFile(self, id):
-        rrfile = open(os.path.join(self._sessionDir, str(id) + self._ext), 'rb')
-        req, res = Unpickler(rrfile).load()
-        rrfile.close()
-        return (req, res)
+        
+        fname = os.path.join(self._sessionDir, str(id) + self._ext)
+        #
+        #    Due to some concurrency issues, we need to perform this check
+        #    before we try to read the .trace file.
+        #
+        if not os.path.exists(fname):
+            
+            for _ in xrange( 1 / 0.05 ):
+                time.sleep(0.05)
+                if os.path.exists(fname):
+                    break
+            else:
+                msg = 'Timeout expecting trace file to be written "%s"' % fname
+                raise IOError(msg)
+
+        #
+        #    Ok... the file exists, but it might still be 
+        #
+        with FileLock(fname, timeout=1):
+            rrfile = open( fname, 'rb')
+            req, res = Unpickler(rrfile).load()
+            rrfile.close()
+            return (req, res)
 
     def delete(self, id=None):
         '''Delete data from DB by ID.'''
@@ -248,14 +270,19 @@ class HistoryItem(object):
             ', method = ?, response_size = ?, codef = ?, alias = ? '
             ' WHERE id = ?' % self._dataTable)
             self._db.execute(sql, values)
+        
         # 
         # Save raw data to file
-        # 
-        rrfile = open(os.path.join(self._sessionDir, str(self.response.id) + self._ext), 'wb')
-        p = Pickler(rrfile)
-        p.dump((self.request, self.response))
-        rrfile.close()
-        return True
+        #
+        fname = os.path.join(self._sessionDir, str(self.response.id) + self._ext)
+
+        with FileLock(fname, timeout=1):
+        
+            rrfile = open(fname, 'wb')
+            p = Pickler(rrfile)
+            p.dump((self.request, self.response))
+            rrfile.close()
+            return True
 
     def getColumns(self):
         return self._columns
