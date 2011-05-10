@@ -54,17 +54,17 @@ class FileLock(object):
             exceeds `timeout` number of seconds, in which case it throws 
             an exception.
         """
-        start_time = time.time()
-        while True:
+        for _ in xrange( self.timeout / self.delay ):
             try:
                 self.fd = os.open(self.lockfile, os.O_CREAT|os.O_EXCL|os.O_RDWR)
                 break;
             except OSError as e:
                 if e.errno != errno.EEXIST:
-                    raise 
-                if (time.time() - start_time) >= self.timeout:
-                    raise FileLockException("Timeout occured.")
+                    raise
                 time.sleep(self.delay)
+        else: 
+            raise FileLockException("Timeout occured.")
+                
         self.is_locked = True
  
  
@@ -101,3 +101,41 @@ class FileLock(object):
             lying around.
         """
         self.release()
+        
+class FileLockRead(object):
+    """ A file locking mechanism that has context-manager support so 
+        you can use it in a with statement. This should be relatively cross
+        compatible as it doesn't rely on msvcrt or fcntl for the locking.
+        
+        This lock allows multiple threads to access the file for reading.
+        
+        Original recipe:
+        http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/
+    """
+  
+    def acquire(self):
+        """ 
+            Wait until the write finishes and then access the file. No lock
+            file is created, since we want to have the possibility of reading
+            the same file from multiple threads.
+            
+            If `timeout` number of seconds is exceeded it throws 
+            an exception.
+        """
+        
+        for _ in xrange( self.timeout / self.delay ):
+            if not os.path.exists(self.lockfile):
+                break
+            time.sleep(self.delay)
+        else:
+            raise FileLockException("Timeout occured.")
+                
+        self.is_locked = True
+ 
+ 
+    def release(self):
+        """
+        Do nothing, as we don't create a lock in acquire()
+        """
+        pass
+ 

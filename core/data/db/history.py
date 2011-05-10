@@ -37,7 +37,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
-from core.controllers.misc.FileLock import FileLock
+from core.controllers.misc.FileLock import FileLock, FileLockRead
 from core.data.db.db import DB, WhereHelper
 
 
@@ -190,9 +190,9 @@ class HistoryItem(object):
                 raise IOError(msg)
 
         #
-        #    Ok... the file exists, but it might still be 
+        #    Ok... the file exists, but it might still be being written 
         #
-        with FileLock(fname, timeout=1):
+        with FileLockRead(fname, timeout=1):
             rrfile = open( fname, 'rb')
             req, res = Unpickler(rrfile).load()
             rrfile.close()
