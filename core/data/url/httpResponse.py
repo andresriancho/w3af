@@ -226,7 +226,7 @@ class httpResponse(object):
         '''
         # A sample header just to remember how they look like: "content-type: text/html; charset=iso-8859-1"
         lowerCaseHeaders = self.getLowerCaseHeaders()
-        headers_charset = meta_charset = ''
+
         if not 'content-type' in lowerCaseHeaders:
             om.out.debug('hmmm... wtf?! The remote web server failed to send the content-type header.')
             self._body = body
@@ -291,9 +291,6 @@ class httpResponse(object):
                 
                 # And we save the charset, just in case.
                 self._charset = charset
-            
-            self.headers_charset = headers_charset
-            self.meta_charset = meta_charset
 
     def setHeaders( self, headers ):
         '''
