@@ -54,7 +54,7 @@ class FileLock(object):
             exceeds `timeout` number of seconds, in which case it throws 
             an exception.
         """
-        for _ in xrange( self.timeout / self.delay ):
+        for _ in xrange( int(self.timeout / self.delay) ):
             try:
                 self.fd = os.open(self.lockfile, os.O_CREAT|os.O_EXCL|os.O_RDWR)
                 break;
@@ -125,7 +125,7 @@ class FileLockRead(FileLock):
             an exception.
         """
         
-        for _ in xrange( self.timeout / self.delay ):
+        for _ in xrange( int(self.timeout / self.delay) ):
             if not os.path.exists(self.lockfile):
                 break
             time.sleep(self.delay)
