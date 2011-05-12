@@ -25,6 +25,7 @@ import copy
 from pymock import PyMockTestCase, method, override, set_count, \
     override_prop, dontcare, expr
 
+from core.data.parsers.urlParser import url_object
 import plugins.discovery.http_vs_https_dist as hvshsdist
 
 # Translation hack
@@ -35,7 +36,7 @@ class test_http_vs_https_dist(PyMockTestCase):
     @author: Javier Andalia <jandalia =at= gmail.com>
     '''
     
-    test_url = 'http://host.tld'
+    test_url = url_object('http://host.tld')
     tracedict = {'localhost': {1: ('192.168.1.1', False),
                                3: ('200.115.195.33', False),
                                5: ('207.46.47.14', True)}}
@@ -49,7 +50,7 @@ class test_http_vs_https_dist(PyMockTestCase):
     def test_discover_override_port(self):
         plugininst = self.plugininst
         override(plugininst, '_has_permission').expects().returns(True)
-        method(self.fuzz_req, 'getURL').expects().returns('https://host.tld:4444')
+        method(self.fuzz_req, 'getURL').expects().returns(url_object('https://host.tld:4444'))
         # HTTPS try
         self._call_traceroute('host.tld', 4444, self.tracedict)
         # HTTP try
