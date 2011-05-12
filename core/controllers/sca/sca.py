@@ -86,7 +86,7 @@ class PhpSCA(object):
             raise CodeSyntaxError, "Error while parsing the code"
         
         # Convenient definition of new node type
-        GlobalParentNodeType = phpast.node('GlobalParentNodeType', \
+        GlobalParentNodeType = phpast.node('GlobalParentNodeType',
                                            ['name', 'children', '_parent_node'])
         ## Instantiate it and self-assign it as root node
         self._global_pnode = GlobalParentNodeType('dummy', self._ast_code, None)

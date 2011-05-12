@@ -109,7 +109,7 @@ EXTRA ATTRIBUTES AND METHODS
 
 # $Id: keepalive.py,v 1.16 2006/09/22 00:58:05 mstenner Exp $
 
-from __future__ import with_statement
+from collections import deque
 import urllib2
 import httplib
 import operator
@@ -122,7 +122,6 @@ import time
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, \
     w3afMustStopByKnownReasonExc
-from core.controllers.misc.datastructs import deque
 import core.data.kb.config as cf
 from core.data.constants.httpConstants import NO_CONTENT
 
