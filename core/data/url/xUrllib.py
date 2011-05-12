@@ -20,61 +20,44 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from __future__ import with_statement
+from collections import deque
+import httplib
+import errno
+import os
+import re
+import socket
+import threading
+import time
+import traceback
+import urllib, urllib2
 
-import urlOpenerSettings
 
-#
-#   Misc imports
-#
-import core.controllers.outputManager as om
+from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
-from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.memoryUsage import dumpMemoryUsage
-from core.controllers.misc.datastructs import deque
-# This is a singleton that's used for assigning request IDs
 from core.controllers.misc.number_generator import \
-consecutive_number_generator as seq_gen
-
-from core.controllers.threads.threadManager import threadManagerObj as thread_manager
-
-from core.controllers.w3afException import w3afMustStopException, \
-    w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc, \
-    w3afException, w3afMustStopOnUrlError
-
-#
-#   Data imports
-#
+    consecutive_number_generator as seq_gen
+from core.controllers.threads.threadManager import threadManagerObj as \
+    thread_manager
+from core.controllers.w3afException import (w3afMustStopException,
+    w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,
+    w3afException, w3afMustStopOnUrlError)
+from core.data.constants.httpConstants import NO_CONTENT
 from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
-
 from core.data.request.frFactory import createFuzzableRequestRaw
-from core.data.constants.httpConstants import NO_CONTENT
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers import logHandler
 from core.data.url.httpResponse import httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
+import core.controllers.outputManager as om
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
+import urlOpenerSettings
 
 
-# For subclassing requests and other things
-import urllib2
-import urllib
-
-import errno
-import os
-import socket
-import threading
-import time
-
-# for better debugging of handlers
-import traceback
-import re
-
-    
 class xUrllib(object):
     '''
     This is a urllib2 wrapper.
@@ -710,21 +693,37 @@ class xUrllib(object):
                 # Known reason errors. See errno module for more info on these
                 # errors.
                 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-                    ENETDOWN, ENETUNREACH
+                    ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
                 EUNKNSERV = -2 # Name or service not known error
+                EINVHOSTNAME = -5 # No address associated with hostname
                 known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
-                                ECONNRESET, ENETDOWN, ENETUNREACH)
+                                ECONNRESET, ENETDOWN, ENETUNREACH,
+                                EINVHOSTNAME, ETIMEDOUT, ENOSPC)
                 
                 msg = ('xUrllib found too much consecutive errors. The '
                 'remote webserver doesn\'t seem to be reachable anymore.')
                 
-                if isinstance(error, urllib2.URLError) and \
-                    isinstance(error.reason, socket.error) and \
-                    error.reason[0] in known_errors:
-                    reason = error.reason
-                    raise w3afMustStopByKnownReasonExc(msg, reason=reason)
-                else:
-                    raise w3afMustStopByUnknownReasonExc(msg, errs=last_errors)                    
+                if type(error) is urllib2.URLError:
+                    # URLError exceptions may wrap either httplib.HTTPException
+                    # or socket.error exception instances. We're interested on
+                    # treat'em in a special way.
+                    reason_err = error.reason 
+                    reason_msg = None
+                    
+                    if isinstance(reason_err, socket.error):
+                        if isinstance(reason_err, socket.sslerror):
+                            reason_msg = 'SSL Error: %s' % error.reason
+                        elif reason_err[0] in known_errors:
+                            reason_msg = reason_err
+                    
+                    elif isinstance(reason_err, httplib.HTTPException):
+                        reason_msg = '%s: %s' % (error.__class__.__name__,
+                                             error.args)
+                    if reason_msg is not None:
+                        raise w3afMustStopByKnownReasonExc(reason_msg,
+                                                           reason=reason_err)
+                
+                raise w3afMustStopByUnknownReasonExc(msg, errs=last_errors)                    
 
     def ignore_errors(self, yes_no):
         '''

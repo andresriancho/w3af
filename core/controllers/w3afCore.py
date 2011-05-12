@@ -358,8 +358,6 @@ class w3afCore(object):
         res = []
         discovered_fr_list = []
         
-        # this will help identify the total discovery time
-        self._discovery_start_time_epoch = time.time()
         self._time_limit_reported = False
         
         while go:
@@ -452,34 +450,31 @@ class w3afCore(object):
         error handling!
         '''
         try:
-            try:
-                self._realStart()
-            except MemoryError:
-                msg = 'Python threw a MemoryError, this means that your'
-                msg += ' OS is running very low in memory. w3af is going'
-                msg += ' to stop.'
-                om.out.error( msg )
-                raise
-            except w3afMustStopByUnknownReasonExc:
-                #
-                # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
-                # purpose so we can find out the *really* unknown error
-                # conditions.
-                #
-                raise
-            except w3afMustStopException, wmse:
-                self._end(wmse)
-                om.out.error('\n**IMPORTANT** The following error was '
-                 'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
-            except Exception:
-                om.out.error('\nUnhandled error, traceback: %s\n' %
-                             traceback.format_exc()) 
-                raise
-            else:
-                msg =  'Scan finished in ' + self._get_time_string()
-                om.out.information( msg )
-                
+            self._realStart()
+        except MemoryError:
+            msg = 'Python threw a MemoryError, this means that your'
+            msg += ' OS is running very low in memory. w3af is going'
+            msg += ' to stop.'
+            om.out.error( msg )
+            raise
+        except w3afMustStopByUnknownReasonExc:
+            #
+            # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
+            # purpose so we can find out the *really* unknown error
+            # conditions.
+            #
+            raise
+        except w3afMustStopException, wmse:
+            self._end(wmse, ignore_err=True)
+            om.out.error('\n**IMPORTANT** The following error was '
+             'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
+        except Exception:
+            om.out.error('\nUnhandled error, traceback: %s\n' %
+                         traceback.format_exc()) 
+            raise
         finally:
+            msg = 'Scan finished in %s' % self._get_time_string()
+            om.out.information( msg )
             self.progress.stop()
             
     def _realStart(self):
@@ -489,8 +484,11 @@ class w3afCore(object):
         initPlugins() method before calling start.
         
         @return: No value is returned.
-        ''' 
+        '''
         om.out.debug('Called w3afCore.start()')
+        
+        # This will help identify the total discovery time
+        self._discovery_start_time_epoch = time.time()
         
         # Let the output plugins know what kind of plugins we're
         # using during the scan
@@ -711,7 +709,7 @@ class w3afCore(object):
         self.uriOpener.stop()
         
         # End the grep plugins
-        self._end()
+        self._end(ignore_err=True)
     
     def quit( self ):
         '''
@@ -726,7 +724,7 @@ class w3afCore(object):
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
         
-    def _end( self, exceptionInstance=None ):
+    def _end(self, exc_inst=None, ignore_err=False):
         '''
         This method is called when the process ends normally or by an error.
         '''
@@ -736,28 +734,27 @@ class w3afCore(object):
             # Create a new one, so it can be used by exploit plugins.
             self.uriOpener = xUrllib()
             
-            # Let the progress module know our status.
-            self.progress.stop()
-            
-            if exceptionInstance:
-                om.out.error( str(exceptionInstance) )
-            
-            # FIXME: Feb 1, 2011. Next block is potentialy a real source of
-            # errors that turns into crashes if called when w3af has to stop
-            # bc of a previous error. I think it is fine to ignore them in 
-            # those cases; otherwise let the exception pass.
+            # Silently ignore. w3af is stopped
             try:
-                tm.join(joinAll=True)
-                tm.stopAllDaemons()
+                # Let the progress module know our status.
+                self.progress.stop()
             except:
-                if not exceptionInstance:
-                    raise
+                pass
+            
+            if exc_inst:
+                om.out.debug(str(exc_inst))
+            
+            tm.join(joinAll=True)
+            tm.stopAllDaemons()
             
             for plugin in self._plugins['grep']:
                 plugin.end()
             
             # Also, close the output manager.
             om.out.endOutputPlugins()
+        except Exception, ex:
+            if not ignore_err:
+                raise
         finally:
             # Now I'm definitly not running:
             self._isRunning = False
