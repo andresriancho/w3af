@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import os
+
 from core.controllers.misc.factory import factory
 # severity constants for vuln messages
 import core.data.constants.severity as severity
+
 
 class outputManager:
     '''
