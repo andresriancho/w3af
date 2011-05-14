@@ -573,12 +573,15 @@ class MainApp(object):
         # saving windows config
         self.generalconfig["mainwindow-size"] = self.window.get_size()
         self.generalconfig["mainwindow-position"] = self.window.get_position()
-        self.generalconfig.close()
-        gtk.main_quit()
-        time.sleep(0.5)
-        self.w3af.stop()
-        self.w3af.quit()
-        return False
+        
+        try:
+            self.generalconfig.close()
+        finally:
+            gtk.main_quit()
+            time.sleep(0.5)
+            self.w3af.stop()
+            self.w3af.quit()
+            return False
 
     def _scan_director(self, widget):
         '''Directs what to do with the Scan.'''
