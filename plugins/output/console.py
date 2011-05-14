@@ -29,10 +29,26 @@ from core.data.options.optionList import optionList
 
 # severity constants for vuln messages
 import core.data.constants.severity as severity
+from core.controllers.w3afException import w3afMustStopByKnownReasonExc
 
+from errno import ENOSPC
 import string
 import sys
 
+
+def catch_ioerror(meth):
+    '''
+    Function to decorate methods in order to catch IOError exceptions.
+    '''
+    def wrapper(self, *args, **kwargs):
+        try:
+            return meth(self, *args, **kwargs)
+        except IOError as (errno, strerror):
+            if errno == ENOSPC:
+                msg = 'No space left on device'
+                raise w3afMustStopByKnownReasonExc( msg )
+
+    return wrapper
 
 class console(baseOutputPlugin):
     '''
@@ -52,6 +68,7 @@ class console(baseOutputPlugin):
                 result += char
         return result
 
+    @catch_ioerror
     def debug(self, message, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -64,6 +81,7 @@ class console(baseOutputPlugin):
             sys.stdout.write( self._make_printable(to_print) )
             sys.stdout.flush()
 
+    @catch_ioerror
     def information(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -75,6 +93,7 @@ class console(baseOutputPlugin):
         sys.stdout.write( self._make_printable(to_print) )
         sys.stdout.flush()
 
+    @catch_ioerror
     def error(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -86,6 +105,7 @@ class console(baseOutputPlugin):
         sys.stderr.write( self._make_printable(to_print) )
         sys.stdout.flush()
 
+    @catch_ioerror
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
@@ -96,7 +116,8 @@ class console(baseOutputPlugin):
             to_print += '\r\n'
         sys.stdout.write( self._make_printable(to_print) )
         sys.stdout.flush()
-        
+    
+    @catch_ioerror
     def console( self, message, newLine = True ):
         '''
         This method is used by the w3af console to print messages to the outside.
