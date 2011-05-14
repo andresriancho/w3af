@@ -91,10 +91,10 @@ class hmap(baseDiscoveryPlugin):
                 try:
                     results = originalHmap.testServer( ssl, server, port, 1, self._genFpF )
                 except w3afException, w3:
-                    msg = 'A w3afException ocurred while running hmap: "' + str(w3) + '"'
+                    msg = 'A w3afException occurred while running hmap: "' + str(w3) + '"'
                     om.out.error( msg )
                 except Exception,  e:
-                    msg = 'An unhandled exception ocurred while running hmap: "' + str(e) + '"'
+                    msg = 'An unhandled exception occurred while running hmap: "' + str(e) + '"'
                     om.out.error( msg )
                 else:
                     #

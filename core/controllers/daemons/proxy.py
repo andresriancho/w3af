@@ -201,7 +201,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 self.doAll()
         except Exception,  e:
             ### FIXME: Maybe I should perform some more detailed error handling...
-            om.out.debug('An exception ocurred in w3afProxyHandler.handle_one_request() :' + str(e) )
+            om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e) )
 
     def _getPostData(self):
         '''
@@ -333,7 +333,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         except Exception, e:
             traceback.print_exc()
-            om.out.debug('An error ocurred in proxy._sendError(). Maybe the browser closed the connection?')
+            om.out.debug('An error occurred in proxy._sendError(). Maybe the browser closed the connection?')
             om.out.debug('Exception: ' + str(e) )
         self.wfile.close()
     

@@ -183,7 +183,7 @@ class pykto(baseDiscoveryPlugin):
                 fetched_version = True
         
         if not fetched_version:
-            msg = 'pykto can\'t update the scan database, an error ocurred while fetching the'
+            msg = 'pykto can\'t update the scan database, an error occurred while fetching the'
             msg += ' versions.txt file from cirt.net .'
             om.out.error( msg )
         else:

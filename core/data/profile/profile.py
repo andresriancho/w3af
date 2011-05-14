@@ -106,7 +106,7 @@ class profile:
         try:
             os.unlink( self._profile_file_name )
         except Exception, e:
-            raise w3afException('An exception ocurred while removing the profile. Exception: ' + str(e))
+            raise w3afException('An exception occurred while removing the profile. Exception: ' + str(e))
         else:
             return True
             
@@ -128,7 +128,7 @@ class profile:
         try:
             shutil.copyfile( self._profile_file_name, newProfilePathAndName )
         except Exception, e:
-            raise w3afException('An exception ocurred while copying the profile. Exception: ' + str(e))
+            raise w3afException('An exception occurred while copying the profile. Exception: ' + str(e))
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
             pNew = profile( newProfilePathAndName )

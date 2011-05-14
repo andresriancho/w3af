@@ -224,7 +224,7 @@ class HistoryItem(object):
         except w3afException:
             raise w3afException('You performed an invalid search. Please verify your syntax.')
         except Exception, e:
-            msg = 'An internal error ocurred while searching for id "' + str(id) + '".'
+            msg = 'An internal error occurred while searching for id "' + str(id) + '".'
             msg += ' Original exception: "' + str(e) + '".'
             raise w3afException( msg )
             

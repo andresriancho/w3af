@@ -94,7 +94,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         try:
             modified_response = self._urlOpener.GET( ip_url, useCache=True )
         except w3afException:
-            om.out.debug('An error ocurred while fetching IP address URL in dnsWildcard plugin.')
+            om.out.debug('An error occurred while fetching IP address URL in dnsWildcard plugin.')
         else:
             if modified_response.getBody() != original_response.getBody():
                 i = info.info()
