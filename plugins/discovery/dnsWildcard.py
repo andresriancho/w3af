@@ -113,6 +113,17 @@ class dnsWildcard(baseDiscoveryPlugin):
         '''
         Check if http://www.domain.tld/ == http://domain.tld/
         '''
+        #
+        #    I only want to perform an HTTP request if the domain
+        #    actually exists. If not... we know it's going to fail
+        #    and that will increase the library's error count, show
+        #    a traceback, etc.
+        #
+        try:
+            socket.gethostbyname( dns_wildcard_url.getDomain() )
+        except:
+            return
+        
         try:
             modified_response = self._urlOpener.GET( dns_wildcard_url, useCache=True )
         except w3afException, w3:
