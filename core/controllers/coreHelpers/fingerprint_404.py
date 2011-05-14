@@ -21,17 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
+from core.data.fuzzer.fuzzer import createRandAlNum
 
-import core.data.parsers.urlParser as urlParser
-
-from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
-
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 import urllib
