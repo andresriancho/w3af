@@ -74,10 +74,9 @@ class w3afMustStopOnUrlError(w3afMustStopException):
         if type(reason) is str:
             ec, em = None, reason
         else:
-            args = reason.args
-            if len(args) > 1:
-                ec, em = reason[0], reason[1]
-            else:
+            try:
+                ec, em = reason
+            except ValueError:
                 ec, em = None, reason[0]
         # Call parent's __init__
         w3afMustStopException.__init__(self, em)
