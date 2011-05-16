@@ -138,13 +138,15 @@ class ProfileList(gtk.TreeView):
             self._useProfile()
         else:
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
-                if selected == self.profile_instances[ prfid ].get_profile_file() or\
-                selected == self.profile_instances[ prfid ].getName():
+                the_prof = self.profile_instances[prfid]
+                if selected == the_prof.get_profile_file() or \
+                    selected == the_prof.getName():
                     self.set_cursor(i)
                     self._useProfile()
                     break
             else:
-                raise ValueError(_("Unexpected problem while loading profile %r (duplicated profile name?).") % selected)
+                raise ValueError(_("Unexpected problem while loading profile "
+                               "%r (duplicated profile name?).") % selected)
                 
         # Now that we've finished loading everything, show the invalid profiles in a nice pop-up window
         if invalid_profiles:
@@ -406,13 +408,14 @@ class ProfileList(gtk.TreeView):
         filename, description = dlgResponse
         filename = cgi.escape(filename)
         try:
-            profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+            profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile,
+                                           filename , description)
         except w3afException:
             #FIXME: This message should be more descriptive
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
         self.w3af.mainwin.sb(_("New profile created"))
-        self.loadProfiles(selected=profile_obj.get_profile_file())
+        self.loadProfiles(selected=profile_obj.getName())
 
         # get the activated plugins
         self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
@@ -454,7 +457,7 @@ class ProfileList(gtk.TreeView):
                 self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
                 return
             self.w3af.mainwin.sb(_("New profile created"))
-            self.loadProfiles(selected=profile_obj.get_profile_file())
+            self.loadProfiles(selected=profile_obj.getName())
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
