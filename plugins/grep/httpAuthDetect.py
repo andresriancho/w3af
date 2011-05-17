@@ -130,7 +130,7 @@ class httpAuthDetect(baseGrepPlugin):
                 
                 v.setSeverity(severity.HIGH)
                 v.setName('Basic HTTP credentials')
-                v.addToHighlight(url)
+                v.addToHighlight( url.url_string )
                 
                 kb.kb.append(self, 'userPassUri', v)
                 om.out.vulnerability(v.getDesc(), severity=v.getSeverity())

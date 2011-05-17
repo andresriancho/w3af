@@ -198,6 +198,7 @@ class Searchable(object):
         # Before searching, I clean the text parameter, as it might contain
         # null bytes, which will trigger an error like:
         # TypeError: GtkTextIter.forward_search() argument 1 must be string without null bytes, not str
+        text = str(text)
         text = text.replace('\x00','')
         # TODO: Will the highlighting succeed? How's the text with \0's actually
         # printed in the textview? 
