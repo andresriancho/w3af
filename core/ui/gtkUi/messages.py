@@ -44,9 +44,11 @@ class _LineScroller(gtk.TextView):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, active_filter, possible):
+    def __init__(self, scroll_bar, active_filter, possible):
         '''
+        @param scroll_bar: Gtk Vertical Scrollbar object 
         @param active_filter: the filter active at startup.
+        @param possible: all filter keys
         '''
         gtk.TextView.__init__(self)
         self.set_editable(False)
@@ -59,6 +61,10 @@ class _LineScroller(gtk.TextView):
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
+        
+        # scroll bar
+        self.freeze_scrollbar = False
+        scroll_bar.connect("value-changed", self.scroll_changed)        
 
         # colors
         self.textbuffer.create_tag("red-fg",  foreground="red")
@@ -78,13 +84,14 @@ class _LineScroller(gtk.TextView):
         @param filtinfo: the new filter
         '''
         self.active_filter = filtinfo
-        self.textbuffer.set_text("")
+        textbuff = self.textbuffer
+        textbuff.set_text("")
         for (mtype, text) in self.all_messages:
             if mtype in filtinfo:
                 colortag = self.bg_colors[mtype]
-                iterl = self.textbuffer.get_end_iter()
-                self.textbuffer.insert_with_tags_by_name(iterl, text, colortag)
-        self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+                iterl = textbuff.get_end_iter()
+                textbuff.insert_with_tags_by_name(iterl, text, colortag)
+        self.scroll_to_end(textbuff)
 
     def addMessage(self):
         '''Adds a message to the textview.
@@ -94,6 +101,7 @@ class _LineScroller(gtk.TextView):
         @returns: True to gobject to keep calling it, and False when all
                   it's done.
         '''
+        textbuff = self.textbuffer
         for mess in self.messages.get():
             if mess is None:
                 yield True
@@ -111,13 +119,28 @@ class _LineScroller(gtk.TextView):
             self.text_position += len(text)
 
             if mtype in self.active_filter:
-                iterl = self.textbuffer.get_end_iter()
+                iterl = textbuff.get_end_iter()
                 colortag = self.bg_colors[mtype]
-                self.textbuffer.insert_with_tags_by_name(iterl, text, colortag)
-                self.scroll_to_mark(self.textbuffer.get_insert(), 0)
+                textbuff.insert_with_tags_by_name(iterl, text, colortag)
+                self.scroll_to_end(textbuff)
 
         yield False
-
+    
+    def scroll_to_end(self, textbuff):
+        if not self.freeze_scrollbar:
+            self.scroll_to_mark(textbuff.get_insert(), 0)
+        
+    def scroll_changed(self, vscrollbar):
+        '''Handle scrollbar's "value-changed" signal.
+        
+        Figure out if the scroll should be frozen. If the adjustment's value
+        is not in the last page's range => means it was moved up =>
+        the scroll bar should be stopped. 
+        '''
+        adj = vscrollbar.get_adjustment()
+        self.freeze_scrollbar = \
+                    False if adj.value >= (adj.upper-adj.page_size) else True
+        
 
 class Messages(gtk.VBox, Searchable):
     '''The Messages window.
@@ -150,8 +173,8 @@ class Messages(gtk.VBox, Searchable):
         sw_mess = gtk.ScrolledWindow()
         sw_mess.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         newfilter = [k for k,v in self.filters.items() if v]
-        possible = self.filters.keys()
-        self.sclines = _LineScroller(newfilter, possible)
+        self.sclines = _LineScroller(sw_mess.get_vscrollbar(),
+                                     newfilter, self.filters.keys())
         sw_mess.add(self.sclines)
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
