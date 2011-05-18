@@ -92,8 +92,9 @@ class shell(vuln, exploitResult):
         case, I forward the request to the specific_user_input method which should be implemented by all shellAttackPlugins.
         '''
         # Get the command and the parameters
-        parameters = command.split(' ')[1:]
-        command = command.split(' ')[0]
+        splist = command.split(' ')
+        command = splist[0]
+        params = [p for p in splist[1:] if p]
         
         #
         #    Commands that are common to all shells:
@@ -105,8 +106,9 @@ class shell(vuln, exploitResult):
             #
             #    Run the payload
             #
-            payload_name = parameters[0]
-            return self._payload( payload_name, parameters[1:] )
+            if params:
+                payload_name = params[0]
+                return self._payload(payload_name, params[1:])
         
         elif command == 'lsp':
             #
