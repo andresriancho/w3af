@@ -191,14 +191,22 @@ class PromptView(gtk.TextView):
 
     def _key_enter(self):
         '''The user pressed Return.'''
-        cursor_pos = self.textbuffer.get_property("cursor-position")
-        iter_end = self.textbuffer.get_end_iter()
+        textbuffer = self.textbuffer
+        cursor_pos = textbuffer.get_property("cursor-position")
+        iter_end = textbuffer.get_end_iter()
         if cursor_pos != iter_end.get_offset():
             return True
 
-        self.textbuffer.insert(iter_end, "\n")
-        iter_start = self.textbuffer.get_iter_at_mark(self.user_started)
-        text = self.textbuffer.get_text(iter_start, iter_end)
+        textbuffer.insert(iter_end, "\n")
+        
+        # In some strange cases `self.user_started` can be None causing
+        # a TypeError raised by get_iter_at_mark(). This hack is to prevent it.
+        if not self.user_started:
+            self.user_started = textbuffer.create_mark("user-input",
+                                                       iter_end, True)
+        
+        iter_start = textbuffer.get_iter_at_mark(self.user_started)
+        text = textbuffer.get_text(iter_start, iter_end)
         self.user_started = None
         text = text.strip()
         if text:
