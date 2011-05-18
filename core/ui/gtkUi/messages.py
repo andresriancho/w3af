@@ -91,7 +91,7 @@ class _LineScroller(gtk.TextView):
                 colortag = self.bg_colors[mtype]
                 iterl = textbuff.get_end_iter()
                 textbuff.insert_with_tags_by_name(iterl, text, colortag)
-        self.scroll_to_end(textbuff)
+        self.scroll_to_end()
 
     def addMessage(self):
         '''Adds a message to the textview.
@@ -122,13 +122,13 @@ class _LineScroller(gtk.TextView):
                 iterl = textbuff.get_end_iter()
                 colortag = self.bg_colors[mtype]
                 textbuff.insert_with_tags_by_name(iterl, text, colortag)
-                self.scroll_to_end(textbuff)
+                self.scroll_to_end()
 
         yield False
     
-    def scroll_to_end(self, textbuff):
+    def scroll_to_end(self):
         if not self.freeze_scrollbar:
-            self.scroll_to_mark(textbuff.get_insert(), 0)
+            self.scroll_to_mark(self.textbuffer.get_insert(), 0)
         
     def scroll_changed(self, vscrollbar):
         '''Handle scrollbar's "value-changed" signal.
