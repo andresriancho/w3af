@@ -25,16 +25,14 @@ import shutil
 import tempfile
 import getpass
 
+TEMP_DIR = os.path.join(tempfile.gettempdir(),
+                        'w3af-' + getpass.getuser(), str(os.getpid()))
 
 def get_temp_dir():
     '''
     @return: The path where we should create the dir.
     '''
-    pid = str(os.getpid())
-    tmp_dir = tempfile.gettempdir()
-    user = getpass.getuser()
-    complete_dir = os.path.join(tmp_dir, 'w3af-' + user, pid)
-    return complete_dir
+    return TEMP_DIR
 
 def create_temp_dir():
     '''
