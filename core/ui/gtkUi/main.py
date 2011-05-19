@@ -71,7 +71,7 @@ except ImportError:
     sys.exit( 1 )
 
 import threading, shelve, os
-import core.controllers.w3afCore
+from core.controllers.w3afCore import wCore
 import core.controllers.miscSettings
 from core.controllers.auto_update import VersionMgr, is_working_copy
 from core.controllers.w3afException import w3afException
@@ -322,7 +322,7 @@ class MainApp(object):
         mainvbox.show()
 
         splash.push(_("Initializing core..."))
-        self.w3af = core.controllers.w3afCore.w3afCore()
+        self.w3af = wCore
         
         # This is inited before all, to have a full logging facility.
         om.out.setOutputPlugins( ['gtkOutput'] )
