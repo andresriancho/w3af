@@ -4,10 +4,12 @@ Project leader:
     Andres Riancho
     
 Main contributors:
+    Javier Andalia <javier_andalia!rapid7.com> - Full time employee working on w3af!
     Alexander Berezhnoy - spiderMan refactoring, new console user interface, plugins
-    Facundo Batista - pyGTK user interface
+    Taras P. Ivashchenko <naplanetu!gmail.com> - A lot of BIG contributions.
 
 GUI design and usability contributors:
+    Facundo Batista - pyGTK user interface
     Eduardo Mercovich - *Incredible* work in design and usability of the GTK user interface. Most of his recommendations still need to be coded.
     Sebastian Ardita - Splash screen and vulnerability icons
     
@@ -37,7 +39,6 @@ Documentation:
 
 General:
     Achim Hoffmann (ah|at|securenet.de) - Great ideas and OWASP SoC Reviewer
-    Taras P. Ivashchenko <naplanetu!gmail.com> - A lot of BIG contributions.
     Kevin Denver - xmlFile plugin, urlParser extension, bug fixing, testing and more!
     Martin Tartarelli - Hacked around the cmd.aspx file in order to evade AV detection, documentation, and more.
 

@@ -1,3 +1,18 @@
+(25 May 2011)    1.0 - stable!     
+==============================
+
+    * Fixed hundreds of bugs that made the project crash
+    * Implemented auto-update feature for w3af
+    * Refactoring of URL handling from strings to url_object
+    * Wrote hundreds of lines of unit-tests
+    * Initial implementation of PHP static code analyzer
+    * Enhanced web application security payload implementation
+
+    Details can be found @ Trac:
+
+        * https://sourceforge.net/apps/trac/w3af/query?group=status&milestone=critical-bugs-before-stable
+        
+
 (10 Jan 2011)    1.0 - release candidate 5     
 ==========================================
 
@@ -5,7 +20,7 @@
     * Fixed most of the bugs that cause w3afMustStopExceptions
     * Updated XML output plugin
     * Added doctests and unittests with pymock
-    * Updated all scripts in order to pass the ./w3af_console -t test
+    * Updated all scripts in order to pass the "./w3af_console -t" test
     * Added new plugin to measure the number of hops for port 80 vs 443
 
     Details can be found @ Trac:
