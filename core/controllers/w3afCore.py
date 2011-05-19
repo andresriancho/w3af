@@ -20,49 +20,38 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import copy
+import datetime
+import os
+import Queue
+import sys
+import time
+import traceback
 
-# Called here to init some variables in the config ( cf.cf.save() )
-# DO NOT REMOVE
-import core.controllers.miscSettings as miscSettings
-
-import os, sys
-
-from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
-from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir, get_temp_dir
+from core.controllers.coreHelpers.export import export
+from core.controllers.coreHelpers.fingerprint_404 import \
+    fingerprint_404_singleton
+from core.controllers.coreHelpers.progress import progress
 from core.controllers.misc.factory import factory
 from core.controllers.misc.get_local_ip import get_local_ip
+from core.controllers.misc.homeDir import (create_home_dir,
+    verify_dir_has_perm, HOME_DIR)
 from core.controllers.misc.number_generator import consecutive_number_generator
-
-from core.data.url.xUrllib import xUrllib
-from core.data.parsers.urlParser import url_object
-from core.controllers.w3afException import w3afException, w3afRunOnce, \
-    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc, \
-    w3afMustStopOnUrlError
+from core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
+    TEMP_DIR)
 from core.controllers.targetSettings import targetSettings as targetSettings
-
-import traceback
-import copy
-import Queue
-import time
-import datetime
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.config as cf
-from core.data.request.frFactory import createFuzzableRequests
 from core.controllers.threads.threadManager import threadManagerObj as tm
-
-# 404 detection
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-
-# Progress tracking
-from core.controllers.coreHelpers.progress import progress
-
-# Export fuzzable requests helper
-from core.controllers.coreHelpers.export import export
-
-# Profile objects
+from core.controllers.w3afException import (w3afException, w3afRunOnce,
+    w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc,
+    w3afMustStopOnUrlError)
+from core.data.parsers.urlParser import url_object
 from core.data.profile.profile import profile as profile
+from core.data.request.frFactory import createFuzzableRequests
+from core.data.url.xUrllib import xUrllib
+import core.controllers.miscSettings as miscSettings
+import core.controllers.outputManager as om
+import core.data.kb.config as cf
+import core.data.kb.knowledgeBase as kb
 
 
 class w3afCore(object):
@@ -103,14 +92,11 @@ class w3afCore(object):
         create_home_dir()
 
         # If this fails, maybe it is because the home directory doesn't exist
-        # or simply because it ain't writable
-        if not home_dir_is_writable():
-
-            # We have a problem!
-            # The home directory isn't writable, we can't create .w3af ...
-            msg = ('The w3af home directory "%s" is not writable. Please set '
-            'the correct permissions and ownership.' % get_home_dir())
-            print msg
+        # or simply because it ain't writable|readable by this user
+        if not verify_dir_has_perm(HOME_DIR, perm=os.W_OK|os.R_OK, levels=3):
+            print('Either the w3af home directory "%s" or its contents are not'
+                  ' writable or readable. Please set the correct permissions '
+                  'and ownership.' % HOME_DIR)
             sys.exit(-3)
             
     def _tmp_directory(self):
@@ -122,7 +108,7 @@ class w3afCore(object):
             create_temp_dir()
         except:
             msg = ('The w3af tmp directory "%s" is not writable. Please set '
-            'the correct permissions and ownership.' % get_temp_dir())
+            'the correct permissions and ownership.' % TEMP_DIR)
             print msg
             sys.exit(-3)            
 
@@ -132,17 +118,19 @@ class w3afCore(object):
         loads a new profile.
         '''
         # A dict with plugin types as keys and a list of plugin names as values
-        self._strPlugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
-        'evasion':[], 'mangle':[], 'output':[]}
+        self._strPlugins = {'audit': [], 'grep': [],
+                            'bruteforce': [], 'discovery': [],
+                            'evasion': [], 'mangle': [], 'output': []}
 
-        self._pluginsOptions = {'audit':{}, 'grep':{}, 'bruteforce':{}, 'discovery':{}, \
-        'evasion':{}, 'mangle':{}, 'output':{}, 'attack':{}}
+        self._pluginsOptions = {'audit': {}, 'grep': {}, 'bruteforce': {},
+                                'discovery': {}, 'evasion': {}, 'mangle': {},
+                                'output': {}, 'attack': {}}
     
     def getHomePath( self ):
         '''
         @return: The location of the w3af directory inside the home directory of the current user.
         '''
-        return get_home_dir()
+        return HOME_DIR
         
     def _initializeInternalVariables(self):
         '''
@@ -1279,7 +1267,7 @@ class w3afCore(object):
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
         '''
-        profile_home = os.path.join(get_home_dir(), 'profiles')
+        profile_home = os.path.join(HOME_DIR, 'profiles')
         str_profile_list = self._getListOfFiles(profile_home, extension='.pw3af')
         
         instance_list = []

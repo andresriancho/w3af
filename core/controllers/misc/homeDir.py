@@ -24,6 +24,7 @@ import user
 import os
 import shutil
 
+HOME_DIR = os.path.join(user.home, '.w3af')
 
 def create_home_dir():
     '''
@@ -59,20 +60,38 @@ def create_home_dir():
     
 def get_home_dir():
     '''
-    @return: The location of the w3af directory inside the home directory of the current user.
+    @return: The location of the w3af directory inside the home directory of
+        the current user.
     '''
-    home_path = user.home + os.path.sep + '.w3af'
-    return home_path
+    return HOME_DIR
 
-def home_dir_is_writable():
+def verify_dir_has_perm(path, perm, levels=0):
     '''
-    Verify if the home directory is writable by the user.
-    @return: True if success, False if the home dir is not writable.
+    Verify that home directory has `perm` access for current user. If at
+    least one of them fails to have it the result will be False.
+    
+    @param path: Path to test
+    @param perm: Access rights. Possible values are os' R_OK, W_OK and X_OK or 
+        the result of a bitwise "|" operator applied a combination of them.
+    @param levels: Depth levels to test
     '''
-    home_path = get_home_dir()
-    if os.access(home_path,os.W_OK):
-        return True
-    else:
-        # Maybe the directory doesn't exist, and I get False because of that...
-        return False
-
+    path = os.path.normpath(path)
+    pdepth = len(path.split(os.path.sep))
+    
+    pathaccess = os.access(path, perm)
+    
+    # 0th level
+    if not levels or not pathaccess:
+        return pathaccess
+    
+    # From 1st to `levels`th
+    for root, dirs, files in os.walk(path):
+        currentlevel = len(root.split(os.path.sep)) - pdepth
+        if currentlevel > levels:
+            break
+        elif ".svn" in dirs:
+            dirs.remove(".svn")
+        if not all(map(lambda p: os.access(p, perm),
+                       (os.path.join(root, f) for f in dirs+files))):
+            return False
+    return True
