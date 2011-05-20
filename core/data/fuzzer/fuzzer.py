@@ -263,10 +263,25 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
     @parameter mutant_str_list: a list with mutant strings to use
     
     @return: Mutants that have the filename URL changed with the strings at mutant_str_list
+    
+    >>> from core.data.parsers.urlParser import url_object
+    >>> from core.data.request.fuzzableRequest import fuzzableRequest
+    >>> url = url_object('http://www.w3af.com/abc/def.html')
+    >>> fr = fuzzableRequest()
+    >>> fr.setURL( url )
+
+    >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['ping!','pong-'], [], False )
+    >>> [ m.getURL().url_string for m in mutant_list]
+    ['http://www.w3af.com/abc/ping%21.html', 'http://www.w3af.com/abc/pong-.html', 'http://www.w3af.com/abc/def.ping%21', 'http://www.w3af.com/abc/def.pong-']
+    
+    >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['/etc/passwd',], [], False )
+    >>> [ m.getURL().url_string for m in mutant_list]
+    ['http://www.w3af.com/abc/%2Fetc%2Fpasswd.html', 'http://www.w3af.com/abc//etc/passwd.html', 'http://www.w3af.com/abc/def.%2Fetc%2Fpasswd', 'http://www.w3af.com/abc/def./etc/passwd']
+
     '''
     res = []
     fileName = freq.getURL().getFileName()
-    splittedFileName = [ x for x in re.split( r'([a-zA-Z0-9]+)', fileName ) if x != '' ]
+    splittedFileName = [ x for x in re.split( r'([a-zA-Z0-9]+)', fileName ) if x != '' ] 
     for i in xrange( len( splittedFileName ) ):
         for mutant_str in mutant_str_list:
             if re.match('[a-zA-Z0-9]', splittedFileName[i] ):
@@ -289,13 +304,14 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
                 m.setModValue( mutant_str )
                 # Special for filename fuzzing and some configurations of mod_rewrite
                 m.setDoubleEncoding( False )
+                res.append( m )
                 
                 # The same but with a different type of encoding! (mod_rewrite)
                 m2 = m.copy()
                 m2.setSafeEncodeChars('/')
                 
-                res.append( m )
-                res.append( m2 )
+                if m2.getURL() != m.getURL():
+                    res.append( m2 )
     return res
     
 def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,append, dataContainer=None):

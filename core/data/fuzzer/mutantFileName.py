@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 import urllib
-import core.controllers.outputManager as om
 
 
 class mutantFileName(mutant):
@@ -52,6 +51,27 @@ class mutantFileName(mutant):
         self._safeEncodeChars = safeChars
     
     def getURL( self ):
+        '''
+        @return: The URL, as modified by "setModValue()"
+        
+        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.dc.dataContainer import dataContainer as dc
+        >>> fr = fuzzableRequest()
+        >>> divided_file_name = dc()
+        >>> divided_file_name['start'] = ''
+        >>> divided_file_name['fuzzedFname'] = 'ping!'
+        >>> divided_file_name['end'] = '.html'
+        
+        >>> url = url_object('http://www.w3af.com/abc/def.html')
+        >>> fr.setURL( url )
+        >>> m = mutantFileName( fr )
+        >>> m._mutant_dc = divided_file_name
+        >>> m.setVar( 'fuzzedFname' )
+        >>> m.getURL().url_string
+        'http://www.w3af.com/abc/ping%21.html'
+        
+        '''
         domain_path = self._freq.getURL().getDomainPath()
         
         # Please note that this double encoding is needed if we want to work with mod_rewrite
