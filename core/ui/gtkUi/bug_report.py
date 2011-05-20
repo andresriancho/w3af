@@ -131,9 +131,15 @@ class sourceforge_bug_report(object):
         # Ask for a bug title and description
         summary, userdesc = self._ask_bug_info()
         
-        return self.sourceforge.report_bug(summary, userdesc, self.tback,
-                                           self.fname, self.plugins,
-                                           self.autogen, user)
+        result = None
+        try:
+            result = self.sourceforge.report_bug(summary, userdesc, self.tback,
+                                                 self.fname, self.plugins,
+                                                 self.autogen, user)
+        except:
+            pass
+        else:
+            return result
     
     def _login_sf(self):
         '''
