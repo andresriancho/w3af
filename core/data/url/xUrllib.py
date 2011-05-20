@@ -717,6 +717,16 @@ class xUrllib(object):
                             reason_msg = reason_err
                     
                     elif isinstance(reason_err, httplib.HTTPException):
+                        #
+                        #    Here we catch:
+                        #
+                        #    BadStatusLine, ResponseNotReady, CannotSendHeader, 
+                        #    CannotSendRequest, ImproperConnectionState,
+                        #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
+                        #    UnknownProtocol, InvalidURL, NotConnected.
+                        #
+                        #    TODO: Maybe we're being TOO generic in this isinstance?
+                        #
                         reason_msg = '%s: %s' % (error.__class__.__name__,
                                              error.args)
                     if reason_msg is not None:
