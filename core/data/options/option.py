@@ -66,7 +66,7 @@ class option:
     # And the string versions of the above methods...
     def _getStr(self, value):
         if isinstance(value,type([])):
-            return ','.join(value)
+            return ','.join( [ str(i) for i in value] )
         else:
             return str(value)
 
