@@ -26,6 +26,7 @@ import shutil
 
 HOME_DIR = os.path.join(user.home, '.w3af')
 
+
 def create_home_dir():
     '''
     Creates the w3af home directory, on linux: /home/user/.w3af/
