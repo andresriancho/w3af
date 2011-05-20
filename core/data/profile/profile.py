@@ -25,7 +25,7 @@ import ConfigParser
 from core.controllers.misc.factory import *
 import os
 import shutil
-from core.controllers.misc.homeDir import create_home_dir, get_home_dir, home_dir_is_writable
+from core.controllers.misc.homeDir import get_home_dir
 
 
 class profile:
