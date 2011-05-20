@@ -117,6 +117,12 @@ class info(dict):
 
         
     def getDesc( self ):
+        #
+        #    TODO: Who's creating a info() object and not setting a description?!
+        #
+        if self._desc is None:
+            return 'No description was set for this object.'
+        
         if self._id is not None and self._id != 0:
             if not self._desc.strip().endswith('.'):
                 self._desc += '.'
