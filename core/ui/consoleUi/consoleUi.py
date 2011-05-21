@@ -91,7 +91,7 @@ class consoleUi:
             log = om.out.console
             # Ask user function
             def ask(msg):
-                return raw_input(msg + '[y/N] ').lower() in ('y', 'yes')
+                return raw_input(msg + ' [y/N] ').lower() in ('y', 'yes')
             # Show revisions logs function
             def show_log(msg, get_logs):
                 if ask(msg):
