@@ -67,7 +67,7 @@ class collectCookies(baseGrepPlugin):
         @return: None
 
         >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.url.HTTPRequest import HTTPRequest
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest 
         >>> from core.data.parsers.urlParser import url_object
         
         Simple test, empty string.
@@ -75,10 +75,11 @@ class collectCookies(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = HTTPRequest(url)
-        >>> s = ssn(); s._already_inspected = set()
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
+        >>> fr = fuzzableRequest()
+        >>> fr.setURL( url )
+        >>> c = collectCookies()
+        >>> c.grep(fr, response)
+        >>> len(kb.kb.getData('collectCookies', 'collectCookies'))
         0
 
         '''
