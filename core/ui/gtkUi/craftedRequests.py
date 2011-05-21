@@ -32,7 +32,7 @@ from .clusterGraph import distance_function_selector
 # Generators
 from .payload_generators import create_generator_menu
 from core.data.db.history import HistoryItem
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import *
 
 ui_proxy_menu = """
 <ui>
@@ -157,10 +157,10 @@ class ManualRequests(entries.RememberingWindow):
                 self.reqresp.response.showObject(impact.httpResp)
                 self.reqresp.nb.next_page()
             else:
-                if impact.exception.__class__ == w3afException:
-                    msg = str(impact.exception)
-                elif impact.exception.__class__ == w3afMustStopException:
-                    msg = "Stopped sending requests because " + str(impact.exception)
+                e_kls = impact.exception.__class__
+                if e_kls in (w3afException, w3afMustStopException, w3afMustStopOnUrlError,
+                             w3afMustStopByKnownReasonExc, w3afProxyException ):
+                    msg = "Stopped sending requests because '%s'" % str(impact.exception)
                 else:
                     raise impact.exception
                 self.reqresp.response.clearPanes()
