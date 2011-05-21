@@ -175,7 +175,18 @@ class WhereHelper(object):
         return (result, value)
 
     def sql(self, whereStr=True):
-        '''Return SQL string.'''
+        '''
+        @return: SQL string.
+        
+        >>> w = WhereHelper( [ ('field', '3', '=') ] )
+        >>> w.sql()
+        ' WHERE field = ?'
+
+        >>> w = WhereHelper( [ ('field', '3', '='), ('foo', '4', '=') ] )
+        >>> w.sql()
+        ' WHERE field = ? AND foo = ?'
+        >>>
+        '''
         result = ''
         self._values = []
 
