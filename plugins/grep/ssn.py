@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import itertools
 
-import core.controllers.outputManager as om
-
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -35,7 +33,6 @@ from core.data.bloomfilter.pybloom import ScalableBloomFilter
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.controllers.w3afException import w3afException
 from .ssndata.ssnAreasGroups import areas_groups_map
 
 
@@ -65,7 +62,7 @@ class ssn(baseGrepPlugin):
         @return: None.
 
         >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.url.HTTPRequest import HTTPRequest
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
         >>> from core.data.parsers.urlParser import url_object
         
         Simple test, empty string.
@@ -73,8 +70,10 @@ class ssn(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = HTTPRequest(url)
-        >>> s = ssn(); s._already_inspected = set()
+        >>> request = fuzzableRequest()
+        >>> request.setURL( url )
+        >>> s = ssn()
+        >>> s._already_inspected = set()
         >>> s.grep(request, response)
         >>> len(kb.kb.getData('ssn', 'ssn'))
         0

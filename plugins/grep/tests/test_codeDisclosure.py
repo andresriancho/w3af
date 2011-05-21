@@ -34,10 +34,10 @@ class test_codeDisclosure(unittest.TestCase):
     def setUp(self):
         self.plugin = codeDisclosure()
 
-        from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404
+        from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
         from core.data.url.xUrllib import xUrllib
-        xurllib = xUrllib()
-        fingerprint_404( xurllib )
+        f = fingerprint_404_singleton( [False, False, False] )
+        f.set_urlopener( xUrllib() )
         kb.kb.save('codeDisclosure', 'codeDisclosure', [])
 
         
@@ -76,10 +76,10 @@ class test_codeDisclosure(unittest.TestCase):
         self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 0 )
 
     def test_no_code_disclosure(self):
+        # TODO: Add this test
         self.assertTrue( True )
     
     def test_no_code_disclosure_xml(self):
+        # TODO: Add this test
         self.assertTrue( True )
 
-if __name__ == "__main__":
-    unittest.main()
