@@ -118,8 +118,8 @@ class http_vs_https_dist(baseDiscoveryPlugin):
                 trc1 = header % (domain, http_port, trace_str(http_ip_tuples))
                 trc2 = header % (domain, https_port, trace_str(https_ip_tuples))
 
-                desc = _('Routes to target \'%s\' using ports \'%s\' and ' \
-                '\'%s\' are different:\n%s\n%s') % (domain, http_port, 
+                desc = 'Routes to target \'%s\' using ports \'%s\' and ' \
+                '\'%s\' are different:\n%s\n%s' % (domain, http_port, 
                                                     https_port, trc1, trc2)
                 set_info('HTTP vs. HTTPS Distance', desc)
                 om.out.information(desc)
