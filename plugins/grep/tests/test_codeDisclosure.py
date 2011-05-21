@@ -38,8 +38,7 @@ class test_codeDisclosure(unittest.TestCase):
         from core.data.url.xUrllib import xUrllib
         xurllib = xUrllib()
         fingerprint_404( xurllib )
-        from core.controllers.coreHelpers.fingerprint_404 import is_404
-        is_404 = lambda x: True
+        kb.kb.save('codeDisclosure', 'codeDisclosure', [])
 
         
     def test_ASP_code_disclosure(self):

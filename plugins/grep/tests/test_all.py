@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import unittest
+import os
 import cProfile
 
 import core.controllers.w3afCore
@@ -57,9 +58,13 @@ class test_all(unittest.TestCase):
         #   To be profiled
         #
         def profile_me():
-            for foo in xrange(10):
+            for _ in xrange(10):
                 for counter in xrange(1,5):
-                    body = file('test-' + str(counter) + '.html').read()
+                    
+                    file_name = 'test-' + str(counter) + '.html'
+                    file_path = os.path.join('plugins','grep','tests',file_name)
+                    
+                    body = file( file_path ).read()
                     response = httpResponse(200, body, {'Content-Type': 'text/html'},
                                             url_object( self.url_str + str(counter) ),
                                             url_object( self.url_str + str(counter) ) )
@@ -81,5 +86,3 @@ class test_all(unittest.TestCase):
         #cProfile.run('profile_me()', 'output.stats')
 
 
-if __name__ == "__main__":
-    unittest.main()
