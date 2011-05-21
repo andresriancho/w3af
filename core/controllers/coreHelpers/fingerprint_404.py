@@ -46,7 +46,7 @@ class fingerprint_404:
 
     _instance = None
     
-    def __init__( self, test_db=False ):
+    def __init__( self, test_db=[] ):
         #
         #   Set the opener, I need it to perform some tests and gain 
         #   the knowledge about the server's 404 response bodies.
@@ -64,6 +64,7 @@ class fingerprint_404:
         self.is_404_LRU = LRU(500)
         
         self._test_db = test_db
+        self._test_db_index = 0
 
     def set_urlopener(self, urlopener):
         self._urlOpener = urlopener
@@ -184,7 +185,16 @@ class fingerprint_404:
         '''
     
         #   This is here for testing.
-        #return False
+        if self._test_db:
+            i = self._test_db_index
+            try:
+                result = self._test_db[ i ]
+                self._test_db_index = i + 1
+                print i
+            except:
+                raise Exception('Your test_db is incomplete!')
+            else:
+                return result
 
         #
         #   First we handle the user configured exceptions:
@@ -251,9 +261,9 @@ class fingerprint_404:
             self.is_404_LRU[ http_response.id ] = False
             return False
 
-def fingerprint_404_singleton():
+def fingerprint_404_singleton( test_db=[] ):
     if not fingerprint_404._instance:
-        fingerprint_404._instance = fingerprint_404()
+        fingerprint_404._instance = fingerprint_404( test_db )
     return fingerprint_404._instance
 
 
