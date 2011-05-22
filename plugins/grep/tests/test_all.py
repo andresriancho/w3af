@@ -52,12 +52,38 @@ class test_all(unittest.TestCase):
         self._plugins = []
         for pname in self._w3af.getPluginList('grep'):
             self._plugins.append( self._w3af.getPluginInstance(pname, 'grep') )
-        
+
+    def test_options_for_grep_plugins(self):
+        '''
+        We're not going to assert anything here. What just want to see if
+        the plugins implement the following methods:
+            - getOptions()
+            - setOptions()
+            - getPluginDeps()
+            - getLongDesc()
+            
+        And don't crash in any way when we call them.
+        '''
+        for plugin in self._plugins:
+            o = plugin.getOptions()
+            plugin.setOptions( o )
+            
+            plugin.getPluginDeps()
+            plugin.getLongDesc()
+            
+            plugin.end()
+                
     def test_all_grep_plugins(self):
-        #
-        #   To be profiled
-        #
+        '''
+        Run a set of 5 html files through all grep plugins. As with the previous
+        test, the only thing we want to see is if the grep plugin crashes or not.
+        
+        We're not asserting any results. 
+        '''
         def profile_me():
+            '''
+            To be profiled
+            '''
             for _ in xrange(10):
                 for counter in xrange(1,5):
                     
