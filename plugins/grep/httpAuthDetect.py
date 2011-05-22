@@ -58,6 +58,92 @@ class httpAuthDetect(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
+
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+        >>> f = fingerprint_404_singleton( [False, False, False] )
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> h = httpAuthDetect()
+        >>> h.grep(request, response)
+        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        0
+        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        0
+
+        One long string
+        >>> body = 'ABC ' * 10000
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> h = httpAuthDetect()
+        >>> h.grep(request, response)
+        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        0
+        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        0
+
+        Something interesting to match
+        >>> body = 'ABC ' * 100
+        >>> body += 'http://abc:def@www.w3af.com/foo.bar'
+        >>> body += '</br> ' * 50
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> h = httpAuthDetect()
+        >>> h.grep(request, response)
+        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        0
+        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        1
+
+        Something interesting to match
+        >>> kb.kb.cleanup()
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(401, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> h = httpAuthDetect()
+        >>> h.grep(request, response)
+        >>> len(kb.kb.getData('httpAuthDetect', 'non_rfc_auth'))
+        1
+        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        0
+
+        Something interesting to match
+        >>> kb.kb.cleanup()
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html', 'www-authenticate': 'realm-w3af'}
+        >>> response = httpResponse(401, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> h = httpAuthDetect()
+        >>> h.grep(request, response)
+        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        1
+        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        0
         '''
         already_reported = [u.getURL() for u in \
                             kb.kb.getData('httpAuthDetect', 'auth')]
