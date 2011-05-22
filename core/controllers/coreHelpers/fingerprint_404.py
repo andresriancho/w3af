@@ -190,7 +190,6 @@ class fingerprint_404:
             try:
                 result = self._test_db[ i ]
                 self._test_db_index = i + 1
-                print i
             except:
                 raise Exception('Your test_db is incomplete!')
             else:
