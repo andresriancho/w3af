@@ -74,7 +74,7 @@ class wsdlGreper(baseGrepPlugin):
         >>> request.setMethod('GET')
         >>> w = wsdlGreper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'wsdlGreper'))
+        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
         0
 
         One long string
@@ -87,7 +87,7 @@ class wsdlGreper(baseGrepPlugin):
         >>> request.setMethod('GET')
         >>> w = wsdlGreper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'wsdlGreper'))
+        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
         0
 
         Something interesting to match
