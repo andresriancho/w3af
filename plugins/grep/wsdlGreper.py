@@ -56,6 +56,70 @@ class wsdlGreper(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
+
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+        >>> f = fingerprint_404_singleton( [False, False, False] )
+
+        Simple test, empty string.
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> w = wsdlGreper()
+        >>> w.grep(request, response)
+        >>> len(kb.kb.getData('wsdlGreper', 'wsdlGreper'))
+        0
+
+        One long string
+        >>> body = 'ABC ' * 10000
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> w = wsdlGreper()
+        >>> w.grep(request, response)
+        >>> len(kb.kb.getData('wsdlGreper', 'wsdlGreper'))
+        0
+
+        Something interesting to match
+        >>> body = 'ABC ' * 100
+        >>> body += '/s:sequence'
+        >>> body += '</br> ' * 50
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> w = wsdlGreper()
+        >>> w.grep(request, response)
+        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
+        1
+
+        Something interesting to match
+        >>> kb.kb.cleanup()
+        >>> body = 'ABC ' * 100
+        >>> body += 'disco:discovery '
+        >>> body += '</br> ' * 50
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> w = wsdlGreper()
+        >>> w.grep(request, response)
+        >>> len(kb.kb.getData('wsdlGreper', 'disco'))
+        1
         '''
         url = response.getURL()
         if response.is_text_or_html() and response.getCode() == 200  and \
