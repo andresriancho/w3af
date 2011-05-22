@@ -50,6 +50,73 @@ class strangeHTTPCode(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
+        
+        Init
+        >>> from core.data.url.httpResponse import httpResponse
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+        >>> f = fingerprint_404_singleton( [False, False, False] )
+
+        Many quick tests:
+        >>> body = ''
+        >>> url = url_object('http://www.w3af.com/')
+        >>> headers = {'content-type': 'text/html'}
+        >>> resp_200 = httpResponse(200, body , headers, url, url)
+        >>> resp_999 = httpResponse(999, body , headers, url, url)
+        >>> resp_123 = httpResponse(123, body , headers, url, url)
+        >>> resp_567 = httpResponse(567, body , headers, url, url)
+        >>> resp_666 = httpResponse(666, body , headers, url, url)
+        >>> resp_777 = httpResponse(777, body , headers, url, url)
+        >>> resp_404 = httpResponse(404, body , headers, url, url)
+        >>> request = fuzzableRequest()
+        >>> request.setURL(url)
+        >>> request.setMethod('GET')
+        >>> s = strangeHTTPCode()
+
+        >>> s.grep(request, resp_200)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        0
+        >>> kb.kb.cleanup()
+
+        >>> s.grep(request, resp_999)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+
+        >>> s.grep(request, resp_123)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+        
+        >>> s.grep(request, resp_567)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+
+        >>> s.grep(request, resp_666)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+
+        >>> s.grep(request, resp_777)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+        
+        >>> resp_777 = httpResponse(777, body , headers, url, url, id=1)
+        >>> s.grep(request, resp_777)
+        >>> resp_777 = httpResponse(777, body , headers, url, url, id=2)
+        >>> s.grep(request, resp_777)        
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        1
+        >>> kb.kb.cleanup()
+
+        >>> s.grep(request, resp_404)
+        >>> len(kb.kb.getData('strangeHTTPCode', 'strangeHTTPCode'))
+        0
+        >>> kb.kb.cleanup()
+        
         '''
         if response.getCode() not in self._common_http_codes:
             
