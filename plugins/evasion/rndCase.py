@@ -68,7 +68,9 @@ class rndCase(baseEvasionPlugin):
 
         >>> u = url_object('http://www.w3af.com/a/B')
         >>> r = HTTPRequest( u )
-        >>> rc.modifyRequest( r ).url_object.getPath() in ['/a/b','/a/B','/A/b','/A/B/']
+        >>> options = ['/a/b','/a/B','/A/b','/A/B'] 
+        >>> path = rc.modifyRequest( r ).url_object.getPath()
+        >>> path in options
         True
 
         >>> #
