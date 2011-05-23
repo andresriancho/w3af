@@ -301,11 +301,13 @@ class bruteforcer:
         >>> b = bruteforcer()
         >>> b.setURL('http://www.google.com/')
         Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
+            ...
         ValueError: The URL in the bruteforcer must be of urlParser.url_object type.
+        >>> url = url_object('http://www.google.com/')
         >>> b = bruteforcer()
-        >>> b.setURL( url_object('http://www.google.com/') )
-        >>>
+        >>> b.setURL(url)
+        >>> b.getURL() == url
+        True
         '''
         if not isinstance(url, url_object):
             raise ValueError('The URL in the bruteforcer must be of urlParser.url_object type.')

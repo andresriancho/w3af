@@ -66,11 +66,13 @@ class form(dataContainer):
         >>> f = form()
         >>> f.setAction('http://www.google.com/')
         Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
+          ...
         ValueError: The action of a form must be of urlParser.url_object type.
         >>> f = form()
-        >>> f.setAction( url_object('http://www.google.com/') )
-        >>>
+        >>> action = url_object('http://www.google.com/')
+        >>> f.setAction(action)
+        >>> f.getAction() == action
+        True
         '''
         if not isinstance(action, url_object):
             raise ValueError('The action of a form must be of urlParser.url_object type.')

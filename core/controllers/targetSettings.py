@@ -97,14 +97,14 @@ class targetSettings(configurable):
     def _verifyURL(self, target_url, fileTarget=True):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't support it.
-
-        >>> ts = targetSettings()
-        >>> ts._verifyURL( url_object('http://www.google.com/') )
-        >>> ts._verifyURL( url_object('http://www.google.com:39/') )
+        >>> ts = targetSettings()        
         >>> ts._verifyURL( url_object('ftp://www.google.com/') )
         Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
+          ...
         w3afException: Invalid format for target URL "ftp://www.google.com/", you have to specify the protocol (http/https/file) and a domain or IP address. Examples: http://host.tld/ ; https://127.0.0.1/ .
+        >>> ts._verifyURL( url_object('http://www.google.com/') )
+        >>> ts._verifyURL( url_object('http://www.google.com:39/')) is None
+        True
         
         @param target_url: The target URL object to check if its valid or not.
         @return: None. A w3afException is raised on error.

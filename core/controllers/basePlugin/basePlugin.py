@@ -136,7 +136,8 @@ class basePlugin(configurable):
         >>> v2 = vuln.vuln()
         >>> v2.setDesc('world')
         >>> info_obj = [ v1, v2 ]
-        >>> b.printUniq( info_obj, None )
+        >>> b.printUniq(info_obj, None) is None
+        True
         '''
 
         # Create the list of things to inform

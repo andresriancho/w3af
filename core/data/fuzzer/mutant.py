@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import copy
 
 
-class mutant:
+class mutant(object):
     '''
     This class is a wrapper for fuzzable requests that have been modified.
     '''
@@ -141,10 +141,14 @@ class mutant:
         self._originalResponseBody = orBody
         
     #
-    # All the other methods are forwarded to the fuzzable request
+    # All the other methods are forwarded to the fuzzable request except for
+    # the magic methods.
     #
-    def __getattr__( self, name ):
-        return getattr( self._freq, name )
+    def __getattr__(self, name):
+        if name.startswith('__'):
+            raise AttributeError, ("%s instance has no attribute '%s'" %
+                                   (self.__class__.__name__, name))
+        return getattr(self._freq, name)
         
     def foundAt(self):
         '''

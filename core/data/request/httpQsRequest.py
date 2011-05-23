@@ -45,9 +45,11 @@ class httpQsRequest(fuzzableRequest):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: The URL of a httpQsRequest must be of urlParser.url_object type.
+        >>> url = url_object('http://www.google.com/')
         >>> r = httpQsRequest()
-        >>> r.setURL( url_object('http://www.google.com/') )
-        >>>
+        >>> r.setURL(url)
+        >>> r.getURL() == url
+        True
         '''
         if not isinstance(url, url_object):
             raise ValueError('The URL of a httpQsRequest must be of urlParser.url_object type.')
@@ -62,9 +64,11 @@ class httpQsRequest(fuzzableRequest):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: The URI of a httpQsRequest must be of urlParser.url_object type.
+        >>> uri = url_object('http://www.google.com/')
         >>> r = httpQsRequest()
-        >>> r.setURI( url_object('http://www.google.com/') )
-        >>>
+        >>> r.setURI(uri)
+        >>> r.getURI() == uri
+        True
         '''
         if not isinstance(uri, url_object):
             raise ValueError('The URI of a httpQsRequest must be of urlParser.url_object type.')

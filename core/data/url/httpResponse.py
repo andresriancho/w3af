@@ -370,9 +370,12 @@ class httpResponse(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: The URL of a httpResponse object must be of urlParser.url_object type.
+        >>> url = url_object('http://www.google.com/')
         >>> u = url_object('http://www.google.com')
         >>> r = httpResponse(200, '' , {}, u, u)
-        >>> r.setURL( url_object('http://www.google.com/') )
+        >>> r.setURL(url)
+        >>> r.getURL() == url
+        True
         '''
         if not isinstance(url, url_object):
             raise ValueError('The URL of a httpResponse object must be of urlParser.url_object type.')
@@ -387,9 +390,12 @@ class httpResponse(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: The URI of a httpResponse object must be of urlParser.url_object type.
+        >>> uri = url_object('http://www.google.com/')
         >>> u = url_object('http://www.google.com')
         >>> r = httpResponse(200, '' , {}, u, u)
-        >>> r.setURI( url_object('http://www.google.com/') )
+        >>> r.setURI(uri)
+        >>> r.getURI() == uri
+        True
         '''
         if not isinstance(uri, url_object):
             raise ValueError('The URI of a httpResponse object must be of urlParser.url_object type.')
