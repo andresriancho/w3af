@@ -39,7 +39,9 @@ class HTTPRequest(urllib2.Request):
         ValueError: The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.
         
         >>> u = url_object('http://www.google.com')
-        >>> r = HTTPRequest(u)
+        >>> req = HTTPRequest(u)
+        >>> req.get_full_url() == 'http://www.google.com'
+        True
         '''
         if not isinstance(url, url_object):
             raise ValueError('The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.')
