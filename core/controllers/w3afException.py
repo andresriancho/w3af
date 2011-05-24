@@ -63,7 +63,7 @@ class w3afMustStopException(Exception):
         self.errs = errs
 
     def __str__(self):
-        return self.msg + '\n'.join(self.errs)
+        return self.msg + '\n'.join( [str(e) for e in self.errs] )
     __repr__ = __str__
 
 
