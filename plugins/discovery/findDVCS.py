@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+import StringIO
+
 import core.controllers.outputManager as om
 
 # options
@@ -32,13 +35,13 @@ from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import re
-import StringIO
+from core.data.bloomfilter.pybloom import ScalableBloomFilter
 
 
 class findDVCS(baseDiscoveryPlugin):
     '''
     Find GIT, Mercurial (HG), and Bazaar (BZR) repositories
+
     @author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     '''
 
@@ -46,8 +49,7 @@ class findDVCS(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = []
-        self._fuzzable_requests_to_return = []
+        self._analyzed_dirs = ScalableBloomFilter()
         self._compile_DVCS_RE()
 
     def discover(self, fuzzableRequest ):
@@ -60,7 +62,7 @@ class findDVCS(baseDiscoveryPlugin):
         self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.append( domain_path )
+            self._analyzed_dirs.add( domain_path )
             
             for repo in self._compiled_dvcs_info.keys():
                 relative_url = self._compiled_dvcs_info[repo]['filename']
