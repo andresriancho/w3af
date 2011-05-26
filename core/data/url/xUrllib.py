@@ -713,7 +713,7 @@ class xUrllib(object):
                         if isinstance(reason_err, socket.sslerror):
                             reason_msg = 'SSL Error: %s' % error.reason
                         elif reason_err[0] in known_errors:
-                            reason_msg = reason_err
+                            reason_msg = str(reason_err)
                     
                     elif isinstance(reason_err, httplib.HTTPException):
                         #
