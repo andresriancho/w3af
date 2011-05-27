@@ -21,13 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-# This regex means: "find all tags that are of the form <? something ?> 
-# but if that something is "xml .*" ignore it completely. This is to 
-# remove the false positive in the detection of code disclosure
-# that is added when the web application uses something like
-# <?xml version="1.0" encoding="UTF-8"?>
+# This regex means: "find all tags that are of the form <? something ?> , 
+# but if that something is "xml .*" ignore it completely. This is to remove 
+# the false positive in the detection of code disclosure that is added when
+# the web application uses something like "<?xml version="1.0" encoding="UTF-8"?>"
 # This was added to fix bug #1989056
-php = re.compile( '<\?(?! *xml).*\?>', re.IGNORECASE | re.DOTALL)
+#
+# Also added (?!xpacket) in order to avoid ticket #164090 with PSD files
+#
+php = re.compile( '<\?(?! *xml)(?!xpacket).*\?>', re.IGNORECASE | re.DOTALL)
 
 # The rest of the regex are ok, because this patterns aren't used in html / xhtml
 asp = re.compile( '<%.*?%>', re.IGNORECASE | re.DOTALL)
@@ -67,6 +69,21 @@ def is_source_file( file_content ):
                             a re.match object if the file_content matches a source code file,
                             a string with the source code programming language
                           ).
+                          
+    >>> is_source_file( 'foo <? echo "a"; ?> bar' ) != (None, None )
+    True
+
+    >>> is_source_file( 'foo <? echo "bar' ) == (None, None )
+    True
+
+    >>> is_source_file( 'foo <?xml ?> "bar' ) == (None, None )
+    True
+
+    >>> is_source_file( 'foo <?xpacket ?> "bar' ) == (None, None )
+    True
+
+    >>> is_source_file( 'foo <?ypacket ?> "bar' ) != (None, None )
+    True
     '''
     for regex, lang in REGEX_LIST:
         
