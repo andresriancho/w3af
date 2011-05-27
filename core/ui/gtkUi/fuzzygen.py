@@ -26,7 +26,10 @@ except ImportError:
     # this is to easy the test when executing this file directly
     w3afException = Exception
 
+from core.data.parsers.urlParser import url_object
+
 REPP = re.compile("\$.*?\$")
+
 
 class FuzzyError(w3afException): pass
 
@@ -93,8 +96,22 @@ class FuzzyGenerator(object):
     def _dissect(self, txt):
         '''Separates the fixed and dynamic part from the text.
 
-        @param txt: the text to process.
+        @param txt: the string of the HTTP request to process.
         '''
+        #
+        #    fix for bug #164086
+        #
+        try:
+            header = txt.split('\n')[0]
+            url_string = header.split(' ')[1]
+            replaced_url_string = url_string.replace('%24','$')
+            txt = txt.replace(url_string,replaced_url_string)
+        except:
+            pass
+        #
+        #    /fix for bug #164086
+        #
+        
         # remove the \$
         txt = txt.replace("\$", "\x00")
 
@@ -148,5 +165,3 @@ class FuzzyGenerator(object):
             else:
                 for val in self._possib(generat, constr+[elem]):
                     yield val
-
-
