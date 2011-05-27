@@ -26,9 +26,9 @@ try:
     import os
     import random
     import traceback
-
     from core.controllers.auto_update import VersionMgr, SVNError, \
-        is_working_copy
+        is_working_copy, W3AF_LOCAL_PATH
+    from core.controllers.misc.homeDir import verify_dir_has_perm
     from core.ui.consoleUi.rootMenu import *
     from core.ui.consoleUi.callbackMenu import *
     from core.ui.consoleUi.util import *
@@ -86,7 +86,8 @@ class consoleUi:
         '''
         Root menu init routine.
         '''        
-        if do_upd in (None, True) and is_working_copy():
+        if do_upd in (None, True) and is_working_copy() and \
+            verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
             # Output function
             log = om.out.console
             # Ask user function

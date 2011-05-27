@@ -32,7 +32,7 @@ def is_working_copy():
     '''
     Test whether current's w3af instance a svn working copy.
     '''
-    return SVNClientClass.is_working_copy(localpath=w3afLocalPath)
+    return SVNClientClass.is_working_copy(localpath=W3AF_LOCAL_PATH)
 
 
 class SVNError(Exception):
@@ -432,7 +432,7 @@ class SVNLogList(SVNList):
 SVNClientClass = w3afSVNClient
 
 # Get w3af install dir
-w3afLocalPath = os.sep.join(__file__.split(os.sep)[:-4])
+W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
 
 # Facade class. Intended to be used to interact with the module
 class VersionMgr(object): #TODO: Make it singleton?
@@ -479,7 +479,7 @@ class VersionMgr(object): #TODO: Make it singleton?
     HEAD = 0
     PREVIOUS = -1
     
-    def __init__(self, localpath=w3afLocalPath, log=None):
+    def __init__(self, localpath=W3AF_LOCAL_PATH, log=None):
         '''
         w3af version manager class. Handles the logic concerning the 
         automatic update/commit process of the code.

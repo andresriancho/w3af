@@ -73,7 +73,8 @@ except ImportError:
 import threading, shelve, os
 from core.controllers.w3afCore import wCore
 import core.controllers.miscSettings
-from core.controllers.auto_update import VersionMgr, is_working_copy
+from core.controllers.auto_update import (VersionMgr, is_working_copy,
+                                          W3AF_LOCAL_PATH)
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 from core.data.parsers.urlParser import url_object
@@ -83,7 +84,7 @@ from . import export_request
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
 
-from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.homeDir import get_home_dir, verify_dir_has_perm
 from core.controllers.misc.get_w3af_version import get_w3af_version
 
 import webbrowser, time
@@ -262,7 +263,8 @@ class MainApp(object):
         self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
         
-        if do_upd in (None, True) and is_working_copy():
+        if do_upd in (None, True) and is_working_copy() and \
+            verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
             # Do SVN update stuff
             vmgr = VersionMgr(log=splash.push)
             
