@@ -109,8 +109,7 @@ class HttpEditor(gtk.VBox, Searchable):
         b.insert_at_cursor(payload)
 
     def get_languages(self):
-        return ['http', 'html', 'xml', 'css']
-        #return self._lm.get_language_ids()
+        return ['http', 'html', 'xml', 'css', 'js']
 
     def _activate_lang(self, widg, lang):
         self.set_language(lang)
@@ -129,6 +128,7 @@ class HttpEditor(gtk.VBox, Searchable):
             syntaxMenu.append(langItem)
         opc = gtk.MenuItem(_("Syntax highlighting"))
         opc.set_submenu(syntaxMenu)
+        menu.append(opc)
         # Strings payloads
         payloadMenu = gtk.Menu()
         for i in self.get_string_payloads():
