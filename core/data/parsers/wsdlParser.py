@@ -77,7 +77,7 @@ class wsdlParser:
                 msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
                 om.out.debug(msg)
                 raise w3afException(msg)
-        
+            
     def getNS( self, method ):
         '''
         @method: The method name
@@ -106,7 +106,9 @@ class wsdlParser:
         @return: The soap action.
         '''
         if methodName in self._proxy.methods.keys():
-            return str(self._proxy.methods[ methodName ].location)
+            location_str = str(self._proxy.methods[ methodName ].location)
+            location_url = url_object(location_str)
+            return location_url
         else:
             raise w3afException('Unknown method name.') 
     
