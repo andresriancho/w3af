@@ -83,7 +83,7 @@ class basicAuthBrute(baseBruteforcePlugin):
         # get instance outside loop...
         uriOpener = xUrllib()
         uriOpener.setGrepPlugins( [] )
-        # So uriOpener._init aint called
+        # So uriOpener._init is not called
         uriOpener._cacheOpener = ''
     
         for combination in combinations:
