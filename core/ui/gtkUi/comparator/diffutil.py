@@ -90,7 +90,7 @@ class Differ(object):
             seq1 = IncrementalSequenceMatcher(None, sequences[1], sequences[2]).get_difference_opcodes()
             self.diffs = seq0, seq1
         else:
-            raise "Bad number of arguments to Differ constructor (%i)" % len(sequences)
+            raise ValueError("Bad number of arguments to Differ constructor (%i)" % len(sequences))
 
     def change_sequence(self, sequence, startidx, sizechange, texts):
         assert sequence in (0,1,2)
@@ -297,7 +297,7 @@ class Differ(object):
                     yield None
                 diffs[i] = matcher.get_difference_opcodes()
         else:
-            raise "Bad number of arguments to Differ constructor (%i)" % len(sequences)
+            raise ValueError("Bad number of arguments to Differ constructor (%i)" % len(sequences))
         self.diffs = diffs
         self.num_sequences = len(sequences)
         self.seqlength = [0,0,0]
