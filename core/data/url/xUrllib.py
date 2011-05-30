@@ -306,8 +306,9 @@ class xUrllib(object):
         subscribed log handlers
         
         @param uri: URI string or request object
+        
         @param log_it: Boolean that indicated whether to log request
-            and response.        
+        and response.  
         '''
         # accept a URI or a Request object
         if isinstance(uri, url_object):
@@ -320,14 +321,15 @@ class xUrllib(object):
             raise Exception( msg )
 
         # Work,
-        nc_resp = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
+        no_content_response = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
         if log_it:
             # This also assigns the id to both objects.
-            logHandler.logHandler().http_response(req, nc_resp)
-        else:
-            nc_resp.id = seq_gen.inc()
+            logHandler.logHandler().http_response(req, no_content_response)
+        
+        if no_content_response.id is None:
+            no_content_response.id = seq_gen.inc()
             
-        return nc_resp
+        return no_content_response
             
     def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
         '''
