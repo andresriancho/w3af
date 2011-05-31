@@ -27,7 +27,7 @@ class w3afException(Exception):
     
     def __init__(self, value):
         Exception.__init__( self )
-        self.value = value
+        self.value = str(value)
     
     def __str__(self):
         return self.value
@@ -39,7 +39,7 @@ class w3afRunOnce(Exception):
     '''
     def __init__(self, value=''):
         Exception.__init__( self )
-        self.value = value
+        self.value = str(value)
     
     def __str__(self):
         return self.value
@@ -59,11 +59,12 @@ class w3afMustStopException(Exception):
     extensively.
     '''
     def __init__(self, msg, errs=()):
-        self.msg = msg
+        self.msg = str(msg)
         self.errs = errs
 
     def __str__(self):
         return self.msg + '\n'.join( [str(e) for e in self.errs] )
+    
     __repr__ = __str__
 
 
