@@ -775,8 +775,6 @@ class xUrllib(object):
             except w3afException, e:
                 msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"' % (eplugin.getName(), e)
                 om.out.error( msg )
-            except Exception, e:
-                raise e
                 
         return request
         
