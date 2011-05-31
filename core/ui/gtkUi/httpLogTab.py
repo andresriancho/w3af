@@ -194,9 +194,10 @@ class httpLogTab(entries.RememberingHPaned):
         for code in codes:
             filterCodes.add(Option(code[0], code[2], code[1], "boolean"))
         self.pref.addSection('codes', _('Response Code'), filterCodes)
-        filterTags = optionList()
-        filterTags.add(Option("tag", False, "Tag", "boolean"))
-        self.pref.addSection('commented', _('Commented'), filterTags)
+        filterMisc = optionList()
+        filterMisc.add(Option("tag", False, "Tag", "boolean"))
+        filterMisc.add(Option("has_qs", False, "Request has Query String", "boolean"))
+        self.pref.addSection('misc', _('Misc'), filterMisc)
         filterTypes = optionList()
         self._filterTypes = [
                 ('html', 'HTML', False),
@@ -351,8 +352,11 @@ class httpLogTab(entries.RememberingHPaned):
         if self.pref.getValue('sizes', 'resp_size'):
             searchData.append(('response_size', 0, ">"))
         # Tags
-        if self.pref.getValue('commented', 'tag'):
+        if self.pref.getValue('misc', 'tag'):
             searchData.append(('tag', '', "!="))
+        # hasQueryString
+        if self.pref.getValue('misc', 'has_qs'):
+            searchData.append(('has_qs', 0, ">"))
         # Content type
         filterTypes = []
         for filterType in self._filterTypes:

@@ -50,7 +50,7 @@ class HistoryItem(object):
         ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
         ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
         ('method', 'text'), ('response_size', 'integer'), ('codef', 'integer'),
-        ('alias', 'text')]
+        ('alias', 'text'), ('has_qs', 'integer')]
     _primaryKeyColumns = ('id',)
     _indexColumns = ('alias',)
     id = None
@@ -256,18 +256,19 @@ class HistoryItem(object):
         code = int(resp.getCode()) / 100
         values.append(code)
         values.append(resp.getAlias())
+        values.append(int(self.request.getURI().hasQueryString()))
 
         if not self.id:
             sql = ('INSERT INTO %s '
-            '(id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef, alias) '
-            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
+            '(id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef, alias, has_qs) '
+            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
             values.append(self.id)
             sql = ('UPDATE %s' 
             ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
-            ', method = ?, response_size = ?, codef = ?, alias = ? '
+            ', method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
             ' WHERE id = ?' % self._dataTable)
             self._db.execute(sql, values)
         
