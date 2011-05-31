@@ -133,7 +133,7 @@ class MozRenderingView(RenderingView):
         mimeType = 'text/html'
         # mimeType = obj.getContentType()
         if obj.is_text_or_html():
-            self._renderingWidget.render_data(obj.getBody(), long(len(obj.getBody())), obj.getURI(), mimeType)
+            self._renderingWidget.render_data(obj.getBody(), long(len(obj.getBody())), str(obj.getURI()), mimeType)
 
     def clear(self):
         '''Clear view.'''
