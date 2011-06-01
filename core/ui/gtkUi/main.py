@@ -40,10 +40,10 @@ import gtk, gobject
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"
-print "  Python version:"
+print "  Python version: "
 print "\n".join("    "+x for x in sys.version.split("\n"))
-print "  GTK version:", ".".join(str(x) for x in gtk.gtk_version)
-print "  PyGTK version:", ".".join(str(x) for x in gtk.pygtk_version)
+print "  GTK version: ", ".".join(str(x) for x in gtk.gtk_version)
+print "  PyGTK version: ", ".".join(str(x) for x in gtk.pygtk_version)
 print
 
 # Threading initializer
