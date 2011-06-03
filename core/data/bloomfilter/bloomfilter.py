@@ -40,6 +40,7 @@ try:
 except:
     USE_PURE_PYTHON_FILTER = True
 else:
+    print 'Using pybloomfilter with mmap.'
     USE_PURE_PYTHON_FILTER = False
 
 
@@ -80,7 +81,7 @@ class mmap_filter_wrapper(generic_bloomfilter):
         self.bf = mmap_filter(capacity, error_rate, temp_file)
 
     def __contains__(self, key):
-        return key in self.bf
+        return str(key) in self.bf
         
     def __len__(self):
         return len(self.bf)
@@ -94,7 +95,7 @@ class pure_python_filter_wrapper(generic_bloomfilter):
         self.bf = pure_python_filter(capacity, error_rate)
 
     def __contains__(self, key):
-        return key in self.bf
+        return str(key) in self.bf
         
     def __len__(self):
         return len(self.bf)
