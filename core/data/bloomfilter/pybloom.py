@@ -24,19 +24,6 @@ use BitVector [1].
     >>> abs((len(f) / float(f.capacity)) - 1.0) <= f.error_rate
     True
 
-    >>> from pybloom import scalable_bloomfilter
-    >>> sbf = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
-    >>> count = 10000
-    >>> for i in xrange(0, count):
-    ...     _ = sbf.add(i)
-    ...
-    >>> sbf.capacity > count
-    True
-    >>> len(sbf) <= count
-    True
-    >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
-    True
-
 """
 import math
 import hashlib

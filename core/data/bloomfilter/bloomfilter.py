@@ -147,6 +147,19 @@ class scalable_bloomfilter(object):
         False
         >>> unicode_string in b
         True
+        
+        >>> sbf = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
+        >>> count = 10000
+        >>> for i in xrange(0, count):
+        ...     _ = sbf.add(i)
+        ...
+        >>> sbf.capacity > count
+        True
+        >>> len(sbf) <= count
+        True
+        >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
+        True
+        
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
@@ -211,4 +224,4 @@ class scalable_bloomfilter(object):
 
     def __len__(self):
         """Returns the total number of elements stored in this SBF"""
-        return sum([f.count for f in self.filters])
+        return sum([len(f) for f in self.filters])
