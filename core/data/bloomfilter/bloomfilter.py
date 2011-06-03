@@ -87,7 +87,7 @@ class mmap_filter_wrapper(generic_bloomfilter):
         return len(self.bf)
         
     def add(self, key):
-        return self.bf.add(key)
+        return self.bf.add( str(key) )
         
 class pure_python_filter_wrapper(generic_bloomfilter):
     def __init__(self, capacity, error_rate=0.01):
@@ -101,7 +101,7 @@ class pure_python_filter_wrapper(generic_bloomfilter):
         return len(self.bf)
         
     def add(self, key):
-        return self.bf.add(key)
+        return self.bf.add( str(key) )
 
 if USE_PURE_PYTHON_FILTER:
     #
