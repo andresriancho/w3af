@@ -32,7 +32,7 @@ from core.controllers.w3afException import w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.parsers.urlParser import url_object
@@ -50,7 +50,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         self._first_time = True
         self._fuzzImages = False
         self._headers = {}
-        self._already_reported = ScalableBloomFilter()
+        self._already_reported = scalable_bloomfilter()
         
     def discover(self, fuzzableRequest ):
         '''

@@ -29,7 +29,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -50,7 +50,7 @@ class sslCertificate(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested_domains = ScalableBloomFilter()
+        self._already_tested_domains = scalable_bloomfilter()
 
     def audit(self, freq ):
         '''

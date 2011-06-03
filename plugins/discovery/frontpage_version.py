@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.info as info
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 #python modules
 import re
@@ -46,7 +46,7 @@ class frontpage_version(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = ScalableBloomFilter()
+        self._analyzed_dirs = scalable_bloomfilter()
         self._exec = True
 
     def discover(self, fuzzableRequest ):

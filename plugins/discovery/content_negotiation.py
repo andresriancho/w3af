@@ -33,7 +33,7 @@ import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afRunOnce
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import os
 import re
@@ -54,8 +54,8 @@ class content_negotiation(baseDiscoveryPlugin):
         
         # Internal variables
         self._exec = True
-        self._already_tested_dir = ScalableBloomFilter()
-        self._already_tested_resource = ScalableBloomFilter()
+        self._already_tested_dir = scalable_bloomfilter()
+        self._already_tested_resource = scalable_bloomfilter()
         self._is_vulnerable_result = None
         self._to_bruteforce = []
         # I want to try 3 times to see if the remote host is vulnerable

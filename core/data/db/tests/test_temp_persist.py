@@ -1,4 +1,5 @@
 import random
+from random import choice
 import unittest
 import string
 
@@ -13,7 +14,7 @@ class test_disk_list(unittest.TestCase):
     def setUp(self):
         create_temp_dir()
 
-    def test_bloom_int(self):
+    def test_int(self):
         dl = disk_list()
 
         for i in xrange(0, 1000):
@@ -27,7 +28,7 @@ class test_disk_list(unittest.TestCase):
             r = random.randint(1000,1000 * 2)
             self.assertEqual(r in dl, False)
         
-    def test_bloom_string(self):
+    def test_string(self):
         dl = disk_list()
 
         for i in xrange(0, 1000):
@@ -40,6 +41,7 @@ class test_disk_list(unittest.TestCase):
             self.assertEqual(i in dl, False)
 
         self.assertEqual(rnd in dl, True)
+
 
 if __name__ == '__main__':
     unittest.main()

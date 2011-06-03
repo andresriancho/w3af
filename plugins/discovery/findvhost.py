@@ -37,7 +37,7 @@ import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import socket
 
@@ -53,7 +53,7 @@ class findvhost(baseDiscoveryPlugin):
         
         # Internal variables
         self._first_exec = True
-        self._already_queried = ScalableBloomFilter()
+        self._already_queried = scalable_bloomfilter()
         self._can_resolve_domain_names = False
         self._non_existant_response = None
         

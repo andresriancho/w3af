@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import re
 
@@ -47,7 +47,7 @@ class directoryIndexing(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._already_visited = ScalableBloomFilter()
+        self._already_visited = scalable_bloomfilter()
         
         # Added performance by compiling all the regular expressions
         # before using them. The setup time of the whole plugin raises,

@@ -34,7 +34,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class codeDisclosure(baseGrepPlugin):
@@ -48,7 +48,7 @@ class codeDisclosure(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         #   Internal variables
-        self._already_added = ScalableBloomFilter()
+        self._already_added = scalable_bloomfilter()
         self._first_404 = True
 
     def grep(self, request, response):

@@ -34,7 +34,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 from core.data.parsers.urlParser import url_object
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 from core.controllers.w3afException import w3afException
@@ -52,7 +52,7 @@ class dav(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested_dirs = ScalableBloomFilter()
+        self._already_tested_dirs = scalable_bloomfilter()
 
     def audit(self, freq ):
         '''

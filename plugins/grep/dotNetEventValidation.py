@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import re
 
@@ -55,7 +55,7 @@ class dotNetEventValidation(baseGrepPlugin):
         encryptedVsRegex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
         self._encryptedVs = re.compile( encryptedVsRegex, re.IGNORECASE|re.DOTALL)
 
-        self._already_reported = ScalableBloomFilter()
+        self._already_reported = scalable_bloomfilter()
 
     def grep(self, request, response):
         '''

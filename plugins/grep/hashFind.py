@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import re
 
@@ -45,7 +45,7 @@ class hashFind(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._already_reported = ScalableBloomFilter()
+        self._already_reported = scalable_bloomfilter()
         
         # regex to split between words
         self._split_re = re.compile('[^\w]')

@@ -38,7 +38,7 @@ import core.data.dc.form as form
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 from core.data.request.variant_identification import are_variants
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.temp_persist import disk_list
 
 # options
@@ -70,7 +70,7 @@ class webSpider(baseDiscoveryPlugin):
         # TODO: param 'text_factory' *MUST* be removed when the toolkit fully
         # supports unicode
         self._already_crawled = disk_list(text_factory=str)
-        self._already_filled_form = ScalableBloomFilter()
+        self._already_filled_form = scalable_bloomfilter()
 
         # User configured variables
         self._ignore_regex = ''

@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -45,7 +45,7 @@ class svnUsers(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_inspected = ScalableBloomFilter()
+        self._already_inspected = scalable_bloomfilter()
         # Add the regex to match something like this:
         #
         #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $

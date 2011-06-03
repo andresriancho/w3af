@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.w3afException import w3afRunOnce
 import core.data.constants.httpConstants as httpConstants
@@ -49,7 +49,7 @@ class allowedMethods(baseDiscoveryPlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = ScalableBloomFilter()
+        self._already_tested = scalable_bloomfilter()
         self._bad_codes = [ httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
                                     httpConstants.METHOD_NOT_ALLOWED, httpConstants.FORBIDDEN]
         

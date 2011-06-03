@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -45,7 +45,7 @@ class wsdlGreper(baseGrepPlugin):
 
         # Only generate the lists once.
         # Adding 0,001% performance ;)
-        self._already_inspected = ScalableBloomFilter()
+        self._already_inspected = scalable_bloomfilter()
         self._wsdl_strings = self._get_WSDL_strings()
         self._disco_strings = ['disco:discovery ']
 

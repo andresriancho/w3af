@@ -35,7 +35,7 @@ from core.data.parsers.dpCache import dpc as dpc
 from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import re
@@ -53,7 +53,7 @@ class archiveDotOrg(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_visited = ScalableBloomFilter()
+        self._already_visited = scalable_bloomfilter()
         
         # User configured parameters
         self._max_depth = 3

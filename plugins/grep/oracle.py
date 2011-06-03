@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -42,7 +42,7 @@ class oracle(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_analyzed = ScalableBloomFilter()
+        self._already_analyzed = scalable_bloomfilter()
         
     def grep(self, request, response):
         '''

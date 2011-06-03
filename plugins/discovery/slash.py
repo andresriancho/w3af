@@ -33,7 +33,7 @@ from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
@@ -46,7 +46,7 @@ class slash( baseDiscoveryPlugin ):
     
     def __init__( self ):
         baseDiscoveryPlugin.__init__( self )
-        self._already_visited = ScalableBloomFilter()
+        self._already_visited = scalable_bloomfilter()
         
     def discover( self, fuzzableRequest ):
         '''

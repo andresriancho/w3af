@@ -35,7 +35,7 @@ from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class findDVCS(baseDiscoveryPlugin):
@@ -49,7 +49,7 @@ class findDVCS(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = ScalableBloomFilter()
+        self._analyzed_dirs = scalable_bloomfilter()
         self._compile_DVCS_RE()
 
     def discover(self, fuzzableRequest ):

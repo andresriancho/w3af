@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.w3afException import w3afException
 import core.data.parsers.dpCache as dpCache
@@ -51,7 +51,7 @@ class strangeParameters(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_reported = ScalableBloomFilter()
+        self._already_reported = scalable_bloomfilter()
         
     def grep(self, request, response):
         '''

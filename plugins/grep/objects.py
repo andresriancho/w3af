@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class objects(baseGrepPlugin):
@@ -48,7 +48,7 @@ class objects(baseGrepPlugin):
         self._tag_names.append('object')
         self._tag_names.append('applet')
         
-        self._already_analyzed = ScalableBloomFilter()
+        self._already_analyzed = scalable_bloomfilter()
 
     def grep(self, request, response):
         '''

@@ -28,7 +28,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
@@ -53,7 +53,7 @@ class metaTags(baseGrepPlugin):
         self._interesting_words = {'user':None, 'pass':None, 'microsoft':None,
         'visual':None, 'linux':None, 'source':None, 'author':None, 'release':None,
         'version':None, 'verify-v1':'Google Sitemap' }
-        self._already_inspected = ScalableBloomFilter()
+        self._already_inspected = scalable_bloomfilter()
         
         '''
         Can someone explain what this meta tag does?

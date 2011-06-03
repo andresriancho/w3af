@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.parsers.urlParser as urlParser
 import re
@@ -56,7 +56,7 @@ class privateIP(baseGrepPlugin):
         self._private_ip_address = re.compile(regex_str)
         self._regex_list = [self._private_ip_address ]
 
-        self._already_inspected = ScalableBloomFilter()
+        self._already_inspected = scalable_bloomfilter()
         
     def grep(self, request, response):
         '''

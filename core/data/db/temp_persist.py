@@ -30,6 +30,7 @@ import threading
 
 from core.controllers.misc.temp_dir import get_temp_dir
 
+
 class disk_list(object):
     '''
     A disk_list is a sqlite3 wrapper which has the following features:
@@ -170,39 +171,4 @@ class disk_list(object):
         with self._db_lock:
             cursor = self._conn.execute('SELECT count(*) FROM data')
             return cursor.fetchone()[0]
-
-import unittest
-class disk_list_test(unittest.TestCase):
-
-    def setUp(self):
-        global get_temp_dir
-        def get_temp_dir():
-            return '/tmp/'
-
-    def test_string_add_contains(self):
-        dl = disk_list()
-        for i in xrange(5000):
-            r = self.create_string()
-            dl.append( r )
-        self.assertTrue( len(dl) == 5000 )
-        self.assertTrue( r in dl )
-        self.assertTrue( 'abc' not in dl )
-
-    def test_string_add_contains(self):
-        dl = disk_list()
-        for i in xrange(5000):
-            dl.append( i )
-        self.assertTrue( len(dl) == 5000 )
-        self.assertTrue( 500 in dl )        
-        self.assertTrue( False not in dl )
-        self.assertTrue( 'abc' not in dl )
-        
-        # TODO: This is not very nice... but for now we can bare with it.
-        self.assertTrue( '500' in dl )
-
-    def create_string():
-        strr = ''
-        for i in xrange(300):
-            strr += choice(string.letters)
-        return strr
 

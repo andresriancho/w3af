@@ -24,7 +24,7 @@ from lxml import etree
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.controllers.outputManager as om
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import core.data.kb.knowledgeBase as kb
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -49,7 +49,7 @@ class formAutocomplete(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._already_inspected = ScalableBloomFilter()
+        self._already_inspected = scalable_bloomfilter()
 
     def grep(self, request, response):
         '''

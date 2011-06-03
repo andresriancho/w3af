@@ -33,7 +33,7 @@ import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.controllers.w3afException import w3afException
@@ -50,7 +50,7 @@ class frontpage(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = ScalableBloomFilter()
+        self._already_tested = scalable_bloomfilter()
         self._stop_on_first = True
 
     def audit(self, freq ):

@@ -31,7 +31,7 @@ from core.data.parsers.urlParser import url_object
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class wsdlFinder(baseDiscoveryPlugin):
@@ -45,7 +45,7 @@ class wsdlFinder(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = ScalableBloomFilter()
+        self._already_tested = scalable_bloomfilter()
         self._new_fuzzable_requests = []
         
     def discover(self, fuzzableRequest ):

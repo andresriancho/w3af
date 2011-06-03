@@ -36,7 +36,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
 from core.data.parsers.urlParser import url_object
-from core.data.bloomfilter.pybloom import ScalableBloomFilter
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import os.path
@@ -54,7 +54,7 @@ class pykto(baseDiscoveryPlugin):
         
         # internal variables
         self._exec = True
-        self._already_visited = ScalableBloomFilter()
+        self._already_visited = scalable_bloomfilter()
         self._first_time = True
         self._show_remote_server = True
         
