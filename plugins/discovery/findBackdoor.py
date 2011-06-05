@@ -27,7 +27,7 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.db.temp_persist import disk_list
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -130,7 +130,7 @@ class findBackdoor(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = disk_list()
+        self._analyzed_dirs = scalable_bloomfilter()
         self._fuzzable_requests_to_return = []
 
     def discover(self, fuzzableRequest):
@@ -144,7 +144,7 @@ class findBackdoor(baseDiscoveryPlugin):
         self._fuzzable_requests_to_return = []
 
         if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.append(domain_path)
+            self._analyzed_dirs.add(domain_path)
 
             # Search for the web shells
             for web_shell_filename in WEB_SHELLS:
