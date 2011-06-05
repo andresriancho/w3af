@@ -23,6 +23,8 @@ import gtk, gobject
 from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
 from core.ui.gtkUi.common.searchable import Searchable
+from core.data.db.temp_persist import disk_list
+
 
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
@@ -57,7 +59,7 @@ class _LineScroller(gtk.TextView):
         self.textbuffer = self.get_buffer()
         self.show()
         self.messages = getQueueDiverter()
-        self.all_messages = []
+        self.all_messages = disk_list()
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
