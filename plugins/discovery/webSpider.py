@@ -228,7 +228,8 @@ class webSpider(baseDiscoveryPlugin):
         #    disk_list, so I could iterate through all the results and avoid having
         #    to create the url_object() using parsing again.
         for reference in self._already_crawled:
-            if are_variants( url_object(reference) , new_reference):
+            print reference
+            if are_variants( reference , new_reference):
                 number_of_variants += 1
                 
             if number_of_variants > MAX_VARIANTS:

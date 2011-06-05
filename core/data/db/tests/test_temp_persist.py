@@ -42,6 +42,28 @@ class test_disk_list(unittest.TestCase):
 
         self.assertEqual(rnd in dl, True)
 
+    def test_len(self):
+        dl = disk_list()
+
+        for i in xrange(0, 100):
+            _ = dl.append(i)
+
+        self.assertEqual( len(dl) == 100, True)
+
+    def test_pickle(self):
+        dl = disk_list()
+
+        dl.append( 'a' )
+        dl.append( 1 )
+        dl.append( [3,2,1] )
+
+        values = []
+        for i in dl:
+            values.append(i)
+        
+        self.assertEqual( values[0] == 'a', True)
+        self.assertEqual( values[1] == 1, True)
+        self.assertEqual( values[2] == [3,2,1], True)
 
 if __name__ == '__main__':
     unittest.main()

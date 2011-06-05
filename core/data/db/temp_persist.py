@@ -27,6 +27,7 @@ import sqlite3
 import string
 import sys
 import threading
+import cPickle
 
 from core.controllers.misc.temp_dir import get_temp_dir
 
@@ -131,7 +132,7 @@ class disk_list(object):
         @return: True if the str(value) is in our list.
         '''
         with self._db_lock:
-            t = (str(value), )
+            t = ( cPickle.dumps(value) , )
             # Adding the "limit 1" to the query makes it faster, as it won't 
             # have to scan through all the table/index, it just stops on the
             # first match.
@@ -149,7 +150,8 @@ class disk_list(object):
         '''
         # thread safe here!
         with self._db_lock:
-            t = (self._current_index, str(value))
+            value = cPickle.dumps(value)
+            t = (self._current_index, value)
             self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
             self._current_index += 1
     
@@ -161,7 +163,8 @@ class disk_list(object):
             
             def next(self):
                 r = self._cursor.next()
-                return r[0]
+                obj = cPickle.loads( r[0] )
+                return obj
         
         cursor = self._conn.execute('SELECT information FROM data')
         mc = my_cursor(cursor)
