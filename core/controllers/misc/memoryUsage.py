@@ -33,7 +33,9 @@ if DEBUGMEMORY:
 
 if DEBUGREFERENCES:
     import gc
-    import core.data.request.fuzzableRequest as fuzzableRequest
+    from core.data.parsers.urlParser import url_object
+    from plugins.output.gtkOutput import message
+
     
 def dumpMemoryUsage():
     '''
@@ -48,18 +50,39 @@ def dumpMemoryUsage():
 
         byrcs = h.byrcs
         
+        msg = ''
+        
         if isinstance( byrcs, guppy.heapy.UniSet.IdentitySetMulti ):
-            om.out.debug( str(byrcs) )
-            for i in xrange(10):
-                om.out.debug( str(byrcs[i].byvia) )
+            try:
+                msg += 'Memory dump:\n'
+                msg += '============\n'
+                msg += str(byrcs) + '\n'
+    
+                for i in xrange(10):
+                    msg += str(byrcs[i].byvia) + '\n'
+                
+            except:
+                msg += 'Memory dump: Failed!'
+            
             #om.out.debug( 'The one:' + repr(byrcs[0].byid[0].theone) )
         
         if DEBUGREFERENCES:
-            for objMemoryUsage in gc.get_objects():
+            classes_to_analyze = [url_object, message]
+            
+            for object_in_memory in gc.get_objects():
                 ###
                 ### Note: str objects CAN'T be analyzed this way. They can't create loops, so they arent
                 ### handled by the gc ( __cycling__ garcage collector ) .
                 ###
-                if isinstance( objMemoryUsage, fuzzableRequest.fuzzableRequest ):
-                    om.out.debug('Objects of class fuzzableRequest are referenced by:' )
-                    om.out.debug( str(hpy.iso(objMemoryUsage).sp) )
+                for kls in classes_to_analyze:
+                    if isinstance( object_in_memory, kls ):
+                        tmp = 'Objects of class %s are referenced by:\n' % kls
+                        tmp += str(hpy.iso(object_in_memory).sp) + '\n'
+                        
+                        #  Objects of class plugins.output.gtkOutput.message are referenced by:
+                        #   0: hpy().Root.t140285309286144_exc_traceback.tb_frame.f_locals['object_in_memory']
+                        if '1: ' in tmp:
+                            msg += tmp
+
+        om.out.debug( msg )
+
