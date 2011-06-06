@@ -189,4 +189,6 @@ class Messages(gtk.VBox, Searchable):
         '''Applies the filter selected through the checkboxes.'''
         self.filters[ptype] = button.get_active()
         active_types = [k for k,v in self.filters.items() if v]
+        
+        # TODO: It might be a good idea to run this in a different thread?
         self.sclines.filter(active_types)
