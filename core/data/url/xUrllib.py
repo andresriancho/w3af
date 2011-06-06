@@ -109,7 +109,7 @@ class xUrllib(object):
         self._sleepIfPausedDieIfStopped()
         
         self._memoryUsageCounter += 1
-        if self._memoryUsageCounter == 2000:
+        if self._memoryUsageCounter == 300:
             dumpMemoryUsage()
             self._memoryUsageCounter = 0
     
