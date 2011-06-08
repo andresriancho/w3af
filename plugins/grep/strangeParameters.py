@@ -154,6 +154,16 @@ class strangeParameters(baseGrepPlugin):
         '''
         @return: True if the parameter value is strange
         '''
+        if 'wicket:' in parameter:
+            #
+            #   The wicket framework uses, by default, strange URLs like this:
+            #   https://www.DOMAIN.com/?wicket:bookmarkablePage=:com.DOMAIN.SUBDOMAIN.web.pages.SignInPage
+            #   &wicket:interface=:0:signInForm::IFormSubmitListener::;jsessionid=7AC76A46A86BBC3F5253E374241BC892
+            #
+            #   Which are strange in all cases, except from wicket!
+            #
+            return False
+
         _strange_parameter_re = []
 
         # Seems to be a function
