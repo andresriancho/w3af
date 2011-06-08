@@ -169,6 +169,17 @@ class disk_list(object):
         cursor = self._conn.execute('SELECT information FROM data')
         mc = my_cursor(cursor)
         return mc
+
+    def __getitem__(self, key):
+        try:
+            query = 'SELECT information FROM data WHERE index_ = %s' % key
+            cursor = self._conn.execute( query )
+            r = cursor.next()
+            obj = cPickle.loads( r[0] )
+        except:
+            raise IndexError('list index out of range')
+        else:
+            return obj
         
     def __len__(self):
         with self._db_lock:
