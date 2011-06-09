@@ -114,7 +114,7 @@ def dependencyCheck():
     try:
         from lxml import etree
     except:
-        packages.append('libxml2')
+        packages.append('lxml')
         packages_debian.append('python-lxml')
         #TODO
         #packages_mac_port.append()
