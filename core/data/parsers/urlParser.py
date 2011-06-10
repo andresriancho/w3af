@@ -217,7 +217,14 @@ class url_object(object):
         'http://www.google.com/foo/bar.txt?id=1'
         >>> u.url_string
         'http://www.google.com/foo/bar.txt?id=1'
+
+        >>> u = url_object('http://www.google.com/foo bar/bar.txt?id=1')
+        >>> u.url_string
+        'http://www.google.com/foo%20bar/bar.txt?id=1'
         
+        >>> u = url_object('http://www.google.com/foo%20bar/bar.txt?id=1')
+        >>> u.url_string
+        'http://www.google.com/foo%20bar/bar.txt?id=1'
         '''
         if self._changed or self._already_calculated_url is None:
             self._already_calculated_url = urlparse.urlunparse( (self.scheme, self.netloc, self.path, self.params, self.qs, self.fragment) )
