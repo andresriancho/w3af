@@ -38,6 +38,22 @@ class LRU:
     
     These is a list of the modifications that I (Andres Riancho) introduced to the code:
         - Thread safety
+
+    >>> lru_test = LRU(4)
+    >>> lru_test['1'] = 1
+    >>> lru_test['2'] = 1
+    >>> lru_test['3'] = 1
+    >>> lru_test['4'] = 1
+    
+    # Adding one more, the '1' should go away
+    >>> lru_test['5'] = 1
+    
+    >> '1' in lru_test
+    False
+    
+    >> '5' in lru_test
+    True
+
     """
     def __init__(self, count, pairs=[]):
         self.lock = threading.RLock()
@@ -126,26 +142,3 @@ class LRU:
     def values(self):
         return [i.me[1] for i in self.d.values()]
 
-def main(): 
-    lruTest = LRU(4)
-    lruTest['1'] = 1
-    lruTest['2'] = 1
-    lruTest['3'] = 1
-    lruTest['4'] = 1
-    print 'Original:'
-    for i in lruTest.iteritems():
-        print i
-    
-    lruTest['5'] = 1
-    print 'Agrego 5, se va 1:'
-    for i in lruTest.iteritems():
-        print i
-    
-    print 'El dos paso a estar en el primer puesto para irse. Pero si le asigno algo a 2...'
-    lruTest['2'] = 1
-    for i in lruTest.iteritems():
-        print i
-    print 'Paso de nuevo al ultimo puesto para irse.'
-    
-if __name__ == "__main__":
-    main()
