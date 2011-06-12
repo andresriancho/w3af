@@ -270,9 +270,14 @@ class IteratedQueue(RegistThread):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
+    CLEANUP_NUM = 1000
+    
     def __init__(self, queue):
         self.inputqueue = queue
         self.repository = []
+        self.indexes = []
+        self._lock = threading.Lock()
+                
         RegistThread.__init__(self)
 
     def run(self):
@@ -292,13 +297,32 @@ class IteratedQueue(RegistThread):
             
         idx = start_idx
         
+        self.indexes.append(idx)
+        idxidx = len(self.indexes) - 1
+        
         while True:
-            if idx == len(self.repository):
+            
+            if self.indexes[idxidx] == len(self.repository):
                 msg = None
             else:
-                msg = self.repository[idx]
-                idx += 1
+                msg = self.repository[ self.indexes[idxidx] ]
+                self.indexes[idxidx] += 1
+                self.clean()
+                
             yield msg
+
+    def clean(self):
+        with self._lock:
+            min_index = min(self.indexes)
+            
+            if min_index >= self.CLEANUP_NUM:
+            
+                self.repository = self.repository[min_index:]
+                
+                for pos in xrange(len(self.indexes)):
+                    self.indexes[pos] -= min_index 
+            
+                print 'Cleaned!', len(self.repository)
 
     def qsize(self):
         return self.inputqueue.qsize()
