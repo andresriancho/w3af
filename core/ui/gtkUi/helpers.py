@@ -321,8 +321,6 @@ class IteratedQueue(RegistThread):
                 
                 for pos in xrange(len(self.indexes)):
                     self.indexes[pos] -= min_index 
-            
-                print 'Cleaned!', len(self.repository)
 
     def qsize(self):
         return self.inputqueue.qsize()
