@@ -108,7 +108,7 @@ def dependencyCheck():
     except:
         packages.append('pyOpenSSL')
         packages_debian.append('python-pyopenssl')
-        packages_mac_ports.extend(['py26-socket-ssl','py26-openssl'])
+        packages_mac_ports.extend(['py26-openssl'])
         reasonForExit = True
 
     try:
