@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 import sys
+import platform
 
 
 def dependencyCheck():
@@ -49,6 +50,16 @@ def dependencyCheck():
     packages_debian = []
     packages_mac_ports = []
     additional_information = []
+    
+    if platform.system() != 'Windows':
+        try:
+            from pybloomfilter import BloomFilter as mmap_filter
+        except Exception, e:
+            msg = '    pybloomfiltermmap is a required dependency in *nix systems, please install from '
+            msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0'
+            
+            additional_information.append(msg)
+            reasonForExit = True        
     
     # nltk raises a warning... which I want to ignore...
     # This is the original warning:

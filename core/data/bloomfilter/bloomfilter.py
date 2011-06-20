@@ -40,7 +40,6 @@ try:
 except:
     USE_PURE_PYTHON_FILTER = True
 else:
-    print 'Using pybloomfilter with mmap.'
     USE_PURE_PYTHON_FILTER = False
 
 
