@@ -737,8 +737,12 @@ class RememberingWindow(gtk.Window):
             if not self.onDestroy():
                 return True
 
-        self.winconfig[self.id_size] = self.get_size()
-        self.winconfig[self.id_position] = self.get_position()
+        try:
+            self.winconfig[self.id_size] = self.get_size()
+            self.winconfig[self.id_position] = self.get_position()
+        except ValueError:
+            pass
+        
         return False
 
 
