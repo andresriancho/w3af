@@ -415,12 +415,20 @@ class PluginTree(gtk.TreeView):
         del self.plugin_instances[path]
         
         # Reload the plugin
-        self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
-        
-        # if we still are in the same tree position, refresh the config
-        (newpath, column) = self.get_cursor()
-        if newpath == path:
-            self.configure_plugin()
+        try:
+            self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
+        except Exception, e:
+            msg = 'The plugin you modified raised the following exception'
+            msg += ' while trying to reload it: "%s",' % str(e)
+            msg += ' please fix this issue before continuing or w3af will crash.'
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, msg)
+            dlg.run()
+            dlg.destroy()            
+        else:
+                 # if we still are in the same tree position, refresh the config
+                (newpath, column) = self.get_cursor()
+                if newpath == path:
+                    self.configure_plugin()
 
     def configure_plugin(self, tv=None):
         '''Starts the plugin configuration.
