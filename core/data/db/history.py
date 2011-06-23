@@ -209,7 +209,7 @@ class HistoryItem(object):
         # FIXME 
         # don't forget about files!
 
-    def load(self, id=None, full=True):
+    def load(self, id=None, full=True, retry=True):
         '''Load data from DB by ID.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
@@ -220,13 +220,33 @@ class HistoryItem(object):
         sql = 'SELECT * FROM ' + self._dataTable + ' WHERE id = ? '
         try:
             row = self._db.retrieve(sql, (id,))
-            self._loadFromRow(row, full)
         except w3afException:
             raise w3afException('You performed an invalid search. Please verify your syntax.')
         except Exception, e:
             msg = 'An internal error occurred while searching for id "' + str(id) + '".'
             msg += ' Original exception: "' + str(e) + '".'
             raise w3afException( msg )
+        else:
+            if row is not None:
+                self._loadFromRow(row, full)
+            else:
+                # The request/response with 'id' == id is not in the DB!
+                # Lets do some "error handling" and try again!
+                
+                if retry:
+                    #    TODO:
+                    #    According to sqlite3 documentation this db.commit() might fix errors like
+                    #    "https://sourceforge.net/apps/trac/w3af/ticket/164352" , but it can degrade
+                    #    performance due to disk IO
+                    #
+                    self._db.commit()
+                    self.load(self, id, full, retry=False)
+                else:
+                    # This is the second time load() is called and we end up here,
+                    # raise an exception and finish our pain.
+                    msg = 'An internal error occurred while searching for id "' + str(id) + '".'
+                    msg += ' Original exception: "' + str(e) + '".'
+                    raise w3afException( msg )
             
         return True
 

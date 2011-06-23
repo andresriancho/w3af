@@ -141,6 +141,12 @@ class DBClientSQLite(DBClient):
         except Exception, e:
             raise w3afException('Failed to create the database in file "%s". '
                     'Exception: %s' % (filenameUtf8, e))
+    
+    def commit(self):
+        try:
+            self._db.commit()
+        except:
+            pass
 
 
 class DBCLientPGSql(DBClient):
