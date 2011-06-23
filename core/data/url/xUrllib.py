@@ -29,6 +29,7 @@ import threading
 import time
 import traceback
 import urllib, urllib2
+import sqlite3
 
 
 from core.controllers.misc.homeDir import get_home_dir
@@ -558,6 +559,11 @@ class xUrllib(object):
         except KeyboardInterrupt:
             # Correct control+c handling...
             raise
+        except sqlite3.Error, e:
+            msg = 'A sqlite3 error was raised: "%s".' % e
+            if 'disk' in str(e).lower():
+                msg += ' Please check if your disk is full.'
+            raise w3afMustStopException( msg )
         except w3afMustStopException:
             raise
         except Exception, e:
