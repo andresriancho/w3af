@@ -102,10 +102,14 @@ class sharedHosting(baseDiscoveryPlugin):
                             # [Mon 09 Jun 2008 01:08:26 PM ART] - http://www.business.com/
                             # Where www.business.com resolves to 216.244.147.14; so we don't really
                             # have more than one domain in the same server.
-                            res0 = socket.gethostbyname( results[0].getDomain() )
-                            res1 = socket.gethostbyname( results[1].getDomain() )
-                            if res0 == res1:
-                                is_vulnerable = False
+                            try:
+                                res0 = socket.gethostbyname( results[0].getDomain() )
+                                res1 = socket.gethostbyname( results[1].getDomain() )
+                            except:
+                                pass
+                            else:
+                                if res0 == res1:
+                                    is_vulnerable = False
                     
                     if is_vulnerable:
                         severityOfThisVuln = severity.MEDIUM
