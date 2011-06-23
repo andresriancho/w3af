@@ -122,7 +122,8 @@ class option:
                 try:
                     re.compile(value)
                 except:
-                    raise w3afException('The regular expression you are trying to use is invalid!')
+                    msg = 'The regular expression "%s" is invalid!' % value
+                    raise w3afException( msg )
                 else:
                     res = value
                 # end regex stuff
