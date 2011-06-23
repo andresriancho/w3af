@@ -90,12 +90,16 @@ class http_vs_https_dist(baseDiscoveryPlugin):
         if not https_troute:
             return []
         
+        # TODO: Fixme! This throws an index out of range exception
+        # >>> traceroute('localhost', dport=80)[0].get_trace().values()[0] 
         https_troute = https_troute.values()[0]
         https_ip_tuples = https_troute.values()
         last_https_ip = https_ip_tuples[-1]
         
         # Then with http
         http_troute = traceroute(domain, dport=http_port)
+        # TODO: Fixme! This throws an index out of range exception
+        # >>> traceroute('localhost', dport=80)[0].get_trace().values()[0] 
         http_troute = http_troute[0].get_trace().values()[0]
         http_ip_tuples = http_troute.values()
         last_http_ip = http_ip_tuples[-1]
