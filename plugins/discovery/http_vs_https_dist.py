@@ -84,24 +84,17 @@ class http_vs_https_dist(baseDiscoveryPlugin):
 
         # First try with httpS
         https_troute = traceroute(domain, dport=https_port)[0].get_trace()
+        # Then with http
+        http_troute = traceroute(domain, dport=http_port)[0].get_trace()
         
-        # This destination was probably 'localhost' or a host reached through
-        # a vpn?
-        if not https_troute:
+        # This destination was probably 'localhost' or a host reached
+        # through a vpn?
+        if not (https_troute and http_troute):
             return []
         
-        # TODO: Fixme! This throws an index out of range exception
-        # >>> traceroute('localhost', dport=80)[0].get_trace().values()[0] 
-        https_troute = https_troute.values()[0]
-        https_ip_tuples = https_troute.values()
+        https_ip_tuples = https_troute.values()[0].values()
         last_https_ip = https_ip_tuples[-1]
-        
-        # Then with http
-        http_troute = traceroute(domain, dport=http_port)
-        # TODO: Fixme! This throws an index out of range exception
-        # >>> traceroute('localhost', dport=80)[0].get_trace().values()[0] 
-        http_troute = http_troute[0].get_trace().values()[0]
-        http_ip_tuples = http_troute.values()
+        http_ip_tuples = http_troute.values()[0].values()
         last_http_ip = http_ip_tuples[-1]
         
         # Last IP should be True; otherwise the dest wasn't reached
@@ -188,4 +181,4 @@ class http_vs_https_dist(baseDiscoveryPlugin):
         before the current one.
         '''
         return []
-
+    
