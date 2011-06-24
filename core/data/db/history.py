@@ -220,11 +220,10 @@ class HistoryItem(object):
         sql = 'SELECT * FROM ' + self._dataTable + ' WHERE id = ? '
         try:
             row = self._db.retrieve(sql, (id,))
-        except w3afException:
-            raise w3afException('You performed an invalid search. Please verify your syntax.')
         except Exception, e:
-            msg = 'An internal error occurred while searching for id "' + str(id) + '".'
-            msg += ' Original exception: "' + str(e) + '".'
+            msg = 'An unexpected error occurred while searching for id "%s".'
+            msg += ' Original exception: "%s".'
+            msg = msg % (id, e)
             raise w3afException( msg )
         else:
             if row is not None:
@@ -244,8 +243,9 @@ class HistoryItem(object):
                 else:
                     # This is the second time load() is called and we end up here,
                     # raise an exception and finish our pain.
-                    msg = 'An internal error occurred while searching for id "' + str(id) + '".'
-                    msg += ' Original exception: "' + str(e) + '".'
+                    msg = 'An internal error occurred while searching for id "%s",'
+                    msg += ' even after commit/retry. Original exception: "%s".'
+                    msg = msg % (id, e)
                     raise w3afException( msg )
             
         return True
