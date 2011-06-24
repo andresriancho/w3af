@@ -115,11 +115,24 @@ class url_object(object):
         >>> u.getExtension()
         'txt'
         >>> 
+        
+        #
+        # http is the default protocol, we can provide URLs with no proto
+        #
         >>> u = url_object('www.google.com')
         >>> u.getDomain()
         'www.google.com'
         >>> u.getProtocol()
         'http'
+
+        #
+        # But we can't specify a URL without a domain!
+        #
+        >>> u = url_object('http://')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: Invalid URL "http://"
+        
         '''
         self._already_calculated_url = None
         self._changed = True
@@ -145,6 +158,10 @@ class url_object(object):
         self.params = params or ''
         self.qs = qs or ''
         self.fragment = fragment or ''
+        
+        if self.netloc == '':
+            msg = 'Invalid URL "%s"' % data
+            raise TypeError( msg )
 
     @classmethod
     def from_parts(cls, scheme, netloc, path, params, qs, fragment):
@@ -561,6 +578,11 @@ class url_object(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         TypeError: 'foo*bar' is an invalid domain
+
+        >>> u.setDomain('')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        TypeError: '' is an invalid domain
 
         >>> u = url_object('http://abc:443/def/jkl/')
         >>> u.getDomain()
@@ -1212,17 +1234,8 @@ class url_object(object):
         True
         >>>
 
-        >>> u = url_object('http:///')
-        >>> if not u:
-        ...    True
-        ...
-        True
-        >>>
         '''
-        if self.scheme and self.netloc:
-            return True
-        
-        return False
+        return True
         
     def __radd__(self, other):
         '''
