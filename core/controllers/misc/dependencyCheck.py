@@ -59,6 +59,7 @@ def dependencyCheck():
             msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0'
             
             additional_information.append(msg)
+            packages_debian.append('python2.6-dev')
             reasonForExit = True        
     
     # nltk raises a warning... which I want to ignore...
