@@ -138,7 +138,11 @@ class sgmlParser(abstractParser, SGMLParser):
                     new_base_url = attr[1]
                     break
             # set the new base URL
-            self._baseUrl = self._baseUrl.urlJoin( new_base_url )
+            try:
+                self._baseUrl = self._baseUrl.urlJoin( new_base_url )
+            except:
+                # The url that resulted from the urljoin is invalid!
+                pass                
         
         if tag.lower() == 'script':
             self._insideScript = True
@@ -201,11 +205,16 @@ class sgmlParser(abstractParser, SGMLParser):
                 # The content variables looks something like... "6  ; URL=http://www.f00.us/"
                 for url_string in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                     url_string = url_string.strip()
-                    url_instance = self._baseUrl.urlJoin( url_string )
-                    url_instance = self._decode_URL( url_instance, self._encoding ) 
+                    try:
+                        url_instance = self._baseUrl.urlJoin( url_string )
+                    except:
+                        # The url that resulted from the urljoin is invalid!
+                        pass                        
+                    else:
+                        url_instance = self._decode_URL( url_instance, self._encoding ) 
                     
-                    self._parsed_URLs.append( url_instance )
-                    self._tag_and_url.append( ('meta', url_instance ) )
+                        self._parsed_URLs.append( url_instance )
+                        self._tag_and_url.append( ('meta', url_instance ) )
     
     def _findReferences(self, tag, attrs):
         '''
@@ -220,14 +229,19 @@ class sgmlParser(abstractParser, SGMLParser):
                 # Only add it to the result of the current URL is not a fragment
                 if attr_val and not attr_val.startswith('#'):
                     
-                    url_instance = self._baseUrl.urlJoin( attr_val )
-                    url_instance = self._decode_URL( url_instance, self._encoding)
-                    url_instance.normalizeURL()
+                    try:
+                        url_instance = self._baseUrl.urlJoin( attr_val )
+                    except:
+                        # The url that resulted from the urljoin is invalid!
+                        pass
+                    else:
+                        url_instance = self._decode_URL( url_instance, self._encoding)
+                        url_instance.normalizeURL()
                     
-                    if url_instance not in self._parsed_URLs:
-                        self._parsed_URLs.append(url_instance)
-                        self._tag_and_url.append((tag.lower(), url_instance))
-                        break
+                        if url_instance not in self._parsed_URLs:
+                            self._parsed_URLs.append(url_instance)
+                            self._tag_and_url.append((tag.lower(), url_instance))
+                            break
     
     def _parse(self, s):
         '''
