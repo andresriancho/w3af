@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
+from core.data.db.history import HistoryItem
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
@@ -68,7 +69,11 @@ class xmlFile(baseOutputPlugin):
         self._topElement.setAttribute("startstr", self._longTimestampString)
         self._topElement.setAttribute("xmloutputversion", "1.00")
         self._scanInfo = self._xmldoc.createElement("scaninfo")
-                                              
+              
+        # HistoryItem to get requests/responses
+        self._history = HistoryItem()
+
+                                
     def _init( self ):
         try:
             self._file = open( self._file_name, "w" )
@@ -138,9 +143,10 @@ class xmlFile(baseOutputPlugin):
         '''
         d1 = 'File name where this plugin will write to'
         o1 = option('fileName', self._file_name, d1, 'string')
-        
+
         ol = optionList()
         ol.add(o1)
+
         return ol
 
     def logHttp( self, request, response):
@@ -194,7 +200,7 @@ class xmlFile(baseOutputPlugin):
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
 
-    def end (self):
+    def end(self):
         '''
         This method is called when the scan has finished.
         '''
@@ -208,6 +214,22 @@ class xmlFile(baseOutputPlugin):
             messageNode.setAttribute("var", str(i.getVar()))
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
+                for requestid in i.getId():
+                    details = self._history.read(requestid)
+
+                    requestNode = self._xmldoc.createElement("httprequest")
+    	            requestNode.setAttribute("id", str(requestid))
+                    requestContent = self._xmldoc.createTextNode(details.request.dump())
+                    requestNode.appendChild(requestContent)
+                    messageNode.appendChild(requestNode)
+
+                    responseNode = self._xmldoc.createElement("httpresponse")
+                    responseNode.setAttribute("id", str(requestid))
+                    responseContent = self._xmldoc.createTextNode(details.response.dump())
+                    responseNode.appendChild(responseContent)
+
+                    messageNode.appendChild(responseNode)
+
             messageNode.setAttribute("name", str(i.getName()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             description = self._xmldoc.createTextNode(i.getDesc())
@@ -221,6 +243,22 @@ class xmlFile(baseOutputPlugin):
             messageNode.setAttribute("url", str(i.getURL()))
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
+                for requestid in i.getId():
+                    details = self._history.read(requestid)
+
+                    requestNode = self._xmldoc.createElement("httprequest")
+                    requestNode.setAttribute("id", str(requestid))
+                    requestContent = self._xmldoc.createTextNode(details.request.dump())
+                    requestNode.appendChild(requestContent)
+                    messageNode.appendChild(requestNode)
+		
+                    responseNode = self._xmldoc.createElement("httpresponse")
+                    responseNode.setAttribute("id", str(requestid))
+                    responseContent = self._xmldoc.createTextNode(details.response.dump())
+                    responseNode.appendChild(responseContent)
+
+                    messageNode.appendChild(responseNode)
+		
             messageNode.setAttribute("name", str(i.getName()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             description = self._xmldoc.createTextNode(i.getDesc())

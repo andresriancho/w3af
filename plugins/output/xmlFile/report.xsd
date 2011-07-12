@@ -101,6 +101,10 @@
       <xs:attribute name="severity" use="required" type="xs:NCName"/>
       <xs:attribute name="url" use="required" type="xs:string"/>
       <xs:attribute name="var" use="required" type="xs:NCName"/>
+      <xs:sequence>
+        <xs:element ref="httprequest" minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="httpresponse" minOccurs="0" maxOccurs="unbounded">
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
   
@@ -110,6 +114,10 @@
       <xs:attribute name="name" use="required" type="xs:string"/>
       <xs:attribute name="plugin" use="required"/>
       <xs:attribute name="url" use="required" type="xs:string"/>
+      <xs:sequence>
+        <xs:element ref="httprequest" minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="httpresponse" minOccurs="0" maxOccurs="unbounded">
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
 
@@ -135,4 +143,16 @@
     </xs:complexType>
   </xs:element>
   
+  <xs:element name="httprequest">
+    <xs:comlexType>
+       <xs:attribute name="id" use="required" type="xs:string"/>
+    </xs:comlexType>
+  </xs:element>
+
+  <xs:element name="httpresponse">
+    <xs:comlexType>
+       <xs:attribute name="id" use="required" type="xs:string"/>
+    </xs:comlexType>
+  </xs:element>
+
 </xs:schema>
