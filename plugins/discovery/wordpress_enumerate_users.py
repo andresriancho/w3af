@@ -1,7 +1,7 @@
 '''
 wordpress_username_enumeration.py
 
-Copyright 2006 Andres Riancho
+Copyright 2011 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -25,7 +25,6 @@ import core.controllers.outputManager as om
 # Import options
 import re
 
-from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
@@ -59,13 +58,13 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
         uid = 1           # First user ID, will be incremented until 404
         redirect = False  # Store if redirection was success
         title_cache = ""  # Save the last title for non-redirection scenario
+        gap_tolerance = 10 # Tolerance for user ID gaps in the sequence (this gaps are present when users are deleted and new users created)
+        gap = 0
 
         if not self._exec :
             # Remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
-
         else:
-
             # Check if the server is running WordPress
             domain_path = fuzzableRequest.getURL().getDomainPath()
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
@@ -74,17 +73,18 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
             # If wp_unique_url is not 404, wordpress = true
             if not is_404( response ):
                 # Loop into authors and increment user ID
-                while True:
+                while (gap <= gap_tolerance):
                     domain_path.setQueryString( {'author': str(uid)} )
                     wp_author_url = domain_path
                     response_author = self._urlOpener.GET(wp_author_url, useCache=True)
                     if not is_404( response_author ):
                         path = response_author.getRedirURI().getPath()
                         if 'author' in path:
-                            # A redirect to /author/<username> was made
+                            # A redirect to /author/<username> was made, username probably found
                             username = path.split("/")[-2]
                             redirect = True
                             self._kb_info_user(self.getName(), wp_author_url, response_author.id, username)
+                            gap = 0
                         elif response_author.getURI() == wp_author_url and redirect is False:
                             # No redirect was made, try to fetch username from
                             # title of the author's archive page
@@ -94,18 +94,20 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
                                 # If the title is the same than the last user
                                 # ID requested, there are no new users
                                 if title == title_cache:
-                                    break
+                                    gap += 1
                                 else:
+                                    # The title changed, username probably found
                                     title_cache = title
                                     username = title.split()[0]
                                     self._kb_info_user(self.getName(), wp_author_url, response_author.id, username)
-                            else:
-                                break
-                        else:
-                            break
-                        uid = uid + 1
+                                    gap = 0
+
+                        gap += 1
                     else:
-                        break
+                        # 404 error
+                        gap += 1
+
+                    uid = uid + 1
 
         # Only run once
         self._exec = False
