@@ -21,311 +21,221 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-import core.data.kb.config as cf
-
-from lxml import etree
-
-from core.data.parsers.sgmlParser import sgmlParser
+from core.data.parsers.sgmlParser import SGMLParser
 from core.data.parsers.urlParser import url_object
 
 import core.data.dc.form as form
 
 
-class htmlParser(sgmlParser):
+class HTMLParser(SGMLParser):
     '''
     This class parses HTML's.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    def __init__(self, httpResponse, normalizeMarkup=True, verbose=0):
-        self._tagsContainingURLs =  ('a', 'img', 'link', 'script', 'iframe', 'object',
-                'embed', 'area', 'frame', 'applet', 'input', 'base',
-                'div', 'layer', 'ilayer', 'bgsound', 'form')
-        self._urlAttrs = ('href', 'src', 'data', 'action' )
+    def __init__(self, http_resp):
         
-        # An internal list to be used to save input tags that are found outside
-        # of the scope of a form tag.
+        # An internal list to be used to save input tags found
+        # outside of the scope of a form tag.
         self._saved_inputs = []
-        self._textareaData = ""
-        self._optionAttrs = []
+        # For <textarea> elems parsing
+        self._textarea_tag_name = ""
+        self._textarea_data = ""
+        # For <select> elems parsing
+        self._selects = []
         # Save for using in form parsing
-        self._source_url = httpResponse.getURL()
-        
-        sgmlParser.__init__(self, httpResponse, normalizeMarkup, verbose)
-        
-    def _preParse( self, httpResponse ):
+        self._source_url = http_resp.getURL()
+        # Call parent's __init__
+        SGMLParser.__init__(self, http_resp)
+    
+    def data(self, data):
         '''
-        @parameter httpResponse: The HTTP response document that contains the
+        Overriding parent's. Called by the main parser when a text node
+        is found
+        '''
+        if self._inside_textarea:
+            self._textarea_data = data.strip()
+    
+    def _pre_parse(self, http_resp):
+        '''
+        @parameter http_resp: The HTTP response document that contains the
         HTML document inside its body.
         '''
+        SGMLParser._pre_parse(self, http_resp)
         assert self._baseUrl, 'The base URL must be set.'
-        
-        HTMLDocument = httpResponse.getBody()
     
-        if self._normalizeMarkup:
-            HTMLDocument = httpResponse.getNormalizedBody() or ''
+    def _form_elems_generic_handler(self, tag, attrs):
+        side = 'inside' if self._inside_form else 'outside'
+        default = lambda *args: None
+        meth = getattr(self, '_handle_'+ tag +'_tag_'+ side +'_form', default)
+        meth(tag, attrs)
 
-        # Now we are ready to work
-        self._parse(HTMLDocument)
+    ## <form> handler methods
+    def _handle_form_tag_start(self, tag, attrs):
+        '''
+        Handle the form tags.
+
+        This method also looks if there are "pending inputs" in the 
+        self._saved_inputs list and parses them.
+        '''
+        SGMLParser._handle_form_tag_start(self, tag, attrs)
         
-    def _findForms(self, tag, attrs):
-        '''
-        This method finds forms inside an HTML document.
+        # Get the 'method'
+        method = attrs.get('method', 'GET').upper()
 
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.parsers.urlParser import url_object
-        >>> url = url_object('http://www.w3af.com/')
-        >>> h = httpResponse(200, '<html>...</html>', {}, url, url)
-        >>> p = htmlParser(h)
-
-        One form with all things inside
-        >>> p._findForms('form',[('action','post-handler.php')])
-        >>> p._findForms('input',[('type','text'), ('name','foo_text'), ('value', 'hi!')])
-        >>> p._findForms('input',[('type','file'), ('name','foo_file')])
-        >>> p._findForms('input',[('type','radio'), ('name','foo_radio')])
-        >>> p._findForms('input',[('type','checkbox'), ('name','foo_checkbox')])
-        >>> p._findForms('input',[('type','textarea'), ('name','foo_textarea')])
-        >>> form_list = p.getForms()
-        >>> form = form_list[0]
-        >>> form.getAction()
-        <url_object for "http://www.w3af.com/post-handler.php">
-        >>> form
-        {'foo_file': [''], 'foo_text': ['hi!'], 'foo_checkbox': [''], 'foo_radio': [''], 'foo_textarea': ['']}
-
-        '''
-
-        '''
-        <FORM action="http://somesite.com/prog/adduser" method="post">
-        <P>
-                <LABEL for="firstname">First name: </LABEL>
-                <INPUT type="text" id="firstname"><BR>
-                <LABEL for="lastname">Last name: </LABEL>
-                <INPUT type="text" id="lastname"><BR>
-                <LABEL for="email">email: </LABEL>
-                <INPUT type="text" id="email"><BR>
-                <INPUT type="radio" name="sex" value="Male"> Male<BR>
-                <INPUT type="radio" name="sex" value="Female"> Female<BR>
-                <INPUT type="submit" value="Send"> <INPUT type="reset">
-        </P>
-        </FORM>
-        '''
-        if tag.lower() == 'form' :
-            self._handle_form_tag(tag, attrs)
-
-        # I changed the logic of this section of the parser because of this bug:
-        # http://groups.google.com/group/beautifulsoup/browse_thread/thread/21ecff548dfda934/469d45ac13dc0162#469d45ac13dc0162
-        # That the guys from BeautifulSoup ignored :S
-        if tag.lower() in ['input','select', 'option', 'textarea']:
-
-            # I may be inside a form tag or not... damn bug!
-            # I'm going to use this ruleset:
-            # - If there is an input tag outside a form, and there is no form in self._forms
-            #   then I'm going to "save" the input tag until I find a form, and then I'll put
-            #   it there.
-            #
-            # - If there is an input tag outside a form, and there IS a form in self._forms
-            #   then I'm going to append the input tag to that form
-            if self._insideForm:
-                method = getattr(self, '_handle_'+tag.lower()+'_tag_inside_form')
-                method(tag, attrs)
-
+        # Get the action
+        action = attrs.get('action', None)
+        missing_or_invalid_action = action is None
+        
+        if not missing_or_invalid_action:
+            try:
+                action = self._baseUrl.urlJoin(action)
+            except ValueError:
+                missing_or_invalid_action = True
             else:
-                # Outside a form!
-                method = getattr(self, '_handle_'+tag.lower()+'_tag_outside_form')
-                method(tag, attrs)
-
-    def _handle_form_tag(self, tag, attrs):
-        '''
-        Handles the form tags.
-
-        This method also looks if there are "pending inputs" in the self._saved_inputs list
-        and parses them.
-        '''
-        #Find the method
-        method = 'GET'
-        foundMethod = False
-        for attr in attrs:
-            if attr[0].lower() == 'method':
-                method = attr[1].upper()
-                foundMethod = True
-
-        if not foundMethod:
-            om.out.debug('htmlParser found a form without a method. Using GET as the default.')
-
-        #Find the action
-        foundAction = False
-        for attr in attrs:
-            if attr[0].lower() == 'action':
-                action = self._baseUrl.urlJoin( attr[1] )
-                action = self._decode_URL( action , self._encoding)
-                foundAction = True
-
-        if not foundAction:
-            msg = 'htmlParser found a form without an action attribute. Javascript may be used...'
-            msg += ' but another option (mozilla does this) is that the form is expected to be '
-            msg += ' posted back to the same URL (the one that returned the HTML that we are '
-            msg += ' parsing).'
+                action = self._decode_URL(unicode(action))
+                action = url_object(action, encoding=self._encoding)
+        
+        if missing_or_invalid_action:
+            msg = ('HTMLParser found a form without an action attribute. '
+            'Javascript may be used... but another option (mozilla does '
+            'this) is that the form is expected to be  posted back to the'
+            ' same URL (the one that returned the HTML that we are  parsing).')
             om.out.debug(msg)
             action = self._source_url
-
+        
         # Create the form object and store everything for later use
-        self._insideForm = True
-        form_obj = form.form()
-        form_obj.setMethod( method )
-        form_obj.setAction( action )
-        self._forms.append( form_obj )
+        form_obj = form.form(encoding=self._encoding)
+        form_obj.setMethod(method)
+        form_obj.setAction(action)
+        self._forms.append(form_obj)
 
-        # Now I verify if they are any input tags that were found outside the scope of a form tag
-        for tag, attrs in self._saved_inputs:
-            # Parse them just like if they were found AFTER the form tag opening
-            self._handle_input_tag_inside_form(tag, attrs)
+        # Now I verify if there are any input tags that were found
+        # outside the scope of a form tag
+        for inputattrs in self._saved_inputs:
+            # Parse them just like if they were found AFTER the
+            # form tag opening
+            if isinstance(inputattrs, dict):
+                self._handle_input_tag_inside_form('input', inputattrs)
+        
         # All parsed, remove them.
         self._saved_inputs = []
+    
+    ## <input> handler methods
+    _handle_input_tag_start = _form_elems_generic_handler
 
     def _handle_input_tag_inside_form(self, tag, attrs):
+        
         # We are working with the last form
         form_obj = self._forms[-1]
-
-        # Try to get the type of input
-        for attr in attrs:
-            
-            #
-            #   FIXME: This is a kludge. Should we get lists as attr?!
-            #
-            if isinstance(attr, list):
-                try:
-                    attr = attr[0]
-                except:
-                    return
-            
-            if attr[0].lower() == 'type' and attr[1].lower() == 'file':
-                # Let the form know, that this is a file input
-                form_obj.hasFileInput = True
-                form_obj.addFileInput( attrs )
-                return
-            if attr[0].lower() == 'type' and attr[1].lower() == 'radio':
-                form_obj.addRadio( attrs )
-                return
-            if attr[0].lower() == 'type' and attr[1].lower() == 'checkbox':
-                form_obj.addCheckBox( attrs )
-                return
-
-        # Simply add all the other input types
-        form_obj.addInput( attrs )
+        type = attrs.get('type', '').lower()
+        items = attrs.items()
+        
+        if type == 'file':
+            # Let the form know, that this is a file input
+            form_obj.hasFileInput = True
+            form_obj.addFileInput(items)
+        elif type == 'radio':
+            form_obj.addRadio(items)
+        elif type == 'checkbox':
+            form_obj.addCheckBox(items)
+        else:
+            # Simply add all the other input types
+            form_obj.addInput(items)
 
     def _handle_input_tag_outside_form(self, tag, attrs):
         # I'm going to use this ruleset:
-        # - If there is an input tag outside a form, and there is no form in self._forms
-        #   then I'm going to "save" the input tag until I find a form, and then I'll put
-        #   it there.
+        # - If there is an input tag outside a form, and there is
+        #   no form in self._forms then I'm going to "save" the input
+        #   tag until I find a form, and then I'll put it there.
         #
-        # - If there is an input tag outside a form, and there IS a form in self._forms
-        #   then I'm going to append the input tag to that form
+        # - If there is an input tag outside a form, and there IS a 
+        #   form in self._forms then I'm going to append the input 
+        #   tag to that form
         if not self._forms:
-            self._saved_inputs.append( (tag, attrs) )
+            self._saved_inputs.append(attrs)
         else:
             self._handle_input_tag_inside_form(tag, attrs)
-
+    
+    ## <textarea> handler methods
+    _handle_textarea_tag_start = _form_elems_generic_handler
+    
     def _handle_textarea_tag_inside_form(self, tag, attrs):
         """
         Handler for textarea tag inside a form
         """
-        self._textareaData = ''
-        
+        # Reset data
+        self._textarea_data = ""
         # Get the name
-        self._textareaTagName = ''
-        for attr in attrs:
-            if attr[0].lower() == 'name':
-                self._textareaTagName = attr[1]
-        
-        if not self._textareaTagName:
-            for attr in attrs:
-                if attr[0].lower() == 'id':
-                    self._textareaTagName = attr[1]
+        self._textarea_tag_name = attrs.get('name', '') or \
+                                    attrs.get('id', '')
             
-        if not self._textareaTagName:    
-            om.out.debug('htmlParser found a textarea tag without a name attr, IGNORING!')
-            self._insideTextarea = False
+        if not self._textarea_tag_name:    
+            om.out.debug('HTMLParser found a textarea tag without a '
+                         'name attr, IGNORING!')
+            self._inside_textarea = False
         else:
-            self._insideTextarea = True
+            self._inside_textarea = True
 
-    def handle_data(self, data):
-        """
-        This method is called to process arbitrary data.
-        """
-        if self._insideTextarea:
-            self._textareaData = data
-
-    def _handle_textarea_tag_outside_form(self, tag, attrs):
-        """
-        Handler for textarea tag outside a form
-        """
-        self._handle_textarea_tag_inside_form(tag, attrs)
-
-    def _handle_textarea_endtag(self):
+    _handle_textarea_tag_outside_form = _handle_textarea_tag_inside_form
+    
+    def _handle_textarea_tag_end(self, tag):
         """
         Handler for textarea end tag
         """
-        attrs = [('name', self._textareaTagName),
-                 ('value', self._textareaData)]
-        sgmlParser._handle_textarea_endtag(self)
+        SGMLParser._handle_textarea_tag_end(self, tag)
+        attrs = {'name': self._textarea_tag_name,
+                 'value': self._textarea_data}
         if not self._forms:
-            self._saved_inputs.append(('input', attrs))
+            self._saved_inputs.append(attrs)
         else:
             form_obj = self._forms[-1]
-            form_obj.addInput(attrs)
+            form_obj.addInput(attrs.items())
 
+    ## <select> handler methods
+    _handle_select_tag_start = _form_elems_generic_handler
+
+    def _handle_select_tag_end(self, tag):
+        """
+        Handler for select end tag
+        """
+        SGMLParser._handle_select_tag_end(self, tag)
+        if self._forms:
+            form_obj = self._forms[-1]
+            for sel_name, optvalues in self._selects:
+                # First convert  to list of tuples before passing it as arg
+                optvalues = [tuple(attrs.items()) for attrs in optvalues]
+                form_obj.addSelect(sel_name, optvalues)
+            
+            # Reset selects container
+            self._selects = []
+    
     def _handle_select_tag_inside_form(self, tag, attrs):
         """
         Handler for select tag inside a form
         """
-        self._optionAttrs = []
-        
         # Get the name
-        self._selectTagName = ''
-        for attr in attrs:
-            if attr[0].lower() == 'name':
-                self._selectTagName = attr[1]
-        
-        if not self._selectTagName:
-            for attr in attrs:
-                if attr[0].lower() == 'id':
-                    self._selectTagName = attr[1]
+        select_name = attrs.get('name', '') or attrs.get('id', '')
             
-        if not self._selectTagName:            
-            om.out.debug('htmlParser found a select tag without a name attr, IGNORING!')
-            self._insideSelect = False
+        if not select_name:
+            om.out.debug('HTMLParser found a select tag without a '
+                         'name attr, IGNORING!')
+            self._inside_select = False
         else:
-            self._insideSelect = True
+            self._selects.append((select_name, []))
+            self._inside_select = True
+    
+    _handle_select_tag_outside_form = _handle_select_tag_inside_form
 
-    def _handle_select_tag_outside_form(self, tag, attrs):
-        """
-        Handler for select tag outside a form
-        """
-        self._handle_select_tag_inside_form(tag, attrs)
-
-    def _handle_select_endtag(self):
-        """
-        Handler for select end tag
-        """
-        sgmlParser._handle_select_endtag(self)
-        if not self._forms:
-            self._saved_inputs.append( ('input', self._optionAttrs) )
-        else:
-            form_obj = self._forms[-1]
-            form_obj.addSelect( self._selectTagName, self._optionAttrs )
+    ## <option> handler methods
+    _handle_option_tag_start = _form_elems_generic_handler
 
     def _handle_option_tag_inside_form(self, tag, attrs):
         """
         Handler for option tag inside a form
         """
-        if self._insideSelect:
-            self._optionAttrs.append(attrs)
-
-    def _handle_option_tag_outside_form(self, tag, attrs):
-        """
-        Handler for option tag outside a form
-        """
-        self._handle_option_tag_inside_form(tag, attrs)
+        if self._inside_select:
+            self._selects[-1][1].append(attrs)
+    
+    _handle_option_tag_outside_form = _handle_option_tag_inside_form

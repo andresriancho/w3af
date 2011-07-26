@@ -34,8 +34,6 @@ from core.data.request.frFactory import createFuzzableRequestRaw
 
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
-from core.data.parsers.urlParser import url_object
-
 
 # TODO: Rethink this: why not POST?
 CACHE_METHODS = ('GET', 'HEAD')
@@ -118,6 +116,7 @@ class CachedResponse(StringIO.StringIO):
     PART_BODY = 'PART_BODY'
     PART_CODE = 'PART_CODE'
     PART_MSG = 'PART_MSG'
+    PART_CHARSET = 'PART_CHARSET'
     
     def __init__(self, request):
         self._hash_id = gen_hash(request)
@@ -126,6 +125,7 @@ class CachedResponse(StringIO.StringIO):
         self._code = None
         self._msg = None
         self._headers = None
+        self._encoding = None
         # Call parent's __init__
         self._body = self._get_from_response(CachedResponse.PART_BODY)
         StringIO.StringIO.__init__(self, self._body)
@@ -146,6 +146,13 @@ class CachedResponse(StringIO.StringIO):
         if not self._msg:
             self._msg = self._get_from_response(CachedResponse.PART_MSG)
         return self._msg
+    
+    @property
+    def encoding(self):
+        if not self._encoding:
+            self._encoding = self._get_from_response(
+                                            CachedResponse.PART_CHARSET)
+        return self._encoding
     
     def info(self):
         return self.headers()
@@ -216,7 +223,7 @@ class DiskCachedResponse(CachedResponse):
         CachedResponse.PART_HEADER: 'headers',
         CachedResponse.PART_BODY: 'body',
         CachedResponse.PART_CODE: 'code',
-        CachedResponse.PART_MSG: 'msg'
+        CachedResponse.PART_MSG: 'msg',
     }
     
     def _get_from_response(self, part):
@@ -312,11 +319,13 @@ class SQLCachedResponse(CachedResponse):
         if part == CachedResponse.PART_HEADER:
             res = hist.info
         elif part == CachedResponse.PART_BODY:
-            res = hist.response.getBody()
+            res = hist.response.body
         elif part == CachedResponse.PART_CODE:
             res = hist.code
         elif part == CachedResponse.PART_MSG:
             res = hist.msg
+        elif part == CachedResponse.PART_CHARSET:
+            res = hist.charset
         else:
             raise ValueError, "Unexpected value for param 'part': %s" % part
 
@@ -337,22 +346,18 @@ class SQLCachedResponse(CachedResponse):
         headers = dict(request.headers)
         headers.update(request.unredirected_hdrs)
     
-        req = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.url_object,
-                                      postData=str(request.get_data() or ''),
-                                      headers=headers)
+        req = createFuzzableRequestRaw(
+                   method=request.get_method(),
+                   url=request.url_object,
+                   postData=str(request.get_data() or ''),
+                   headers=headers)
         hi.request = req
 
         # Set the response
-        resp = response
-        code, msg, hdrs, url, body, id = (resp.code, resp.msg, resp.info(),
-                                          resp.geturl(), resp.read(), resp.id)
-        # BUGBUG: This is where I create/log the responses that always have
-        # 0.2 as the time!
-        url_instance = url_object( url )
-        resp = httpResponse.httpResponse(code, body, hdrs, url_instance,
-                                         request.url_object, msg=msg, id=id,
-                                         alias=gen_hash(request))
+        resp = httpResponse.from_httplib_resp(response,
+                                              original_url=request.url_object)
+        resp.setId(response.id)
+        resp.setAlias(gen_hash(request))
         hi.response = resp
 
         # Now save them

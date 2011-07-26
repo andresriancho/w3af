@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 '''
 form.py
 
@@ -20,29 +21,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import copy
 import operator
 import random
 
-import core.controllers.outputManager as om
+from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.dataContainer import dataContainer
 from core.data.parsers.encode_decode import urlencode
 from core.data.parsers.urlParser import url_object
+import core.controllers.outputManager as om
 
 
 class form(dataContainer):
     '''
     This class represents a HTML form.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho ( andres.riancho@gmail.com ) |
+        Javier Andalia (jandalia =at= gmail.com)
     '''
     # Max
     TOP_VARIANTS = 150
     MAX_VARIANTS_TOTAL = 10**9
     SEED = 1
     
-    def __init__(self, init_val=(), strict=False):
-        dataContainer.__init__(self)
+    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+        dataContainer.__init__(self, init_val, encoding)
         
         # Internal variables
         self._method = None
@@ -96,10 +98,8 @@ class form(dataContainer):
         Auxiliary setter for name=value
         '''
         # added to support repeated parameter names
-        if name in self:
-            self[name].append(value)
-        else:
-            self[name] = [value, ]
+        vals = self.setdefault(name, [])
+        vals.append(value)
 
     def addFileInput( self, attrs ):
         '''
@@ -126,33 +126,38 @@ class form(dataContainer):
             # with the same name, and different types
             self._types[name] = 'file'
     
-    def __str__( self ):
+    def __str__(self):
         '''
         This method returns a string representation of the form Object.
         
         >>> f = form()
-        >>> _ = f.addInput( [("type", "text") , ("name", "abc") , ("value", "123")] )
+        >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
         >>> str(f)
         'abc=123'
 
         >>> f = form()
-        >>> _ = f.addInput( [("type", "text") , ("name", "abc") , ("value", "123")] )
-        >>> _ = f.addInput( [("type", "text") , ("name", "def") , ("value", "000")] )        
+        >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
+        >>> _ = f.addInput([("type", "text"), ("name", "def"), ("value", "000")])        
         >>> str(f)
         'abc=123&def=000'
+        
+        >>> import urllib
+        >>> f = form() # Default encoding UTF-8
+        >>> _ = f.addInput([("type", "text"), ("name", u"v"),("value", u"áéíóú")])
+        >>> _ = f.addInput([("type", "text"), ("name", u"c"), ("value", u"ñçÑÇ")])
+        >>> f.addSubmit('address', 'bsas')
+        >>> urllib.unquote(str(f)).decode('utf-8') == u'c=ñçÑÇ&address=bsas&v=áéíóú'
+        True
 
         @return: string representation of the form Object.
         '''
-        tmp = self.copy()
-        for i in self._submitMap:
-            tmp[i] = self._submitMap[i]
-        
         #
         # FIXME: hmmm I think that we are missing something here... what about
         # self._select values. See FIXME below. Maybe we need another for?
         #
-
-        return urlencode(tmp)
+        d = dict(self)
+        d.update(self._submitMap)
+        return urlencode(d, encoding=self.encoding)
         
     def addSubmit( self, name, value ):
         '''
@@ -262,7 +267,7 @@ class form(dataContainer):
         if not name:
             return
         
-        self._selects[name] = []
+        self._selects.setdefault(name, [])
         self._types[name] = 'select'
         
         value = ""
@@ -276,7 +281,7 @@ class form(dataContainer):
 
     def getVariants(self, mode="tmb"):
         """
-        Returns all variants of form by mode:
+        Generate all variants of form by mode:
           "all" - all values
           "tb" - only top and bottom values
           "tmb" - top, middle and bottom values
@@ -300,7 +305,7 @@ class form(dataContainer):
         # Build self variant based on `sample_path`
         for sample_path in self._getSamplePaths(mode, matrix):
             # Clone self
-            self_variant = copy.deepcopy(self)
+            self_variant = self.copy()
             
             for row_index, col_index in enumerate(sample_path):
                 sel_name = sel_names[row_index]
@@ -317,7 +322,6 @@ class form(dataContainer):
             
             yield self_variant
 
-    
     def _getSamplePaths(self, mode, matrix):
         if mode in ["t", "tb"]:
             yield [0] * len(matrix)

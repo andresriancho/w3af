@@ -20,31 +20,33 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from itertools import chain
+
 from lxml import etree
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.controllers.outputManager as om
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import core.data.kb.knowledgeBase as kb
-from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.kb.info import info
 
 # Find all form elements that don't include the'autocomplete' attribute;
 # otherwise (if included) not equals 'off'
-AUTOCOMPLETE_FORMS_XPATH = "//form[not(@autocomplete) or " \
-"translate(@autocomplete,'OF','of')!='off']"
+AUTOCOMPLETE_FORMS_XPATH = ("//form[not(@autocomplete) or "
+                            "translate(@autocomplete,'OF','of')!='off']")
 # Find all input elements which type's lower-case value 
 # equals-case-sensitive 'password'
 PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
-
+# All 'text' input elements
+TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 class formAutocomplete(baseGrepPlugin):
     '''
     Grep every page for detection of forms with 'autocomplete' capabilities 
     containing password-type inputs.
       
-    @author: Javier Andalia (jandalia@gmail.com)
+    @author: Javier Andalia (jandalia =at= gmail.com)
     '''
 
     def __init__(self):
@@ -69,12 +71,20 @@ class formAutocomplete(baseGrepPlugin):
             dom = response.getDOM()
 
             if dom is not None:
+                
+                autocompletable = \
+                    lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
 
                 # Loop through "auto-completable" forms
                 for form in dom.xpath(AUTOCOMPLETE_FORMS_XPATH):
 
-                    # Test existance of password-type inputs
-                    if form.xpath(PWD_INPUT_XPATH):
+                    passwd_inputs = form.xpath(PWD_INPUT_XPATH)
+
+                    # Test existence of password-type inputs and verify that
+                    # all inputs are autocompletable
+                    if passwd_inputs and \
+                        all(map(autocompletable,
+                        chain(passwd_inputs, form.xpath(TEXT_INPUT_XPATH)))):
                         inf = info()
                         inf.setName('Auto-completable form')
                         inf.setURL(url)
@@ -88,8 +98,6 @@ class formAutocomplete(baseGrepPlugin):
                         kb.kb.append(self, 'formAutocomplete', inf)
                         # Also send 'msg' to console
                         om.out.information(msg)
-                        # Enough with one input
-                        break
 
 
     def setOptions(self, OptionList):

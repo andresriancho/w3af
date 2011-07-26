@@ -23,6 +23,6 @@ set target http://moth/w3af/core/encoding/index.html
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 9 
+assert len(kb.kb.getData('urls','urlList')) == 14 
 
 exit

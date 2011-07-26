@@ -29,34 +29,34 @@ parameter_name_knowledge = {
     'John': ['name','nombre','nome','name', 'naam'],  
     'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
     
-    'FrAmE30.': ['pass','word','pswd','pwd','auth','password','passwort','contraseña','senha',
+    'FrAmE30.': ['pass','word','pswd','pwd','auth','password','passwort', u'contraseña','senha',
                                     'key', 'hash', 'pword', 'passe'], 
 
     'w3af@email.com':['mail','email','e-mail','correo','correio', 'to', 'cc', 'bcc'], 
     'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website', 'web'], 
     
     'AK':['state','estado'], 
-    'Argentina':['location','country','pais','país','land'], 
+    'Argentina':['location','country','pais', u'país','land'], 
     'English':['language', 'lang',  'idioma'], 
     'Buenos Aires':['city','ciudad','cidade','stadt'], 
-    'Bonsai Street 123':['addr','address','residence','dirección','direccion','residencia',
-                                    'endereço','endereco','residência','addresse','wohnsitz','wohnort'],
+    'Bonsai Street 123':['addr','address','residence', u'dirección','direccion','residencia',
+                                    u'endereço','endereco', u'residência','addresse','wohnsitz','wohnort'],
     
     'Bonsai':['company','empresa','companhia','unternehmen'],  
-    'Manager':['position','jon','cargo','posição','unternehmung','position'],
+    'Manager':['position','jon','cargo', u'posição','unternehmung','position'],
     
     '90210':['postal','zip','postleitzahl','plz','postais'],
     '3419':['pin','id', 'suffix'],
     '22':['floor','age','piso','edad','stock','alter', 'port', 'puerto'],
     '555':['area', 'prefijo','prefix'],
-    '55550178':['phone','fax','code','number','telefono','numero','número','código','codigo','telefon',
+    '55550178':['phone','fax','code','number','telefono','numero', u'número', u'código','codigo','telefon',
                         'tel','code','nummer', 'call', 'llamar', 'passport', 'pasaporte'],
     '987654320': ['ssn', 'social'], 
-    '7':['month','day','birthday','birthmonth','mes','dia','día','monat','tag','geburts','mês',
+    '7':['month','day','birthday','birthmonth','mes','dia', u'día','monat','tag','geburts', u'mês',
             'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article', 'score', 'puntos', 
             'hour', 'hora', 'minute', 'minuto', 'second', 'segundo', 'weight','peso', 'largo', 'length',
              'height', 'altura', 'step', 'pageid'], 
-    '1982':['year','birthyear','año','ano','jahr', 'since', 'desde'], 
+    '1982':['year','birthyear', u'año','ano','jahr', 'since', 'desde'], 
     
     'Hello World':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data',
                              'payload', 'answer', 'respuesta', 'description', 'descripcion', 
@@ -129,7 +129,7 @@ def smartFill( variable_name ):
             #
             if variable_name_db == variable_name:
                 return filled_value
-                
+            
             if variable_name in variable_name_db:
                 match_rate = get_match_rate(variable_name, variable_name_db)
                 possible_results.append( (filled_value, match_rate) )

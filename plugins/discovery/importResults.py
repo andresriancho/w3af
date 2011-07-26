@@ -117,14 +117,14 @@ class importResults(baseDiscoveryPlugin):
         >>> i = importResults()
         
         >>> i._obj_from_csv( ('GET','http://www.w3af.com/',''))
-        <QS fuzzable request | GET | http://www.w3af.com/ >
+        <QS fuzzable request | GET | http://www.w3af.com/>
         
         >>> i._obj_from_csv( ('GET','http://www.w3af.com/?id=1',''))
-        <QS fuzzable request | GET | http://www.w3af.com/?id=1 >
+        <QS fuzzable request | GET | http://www.w3af.com/?id=1>
 
         >>> pdr = i._obj_from_csv( ('GET','http://www.w3af.com/','id=1'))
         >>> pdr
-        <postdata fuzzable request | GET | http://www.w3af.com/ >
+        <postdata fuzzable request | GET | http://www.w3af.com/>
         >>> pdr.getData()
         {'id': ['1']}
         >>> str(pdr.getData())

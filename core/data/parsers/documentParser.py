@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdfParser as pdfParser
@@ -42,31 +41,35 @@ class documentParser:
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, httpResponse, normalizeMarkup=True):
-        if self._isWML( httpResponse ):
-            self._parser = wmlParser.wmlParser( httpResponse )
-        elif self._isPDF( httpResponse ):
-            self._parser = pdfParser.pdfParser( httpResponse )
-        elif self._isSWF( httpResponse ):
-            self._parser = swfParser.swfParser( httpResponse )
+    def __init__(self, httpResponse):
+        
+        # Create the proper parser instance
+        if self._isWML(httpResponse):
+            parser = wmlParser.wmlParser(httpResponse)
+        elif self._isPDF(httpResponse):
+            parser = pdfParser.pdfParser(httpResponse)
+        elif self._isSWF(httpResponse):
+            parser = swfParser.swfParser(httpResponse)
         elif httpResponse.is_text_or_html():
-            self._parser = htmlParser.htmlParser( httpResponse, normalizeMarkup)
+            parser = htmlParser.HTMLParser(httpResponse)
         else:
-            msg = 'There is no parser for "%s".' % httpResponse.getURL() 
-            raise w3afException( msg )
+            msg = 'There is no parser for "%s".' % httpResponse.getURL()
+            raise w3afException(msg)
+        
+        self._parser = parser
     
-    def _isPDF( self, httpResponse ):
+    def _isPDF(self, httpResponse):
         '''
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a PDF document.
         '''
-        if httpResponse.getContentType() in ['application/x-pdf', 'application/pdf']:
-            document = httpResponse.getBody()
+        if httpResponse.getContentType() in ('application/x-pdf', 'application/pdf'):
+            document = httpResponse.body
             
             #   With the objective of avoiding this bug:
             #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
             #   I perform this safety check:
-            if document == '':
+            if not document:
                 return False
         
             #   Some PDF files don't end with %%EOF, they end with

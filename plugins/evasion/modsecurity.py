@@ -54,17 +54,17 @@ class modsecurity(baseEvasionPlugin):
         >>> from core.data.parsers.urlParser import url_object
         >>> modsec = modsecurity()
         
-        >>> u = url_object('http://www.google.com/')
+        >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> modsec.modifyRequest( r ).url_object.url_string
-        'http://www.google.com/'
+        u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.google.com/')
+        >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='' )
         >>> modsec.modifyRequest( r ).get_data()
         ''
 
-        >>> u = url_object('http://www.google.com/')
+        >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='a=b' )
         >>> modsec.modifyRequest( r ).get_data()
         '\\x00a=b'

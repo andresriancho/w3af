@@ -20,14 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
+import simplejson as json
+
 from core.data.request.httpPostDataRequest import httpPostDataRequest
-import core.data.dc.dataContainer as dc
-try:
-    import extlib.simplejson as json
-except:
-    import simplejson as json
 
 class jsonPostDataRequest(httpPostDataRequest):
     '''

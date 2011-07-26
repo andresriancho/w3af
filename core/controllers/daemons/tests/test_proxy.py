@@ -26,15 +26,15 @@ class TestProxy(PyMockTestCase):
                     urllib2.HTTPHandler)
     
     def test_do_req_through_proxy(self):
-        resp_body = self.proxy_opener.open('http://www.google.com').read()
+        resp_body = self.proxy_opener.open('http://moth').read()
         self.assertTrue(len(resp_body) > 0)
     
     def test_prox_req_ok(self):
         '''Test if the responses either using a proxy or not are the same'''
         # Get response using the proxy
-        proxy_resp = self.proxy_opener.open('http://www.google.com').read()
+        proxy_resp = self.proxy_opener.open('http://moth').read()
         # Get it the other way
-        resp = urllib2.urlopen('http://www.google.com').read()
+        resp = urllib2.urlopen('http://moth').read()
         # They must be very similar
         self.assertTrue(relative_distance_ge(resp, proxy_resp, 0.9))
     

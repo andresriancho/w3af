@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 dataContainer.py
 
@@ -19,9 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.data.parsers.encode_decode import urlencode
 import copy
+
+from core.data.constants.encodings import DEFAULT_ENCODING
+import core.data.parsers.encode_decode as enc_dec
 
 
 class dataContainer(dict):
@@ -31,19 +33,18 @@ class dataContainer(dict):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, init_val=(), strict=False):
-        self.strict = strict
+    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+        
         dict.__init__(self)
         
+        self.encoding = encoding
+        
         if isinstance(init_val, dataContainer):
-            self._sequence = init_val.keys()
             dict.update(self, init_val)
         elif isinstance(init_val, dict):
             # we lose compatibility with other ordered dict types this way
             raise TypeError('Undefined order, cannot get items from dict')
         else:
-            self._sequence = []
-
             for item in init_val:
                 try:
                     key, val = item
@@ -51,22 +52,20 @@ class dataContainer(dict):
                     raise TypeError('key, val = item')
                 self[key] = val
                 
-    def __str__( self ):
+    def __str__(self):
         '''
         This method returns a string representation of the dataContainer Object.
         
-        >>> dc = dataContainer( [('a','1') , ('b', ['2','3']) ] )
-        >>> str(dc)
+        >>> str(dataContainer([('a','1'), ('b', ['2','3'])]))
         'a=1&b=2&b=3'
-        
-        >>> dc = dataContainer( [('a','1') , ('b', '2') ] )
-        >>> str(dc)
-        'a=1&b=2'
+        >>> import urllib
+        >>> dc = dataContainer([('a','1'), ('u', u'Ú-ú-Ü-ü')], 'latin1')
+        >>> urllib.unquote(str(dc)).decode('latin-1') == u'a=1&u=Ú-ú-Ü-ü'
+        True
 
         @return: string representation of the dataContainer Object.
         '''
-        return urlencode( self )
-        #return urllib.urlencode( self )
+        return enc_dec.urlencode(self, encoding=self.encoding)
         
     def copy(self):
         '''
@@ -75,4 +74,4 @@ class dataContainer(dict):
         @return: A copy of myself.
         '''
         return copy.deepcopy(self)
-        
+       

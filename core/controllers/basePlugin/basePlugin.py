@@ -175,9 +175,8 @@ class basePlugin(configurable):
         Sends a mutant to the remote web server.
         '''
         #
-        #
-        #   IMPORTANT NOTE: If you touch something here, the whole framework may stop working!
-        #
+        # IMPORTANT NOTE: If you touch something here, the whole framework may
+        # stop working!
         #
         url = mutant.getURI()
         data = mutant.getData()
@@ -191,7 +190,7 @@ class basePlugin(configurable):
         args = ( url, )
         method = mutant.getMethod()
         
-        functor = getattr( self._urlOpener , method )
+        functor = getattr(self._urlOpener , method)
         # run functor , run !   ( forest gump flash )
         res = functor(*args, data=data, headers=headers,
                       grepResult=grepResult, useCache=useCache)

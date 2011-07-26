@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import urllib2
-import core.controllers.outputManager as om
 import core.data.request.fuzzableRequest as fuzzableRequest
 
 import core.data.url.httpResponse as httpResponse
@@ -106,7 +105,8 @@ class mangleHandler(urllib2.BaseHandler):
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
 
-            httpRes = httpResponse.httpResponse( code, body, hdrs, url_instance, request.url_object, msg=msg)
+            httpRes = httpResponse.httpResponse(code, body, hdrs, url_instance,
+                                                request.url_object, msg=msg)
             
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
@@ -129,6 +129,7 @@ class mangleHandler(urllib2.BaseHandler):
         kaRes._url = mangledResponse.getURI().url_string
         kaRes.msg = originalResponse.msg
         kaRes.id = originalResponse.id
+        kaRes.encoding = mangledResponse.charset
         return kaRes
     
     https_request = http_request

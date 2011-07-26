@@ -27,65 +27,57 @@ from htmlentitydefs import name2codepoint
 import urllib
 import sys
 
+# This pattern matches a character entity reference (a decimal numeric
+# references, a hexadecimal numeric reference, or a named reference).
+CHAR_REF_PATT = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?', re.U)
 
 def htmldecode(text, use_repr=False):
     """
     Decode HTML entities in the given text.
 
-    >>> htmldecode('hola mundo')
-    'hola mundo'
-    >>> print htmldecode('hólá múndó')
-    hólá múndó
-    >>> print htmldecode('hola mundo &#0443')
-    hola mundo ƻ
-    >>> htmldecode('hola mundo &#x41')
-    'hola mundo A'
-    >>> print htmldecode('&aacute;')
-    á
+    >>> htmldecode('hola mundo') == 'hola mundo'
+    True
+    >>> htmldecode(u'hólá múndó') == u'hólá múndó'
+    True
+    >>> htmldecode(u'hola &#0443') == u'hola \u01bb' ## u'hola ƻ'
+    True
+    >>> htmldecode(u'hola mundo &#x41') == u'hola mundo A'
+    True
+    >>> htmldecode(u'&aacute;') == u'\xe1' ## u'á'
+    True
     """
-    # This pattern matches a character entity reference (a decimal numeric
-    # references, a hexadecimal numeric reference, or a named reference).
-    charrefpat = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?')
-    
-    # FIXME: What if we have something like this: &aacute ?!?!
-    # I expected something like á , not a  '\xe1'
-    '''
-    >>> from encode_decode import *
-    >>> htmldecode('&aacute;')
-    '\xe1'
-    '''
-    #uchr = lambda value: value > 255 and unichr(value).encode('utf-8') or chr(value)
-    uchr = lambda value: unichr(value).encode('utf-8')
     
     # Internal function to do the work
-    def entitydecode(match, uchr=uchr):
+    def entitydecode(match):
         entity = match.group(1)
+        
         if entity.startswith('#x'):
-            return uchr(int(entity[2:], 16))
+            return unichr(int(entity[2:], 16))
+        
         elif entity.startswith('#'):
-            return uchr(int(entity[1:]))
+            return unichr(int(entity[1:]))
+        
         elif entity in name2codepoint:
-            return uchr(name2codepoint[entity])
+            return unichr(name2codepoint[entity])
+        
         else:
             return match.group(0)
             
     # "main"
-    return charrefpat.sub(entitydecode, text)
+    return CHAR_REF_PATT.sub(entitydecode, text)
 
 
-def urlencode(query, doseq=0, safe='/<>"\'=:()'):
+def urlencode(query, encoding, safe='/<>"\'=:()'):
     '''
-    This is my version of urllib.urlencode , that adds "/" as a safe character and also adds support
-    for "repeated parameter names".
+    This is my version of urllib.urlencode. It adds "/" as a safe character
+    and also adds support for "repeated parameter names".
     
     Note:
         This function is EXPERIMENTAL and should be used with care ;)
-    
-    Maybe this is the place to fix this bug:
-        http://sourceforge.net/tracker2/?func=detail&aid=2675634&group_id=170274&atid=853652
         
     Original documentation:
-        Encode a sequence of two-element tuples or dictionary into a URL query string.
+        Encode a sequence of two-element tuples or dictionary into a URL query
+        string.
 
         If any values in the query arg are sequences and doseq is true, each
         sequence element is converted to a separate parameter.
@@ -96,19 +88,19 @@ def urlencode(query, doseq=0, safe='/<>"\'=:()'):
 
 
     >>> import cgi
-    >>> urlencode( cgi.parse_qs('a=1&a=c') )
+    >>> urlencode(cgi.parse_qs(u'a=1&a=c'), 'latin1')
     'a=1&a=c'
-    >>> urlencode( cgi.parse_qs('a=1&b=c') )
+    >>> urlencode(cgi.parse_qs(u'a=1&b=c'), 'latin1')
     'a=1&b=c'
-    >>> urlencode( cgi.parse_qs('a=á&a=2') )
+    >>> urlencode(cgi.parse_qs(u'a=á&a=2'), 'latin1')
     'a=%C3%A1&a=2'
-    >>> urlencode( 'a=b&c=d' )
+    >>> urlencode(u'a=b&c=d', 'utf-8')
     Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
+      ...
     TypeError: not a valid non-string sequence or mapping object
     '''
 
-    if hasattr(query,"items"):
+    if hasattr(query, "items"):
         # mapping objects
         query = query.items()
     else:
@@ -124,57 +116,33 @@ def urlencode(query, doseq=0, safe='/<>"\'=:()'):
             # allowed empty dicts that type of behavior probably should be
             # preserved for consistency
         except TypeError:
-            ty,va,tb = sys.exc_info()
-            raise TypeError, "not a valid non-string sequence or mapping object", tb
+            try:
+                tb = sys.exc_info()[2]
+                raise TypeError, "not a valid non-string sequence or mapping "\
+                       "object", tb
+            finally:
+                del tb
 
     l = []
-    if not doseq:
-        # preserve old behavior
-        for k, v in query:
-            
-            # keys are easy
-            k = urllib.quote_plus(str(k), safe)
-            
-            # Check for [] in the value
-            if isinstance(v, list):
-                for v_item in v:
-                    v_item = urllib.quote_plus(str(v_item), safe)
-                    l.append(k + '=' + v_item)
-            else:
-                v = urllib.quote_plus(str(v), safe)
-                l.append(k + '=' + v)
-    else:
-        for k, v in query:
-            # keys are easy...
-            k = urllib.quote_plus(str(k), safe)
-            
-            # now the value...
-            # is string
-            if isinstance(v, str):
-                v = urllib.quote_plus(v, safe)
-                l.append(k + '=' + v)
+    is_unicode = lambda x: isinstance(x, unicode)
     
-            # is unicode...
-            elif urllib._is_unicode(v):
-                # is there a reasonable way to convert to ASCII?
-                # encode generates a string, but "replace" or "ignore"
-                # lose information and "strict" can raise UnicodeError
-                v = urllib.quote_plus(v.encode("ASCII","replace"), safe)
-                l.append(k + '=' + v)
-                
-            else:
-                try:
-                    # is this a sufficient test for sequence-ness?
-                    x = len(v)
-                except TypeError:
-                    # not a sequence
-                    v = urllib.quote_plus(str(v), safe)
-                    l.append(k + '=' + v)
-                else:
-                    # loop over the sequence
-                    for elt in v:
-                        l.append(k + '=' + urllib.quote_plus(str(elt), safe))
-                        
+    for k, v in query:
+        # first work with keys
+        k = k.encode(encoding) if is_unicode(k) else str(k)
+        k = urllib.quote(k, safe)
+        
+        if isinstance(v, basestring):
+            v = [v]
+        else:
+            try:
+                # is this a sufficient test for sequence-ness?
+                len(v)
+            except TypeError:
+                v = [str(v)]
+        for ele in v:
+            ele = ele.encode(encoding) if is_unicode(ele) else str(ele) 
+            l.append(k + '=' + urllib.quote(ele, safe))
+    
     return '&'.join(l)
 
 

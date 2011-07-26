@@ -33,12 +33,10 @@ except ImportError:
     from StringIO import StringIO
 
 import core.data.kb.knowledgeBase as kb
-import core.controllers.outputManager as om
-import core.data.kb.config as cf
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead
-from core.data.db.db import DB, WhereHelper
+from core.data.db.db import WhereHelper
 
 
 class HistoryItem(object):
@@ -46,11 +44,13 @@ class HistoryItem(object):
 
     _db = None
     _dataTable = 'data_table'
-    _columns = [('id','integer'), ('url', 'text'), ('code', 'integer'),
+    _columns = [
+        ('id','integer'), ('url', 'text'), ('code', 'integer'),
         ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
         ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
-        ('method', 'text'), ('response_size', 'integer'), ('codef', 'integer'),
-        ('alias', 'text'), ('has_qs', 'integer')]
+        ('charset', 'text'), ('method', 'text'), ('response_size', 'integer'),
+        ('codef', 'integer'), ('alias', 'text'), ('has_qs', 'integer')
+    ]
     _primaryKeyColumns = ('id',)
     _indexColumns = ('alias',)
     id = None
@@ -169,8 +169,9 @@ class HistoryItem(object):
         self.time = float(row[6])
         self.msg = row[7]
         self.contentType = row[8]
-        self.method = row[9]
-        self.responseSize = int(row[10])
+        self.charset = row[9]
+        self.method = row[10]
+        self.responseSize = int(row[11])
 
     def _loadFromFile(self, id):
         
@@ -271,8 +272,10 @@ class HistoryItem(object):
         values.append(resp.getWaitTime())
         values.append(resp.getMsg())
         values.append(resp.getContentType())
+        ch = resp.charset
+        values.append(ch)
         values.append(self.request.getMethod())
-        values.append(len(resp.getBody()))
+        values.append(len(resp.body))
         code = int(resp.getCode()) / 100
         values.append(code)
         values.append(resp.getAlias())
@@ -280,15 +283,17 @@ class HistoryItem(object):
 
         if not self.id:
             sql = ('INSERT INTO %s '
-            '(id, url, code, tag, mark, info, time, msg, content_type, method, response_size, codef, alias, has_qs) '
-            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
+            '(id, url, code, tag, mark, info, time, msg, content_type, '
+                    'charset, method, response_size, codef, alias, has_qs) '
+            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
             values.append(self.id)
             sql = ('UPDATE %s' 
-            ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, time = ?, msg = ? , content_type = ? '
-            ', method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
+            ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, '
+                        'time = ?, msg = ?, content_type = ?, charset = ?, '
+            'method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
             ' WHERE id = ?' % self._dataTable)
             self._db.execute(sql, values)
         

@@ -11,10 +11,13 @@ set verbose False
 back
 
 discovery fingerGoogle
+discovery config fingerGoogle
+set resultLimit 64
+back
 back
 
 target
-set target http://www.gmail.com/
+set target http://www.cybsec.com/
 back
 
 start

@@ -141,7 +141,7 @@ class xss(baseAuditPlugin):
         
         I'm aware that this doesn't work if the filter also filters by length.
         The idea of this method is to reduce the amount of tests to be performed, if I start
-        testing each char separately, I loose that performance enhancement that I want to
+        testing each char separately, I lose that performance enhancement that I want to
         get.
         
         @return: A list with the special characters that are allowed by the XSS filter
@@ -163,10 +163,11 @@ class xss(baseAuditPlugin):
         
         # Analyze the response
         allowed = []
-        if response.getBody().count(list_delimiter) == 2:
-            start = response.getBody().find(list_delimiter) 
-            end = response.getBody().find(list_delimiter, start+1)
-            the_list = response.getBody()[start+len(list_delimiter):end]
+        body = response.getBody()
+        if body.count(list_delimiter) == 2:
+            start = body.find(list_delimiter) 
+            end = body.find(list_delimiter, start+1)
+            the_list = body[start+len(list_delimiter):end]
             split_list = the_list.split(rndNum)
             for i, char in enumerate(split_list):
                 if char == self._special_characters[i]:
@@ -329,21 +330,23 @@ class xss(baseAuditPlugin):
         #
         with self._plugin_lock:
             
+            mod_value = mutant.getModValue()
+            
             #
             #   I will only report the XSS vulnerability once.
             #
-            if self._hasNoBug( 'xss' , 'xss' , mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug('xss', 'xss', mutant.getURL(), mutant.getVar()):
                 
                 #   Internal variable for the analysis process
                 vulnerable = False
                 
-                if mutant.getModValue() in response:
+                if mod_value in response:
                     # Ok, we MAY have found a xss. Let's remove some false positives.
-                    if mutant.getModValue().lower().count( 'javas' ):
+                    if mod_value.lower().count( 'javas' ):
                         # I have to check if javascript was written inside a SRC parameter of html
                         # afaik it is the only place this type (<IMG SRC="javascript:alert('XSS');">)
                         # of xss works.
-                        if self._checkHTML( mutant.getModValue(), response ):
+                        if self._checkHTML(mod_value, response):
                             vulnerable = True
                     else:
                         # Not a javascript type of xss, it's a <SCRIPT>...</SCRIPT> type
@@ -359,7 +362,7 @@ class xss(baseAuditPlugin):
                     msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
                     msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
                     v.setDesc( msg )
-                    v.addToHighlight( mutant.getModValue() )
+                    v.addToHighlight(mod_value)
 
                     kb.kb.append( self, 'xss', v )
     

@@ -15,8 +15,6 @@
 Enables the use of multipart/form-data for posting forms
 """
 
-import sys
-
 '''
 Inspirations:
   Upload files in python:
@@ -39,11 +37,13 @@ Further Example:
   then uploads it to the W3C validator.
 '''
 
+import sys
 import urllib
 import urllib2
 import mimetools, mimetypes
 import os, stat, hashlib
-from core.data.fuzzer.fuzzer import string_file
+from core.controllers.misc.io import NamedStringIO, is_file_like
+from core.data.constants.encodings import DEFAULT_ENCODING
 
 class Callable:
     def __init__(self, anycallable):
@@ -59,28 +59,49 @@ class MultipartPostHandler(urllib2.BaseHandler):
     def http_request(self, request):
         data = request.get_data()
         
-        if data is not None and type(data) != str:
+        to_str = lambda _str: _str.encode(DEFAULT_ENCODING) if \
+                                isinstance(_str, unicode) else _str
+        
+        if data and not isinstance(data, basestring):
             v_files = []
             v_vars = []
             
             try:
-                for parameter_name in data:
+                for pname, val in data.items():
                     # Added to support repeated parameter names
-                    for element_index, element in enumerate(data[parameter_name]):
-                        if type(element) == file:
-                            if not element.closed:
-                                v_files.append((parameter_name, element))
+                    enc_pname = to_str(pname)
+                    
+                    if isinstance(val, basestring):
+                        val = [val]
+                    else:
+                        try:
+                            # is this a sufficient test for sequence-ness?
+                            len(val)
+                        except:
+                            val = [val]
+                    
+                    for elem in val:
+                        if is_file_like(elem):
+                            if not elem.closed:
+                                v_files.append((enc_pname, elem))
                             else:
-                                v_vars.append((parameter_name, ''))
-                        elif hasattr( element, 'isFile'):
-                            v_files.append((parameter_name, element))
+                                v_vars.append((enc_pname, ''))
+                        elif hasattr(elem, 'isFile'):
+                            v_files.append((enc_pname, elem))
                         else:
-                            v_vars.append((parameter_name, element))
+                            # Ensuring we actually send a string
+                            elem = to_str(elem)
+                            v_vars.append((enc_pname, elem))
             except TypeError:
-                systype, value, traceback = sys.exc_info()
-                raise TypeError, "not a valid non-string sequence or mapping object", traceback
+                try:
+                    tb = sys.exc_info()[2]
+                    raise (TypeError, "not a valid non-string sequence or "
+                           "mapping object", tb)
+                finally:
+                    del tb
+                
 
-            if len(v_files) == 0:
+            if not v_files:
                 data = urllib.urlencode(v_vars, doseq)
             else:
                 boundary, data = self.multipart_encode(v_vars, v_files)
@@ -114,13 +135,12 @@ class MultipartPostHandler(urllib2.BaseHandler):
             buffer += '\r\n\r\n' + value + '\r\n'
         
         for(key, fd) in files:
-            file_size = getFileSize( fd )
             filename = fd.name.split( os.path.sep )[-1]
             contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             buffer += '--%s\r\n' % boundary
             buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
             buffer += 'Content-Type: %s\r\n' % contenttype
-            # buffer += 'Content-Length: %s\r\n' % file_size
+            # buffer += 'Content-Length: %s\r\n' % getFileSize(fd)
             fd.seek(0)
             buffer += '\r\n' + fd.read() + '\r\n'
         buffer += '--%s--\r\n\r\n' % boundary
@@ -129,40 +149,15 @@ class MultipartPostHandler(urllib2.BaseHandler):
 
     https_request = http_request
 
-def getFileSize( file ):
+def getFileSize(f):
     '''
-    Aux function to get the file size. Needed if I want to use my modified string to fuzz file content.
+    Aux function to get the file size. Needed if I want to use my
+    modified string to fuzz file content.
     '''
-    if type( file ) == string_file:
-        return len( file )
+    if isinstance(f, file):
+        size = os.fstat(f.fileno())[stat.ST_SIZE]
+    elif hasattr(f, '__len__'):
+        size = len(f)
     else:
-        return os.fstat(file.fileno())[stat.ST_SIZE]
-    
-def main():
-    import tempfile, sys
-
-    validatorURL = "http://validator.w3.org/check"
-    opener = urllib2.build_opener(MultipartPostHandler)
-
-    def validateFile(url):
-        temp = tempfile.mkstemp(suffix=".html")
-        os.write(temp[0], opener.open(url).read())
-        params = { "ss" : "0",          # show source
-                   "doctype" : "Inline",
-                   "uploaded_file" : open(temp[1], "rb") }
-        print opener.open(validatorURL, params).read()
-        os.remove(temp[1])
-    
-    def uploadFile( file ):
-        params = { "MAX_FILE_SIZE" : "10000",
-                   "uploadedfile" : open( file , "rb") }
-        print opener.open( 'http://localhost/w3af/fileUpload/uploader.php', params).read()
-        
-    if len(sys.argv[1:]) > 0:
-        for arg in sys.argv[1:]:
-            uploadFile(arg)
-    else:
-        validateFile("http://www.google.com")
-
-if __name__=="__main__":
-    main()
+        size = f.len
+    return size

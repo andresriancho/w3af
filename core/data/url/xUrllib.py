@@ -49,12 +49,11 @@ from core.data.parsers.urlParser import url_object
 from core.data.request.frFactory import createFuzzableRequestRaw
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers import logHandler
-from core.data.url.httpResponse import httpResponse as httpResponse
+from core.data.url.httpResponse import httpResponse, from_httplib_resp
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
 import urlOpenerSettings
 
 
@@ -280,10 +279,12 @@ class xUrllib(object):
         @return: An httpResponse object.
         '''
         #
-        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        # Validate what I'm sending, init the library (if needed) and check
+        # blacklists.
         #
         if not isinstance(uri, url_object):
-            raise ValueError('The uri parameter of xUrllib.GET() must be of urlParser.url_object type.')
+            raise TypeError('The uri parameter of xUrllib.GET() must be of '
+                            'urlParser.url_object type.')
 
         self._init()
 
@@ -291,15 +292,15 @@ class xUrllib(object):
             return self._new_no_content_resp(uri, log_it=True)
 
         #
-        #    Create and send the request
+        # Create and send the request
         #
         if data:
             uri = uri.copy()
             uri.setQueryString(str(data))
             
-        req = HTTPRequest( uri )
-        req = self._add_headers( req, headers )
-        return self._send( req , useCache=useCache, grepResult=grepResult)
+        req = HTTPRequest(uri)
+        req = self._add_headers(req, headers)
+        return self._send(req, useCache=useCache, grepResult=grepResult)
     
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -355,7 +356,7 @@ class xUrllib(object):
         #
         #    Create and send the request
         #
-        req = HTTPRequest( uri, data )
+        req = HTTPRequest(uri, data)
         req = self._add_headers( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
@@ -488,7 +489,7 @@ class xUrllib(object):
         
         # Evasion
         original_url = req._Request__original
-        original_url_instance = req.url_object
+        original_url_inst = req.url_object
         req = self._evasion(req)
         
         start_time = time.time()
@@ -512,8 +513,9 @@ class xUrllib(object):
             geturl_instance = url_object(e.geturl())
             read = self._readRespose(e)
             httpResObj = httpResponse(code, read, info, geturl_instance,
-                                      original_url_instance, id=e.id,
-                                      time=time.time()-start_time, msg=e.msg)
+                                      original_url_inst, id=e.id,
+                                      time=time.time()-start_time, msg=e.msg,
+                                      charset=getattr(e.fp, 'encoding', None))
             
             # Clear the log of failed requests; this request is done!
             req_id = id(req)
@@ -581,7 +583,7 @@ class xUrllib(object):
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
 
-            original_url_instance = url_object(original_url)
+            original_url_inst = url_object(original_url)
 
             trace_str = traceback.format_exc()
             parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)',
@@ -594,7 +596,7 @@ class xUrllib(object):
 
             self._incrementGlobalErrorCount(e, parsed_traceback)
             
-            return self._new_no_content_resp(original_url_instance, log_it=True)
+            return self._new_no_content_resp(original_url_inst, log_it=True)
 
         else:
             # Everything went well!
@@ -612,16 +614,12 @@ class xUrllib(object):
                 msg += ' - from cache.'
             om.out.debug(msg)
 
-            code = int(res.code)
-            info = res.info()
-            geturl = res.geturl()
-            geturl_instance = url_object(geturl)
-            read = self._readRespose( res )
-            httpResObj = httpResponse(code, read, info, geturl_instance,
-                                      original_url_instance, id=res.id,
-                                      time=time.time()-start_time, msg=res.msg)
+            httpResObj = from_httplib_resp(res, original_url=original_url_inst)
+            httpResObj.setId(id=res.id)
+            httpResObj.setWaitTime(time.time()-start_time)
 
-            # Let the upper layers know that this response came from the local cache.
+            # Let the upper layers know that this response came from the
+            # local cache.
             if isinstance(res, CachedResponse):
                 httpResObj.setFromCache(True)
 
@@ -635,15 +633,15 @@ class xUrllib(object):
                 self._grepResult(req, httpResObj)
             else:
                 om.out.debug('No grep for: %s, the plugin sent grepResult='
-                             'False.' % geturl)
+                             'False.' % res.geturl())
             return httpResObj
 
     def _readRespose( self, res ):
         read = ''
         try:
             read = res.read()
-        except KeyboardInterrupt, k:
-            raise k
+        except KeyboardInterrupt:
+            raise
         except Exception, e:
             om.out.error(str(e))
         return read
@@ -660,7 +658,6 @@ class xUrllib(object):
             om.out.debug('Re-sending request...')
             return self._send(req, useCache)
         else:
-            error_amt = self._errorCount[req_id]
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do
             del self._errorCount[req_id]
@@ -787,13 +784,16 @@ class xUrllib(object):
     def _grepResult(self, request, response):
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
-        url_instance = url_object( request.get_full_url() )
+        url_instance = url_object(request.get_full_url(),
+                                  encoding=response.charset)
         domain = url_instance.getDomain()
         
         if len( self._grepPlugins ) and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
-            fuzzReq = createFuzzableRequestRaw( request.get_method(), url_instance, request.get_data(), request.headers )
+            fuzzReq = createFuzzableRequestRaw(
+                           request.get_method(), url_instance,
+                           request.get_data(), request.headers)
             
             for grep_plugin in self._grepPlugins:
                 #

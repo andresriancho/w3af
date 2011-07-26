@@ -54,7 +54,7 @@ class rndCase(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rc.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
 
         >>> u = url_object('http://www.w3af.com/ab/')
         >>> r = HTTPRequest( u )
@@ -77,7 +77,7 @@ class rndCase(baseEvasionPlugin):
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/a/B'
+        u'http://www.w3af.com/a/B'
 
         '''
         # First we mangle the URL        

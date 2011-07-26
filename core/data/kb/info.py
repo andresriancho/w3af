@@ -74,14 +74,14 @@ class info(dict):
         >>> i.setURL('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        ValueError: The URL in the info object must be of urlParser.url_object type.
+        TypeError: The URL in the info object must be of urlParser.url_object type.
         >>> url = url_object('http://www.google.com/')
         >>> i.setURL(url)
         >>> i.getURL() == url
         True
         '''
         if not isinstance(url, url_object):
-            raise ValueError('The URL in the info object must be of urlParser.url_object type.')
+            raise TypeError('The URL in the info object must be of urlParser.url_object type.')
         
         self._url = url.uri2url()
         self._uri = url
@@ -95,7 +95,7 @@ class info(dict):
         >>> i.setURI('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        ValueError: The URI in the info object must be of urlParser.url_object type.
+        TypeError: The URI in the info object must be of urlParser.url_object type.
         >>> uri = url_object('http://www.google.com/')
         >>> i = info()
         >>> i.setURI(uri)
@@ -103,7 +103,7 @@ class info(dict):
         True
         '''
         if not isinstance(uri, url_object):
-            raise ValueError('The URI in the info object must be of urlParser.url_object type.')
+            raise TypeError('The URI in the info object must be of urlParser.url_object type.')
         
         self._uri = uri
         self._url = uri.uri2url()

@@ -52,22 +52,22 @@ class reversedSlashes(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
 
         >>> u = url_object('http://www.w3af.com/abc/def.htm')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/abc\\\def.htm'
+        u'http://www.w3af.com/abc\\\def.htm'
 
         >>> u = url_object('http://www.w3af.com/abc/123/def.htm')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/abc\\\\123\\\def.htm'
+        u'http://www.w3af.com/abc\\\\123\\\def.htm'
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/abc/123/def.htm'
+        u'http://www.w3af.com/abc/123/def.htm'
 
         '''
         # We mangle the URL

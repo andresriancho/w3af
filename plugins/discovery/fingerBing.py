@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.w3afException import w3afRunOnce
 
 import core.data.kb.knowledgeBase as kb
@@ -83,18 +83,23 @@ class fingerBing(baseDiscoveryPlugin):
         @return: A list of valid accounts
         '''
         try:
-            om.out.debug('Searching for mails in: ' + page.URL)
-            if self._domain == page.URL.getDomain():
-                response = self._urlOpener.GET(page.URL, useCache=True, grepResult=True)
-            else:
-                response = self._urlOpener.GET(page.URL, useCache=True, grepResult=False)
+            url = page.URL
+            om.out.debug('Searching for mails in: %s' % url)
+            
+            grepResult = True if self._domain == url.getDomain() else False
+            response = self._urlOpener.GET(page.URL, useCache=True,
+                                           grepResult=grepResult)
         except KeyboardInterrupt, e:
             raise e
+        except w3afMustStopOnUrlError:
+            # Just ignore it
+            pass
         except w3afException, w3:
             msg = 'xUrllib exception raised while fetching page in fingerBing,'
             msg += ' error description: ' + str(w3)
             om.out.debug(msg)
         else:
+            
             # I have the response object!
             try:
                 document_parser = dpCache.dpc.getDocumentParserFor(response)

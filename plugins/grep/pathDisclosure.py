@@ -111,7 +111,7 @@ class pathDisclosure(baseGrepPlugin):
         >>> res = httpResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, u, u)
         >>> pd.grep( req, res )
         >>> kb.kb.getData('pathDisclosure', 'pathDisclosure')[0]['path']
-        '/etc/passwd'
+        u'/etc/passwd'
         '''
         if response.is_text_or_html():
             

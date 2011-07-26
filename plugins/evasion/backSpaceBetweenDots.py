@@ -52,22 +52,22 @@ class backSpaceBetweenDots(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> bbd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
 
         >>> u = url_object('http://www.w3af.com/../')
         >>> r = HTTPRequest( u )
         >>> bbd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/.%41%08./'
+        u'http://www.w3af.com/.%41%08./'
 
         >>> u = url_object('http://www.w3af.com/abc/def/.././jkl.htm')
         >>> r = HTTPRequest( u )
         >>> bbd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/abc/def/.%41%08././jkl.htm'
+        u'http://www.w3af.com/abc/def/.%41%08././jkl.htm'
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/abc/def/.././jkl.htm'
+        u'http://www.w3af.com/abc/def/.././jkl.htm'
 
         '''
         # We mangle the URL

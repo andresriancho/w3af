@@ -65,18 +65,18 @@ def are_variants( url_a ,  url_b ):
     >>> b = 'http://www.rapid7.com/foo.php?id=1'
     >>> are_variants( a, b )
     Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    ValueError: The "url_a" parameter in "are_variants"  must be of urlParser.url_object type.
+      ...
+    TypeError: The "url_a" parameter in "are_variants"  must be of urlParser.url_object type.
     '''
     if not isinstance(url_a, url_object):
         msg = 'The "url_a" parameter in "are_variants" '
         msg += ' must be of urlParser.url_object type.'
-        raise ValueError( msg )
+        raise TypeError(msg)
 
     if not isinstance(url_b, url_object):
         msg = 'The "url_b" parameter in "are_variants" '
         msg += ' must be of urlParser.url_object type.'
-        raise ValueError( msg )
+        raise TypeError(msg)
     
     qs_a = url_a.getQueryString()
     qsr_a = httpQsRequest.httpQsRequest()

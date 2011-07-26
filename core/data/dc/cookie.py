@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import re
-from core.data.dc.dataContainer import dataContainer
-import copy
 
+from core.data.constants.encodings import DEFAULT_ENCODING
+from core.data.dc.dataContainer import dataContainer
 
 class cookie(dataContainer):
     '''
@@ -31,7 +31,9 @@ class cookie(dataContainer):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, strValues='', strict=False):
+    def __init__(self, strValues='', encoding=DEFAULT_ENCODING):
+        
+        dataContainer.__init__(self, encoding=encoding)
         
         for k, v in re.findall('(.*?)=(.*?);', strValues + ';' ):
             k = k.strip()
@@ -61,11 +63,4 @@ class cookie(dataContainer):
                 vs = self._sanitize( self[parameter_name][element_index] )
                 res += ks + '=' + vs + '; '
         return res[:-1]
-        
-    def copy(self):
-        '''
-        This method returns a copy of the cookie Object.
-        
-        @return: A copy of myself.
-        '''
-        return copy.deepcopy( self )
+    

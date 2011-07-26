@@ -28,7 +28,7 @@ class mutant(object):
     '''
     This class is a wrapper for fuzzable requests that have been modified.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq, israw=False):
         self._freq = freq
         self._fuzzableType = None
         self._var = ''
@@ -39,10 +39,13 @@ class mutant(object):
     #
     # this methods are from the mutant
     #
-    def getFuzzableReq( self ): return self._freq
-    def setFuzzableReq( self, freq ): self._freq = freq
+    def getFuzzableReq(self):
+        return self._freq
+    
+    def setFuzzableReq(self, freq):
+        self._freq = freq
 
-    def setVar( self, var, index=0): 
+    def setVar(self, var, index=0): 
         '''
         Set the name of the variable that this mutant modifies.
         
@@ -76,8 +79,11 @@ class mutant(object):
         self._var = var
         self._index = index
         
-    def getVar( self ): return self._var
-    def getVarIndex( self ): return self._index
+    def getVar( self ):
+        return self._var
+    
+    def getVarIndex( self ):
+        return self._index
 
     def setOriginalValue( self , v ):
         self._originalValue = v
@@ -107,7 +113,7 @@ class mutant(object):
             raise w3afException( msg )
     
     def getMutantType( self ):
-        msg = 'You should implement the getMutantType method when inhereting from mutant.'
+        msg = 'You should implement the getMutantType method when inheriting from mutant.'
         raise w3afException( msg )
     
     def printModValue( self ):

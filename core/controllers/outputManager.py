@@ -26,6 +26,16 @@ from core.controllers.misc.factory import factory
 # severity constants for vuln messages
 import core.data.constants.severity as severity
 
+def to_str(meth):
+    '''
+    Function to decorate methods in order to catch IOError exceptions.
+    '''
+    def wrapper(self, msg, newLine=True):
+            if type(msg) is unicode:
+                msg = msg.encode('utf-8', 'replace')
+            return meth(self, msg, newLine)
+    return wrapper
+
 
 class outputManager:
     '''
@@ -90,50 +100,38 @@ class outputManager:
         for oPlugin in self._outputPluginList:
             oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
     
-    def debug(self, message, newLine = True ):
+    @to_str
+    def debug(self, message, newLine=True):
         '''
         Sends a debug message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
         if self._echo:
-            try:
-                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
-            except:
-                pass
-            else:
-                for oPlugin in self._outputPluginList:
-                    oPlugin.debug( message, newLine )
+            for oPlugin in self._outputPluginList:
+                oPlugin.debug(message, newLine)
     
-    def information(self, message, newLine = True ):
+    @to_str
+    def information(self, message, newLine=True):
         '''
         Sends a informational message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
         if self._echo:
-            try:
-                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
-            except:
-                pass
-            else:
-                for oPlugin in self._outputPluginList:
-                    oPlugin.information( message, newLine )
-            
-    def error(self, message, newLine = True ):
+            for oPlugin in self._outputPluginList:
+                oPlugin.information(message, newLine)
+    
+    @to_str
+    def error(self, message, newLine=True):
         '''
         Sends an error message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
         if self._echo:
-            try:
-                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
-            except:
-                pass
-            else:
-                for oPlugin in self._outputPluginList:
-                    oPlugin.error( message, newLine )
+            for oPlugin in self._outputPluginList:
+                oPlugin.error(message, newLine)
 
     def logHttp( self, request, response ):
         '''

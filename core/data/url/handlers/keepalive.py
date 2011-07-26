@@ -201,6 +201,22 @@ class HTTPResponse(httplib.HTTPResponse):
         self._connection = None # (same)
         self._method = method
         self._multiread = None
+        self._encoding = None
+    
+    @property
+    def URL(self):
+        return self.geturl()
+
+    def geturl(self):
+        return self._url
+    
+    @property
+    def encoding(self):
+        return self._encoding
+    
+    @encoding.setter
+    def encoding(self, enc):
+        self._encoding = enc
 
     def _raw_read(self, amt=None):
         '''
@@ -256,13 +272,6 @@ class HTTPResponse(httplib.HTTPResponse):
 
     def info(self):
         return self.headers
-
-    @property
-    def URL(self):
-        return self.geturl()
-
-    def geturl(self):
-        return self._url
 
     @closeonerror
     def read(self, amt=None):
@@ -687,8 +696,8 @@ class KeepAliveHandler:
         The real workhorse.
         '''
         try:
-            if req.has_data():
-                data = req.get_data()
+            data = req.get_data()
+            if data is not None:
                 data = str(data)
                 conn.putrequest(req.get_method(), req.get_selector(),
                                 skip_host=1, skip_accept_encoding=1)
@@ -706,18 +715,18 @@ class KeepAliveHandler:
             raise
         except (socket.error, httplib.HTTPException), err:
             raise urllib2.URLError(err)
-
-        # Add headers.
-        headerDict = dict(self.parent.addheaders)
-        headerDict.update(req.headers)
-        headerDict.update(req.unredirected_hdrs)
-
-        for k, v in headerDict.iteritems():
-            conn.putheader(k, v)
-        conn.endheaders()
-
-        if req.has_data():
-            conn.send(data)
+        else:
+            # Add headers.
+            headerDict = dict(self.parent.addheaders)
+            headerDict.update(req.headers)
+            headerDict.update(req.unredirected_hdrs)
+    
+            for k, v in headerDict.iteritems():
+                conn.putheader(k, v)
+            conn.endheaders()
+    
+            if data is not None:
+                conn.send(data)
 
     def _get_connection(self, host):
         '''
@@ -763,8 +772,10 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
 
 class _HTTPConnection(httplib.HTTPConnection):
 
-    def __init__(self, host, port=None, strict=None):
-        httplib.HTTPConnection.__init__(self, host, port, strict)
+    def __init__(self, host, port=None, strict=None,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        httplib.HTTPConnection.__init__(self, host, port, strict,
+                                        timeout=TIMEOUT)
         self.is_fresh = True
 
 
@@ -844,22 +855,14 @@ class HTTPConnection(_HTTPConnection):
     # use the modified response class
     response_class = HTTPResponse
 
-    # TODO: In Python > 2.5 the timeout is a constructor parameter. The 
-    # socket.setdefaulttimeout(TIMEOUT) call will no longer be needed.
-    # CHANGE ME!!
     def __init__(self, host, port=None, strict=None):
-        _HTTPConnection.__init__(self, host, port, strict)
-        socket.setdefaulttimeout(TIMEOUT)
+        _HTTPConnection.__init__(self, host, port, strict, TIMEOUT)
 
 class HTTPSConnection(httplib.HTTPSConnection):
     response_class = HTTPResponse
 
-    # TODO: In Python > 2.5 the timeout is a constructor parameter. The 
-    # socket.setdefaulttimeout(TIMEOUT) call will no longer be needed.
-    # CHANGE ME!!
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
         httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
-                                        strict)
-        socket.setdefaulttimeout(TIMEOUT)
+                                        strict, timeout=TIMEOUT)
         self.is_fresh = True

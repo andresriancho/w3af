@@ -42,7 +42,7 @@ class mutantQs(mutant):
         >>> freq.setURL( u )
         >>> m = mutantQs( freq )
         >>> m.printModValue()
-        'The sent URI was http://www.w3af.com/ .'
+        u'The sent URI was http://www.w3af.com/ .'
         '''
         return 'The sent URI was '+ self.getURI() +' .'
     

@@ -47,13 +47,10 @@ class LRU:
     
     # Adding one more, the '1' should go away
     >>> lru_test['5'] = 1
-    
-    >> '1' in lru_test
+    >>> '1' in lru_test
     False
-    
-    >> '5' in lru_test
+    >>> '5' in lru_test
     True
-
     """
     def __init__(self, count, pairs=[]):
         self.lock = threading.RLock()

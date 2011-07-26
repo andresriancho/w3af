@@ -76,7 +76,7 @@ class sed(baseManglePlugin):
         
         return request
     
-    def mangleResponse(self, response ):
+    def mangleResponse(self, response):
         '''
         This method mangles the response.
         
@@ -84,18 +84,21 @@ class sed(baseManglePlugin):
         @return: A mangled version of the response.
         '''
         body = response.getBody()
+        
         for regex, string in self._res_body_manglers:
-            body = regex.sub( string, response.getBody() )
-        response.setBody( body )
+            body = regex.sub(string, body)
         
-        header_string = headersToString( response.getHeaders() )
+        response.setBody(body)
+        
+        header_string = headersToString(response.getHeaders())
+        
         for regex, string in self._res_head_manglers:
-            header_string = regex.sub( string, header_string )
-        header_dict = stringToHeaders( header_string )
-        response.setHeaders( header_dict )
+            header_string = regex.sub(string, header_string)
         
-        if len( self._res_body_manglers ) != 0 and self._user_option_fix_content_len:
-            response = self._fixContentLen( response )
+        response.setHeaders(stringToHeaders(header_string))
+        
+        if self._res_body_manglers and self._user_option_fix_content_len:
+            response = self._fixContentLen(response)
         
         return response
     

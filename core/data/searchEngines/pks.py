@@ -88,7 +88,7 @@ class pks(searchEngine):
                 email = tokens[-1]
                 name = ' '.join(tokens[3:-1])
 
-                # Copy+paste from abstractParser.py
+                # Copy+paste from baseparser.py
                 emailRegex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
                 if re.match(emailRegex, email, re.IGNORECASE):
                     

@@ -21,9 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.controllers.basePlugin.basePlugin import basePlugin
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import httpQsRequest
-from core.controllers.w3afException import *
+from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 

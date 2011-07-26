@@ -44,10 +44,10 @@ class passwordProfiling(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        # This is nicer, but htmlParser inherits from SGMLParser that IS NOT
-        # thread safe, So i have to create an instance of htmlParser for every
+        # This is nicer, but HTMLParser inherits from SGMLParser that IS NOT
+        # thread safe, So i have to create an instance of HTMLParser for every
         # call to testResponse
-        #self._htmlParser = htmlParser.htmlParser()
+        #self._htmlParser = htmlParser.HTMLParser()
         kb.kb.save( self, 'passwordProfiling', {} )
         
         # names of plugins to run

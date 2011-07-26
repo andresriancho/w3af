@@ -46,6 +46,7 @@ except Exception, e:
     pass
 
 from core.controllers.w3afException import w3afException
+from core.data.constants.encodings import UTF8
 
 def getRenderingView(w3af, parentView):
     '''Return RenderingView with best web engine or raise exception.'''
@@ -163,12 +164,11 @@ class WebKitRenderingView(RenderingView):
             if obj.is_text_or_html():
             
                 body = obj.getBody()
-                charset = obj.getCharset()
                 uri = obj.getURI().url_string
                 try:
-                    load_string(body, mimeType, charset, uri)
+                    load_string(body, mimeType, UTF8, uri)
                 except Exception:
-                    load_string(repr(body), mimeType, charset, uri)
+                    load_string(repr(body), mimeType, UTF8, uri)
             
             else:
                 raise Exception

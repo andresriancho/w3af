@@ -114,9 +114,10 @@ class textFile(baseOutputPlugin):
         @parameter msg: The text to write (a string representation of the HTTP req and res)
         '''
         try:
-            self._http.write( msg )
+            self._http.write(msg)
         except Exception, e:
-            print 'An exception was raised while trying to write to the HTTP log output file:', e
+            print 'An exception was raised while trying to write to the HTTP'
+            ' log output file:', e
             sys.exit(1)
             
     def debug(self, message, newLine = True ):
@@ -353,7 +354,7 @@ class textFile(baseOutputPlugin):
         ol.add(o4)
         return ol
 
-    def logHttp( self, request, response):
+    def logHttp(self, request, response):
         '''
         log the http req / res to file.
         @parameter request: A fuzzable request object
@@ -362,14 +363,14 @@ class textFile(baseOutputPlugin):
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
         
-        msg = '='*40  + 'Request ' + str(response.id) + ' - '+ the_time+'='*40 + '\n'
-        self._write_to_HTTP_log(  msg )
-        self._write_to_HTTP_log( request.dump() )
-        msg2 = '\n' + '='*40  + 'Response ' + str(response.id) + ' - '+ the_time+'='*39 + '\n'
-        self._write_to_HTTP_log( msg2 )
-        self._write_to_HTTP_log( response.dump() )
+        msg = '=' * 40 + 'Request ' + str(response.id) + ' - ' + the_time + '=' * 40 + '\n'
+        self._write_to_HTTP_log(msg)
+        self._write_to_HTTP_log(request.dump())
+        msg2 = '\n' + '=' * 40 + 'Response ' + str(response.id) + ' - ' + the_time + '=' * 39 + '\n'
+        self._write_to_HTTP_log(msg2)
+        self._write_to_HTTP_log(response.dump())
         
-        self._write_to_HTTP_log( '\n' + '='*(len(msg)-1) + '\n')
+        self._write_to_HTTP_log('\n' + '=' * (len(msg) - 1) + '\n')
         self._http.flush()
 
     def getLongDesc( self ):

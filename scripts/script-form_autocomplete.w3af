@@ -11,6 +11,11 @@ set verbose False
 back
 
 grep formAutocomplete
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 back
 
 target
@@ -19,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.getData('formAutocomplete','formAutocomplete')) == 1
+assert len(kb.kb.getData('formAutocomplete','formAutocomplete')) == 3
 
 exit

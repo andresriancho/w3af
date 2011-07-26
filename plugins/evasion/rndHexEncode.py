@@ -54,7 +54,7 @@ class rndHexEncode(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rhe.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
 
         >>> u = url_object('http://www.w3af.com/a/')
         >>> r = HTTPRequest( u )
@@ -75,7 +75,7 @@ class rndHexEncode(baseEvasionPlugin):
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/aa/'
+        u'http://www.w3af.com/aa/'
 
         '''
         # First we mangle the URL        

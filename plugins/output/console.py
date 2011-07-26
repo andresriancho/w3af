@@ -62,11 +62,7 @@ class console(baseOutputPlugin):
         self.verbose = False
 
     def _make_printable(self, a_string):
-        result = ''
-        for char in a_string:
-            if char in string.printable:
-                result += char
-        return result
+        return ''.join(ch for ch in a_string if ch in string.printable)
 
     @catch_ioerror
     def debug(self, message, newLine = True ):

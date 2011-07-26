@@ -35,7 +35,7 @@ HEADERS = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
 URL_OPENER = xUrllib()
 URL_OPEN_FUNC = lambda url: URL_OPENER.GET(url, headers=HEADERS,
                                             useCache=True, grepResult=False)
-URL_REGEX = re.compile('((http|https)://([a-zA-Z0-9_:@\-\./]*?)/[^ \n\r\t"\'<>]*)')
+URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
 
 class test_googleSearchEngine(unittest.TestCase):
     

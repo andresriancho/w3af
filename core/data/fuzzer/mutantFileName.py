@@ -69,7 +69,7 @@ class mutantFileName(mutant):
         >>> m._mutant_dc = divided_file_name
         >>> m.setVar( 'fuzzedFname' )
         >>> m.getURL().url_string
-        'http://www.w3af.com/abc/ping%21.html'
+        u'http://www.w3af.com/abc/ping%21.html'
         
         '''
         domain_path = self._freq.getURL().getDomainPath()

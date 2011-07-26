@@ -238,9 +238,12 @@ class webDiff(baseDiscoveryPlugin):
         ''' 
         self._content = optionsMap['content'].getValue()
         self._ban_url = optionsMap['banUrl'].getValue()
-        url = url_object( optionsMap['remotePath'].getValue() )
-        self._remote_path = url.getDomainPath()
         self._local_dir = optionsMap['localDir'].getValue()
+        try:
+            url = url_object(optionsMap['remotePath'].getValue())
+            self._remote_path = url.getDomainPath()
+        except ValueError:
+            pass
 
     def getPluginDeps( self ):
         '''

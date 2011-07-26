@@ -20,32 +20,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import itertools
+import re
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
-
-import core.data.parsers.dpCache as dpCache
-from core.data.parsers.urlParser import url_object
-
-from core.controllers.misc.levenshtein import relative_distance_ge
-
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.kb.config as cf
+from core.controllers.misc.levenshtein import relative_distance_ge
+from core.controllers.w3afException import w3afException, \
+    w3afMustStopOnUrlError
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.db.temp_persist import disk_list as DiskList
 from core.data.fuzzer.formFiller import smartFill
 from core.data.fuzzer.fuzzer import createRandAlpha
-import core.data.dc.form as form
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-from core.data.request.variant_identification import are_variants
-
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.db.temp_persist import disk_list
-
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-import re
+from core.data.request.httpPostDataRequest import httpPostDataRequest as \
+    HttpPostDataRequest
+from core.data.request.variant_identification import are_variants
+import core.controllers.outputManager as om
+import core.data.dc.form as form
+import core.data.kb.config as cf
+import core.data.parsers.dpCache as dpCache
 
 IS_EQUAL_RATIO = 0.90
 MAX_VARIANTS = 5
@@ -55,7 +50,7 @@ class webSpider(baseDiscoveryPlugin):
     '''
     Crawl the web application.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
@@ -67,9 +62,7 @@ class webSpider(baseDiscoveryPlugin):
         self._brokenLinks = []
         self._fuzzableRequests = []
         self._first_run = True
-        # TODO: param 'text_factory' *MUST* be removed when the toolkit fully
-        # supports unicode
-        self._already_crawled = disk_list(text_factory=str)
+        self._already_crawled = DiskList()
         self._already_filled_form = scalable_bloomfilter()
 
         # User configured variables
@@ -78,60 +71,62 @@ class webSpider(baseDiscoveryPlugin):
         self._only_forward = False
         self._compileRE()
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzableRequest):
         '''
         Searches for links on the html.
 
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @param fuzzableRequest: A fuzzableRequest instance that contains
+            (among other things) the URL to test.
         '''
-        om.out.debug( 'webSpider plugin is testing: ' + fuzzableRequest.getURL() )
+        om.out.debug('webSpider plugin is testing: %s' %
+                     fuzzableRequest.getURL())
         
         if self._first_run:
-            # I have to set some variables, in order to be able to code the "onlyForward" feature
+            # I have to set some variables, in order to be able to code
+            # the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [ i.getDomainPath() for i in cf.cf.getData('targets') ]
+            self._target_urls = [i.getDomainPath() for i in cf.cf.getData('targets')]
             self._target_domain = cf.cf.getData('targets')[0].getDomain()
         
         # If its a form, then smartFill the Dc.
-        original_dc = fuzzableRequest.getDc()
-        if isinstance( fuzzableRequest, httpPostDataRequest.httpPostDataRequest ):
+        if isinstance(fuzzableRequest, HttpPostDataRequest):
             
-            # TODO!!!!!!
+            # TODO: !!!!!!
             if fuzzableRequest.getURL() in self._already_filled_form:
                 return []
-            else:
-                self._already_filled_form.add( fuzzableRequest.getURL() )
-                
-            to_send = original_dc.copy()
-            for parameter_name in to_send:
+            
+            self._already_filled_form.add(fuzzableRequest.getURL())
+            
+            to_send = fuzzableRequest.getDc().copy()
+            
+            for param_name in to_send:
                 
                 # I do not want to mess with the "static" fields
-                if isinstance( to_send, form.form ):
-                    if to_send.getType(parameter_name) in ['checkbox', 'file', 'radio', 'select']:
+                if isinstance(to_send, form.form):
+                    if to_send.getType(param_name) in ('checkbox', 'file',
+                                                       'radio', 'select'):
                         continue
                 
-                #
-                #   Set all the other fields, except from the ones that have a value set (example:
-                #   hidden fields like __VIEWSTATE).
-                #                
-                for element_index in xrange(len(to_send[parameter_name])):
+                # Set all the other fields, except from the ones that have a
+                # value set (example: hidden fields like __VIEWSTATE).
+                for elem_index in xrange(len(to_send[param_name])):
                     
-                    #   should I ignore it because it already has a value?
-                    if to_send[parameter_name][element_index] != '':
+                    # Should I ignore it because it already has a value?
+                    if to_send[param_name][elem_index] != '':
                         continue
                     
-                    #   smartFill it!
-                    to_send[ parameter_name ][element_index] = smartFill( parameter_name )
+                    # SmartFill it!
+                    to_send[param_name][elem_index] = smartFill(param_name)
                     
-            fuzzableRequest.setDc( to_send )
+            fuzzableRequest.setDc(to_send)
 
         self._fuzzableRequests = []
         response = None
 
         try:
-            response = self._sendMutant( fuzzableRequest, analyze=False )
-        except KeyboardInterrupt,e:
-            raise e
+            response = self._sendMutant(fuzzableRequest, analyze=False)
+        except KeyboardInterrupt:
+            raise
         else:
             #
             #   Simply ignore 401 responses, because they might bring problems
@@ -145,95 +140,104 @@ class webSpider(baseDiscoveryPlugin):
             #
             
             # Modified when I added the pdfParser
-            # I had to add this x OR y stuff, just because I dont want the SGML parser to analyze
-            # a image file, its useless and consumes CPU power.
-            if response.is_text_or_html() or response.is_pdf() or response.is_swf():
+            # I had to add this x OR y stuff, just because I don't want 
+            # the SGML parser to analyze a image file, its useless and
+            # consumes CPU power.
+            if response.is_text_or_html() or response.is_pdf() or \
+                response.is_swf():
                 originalURL = response.getRedirURI()
                 try:
-                    documentParser = dpCache.dpc.getDocumentParserFor( response )
+                    doc_parser = dpCache.dpc.getDocumentParserFor(response)
                 except w3afException, w3:
-                    msg = 'Failed to find a suitable document parser.'
-                    msg += ' Exception: "' + str(w3) +'".'
-                    om.out.debug( msg )
+                    om.out.debug('Failed to find a suitable document parser. '
+                                 'Exception "%s"' % w3)
                 else:
                     # Note:
-                    # - With parsed_references I'm 100% that it's really something in the HTML
-                    # that the developer intended to add.
+                    # - With parsed_refs I'm 100% that it's really 
+                    # something in the HTML that the developer intended to add.
                     #
-                    # - The re_references are the result of regular expressions, which in some cases
-                    # are just false positives.
-                    parsed_references, re_references = documentParser.getReferences()
+                    # - The re_refs are the result of regular expressions,
+                    # which in some cases are just false positives.
+                    parsed_refs, re_refs = doc_parser.getReferences()
                     
-                    # I also want to analyze all directories, if the URL I just fetched is:
+                    # I also want to analyze all directories, if the URL I just
+                    # fetched is:
                     # http://localhost/a/b/c/f00.php I want to GET:
                     # http://localhost/a/b/c/
                     # http://localhost/a/b/
                     # http://localhost/a/
                     # http://localhost/
                     # And analyze the responses...
-                    directories = response.getURL().getDirectories()
-                    parsed_references.extend( directories )
-                    parsed_references = list( set( parsed_references ) )
-
-                    references = parsed_references + re_references
-                    references = list( set( references ) )
+                    dirs = response.getURL().getDirectories()
+                    seen = set()
+                    only_re_refs = set(re_refs) - set(dirs + parsed_refs)
                     
-                    # Filter only the references that are inside the target domain
-                    # I don't want w3af sending request to 3rd parties!
-                    references = [ r for r in references if r.getDomain() == self._target_domain]
-                            
-                    # Filter the URL's according to the configured regular expressions
-                    references = [ r for r in references if self._compiled_follow_re.match( r.url_string ) ]
-                    references = [ r for r in references if not self._compiled_ignore_re.match( r.url_string )]
-                                          
-                    # work with the parsed references and report broken links
-                    # then work with the regex references and DO NOT report broken links
-                    for ref in references:
+                    for ref in itertools.chain(dirs, parsed_refs, re_refs):
                         
+                        if ref in seen:
+                            continue
+                        seen.add(ref)
+                        
+                        # I don't want w3af sending requests to 3rd parties!
+                        if ref.getDomain() != self._target_domain:
+                            continue
+                        
+                        # Filter the URL's according to the configured regexs
+                        urlstr = ref.url_string
+                        if not self._compiled_follow_re.match(urlstr) or \
+                            self._compiled_ignore_re.match(urlstr):
+                            continue
+                        
+                        # Work with the parsed references and report broken
+                        # links. Then work with the regex references and DO NOT
+                        # report broken links
                         if self._need_more_variants(ref):
-                            
                             self._already_crawled.append(ref)
-                            
-                            possibly_broken = ref in re_references and not ref in parsed_references
-                            targs = (ref, fuzzableRequest, originalURL, possibly_broken)
-                            self._tm.startFunction( target=self._verify_reference, args=targs, \
-                                                                ownerObj=self )
+                            possibly_broken = ref in only_re_refs
+                            targs = (ref, fuzzableRequest, originalURL,
+                                     possibly_broken)
+                            self._tm.startFunction(
+                                    target=self._verify_reference,
+                                    args=targs, ownerObj=self)
             
-        self._tm.join( self )
+        self._tm.join(self)
         
         return self._fuzzableRequests
     
     
     def _need_more_variants(self, new_reference):
         '''
-        @new_reference: The new URL that we want to see if its a variant of at most MAX_VARIANTS
-        references stored in self._already_crawled.
+        @param new_reference: The new URL that we want to see if its a variant
+            of at most MAX_VARIANTS references stored in self._already_crawled.
         
         @return: True if I need more variants of ref.
         
-        Basically, the idea is to crawl the whole website, but if we are crawling a site like
-        youtube.com that has A LOT of links with the form: 
+        Basically, the idea is to crawl the whole website, but if we are
+        crawling a site like youtube.com that has A LOT of links with the form: 
             - http://www.youtube.com/watch?v=xwLNu5MHXFs
             - http://www.youtube.com/watch?v=JEzjwifH4ts
             - ...
             - http://www.youtube.com/watch?v=something_here
         
-        Then we don't actually want to follow all the links to all the videos! So we are going
-        to follow a decent number of variant URLs (in this case, video URLs) to see if we can
-        find something interesting in those links, but after a fixed number of variants, we will
-        start ignoring all those variants.
+        Then we don't actually want to follow all the links to all the videos!
+        So we are going to follow a decent number of variant URLs (in this
+        case, video URLs) to see if we can find something interesting in those
+        links, but after a fixed number of variants, we will start ignoring all
+        those variants.
         '''
         number_of_variants = 0
-        #    TODO: The self._already_crawled should be an ORM instead of a simple
-        #    disk_list, so I could iterate through all the results and avoid having
-        #    to create the url_object() using parsing again.
+        
+        # TODO: The self._already_crawled should be an ORM instead of a simple
+        # disk_list, so I could iterate through all the results and avoid
+        # having to create the url_object() using parsing again.
         for reference in self._already_crawled:
-            if are_variants( reference , new_reference):
+            if are_variants(reference, new_reference):
                 number_of_variants += 1
                 
             if number_of_variants > MAX_VARIANTS:
-                msg = 'Ignoring new reference "' + new_reference + '" (it is simply a variant).'
-                om.out.debug( msg )
+                msg = ('Ignoring new reference "%s" (it is simply a variant).'
+                       % new_reference)
+                om.out.debug(msg)
                 return False
             
         return True
@@ -244,47 +248,50 @@ class webSpider(baseDiscoveryPlugin):
         This method GET's every new link and parses it in order to get
         new links and forms.
         '''
-        fuzzable_request_list = []
+        fuzz_req_list = []
         is_forward = self._is_forward(reference)
         if not self._only_forward or is_forward:
             resp = None
             #
-            #   Remember that this "breaks" the useCache=True in most cases!
+            # Remember that this "breaks" the useCache=True in most cases!
+            #     headers = { 'Referer': originalURL }
             #
-            #headers = { 'Referer': originalURL }
-            #
-            #   But this does not, and it is friendlier that simply ignoring the referer
+            # But this does not, and it is friendlier that simply ignoring the
+            # referer
             #
             referer = originalURL.baseUrl()
             if not referer.url_string.endswith('/'):
                 referer += '/'
-            headers = { 'Referer': referer }
+            headers = {'Referer': referer}
             
             try:
-                resp = self._urlOpener.GET(reference, useCache=True, headers=headers)
-            except KeyboardInterrupt,e:
-                raise e
+                resp = self._urlOpener.GET(reference, useCache=True, 
+                                           headers=headers)
+            except KeyboardInterrupt:
+                raise
             except w3afMustStopOnUrlError:
                 pass
             else:
-                # Note: I WANT to follow links that are in the 404 page, but if the page
-                # I fetched is a 404... I should ignore it.
+                # Note: I WANT to follow links that are in the 404 page, but
+                # if the page I fetched is a 404 then it should be ignored.
                 if is_404(resp):
-                    #
-                    # add_self == False, because I don't want to return a 404 to the core
-                    #
-                    fuzzable_request_list = self._createFuzzableRequests(resp,
+                    # add_self == False, because I don't want to return a 404
+                    # to the core
+                    fuzz_req_list = self._createFuzzableRequests(resp,
                                      request=original_request, add_self=False)
                     if not possibly_broken:
-                        self._brokenLinks.append((resp.getURL(), original_request.getURI()))
+                        t = (resp.getURL(), original_request.getURI())
+                        self._brokenLinks.append(t)
                 else:
                     if possibly_broken:
                         #
-                        #   Now... the caller is telling us that this link is possibly broken. This
-                        #   means that it came from a regular expression, or something that
-                        #   usually introduces "false positives". So what I'm going to do is to
-                        #   perform one more request to the same directory but with a different
-                        #   filename, and then compare it to what we got in the first request.
+                        # Now the caller is telling us that this link is 
+                        # possibly broken. This means that it came from a 
+                        # regular expression, or something that usually 
+                        # introduces "false positives". So what I'm going to do
+                        # is to perform one more request to the same directory
+                        # but with a different filename, and then compare it to
+                        # what we got in the first request.
                         #
                         #   Fixes this:
                         '''
@@ -305,49 +312,56 @@ class webSpider(baseDiscoveryPlugin):
                         '''
                         filename = reference.getFileName()
                         if filename:
-                            
                             new_reference = reference.copy()
-                            new_reference.setFileName( createRandAlpha(3) + filename )
+                            new_reference.setFileName(createRandAlpha(3) +
+                                                      filename)
                             
-                            check_response = self._urlOpener.GET( new_reference, useCache=True,
-                                                                  headers= headers)
+                            check_response = self._urlOpener.GET(new_reference,
+                                                useCache=True, headers=headers)
                             resp_body = resp.getBody()
                             check_resp_body = check_response.getBody()
 
                             if relative_distance_ge(resp_body,
-                                                    check_resp_body, IS_EQUAL_RATIO):
-                                # If they are equal, then they are both a 404 (or something invalid)
-                                #om.out.debug( reference + ' was broken!')
+                                            check_resp_body, IS_EQUAL_RATIO):
+                                # If they are equal, then they are both a 404
+                                # (or something invalid)
+                                # om.out.debug(reference + ' was broken!')
                                 return
                             
                             else:
-                                # The URL was possibly_broken, but after testing we found out that
-                                # it was not, so not we use it!
-                                om.out.debug('Adding relative reference "' + reference + '" to the resp.')
-                                fuzzable_request_list.extend( self._createFuzzableRequests( resp, request=original_request ) )
+                                # The URL was possibly_broken, but after 
+                                # testing we found out that it was not, so now
+                                # we use it!
+                                om.out.debug('Adding relative reference "%s" '
+                                             'to the resp.' % reference)
+                                frlist = self._createFuzzableRequests(
+                                               resp, request=original_request)
+                                fuzz_req_list.extend(frlist)
                 
                     else: # Not possibly_broken:
-                        fuzzable_request_list = self._createFuzzableRequests( resp, request=original_request )
+                        fuzz_req_list = self._createFuzzableRequests(resp,
+                                                     request=original_request)
                 
                 # Process the list.
-                for fuzzableRequest in fuzzable_request_list:
-                    fuzzableRequest.setReferer( referer )
-                    self._fuzzableRequests.append( fuzzableRequest )
+                for fuzz_req in fuzz_req_list:
+                    fuzz_req.setReferer(referer)
+                    self._fuzzableRequests.append(fuzz_req)
     
-    def end( self ):
+    def end(self):
         '''
         Called when the process ends, prints out the list of broken links.
         '''
         if len(self._brokenLinks):
             reported = []
-            msg = 'The following is a list of broken links that were found by the webSpider plugin:'
-            om.out.information(msg)
+            om.out.information('The following is a list of broken links that '
+                               'were found by the webSpider plugin:')
             for broken, where in self._brokenLinks:
                 if (broken, where) not in reported:
-                    reported.append( (broken, where) )
-                    om.out.information('- ' + broken + ' [ referenced from: ' + where + ' ]')
+                    reported.append((broken, where))
+                    om.out.information('- %s [ referenced from: %s ]' %
+                                       (broken, where))
     
-    def _is_forward( self, reference ):
+    def _is_forward(self, reference):
         '''
         Check if the reference is inside the target directories.
         
@@ -359,7 +373,7 @@ class webSpider(baseDiscoveryPlugin):
             # I have to work :S
         is_forward = False
         for domain_path in self._target_urls:
-            if reference.url_string.startswith( domain_path.url_string ):
+            if reference.url_string.startswith(domain_path.url_string):
                 is_forward = True
                 break
         return is_forward
@@ -398,29 +412,28 @@ class webSpider(baseDiscoveryPlugin):
         self._follow_regex = optionsMap['followRegex'].getValue()
         self._compileRE()
     
-    def _compileRE( self ):
+    def _compileRE(self):
         '''
-        Now we compile the regular expressions that are going to be
-        used to ignore or follow links.
+        Compile the regular expressions that are going to be used to ignore
+        or follow links.
         '''
-        #
-        #   If the self._ignore_regex is '' then I don't have to ignore anything. To be able to do
-        #   that, I simply compile an re with "abc" as the pattern.
-        #
-        if self._ignore_regex != '':
+        # If the self._ignore_regex is empty then I don't have to ignore
+        # anything. To be able to do that, I simply compile an re with "abc"
+        # as the pattern.
+        if self._ignore_regex:
             try:
-                self._compiled_ignore_re = re.compile( self._ignore_regex )
+                self._compiled_ignore_re = re.compile(self._ignore_regex)
             except:
-                msg = 'You specified an invalid regular expression: "' + self._ignore_regex + '".'
-                raise w3afException(msg)
+                raise w3afException('You specified an invalid regular '
+                                    'expression: "%s".' % self._ignore_regex)
         else:
-            self._compiled_ignore_re = re.compile( 'abc' )
+            self._compiled_ignore_re = re.compile('abc')
 
         try:
-            self._compiled_follow_re = re.compile( self._follow_regex )
+            self._compiled_follow_re = re.compile(self._follow_regex)
         except:
-            msg = 'You specified an invalid regular expression: "' + self._follow_regex + '".'
-            raise w3afException(msg)
+            raise w3afException('You specified an invalid regular expression: '
+                                '"%s".' % self._follow_regex)
         
         
     def getPluginDeps( self ):

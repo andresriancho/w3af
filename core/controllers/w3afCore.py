@@ -44,7 +44,6 @@ from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afFileException, w3afMustStopException, w3afMustStopByUnknownReasonExc,
     w3afMustStopOnUrlError)
-from core.data.parsers.urlParser import url_object
 from core.data.profile.profile import profile as profile
 from core.data.request.frFactory import createFuzzableRequests
 from core.data.url.xUrllib import xUrllib
@@ -645,9 +644,8 @@ class w3afCore(object):
                     tmp_fr_list.sort()
 
                     om.out.information('The list of fuzzable requests is:')
-                    for i in tmp_fr_list:
-                        om.out.information( i )
-                
+                    map(om.out.information, tmp_fr_list)
+                    
                     self._audit()
                     
                 self._end()
@@ -890,7 +888,8 @@ class w3afCore(object):
             #   Print the new URLs in a sorted manner.
             tmp_sort.sort()
             for u in tmp_sort:
-                om.out.information('New URL found by ' + pluginWhoFoundIt +' plugin: ' +  u )
+                om.out.information('New URL found by %s plugin: %s' %
+                                            (pluginWhoFoundIt, unicode(u)))
                 
             # Update the list / queue that lives in the KB
             self._updateURLsInKb( newFR )

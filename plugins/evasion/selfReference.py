@@ -53,23 +53,23 @@ class selfReference(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/./'
+        u'http://www.w3af.com/./'
 
         >>> u = url_object('http://www.w3af.com/abc/')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/./abc/./'
+        u'http://www.w3af.com/./abc/./'
 
         >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/./abc/./def.htm?id=1'
+        u'http://www.w3af.com/./abc/./def.htm?id=1'
 
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/abc/def.htm?id=1'
+        u'http://www.w3af.com/abc/def.htm?id=1'
         
         '''
         # We mangle the URL

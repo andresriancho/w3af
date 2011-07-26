@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
-from core.data.dc.dataContainer import dataContainer as dc
-from core.data.dc.cookie import cookie as cookie
-from core.data.parsers.urlParser import url_object
-
+from urllib import unquote
 import copy
-import urllib
+
+from core.data.constants.encodings import DEFAULT_ENCODING
+from core.controllers.w3afException import w3afException
+from core.data.dc.cookie import cookie as cookie
+from core.data.dc.dataContainer import dataContainer
+from core.data.parsers.urlParser import url_object
+import core.controllers.outputManager as om
 
 #CR = '\r'
 CR = ''
@@ -38,13 +38,15 @@ SP = ' '
 
 class fuzzableRequest(object):
     '''
-    This class represents a fuzzable request. Fuzzable requests where created to allow w3af plugins
-    to be much simpler and dont really care if the vulnerability is in the postdata, querystring, header, cookie
-    or some other variable.
+    This class represents a fuzzable request. Fuzzable requests were created
+    to allow w3af plugins to be much simpler and don't really care if the
+    vulnerability is in the postdata, querystring, header, cookie or any other
+    variable.
     
-    Other classes should inherit from this one and change the behaviour of getURL() and getData(). For
-    example: the class httpQsRequest should return the _dc in the querystring ( getURL ) and httpPostDataRequest
-    should return the _dc in the POSTDATA ( getData() ).
+    Other classes should inherit from this one and change the behaviour of
+    getURL() and getData(). For example: the class httpQsRequest should return
+    the _dc in the querystring (getURL) and httpPostDataRequest should return
+    the _dc in the POSTDATA (getData()).
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -58,17 +60,17 @@ class fuzzableRequest(object):
         self._data = ''
         self._headers = {}
         self._cookie = None
-        self._dc = dc()
+        self._dc = dataContainer()
 
         # Set the internal variables
-        self._sent_information_comparable = None
+        self._sent_info_comp = None
     
     def dump( self ):
         '''
         @return: a DETAILED str representation of this fuzzable request.
 
         >>> fr = fuzzableRequest()
-        >>> u = url_object("""http://www.w3af.com/""")
+        >>> u = url_object("http://www.w3af.com/")
         >>> fr.setURL( u )
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\n\\n'
@@ -77,42 +79,31 @@ class fuzzableRequest(object):
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
 
-
         >>> fr.setHeaders( {'Host':'www.w3af.com'} )
         >>> fr.setMethod('POST')
         >>> fr.setData('D474')
         >>> fr.dump()
         'POST http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\nD474'
-
         '''
-        result_string = ''
-        result_string += self.dumpRequestHead()
-        result_string += CRLF
-        if self.getData():
-            result_string += str( self.getData() )
-        return result_string
+        return "%s%s%s" % (self.dumpRequestHead(),
+                           CRLF, str(self.getData() or ''))
     
     def getRequestLine(self):
         '''Return request line.'''
-        return self.getMethod() + SP + self.getURI() + SP + 'HTTP/1.1' + CRLF
+        return "%s %s HTTP/1.1%s" % (self.getMethod(), self.getURI(), CRLF)
 
-    def dumpRequestHead( self ):
+    def dumpRequestHead(self):
         '''
         @return: A string with the head of the request
         '''
-        res = ''
-        res += self.getRequestLine()
-        res += self.dumpHeaders()
-        return res
+        return "%s%s" % (self.getRequestLine(), self.dumpHeaders())
     
     def dumpHeaders( self ):
         '''
-        @return: a str representation of the headers.
+        @return: A string representation of the headers.
         '''
-        result_string = ''
-        for header in self._headers:
-            result_string += header + ': ' + self._headers[ header ] + CRLF
-        return result_string
+        return ''.join("%s: %s%s" % (h, v, CRLF) for h, v
+                       in self._headers.iteritems())
 
     def export( self ):
         '''
@@ -125,7 +116,7 @@ class fuzzableRequest(object):
         
         @return: a csv str representation of the request
 
-        >>> from core.data.dc.dataContainer import dataContainer as dc
+        >>> from core.data.dc.dataContainer import dataContainer
         >>> fr = fuzzableRequest()
         >>> u = url_object("""http://www.w3af.com/""")
         >>> fr.setURL( u )
@@ -134,7 +125,7 @@ class fuzzableRequest(object):
 
         >>> fr = fuzzableRequest()
         >>> u = url_object("""http://www.w3af.com/""")
-        >>> d = dc()
+        >>> d = dataContainer()
         >>> d['a'] = ['1',]
         >>> fr.setURL( u )
         >>> fr.setDc( d )
@@ -143,27 +134,26 @@ class fuzzableRequest(object):
 
         '''
         #
-        #   FIXME: What if a comma is inside the URL or DC?
-        #   TODO: Why don't we export headers and cookies?
+        # FIXME: What if a comma is inside the URL or DC?
+        # TODO: Why don't we export headers and cookies?
         #
-        str_res = ''
-        str_res += self._method + ',' 
-        str_res += self._url
+        meth = self._method
+        str_res = [meth, ',', str(self._url)]
 
-        if self._method == 'GET': 
+        if meth == 'GET': 
             if self._dc:
-                str_res += '?'
-                str_res += str(self._dc)         
-            str_res += ','
+                str_res.extend(('?', str(self._dc)))
+            str_res.append(',')
         else:
-            str_res += ','
+            str_res.append(',')
             if self._dc:
-                str_res += str(self._dc)
-        return str_res
+                str_res.append(str(self._dc))
+        
+        return ''.join(str_res)
                     
-    def sent(self, smth_interesting):
+    def sent(self, smth_instng):
         '''
-        Checks if something similar to `smth_interesting` was sent in the request.
+        Checks if something similar to `smth_instng` was sent in the request.
         This is used to remove false positives, e.g. if a grep plugin finds a "strange"
         string and wants to be sure it was not generated by an audit plugin.
         
@@ -188,48 +178,51 @@ class fuzzableRequest(object):
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
-        @parameter smth_interesting: The string
+        @parameter smth_instng: The string
         @return: True if something similar was sent
         '''
-        def make_comparable(heterogen_string):
+        def make_comp(heterogen_string):
             '''
             This basically removes characters that are hard to compare
             '''
-            heterogen_characters = ['\\', '\'', '"', '+',' ', chr(0), 
-                                    chr(int("0D",16)), chr(int("0A",16))]
+            heterogen_characters = ('\\', '\'', '"', '+',' ', chr(0), 
+                                    chr(int("0D",16)), chr(int("0A",16)))
             #heterogen_characters.extend(string.whitespace)
+
             for hetero_char in heterogen_characters:
                 heterogen_string = heterogen_string.replace(hetero_char, '')
             return heterogen_string
         
         # This is the easy part. If it was exactly like this in the request
-        if smth_interesting in self._data or \
-            smth_interesting in self.getURI() or \
-            smth_interesting in urllib.unquote(self._data) or \
-            smth_interesting in urllib.unquote(self.getURI().url_string):
+        if smth_instng in self._data or \
+            smth_instng in self.getURI() or \
+            smth_instng in unquote(self._data) or \
+            smth_instng in unicode(self._uri.urlDecode()):
             return True
         
         # Ok, it's not in it but maybe something similar
         # Let's set up something we can compare
-        if self._sent_information_comparable is None:
-            data = self._uri + self._data + str(self._dc)
-            self._sent_information_comparable = make_comparable(data + urllib.unquote(data))
+        if self._sent_info_comp is None:
+            dc = self._dc
+            dec_dc = unquote(str(dc)).decode(dc.encoding)
+            data = '%s%s%s' % (unicode(self._uri), self._data, dec_dc)
+            
+            self._sent_info_comp = make_comp(data + unquote(data))
         
         minLength = 3
-        # make the smth_interesting comparable
-        smth_interesting_comparables = []
-        smth_interesting_comparables.append(make_comparable(smth_interesting))
-        smth_interesting_comparables.append(make_comparable(urllib.unquote(smth_interesting)))
-        for smth_interesting_comparable in smth_interesting_comparables:
+        # make the smth_instng comparable
+        smth_instng_comps = (make_comp(smth_instng),
+                             make_comp(unquote(smth_instng)))
+        for smth_intstng_comp in smth_instng_comps:
             # We don't want false negatives just because the string is 
             # short after making comparable
-            if len(smth_interesting_comparable) >= minLength and \
-            smth_interesting_comparable in self._sent_information_comparable:
+            if smth_intstng_comp in self._sent_info_comp and \
+                len(smth_intstng_comp) >= minLength:
                 return True
-        # I didn't sent the smth_interesting in any way
+        # I didn't sent the smth_instng in any way
         return False
 
-    def __str__( self ):
+    def __str__(self):
         '''
         @return: A string representation of this fuzzable request.
 
@@ -240,9 +233,9 @@ class fuzzableRequest(object):
         'http://www.w3af.com/ | Method: GET'
 
         >>> repr( fr )
-        '<fuzzable request | GET | http://www.w3af.com/ >'
+        '<fuzzable request | GET | http://www.w3af.com/>'
 
-        '''
+        '''        
         result_string = ''
         result_string += self._url
         result_string += ' | Method: ' + self._method
@@ -251,13 +244,12 @@ class fuzzableRequest(object):
             result_string += ' | Parameters: ('
             
             # Mangle the value for printing
-            for param_name in self._dc:
+            for param_name, values in self._dc.items():
 
                 #
                 # Because of repeated parameter names, we need to add this:
                 #
-                for the_value in self._dc[param_name]:
-
+                for the_value in values:
                     # the_value is always a string
                     if len(the_value) > 10:
                         the_value = the_value[:10] + '...'
@@ -267,9 +259,14 @@ class fuzzableRequest(object):
                     
             result_string = result_string[: -2]
             result_string += ')'
-        return result_string
         
-    def __eq__( self, other ):
+        return result_string.encode(DEFAULT_ENCODING)
+    
+    def __repr__( self ):
+        return '<fuzzable request | %s | %s>' % \
+                                        (self.getMethod(), self.getURI())
+        
+    def __eq__(self, other):
         '''
         Two requests are equal if:
             - They have the same URL
@@ -307,12 +304,15 @@ class fuzzableRequest(object):
         False
 
         '''
-        if self._uri == other._uri and\
-        self._method == other._method and\
-        self._dc == other._dc:
+        if self._uri == other._uri and \
+            self._method == other._method and \
+            self._dc == other._dc:
             return True
         else:
             return False
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
             
     def is_variant_of(self, other):
         '''
@@ -324,27 +324,26 @@ class fuzzableRequest(object):
             
         @return: True if self and other are variants.
         '''
-        if self._uri == other._uri and\
-        self._method == other._method and\
-        self._dc.keys() == other._dc.keys():
+        if self._uri == other._uri and \
+           self._method == other._method and \
+           self._dc.keys() == other._dc.keys():
                 
-            #
-            #   Ok, so it has the same URI, method, dc:
-            #   I need to work now :(
-            #
+            # Ok, so it has the same URI, method, dc:
+            # I need to work now :(
             
-            #   What I do now, is check if the values for each parameter has the same
-            #   type or not.
+            # What I do now, is check if the values for each parameter has the
+            # same type or not.
             for param_name in self._dc:
                 
-                #   repeated parameter names
+                # repeated parameter names
                 for index in xrange(len(self._dc[param_name])):
                     try:
-                        #   I do it in a try, because "other" might not have that many repeated
-                        #   parameters, and index could be out of bounds.
+                        # I do it in a try, because "other" might not have
+                        # that many repeated parameters, and index could be
+                        # out of bounds.
                         value_self = self._dc[param_name][index]
                         value_other = other._dc[param_name][index]
-                    except IndexError, e:
+                    except IndexError:
                         return False
                     else:
                         if value_other.isdigit() and not value_self.isdigit():
@@ -355,10 +354,6 @@ class fuzzableRequest(object):
             return True
         else:
             return False
-        
-    
-    def __ne__( self,other):
-        return not self.__eq__( other )
     
     def setURL( self , url ):
         if not isinstance(url, url_object):
@@ -381,13 +376,11 @@ class fuzzableRequest(object):
     def setMethod( self , method ):
         self._method = method
         
-    def setDc( self , dataCont ):
-        if isinstance(dataCont, dc):
-            self._dc = dataCont
-        else:
-            msg = 'Invalid call to fuzzableRequest.setDc(), the argument must be a'
-            msg += ' dataContainer instance.'
-            raise w3afException( msg )
+    def setDc(self, dataCont):
+        if not isinstance(dataCont, dataContainer):
+            raise TypeError('Invalid call to fuzzableRequest.setDc(), the '
+                            'argument must be a dataContainer instance.')
+        self._dc = dataCont
         
     def setHeaders( self , headers ):
         self._headers = headers
@@ -397,7 +390,8 @@ class fuzzableRequest(object):
     
     def setCookie( self , c ):
         '''
-        @parameter cookie: A cookie object as defined in core.data.dc.cookie, or a string.
+        @parameter cookie: A cookie object as defined in core.data.dc.cookie,
+            or a string.
         '''
         if isinstance( c, cookie):
             self._cookie = c
@@ -417,14 +411,16 @@ class fuzzableRequest(object):
         
     def setData( self, d ):
         '''
-        The data is the string representation of the dataContainer, in most cases it wont be set.
+        The data is the string representation of the dataContainer, in most 
+        cases it wont be set.
         '''
         self._data = d
         
     def getData( self ):
         '''
-        The data is the string representation of the dataContainer, in most cases it will be used as the POSTDATA for requests.
-        Sometimes it is also used as the query string data.
+        The data is the string representation of the dataContainer, in most
+        cases it will be used as the POSTDATA for requests. Sometimes it is
+        also used as the query string data.
         '''
         return self._data
         
@@ -453,8 +449,4 @@ class fuzzableRequest(object):
         return []
     
     def copy( self ):
-        newFr = copy.deepcopy( self )
-        return newFr
-
-    def __repr__( self ):
-        return '<fuzzable request | '+ self.getMethod() +' | '+ self.getURI() +' >'
+        return copy.deepcopy(self)

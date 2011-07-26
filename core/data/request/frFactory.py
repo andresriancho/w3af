@@ -20,80 +20,73 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from StringIO import StringIO
-
-# used to parse multipart posts
 import cgi
+import simplejson as json
 
-# for json
-try:
-    import extlib.simplejson as json
-except:
-    import simplejson as json
-
-import core.data.parsers.dpCache as dpCache
-import core.data.parsers.wsdlParser as wsdlParser
-from core.data.parsers.urlParser import url_object, parse_qs
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-import core.data.request.httpQsRequest as httpQsRequest
-import core.data.request.wsPostDataRequest as wsPostDataRequest
-import core.data.request.jsonPostDataRequest as jsonPostDataRequest
-import core.data.request.xmlrpcRequest as xmlrpcRequest
-from core.data.dc.cookie import cookie as cookie
 from core.controllers.w3afException import w3afException
+from core.data.dc.cookie import cookie as cookie
+from core.data.dc.queryString import queryString
+from core.data.parsers.urlParser import url_object, parse_qs
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-from core.data.dc.queryString import queryString
+import core.data.parsers.dpCache as dpCache
+import core.data.parsers.wsdlParser as wsdlParser
+import core.data.request.httpPostDataRequest as httpPostDataRequest
+import core.data.request.httpQsRequest as httpQsRequest
+import core.data.request.jsonPostDataRequest as jsonPostDataRequest
+import core.data.request.wsPostDataRequest as wsPostDataRequest
+import core.data.request.xmlrpcRequest as xmlrpcRequest
 
 
-def createFuzzableRequests( httpResponse, request=None, add_self=True ):
+def createFuzzableRequests(httpResponse, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an http response instance.
     
     @parameter httpResponse: An httpResponse instance.
     @parameter request: The HTTP request that generated the httpResponse
-    @parameter add_self: If I should add the current HTTP request (@parameter request) to the result
-    on not.
+    @parameter add_self: If I should add the current HTTP request
+        (@parameter request) to the result on not.
     
     @return: A list of fuzzable requests.
     '''
     res = []
     
-    # query string
-    url = httpResponse.getURL()
-    QSObject = httpResponse.getURI().getQueryString()
+    # Query string
+    qs_obj = httpResponse.getURI().getQueryString()
     
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
     headers = {}
-    for header_name in cf.cf.getData('fuzzableHeaders' ):
+    for header_name in cf.cf.getData('fuzzableHeaders'):
         if header_name not in headers:
             headers[ header_name ] = ''
     
     # Get the cookie!
-    cookieObj = _createCookie( httpResponse )
+    cookieObj = _createCookie(httpResponse)
     
     #
-    # create the fuzzable request that represents the request object passed as parameter
+    # create the fuzzable request that represents the request object
+    # passed as parameter
     #
     if add_self:
         self_headers = {}
         if request:
             self_headers = request.getHeaders()
-        for header_name in cf.cf.getData('fuzzableHeaders' ):
+        for header_name in cf.cf.getData('fuzzableHeaders'):
             if header_name not in headers:
                 self_headers[ header_name ] = ''
 
         qsr = httpQsRequest.httpQsRequest()
-        qsr.setURL( url )
-        qsr.setDc( QSObject )
-        qsr.setHeaders( self_headers )
-        qsr.setCookie( cookieObj )
-        res.append( qsr )
+        qsr.setURL(httpResponse.getURL())
+        qsr.setDc(qs_obj)
+        qsr.setHeaders(self_headers)
+        qsr.setCookie(cookieObj)
+        res.append(qsr)
     
     # Try to find forms in the document
     form_list = []
     try:
-        dp = dpCache.dpc.getDocumentParserFor( httpResponse )
+        dp = dpCache.dpc.getDocumentParserFor(httpResponse)
     except w3afException:
         # Failed to find a suitable parser for the document
         pass
@@ -105,27 +98,28 @@ def createFuzzableRequests( httpResponse, request=None, add_self=True ):
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
         try:
-            wsdlp.setWsdl( httpResponse.getBody() )
+            wsdlp.setWsdl(httpResponse.getBody())
         except w3afException:
             pass
         else:
             webServiceList = wsdlp.getMethods()
-            if len( webServiceList ) != 0:
+            if len(webServiceList) != 0:
                 for remoteMethod in webServiceList:
                     wspdr = wsPostDataRequest.wsPostDataRequest()
-                    wspdr.setURL( remoteMethod.getLocation() )
-                    wspdr.setAction( remoteMethod.getAction() )
-                    wspdr.setParameters( remoteMethod.getParameters() )
-                    wspdr.setNS( remoteMethod.getNamespace() )
-                    wspdr.setMethodName( remoteMethod.getMethodName() )
-                    wspdr.setHeaders( headers )
-                    res.append( wspdr )     
+                    wspdr.setURL(remoteMethod.getLocation())
+                    wspdr.setAction(remoteMethod.getAction())
+                    wspdr.setParameters(remoteMethod.getParameters())
+                    wspdr.setNS(remoteMethod.getNamespace())
+                    wspdr.setMethodName(remoteMethod.getMethodName())
+                    wspdr.setHeaders(headers)
+                    res.append(wspdr)     
         
     else:
         # create one httpPostDataRequest for each form variant
         mode = cf.cf.getData('fuzzFormComboValues')
         for form in form_list:
             for variant in form.getVariants(mode):
+                
                 if form.getMethod().upper() == 'POST':
                     r = httpPostDataRequest.httpPostDataRequest()
                     r.setMethod(variant.getMethod())
@@ -133,6 +127,7 @@ def createFuzzableRequests( httpResponse, request=None, add_self=True ):
                 else:
                     # The default is a GET request
                     r = httpQsRequest.httpQsRequest()
+                
                 r.setURL(variant.getAction())
                 r.setDc(variant)
                 r.setHeaders(headers)
@@ -153,11 +148,11 @@ def createFuzzableRequestRaw(method, url, postData, headers):
     if not isinstance(url, url_object):
         msg = 'The "url" parameter of createFuzzableRequestRaw @ frFactory'
         msg += ' must be of urlParser.url_object type.'
-        raise ValueError( msg )
+        raise TypeError( msg )
 
     
     #
-    # Just a query string request ! no postdata
+    # Just a query string request! No postdata
     #
     if not postData:
         qsr = httpQsRequest.httpQsRequest()

@@ -20,10 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 from core.data.request.httpPostDataRequest import httpPostDataRequest
-import core.data.dc.dataContainer as dc
 import cgi
 
 

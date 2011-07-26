@@ -59,7 +59,7 @@ class sqli(baseAuditPlugin):
         '''
         om.out.debug( 'SQLi plugin is testing: ' + freq.getURL() )
 
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant(freq , analyze=False).body
         sqli_strings = self._get_sqli_strings()
         mutants = createMutants( freq , sqli_strings, oResponse=oResponse )
 

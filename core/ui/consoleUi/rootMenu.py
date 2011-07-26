@@ -114,9 +114,9 @@ class rootMenu(menu):
             om.out.error(str(w3))
         except w3afMustStopException, w3:
             om.out.error(str(w3))
-        except Exception, e:
+        except Exception:
             self._w3af.quit()
-            raise e
+            raise
      
     def show_progress_on_request(self):
         '''

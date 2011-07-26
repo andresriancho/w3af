@@ -21,7 +21,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.data.parsers.dpCache as dpCache
 import core.controllers.outputManager as om
 
@@ -51,15 +50,17 @@ class findComments(baseGrepPlugin):
 
         # Internal variables
         self._comments = {}
-        self._interestingWords = ['user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack', 
-        'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit','stupid', 'tonto', 'porqueria',
-        'ciudado', 'usuario', 'contrase', 'puta',
-        'secret','@', 'email','security','captcha',
-        # some in Portuguese
-        'banco', 'bradesco', 'itau', 'visa', 'bancoreal', 'transfêrencia', 'depósito', 'cartão', 'crédito', 'dados pessoais'
-        ]
+        self._interestingWords = (
+            'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
+            'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
+            'stupid', 'tonto', 'porqueria', 'ciudado', 'usuario', 'contrase',
+            'puta', 'secret', '@', 'email','security','captcha', 'pinga',
+			'cojones',
+            # some in Portuguese
+            'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
+            u'depósito', u'cartão', u'crédito', 'dados pessoais'
+        )
         self._already_reported_interesting = []
-
         # User configurations
         self._search404 = False
         
@@ -98,7 +99,8 @@ class findComments(baseGrepPlugin):
                     
                     comment = comment.lower()
                     for word in self._interestingWords:
-                        if word in comment and ( word, response.getURL() ) not in self._already_reported_interesting:
+                        if word in comment and (word, response.getURL()) \
+                                    not in self._already_reported_interesting:
                             i = info.info()
                             i.setPluginName(self.getName())
                             i.setName('HTML comment with "' + word + '" inside')

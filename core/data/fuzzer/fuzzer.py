@@ -27,6 +27,7 @@ from random import choice, randint
 import core.data.kb.config as cf
 
 # Common modules
+from StringIO import StringIO
 import copy
 import re
 import urllib
@@ -36,14 +37,12 @@ from core.controllers.w3afException import w3afException
 # The data containers
 from core.data.dc.cookie import cookie as cookie
 from core.data.dc.dataContainer import dataContainer as dc
-try:
-    import extlib.simplejson as json
-except:
-    import simplejson as json
+import simplejson as json
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import httpQsRequest
 
 # import all the mutant types
+from core.data.fuzzer.formFiller import smartFill
 from core.data.fuzzer.mutantQs import mutantQs
 from core.data.fuzzer.mutantPostData import mutantPostData
 from core.data.fuzzer.mutantFileName import mutantFileName
@@ -54,74 +53,89 @@ from core.data.fuzzer.mutantFileContent import mutantFileContent
 
 import core.controllers.outputManager as om
 
+from core.controllers.misc.io import NamedStringIO
 from core.data.dc.form import form
 
 
 #
-#   The following is a list of parameter names that will be ignored during the fuzzing process
+# The following is a list of parameter names that will be ignored during
+# the fuzzing process
 #
-IGNORED_PARAMETERS = ['__EVENTTARGET', '__EVENTARGUMENT', '__VIEWSTATE', '__VIEWSTATEENCRYPTED', 
-                                          '__EVENTVALIDATION', '__dnnVariable', 'javax.faces.ViewState',
-                                          'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64', 
-                                          'jsf_viewid', 'jsf_state', 'cfid', 'cftoken','ASP.NET_sessionid',
-                                          'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID']
-                                          
+IGNORED_PARAMETERS = [
+    '__EVENTTARGET', '__EVENTARGUMENT', '__VIEWSTATE', '__VIEWSTATEENCRYPTED', 
+    '__EVENTVALIDATION', '__dnnVariable', 'javax.faces.ViewState',
+    'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64', 
+    'jsf_viewid', 'jsf_state', 'cfid', 'cftoken','ASP.NET_sessionid',
+    'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID'
+    ]
 
-def createMutants( freq, mutant_str_list, append=False, fuzzableParamList = [] , oResponse = None ):
+def createMutants(freq, mutant_str_list, append=False,
+                  fuzzableParamList=[], oResponse=None):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutant_str_list: a list with mutant strings to use
-    @parameter append: This indicates if the content of mutant_str_list should be appended to the variable value
-    @parameter fuzzableParamList: If [] then all params are fuzzed. If ['a'] , then only 'a' is fuzzed.
+    @parameter append: This indicates if the content of mutant_str_list should
+        be appended to the variable value
+    @parameter fuzzableParamList: If [] then all params are fuzzed. If ['a'],
+        then only 'a' is fuzzed.
     @return: A Mutant object List.
     '''
     result = []
+    _fuzzable = _createFuzzable(freq)
     
-    _fuzzable = _createFuzzable( freq )
-    # Query string parameters
-    if isinstance( freq, httpQsRequest ):
+    if isinstance(freq, httpQsRequest):
+        
+        # Query string parameters    
         om.out.debug('Fuzzing query string')
-        result.extend( _createMutantsWorker( freq, mutantQs, mutant_str_list, fuzzableParamList , append ) )
-    
+        result.extend(_createMutantsWorker(freq, mutantQs, mutant_str_list,
+                                           fuzzableParamList, append))
+        
+        # File name
+        if 'fuzzedFname' in _fuzzable:
+            om.out.debug('Fuzzing file name')
+            result.extend(_createFileNameMutants(freq, mutantFileName, 
+                                 mutant_str_list, fuzzableParamList, append))
     # POST-data parameters
-    if isinstance( freq, httpPostDataRequest ):
-        # If this is a POST request, it could be a JSON request, and I want to fuzz it !
+    if isinstance(freq, httpPostDataRequest):
+        # If this is a POST request, it could be a JSON request, and I want
+        # to fuzz it!
         om.out.debug('Fuzzing POST data')
-        if isJSON( freq ):
-            result.extend( _createJSONMutants( freq, mutantJSON, mutant_str_list, fuzzableParamList , append ) )
+        if isJSON(freq):
+            result.extend(_createJSONMutants(freq, mutantJSON, mutant_str_list,
+                                             fuzzableParamList, append))
         else:
-            result.extend( _createMutantsWorker( freq, mutantPostData, mutant_str_list, fuzzableParamList , append ) )
-    
-    # File name
-    if 'fuzzedFname' in _fuzzable and isinstance( freq, httpQsRequest ):
-        om.out.debug('Fuzzing file name')
-        result.extend( _createFileNameMutants( freq, mutantFileName, mutant_str_list, fuzzableParamList , append ) )
-    
+            result.extend(_createMutantsWorker(freq, mutantPostData,
+                                   mutant_str_list, fuzzableParamList, append))
+        
+        # File content of multipart forms
+        if 'fuzzFileContent' in _fuzzable:
+            om.out.debug('Fuzzing file content')
+            result.extend(_createFileContentMutants(freq, mutant_str_list,
+                                                    fuzzableParamList, append))
     # Headers
     if 'headers' in _fuzzable:
         om.out.debug('Fuzzing headers')
-        result.extend( _createMutantsWorker( freq, mutantHeaders, mutant_str_list, fuzzableParamList , append, dataContainer=_fuzzable['headers'] ) )
+        result.extend(_createMutantsWorker(freq, mutantHeaders, mutant_str_list,
+                                           fuzzableParamList, append, 
+                                           dataContainer=_fuzzable['headers']))
         
     # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
         om.out.debug('Fuzzing cookie')
-        result.extend( _createMutantsWorker( freq, mutantCookie, mutant_str_list, fuzzableParamList , append, dataContainer=freq.getCookie() ) )
-        
-    # File content of multipart forms
-    if 'fuzzFileContent' in _fuzzable and isinstance( freq, httpPostDataRequest ):
-        om.out.debug('Fuzzing file content')
-        result.extend( _createFileContentMutants( freq, mutantFileContent, mutant_str_list, fuzzableParamList , append ) )
+        result.extend(_createMutantsWorker(freq, mutantCookie, mutant_str_list,
+                                           fuzzableParamList, append,
+                                           dataContainer=freq.getCookie()))
     
     #
     # Get the original response, and apply it to all mutants
     #
     if oResponse is not None:
         for m in result:
-            m.setOriginalResponseBody( oResponse )
+            m.setOriginalResponseBody(oResponse)
         
     return result
 
-def _createJSONMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
+def _createJSONMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
@@ -217,11 +231,11 @@ def isJSON( freq ):
     postdata = freq.getData()
     try:
         cgi.parse_qs( postdata ,keep_blank_values=True,strict_parsing=True)
-    except Exception, e:
+    except Exception:
         # We have something that's not URL encoded in the postdata, it could be something
         # like JSON, XML, or multipart encoding. Let's try with JSON
         try:
-            jsonPostData = json.loads( postdata )
+            json.loads( postdata )
         except:
             # It's not json, maybe XML or multipart, I don't really care ( at least not in this section of the code )
             return False
@@ -232,7 +246,7 @@ def isJSON( freq ):
         # No need to do any JSON stuff, the postdata is urlencoded
         return False
     
-def _createFileContentMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
+def _createFileContentMutants(freq, mutant_str_list, fuzzableParamList, append):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
@@ -242,16 +256,22 @@ def _createFileContentMutants( freq, mutantClass, mutant_str_list, fuzzableParam
     @return: Mutants that have the file content changed with the strings at mutant_str_list
     '''
     res = []
-    tmp = []
-    if freq.getFileVariables():
+    file_vars = freq.getFileVariables()
+    
+    if file_vars:
+        tmp = []
+        ext = cf.cf.getData('fuzzFCExt') or 'txt'
+        
         for mutant_str in mutant_str_list:
-            if type( mutant_str ) == str:
-                # I have to create the string_file with a "name" attr. This is needed for MultipartPostHandler
-                str_file_instance = string_file( mutant_str )
-                extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
-                str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
-                tmp.append( str_file_instance )
-        res = _createMutantsWorker( freq, mutantClass, tmp, freq.getFileVariables() , append )
+            if isinstance(mutant_str, basestring):
+                # I have to create the NamedStringIO with a "name".
+                # This is needed for MultipartPostHandler
+                fname = "%s.%s" % (createRandAlpha(7), ext)
+                str_file = NamedStringIO(mutant_str, name=fname)
+                tmp.append(str_file)
+        res = _createMutantsWorker(freq, mutantFileContent,
+                                   tmp, file_vars, append)
+    
     return res
     
 def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
@@ -272,11 +292,11 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
 
     >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['ping!','pong-'], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
-    ['http://www.w3af.com/abc/ping%21.html', 'http://www.w3af.com/abc/pong-.html', 'http://www.w3af.com/abc/def.ping%21', 'http://www.w3af.com/abc/def.pong-']
+    [u'http://www.w3af.com/abc/ping%21.html', u'http://www.w3af.com/abc/pong-.html', u'http://www.w3af.com/abc/def.ping%21', u'http://www.w3af.com/abc/def.pong-']
     
     >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['/etc/passwd',], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
-    ['http://www.w3af.com/abc/%2Fetc%2Fpasswd.html', 'http://www.w3af.com/abc//etc/passwd.html', 'http://www.w3af.com/abc/def.%2Fetc%2Fpasswd', 'http://www.w3af.com/abc/def./etc/passwd']
+    [u'http://www.w3af.com/abc/%2Fetc%2Fpasswd.html', u'http://www.w3af.com/abc//etc/passwd.html', u'http://www.w3af.com/abc/def.%2Fetc%2Fpasswd', u'http://www.w3af.com/abc/def./etc/passwd']
 
     '''
     res = []
@@ -314,7 +334,8 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
                     res.append( m2 )
     return res
     
-def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,append, dataContainer=None):
+def _createMutantsWorker(freq, mutantClass, mutant_str_list,
+                         fuzzableParamList, append, dataContainer=None):
     '''
     An auxiliary function to createMutants.
     
@@ -366,16 +387,16 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
     if not dataContainer:
         dataContainer = freq.getDc()
 
-    for parameter_name in dataContainer:
+    for pname in dataContainer:
         
         #
-        #   Ignore the banned parameter names
+        # Ignore the banned parameter names
         #
-        if parameter_name in IGNORED_PARAMETERS:
+        if pname in IGNORED_PARAMETERS:
             continue
         
         # This for is to support repeated parameter names
-        for element_index, element_value in enumerate(dataContainer[parameter_name]):
+        for element_index, element_value in enumerate(dataContainer[pname]):
             
             for mutant_str in mutant_str_list:
                 
@@ -391,20 +412,20 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                 # the "__HERE__" string!
                 #
                 # The exclusion is done here:
-                if parameter_name in freq.getFileVariables() and not hasattr(mutant_str, 'name'):
+                if pname in freq.getFileVariables() and not hasattr(mutant_str, 'name'):
                     continue
                     
                 # Only fuzz the specified parameters (if any)
                 # or fuzz all of them (the fuzzableParamList == [] case)
-                if parameter_name in fuzzableParamList or fuzzableParamList == []:
+                if pname in fuzzableParamList or fuzzableParamList == []:
                     
-                    dataContainerCopy = dataContainer.copy()
+                    dc_copy = dataContainer.copy()
                     original_value = element_value
                     
                     if append :
-                        dataContainerCopy[parameter_name][element_index] += mutant_str
+                        dc_copy[pname][element_index] += mutant_str
                     else:
-                        dataContainerCopy[parameter_name][element_index] = mutant_str
+                        dc_copy[pname][element_index] = mutant_str
 
                     # Ok, now we have a data container with the mutant string, but it's possible that
                     # all the other fields of the data container are empty (think about a form)
@@ -412,11 +433,11 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                     # developer checks like: "parameter A was filled".
                     
                     # But I only perform this task in HTML forms, everything else is left as it is:
-                    if isinstance( dataContainerCopy, form ):
-                        for var_name_dc in dataContainerCopy:
-                            for element_index_dc, element_value_dc in enumerate(dataContainerCopy[var_name_dc]):
-                                if (var_name_dc, element_index_dc) != (parameter_name, element_index) and\
-                                dataContainerCopy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
+                    if isinstance( dc_copy, form ):
+                        for var_name_dc in dc_copy:
+                            for element_index_dc, element_value_dc in enumerate(dc_copy[var_name_dc]):
+                                if (var_name_dc, element_index_dc) != (pname, element_index) and\
+                                dc_copy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
                                     
                                     #   Fill only if the parameter does NOT have a value set.
                                     #
@@ -425,27 +446,27 @@ def _createMutantsWorker( freq, mutantClass, mutant_str_list, fuzzableParamList,
                                     #
                                     #   <input type="text" name="p" value="foobar">
                                     #
-                                    if dataContainerCopy[var_name_dc][element_index_dc] == '':
+                                    if dc_copy[var_name_dc][element_index_dc] == '':
                                         #
                                         #   Fill it smartly
                                         #
-                                        dataContainerCopy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
+                                        dc_copy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
 
                     # __HERE__
                     # Please see the comment above for an explanation of what we are doing here:
                     for var_name in freq.getFileVariables():
-                        # I have to create the string_file with a "name" attr.
+                        # I have to create the NamedStringIO with a "name".
                         # This is needed for MultipartPostHandler
-                        str_file_instance = string_file( '' )
-                        extension = cf.cf.getData('fuzzFCExt' ) or 'txt'
-                        str_file_instance.name = createRandAlpha( 7 ) + '.' + extension
-                        dataContainerCopy[var_name][0] = str_file_instance
+                        fname = "%s.%s" % (createRandAlpha(7), 
+                                           cf.cf.getData('fuzzFCExt' ) or 'txt') 
+                        str_file = NamedStringIO('', name=fname)
+                        dc_copy[var_name][0] = str_file
                     
                     # Create the mutant
                     freq_copy = freq.copy()
                     m = mutantClass( freq_copy )
-                    m.setVar( parameter_name, index=element_index )
-                    m.setDc( dataContainerCopy )
+                    m.setVar( pname, index=element_index )
+                    m.setDc( dc_copy )
                     m.setOriginalValue( original_value )
                     m.setModValue( mutant_str )
                     
@@ -547,18 +568,10 @@ def createFormatString(  length ):
     result = '%n' * length
     return result
 
-class string_file( str ):
-    isFile = True
-    name = ''
-    def read( self, size = 0 ):
-        return self.__repr__()[1:-1]
-        
-    def seek( self, foo = 0 ):
-        pass
-        
 def _createFuzzable( freq ):
     '''
-    @return: This function verifies the configuration, and creates a map of things that can be fuzzed.
+    @return: This function verifies the configuration, and creates a map of
+        things that can be fuzzed.
     '''
     _fuzzable = {}
     _fuzzable['dc'] = freq.getDc()
@@ -581,5 +594,4 @@ def _createFuzzable( freq ):
         _fuzzable['fuzzFileContent'] = None
     
     return _fuzzable
-    
-from core.data.fuzzer.formFiller import smartFill
+

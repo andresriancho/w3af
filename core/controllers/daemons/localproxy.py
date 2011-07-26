@@ -19,22 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-    
-from core.controllers.daemons.proxy import proxy
-from core.controllers.daemons.proxy import w3afProxyHandler
 
-from core.data.request.fuzzableRequest import fuzzableRequest
-from core.data.url.xUrllib import xUrllib
-
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
-
-from core.data.parsers.httpRequestParser import httpRequestParser
-
-import time
-import re
 import Queue
+import re
+import time
 import traceback
+
+from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.w3afException import w3afException
+from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.url.xUrllib import xUrllib
+import core.controllers.outputManager as om
 
 
 class w3afLocalProxyHandler(w3afProxyHandler):
@@ -45,10 +40,12 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         This method handles EVERY request that were send by the browser.
         '''
-        # first of all, we create a fuzzable request based on the attributes that are set to this object
+        # First of all, we create a fuzzable request based on the attributes
+        # that are set to this object
         fuzzReq = self._createFuzzableRequest()
         try:
-            # Now we check if we need to add this to the queue, or just let it go through.
+            # Now we check if we need to add this to the queue, or just let
+            # it go through.
             if self._shouldBeTrapped(fuzzReq):
                 res = self._do_trap(fuzzReq)
             else:

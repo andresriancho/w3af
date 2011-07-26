@@ -23,36 +23,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import copy
 
-from core.data.parsers.urlParser import url_object
-
-
 class HTTPRequest(urllib2.Request):
     
     def __init__(self, url, data=None, headers={},
                  origin_req_host=None, unverifiable=False):
         '''
         This is a simple wrapper around a urllib2 request object.
-        
-        >>> r = HTTPRequest('http://www.google.com')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.
-        
-        >>> u = url_object('http://www.google.com')
+        >>> from core.data.parsers.urlParser import url_object
+        >>> u = url_object('http://www.w3af.com')
         >>> req = HTTPRequest(u)
-        >>> req.get_full_url() == 'http://www.google.com'
+        >>> req.get_full_url() == 'http://www.w3af.com'
         True
         '''
-        if not isinstance(url, url_object):
-            raise ValueError('The url __init__ parameter of a HTTPRequest object must be of urlParser.url_object type.')
-        
         #
-        #    Save some information for later access in an easier way
+        # Save some information for later access in an easier way
         #
         self.url_object = url
         
         # Call the base class
-        urllib2.Request.__init__(self, url.url_string, data, headers, origin_req_host, unverifiable)
+        urllib2.Request.__init__(self, str(url.urlEncode()), data,
+                                 headers, origin_req_host, unverifiable)
 
     def copy(self):
-        return copy.deepcopy( self )
+        return copy.deepcopy(self)

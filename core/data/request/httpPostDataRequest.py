@@ -20,15 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
+from itertools import imap
+
+from core.controllers.misc.io import is_file_like
 from core.data.request.fuzzableRequest import fuzzableRequest
-import core.data.dc.dataContainer as dc
+
 
 class httpPostDataRequest(fuzzableRequest):
     '''
-    This class represents a fuzzable request that sends all variables in the POSTDATA. This is tipically used
-    for POST requests.
+    This class represents a fuzzable request that sends all variables in the
+    POSTDATA. This is tipically used for POST requests.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -40,21 +41,31 @@ class httpPostDataRequest(fuzzableRequest):
 
     def getData( self ):
         '''
-        @return: A string representation of the dataContainer. There is a special case, in which
-        the dataContainer has a file inside, in which we return the data container as it is. This is
-        needed by the multipart post handler.
+        @return: A string representation of the dataContainer. There is a
+        special case, in which the dataContainer has a file inside, in which
+        we return the data container as it is. This is needed by the multipart
+        post handler.
         '''
-        for value in self._dc.values():
-            if not isinstance(value, type('')):
-                # We have a file here, return the dc as it is.
+
+        # TODO: This is a hack I'm not comfortable with. There should
+        # be a fancier way to do this.
+        # If contains a file then we are not interested on returning
+        # its string representation
+        for value in self._dc.itervalues():
+            
+            if isinstance(value, basestring):
+                continue
+            elif is_file_like(value) or (hasattr(value, "__iter__") and
+                                         any(imap(is_file_like, value))):
                 return self._dc
         
-        # return the string representation
-        return str( self._dc )
+        # Ok, no file was found; return the string representation
+        return str(self._dc)
         
     def setFileVariables( self, file_variables ):
         '''
-        @parameter file_variables: A list of postdata parameters that contain a file
+        @parameter file_variables: A list of postdata parameters that contain
+            a file
         '''
         self._files = file_variables
     
@@ -65,4 +76,6 @@ class httpPostDataRequest(fuzzableRequest):
         return self._files
     
     def __repr__( self ):
-        return '<postdata fuzzable request | '+ self.getMethod() +' | '+ self.getURI() +' >'
+        return '<postdata fuzzable request | %s | %s>' % \
+                    (self.getMethod(), self.getURI())
+    

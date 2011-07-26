@@ -44,10 +44,7 @@ class objects(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._tag_names = []
-        self._tag_names.append('object')
-        self._tag_names.append('applet')
-        
+        self._tag_names = ('object', 'applet')
         self._already_analyzed = scalable_bloomfilter()
 
     def grep(self, request, response):

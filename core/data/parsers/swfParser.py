@@ -20,38 +20,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-from core.data.parsers.abstractParser import abstractParser
-    
 import zlib
 
+from core.data.parsers.baseparser import BaseParser
+    
 
-class swfParser(abstractParser):
+class swfParser(BaseParser):
     '''
     This class is a SWF (flash) parser. This is the first version, so don't expect much!
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self, httpResponse):
-        abstractParser.__init__(self , httpResponse)
-        
-        # To store results
-        self._parsed_URLs = []
-        self._re_URLs = []
+        BaseParser.__init__(self , httpResponse)
         
         # work !
         swf = httpResponse.getBody()
-        if self._is_compressed( swf ):
+        if self._is_compressed(swf):
             try:
-                swf = self._inflate( swf )
-            except Exception, e:
+                swf = self._inflate(swf)
+            except Exception:
                 # If the inflate fails... there is nothing else to do.
                 return
         
-        http_response_copy = httpResponse.copy()
-        http_response_copy.setBody(swf)
-        
-        self._parse( http_response_copy )
+        self._parse(swf)
     
     def _is_compressed(self, swf_document):
         '''
@@ -61,7 +53,7 @@ class swfParser(abstractParser):
         '''
         return swf_document.startswith('CWS')
         
-    def _inflate( self, swf_document ):
+    def _inflate(self, swf_document):
         '''
         zlib.inflate the SWF file.
         
@@ -76,17 +68,17 @@ class swfParser(abstractParser):
         else:
             return uncompressed_data
     
-    def _parse( self, swf_response ):
+    def _parse(self, swf_body):
         '''
         Parse the SWF bytecode.
         
         For now... don't decompile anything, just apply regular expressions to it.
         
-        @parameter swf_response: An httpResponse containing the SWF
+        @parameter swf_body: SWF bytecode string
         '''
-        self._regex_url_parse( swf_response )
+        self._regex_url_parse(swf_body)
     
-    def getReferences( self ):
+    def getReferences(self):
         '''
         Searches for references on a page. w3af searches references in every html tag, including:
             - a
@@ -98,10 +90,9 @@ class swfParser(abstractParser):
         @return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
         regular expression. The second list if less trustworthy.
         '''        
-        tmp_re_URLs = set(self._re_URLs) - set( self._parsed_URLs )
-        return list(set( self._parsed_URLs )), list(tmp_re_URLs)
+        return ([], list(self._re_urls))
         
-    def _returnEmptyList( self, *args, **kwds ):
+    def _returnEmptyList(self, *args, **kwds):
         '''
         This method is called (see below) when the caller invokes one of:
             - getForms
@@ -116,3 +107,4 @@ class swfParser(abstractParser):
         return []
         
     getReferencesOfTag = getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList
+    

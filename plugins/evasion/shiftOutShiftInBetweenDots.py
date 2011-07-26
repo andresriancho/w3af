@@ -52,22 +52,22 @@ class shiftOutShiftInBetweenDots(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
         
         >>> u = url_object('http://www.w3af.com/../')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/.%0E%0F./'
+        u'http://www.w3af.com/.%0E%0F./'
 
         >>> u = url_object('http://www.w3af.com/abc/def/.././jkl.htm')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/abc/def/.%0E%0F././jkl.htm'
+        u'http://www.w3af.com/abc/def/.%0E%0F././jkl.htm'
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/abc/def/.././jkl.htm'
+        u'http://www.w3af.com/abc/def/.././jkl.htm'
 
         '''
         # We mangle the URL

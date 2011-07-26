@@ -26,24 +26,24 @@ from core.data.request.frFactory import createFuzzableRequestRaw
 from core.controllers.w3afException import w3afException
 
 
-def checkVersionSintax(version):
+def checkVersionSyntax(version):
     '''
-    @return: True if the sintax of the version section of HTTP is valid; else raise an exception.
+    @return: True if the syntax of the version section of HTTP is valid; else raise an exception.
 
-    >>> checkVersionSintax('HTTP/1.0')
+    >>> checkVersionSyntax('HTTP/1.0')
     True
 
-    >>> checkVersionSintax('HTTPS/1.0')
+    >>> checkVersionSyntax('HTTPS/1.0')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: The HTTP request has an invalid HTTP token in the version specification: "HTTPS/1.0"
 
-    >>> checkVersionSintax('HTTP/1.00000000000000')
+    >>> checkVersionSyntax('HTTP/1.00000000000000')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: HTTP request version "HTTP/1.00000000000000" is unsupported
 
-    >>> checkVersionSintax('ABCDEF')
+    >>> checkVersionSyntax('ABCDEF')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: The HTTP request has an invalid version token: "ABCDEF"
@@ -63,14 +63,14 @@ def checkVersionSintax(version):
             raise w3afException('HTTP request version "' + version + '" is unsupported')
     return True
 
-def checkURISintax(uri, host=None):
+def checkURISyntax(uri, host=None):
     '''
     @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
 
-    >>> checkURISintax('http://abc/def.html')
+    >>> checkURISyntax('http://abc/def.html')
     'http://abc/def.html'
 
-    >>> checkURISintax('ABCDEF')
+    >>> checkURISyntax('ABCDEF')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: ABCDEF
@@ -99,15 +99,16 @@ def httpRequestParser(head, postdata):
     
     @parameter head: The head of the request.
     @parameter postdata: The post data of the request
-    @return: A fuzzableRequest object with all the corresponding information that was sent in head and postdata
+    @return: A fuzzableRequest object with all the corresponding information
+        that was sent in head and postdata
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
 
     >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', 'foo=bar')
-    <postdata fuzzable request | 200 | http://www.w3af.com/ >
+    <postdata fuzzable request | 200 | http://www.w3af.com/>
 
     >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', '')
-    <QS fuzzable request | 200 | http://www.w3af.com/ >
+    <QS fuzzable request | 200 | http://www.w3af.com/>
 
     >>> httpRequestParser('200 / HTTP/1.0', '')
     Traceback (most recent call last):
@@ -122,7 +123,7 @@ def httpRequestParser(head, postdata):
     >>> head = "200 http://www.w3af.com/ HTTP/1.0"
     >>> head += '\\nHost: www.w3af.com'
     >>> httpRequestParser( head, 'foo=bar')
-    <postdata fuzzable request | 200 | http://www.w3af.com/ >
+    <postdata fuzzable request | 200 | http://www.w3af.com/>
     '''
     # Parse the request head
     splitted_head = head.split('\n')
@@ -149,7 +150,7 @@ def httpRequestParser(head, postdata):
         version = firstLine[-1]
         uri = ' '.join( firstLine[1:-1] )
     
-    checkVersionSintax(version)
+    checkVersionSyntax(version)
     
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
@@ -164,6 +165,6 @@ def httpRequestParser(head, postdata):
     for headerName in headersDict:
         if headerName.lower() == 'host':
             host = headersDict[headerName]
-    uri = checkURISintax(uri, host)
+    uri = checkURISyntax(uri, host)
     fuzzReq = createFuzzableRequestRaw(method, url_object(uri), postdata, headersDict)
     return fuzzReq

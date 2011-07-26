@@ -292,18 +292,19 @@ def get_clean_body(response):
     @parameter response: The httpResponse object to clean
     @return: A string that represents the "cleaned" response body of the response.
     '''
-    original_body = response.getBody()
-    url = response.getURL()
-    to_replace = url.url_string.split('/')
-    to_replace.append( url.url_string )
     
-    for i in to_replace:
-        if len(i) > 6:
-            original_body = original_body.replace(i, '')
-            original_body = original_body.replace(urllib.unquote_plus(i), '')
-            original_body = original_body.replace(cgi.escape(i), '')
-            original_body = original_body.replace(cgi.escape(urllib.unquote_plus(i)), '')
+    body = response.body
+    
+    if response.is_text_or_html():
+        url = response.getURL()
+        to_replace = url.url_string.split('/')
+        to_replace.append( url.url_string )
+        
+        for repl in to_replace:
+            if len(repl) > 6:
+                body = body.replace(repl, '')
+                body = body.replace(urllib.unquote_plus(repl), '')
+                body = body.replace(cgi.escape(repl), '')
+                body = body.replace(cgi.escape(urllib.unquote_plus(repl)), '')
 
-    return original_body
-
-
+    return body

@@ -98,7 +98,9 @@ $plugins
         multi_handler = MultipartPostHandler.MultipartPostHandler()
         redir_handler = urllib2.HTTPRedirectHandler()
         
-        self.opener = apply(urllib2.build_opener, (multi_handler,cookie_handler,redir_handler) )
+        self.opener = urllib2.build_opener(multi_handler,
+                                           cookie_handler,
+                                           redir_handler)
 
     def login(self, user, passwd):
         '''

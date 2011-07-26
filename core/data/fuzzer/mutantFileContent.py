@@ -34,8 +34,8 @@ class mutantFileContent(mutant):
 
     def getData( self ):
         '''
-        Override the default getData() of the fuzzable request that contains a str(self._dc) <<---- that kills the
-        file I contain in my DC.
+        Override the default getData() of the fuzzable request that contains a
+        str(self._dc) <<---- that kills the file I contain in my DC.
         '''
         return self._dc
     

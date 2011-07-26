@@ -55,22 +55,22 @@ class fullWidthEncode(baseEvasionPlugin):
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/'
+        u'http://www.w3af.com/'
 
         >>> u = url_object('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
 
         >>> u = url_object('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
-        'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        'http://www.w3af.com/hola-mundo'
+        u'http://www.w3af.com/hola-mundo'
         '''
         # This is a test URL
         # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E

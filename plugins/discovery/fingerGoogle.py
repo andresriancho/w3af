@@ -99,7 +99,7 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         search_string = '@'+ self._domain_root
         try:
-            result_page_objects = self._google.getNResultPages( search_string , self._result_limit )
+            result_page_objects = self._google.getNResultPages(search_string, self._result_limit)
         except w3afException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
