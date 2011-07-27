@@ -20,29 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-class config:
+class config(dict):
     '''
     This class saves config parameters sent by the user.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    
-    def __init__(self):
-        self._cf = {}
         
-    def save( self, variableName, value ):
+    def save(self, variableName, value):
         '''
         This method saves the variableName value to a dict.
         '''
-        self._cf[ variableName ] = value
+        self[variableName] = value
         
-    def getData( self, variableName ):
+    def getData(self, variableName):
         '''
         @return: Returns the data that was saved to the variableName
         '''
-        res = None
-        if variableName in self._cf.keys():
-            res = self._cf[ variableName ]
-        return res
+        return self.get(variableName, None)
         
 cf = config()
