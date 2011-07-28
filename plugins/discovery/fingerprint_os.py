@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
@@ -31,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 from core.data.parsers.urlParser import url_object
 
-from core.controllers.w3afException import w3afRunOnce,  w3afException
+from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.levenshtein import relative_distance_ge
 
 
@@ -57,34 +56,29 @@ class fingerprint_os(baseDiscoveryPlugin):
         if not self._exec:
             # This will remove the plugin from the discovery plugins to be runned.
             raise w3afRunOnce()
-        else:
-            
-            if self._found_OS:
-                # Nothing else to do here.
-                self._exec = False
-
-            else:
-                # Work!
-                self._find_OS( fuzzableRequest )
+        
+        self._exec = not self._find_OS(fuzzableRequest)
     
-    def _find_OS( self, fuzzableRequest ):
+    def _find_OS(self, fuzzableRequest):
         '''
         Analyze responses and determine if remote web server runs on windows or *nix
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
-        dirs = fuzzableRequest.getURL().getDirectories()
-        filename = fuzzableRequest.getURL().getFileName()
+        found_os = False
+        freq_url = fuzzableRequest.getURL() 
+        filename = freq_url.getFileName()
+        dirs = freq_url.getDirectories()[:-1] # Skipping "domain level" dir.
         
-        if len( dirs ) > 1 and filename:
+        if dirs and filename:
             
             last_url = dirs[-1]
             last_url = last_url.url_string
             
-            windows_url = url_object( last_url[0:-1] + '\\' + filename )
-            windows_response = self._urlOpener.GET( windows_url )
+            windows_url = url_object(last_url[0:-1] + '\\' + filename)
+            windows_response = self._urlOpener.GET(windows_url)
             
-            original_response = self._urlOpener.GET( fuzzableRequest.getURL() )
-            self._found_OS = True
+            original_response = self._urlOpener.GET(freq_url)
+            found_os = True
 
             if relative_distance_ge(original_response.getBody(),
                                     windows_response.getBody(), 0.98):
@@ -111,6 +105,8 @@ class fingerprint_os(baseDiscoveryPlugin):
                 kb.kb.append( self, 'operating_system_str', 'unix' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
+        
+        return found_os
     
     def getOptions( self ):
         '''
