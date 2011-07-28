@@ -27,17 +27,17 @@ from random import choice, randint
 import core.data.kb.config as cf
 
 # Common modules
-from StringIO import StringIO
 import copy
 import re
 import urllib
 import cgi
+import json
+
 from core.controllers.w3afException import w3afException
 
 # The data containers
 from core.data.dc.cookie import cookie as cookie
 from core.data.dc.dataContainer import dataContainer as dc
-import simplejson as json
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import httpQsRequest
 

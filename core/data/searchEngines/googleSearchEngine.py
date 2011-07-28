@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import re
 import urllib
-import simplejson as json
+import json
 
 from core.controllers import outputManager as om
 from core.controllers.w3afException import w3afException
