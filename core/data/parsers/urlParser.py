@@ -1155,6 +1155,17 @@ class url_object(object):
                 for k, v in parsedData.iteritems():
                     result[k] = v[0]
         return result
+    
+    def __iter__(self):
+        '''
+        Return iterator for self.url_string
+        
+        >>> url = u'http://w3af.com/xyz.txt;id=1?file=2'
+        >>> url_obj = url_object(url)
+        >>> ''.join(chr for chr in url_obj) == url
+        True
+        '''
+        return iter(self.url_string)
 
     def __eq__(self, other):
         '''
