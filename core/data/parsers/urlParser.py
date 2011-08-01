@@ -126,6 +126,8 @@ class url_object(object):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
+    ALWAYS_SAFE = "%/:=&?~#+!$,;'@()*[]|"
+    
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         '''
         @param data: Either a string representing a URL or a 6-elems tuple
@@ -999,7 +1001,7 @@ class url_object(object):
             self_str = self_str[:qs_start_index]
         
         self_str = "%s%s" % \
-                    (urllib.quote(self_str, safe="%/:=&?~#+!$,;'@()*[]|"), qs)
+                    (urllib.quote(self_str, safe=url_object.ALWAYS_SAFE), qs)
         
         return self_str
     

@@ -274,7 +274,7 @@ def _createFileContentMutants(freq, mutant_str_list, fuzzableParamList, append):
     
     return res
     
-def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamList , append ):
+def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append ):
     '''
     @parameter freq: A fuzzable request with a dataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
@@ -300,38 +300,40 @@ def _createFileNameMutants( freq, mutantClass, mutant_str_list, fuzzableParamLis
 
     '''
     res = []
-    fileName = freq.getURL().getFileName()
-    splittedFileName = [ x for x in re.split( r'([a-zA-Z0-9]+)', fileName ) if x != '' ] 
-    for i in xrange( len( splittedFileName ) ):
+    fname = freq.getURL().getFileName()
+    fname_chunks = [x for x in re.split(r'([a-zA-Z0-9]+)', fname) if x] 
+    
+    for idx, fn_chunk in enumerate(fname_chunks):
+        
         for mutant_str in mutant_str_list:
-            if re.match('[a-zA-Z0-9]', splittedFileName[i] ):
-                divided_file_name = dc()
-                divided_file_name['start'] = ''.join( splittedFileName[: i] )
-                if append:
-                    divided_file_name['fuzzedFname'] = splittedFileName[i] + urllib.quote_plus( mutant_str )
-                else:
-                    divided_file_name['fuzzedFname'] = urllib.quote_plus( mutant_str )
-                divided_file_name['end'] = ''.join( splittedFileName[i+1:] )
+            
+            if re.match('[a-zA-Z0-9]', fn_chunk):
+                divided_fname = dc()
+                divided_fname['start'] = ''.join(fname_chunks[:idx])
+                divided_fname['end'] = ''.join(fname_chunks[idx+1:])
+                divided_fname['fuzzedFname'] = \
+                    (fn_chunk if append else '') + urllib.quote_plus(mutant_str)
                 
                 freq_copy = freq.copy()
-                freq_copy.setURL( freq.getURL() )
+                freq_copy.setURL(freq.getURL())
                 
                 # Create the mutant
-                m = mutantClass( freq_copy ) 
-                m.setOriginalValue( splittedFileName[i] )
-                m.setVar( 'fuzzedFname' )
-                m._mutant_dc = divided_file_name
-                m.setModValue( mutant_str )
-                # Special for filename fuzzing and some configurations of mod_rewrite
-                m.setDoubleEncoding( False )
-                res.append( m )
+                m = mutantClass(freq_copy) 
+                m.setOriginalValue(fn_chunk)
+                m.setVar('fuzzedFname')
+                m._mutant_dc = divided_fname
+                m.setModValue(mutant_str)
+                # Special for filename fuzzing and some configurations
+                # of mod_rewrite
+                m.setDoubleEncoding(False)
+                res.append(m)
                 
                 # The same but with a different type of encoding! (mod_rewrite)
                 m2 = m.copy()
                 m2.setSafeEncodeChars('/')
                 
                 if m2.getURL() != m.getURL():
-                    res.append( m2 )
+                    res.append(m2)
     return res
     
 def _createMutantsWorker(freq, mutantClass, mutant_str_list,
@@ -475,7 +477,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
 
     return result
     
-def createRandAlpha( length=0 ):
+def createRandAlpha(length=0):
     '''
     Create a random string ONLY with letters
     
@@ -494,15 +496,9 @@ def createRandAlpha( length=0 ):
     >>> x != y != z != w
     True
     '''
-    if length == 0:
-        jibber = ''.join([letters])
-        ru = ''.join([choice(jibber) for x in range(randint(10, 30))])
-    else:
-        jibber = ''.join([letters])
-        ru = ''.join([choice(jibber) for x in range(length)])
-    return ru
+    return ''.join(choice(letters) for x in xrange(length or randint(10, 30)))
     
-def createRandAlNum( length=0):
+def createRandAlNum(length=0):
     '''
     Create a random string with random length
     
@@ -521,15 +517,10 @@ def createRandAlNum( length=0):
     >>> x != y != z != w
     True
     '''
-    if length == 0:
-        jibber = ''.join([letters, digits])
-        ru = ''.join([choice(jibber) for x in range(randint(10, 30))])
-    else:
-        jibber = ''.join([letters, digits])
-        ru = ''.join([choice(jibber) for x in range(length)])
-    return ru
+    jibber = ''.join([letters, digits])
+    return ''.join(choice(jibber) for x in xrange(length or randint(10, 30)))
 
-def createRandNum( length=0, excludeNumbers=[] ):
+def createRandNum(length=0, excludeNumbers=[]):
     '''
     Create a random string ONLY with numbers
     
@@ -545,20 +536,14 @@ def createRandNum( length=0, excludeNumbers=[] ):
     >>> int(x) in range(1000)
     True
     '''
-    if length == 0:
-        jibber = ''.join([digits])
-        ru = ''.join([choice(jibber) for x in range(randint(10, 30))])
-    else:
-        jibber = ''.join([digits])
-        ru = ''.join([choice(jibber) for x in range(length)])
+    ru = ''.join(choice(digits) for x in xrange(length or randint(10, 30)))
         
     if int(ru) in excludeNumbers:
         try:
-            return createRandNum( length, excludeNumbers )
+            return createRandNum(length, excludeNumbers)
         except:
             # a recursion exceeded could happend here.
             raise w3afException('Failed return random number.')
-        
     return ru
     
 def createFormatString(  length ):
