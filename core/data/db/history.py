@@ -240,7 +240,7 @@ class HistoryItem(object):
                     #    performance due to disk IO
                     #
                     self._db.commit()
-                    self.load(self, id, full=full, retry=False)
+                    self.load(id=id, full=full, retry=False)
                 else:
                     # This is the second time load() is called and we end up here,
                     # raise an exception and finish our pain.
