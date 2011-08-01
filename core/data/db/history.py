@@ -244,11 +244,10 @@ class HistoryItem(object):
                 else:
                     # This is the second time load() is called and we end up here,
                     # raise an exception and finish our pain.
-                    msg = 'An internal error occurred while searching for id "%s",'
-                    msg += ' even after commit/retry. Original exception: "%s".'
-                    msg = msg % (id, e)
-                    raise w3afException( msg )
-            
+                    msg = ('An internal error occurred while searching for '
+                           'id "%s", even after commit/retry' % id)
+                    raise w3afException(msg)
+        
         return True
 
     def read(self, id, full=True):
