@@ -45,11 +45,12 @@ import core.data.constants.w3afPorts as w3afPorts
 import os
 import socket
 
-CONFIG_ERROR_MSG = 'audit.remoteFileInclude plugin has to be correctly ' \
-'configured to use. Please set the correct values for local address and ' \
-'port, or use the official w3af site as the target server for remote ' \
-'inclusions.'
+CONFIG_ERROR_MSG = ('audit.remoteFileInclude plugin has to be correctly '
+'configured to use. Please set the correct values for local address and '
+'port, or use the official w3af site as the target server for remote '
+'inclusions.')
 
+RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
 
 class remoteFileInclude(baseAuditPlugin):
     '''
@@ -64,8 +65,8 @@ class remoteFileInclude(baseAuditPlugin):
         self._error_reported = False
         
         # User configured parameters
-        self._rfi_url = ''
-        self._rfi_result = ''
+        self._rfi_url = None
+        self._rfi_result = None
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
@@ -159,9 +160,9 @@ class remoteFileInclude(baseAuditPlugin):
                 
                 # Wait for threads to finish
                 self._tm.join(self)
-            except Exception,e:
-                msg = 'An error occurred while running local webserver: "%s"' % str(e)
-                om.out.error( msg )
+            except Exception, e:
+                om.out.error('An error occurred while running local webserver:'
+                             ' "%s"' % e)
             finally:
                 self._rm_file()
             
@@ -172,7 +173,7 @@ class remoteFileInclude(baseAuditPlugin):
         @param freq: A fuzzableRequest object
         @return: None, everything is saved to the kb
         '''        
-        self._rfi_url = url_object('http://w3af.sourceforge.net/w3af/remoteFileInclude.html')
+        self._rfi_url = url_object(RFI_TEST_URL)
         self._rfi_result = 'w3af is goood!'
         # Perform the real work
         self._test_inclusion(freq)
@@ -185,7 +186,8 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         oResponse = self._sendMutant(freq, analyze=False).getBody()
         
-        rfi_url_list = [self._rfi_url, self._rfi_url.urlJoin("\0")]
+        rfi_url = str(self._rfi_url)
+        rfi_url_list = [rfi_url, rfi_url + '\0']
         mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
         for mutant in mutants:
@@ -268,7 +270,7 @@ class remoteFileInclude(baseAuditPlugin):
         
         # Define the required parameters
         netloc = self._listen_address +':' + str(self._listen_port)
-        path = '/'+filename
+        path = '/' + filename
         self._rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
         self._rfi_result = rand1 + rand2
         
