@@ -27,6 +27,7 @@ import time
 import ConfigParser
 import threading
 
+from core.controllers.misc.decorators import retry
 
 def is_working_copy():
     '''
@@ -150,6 +151,8 @@ class w3afSVNClient(SVNClient):
     '''
 
     UPD_ACTIONS = (wcna.update_add, wcna.update_delete, wcna.update_update)
+    UPD_ERROR_MSG = ('A repeated error occurred while updating from the '
+                     'SVN Repo! Please update manually.')
 
     def __init__(self, localpath):
         self._svnclient = pysvn.Client()
@@ -205,6 +208,8 @@ class w3afSVNClient(SVNClient):
     def URL(self):
         return self._repourl
 
+    @retry(tries=3, delay=0.5, backoff=2, exc_class=SVNUpdateError,
+           err_msg=UPD_ERROR_MSG)
     def update(self, rev=None):
         with self._actionlock:
             kind = pysvn.opt_revision_kind
