@@ -248,7 +248,7 @@ class urlOpenerSettings( configurable ):
         om.out.debug( 'Called SetBasicAuth')
 
         if not url:
-            if username or password:
+            if url is None or username or password:
                 msg = ('To properly configure the basic authentication settings, '
                        'you should also set the auth domain. If you are unsure, '
                        'you can set it to the target domain name.')
@@ -272,7 +272,7 @@ class urlOpenerSettings( configurable ):
         # Save'em!
         cfg.save('basicAuthPass',  password)
         cfg.save('basicAuthUser', username )
-        cfg.save('basicAuthDomain', url or '')
+        cfg.save('basicAuthDomain', url)
 
     def getBasicAuth( self ):
         scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( cfg.getData('basicAuthDomain') )
@@ -497,7 +497,7 @@ class urlOpenerSettings( configurable ):
             bAuthUser != cfg['basicAuthUser'] or \
             bAuthPass != cfg['basicAuthPass']:
             try:
-                bAuthDomain = url_object(bAuthDomain)
+                bAuthDomain = url_object(bAuthDomain) if bAuthDomain else ''
             except ValueError:
                 bAuthDomain = None
             
