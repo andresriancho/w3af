@@ -42,9 +42,9 @@ class URLParameterHandler(urllib2.BaseHandler):
         
     def http_request( self, req ):
         url_instance = url_object( req.get_full_url() )
-        new_url = url_instance.setParam( self._url_parameter )
+        url_instance.setParam( self._url_parameter )
         
-        new_request = HTTPRequest(new_url, headers=req.headers,
+        new_request = HTTPRequest(url_instance, headers=req.headers,
             origin_req_host=req.get_origin_req_host(),
             unverifiable=req.is_unverifiable())
         return new_request
