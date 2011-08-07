@@ -57,7 +57,7 @@ class LDAPi(baseAuditPlugin):
         '''
         om.out.debug( 'LDAPi plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         ldapiStrings = self._get_LDAPi_strings()
         mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )
             

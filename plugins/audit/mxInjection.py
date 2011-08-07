@@ -63,7 +63,7 @@ class mxInjection(baseAuditPlugin):
         '''
         om.out.debug( 'mxInjection plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
             

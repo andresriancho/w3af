@@ -59,7 +59,7 @@ class preg_replace(baseAuditPlugin):
         om.out.debug( 'preg_replace plugin is testing: ' + freq.getURL() )
         
         # First I check If I get the error message from php
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
         
         for mutant in mutants:

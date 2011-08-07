@@ -58,7 +58,7 @@ class xpath(baseAuditPlugin):
         '''
         om.out.debug( 'xpath plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         xpath_strings = self._get_xpath_strings()
         mutants = createMutants( freq , xpath_strings, oResponse=oResponse )
             

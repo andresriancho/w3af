@@ -127,11 +127,33 @@ def createMutants(freq, mutant_str_list, append=False,
                                            dataContainer=freq.getCookie()))
     
     #
-    # Get the original response, and apply it to all mutants
+    # Improvement to reduce false positives with a double check:
+    #    Get the original response and link it to each mutant.
+    #
+    # Improvement to reduce network traffic:
+    #    If the original response has an "ETag" header, set a "If-None-Match"
+    #    header with the same value. On a test that I run, the difference was
+    #    very noticable:
+    #        - Without sending ETag headers: 304046 bytes
+    #        - Sending ETag headers:          55320 bytes
+    #
+    # This is very impressing, but the performance enhancement is only
+    # possible IF the remote server sends the ETag header, and for example
+    # Apache+PHP doesn't send that tag by default (only sent if the PHP developer
+    # added some code to his PHP to do it).
     #
     if oResponse is not None:
+        
+        headers = oResponse.getHeaders()
+        etag = headers.get('ETag', None)
+        
         for m in result:
-            m.setOriginalResponseBody(oResponse)
+            m.setOriginalResponseBody( oResponse.getBody() )
+            
+            if etag is not None:
+                orig_headers = m.getHeaders()
+                orig_headers['If-None-Match'] = etag
+                m.setHeaders(orig_headers) 
         
     return result
 

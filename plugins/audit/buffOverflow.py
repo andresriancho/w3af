@@ -82,7 +82,7 @@ class buffOverflow(baseAuditPlugin):
         
         str_list = self._get_string_list()
         try:
-            oResponse = self._sendMutant( freq , analyze=False ).getBody()
+            oResponse = self._sendMutant( freq , analyze=False )
         except:
             msg = 'Failed to perform the initial request during buffer'
             msg += ' overflow testing'

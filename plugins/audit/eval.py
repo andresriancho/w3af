@@ -93,7 +93,7 @@ class eval(baseAuditPlugin):
         Tests an URL for eval() usage vulnerabilities using echo strings.
         @param freq: A fuzzableRequest
         '''
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         print_strings = self._get_print_strings()
         mutants = createMutants( freq , print_strings, oResponse=oResponse )
 

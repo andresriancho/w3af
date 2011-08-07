@@ -55,7 +55,7 @@ class formatString(baseAuditPlugin):
         om.out.debug( 'formatString plugin is testing: ' + freq.getURL() )
         
         string_list = self._get_string_list()
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         mutants = createMutants( freq , string_list, oResponse=oResponse )
             
         for mutant in mutants:

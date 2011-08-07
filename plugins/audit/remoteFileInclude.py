@@ -184,7 +184,7 @@ class remoteFileInclude(baseAuditPlugin):
         
         @return: None
         '''
-        oResponse = self._sendMutant(freq, analyze=False).getBody()
+        oResponse = self._sendMutant(freq, analyze=False)
         
         rfi_url = str(self._rfi_url)
         rfi_url_list = [rfi_url, rfi_url + '\0']

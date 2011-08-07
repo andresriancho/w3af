@@ -59,7 +59,7 @@ class ssi(baseAuditPlugin):
         '''
         om.out.debug( 'ssi plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False ).getBody()
+        oResponse = self._sendMutant( freq , analyze=False )
         
         # Used in end() to detect "persistent SSI"
         self._add_persistent_SSI( freq, oResponse )
