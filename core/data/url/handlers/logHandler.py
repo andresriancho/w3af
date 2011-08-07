@@ -182,7 +182,7 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         if not request.has_header('Host'):
             request.add_unredirected_header('Host', request.host )
             
-        if not request.has_header('Accept-Encoding'):
+        if not request.has_header('Accept-encoding'):
             request.add_unredirected_header('Accept-Encoding', 'identity' )
         
         return request

@@ -28,7 +28,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
     handler_order = 200  # response processing before HTTPEquivProcessor
 
     def http_request(self, request):
-        request.add_header("Accept-Encoding", "gzip")
+        request.add_header("Accept-encoding", "gzip")
         return request
 
     def http_response(self, request, response):
