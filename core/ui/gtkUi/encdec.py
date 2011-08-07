@@ -308,7 +308,7 @@ def html_unescape(t):
     '''Decoder doing HTML unescaping.
 
     >>> encode_decode.htmldecode('&lt;script&gt;')
-    '<script>'
+    u'<script>'
     >>> 
     '''
     return encode_decode.htmldecode(t)
