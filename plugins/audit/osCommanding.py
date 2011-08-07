@@ -121,7 +121,7 @@ class osCommanding(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        original_response = self._sendMutant( freq , analyze=False ).getBody()
+        original_response = self._sendMutant( freq , analyze=False )
         # Prepare the strings to create the mutants
         command_list = self._get_echo_commands()
         only_command_strings = [ v.getCommand() for v in command_list ]
