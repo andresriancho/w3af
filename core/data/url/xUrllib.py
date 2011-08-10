@@ -261,9 +261,11 @@ class xUrllib(object):
         
     def GET(self, uri, data=None, headers={}, useCache=False, grepResult=True):
         '''
-        Gets a uri using a proxy, user agents, and other settings that where
-        set previously.
+        HTTP GET a URI using a proxy, user agent, and other settings that where previously set in urlOpenerSettings.py .
         
+        #
+        #   Simple tests to verify that everything is working as expected:
+        #
         >>> x = xUrllib()
         >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
         True
@@ -271,11 +273,27 @@ class xUrllib(object):
         True
         >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def')).getBody()
         False
-        
+
+
+        #
+        #   This test verifies that the gzip_handler.py is properly working. It's very important to check this because we've
+        #   (more than once) disabled it without noticing, and it provides a very important performance improvement.
+        #
+        >>> res = x.GET(url_object('http://www.google.com.ar/'))
+        >>> headers = res.getHeaders()
+        >>> content_encoding = headers.get('Content-Encoding', '')
+        >>> 'gzip' in content_encoding or 'compress' in content_encoding
+        True
+
 
         @param uri: This is the URI to GET, with the query string included.
         @param data: Only used if the uri parameter is really a URL. The data will be
         converted into a string and set as the URL object query string before sending.
+        @param headers: Any special headers that will be sent with this request
+
+        @param useCache: Should the library search the local cache for a response before sending it to the wire?
+        @param grepResult: Should grep plugins be applied to this request/response?
+
         @return: An httpResponse object.
         '''
         #
