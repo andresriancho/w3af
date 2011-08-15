@@ -48,9 +48,13 @@ class pdfParser(BaseParser):
         self._parse(content_text)
     
     def _parse(self, content_text):
+
         # Get the URLs using a regex
-        self._re_urls.update(url_object(x[0]) for x in 
-                             re.findall(BaseParser.URL_RE, content_text))
+        for x in re.findall(BaseParser.URL_RE, content_text):
+            try:
+                self._re_urls.add( url_object(x[0]) )
+            except ValueError:
+                pass
         
         # Get the mail addys
         self._findEmails(content_text)
