@@ -85,7 +85,10 @@ class dnsWildcard(baseDiscoveryPlugin):
         '''
         Check if http://ip(domain)/ == http://domain/
         '''
-        ip_address = socket.gethostbyname( domain )
+        try:
+            ip_address = socket.gethostbyname( domain )
+        except:
+            return
 
         url = original_response.getURL()
         ip_url = url.copy()
