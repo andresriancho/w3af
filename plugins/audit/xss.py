@@ -65,7 +65,7 @@ class xss(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'Xss plugin is testing: ' + freq.getURL() )
+        om.out.debug( 'XSS plugin is testing: ' + freq.getURL() )
         
         # Save it here, so I can search for permanent XSS
         self._fuzzableRequests.append( freq )
@@ -364,6 +364,7 @@ class xss(baseAuditPlugin):
                     v.setDesc( msg )
                     v.addToHighlight(mod_value)
 
+                    om.out.vulnerability( v.getDesc() )
                     kb.kb.append( self, 'xss', v )
     
     def _checkHTML( self, xss_string , response ):
@@ -444,6 +445,8 @@ class xss(baseAuditPlugin):
                         v.setDesc( msg )
                         v.setId( [response.id, mutant_response_id] )
                         v.addToHighlight( mutant.getModValue() )
+
+                        om.out.vulnerability( v.getDesc() )
                         kb.kb.append( self, 'xss', v )
                         break
         
