@@ -23,18 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from core.controllers.misc.factory import factory
+from core.data.constants.encodings import UTF8
 # severity constants for vuln messages
 import core.data.constants.severity as severity
-
-def to_str(meth):
-    '''
-    Function to decorate methods in order to catch IOError exceptions.
-    '''
-    def wrapper(self, msg, newLine=True):
-            if type(msg) is unicode:
-                msg = msg.encode('utf-8', 'replace')
-            return meth(self, msg, newLine)
-    return wrapper
 
 
 class outputManager:
@@ -50,41 +41,12 @@ class outputManager:
         self._outputPlugins = []
         self._pluginsOptions = {}
         self._echo = True
-
-    def _addOutputPlugin(self, OutputPluginName ):
-        '''
-        Takes a string with the OutputPluginName, creates the object and adds it to the OutputPluginName
-        
-        @parameter OutputPluginName: The name of the plugin to add to the list.
-        @return: No value is returned.
-        '''
-        if OutputPluginName == 'all':
-            fileList = [ f for f in os.listdir('plugins' +os.path.sep +'output'+os.path.sep) ]    
-            strReqPlugins = [ os.path.splitext(f)[0] for f in fileList if os.path.splitext(f)[1] == '.py']
-            strReqPlugins.remove ( '__init__' )
-            
-            for pluginName in strReqPlugins:
-                plugin = factory( 'plugins.output.' + pluginName )
-                
-                if pluginName in self._pluginsOptions.keys():
-                    plugin.setOptions( self._pluginsOptions[pluginName] )
-                
-                # Append the plugin to the list
-                self._outputPluginList.append( plugin )
-        
-        else:
-                plugin = factory( 'plugins.output.' + OutputPluginName )
-                if OutputPluginName in self._pluginsOptions.keys():
-                    plugin.setOptions( self._pluginsOptions[OutputPluginName] )
-
-                    # Append the plugin to the list
-                self._outputPluginList.append( plugin )
     
-    def endOutputPlugins( self ):
+    def endOutputPlugins(self):
         for oPlugin in self._outputPluginList:
             oPlugin.end()
             
-    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+    def logEnabledPlugins(self, enabledPluginsDict, pluginOptionsDict):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
         
@@ -100,84 +62,64 @@ class outputManager:
         for oPlugin in self._outputPluginList:
             oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
     
-    @to_str
     def debug(self, message, newLine=True):
         '''
         Sends a debug message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
-        if self._echo:
-            for oPlugin in self._outputPluginList:
-                oPlugin.debug(message, newLine)
+        self._call_output_plugins_action('debug', message, newLine)
     
-    @to_str
     def information(self, message, newLine=True):
         '''
         Sends a informational message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
-        if self._echo:
-            for oPlugin in self._outputPluginList:
-                oPlugin.information(message, newLine)
+        self._call_output_plugins_action('information', message, newLine)
     
-    @to_str
     def error(self, message, newLine=True):
         '''
         Sends an error message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
-        if self._echo:
-            for oPlugin in self._outputPluginList:
-                oPlugin.error(message, newLine)
-
-    def logHttp( self, request, response ):
-        '''
-        Sends the request/response object pair to every output plugin on the list.
-        
-        @parameter request: A fuzzable request object
-        @parameter response: A httpResponse object
-        '''
-        for oPlugin in self._outputPluginList:
-            oPlugin.logHttp( request, response )
-            
-    def vulnerability(self, message, newLine = True, severity=severity.MEDIUM ):
+        self._call_output_plugins_action('error', message, newLine)
+    
+    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
         '''
         Sends a vulnerability message to every output plugin on the list.
         
         @parameter message: Message that is sent.
         '''
-        if self._echo:
-            try:
-                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
-            except:
-                pass
-            else:
-                for oPlugin in self._outputPluginList:
-                    oPlugin.vulnerability( message, newLine, severity=severity )
-
-    def console( self, message, newLine = True ):
-        '''
-        This method is used by the w3af console to print messages to the outside.
-        '''
-        if self._echo:
-            try:
-                message = unicode( message, 'utf-8', errors='replace').encode('utf-8')
-            except:
-                pass
-            else:
-                for oPlugin in self._outputPluginList:
-                    oPlugin.console( message, newLine )
+        self._call_output_plugins_action('vulnerability', message,
+                                         newLine, severity)
     
-    def echo( self, onOff ):
+    def console(self, message, newLine=True):
+        '''
+        This method is used by the w3af console to print messages
+        to the outside.
+        '''
+        self._call_output_plugins_action('console', message, newLine)
+    
+    def logHttp(self, request, response):
+        '''
+        Sends the request/response object pair to every output plugin
+        on the list.
+        
+        @parameter request: A fuzzable request object
+        @parameter response: A httpResponse object
+        '''
+        for oPlugin in self._outputPluginList:
+            oPlugin.logHttp(request, response)
+    
+    def echo(self, onOff):
         '''
         This method is used to enable/disable the output.
         '''
         self._echo = onOff
 
-    def setOutputPlugins( self, outputPlugins ):
+    def setOutputPlugins(self, outputPlugins):
         '''
         @parameter outputPlugins: A list with the names of Output Plugins that will be used.
         @return: No value is returned.
@@ -186,14 +128,14 @@ class outputManager:
         self._outputPlugins = outputPlugins
         
         for pluginName in self._outputPlugins:
-            out._addOutputPlugin( pluginName )  
+            out._addOutputPlugin(pluginName)  
         
-        out.debug('Exiting setOutputPlugins()' )
+        out.debug('Exiting setOutputPlugins()')
     
     def getOutputPlugins(self):
         return self._outputPlugins
     
-    def setPluginOptions(self, pluginName, PluginsOptions ):
+    def setPluginOptions(self, pluginName, PluginsOptions):
         '''
         @parameter PluginsOptions: A tuple with a string and a dictionary with the options for a plugin. For example:\
         { console:{'verbosity':7} }
@@ -210,7 +152,51 @@ class outputManager:
         res = []
         for oPlugin in self._outputPluginList:
             plugCache = oPlugin.getMessageCache()
-            res.extend( plugCache )
+            res.extend(plugCache)
         return res
+    
+    def _call_output_plugins_action(self, actionname, message, *params):
+        '''
+        Internal method used to invoke the requested action on each plugin
+        in the output plugin list.
+        '''
+        if self._echo:
+            
+            if isinstance(message, unicode):
+                message = message.encode(UTF8, 'replace')
+            
+            for oPlugin in self._outputPluginList:
+                getattr(oPlugin, actionname)(message, *params)
+    
+    def _addOutputPlugin(self, OutputPluginName):
+        '''
+        Takes a string with the OutputPluginName, creates the object and
+        adds it to the OutputPluginName
+        
+        @parameter OutputPluginName: The name of the plugin to add to the list.
+        @return: No value is returned.
+        '''
+        if OutputPluginName == 'all':
+            fileList = os.listdir(os.path.join('plugins', 'output'))    
+            strReqPlugins = [os.path.splitext(f)[0] for f in fileList
+                                            if os.path.splitext(f)[1] == '.py']
+            strReqPlugins.remove ('__init__')
+            
+            for pluginName in strReqPlugins:
+                plugin = factory('plugins.output.' + pluginName)
+                
+                if pluginName in self._pluginsOptions.keys():
+                    plugin.setOptions(self._pluginsOptions[pluginName])
+                
+                # Append the plugin to the list
+                self._outputPluginList.append(plugin)
+        
+        else:
+            plugin = factory('plugins.output.' + OutputPluginName)
+            if OutputPluginName in self._pluginsOptions.keys():
+                plugin.setOptions(self._pluginsOptions[OutputPluginName])
+
+                # Append the plugin to the list
+            self._outputPluginList.append(plugin)    
         
 out = outputManager()
