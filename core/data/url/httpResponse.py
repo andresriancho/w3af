@@ -533,7 +533,7 @@ class httpResponse(object):
         @return: a str representation of the headers.
         '''
         if self.headers:
-            return CRLF.join(h + ': ' + hv  for h, hv in self.headers.items())
+            return CRLF.join(h + ': ' + hv  for h, hv in self.headers.items()) + CRLF 
         else:
             return ''
         
