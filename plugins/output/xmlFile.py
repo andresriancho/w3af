@@ -204,6 +204,11 @@ class xmlFile(baseOutputPlugin):
         '''
         This method is called when the scan has finished.
         '''
+        # TODO: Aug 31 2011, Is there improvement for this? We are
+        # removing null characters from the xml doc. Would this be a
+        # significant loss of data for any scenario?
+        escape_nulls = lambda str: str.replace('\0', 'NULL')
+        
         # Add the vulnerability results
         vulns = kb.kb.getAllVulns()
         for i in vulns:
@@ -218,14 +223,16 @@ class xmlFile(baseOutputPlugin):
                     details = self._history.read(requestid)
 
                     requestNode = self._xmldoc.createElement("httprequest")
-    	            requestNode.setAttribute("id", str(requestid))
-                    requestContent = self._xmldoc.createTextNode(details.request.dump())
+                    requestNode.setAttribute("id", str(requestid))
+                    requestContent = self._xmldoc.createTextNode(
+                                        escape_nulls(details.request.dump()))
                     requestNode.appendChild(requestContent)
                     messageNode.appendChild(requestNode)
 
                     responseNode = self._xmldoc.createElement("httpresponse")
                     responseNode.setAttribute("id", str(requestid))
-                    responseContent = self._xmldoc.createTextNode(details.response.dump())
+                    responseContent = self._xmldoc.createTextNode(
+                                        escape_nulls(details.response.dump()))
                     responseNode.appendChild(responseContent)
 
                     messageNode.appendChild(responseNode)
@@ -248,17 +255,19 @@ class xmlFile(baseOutputPlugin):
 
                     requestNode = self._xmldoc.createElement("httprequest")
                     requestNode.setAttribute("id", str(requestid))
-                    requestContent = self._xmldoc.createTextNode(details.request.dump())
+                    requestContent = self._xmldoc.createTextNode(
+                                        escape_nulls(details.request.dump()))
                     requestNode.appendChild(requestContent)
                     messageNode.appendChild(requestNode)
-		
+                    
                     responseNode = self._xmldoc.createElement("httpresponse")
                     responseNode.setAttribute("id", str(requestid))
-                    responseContent = self._xmldoc.createTextNode(details.response.dump())
+                    responseContent = self._xmldoc.createTextNode(
+                                        escape_nulls(details.response.dump()))
                     responseNode.appendChild(responseContent)
 
                     messageNode.appendChild(responseNode)
-		
+            
             messageNode.setAttribute("name", str(i.getName()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             description = self._xmldoc.createTextNode(i.getDesc())
