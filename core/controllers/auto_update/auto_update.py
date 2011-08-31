@@ -23,11 +23,15 @@ from __future__ import with_statement
 from datetime import datetime, date, timedelta
 import os
 import re
+import sys
 import time
 import ConfigParser
 import threading
 
 from core.controllers.misc.decorators import retry
+
+# Get w3af install dir
+W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
 
 def is_working_copy():
     '''
@@ -35,6 +39,24 @@ def is_working_copy():
     '''
     return SVNClientClass.is_working_copy(localpath=W3AF_LOCAL_PATH)
 
+def get_svnversion(path=W3AF_LOCAL_PATH):
+    '''
+    Summarize the local revision(s) of a `path`'s working copy.
+    '''
+    cli = pysvn.Client()
+    revs = set()
+    
+    for root, dirs, files in os.walk(path):
+        if ".svn" in dirs:
+            dirs.remove(".svn")
+        info = cli.info(root)
+        if info:
+            revs.add(str(info['revision'].number))
+    
+    revs = sorted(revs)
+    d = {True: (revs[0], ''), False: (revs[0], ':' + revs[-1])}
+    return '%s%s' % d[len(revs) == 1]
+    
 
 class SVNError(Exception):
     pass
@@ -169,7 +191,7 @@ class w3afSVNClient(SVNClient):
     
     def __getattribute__(self, name):
         '''
-        Wrap all methods on order to be able to respond to Ctrl+C signals.
+        Wrap all methods in order to be able to respond to Ctrl+C signals.
         This implementation was added due to limitations in pysvn.
         '''
         def new_meth(*args, **kwargs):
@@ -379,14 +401,13 @@ class SVNList(list):
         self._rev = rev
         self._sorted = True
 
-    def _getrev(self):
+    @property
+    def rev(self):
         return self._rev
 
-    def _setrev(self, rev):
+    @rev.setter
+    def rev(self, rev):
         self._rev = rev
-
-    # TODO: Cannot use *full* decorators as we're still on py2.5
-    rev = property(_getrev, _setrev)
 
     def __eq__(self, olist):
         return list.__eq__(self, olist) and self._rev == olist.rev
@@ -420,7 +441,7 @@ class SVNFilesList(SVNList):
 
 class SVNLogList(SVNList):
     '''
-    Provides a custom way to print a SVN logs list.
+    Provide a custom way to print a SVN logs list.
     '''
     def __str__(self):
         print_list = []
@@ -436,10 +457,6 @@ class SVNLogList(SVNList):
 # Use this class to perform svn actions on code
 SVNClientClass = w3afSVNClient
 
-# Get w3af install dir
-W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
-
-# Facade class. Intended to be used to interact with the module
 class VersionMgr(object): #TODO: Make it singleton?
     '''
     Perform SVN w3af code update and commit. When an instance is created loads
@@ -518,7 +535,7 @@ class VersionMgr(object): #TODO: Make it singleton?
             try:
                 return attr(*args, **kwargs)
             except SVNError, err:
-                msg = 'An error occured while updating:\n%s' % err.args
+                msg = 'An error occurred while updating:\n%s' % err.args
                 self._notify(VersionMgr.ON_ACTION_ERROR, msg)
         attr = object.__getattribute__(self, name)            
         if callable(attr):
@@ -559,8 +576,8 @@ class VersionMgr(object): #TODO: Make it singleton?
                 callback = self.callback_onupdate_confirm
                 # Call callback function
                 if callback:
-                    proceed_upd = callback(\
-                        'Your current w3af installation is r%s. Do you want ' \
+                    proceed_upd = callback(
+                        'Your current w3af installation is r%s. Do you want '
                         'to update to r%s?' % (localrev.number, remrev.number))
     
                 if proceed_upd:
@@ -694,6 +711,54 @@ class VersionMgr(object): #TODO: Make it singleton?
             return False
 
 
+from core.controllers.misc.homeDir import verify_dir_has_perm
+
+class UIUpdater(object):
+    '''
+    Base class that provides...
+    '''
+    
+    def __init__(self, force=False, ask=None, logger=None,
+                 rev=VersionMgr.HEAD, print_result=False):
+        self._force_upd = force
+        self._ask = ask
+        self._rev_upd = rev
+        self._print_res = print_result
+        self._vmngr = VersionMgr(log=logger)
+        self._vmngr.callback_onupdate_confirm = ask
+    
+    def update(self):
+        if self._force_upd in (None, True) and is_working_copy() and \
+            verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
+            try:
+                resp = self._call_update()
+                self._handle_update_output(resp)
+            except KeyboardInterrupt:
+                pass
+            except Exception, ex:
+                print('An error occurred while updating: %s' % ex.args)
+            
+            # Try to convert to int => a valid revision number. Otherwise the
+            # code is inconsistent and more than one revision is checked out
+            try:
+                int(get_svnversion())
+            except ValueError:
+                self._log("Oops!... w3af can't be started. It seems that the "
+                  "last update process wasn't successfully completed.\nPlease "
+                  "update manually by executing a regular 'svn update'.\n")
+                sys.exit(1)
+    
+    def _call_update(self):
+        return self._vmngr.update(self._force_upd,
+                                  self._rev_upd, self._print_res)
+    
+    def _handle_update_output(self, resp):
+        raise NotImplementedError, "Must be implemented by subclass"
+    
+    def _log(self, msg):
+        print msg
+
+
 from core.controllers.misc.homeDir import get_home_dir
 
 class StartUpConfig(object):
@@ -720,33 +785,30 @@ class StartUpConfig(object):
         self._autoupd, self._freq, self._lastupd, self._lastrev = configs
 
     ### PROPERTIES #
-
-    def _get_last_upd(self):
+    @property
+    def last_upd(self):
         '''
         Getter method.
         '''
         return self._lastupd
 
-    def _set_last_upd(self, datevalue):
+    @last_upd.setter
+    def last_upd(self, datevalue):
         '''
         @param datevalue: datetime.date value
         '''
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
-    # Read/Write property
-    # @property - Cannot use *full* decorators as we're still on py2.5
-    last_upd = property(_get_last_upd, _set_last_upd)
     
-    def _get_last_rev(self):
+    @property
+    def last_rev(self):
         return self._lastrev
     
-    def _set_last_rev(self, rev):
+    @last_rev.setter
+    def last_rev(self, rev):
         self._lastrev = rev.number
         self._config.set(self._start_section, 'last-rev', self._lastrev)
-    # Read/Write property
-    # @property
-    last_rev = property(_get_last_rev, _set_last_rev)
 
     @property
     def freq(self):

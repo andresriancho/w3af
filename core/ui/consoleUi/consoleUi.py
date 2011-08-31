@@ -26,8 +26,7 @@ try:
     import os
     import random
     import traceback
-    from core.controllers.auto_update import VersionMgr, SVNError, \
-        is_working_copy, W3AF_LOCAL_PATH
+    from core.controllers.auto_update import UIUpdater
     from core.controllers.misc.homeDir import verify_dir_has_perm
     from core.ui.consoleUi.rootMenu import *
     from core.ui.consoleUi.callbackMenu import *
@@ -43,6 +42,31 @@ try:
 except KeyboardInterrupt:
     sys.exit(0)
 
+
+class ConsoleUIUpdater(UIUpdater):
+    
+    def __init__(self, force, rev):
+        
+        # Output function
+        log = om.out.console
+        # Ask user function
+        def ask(msg):
+            return raw_input(msg + ' [y/N] ').lower() in ('y', 'yes')
+
+        UIUpdater.__init__(self, force=force, ask=ask,
+                           logger=log, rev=rev, print_result=True)
+        
+        # Show revisions logs function
+        def show_log(msg, get_logs):
+            if ask(msg):
+                log(get_logs())
+        # Set callbacks
+        self._vmngr.callback_onupdate_confirm = ask
+        self._vmngr.callback_onupdate_show_log = show_log
+    
+    def _handle_update_output(self, upd_output):
+        # Nothing special to do here.
+        pass
 
 class consoleUi:
     '''
@@ -85,30 +109,9 @@ class consoleUi:
     def __initRoot(self, do_upd, rev):
         '''
         Root menu init routine.
-        '''        
-        if do_upd in (None, True) and is_working_copy() and \
-            verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
-            # Output function
-            log = om.out.console
-            # Ask user function
-            def ask(msg):
-                return raw_input(msg + ' [y/N] ').lower() in ('y', 'yes')
-            # Show revisions logs function
-            def show_log(msg, get_logs):
-                if ask(msg):
-                    log(get_logs())
-            # Instantiate mgr.
-            vmgr = VersionMgr(log=log)
-            # Set callbacks
-            vmgr.callback_onupdate_confirm = ask
-            vmgr.callback_onupdate_show_log = show_log
-            try:
-                vmgr.update(force=do_upd, rev=rev, print_result=True)
-            except Exception, e:
-                om.out.error('An error occured while updating: %s' % e.args)
-            except KeyboardInterrupt:
-                pass
-
+        '''     
+        cons_upd = ConsoleUIUpdater(force=do_upd, rev=rev)
+        cons_upd.update()
         # Core initialization
         self._w3af = core.controllers.w3afCore.w3afCore()
         self._w3af.setPlugins(['console'], 'output')
