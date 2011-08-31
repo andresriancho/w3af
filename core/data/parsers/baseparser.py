@@ -247,7 +247,7 @@ class BaseParser(object):
             try:
                 decoded_url = url_object(self._decode_URL(url[0]),
                                          encoding=self._encoding)
-            except Exception:
+            except ValueError:
                 pass
             else:
                 re_urls.add(decoded_url)

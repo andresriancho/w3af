@@ -20,8 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from __future__ import with_statement
-import thread
+from threading import Lock
 
 
 class number_generator(object):
@@ -35,9 +34,9 @@ class number_generator(object):
         '''
         Start the counter and be thread safe.
         '''
-        self._lock = thread.allocate_lock()
+        self._lock = Lock()
         self._id = 0
-        
+    
     def inc(self):
         '''
         @return: The next number.
@@ -45,7 +44,7 @@ class number_generator(object):
         with self._lock:
             self._id += 1
             return self._id
-            
+    
     def get(self):
         '''
         @return: The current number
@@ -58,5 +57,5 @@ class number_generator(object):
         '''
         with self._lock:
             self._id = 0
-            
+    
 consecutive_number_generator = number_generator()

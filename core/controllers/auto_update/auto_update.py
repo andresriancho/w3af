@@ -715,7 +715,7 @@ from core.controllers.misc.homeDir import verify_dir_has_perm
 
 class UIUpdater(object):
     '''
-    Base class that provides...
+    Base class that provides an API for UI update workers.
     '''
     
     def __init__(self, force=False, ask=None, logger=None,
@@ -739,7 +739,7 @@ class UIUpdater(object):
                 print('An error occurred while updating: %s' % ex.args)
             
             # Try to convert to int => a valid revision number. Otherwise the
-            # code is inconsistent and more than one revision is checked out
+            # code is inconsistent => more than one revision is checked out
             try:
                 int(get_svnversion())
             except ValueError:

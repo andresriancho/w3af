@@ -31,7 +31,8 @@ class HTMLParser(SGMLParser):
     '''
     This class parses HTML's.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @authors: Andres Riancho ( andres.riancho@gmail.com )
+              Javier Andalia (jandalia =AT= GMAIL.COM)
     '''
     
     def __init__(self, http_resp):

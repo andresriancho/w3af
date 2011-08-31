@@ -23,15 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-from core.controllers.w3afException import w3afException
-
-import urllib
 
 
 class baseGrepPlugin(basePlugin):
     '''
-    This is the base class for grep plugins, all grep plugins should inherit from it 
-    and implement the following methods :
+    This is the base class for grep plugins, all grep plugins should
+    inherit from it and implement the following methods :
         1. testResponse(...)
         2. setOptions( OptionList )
         3. getOptions()
@@ -40,51 +37,60 @@ class baseGrepPlugin(basePlugin):
     '''
 
     def __init__(self):
-        basePlugin.__init__( self )
+        basePlugin.__init__(self)
         self._urlOpener = None
 
     def grep_wrapper(self, fuzzableRequest, response):
         '''
         This method tries to find patterns on responses.
         
-        This method CAN be implemented on a plugin, but its better to do your searches in _testResponse().
+        This method CAN be implemented on a plugin, but its better to
+        do your searches in _testResponse().
         
         @param response: This is the httpResponse object to test.
-        @param fuzzableRequest: This is the fuzzable request object that generated the current response being analyzed.
-        @return: If something is found it must be reported to the Output Manager and the KB.
+        @param fuzzableRequest: This is the fuzzable request object that
+            generated the current response being analyzed.
+        @return: If something is found it must be reported to the Output
+            Manager and the KB.
         '''
         if response.getFromCache():
-            #om.out.debug('Grep plugins not testing: ' + repr(fuzzableRequest) + ' cause it was already tested.' )
+            #om.out.debug('Grep plugins not testing: %s cause it was '
+            #             'already tested.' % repr(fuzzableRequest))
             pass
         elif fuzzableRequest.getURL().getDomain() in cf.cf.getData('targetDomains'):
-            self.grep( fuzzableRequest, response )
+            self.grep(fuzzableRequest, response)
         else:
-            #om.out.debug('Grep plugins not testing: ' + fuzzableRequest.getURL() + ' cause it aint a target domain.' )
+            #om.out.debug('Grep plugins not testing: %s cause it aint a '
+            #             'target domain.' % fuzzableRequest.getURL())
             pass
     
-    def grep(self, fuzzableRequest, response ):
+    def grep(self, fuzzableRequest, response):
         '''
         Analyze the response.
         
         @parameter fuzzableRequest: The request that was sent
         @parameter response: The HTTP response obj
         '''
-        raise w3afException('Plugin is not implementing required method grep' )
+        raise NotImplementedError('Plugin "%s" must not implement required '
+                                  'method grep' % self.__class__.__name__)
             
-    def _testResponse( self, request, response ):
+    def _testResponse(self, request, response):
         '''
         This method tries to find patterns on responses.
         
         This method MUST be implemented on every plugin.
         
         @param response: This is the htmlString response to test
-        @param request: This is the request object that generated the current response being analyzed.
-        @return: If something is found it must be reported to the Output Manager and the KB.
+        @param request: This is the request object that generated the
+            current response being analyzed.
+        @return: If something is found it must be reported to the Output
+            Manager and the KB.
         '''
-        raise w3afException('Plugin is not implementing required method _testResponse' )
+        raise NotImplementedError('Plugin "%s" is not implementing required '
+                              'method _testResponse' % self.__class__.__name__)
         
     def setUrlOpener(self, foo):
         pass
         
-    def getType( self ):
+    def getType(self):
         return 'grep'

@@ -80,7 +80,7 @@ class DBClient(object):
             try:
                 c.execute(sql, parameters)
                 self._commitIfNeeded()
-            except Exception, e:
+            except Exception:
                 raise
 
     def createTable(self, name, columns=(), primaryKeyColumns=[]):

@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import threading
 import gobject
-import traceback
 import urllib
 import base64
 import sha

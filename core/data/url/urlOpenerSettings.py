@@ -248,10 +248,13 @@ class urlOpenerSettings( configurable ):
         om.out.debug( 'Called SetBasicAuth')
 
         if not url:
-            if url is None or username or password:
-                msg = ('To properly configure the basic authentication settings, '
-                       'you should also set the auth domain. If you are unsure, '
-                       'you can set it to the target domain name.')
+            if url is None:
+                raise w3afException(
+                                'The entered basicAuthDomain URL is invalid!')
+            elif username or password:
+                msg = ('To properly configure the basic authentication '
+                    'settings, you should also set the auth domain. If you '
+                    'are unsure, you can set it to the target domain name.')
                 raise w3afException(msg)
         else:
             if not hasattr(self, '_password_mgr'):
