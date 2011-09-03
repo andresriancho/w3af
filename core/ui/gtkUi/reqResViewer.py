@@ -218,12 +218,15 @@ class reqResViewer(gtk.VBox):
             #               not just the ones with vulnerabilities.
             #
             for result in impact.result:
-                for itemId in result.getId():
-                    historyItem = HistoryItem()
-                    historyItem.load(itemId)
-                    historyItem.updateTag(historyItem.tag + result.plugin_name)
-                    historyItem.info = result.getDesc()
-                    historyItem.save()
+                
+                # TODO: I'm not sure when this is None bug it appeared in Trac bug #167736
+                if result.getId() is not None:
+                    for itemId in result.getId():
+                        historyItem = HistoryItem()
+                        historyItem.load(itemId)
+                        historyItem.updateTag(historyItem.tag + result.plugin_name)
+                        historyItem.info = result.getDesc()
+                        historyItem.save()
         else:
             if impact.exception.__class__ == w3afException:
                 msg = str(impact.exception)
