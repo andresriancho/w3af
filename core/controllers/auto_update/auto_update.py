@@ -245,7 +245,9 @@ class w3afSVNClient(SVNClient):
             self._events = []
             try:
                 pysvn_rev = \
-                    self._svnclient.update(self._localpath, revision=rev)[0]
+                    self._svnclient.update(self._localpath,
+                                           revision=rev,
+                                           depth=pysvn.depth.infinity)[0]
             except pysvn.ClientError, ce:
                 raise SVNUpdateError(*ce.args)
             
