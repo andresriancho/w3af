@@ -23,30 +23,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 
+from core.controllers.auto_update.auto_update import is_working_copy, get_svnversion
+
 
 def get_w3af_version():
     '''
     @return: A string with the w3af version.
     '''
-    # Let's check if the user is using a version from SVN
-    revision = -1
+    if is_working_copy():
+        revision = get_svnversion()
+    else:
+        revision = 'unknown'
     
-    if os.path.exists( os.path.join('.svn', 'entries') ):
-        try:
-            for line in file('.svn' + os.path.sep +'entries').readlines()[:4]:
-                line = line.strip()
-                if re.match('^\d+$', line ):
-                    if int(line) > int(revision):
-                        revision = int(line)
-        except (IOError, ValueError):
-            revision = 'unknown'
-
     res = 'w3af - Web Application Attack and Audit Framework'
     res += '\nVersion: 1.1'
-    if revision != -1:
-        res += ' (from SVN server)'
-        res += '\nRevision: ' + str(revision)
-    else:
-        res += ' (from tgz)'
+    res += '\nRevision: ' + str(revision)
     res += '\nAuthor: Andres Riancho and the w3af team.'
     return res
