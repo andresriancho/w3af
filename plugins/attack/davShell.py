@@ -148,7 +148,7 @@ class davShell(baseAttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'string')
+        o1 = option('url', self._url, d1, 'url')
         
         d2 = 'Exploit only one vulnerability.'
         o2 = option('generateOnlyOne', self._generateOnlyOne, d2, 'boolean')

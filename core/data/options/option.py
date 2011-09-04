@@ -23,7 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 import cgi
 import re
+
 from core.controllers.w3afException import w3afException
+from core.data.parsers.urlParser import parse_qs, url_object
 
 
 class option:
@@ -36,6 +38,7 @@ class option:
     INT = 'integer'
     FLOAT = 'float'
     STRING = 'string'
+    URL = 'url'
     IPPORT = 'ipport'
     LIST = 'list'
     REGEX = 'regex'
@@ -117,6 +120,12 @@ class option:
                     raise ValueError
             elif self._type in ('string', 'ipport'):
                 res = str(value)
+            elif self._type == 'url':
+                try:
+                    res = url_object(value)
+                except Exception, e:
+                    msg = str(e)
+                    raise w3afException( msg )
             elif self._type == 'regex':
                 # Parse regex stuff...
                 try:

@@ -201,7 +201,7 @@ class xssBeef(baseAttackPlugin):
         d1 = 'This is the location that the zombies will connect to (do not include the'
         d1 += ' hook directory)'
         h1 = 'This is configuration is directly passed to beEF XSS exploitation framework.'
-        o1 = option('beefURL', self._beefURL, d1, 'string', help=h1)
+        o1 = option('beefURL', self._beefURL, d1, 'url', help=h1)
         
         d2 = 'The configuration password for beef.'
         h2 = 'This configuration parameter is needed to change the configuration of beEF.'
@@ -220,7 +220,7 @@ class xssBeef(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._beefURL = url_object( optionsMap['beefURL'].getValue() )
+        self._beefURL = optionsMap['beefURL'].getValue()
         self._beefPasswd = optionsMap['beefPasswd'].getValue()
 
         if self._beefPasswd == '':

@@ -237,7 +237,7 @@ class sqlmap(baseAttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'string')
+        o1 = option('url', self._url, d1, 'url')
         
         d2 = 'Method to use with fastExploit()'
         o2 = option('method', self._method, d2, 'string')
@@ -289,7 +289,7 @@ class sqlmap(baseAttackPlugin):
         @parameter optionsMap: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = url_object( optionsMap['url'].getValue() ).uri2url()
+        self._url = optionsMap['url'].getValue().uri2url()
             
         if optionsMap['method'].getValue() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')

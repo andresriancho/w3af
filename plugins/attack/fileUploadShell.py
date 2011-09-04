@@ -187,7 +187,7 @@ class fileUploadShell(baseAttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'string')
+        o1 = option('url', self._url, d1, 'url')
         
         d2 = 'Method to use with fastExploit()'
         o2 = option('method', self._method, d2, 'string')

@@ -27,6 +27,8 @@ import threading
 from core.ui.gtkUi import history
 from core.ui.gtkUi import helpers
 from core.data.options.preferences import Preferences
+from core.data.parsers.urlParser import parse_qs, url_object
+
 
 class ValidatedEntry(gtk.Entry):
     '''Class to perform some validations in gtk.Entry.
@@ -248,6 +250,29 @@ class StringOption(ValidatedEntry, ModifiedMixIn):
         @return Always True, there's no validation to perform
         '''
         return True
+
+class UrlOption(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option URL.
+
+    @author: Andres Riancho
+    '''
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.getValueStr())
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ""
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return Always True, there's no validation to perform
+        '''
+        try:
+            url_object(value)
+        except Exception:
+            return False
+        else:        
+            return True
 
 class IPPortOption(ValidatedEntry, ModifiedMixIn):
     '''Class that implements the config option IP and Port.
@@ -898,6 +923,7 @@ wrapperWidgets = {
     "boolean": BooleanOption,
     "integer": IntegerOption,
     "string": StringOption,
+    "url": StringOption,    
     "ipport": IPPortOption,
     "float": FloatOption,
     "list": ListOption,
