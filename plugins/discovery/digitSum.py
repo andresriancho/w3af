@@ -64,14 +64,14 @@ class digitSum(baseDiscoveryPlugin):
         self._fuzzableRequests = []
             
         url = fuzzableRequest.getURL()
-        self._headers = {'Referer':url}
+        self._headers = {'Referer': url.url_string }
         
         if self._first_time:
             self._first_time = False
         
         om.out.debug('digitSum is testing ' + fuzzableRequest.getURL() )
         original_response = self._urlOpener.GET( fuzzableRequest.getURL(), \
-                                                            useCache=True, headers=self._headers )
+                                                 useCache=True, headers=self._headers )
         
         if original_response.is_text_or_html() or self._fuzz_images:
             for fr in self._mangle_digits( fuzzableRequest ):
