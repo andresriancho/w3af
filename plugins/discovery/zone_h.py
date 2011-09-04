@@ -95,51 +95,47 @@ class zone_h(baseDiscoveryPlugin):
         
         @return: None
         '''
-        if 'No results were found' in response.getBody():
-            # Nothing to see here...
-            pass
-        else:
-            #
-            #   I'm going to do only one big "if":
-            #
-            #       - The target site was hacked more than one time
-            #       - The target site was hacked only one time
-            #
-            
-            # This is the string I have to parse:
-            # in the zone_h response, they are two like this, the first has to be ignored!
-            regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
-            regex_result = re.findall( regex, response.getBody() )
+        #
+        #   I'm going to do only one big "if":
+        #
+        #       - The target site was hacked more than one time
+        #       - The target site was hacked only one time
+        #
+        
+        # This is the string I have to parse:
+        # in the zone_h response, they are two like this, the first has to be ignored!
+        regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
+        regex_result = re.findall( regex, response.getBody() )
 
-            try:
-                total_attacks = int(regex_result[0][0])
-            except IndexError:
-                om.out.debug('An error was generated during the parsing of the zone_h website.')
-            else:
-                
-                # Do the if...
-                if total_attacks > 1:
-                    v = vuln.vuln()
-                    v.setPluginName(self.getName())
-                    v.setName('Previous defacements')
-                    v.setURL( response.getURL() )
-                    v.setSeverity( severity.MEDIUM )
-                    msg = 'The target site was defaced more than one time in the past. For more'
-                    msg += ' information please visit the following URL: "' + response.getURL()
-                    msg += '".'
-                    v.setDesc( msg )
-                    kb.kb.append( self, 'defacements', v )
-                    om.out.information( v.getDesc() )
-                else:
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Previous defacement')
-                    i.setURL( response.getURL() )
-                    msg = 'The target site was defaced in the past. For more information'
-                    msg += ' please visit the following URL: "' + response.getURL() + '".'
-                    i.setDesc( msg )
-                    kb.kb.append( self, 'defacements', i )
-                    om.out.information( i.getDesc() )
+        try:
+            total_attacks = int(regex_result[0][0])
+        except IndexError:
+            om.out.debug('An error was generated during the parsing of the zone_h website.')
+        else:
+            
+            # Do the if...
+            if total_attacks > 1:
+                v = vuln.vuln()
+                v.setPluginName(self.getName())
+                v.setName('Previous defacements')
+                v.setURL( response.getURL() )
+                v.setSeverity( severity.MEDIUM )
+                msg = 'The target site was defaced more than one time in the past. For more'
+                msg += ' information please visit the following URL: "' + response.getURL()
+                msg += '".'
+                v.setDesc( msg )
+                kb.kb.append( self, 'defacements', v )
+                om.out.information( v.getDesc() )
+            elif total_attacks == 1:
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('Previous defacement')
+                i.setURL( response.getURL() )
+                msg = 'The target site was defaced in the past. For more information'
+                msg += ' please visit the following URL: "' + response.getURL() + '".'
+                i.setDesc( msg )
+                kb.kb.append( self, 'defacements', i )
+                om.out.information( i.getDesc() )
                 
     def getOptions( self ):
         '''
