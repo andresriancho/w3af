@@ -240,6 +240,7 @@ class HistoryItem(object):
                     #    performance due to disk IO
                     #
                     self._db.commit()
+                    time.sleep(0.1)
                     self.load(id=id, full=full, retry=False)
                 else:
                     # This is the second time load() is called and we end up here,
