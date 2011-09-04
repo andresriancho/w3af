@@ -746,8 +746,9 @@ class UIUpdater(object):
                 int(get_svnversion())
             except ValueError:
                 self._log("Oops!... w3af can't be started. It seems that the "
-                  "last update process wasn't successfully completed.\nPlease "
-                  "update manually by executing a regular 'svn update'.\n")
+                  "last auto update process was unsuccessful.\n\n"
+                  "Please update manually by executing a regular 'svn update' "
+                  "in the w3af installation directory.\n")
                 sys.exit(1)
     
     def _call_update(self):
