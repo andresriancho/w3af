@@ -877,7 +877,7 @@ def testServer( ssl, server, port, matchCount, generateFP ):
             ### FIXME: This eval is awful, I should change it to pickle.
             ks = eval(ksf.read())
         except Exception,  e:
-            raise w3afException('The signature file "' + f + '" has an invalid sintax.')
+            raise w3afException('The signature file "' + f + '" has an invalid syntax.')
         else:
             known_servers.append(ks)
             ksf.close()
