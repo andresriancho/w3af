@@ -188,7 +188,7 @@ class htmlFile(baseOutputPlugin):
         @parameter message: The message to add to the table. It's in HTML.
         @parameter msg_type: The type of message
         '''
-        if self._aditional_info_fh:
+        if self._aditional_info_fh is not None:
             now = time.localtime(time.time())
             the_time = time.strftime("%c", now)
         
