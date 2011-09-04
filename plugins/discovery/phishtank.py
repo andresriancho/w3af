@@ -266,7 +266,8 @@ class phishtank(baseDiscoveryPlugin):
         msg = 'Updating the phishtank database, this will take some minutes'
         msg += ' ( almost 7MB to download ).'
         om.out.information( msg )
-        res = self._urlOpener.GET('http://data.phishtank.com/data/online-valid/')
+        update_url = url_object('http://data.phishtank.com/data/online-valid/')
+        res = self._urlOpener.GET( update_url )
         om.out.information('Download complete, writing to the database file.')
         
         try:
