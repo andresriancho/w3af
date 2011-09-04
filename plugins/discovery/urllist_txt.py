@@ -68,24 +68,34 @@ class urllist_txt(baseDiscoveryPlugin):
             http_response = self._urlOpener.GET( urllist_url, useCache=True )
             
             if not is_404( http_response ):
-                # Save it to the kb!
-                i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('urllist.txt file')
-                i.setURL( urllist_url )
-                i.setId( http_response.id )
-                i.setDesc( 'A urllist.txt file was found at: "'+ urllist_url +'".' )
-                kb.kb.append( self, 'urllist.txt', i )
-                om.out.information( i.getDesc() )
-
 
                 # Work with it...
                 dirs.append( urllist_url )
+                is_urllist = 5
                 for line in http_response.getBody().split('\n'):
-                    if not line.startswith('#'):
-                        url = line.strip()
-                        url = base_url.urlJoin( url )
-                        dirs.append( url )
+                    
+                    line = line.strip()
+                    
+                    if not line.startswith('#') and line:    
+                        try:
+                            url = base_url.urlJoin( line )
+                        except:
+                            is_urllist -= 1
+                            if not is_urllist:
+                                break
+                        else:
+                            dirs.append( url )
+
+                if is_urllist:
+                    # Save it to the kb!
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('urllist.txt file')
+                    i.setURL( urllist_url )
+                    i.setId( http_response.id )
+                    i.setDesc( 'A urllist.txt file was found at: "'+ urllist_url +'".' )
+                    kb.kb.append( self, 'urllist.txt', i )
+                    om.out.information( i.getDesc() )
 
             for url in dirs:
                 #   Send the requests using threads:
