@@ -276,12 +276,13 @@ class formAuthBrute(baseBruteforcePlugin):
         @parameter combinations: A list of tuples with (user, pass)
         '''
         
-        def _doPOSTWithoutCookies(urlOpener, fuzz_req):
+        def _do_req_without_cookies(fuzz_req):
             url = fuzz_req.getURI()
             data = fuzz_req.getData()
             headers = fuzz_req.getHeaders()
-            resp = urlOpener.POST(url, data, headers, grepResult=False,
-                                  useCache=False)
+            # Typically GET and POST
+            meth = getattr(xUrllib(), fuzz_req.getMethod().upper())
+            resp = meth(url, data, headers, grepResult=False, useCache=False)
             return resp
         
         data_container = freq.getDc()
@@ -303,10 +304,9 @@ class formAuthBrute(baseBruteforcePlugin):
             if not self._found or not self._stopOnFirst:
                 
                 # TODO: This is a *hack*. This logic shouldn't be implemented
-                # in the plugin but in xUrllib,
-                urlOpener = xUrllib()
+                # in the plugin but in xUrllib
                 try:
-                    resp = _doPOSTWithoutCookies(urlOpener, freq)
+                    resp = _do_req_without_cookies(freq)
                 except w3afMustStopOnUrlError:
                     return
                 
@@ -321,7 +321,7 @@ class formAuthBrute(baseBruteforcePlugin):
                         data_container[self._passwd_field_name][0] = \
                                                             createRandAlNum(8)
                         freq.setDc(data_container)
-                        verif_resp = _doPOSTWithoutCookies(xUrllib(), freq)
+                        verif_resp = _do_req_without_cookies(freq)
                         body = verif_resp.getBody()
                         body = body.replace(username, '').replace(userpwd, '')
     

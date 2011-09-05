@@ -69,7 +69,6 @@ class urlOpenerSettings( configurable ):
         self._cookieHandler = None
         self._httpsHandler = None
         self._mangleHandler = None
-        self._cookieHandler = None
         self._urlParameterHandler = None
         self._ntlmAuthHandler = None
         # Keep alive handlers are created on buildOpeners()
