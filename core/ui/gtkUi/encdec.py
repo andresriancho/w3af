@@ -74,8 +74,20 @@ class SimpleTextView(gtk.TextView):
         if use_repr:
             newtext = self._repr(newtext)
         else:
-            newtext = str(newtext)
-        self.buffer.insert(iterl, unicode(newtext))
+            #    Better handling of the newtext data to avoid issues
+            #    when decoding stuff that can NOT be represented in unicode. Example:
+            #    base64 decode /w== returns \xff which raises an exception here if we
+            #    use unicode(newtext)
+            
+            newtext = newtext.replace('\0','\\x00')
+            
+            try:
+                newtext = unicode(newtext)
+            except:
+                newtext = repr(newtext)[1:-1]
+            
+                    
+        self.buffer.insert(iterl, newtext)
 
     def getText(self):
         '''Gets the text of the pane, un-repr'ing it.
