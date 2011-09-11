@@ -73,6 +73,8 @@ class hashFind(baseGrepPlugin):
                 
                     hash_type = self._get_hash_type( possible_hash )
                     if hash_type:
+                        
+                        possible_hash = possible_hash.lower()
                         if self._has_hash_distribution( possible_hash ):
                             if (possible_hash, response.getURL()) not in self._already_reported:
                                 i = info.info()
@@ -92,15 +94,18 @@ class hashFind(baseGrepPlugin):
     def _has_hash_distribution( self, possible_hash ):
         '''
         @parameter possible_hash: A string that may be a hash.
-        @return: True if the string s has an equal(aprox.) distribution of numbers and letters
+        @return: True if the possible_hash has an equal (aprox.) distribution 
+        of numbers and letters and only has hex characters (0-9, a-f)
         '''
         numbers = 0
         letters = 0
         for char in possible_hash:
             if char.isdigit():
                 numbers += 1
-            else:
+            elif char in 'abcdef':
                 letters += 1
+            else:
+                return False
         
         if numbers in range( letters - len(possible_hash) / 2 , letters + len(possible_hash) / 2 ):
             # Seems to be a hash, let's make a final test to avoid false positives with
