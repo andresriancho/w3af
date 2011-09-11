@@ -37,7 +37,7 @@ from core.data.constants import severity
 from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.dc.queryString import queryString
 
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException, w3afMustStopException, w3afMustStopOnUrlError
 
 import core.controllers.outputManager as om
 from .export_request import export_request
@@ -232,6 +232,8 @@ class reqResViewer(gtk.VBox):
                 msg = str(impact.exception)
             elif impact.exception.__class__ == w3afMustStopException:
                 msg = "Stopped sending requests because " + str(impact.exception)
+            elif impact.exception.__class__ == w3afMustStopOnUrlError:
+                msg = "Not sending requests because " + str(impact.exception)
             else:
                 raise impact.exception
             # We stop the throbber, and hide it
