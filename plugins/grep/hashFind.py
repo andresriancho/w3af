@@ -96,6 +96,18 @@ class hashFind(baseGrepPlugin):
         @parameter possible_hash: A string that may be a hash.
         @return: True if the possible_hash has an equal (aprox.) distribution 
         of numbers and letters and only has hex characters (0-9, a-f)
+        
+        >>> p = hashFind()
+        >>> p._has_hash_distribution( 'cdf13c6f85b216a18665e7bba74cc1a7' )
+        True
+        
+        >>> p._has_hash_distribution( 'AB_Halloween_Wallpaper_1920x1080' )
+        False
+
+        # Note the "h" at the beginning
+        >>> p._has_hash_distribution( 'hdf13c6f85b216a18665e7bba74cc1a7' )
+        False
+        
         '''
         numbers = 0
         letters = 0
