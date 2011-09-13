@@ -413,9 +413,10 @@ class url_object(object):
         In some web apps we see things like:
             - http://host.tld:80/foo/bar
     
-        As you may have noticed, the ":80" is redundant, and what's even worse, it can confuse w3af because
-        in most cases http://host.tld:80/foo/bar != http://host.tld/foo/bar , and http://host.tld/foo/bar could also be
-        found by the webSpider plugin, so we are analyzing the same thing twice.
+        As you may have noticed, the ":80" is redundant, and what's even worse, it can confuse w3af
+        because in most cases http://host.tld:80/foo/bar != http://host.tld/foo/bar , and 
+        http://host.tld/foo/bar could also be found by the webSpider plugin, so we are analyzing
+        the same thing twice.
     
         So, before the path normalization, I perform a small net location normalization that transforms:
         
@@ -443,6 +444,13 @@ class url_object(object):
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r'
+        
+        # IPv6 support
+        >>> u = url_object('http://fe80:0:0:0:202:b3ff:fe1e:8329/')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'http://fe80:0:0:0:202:b3ff:fe1e:8329/'
+        
         '''
         # net location normalization:
         net_location = self.getNetLocation()
