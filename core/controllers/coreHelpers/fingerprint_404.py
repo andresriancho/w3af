@@ -26,9 +26,12 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.threads.threadManager import threadManagerObj as tm
+
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.misc.decorators import retry
+
 
 import urllib
 import thread
@@ -141,6 +144,7 @@ class fingerprint_404:
     def need_analysis(self):
         return not self._already_analyzed
     
+    @retry(tries=2, delay=0.5, backoff=2)
     def _send_404(self, url404):
         '''
         Sends a GET request to url404 and saves the response in self._response_body_list .
