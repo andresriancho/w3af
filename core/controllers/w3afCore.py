@@ -522,11 +522,9 @@ class w3afCore(object):
                     except KeyboardInterrupt:
                         self._end()
                         raise
-                    except (w3afMustStopOnUrlError, w3afException), w3:
+                    except (w3afMustStopOnUrlError, w3afException, w3afMustStopException), w3:
                         om.out.error('The target URL: %s is unreachable.' % url)
                         om.out.error('Error description: %s' % w3)
-                    except w3afMustStopException:
-                        raise
                     except Exception, e:
                         om.out.error('The target URL: %s is unreachable '
                                      'because of an unhandled exception.' % url)
