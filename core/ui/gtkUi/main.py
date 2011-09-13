@@ -577,12 +577,11 @@ class MainApp(object):
             return True
         helpers.endThreads()
         self.sb.clear()
-
-        # saving windows config
-        self.generalconfig["mainwindow-size"] = self.window.get_size()
-        self.generalconfig["mainwindow-position"] = self.window.get_position()
         
         try:
+            # saving windows config
+            self.generalconfig["mainwindow-size"] = self.window.get_size()
+            self.generalconfig["mainwindow-position"] = self.window.get_position()
             self.generalconfig.close()
         finally:
             gtk.main_quit()
