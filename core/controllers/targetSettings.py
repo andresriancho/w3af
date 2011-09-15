@@ -137,7 +137,7 @@ class targetSettings(configurable):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        target_urls_strings = optionsMap['target'].getValue() or ['']
+        target_urls_strings = optionsMap['target'].getValue() or []
 
         for target_url_string in target_urls_strings:
             
