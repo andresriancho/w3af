@@ -21,6 +21,7 @@ from __future__ import with_statement
 import os
 import time
 from shutil import rmtree
+from errno import EEXIST
 
 try:
     from cPickle import Pickler, Unpickler
@@ -120,8 +121,8 @@ class HistoryItem(object):
         try:
             os.mkdir(self._sessionDir)
         except OSError, oe:
-            # [Errno 17] File exists
-            if oe.errno != 17:
+            # [Errno EEXIST] File exists
+            if oe.errno != EEXIST:
                 msg = 'Unable to write to the user home directory: ' + get_home_dir()
                 raise w3afException(msg)
 

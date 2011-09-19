@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # Only to be used with care.
 import Queue
 import os
+from errno import EEXIST
 
 # I'm timestamping the messages
 import time
@@ -69,8 +70,8 @@ class gtkOutput(baseOutputPlugin):
             try:
                 os.mkdir(os.path.join(get_home_dir() , 'sessions'))
             except OSError, oe:
-                # [Errno 17] File exists
-                if oe.errno != 17:
+                # [Errno EEXIST] File exists
+                if oe.errno != EEXIST:
                     msg = 'Unable to write to the user home directory: ' + get_home_dir()
                     raise w3afException( msg )
 
