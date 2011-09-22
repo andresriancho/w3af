@@ -113,7 +113,7 @@ class php_sca(base_payload):
         rows = [['Vuln Type', 'Remote Location', 'Vuln Param', 'Lineno'], []]
         for vulnty, files in api_res.iteritems():
             for f in files:
-                rows.append([vulnty, f['loc'], f['vulnsrc'], str(f['lineno'])])
+                rows.append([vulnty, str( f['loc'] ), f['vulnsrc'], str(f['lineno'])])
         
         restable = table(rows)
         restable.draw(100)
