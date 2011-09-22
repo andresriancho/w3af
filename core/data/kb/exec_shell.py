@@ -51,20 +51,21 @@ class exec_shell(shell):
         '''
         Handle the help command.
         '''
-        om.out.console('Available commands:')
-        om.out.console('    help                            Display this information')
-        om.out.console('    lsp                             List payloads')
-        om.out.console('    payload <payload>               Execute "payload" and get the result')
-        om.out.console('    read <file>                     Read the remote server <file> and echo to this console')
-        om.out.console('    write <file> <content>          Write <content> to the remote <file>')
-        om.out.console('    upload <local> <remote>         Upload <local> file to <remote> location')
-        om.out.console('    execute <cmd>                   ')
-        om.out.console('    exec <cmd>                      ')
-        om.out.console('    e <cmd>                         Run <cmd> on the remote operating system')                
-        om.out.console('    exit                            Exit this shell session')
-        om.out.console('')
-        om.out.console('All the other commands are executed on the remote server.')
-        return True
+        result = []
+        result.append('Available commands:')
+        result.append('    help                            Display this information')
+        result.append('    lsp                             List payloads')
+        result.append('    payload <payload>               Execute "payload" and get the result')
+        result.append('    read <file>                     Read the remote server <file> and echo to this console')
+        result.append('    write <file> <content>          Write <content> to the remote <file>')
+        result.append('    upload <local> <remote>         Upload <local> file to <remote> location')
+        result.append('    execute <cmd>                   ')
+        result.append('    exec <cmd>                      ')
+        result.append('    e <cmd>                         Run <cmd> on the remote operating system')                
+        result.append('    exit                            Exit this shell session')
+        result.append('')
+        result.append('All the other commands are executed on the remote server.')
+        return '\n'.join(result)
 
     @download_debug
     def download(self, remote_filename, local_filename):

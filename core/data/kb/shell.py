@@ -76,13 +76,14 @@ class shell(vuln, exploitResult):
         '''
         Handle the help command.
         '''
-        om.out.console('Available commands:')
-        om.out.console('    help                            Display this information')
-        om.out.console('    lsp                             List the available payloads')        
-        om.out.console('    exit                            Exit the shell session')
-        om.out.console('')
-        om.out.console('All the other commands are executed on the remote server.')
-        return True
+        result = []
+        result.append('Available commands:')
+        result.append('    help                            Display this information')
+        result.append('    lsp                             List the available payloads')        
+        result.append('    exit                            Exit the shell session')
+        result.append('')
+        result.append('All the other commands are executed on the remote server.')
+        return '\n'.join(result)
 
     def generic_user_input( self, command ):
         '''
