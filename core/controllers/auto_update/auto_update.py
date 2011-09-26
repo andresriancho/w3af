@@ -49,9 +49,15 @@ def get_svnversion(path=W3AF_LOCAL_PATH):
     for root, dirs, files in os.walk(path):
         if ".svn" in dirs:
             dirs.remove(".svn")
-        info = cli.info(root)
+        try:
+            info = cli.info(root)
+        except pysvn.ClientError:
+            info = None
         if info:
             revs.add(str(info['revision'].number))
+    
+    if not revs:
+        raise SVNError, "Path '%s' is not a svn working copy" % path
     
     revs = sorted(revs)
     d = {True: (revs[0], ''), False: (revs[0], ':' + revs[-1])}

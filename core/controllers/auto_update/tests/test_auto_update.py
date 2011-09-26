@@ -19,13 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+from collections import namedtuple
+
 from pymock import PyMockTestCase, method, override, dontcare, set_count
 import pysvn
 
-from core.controllers.auto_update.auto_update import w3afSVNClient, Revision,\
-    VersionMgr, SVNFilesList, StartUpConfig, FILE_UPD, FILE_NEW, FILE_DEL, \
-    ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN
-from core.controllers import auto_update
+from ..auto_update import (
+    w3afSVNClient, Revision, VersionMgr, SVNFilesList, StartUpConfig,
+    FILE_UPD, FILE_NEW, FILE_DEL, ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN,
+    W3AF_LOCAL_PATH, get_svnversion
+    )
 
 # Remove magic method as it generates some conficts with pymock
 del w3afSVNClient.__getattribute__
@@ -110,7 +113,7 @@ class Testw3afSVNClient(PyMockTestCase):
     def test_filter_files(self):
         from pysvn import wc_notify_action as wcna
         from pysvn import Revision
-        from core.controllers.auto_update.auto_update import os
+        from ..auto_update import os
         client = self.client
         override(os.path, 'isdir').expects(dontcare()).returns(False)
         set_count(exactly=2)
@@ -232,3 +235,32 @@ class TestVersionMgr(PyMockTestCase):
     
     def test_added_new_dependencies(self):
         pass
+
+
+class TestSVNVersion(PyMockTestCase):
+    
+    def setUp(self):
+        PyMockTestCase.setUp(self)
+        from ..auto_update import pysvn
+        self.cli = self.mock()
+        override(pysvn, 'Client').expects().returns(self.cli)
+    
+    def test_get_svnversion_with_non_svn_path(self):
+        Rev = namedtuple('Rev', ('number',))
+        from ..auto_update import os
+        override(os, 'walk').expects(dontcare()).generates(
+                           ('x', 'y', 'z'), ('a', 'b', 'c'), ('1', '2', '2'),
+                           )
+        
+        cli = self.cli
+        method(cli, 'info').expects(dontcare()).returns({'revision': Rev(22)})
+        method(cli, 'info').expects(dontcare()).returns({'revision': Rev(23)})
+        # If at least a 2-level depth non svn subdirectory is found the pysvn
+        # client raises an exception
+        method(cli, 'info').expects(dontcare()).raises(pysvn.ClientError)
+        ## Stop recording - Replay ##
+        self.replay()
+        self.assertEquals('22:23', get_svnversion(W3AF_LOCAL_PATH))
+        ## Verify ##
+        self.verify()
+        
