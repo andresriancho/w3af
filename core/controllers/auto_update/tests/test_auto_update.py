@@ -27,7 +27,7 @@ import pysvn
 from ..auto_update import (
     w3afSVNClient, Revision, VersionMgr, SVNFilesList, StartUpConfig,
     FILE_UPD, FILE_NEW, FILE_DEL, ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN,
-    W3AF_LOCAL_PATH, get_svnversion
+    W3AF_LOCAL_PATH, get_svnversion, SVNError, SVNUpdateError
     )
 
 # Remove magic method as it generates some conficts with pymock
@@ -36,11 +36,16 @@ del VersionMgr.__getattribute__
 
 REPO_URL = 'http://localhost/svn/w3af'
 LOCAL_PATH = '/home/user/w3af'
+INF = pysvn.depth.infinity
 
 
 def dummy(*args, **kwargs):
     pass
 
+def get_autoupdate_os_module():
+    from ..auto_update import os
+    return os
+    
 
 class Testw3afSVNClient(PyMockTestCase):
     
@@ -73,9 +78,13 @@ class Testw3afSVNClient(PyMockTestCase):
         client = self.client
         override(pysvn, 'Revision', self.mock())
         pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
-        method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead).returns([self.rev])
-        override(client, '_filter_files').expects(client.UPD_ACTIONS)
-        self.returns(self.upd_files)
+        method(client._svnclient, 'update').expects(
+                                                LOCAL_PATH,
+                                                revision=pysvnhead,
+                                                depth=INF
+                                                ).returns([self.rev])
+        override(client, '_filter_files').expects(
+                                    client.UPD_ACTIONS).returns(self.upd_files)
         
         ## Stop recording. Play!
         self.replay()
@@ -87,10 +96,12 @@ class Testw3afSVNClient(PyMockTestCase):
     def test_upd_fail(self):
         override(pysvn, 'Revision', self.mock())
         pysvnhead = pysvn.Revision(pysvn.opt_revision_kind.head)
-        from core.controllers.auto_update.auto_update import SVNUpdateError
         client = self.client
-        method(client._svnclient, 'update').expects(LOCAL_PATH, revision=pysvnhead)
-        self.raises(pysvn.ClientError('file locked'))
+        method(client._svnclient, 'update').expects(
+                                    LOCAL_PATH,
+                                    revision=pysvnhead,
+                                    depth=INF
+                                    ).raises(pysvn.ClientError('file locked'))
         
         ## Stop recording. Play!
         self.replay()
@@ -113,7 +124,7 @@ class Testw3afSVNClient(PyMockTestCase):
     def test_filter_files(self):
         from pysvn import wc_notify_action as wcna
         from pysvn import Revision
-        from ..auto_update import os
+        os = get_autoupdate_os_module()
         client = self.client
         override(os.path, 'isdir').expects(dontcare()).returns(False)
         set_count(exactly=2)
@@ -239,6 +250,8 @@ class TestVersionMgr(PyMockTestCase):
 
 class TestSVNVersion(PyMockTestCase):
     
+    Rev = namedtuple('Rev', ('number',))
+    
     def setUp(self):
         PyMockTestCase.setUp(self)
         from ..auto_update import pysvn
@@ -246,21 +259,37 @@ class TestSVNVersion(PyMockTestCase):
         override(pysvn, 'Client').expects().returns(self.cli)
     
     def test_get_svnversion_with_non_svn_path(self):
-        Rev = namedtuple('Rev', ('number',))
-        from ..auto_update import os
+        os = get_autoupdate_os_module()
         override(os, 'walk').expects(dontcare()).generates(
-                           ('x', 'y', 'z'), ('a', 'b', 'c'), ('1', '2', '2'),
-                           )
+                                                    *([('x', 'y', 'z')] * 3)
+                                                    )
         
         cli = self.cli
+        Rev = TestSVNVersion.Rev
         method(cli, 'info').expects(dontcare()).returns({'revision': Rev(22)})
         method(cli, 'info').expects(dontcare()).returns({'revision': Rev(23)})
-        # If at least a 2-level depth non svn subdirectory is found the pysvn
-        # client raises an exception
+        # If at least a 2-level depth non svn subdirectory is
+        # found the pysvn client raises an exception
         method(cli, 'info').expects(dontcare()).raises(pysvn.ClientError)
+        
         ## Stop recording - Replay ##
         self.replay()
         self.assertEquals('22:23', get_svnversion(W3AF_LOCAL_PATH))
+        
         ## Verify ##
         self.verify()
-        
+    
+    def test_non_svn_install(self):
+        '''
+        Ensure that SVNError is raised when `get_svnversion` is called
+        in a non svn copy.
+        '''
+        os = get_autoupdate_os_module()
+        override(os, 'walk').expects(dontcare()).returns(())
+        self.replay()
+        self.assertRaises(SVNError, get_svnversion, (W3AF_LOCAL_PATH,))
+## TODO: Uncomment next lines when py >= 2.7 and delete the previous one ##        
+##        with self.assertRaises(SVNError) as cm:
+##            get_svnversion(W3AF_LOCAL_PATH)
+##        self.assertTrue("is not a svn working copy" in cm.exception.message)
+    
