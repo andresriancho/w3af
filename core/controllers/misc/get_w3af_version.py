@@ -20,23 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import os
-import re
-
-from core.controllers.auto_update.auto_update import is_working_copy, get_svnversion
-
+from core.controllers.auto_update.auto_update import is_working_copy, \
+                                                        get_svnversion
 
 def get_w3af_version():
     '''
     @return: A string with the w3af version.
-    '''
-    if is_working_copy():
-        revision = get_svnversion()
-    else:
-        revision = 'unknown'
-    
-    res = 'w3af - Web Application Attack and Audit Framework'
-    res += '\nVersion: 1.1'
-    res += '\nRevision: ' + str(revision)
-    res += '\nAuthor: Andres Riancho and the w3af team.'
-    return res
+    '''    
+    rev = get_svnversion() if is_working_copy() else 'unknown'
+    return ('w3af - Web Application Attack and Audit Framework\n'
+            'Version: 1.1\n'
+            'Revision: %s\n'
+            'Author: Andres Riancho and the w3af team.') % rev

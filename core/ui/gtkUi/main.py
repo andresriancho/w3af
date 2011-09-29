@@ -262,12 +262,17 @@ class GUIUpdater(UIUpdater):
         UIUpdater.__init__(self, force=force, ask=ask, logger=log)
         
         #  Event registration
-        self._vmngr.register(VersionMgr.ON_ACTION_ERROR,
-                             GUIUpdater.notify, 'Error occurred.')
-        msg = ('At least one new dependency was included in w3af. Please '
-               'update manually.')
-        self._vmngr.register(VersionMgr.ON_UPDATE_ADDED_DEP,
-                             GUIUpdater.notify, msg)
+        self._register(
+                   VersionMgr.ON_ACTION_ERROR,
+                   GUIUpdater.notify,
+                   'Error occurred.'
+                   )        
+        self._register(
+                    VersionMgr.ON_UPDATE_ADDED_DEP,
+                    GUIUpdater.notify,
+                    ('At least one new dependency was included in '
+                     'w3af. Please update manually.')
+                    )
     
     @staticmethod
     def notify(msg):

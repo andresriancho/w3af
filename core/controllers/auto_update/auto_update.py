@@ -729,11 +729,29 @@ class UIUpdater(object):
                  rev=VersionMgr.HEAD, print_result=False):
         self._force_upd = force
         self._ask = ask
+        self._logger = logger
         self._rev_upd = rev
         self._print_res = print_result
-        self._vmngr = VersionMgr(log=logger)
-        self._vmngr.callback_onupdate_confirm = ask
+        self._callbacks = {'callback_onupdate_confirm': ask}
+        self._registries = {}
     
+    @property
+    def _vmngr(self):
+        vmngr = getattr(self, '__vmngr', None)
+        if vmngr is None:
+            vmngr = VersionMgr(log=self._logger)
+            [setattr(vmngr, n, c) for n, c in self._callbacks.items()]
+            [vmngr.register(ev, val[0], val[1]) for ev, val in 
+                                                self._registries.items()]
+            setattr(self, '__vmngr', vmngr)
+        return vmngr
+    
+    def _add_callback(self, callback_name, callback):
+        self._callbacks[callback_name] = callback
+    
+    def _register(self, event, func, msg):
+        self._registries[event] = (func, msg)
+        
     def update(self):
         if self._force_upd in (None, True) and is_working_copy() and \
             verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):

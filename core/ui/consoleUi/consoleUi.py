@@ -60,9 +60,9 @@ class ConsoleUIUpdater(UIUpdater):
         def show_log(msg, get_logs):
             if ask(msg):
                 log(get_logs())
-        # Set callbacks
-        self._vmngr.callback_onupdate_confirm = ask
-        self._vmngr.callback_onupdate_show_log = show_log
+        # Add callbacks
+        self._add_callback('callback_onupdate_confirm', ask)
+        self._add_callback('callback_onupdate_show_log', show_log)
     
     def _handle_update_output(self, upd_output):
         # Nothing special to do here.
