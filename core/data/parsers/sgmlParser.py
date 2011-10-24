@@ -135,6 +135,7 @@ class SGMLParser(BaseParser):
             # we better make an exception and convert it to string. Note that
             # yet the parsed elems will be unicode.
             resp_body = resp_body.encode(http_resp.charset, 'replace')
+            parser = etree.XMLParser(target=self, recover=True)
             etree.fromstring(resp_body, parser)
     
     def _find_references(self, tag, attrs):
