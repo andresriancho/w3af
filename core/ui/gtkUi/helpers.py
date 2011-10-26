@@ -29,34 +29,6 @@ from core.controllers.w3afException import w3afException
 
 RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
 
-
-def all(iterable):
-    '''Redefinition of >=2.5 builtin all().
-    
-    @param iterable: a collection of somethings.
-    @return: True if bool(x) is True for all values x in the iterable.
-
-    @author: Taken from Python docs
-
-    '''
-    for element in iterable:
-        if not element:
-            return False
-    return True
-
-def any(iterable):
-    '''Redefinition of >=2.5 builtin all().
-    
-    @param iterable: a collection of somethings.
-    @return: Return True if any element of the iterable is true
-
-    @author: Taken from Python docs
-    '''
-    for element in iterable:
-        if element:
-            return True
-    return False
-
 class PropagateBuffer(object):
     '''Buffer to don't propagate signals when it's not necessary.
 

@@ -20,17 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, gobject
-import sys, os
+import os
 
 from . import confpanel, entries, helpers
 from core.ui.gtkUi.pluginEditor import pluginEditor
 
 from core.controllers.misc.homeDir import get_home_dir
 
-# support for <2.5
-if sys.version_info[:2] < (2,5):
-    all = helpers.all
-    any = helpers.any
 
 class OptionsPanel(gtk.VBox):
     '''Panel with options for configuration.
