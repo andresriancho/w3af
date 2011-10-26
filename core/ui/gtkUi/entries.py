@@ -268,7 +268,7 @@ class UrlOption(ValidatedEntry, ModifiedMixIn):
         @return Always True, there's no validation to perform
         '''
         try:
-            url_object(value)
+            url_object(text)
         except Exception:
             return False
         else:        
