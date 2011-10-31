@@ -20,44 +20,47 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-
-class configurable:
+class configurable(object):
     '''
-    This is mostly "an interface", this "interface" states that all classes that implement it, should
+    This is mostly "an interface", this "interface" states that all
+    classes that implement it, should
     implement the following methods :
         1. setOptions( optionsMap )
         2. getOptions()
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def setOptions( self, optionsMap ):
+    def setOptions(self, optionsMap):
         '''
-        Sets the Options given on the optionsMap to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptions()
+        Sets the Options given on the optionsMap to self. The options
+        are the result of a user entering some data on a window that
+        was constructed using the XML Options that was retrieved from
+        the plugin using getOptions()
         
         This method MUST be implemented on every configurable object. 
         
         @return: No value is returned.
         ''' 
-        raise w3afException('Configurable object is not implementing required method setOptions' )
+        raise NotImplementedError('Configurable object is not implementing '
+                                  'required method setOptions')
         
 
     def getOptions(self):
         '''
-        This method returns an optionList containing the options objects that the configurable object has.
-        Using this option list the framework will build a window, a menu, or some other input method to retrieve
-        the info from the user.
+        This method returns an optionList containing the options
+        objects that the configurable object has. Using this option
+        list the framework will build a window, a menu, or some 
+        other input method to retrieve the info from the user.
         
         This method MUST be implemented on every plugin. 
         
         @return: optionList object.
         '''
-        raise w3afException('Configurable object is not implementing required method getOptions' )
+        raise NotImplementedError('Configurable object is not implementing '
+                                  'required method getOptions')
 
-    def getName( self ):
-        return self.__class__.__name__
+    def getName(self):
+        return type(self).__name__
         
-    def getType( self ):
+    def getType(self):
         return 'configurable'

@@ -1063,7 +1063,7 @@ class w3afCore(object):
                 
         return res
 
-    def setPluginOptions(self, pluginType, pluginName, pluginOptions ):
+    def setPluginOptions(self, pluginType, pluginName, pluginOptions):
         '''
         @parameter pluginType: The plugin type, like 'audit' or 'discovery'
         @parameter pluginName: The plugin name, like 'sqli' or 'webSpider'
@@ -1076,29 +1076,28 @@ class w3afCore(object):
             
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
-        pI = self.getPluginInstance( pluginName, pluginType )
+        pI = self.getPluginInstance(pluginName, pluginType)
         try:
-            pI.setOptions( pluginOptions )
-        except Exception, e:
+            pI.setOptions(pluginOptions)
+        except Exception:
             raise
         else:
             # Now that we are sure that these options are valid, lets save them
             # so we can use them later!
-            self._pluginsOptions[ pluginType ][ pluginName ] = pluginOptions
-    
+            self._pluginsOptions[pluginType][pluginName] = pluginOptions
+
     def getPluginOptions(self, pluginType, pluginName):
         '''
         Get the options for a plugin.
         
-        IMPORTANT NOTE: This method only returns the options for a plugin that was previously configured using setPluginOptions.
-        If you wan't to get the default options for a plugin, get a plugin instance and perform a plugin.getOptions()
+        IMPORTANT NOTE: This method only returns the options for a plugin
+        that was previously configured using setPluginOptions. If you wan't
+        to get the default options for a plugin, get a plugin instance and
+        perform a plugin.getOptions()
         
         @return: An optionList with the plugin options.
         '''
-        if pluginType in self._pluginsOptions:
-            if pluginName in self._pluginsOptions[pluginType]:
-                return self._pluginsOptions[ pluginType ][ pluginName ]
-        return None
+        return self._pluginsOptions.get(pluginType, {}).get(pluginName, None)
         
     def getEnabledPlugins( self, pluginType ):
         return self._strPlugins[ pluginType ]
@@ -1294,15 +1293,15 @@ class w3afCore(object):
         strFileList.sort()
         return strFileList
         
-    def getPluginInstance( self, pluginName, pluginType ):
+    def getPluginInstance(self, pluginName, pluginType):
         '''
         @return: An instance of a plugin.
         '''
         pluginInst = factory('plugins.' + pluginType + '.' + pluginName)
-        pluginInst.setUrlOpener( self.uriOpener )
+        pluginInst.setUrlOpener(self.uriOpener)
         if pluginName in self._pluginsOptions[ pluginType ].keys():
-            pluginInst.setOptions( self._pluginsOptions[ pluginType ][pluginName] )
-                
+            pluginInst.setOptions(self._pluginsOptions[pluginType ][pluginName])
+        
         # This will init some plugins like mangle and output
         if pluginType == 'attack' and not self._initialized:
             self.initPlugins()
@@ -1410,7 +1409,8 @@ class w3afCore(object):
                 for pluginName in profileInstance.getEnabledPlugins( pluginType ):
                     pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
                     try:
-                        # FIXME: Does this work with output plugin options? What about target, http-settings, etc?
+                        # FIXME: Does this work with output plugin options?
+                        # What about target, http-settings, etc?
                         self.setPluginOptions( pluginType, pluginName, pluginOptions )
                     except Exception, e:
                         # This is because of an invalid plugin, or something like that...

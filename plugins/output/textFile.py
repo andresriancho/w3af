@@ -49,10 +49,6 @@ class textFile(baseOutputPlugin):
         # User configured parameters
         self._file_name = 'output.txt'
         self._http_file_name = 'output-http.txt'
-        # I changed this to false because the performance is enhanced A LOT
-        # Show Caller False: Performed 4001 requests in 10 seconds (400.100000 req/sec)
-        # Show Caller True: Performed 4001 requests in 28 seconds (142.892857 req/sec)
-        self._show_caller = False
         self.verbose = True
         
         # Internal variables
@@ -62,8 +58,11 @@ class textFile(baseOutputPlugin):
         # File handlers
         self._file = None
         self._http = None
+        # XXX Only set '_show_caller' to True for debugging purposes. It
+        # causes the execution of potentially slow code that handles
+        # with introspection. 
+        self._show_caller = False
 
-    
     def _init( self ):
         self._initialized = True
         try:
@@ -327,7 +326,6 @@ class textFile(baseOutputPlugin):
         self.verbose = OptionList['verbose'].getValue()
         self._file_name = OptionList['fileName'].getValue()
         self._http_file_name = OptionList['httpFileName'].getValue()
-        self._show_caller = OptionList['showCaller'].getValue()
         
         self._init()
     
@@ -344,14 +342,10 @@ class textFile(baseOutputPlugin):
         d3 = 'File name where this plugin will write HTTP requests and responses'
         o3 = option('httpFileName', self._http_file_name, d3, 'string')
         
-        d4 = 'Enables a slightly more verbose output that shows who called the output manager'
-        o4 = option('showCaller', self._show_caller, d4, 'boolean')
-        
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
-        ol.add(o4)
         return ol
 
     def logHttp(self, request, response):
@@ -384,5 +378,4 @@ class textFile(baseOutputPlugin):
             - fileName
             - httpFileName
             - verbose
-            - showCaller
         '''

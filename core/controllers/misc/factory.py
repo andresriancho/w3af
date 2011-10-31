@@ -49,19 +49,20 @@ def factory(moduleName, *args):
     except Exception, e:
         raise w3afException('Error while loading plugin "'+ moduleName + '". Exception: ' + str(e) )
     else:
+        
+        className = moduleName.split('.')[-1]
+        
         try:
             aModule = sys.modules[moduleName]
-            className = moduleName.split('.')[len(moduleName.split('.'))-1]
-            aClass = getattr( aModule , className )
+            aClass = getattr(aModule , className)
         except:
             raise w3afException('The requested plugin ("'+ moduleName + '") doesn\'t have a correct format.')
         else:
             try:
-                res = aClass(*args)
+                inst = aClass(*args)
             except Exception, e:
                 msg = 'Failed to get an instance of "' + className
                 msg += '". Original exception: "' + str(e) + '".'
                 msg += 'Traceback for this error: ' + str( traceback.format_exc() )
                 raise w3afException(msg)
-            else:
-                return res
+            return inst
