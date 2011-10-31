@@ -421,10 +421,10 @@ class PluginTree(gtk.TreeView):
             dlg.run()
             dlg.destroy()            
         else:
-                 # if we still are in the same tree position, refresh the config
-                (newpath, column) = self.get_cursor()
-                if newpath == path:
-                    self.configure_plugin()
+            # if we still are in the same tree position, refresh the config
+            (newpath, column) = self.get_cursor()
+            if newpath == path:
+                self.configure_plugin()
 
     def configure_plugin(self, tv=None):
         '''Starts the plugin configuration.
