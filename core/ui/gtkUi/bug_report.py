@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 # w3af crash File creation
-from core.controllers.easy_contribution.sourceforge import sourceforge
+from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 import cgi
 import webbrowser
 from core.ui.gtkUi.helpers import endThreads
@@ -111,8 +111,11 @@ class sourceforge_bug_report(object):
     Class that models user interaction with sourceforge to report a bug.
     '''
     
+    DEFAULT_USER_NAME = 'w3afbugsreport'
+    DEFAULT_PASSWD = 'w3afs1nce2006'
+    
     def __init__(self, tback='', fname=None, plugins=''):
-        self.sourceforge = sourceforge()
+        self.sf = None
         self.tback = tback
         self.fname = fname
         self.plugins = plugins
@@ -127,42 +130,54 @@ class sourceforge_bug_report(object):
         Send bug to Sourceforge.
         '''
         # Do the login
-        user = self._login_sf()
+        sf = self._login_sf(ask_credentials=None)
+        
+        # XXX - JAP Oct 31, 2011 - This hack was caused by the spam reports
+        # some SF user has been logging in SF permanently during the last
+        # weeks. Now we don't accept in SF reports from 'anonymous' anymore.
+        if not sf.logged_in:
+            ask_cred = lambda x: (self.DEFAULT_USER_NAME, self.DEFAULT_PASSWD)
+            sf = self._login_sf(ask_credentials=ask_cred)
+            
         # Ask for a bug title and description
         summary, userdesc = self._ask_bug_info()
         
         result = None
         try:
-            result = self.sourceforge.report_bug(summary, userdesc, self.tback,
-                                                 self.fname, self.plugins,
-                                                 self.autogen, user)
+            result = sf.report_bug(summary, userdesc, self.tback,
+                                   self.fname, self.plugins, self.autogen)
         except:
             pass
         else:
             return result
     
-    def _login_sf(self):
+    def _login_sf(self, ask_credentials=None, retry=10):
         '''
         Perform user login.
         '''
+        if ask_credentials is None:
+            ask_credentials = self._ask_credentials
         invalid_login = False
 
-        while True:
+        while retry:
+            # Decrement retry counter
+            retry -= 1
             # Ask for user and password, or anonymous
-            user, password = self._ask_credentials(invalid_login)
-        
+            user, password = ask_credentials(invalid_login)
+            sf = SourceforgeXMLRPC(user, password)
+            
             if user == password == '':
-                # anonymous bug report, no login.
-                login_ok = True
+                login_ok = False
+                break
             else:
                 # Login to sourceforge
-                login_ok = self.sourceforge.login(user, password)
+                login_ok = sf.login()
                 invalid_login = True
-            
-            if login_ok:
-                break
+                
+                if login_ok:
+                    break
         
-        return user
+        return sf
     
     def _ask_bug_info(self):
         '''

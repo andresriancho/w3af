@@ -25,20 +25,14 @@ import re
 import string
 import time
 import urllib2, urllib
+import xmlrpclib
 
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 
 
-class sourceforge(object):
+class Sourceforge(object):
     
-    # URLs
-    LOGGED_IN_PROTOCOL = 'https'
-    ANON_PROTOCOL = 'http'
-    
-    LOGIN_PAGE = 'https://sourceforge.net/account/login.php'
-    NEW_TKT_URL = '://sourceforge.net/apps/trac/w3af/newticket'
     CREATED_TKT = 'http://sourceforge.net/apps/trac/w3af/ticket/'
-    
     # Error report body
     WIKI_DETAILS_TEMPLATE = string.Template(
 '''== User description: ==
@@ -57,22 +51,121 @@ $t_back
 {{{
 $plugins
 }}}''')
+    
+    def __init__(self, username=None, passwd=None):
+        self.username = username or ''
+        self.passwd = passwd or ''
+        self.logged_in = False
+    
+    def login(self):
+        raise NotImplementedError
+    
+    def report_bug(self, summary, userdesc, tback='',
+                   fname=None, plugins='', autogen=True):
+        raise NotImplementedError
+    
+    def _build_summary_and_desc(self, summary, desc, tback,
+                                fname, plugins, autogen):
+        '''
+        Build the formatted summary and description that will be
+        part of the reported bug.
+        '''
+        # Which summary should I use?
+        if summary:
+            bug_summary = summary
+        else:
+            # Try to extract the last line from the traceback:
+            if tback:
+                bug_summary = tback.split('\n')[-2]
+            else:
+                # Failed... lets generate something random!
+                m = hashlib.md5()
+                m.update(time.ctime())
+                bug_summary = m.hexdigest()
+        
+        from core.ui.gtkUi.exception_handler import VERSIONS
+        bdata = {'plugins': plugins, 't_back': tback,
+                 'user_desc': desc, 'w3af_v': VERSIONS}
+
+        # Handle the summary. Concat 'user_title'. If empty, append a random
+        # token to avoid the double click protection added by sourceforge.
+        summary = '%sBug Report - %s' % (
+                    autogen and '[Auto-Generated] ' or '',
+                    bug_summary)
+        
+        # Build details string
+        details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
+        
+        return summary, details
+        
+
+class SourceforgeXMLRPC(Sourceforge):
+    
+    LOGIN_URL = "https://%s:%s@sourceforge.net/apps/trac/w3af/login/xmlrpc"
+    
+    def __init__(self, username, passwd):
+        Sourceforge.__init__(self, username, passwd)
+        self._proxy = None
+    
+    def login(self):
+        self._proxy = xmlrpclib.ServerProxy(
+                    SourceforgeXMLRPC.LOGIN_URL % (self.username, self.passwd)
+                    )
+        # Test if the login was successful
+        try:
+            self._proxy.system.listMethods()
+            self.logged_in = True
+        except xmlrpclib.ProtocolError:
+            return False
+        return self.logged_in
+            
+    def report_bug(self, summary, userdesc, tback='',
+                   fname=None, plugins='', autogen=True):
+        assert self.logged_in, "You should login first"
+        
+        summary, desc = self._build_summary_and_desc(
+                            summary, userdesc, tback, fname, plugins, autogen
+                            )
+        
+        values = {
+            'type': 'defect',
+            'status': 'new',
+            'component': 'automatic-bug-report',
+            'milestone': '',
+            'priority': 'major',
+            }
+        try:
+            newticket = self._proxy.ticket.create(summary, desc,
+                                                  values, True)
+            return self.CREATED_TKT + str(newticket)
+        except xmlrpclib.ProtocolError:
+            return None
+        
+
+
+class SourceforgeHTTP(Sourceforge):
+    
+    # URLs
+    LOGGED_IN_PROTOCOL = 'https'
+    ANON_PROTOCOL = 'http'
+    
+    LOGIN_PAGE = 'https://sourceforge.net/account/login.php'
+    NEW_TKT_URL = '://sourceforge.net/apps/trac/w3af/newticket'
+    
     # Form token regex
     FORM_TOKEN_RE = 'name="__FORM_TOKEN"\svalue="(\w*?)"'
     # Created ticket regex
     NEW_TICKET_RE = '://sourceforge.net/apps/trac/w3af/attachment/ticket/(\d*?)\?action=new'
     NEW_ATTACHMENT_URL_FORMAT = 'http://sourceforge.net/apps/trac/w3af/attachment/ticket/%s/?action=new&attachfilebutton=Attach+file'
     
-    def __init__(self):
+    def __init__(self, username, passwd):
         '''
         This class is a wrapper for reporting bugs to sourceforge's TRAC
         using python.
         
         @author: Andres Riancho ( andres.riancho@gmail.com )
         '''
-        # Internal variables
-        self.logged_in = False
-        self.logged_in_user = 'anonymous'
+        Sourceforge.__init__(self, username, passwd)
         
         # Init the urllib2 module
         self._init_urllib2_handlers()
@@ -102,7 +195,7 @@ $plugins
                                            cookie_handler,
                                            redir_handler)
 
-    def login(self, user, passwd):
+    def login(self):
         '''
         Perform a login to the sourceforge page using the provided user and password.
         
@@ -123,8 +216,8 @@ $plugins
         '''
         values = {'return_to': '',
             'ssl_status': '',
-            'form_loginname': user, 
-            'form_pw': passwd,
+            'form_loginname': self.username, 
+            'form_pw': self.passwd,
             'login': 'Log in'}
         try:
             resp = self._do_request(self.LOGIN_PAGE, values)
@@ -132,8 +225,6 @@ $plugins
             return False
         else:
             self.logged_in = 'Invalid username or password' not in resp.read()
-            if self.logged_in:
-                self.logged_in_user = user
             return self.logged_in
         
             
@@ -175,35 +266,13 @@ $plugins
 
         '''
         
-        # Which summary should I use?
-        if summary:
-            bug_summary = summary
-        else:
-            # Try to extract the last line from the traceback:
-            if tback:
-                bug_summary = tback.split('\n')[-2]
-            else:
-                # Failed... lets generate something random!
-                m = hashlib.md5()
-                m.update(time.ctime())
-                bug_summary = m.hexdigest()
-        
-        
-        from core.ui.gtkUi.exception_handler import VERSIONS
-        
-        bdata = {'plugins': plugins, 't_back': tback,
-                 'user_desc': userdesc, 'w3af_v': VERSIONS}
+        summary, details = self._build_summary_and_desc(
+                    summary, userdesc, tback, fname, plugins, autogen
+                    )
 
-        # Handle the summary. Concat 'user_title'. If empty, append a random
-        # token to avoid the double click protection added by sourceforge.
-        summary = '%sBug Report - %s' % (
-                    autogen and '[Auto-Generated] ' or '',
-                    bug_summary)
-        
-        # Build details string
-        details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
         resp = self._do_request( self.get_new_ticket_url() )
-        form_token = self._get_match_from_response(resp.read(), self.FORM_TOKEN_RE) or ''
+        form_token = self._get_match_from_response(
+                                        resp.read(), self.FORM_TOKEN_RE) or ''
         
         values = {
             'field_component': 'automatic-bug-report',
@@ -222,7 +291,7 @@ $plugins
         resp = self._do_request( self.get_new_ticket_url(), values)
         
         # If everything went well a ticket_id must be present
-        match = re.search( self.get_ticket_re() , resp.geturl() )
+        match = re.search( self.get_ticket_re(), resp.geturl() )
         if match:
             ticket_id = match.group(1)
 
@@ -245,7 +314,7 @@ $plugins
             'realm': ['ticket'],
             '__FORM_TOKEN': [form_token],
             'id': [ticket_id],
-            'author': [self.logged_in_user],
+            'author': [getattr(self, 'logged_in_user', 'anonymous')],
             'submit': ['Add attachment']}
         
         req = urllib2.Request(url, values)
