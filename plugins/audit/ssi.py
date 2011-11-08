@@ -19,23 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from __future__ import with_statement
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import re
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
-from core.controllers.w3afException import w3afException
-
+from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
-
-import re
 
 
 class ssi(baseAuditPlugin):
@@ -97,7 +89,7 @@ class ssi(baseAuditPlugin):
                 self.__dict__['oResponse'] = oResponse
             
             def getOriginalResponseBody(self):
-                return self.oResponse
+                return self.oResponse.body
                 
             def __getattr__(self, attr):
                 return getattr(self.__dict__['freq'], attr)
@@ -145,7 +137,6 @@ class ssi(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._tm.join( self )
-        
         for fr in self._fuzzable_requests:
             self._sendMutant( fr )
             # The _analyzeResult is called and "permanent" SSI's are saved there to the kb
