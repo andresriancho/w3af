@@ -221,12 +221,12 @@ class OnlyOptions(gtk.VBox):
             dlg.run()
             dlg.destroy()
             return
-
-        # Get the value from the GTK widget and set it to the option object
-        for opt in self.options:
-            opt.setValue( opt.widg.getValue() )
-            
+        
         try:
+            # Get the value from the GTK widget and set it to the option object
+            for opt in self.options:
+                helpers.coreWrap(opt.setValue, opt.widg.getValue())
+
             if isinstance(plugin, basePlugin):
                 helpers.coreWrap(self.w3af.setPluginOptions, plugin.ptype, plugin.pname, self.options)
             else:
