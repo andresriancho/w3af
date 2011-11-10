@@ -29,6 +29,6 @@ def get_w3af_version():
     '''    
     rev = get_svnversion() if is_working_copy() else 'unknown'
     return ('w3af - Web Application Attack and Audit Framework\n'
-            'Version: 1.1\n'
+            'Version: 1.2\n'
             'Revision: %s\n'
             'Author: Andres Riancho and the w3af team.') % rev
