@@ -27,7 +27,6 @@ import time
 import ConfigParser
 import threading
 
-from core.controllers.misc.decorators import retry
 
 # Get w3af install dir
 W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
@@ -236,9 +235,6 @@ class w3afSVNClient(SVNClient):
     def URL(self):
         return self._repourl
 
-    @retry(tries=3, delay=0.5, backoff=2,
-           exc_class=SVNUpdateError,
-           err_msg=UPD_ERROR_MSG)
     def update(self, rev=None):
         with self._actionlock:
             
