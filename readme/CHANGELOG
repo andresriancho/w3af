@@ -1,3 +1,14 @@
+(10 Nov 2011)    1.1
+====================
+
+    * Considerably increased performance by implementing gzip encoding
+    * Fixed hundreds of crashes
+    * Fixed critical bug in auto-update feature
+    * Merged changes from different branches to support webUI
+    * Enhanced embedded bug report system using Trac's XMLRPC
+    * Enhanced integration with other tools (bug fixed and added more info to the file)
+
+
 (25 May 2011)    1.0 - stable!     
 ==============================
 
