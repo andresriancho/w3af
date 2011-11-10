@@ -239,7 +239,7 @@ class w3afSVNClient(SVNClient):
         with self._actionlock:
             
             if self.URL != w3afSVNClient.W3AF_TRUNK_URL:
-                self.switch(w3afSVNClient.W3AF_TRUNK_URL)
+                self._switch(w3afSVNClient.W3AF_TRUNK_URL)
 
             kind = pysvn.opt_revision_kind
             if rev is None:
