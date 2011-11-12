@@ -55,11 +55,11 @@ def dependencyCheck():
         try:
             from pybloomfilter import BloomFilter as mmap_filter
         except Exception, e:
-            msg = '    pybloomfiltermmap is a required dependency in *nix systems, please install from '
-            msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0'
+            msg = '    pybloomfiltermmap is a required dependency in *nix systems, please download from '
+            msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0 and build using the python2.6-dev '
+            msg += 'package.'
             
             additional_information.append(msg)
-            packages_debian.append('python2.6-dev')
             reasonForExit = True        
     
     # nltk raises a warning... which I want to ignore...
