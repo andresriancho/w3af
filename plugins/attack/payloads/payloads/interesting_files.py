@@ -24,10 +24,16 @@ class interesting_files(base_payload):
         interesting_extensions.append('.config')
         interesting_extensions.append('.nfo')
         interesting_extensions.append('.info')
+        interesting_extensions.append('.properties')
+        interesting_extensions.append('.tar')
+        interesting_extensions.append('.tar.gz')
+        interesting_extensions.append('.pgp')
         
         file_list = []
+        file_list.append('backup')
         file_list.append('passwords')
         file_list.append('passwd')
+        file_list.append('pwd')
         file_list.append('password')
         file_list.append('access')
         file_list.append('auth')
@@ -38,7 +44,7 @@ class interesting_files(base_payload):
         file_list.append('keys')
         file_list.append('permissions')
         file_list.append('perm')
-        
+                
         users_result = self.exec_payload('users')
 
         files_to_read = []
