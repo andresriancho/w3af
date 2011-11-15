@@ -46,6 +46,7 @@ class symfony(baseGrepPlugin):
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()
+        self._override = False
         
     def grep(self, request, response):
         '''
@@ -82,6 +83,15 @@ class symfony(baseGrepPlugin):
         >>> response = httpResponse(200, body , headers, url, url)
         >>> a = symfony()
         >>> assert a.symfonyDetected(response) == False
+
+        Symfony detection, override
+        >>> body = emptyBody
+        >>> headers = noSymfonyHeaders
+        >>> url = url_object('http://www.w3af.com/')
+        >>> response = httpResponse(200, body , headers, url, url)
+        >>> a = symfony()
+        >>> a._override = True
+        >>> assert a.symfonyDetected(response) == True
 
         CSRF detection, positive
         >>> body = protectedBody
@@ -126,6 +136,7 @@ class symfony(baseGrepPlugin):
         >>> request.setMethod( 'GET' )
         >>> a = symfony()
         >>> a.grep(request, response)
+        
         # TODO: should != 0, outside the tests it works fine!
         >>> assert len(kb.kb.getData('symfony', 'symfony')) == 0
         '''
@@ -148,6 +159,8 @@ class symfony(baseGrepPlugin):
                         kb.kb.append(self, 'symfony', i)
 
     def symfonyDetected(self, response):
+        if self._override:
+            return True
         for header_name in response.getHeaders().keys():
             if header_name.lower() == 'set-cookie' or header_name.lower() == 'cookie':
                 if re.match('^symfony=', response.getHeaders()[header_name]):
@@ -167,16 +180,20 @@ class symfony(baseGrepPlugin):
                             return True
         return False
 
-
-    def setOptions( self, OptionList ):
-        pass
+    def setOptions( self, optionsMap ):
+        self._override = optionsMap['override'].getValue()
     
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
+        d1 = 'Skip symfony detection and search for the csrf (mis)protection.'
+        o1 = option('Skip symfony detection', self._override, d1, 'boolean')
+        
         ol = optionList()
+        ol.add(o1)
         return ol
+        
         
     def end(self):
         '''
