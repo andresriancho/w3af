@@ -36,11 +36,10 @@ Documentation:
     Mike Harbison - Documentation review
     Andy Bach - Documentation review
     Jerome Athias - Users guide translation to French
+    Антон Кузьмин - Users guide translation to Russian
 
 General:
     Achim Hoffmann (ah|at|securenet.de) - Great ideas and OWASP SoC Reviewer
     Kevin Denver - xmlFile plugin, urlParser extension, bug fixing, testing and more!
     Martin Tartarelli - Hacked around the cmd.aspx file in order to evade AV detection, documentation, and more.
-
-w3af also has one big sponsor, Cybsec, www.cybsec.com
 
