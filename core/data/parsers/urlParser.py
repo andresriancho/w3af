@@ -168,6 +168,9 @@ class url_object(object):
         self._changed = True
         self._encoding = encoding
 
+        if data is None:
+            raise ValueError('Can not build a url_object from data=None.')
+        
         if type(data) is tuple:
             scheme, netloc, path, params, qs, fragment = data
         else:
