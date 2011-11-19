@@ -78,9 +78,7 @@ class codeDisclosure(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = codeDisclosure.codeDisclosure()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))
@@ -92,9 +90,7 @@ class codeDisclosure(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = codeDisclosure.codeDisclosure()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('codeDisclosure', 'codeDisclosure'))

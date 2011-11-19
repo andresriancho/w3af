@@ -118,9 +118,7 @@ class symfony(baseGrepPlugin):
         >>> headers = symfonyHeaders        
         >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = symfony()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('symfony', 'symfony')) == 0
@@ -131,9 +129,7 @@ class symfony(baseGrepPlugin):
         >>> headers = symfonyHeaders
         >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = symfony()
         >>> a.grep(request, response)
         

@@ -70,8 +70,7 @@ class ssn(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
+        >>> request = fuzzableRequest(url)
         >>> s = ssn()
         >>> s._already_inspected = set()
         >>> s.grep(request, response)

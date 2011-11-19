@@ -30,7 +30,7 @@ import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 from core.controllers.misc.number_generator import consecutive_number_generator
-from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.request.frFactory import create_fuzzable_request
 
 
 class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.HTTPRedirectHandler):
@@ -198,19 +198,18 @@ class logHandler(urllib2.BaseHandler, urllib2.HTTPDefaultErrorHandler, urllib2.H
         '''
         Send the request and the response to the output manager.
         '''        
-        headers = dict(request.headers)
-        headers.update(request.unredirected_hdrs)
-    
-        fr = createFuzzableRequestRaw(method=request.get_method(),
-                                      url=request.url_object,
-                                      postData=str(request.get_data()),
-                                      headers=headers)
+        fr = create_fuzzable_request(
+                            request,
+                            add_headers=request.unredirected_hdrs
+                            )
 
         if isinstance(response, httpResponse.httpResponse):
             resp = response
         else:
-            resp = httpResponse.from_httplib_resp(response,
-                                              original_url=request.url_object)
+            resp = httpResponse.from_httplib_resp(
+                                          response,
+                                          original_url=request.url_object
+                                          )
             resp.setId(response.id)
         
         om.out.logHttp(fr, resp)

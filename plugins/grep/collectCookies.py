@@ -80,9 +80,7 @@ class collectCookies(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = collectCookies()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('collectCookies', 'cookies'))
@@ -95,9 +93,7 @@ class collectCookies(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = collectCookies()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('collectCookies', 'cookies'))
@@ -110,9 +106,7 @@ class collectCookies(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; HttpOnly'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = collectCookies()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('collectCookies', 'cookies'))
@@ -125,9 +119,7 @@ class collectCookies(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': ''}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> c = collectCookies()
         >>> c.grep(request, response)
         >>> len(kb.kb.getData('collectCookies', 'cookies'))

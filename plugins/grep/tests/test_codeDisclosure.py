@@ -46,9 +46,7 @@ class test_codeDisclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest()
-        request.setURL( url )
-        request.setMethod( 'GET' )
+        request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1 )
             
@@ -57,9 +55,7 @@ class test_codeDisclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest()
-        request.setURL( url )
-        request.setMethod( 'GET' )
+        request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1 )
 
@@ -69,9 +65,7 @@ class test_codeDisclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest()
-        request.setURL( url )
-        request.setMethod( 'GET' )
+        request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 0 )
 

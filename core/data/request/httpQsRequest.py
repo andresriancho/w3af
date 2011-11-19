@@ -24,73 +24,49 @@ from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
-class httpQsRequest(fuzzableRequest):
+class HTTPQSRequest(fuzzableRequest):
     '''
-    This class represents a fuzzable request that sends all variables in the querystring. This is tipically used
-    for GET requests.
+    This class represents a fuzzable request that sends all variables
+    in the querystring. This is tipically used for GET requests.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
-        fuzzableRequest.__init__(self)
-        self._method = 'GET'
-    
-    def setURL( self , url ):
-        '''
-        >>> r = httpQsRequest()
-        >>> r.setURL('http://www.google.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        TypeError: The URL of a httpQsRequest must be of urlParser.url_object type.
-        >>> url = url_object('http://www.google.com/')
-        >>> r = httpQsRequest()
-        >>> r.setURL(url)
-        >>> r.getURL() == url
-        True
-        '''
-        if not isinstance(url, url_object):
-            raise TypeError('The URL of a httpQsRequest must be of urlParser.url_object type.')
+    def __init__(self, uri, method='GET', headers=None, cookie=None):
+        fuzzableRequest.__init__(self, uri, method, headers, cookie)
         
-        self._url = url.uri2url()
-        self._uri = url
-    
-    def setURI( self, uri ):
+    def setURI(self, uri):
         '''
-        >>> r = httpQsRequest()
-        >>> r.setURI('http://www.google.com/')
+        >>> r = HTTPQSRequest('http://www.w3af.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: The URI of a httpQsRequest must be of urlParser.url_object type.
-        >>> uri = url_object('http://www.google.com/')
-        >>> r = httpQsRequest()
+        ValueError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
+        >>> r = HTTPQSRequest(url_object('http://www.w3af.com/'))
+        >>> uri = url_object('http://www.w3af.com/scan')
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True
         '''
-        if not isinstance(uri, url_object):
-            raise TypeError('The URI of a httpQsRequest must be of urlParser.url_object type.')
-        
+        fuzzableRequest.setURI(self, uri)
         self._dc = uri.getQueryString()
-        self._uri = uri
-        self._url = uri.uri2url()
         
-    def getURI( self ):
+    def getURI(self):
+        res = self._url.copy()
         if self._dc:
-            res = self._url.copy()
-            res.setQueryString( self._dc )
-        else:
-            res = self._url.copy()
+            res.setQueryString(self._dc)
         return res
     
-    def setData( self, d=None ):
+    def setData(self, d):
+        pass
+    
+    def setMethod(self, meth):
         pass
         
-    def getData( self ):
+    def getData(self):
         # The postdata
         return None
     
-    def __repr__( self ):
-        return '<QS fuzzable request | %s | %s>' % \
-                                            (self.getMethod(), self.getURI())
-    
+    def __repr__(self):
+        #return '----' +  str(self._uri.getQueryString())
+        return ('<QS fuzzable request | %s | %s>' % 
+                                (self.getMethod(), self.getURI()))

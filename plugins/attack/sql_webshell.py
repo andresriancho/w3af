@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-import core.data.request.httpQsRequest as httpQsRequest
+from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
 
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.urlParser import parse_qs
 from core.controllers.w3afException import w3afException
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
@@ -79,21 +79,20 @@ class sql_webshell(baseAttackPlugin):
         '''
         om.out.debug( 'Starting sql_webshell fastExploit.' )
         
-        if self._url is None or self._method is None or self._data is None or self._injvar is None:
+        if any(
+             lambda attr: attr is None,
+             (self._url, self._method, self._data, self._injvar)
+             ):
             raise w3afException('You have to configure the plugin parameters')
         else:
-            
-            freq = None
             if self._method == 'POST':
-                freq = httpPostDataRequest.httpPostDataRequest()
+                freq = httpPostDataRequest(self._url)
             elif self._method == 'GET':
-                freq = httpQsRequest.httpQsRequest()
+                freq = HTTPQSRequest(self._url)
             else:
                 raise w3afException('Method not supported.')
             
-            freq.setURL( self._url )
-            freq.setDc( parse_qs( self._data ) )
-            freq.setHeaders( {} )
+            freq.setDc(parse_qs(self._data))
             
             bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )

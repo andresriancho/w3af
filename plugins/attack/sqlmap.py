@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.kb.shell import shell as shell
 
-import core.data.request.httpPostDataRequest as httpPostDataRequest
-import core.data.request.httpQsRequest as httpQsRequest
+from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
 
 import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
@@ -75,13 +75,13 @@ class sqlmap(baseAttackPlugin):
         self._goodSamaritan = True
         self._generateOnlyOne = True
         
-    def fastExploit( self ):
+    def fastExploit(self):
         '''
         Exploits a web app with [blind] sql injections vulns.
         The options are configured using the plugin options and setOptions() method.
         '''
-        om.out.debug( 'Starting sqlmap fastExploit.' )
-        om.out.console( SQLMAPCREATORS )
+        om.out.debug('Starting sqlmap fastExploit.')
+        om.out.console(SQLMAPCREATORS)
         
         if self._url is None or self._method is None or self._data is None or self._injvar is None:
             raise w3afException('You have to configure the plugin parameters')
@@ -89,37 +89,36 @@ class sqlmap(baseAttackPlugin):
             
             freq = None
             if self._method == 'POST':
-                freq = httpPostDataRequest.httpPostDataRequest()
+                freq = httpPostDataRequest(self._url)
             elif self._method == 'GET':
-                freq = httpQsRequest.httpQsRequest()
+                freq = HTTPQSRequest(self._url)
             else:
                 raise w3afException('Method not supported.')
             
-            freq.setURL( self._url )
-            freq.setDc( parse_qs( self._data ) )
-            freq.setHeaders( {} )
+            freq.setDc(parse_qs(self._data))
             
             bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._urlOpener )
-            bsql.setEqualLimit( self._equalLimit )
-            bsql.setEquAlgorithm( self._equAlgorithm )
+            bsql.setUrlOpener(self._urlOpener)
+            bsql.setEqualLimit(self._equalLimit)
+            bsql.setEquAlgorithm(self._equAlgorithm)
             
-            vuln_obj = bsql.is_injectable( freq, self._injvar )
+            vuln_obj = bsql.is_injectable(freq, self._injvar)
             if not vuln_obj:
-                raise w3afException('Could not verify SQL injection ' + str(vuln) )
+                raise w3afException('Could not verify SQL injection ' + str(vuln))
             else:
                 om.out.console('SQL injection could be verified, trying to create the DB driver.')
                 
                 # Try to get a shell using all vuln
-                msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
+                msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
                 msg += '. Please wait...'
-                om.out.console( msg )
-                shell_obj = self._generateShell( vuln_obj )
+                om.out.console(msg)
+                shell_obj = self._generateShell(vuln_obj)
                 if shell_obj is not None:
-                    kb.kb.append( self, 'shell', shell_obj )
+                    kb.kb.append(self, 'shell', shell_obj)
                     return [shell_obj, ]
                     
                 raise w3afException('No exploitable vulnerabilities found.')
+
         
     def getAttackType(self):
         '''

@@ -33,7 +33,7 @@ from core.controllers.basePlugin.baseManglePlugin import headersToString, string
 import re
 
 from core.controllers.w3afException import w3afException
-from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.request.frFactory import create_fuzzable_request
 
 
 class sed(baseManglePlugin):
@@ -55,7 +55,7 @@ class sed(baseManglePlugin):
         self._priority = 20
         self._expressions = ''
         
-    def mangleRequest(self, request ):
+    def mangleRequest(self, request):
         '''
         This method mangles the request.
         
@@ -64,17 +64,18 @@ class sed(baseManglePlugin):
         '''
         data = request.getData()
         for regex, string in self._req_body_manglers:
-            data = regex.sub( string, data )
+            data = regex.sub(string, data)
         
-        header_string = headersToString( request.getHeaders() )
+        header_string = headersToString(request.getHeaders())
         for regex, string in self._req_head_manglers:
-            header_string = regex.sub( string, header_string )
-        header_dict = stringToHeaders( header_string )
+            header_string = regex.sub(string, header_string)
+        header_dict = stringToHeaders(header_string)
         
-        request = createFuzzableRequestRaw( request.getMethod() , request.getURL(), 
-                                            data, header_dict )
-        
-        return request
+        return create_fuzzable_request(
+                                 request.getURL(),
+                                 request.getMethod(),
+                                 data, header_dict
+                                 )
     
     def mangleResponse(self, response):
         '''

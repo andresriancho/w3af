@@ -339,13 +339,14 @@ class httpResponse(object):
         >>> r.setURI('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URI of a httpResponse object must be of urlParser.url_object type.
+        ValueError: The URI of a httpResponse object must be of urlParser.url_object type.
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True
+        
         '''
         if not isinstance(uri, url_object):
-            raise TypeError('The URI of a httpResponse object must be of '
+            raise ValueError('The URI of a httpResponse object must be of '
                              'urlParser.url_object type.')
         
         self._uri = uri

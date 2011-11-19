@@ -56,9 +56,7 @@ class mutant(object):
 
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> fr = fuzzableRequest()
-        >>> url = url_object('http://www.w3af.com')
-        >>> fr.setURL( url ) 
+        >>> fr = fuzzableRequest(url_object('http://www.w3af.com'), )
         >>> m = mutant( fr )
         
         # By default

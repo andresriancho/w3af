@@ -95,9 +95,7 @@ class test_all(unittest.TestCase):
                                             url_object( self.url_str + str(counter) ),
                                             url_object( self.url_str + str(counter) ) )
 
-                    request = fuzzableRequest()
-                    request.setURI( self.url_inst )
-
+                    request = fuzzableRequest(self.url_inst)
                     for pinst in self._plugins:
                         pinst.grep( request, response )
 

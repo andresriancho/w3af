@@ -36,7 +36,7 @@ class mutantCookie(mutant):
 
     def getURL( self ):
         '''
-        The next methods (getURL and getURI) are really simple, but they override the URL creation algorithm of httpQsRequest, that
+        The next methods (getURL and getURI) are really simple, but they override the URL creation algorithm of HTTPQSRequest, that
         uses the self._dc variable. If I don't have these methods, I end up with something like this:
         
         ========================================Request 15 - Sat Oct 27 21:05:34 2007========================================

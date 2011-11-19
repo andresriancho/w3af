@@ -234,10 +234,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             path = self.path
 
-        fuzzReq = fuzzableRequest()
-        fuzzReq.setURI(url_object(path))
-        fuzzReq.setHeaders(self.headers.dict)
-        fuzzReq.setMethod(self.command)
+        fuzzReq = fuzzableRequest(
+                              url_object(path), 
+                              self.command,
+                              self.headers.dict
+                              )
         postData = self._getPostData()
         if postData:
             fuzzReq.setData(postData)

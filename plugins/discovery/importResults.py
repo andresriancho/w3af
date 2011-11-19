@@ -28,7 +28,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.request.frFactory import create_fuzzable_request
 from core.data.parsers.urlParser import url_object
 
 import csv
@@ -116,18 +116,16 @@ class importResults(baseDiscoveryPlugin):
         
         >>> i = importResults()
         
-        >>> i._obj_from_csv( ('GET','http://www.w3af.com/',''))
+        >>> i._obj_from_csv(('GET', 'http://www.w3af.com/', ''))
         <QS fuzzable request | GET | http://www.w3af.com/>
-        
-        >>> i._obj_from_csv( ('GET','http://www.w3af.com/?id=1',''))
+        >>> i._obj_from_csv(('GET', 'http://www.w3af.com/?id=1', ''))
         <QS fuzzable request | GET | http://www.w3af.com/?id=1>
-
-        >>> pdr = i._obj_from_csv( ('GET','http://www.w3af.com/','id=1'))
+        >>> pdr = i._obj_from_csv(('GET', 'http://www.w3af.com/', 'id=1'))
         >>> pdr
         <postdata fuzzable request | GET | http://www.w3af.com/>
-        >>> pdr.getData()
+        >>> pdr._dc
         {'id': ['1']}
-        >>> str(pdr.getData())
+        >>> pdr.getData()
         'id=1'
         '''
         try:
@@ -135,13 +133,13 @@ class importResults(baseDiscoveryPlugin):
         except ValueError, value_error:
             msg = 'The file format is incorrect, an error was found while parsing: "'
             msg += str(csv_row) + '". Exception: "' + str(value_error) + '".'
-            om.out.error( msg )
+            om.out.error(msg)
         else:
             # Create the obj based on the information
-            uri = url_object( uri )
+            uri = url_object(uri)
             if uri.is_valid_domain():
-                return createFuzzableRequestRaw( method, uri, postdata, {} )
-            
+                return create_fuzzable_request(uri, method, postdata)
+
     def _objs_from_log( self, req_file ):
         '''
         This code was largely copied from Bernardo Damele's sqlmap[0] . See
@@ -232,8 +230,12 @@ class importResults(baseDiscoveryPlugin):
                     port   = None
 
                 url_instance = url_object(url)
-
-                res.append( createFuzzableRequestRaw( method, url_instance, postdata, headers ) )
+                res.append(
+                       create_fuzzable_request(
+                                  url_instance, method,
+                                  postdata, headers
+                                  )
+                           )
                 
         return res
         

@@ -44,42 +44,35 @@ class fuzzableRequest(object):
     variable.
     
     Other classes should inherit from this one and change the behaviour of
-    getURL() and getData(). For example: the class httpQsRequest should return
-    the _dc in the querystring (getURL) and httpPostDataRequest should return
+    getURI() and getData(). For example: the class HTTPQSRequest should return
+    the _dc in the querystring (getURI) and httpPostDataRequest should return
     the _dc in the POSTDATA (getData()).
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
+    def __init__(self, uri, method='GET',
+                 headers=None, cookie=None, dc=None):
         
         # Internal variables
-        self._url = None
-        self._uri = None
-        self._method = 'GET'
-        self._data = ''
-        self._headers = {}
+        self._dc = dc or dataContainer()
+        self._method = method
+        self._headers = headers or {}
         self._cookie = None
-        self._dc = dataContainer()
+        self._data = None
+        self.setURI(uri)
 
         # Set the internal variables
         self._sent_info_comp = None
     
-    def dump( self ):
+    def dump(self):
         '''
         @return: a DETAILED str representation of this fuzzable request.
 
-        >>> fr = fuzzableRequest()
-        >>> u = url_object("http://www.w3af.com/")
-        >>> fr.setURL( u )
-        >>> fr.dump()
-        'GET http://www.w3af.com/ HTTP/1.1\\n\\n'
-
-        >>> fr.setHeaders( {'Host':'www.w3af.com'} )
+        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"),\
+                                 headers={'Host':'www.w3af.com'})
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
-
-        >>> fr.setHeaders( {'Host':'www.w3af.com'} )
         >>> fr.setMethod('POST')
         >>> fr.setData('D474')
         >>> fr.dump()
@@ -98,14 +91,14 @@ class fuzzableRequest(object):
         '''
         return "%s%s" % (self.getRequestLine(), self.dumpHeaders())
     
-    def dumpHeaders( self ):
+    def dumpHeaders(self):
         '''
         @return: A string representation of the headers.
         '''
         return ''.join("%s: %s%s" % (h, v, CRLF) for h, v
                        in self._headers.iteritems())
 
-    def export( self ):
+    def export(self):
         '''
         Generic version of how they are exported:
             METHOD,URL,DC
@@ -117,17 +110,11 @@ class fuzzableRequest(object):
         @return: a csv str representation of the request
 
         >>> from core.data.dc.dataContainer import dataContainer
-        >>> fr = fuzzableRequest()
-        >>> u = url_object("""http://www.w3af.com/""")
-        >>> fr.setURL( u )
+        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
         >>> fr.export()
         'GET,http://www.w3af.com/,'
-
-        >>> fr = fuzzableRequest()
-        >>> u = url_object("""http://www.w3af.com/""")
         >>> d = dataContainer()
         >>> d['a'] = ['1',]
-        >>> fr.setURL( u )
         >>> fr.setDc( d )
         >>> fr.export()
         'GET,http://www.w3af.com/?a=1,'
@@ -166,15 +153,13 @@ class fuzzableRequest(object):
         TODO: This function is called MANY times, and under some circumstances it's
         performance REALLY matters. We need to review this function.
         
-        >>> f = fuzzableRequest()
-        >>> f._uri = url_object("""http://example.com/a?p=d'z"0&paged=2""")
+        >>> f = fuzzableRequest(url_object("""http://example.com/a?p=d'z"0&paged=2"""))
         >>> f.sent('d%5C%27z%5C%220')
         True
         >>> f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
         >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
         True
-        >>> f = fuzzableRequest()
-        >>> f._uri = url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>')
+        >>> f = fuzzableRequest(url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
@@ -185,18 +170,19 @@ class fuzzableRequest(object):
             '''
             This basically removes characters that are hard to compare
             '''
-            heterogen_characters = ('\\', '\'', '"', '+',' ', chr(0), 
-                                    chr(int("0D",16)), chr(int("0A",16)))
+            heterogen_characters = ('\\', '\'', '"', '+', ' ', chr(0),
+                                    chr(int("0D", 16)), chr(int("0A", 16)))
             #heterogen_characters.extend(string.whitespace)
 
             for hetero_char in heterogen_characters:
                 heterogen_string = heterogen_string.replace(hetero_char, '')
             return heterogen_string
         
+        data = self._data or ''
         # This is the easy part. If it was exactly like this in the request
-        if smth_instng in self._data or \
+        if data and smth_instng in data or \
             smth_instng in self.getURI() or \
-            smth_instng in unquote(self._data) or \
+            smth_instng in unquote(data) or \
             smth_instng in unicode(self._uri.urlDecode()):
             return True
         
@@ -205,7 +191,7 @@ class fuzzableRequest(object):
         if self._sent_info_comp is None:
             dc = self._dc
             dec_dc = unquote(str(dc)).decode(dc.encoding)
-            data = '%s%s%s' % (unicode(self._uri), self._data, dec_dc)
+            data = '%s%s%s' % (unicode(self._uri), data, dec_dc)
             
             self._sent_info_comp = make_comp(data + unquote(data))
         
@@ -226,12 +212,9 @@ class fuzzableRequest(object):
         '''
         @return: A string representation of this fuzzable request.
 
-        >>> fr = fuzzableRequest()
-        >>> u = url_object("""http://www.w3af.com/""")
-        >>> fr.setURL( u )
-        >>> str( fr )
+        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
+        >>> str(fr)
         'http://www.w3af.com/ | Method: GET'
-
         >>> repr( fr )
         '<fuzzable request | GET | http://www.w3af.com/>'
 
@@ -257,12 +240,12 @@ class fuzzableRequest(object):
                     
                     result_string += param_name + '=' + the_value + ', '
                     
-            result_string = result_string[: -2]
+            result_string = result_string[:-2]
             result_string += ')'
         
         return result_string.encode(DEFAULT_ENCODING)
     
-    def __repr__( self ):
+    def __repr__(self):
         return '<fuzzable request | %s | %s>' % \
                                         (self.getMethod(), self.getURI())
         
@@ -278,38 +261,23 @@ class fuzzableRequest(object):
 
 
         >>> u = url_object("""http://www.w3af.com/""")
-        >>> fr1 = fuzzableRequest()
-        >>> fr2 = fuzzableRequest()
-        >>> fr1.setURL( u )
-        >>> fr2.setURL( u )
+        >>> fr1 = fuzzableRequest(u)
+        >>> fr2 = fuzzableRequest(u)
         >>> fr1 == fr2
         True
-
-        >>> u1 = url_object("""http://www.w3af.com/a""")
-        >>> u2 = url_object("""http://www.w3af.com/b""")
-        >>> fr1 = fuzzableRequest()
-        >>> fr2 = fuzzableRequest()
-        >>> fr1.setURL( u1 )
-        >>> fr2.setURL( u2 )
+        >>> fr1 = fuzzableRequest(url_object("http://www.w3af.com/a"))
+        >>> fr2 = fuzzableRequest(url_object("http://www.w3af.com/b"))
         >>> fr1 == fr2
         False
-
-        >>> u = url_object("""http://www.w3af.com/""")
-        >>> fr1 = fuzzableRequest()
-        >>> fr2 = fuzzableRequest()
-        >>> fr1.setMethod( 'POST' )
-        >>> fr1.setURL( u )
-        >>> fr2.setURL( u )
+        >>> fr1 = fuzzableRequest(u)
+        >>> fr2 = fuzzableRequest(u, method='POST')
         >>> fr1 == fr2
         False
 
         '''
-        if self._uri == other._uri and \
-            self._method == other._method and \
-            self._dc == other._dc:
-            return True
-        else:
-            return False
+        return (self._uri == other._uri and
+                self._method == other._method and
+                self._dc == other._dc)
     
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -355,68 +323,77 @@ class fuzzableRequest(object):
         else:
             return False
     
-    def setURL( self , url ):
+    def setURL(self , url):
+        '''
+        >>> r = fuzzableRequest('http://www.google.com/')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: The "uri" parameter of a fuzzableRequest must be of urlParser.url_object type.
+        >>> url = url_object('http://www.google.com/')
+        >>> r = fuzzableRequest(url)
+        >>> r.getURL() == url
+        True
+        '''        
         if not isinstance(url, url_object):
-            msg = 'The "url" parameter of setURL @ fuzzableRequest'
-            msg += ' must be of urlParser.url_object type.'
-            raise ValueError( msg )
+            raise ValueError('The "url" parameter of a %s must be of '
+                         'urlParser.url_object type.' % type(self).__name__)
 
-        self._url = url_object( url.url_string.replace(' ', '%20') )
+        self._url = url_object(url.url_string.replace(' ', '%20'))
         self._uri = self._url
     
-    def setURI( self, uri ):
+    def setURI(self, uri):
         if not isinstance(uri, url_object):
-            msg = 'The "url" parameter of setURL @ fuzzableRequest'
-            msg += ' must be of urlParser.url_object type.'
-            raise ValueError( msg )
+            raise ValueError('The "uri" parameter of a %s must be of '
+                         'urlParser.url_object type.' % type(self).__name__)
 
-        self._uri = url_object( uri.url_string.replace(' ', '%20') )
+        self._uri = url_object(uri.url_string.replace(' ', '%20'))
         self._url = self._uri.uri2url()
         
-    def setMethod( self , method ):
+    def setMethod(self , method):
         self._method = method
         
     def setDc(self, dataCont):
         if not isinstance(dataCont, dataContainer):
-            raise TypeError('Invalid call to fuzzableRequest.setDc(), the '
+            raise ValueError('Invalid call to fuzzableRequest.setDc(), the '
                             'argument must be a dataContainer instance.')
         self._dc = dataCont
         
-    def setHeaders( self , headers ):
+    def setHeaders(self , headers):
         self._headers = headers
     
-    def setReferer( self, referer ):
-        self._headers[ 'Referer' ] = referer
+    def setReferer(self, referer):
+        self._headers['Referer'] = referer
     
-    def setCookie( self , c ):
+    def setCookie(self , c):
         '''
         @parameter cookie: A cookie object as defined in core.data.dc.cookie,
             or a string.
         '''
-        if isinstance( c, cookie):
+        if isinstance(c, cookie):
             self._cookie = c
-        elif isinstance( c, basestring ):
-            self._cookie = cookie( c )
+        elif isinstance(c, basestring):
+            self._cookie = cookie(c)
         elif c is None:
             self._cookie = None
         else:
-            om.out.error('[fuzzableRequest error] setCookie received: "' + str(type(c)) + '" , "' + repr(c) + '"'  )
+            om.out.error('[fuzzableRequest error] setCookie received: "' + 
+                         str(type(c)) + '" , "' + repr(c) + '"')
             raise w3afException('Invalid call to fuzzableRequest.setCookie()')
             
-    def getURL( self ):
+    def getURL(self):
         return self._url
     
-    def getURI( self ):
+    def getURI(self):
         return self._uri
         
-    def setData( self, d ):
+    def setData(self, d):
         '''
         The data is the string representation of the dataContainer, in most 
         cases it wont be set.
         '''
         self._data = d
         
-    def getData( self ):
+    def getData(self):
         '''
         The data is the string representation of the dataContainer, in most
         cases it will be used as the POSTDATA for requests. Sometimes it is
@@ -424,29 +401,29 @@ class fuzzableRequest(object):
         '''
         return self._data
         
-    def getMethod( self ):
+    def getMethod(self):
         return self._method
         
-    def getDc( self ):
+    def getDc(self):
         return self._dc
         
-    def getHeaders( self ):
+    def getHeaders(self):
         return self._headers
     
-    def getReferer( self ):
+    def getReferer(self):
         if 'Referer' in self._headers['headers']:
             return self._headers['Referer']
         else:
             return ''
     
-    def getCookie( self ):
+    def getCookie(self):
         if self._cookie:
             return self._cookie
         else:
             return None
     
-    def getFileVariables( self ):
+    def getFileVariables(self):
         return []
     
-    def copy( self ):
+    def copy(self):
         return copy.deepcopy(self)

@@ -99,8 +99,7 @@ class pathDisclosure(baseGrepPlugin):
         >>> from core.data.request.fuzzableRequest import fuzzableRequest as fuzzableRequest
         >>> from core.data.url.httpResponse import httpResponse as httpResponse
         >>> u = url_object('http://www.w3af.com/')
-        >>> req = fuzzableRequest()
-        >>> req.setURL( u )
+        >>> req = fuzzableRequest(u, method='GET')
         >>> pd = pathDisclosure()
         
         >>> res = httpResponse(200, 'header body footer' , {'Content-Type':'text/html'}, u, u)

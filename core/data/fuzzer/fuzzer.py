@@ -39,7 +39,7 @@ from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import cookie as cookie
 from core.data.dc.dataContainer import dataContainer as dc
 from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import httpQsRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
 
 # import all the mutant types
 from core.data.fuzzer.formFiller import smartFill
@@ -83,7 +83,7 @@ def createMutants(freq, mutant_str_list, append=False,
     result = []
     _fuzzable = _createFuzzable(freq)
     
-    if isinstance(freq, httpQsRequest):
+    if isinstance(freq, HTTPQSRequest):
         
         # Query string parameters    
         om.out.debug('Fuzzing query string')
@@ -309,9 +309,7 @@ def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
     >>> from core.data.parsers.urlParser import url_object
     >>> from core.data.request.fuzzableRequest import fuzzableRequest
     >>> url = url_object('http://www.w3af.com/abc/def.html')
-    >>> fr = fuzzableRequest()
-    >>> fr.setURL( url )
-
+    >>> fr = fuzzableRequest(url)
     >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['ping!','pong-'], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/abc/ping%21.html', u'http://www.w3af.com/abc/pong-.html', u'http://www.w3af.com/abc/def.ping%21', u'http://www.w3af.com/abc/def.pong-']
@@ -370,24 +368,18 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     >>> from core.data.dc.dataContainer import dataContainer as dc
 
     Mutant creation
-    >>> freq = fuzzableRequest()
-    >>> u = url_object('http://www.w3af.com/')
     >>> d = dc()
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
-    >>> freq.setURL( u )
-    >>> freq.setDc( d )
+    >>> freq = fuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
     >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
     [{'a': ['abc'], 'b': ['2']}, {'a': ['def'], 'b': ['2']}, {'a': ['1'], 'b': ['abc']}, {'a': ['1'], 'b': ['def']}]
 
     Repeated parameters
-    >>> freq = fuzzableRequest()
-    >>> u = url_object('http://www.w3af.com/')
     >>> d = dc()
     >>> d['a'] = ['1','2','3']
-    >>> freq.setURL( u )
-    >>> freq.setDc( d )
+    >>> freq.setDc(d)
     >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
     [{'a': ['abc', '2', '3']}, {'a': ['def', '2', '3']}, {'a': ['1', 'abc', '3']}, {'a': ['1', 'def', '3']}, {'a': ['1', '2', 'abc']}, {'a': ['1', '2', 'def']}]
@@ -395,13 +387,10 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     SmartFill of parameters
     >>> from core.data.dc.form import form
     >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
-    >>> pdr = httpPostDataRequest()
-    >>> u = url_object('http://www.w3af.com/')
     >>> f = form()
     >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
     >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
-    >>> pdr.setURL( u )
-    >>> pdr.setDc( f )
+    >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/'), dc=f)
     >>> f = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
     [{'foo': ['abc'], 'address': ['Bonsai Street 123']}, {'foo': ['def'], 'address': ['Bonsai Street 123']}, {'foo': ['56'], 'address': ['abc']}, {'foo': ['56'], 'address': ['def']}]

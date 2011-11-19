@@ -111,12 +111,13 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
             return vulnCopy
             
         else:
-            pdr = httpPostDataRequest.httpPostDataRequest()
-            pdr.setURL( mutant.getURL() )
-            pdr.setDc( mutant.getDc() )
-            pdr.setHeaders( mutant.getHeaders() )
-            pdr.setCookie( mutant.getCookie() )
-            mutant.setFuzzableReq( pdr )
+            pdr = httpPostDataRequest.httpPostDataRequest(
+                                              mutant.getURL(),
+                                              headers=mutant.getHeaders(),
+                                              cookie=mutant.getCookie(),
+                                              dc=mutant.getDc()
+                                              )
+            mutant.setFuzzableReq(pdr)
             return vulnCopy
             
     def getRootProbability( self ):

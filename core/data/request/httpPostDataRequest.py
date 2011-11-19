@@ -33,13 +33,12 @@ class httpPostDataRequest(fuzzableRequest):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    def __init__(self, uri, method='POST', headers=None,
+                 cookie=None, dc=None, files=None):
+        fuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
+        self._files = files or []
 
-    def __init__(self):
-        fuzzableRequest.__init__(self)
-        self._method = 'POST'
-        self._files = []
-
-    def getData( self ):
+    def getData(self):
         '''
         @return: A string representation of the dataContainer. There is a
         special case, in which the dataContainer has a file inside, in which
@@ -49,14 +48,14 @@ class httpPostDataRequest(fuzzableRequest):
 
         # TODO: This is a hack I'm not comfortable with. There should
         # be a fancier way to do this.
-        # If contains a file then we are not interested on returning
+        # If it contains a file then we are not interested on returning
         # its string representation
         for value in self._dc.itervalues():
             
             if isinstance(value, basestring):
                 continue
-            elif is_file_like(value) or (hasattr(value, "__iter__") and
-                                         any(imap(is_file_like, value))):
+            elif is_file_like(value) or (hasattr(value, "__iter__") and \
+                   any(imap(is_file_like, value))):
                 return self._dc
         
         # Ok, no file was found; return the string representation

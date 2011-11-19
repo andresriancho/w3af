@@ -46,7 +46,7 @@ from core.controllers.w3afException import (w3afMustStopException,
 from core.data.constants.httpConstants import NO_CONTENT
 from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
-from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.request.frFactory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers import logHandler
 from core.data.url.httpResponse import httpResponse, from_httplib_resp
@@ -197,7 +197,6 @@ class xUrllib(object):
     
     def _init(self):
         if self.settings.needUpdate or self._opener is None:
-        
             self.settings.needUpdate = False
             self.settings.buildOpeners()
             self._opener = self.settings.getCustomUrlopen()
@@ -418,50 +417,41 @@ class xUrllib(object):
         @parameter method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         '''
-        class anyMethod:
+        class AnyMethod:
             
-            class methodRequest(HTTPRequest):
+            class MethodRequest(HTTPRequest):
                 def get_method(self):
                     return self._method
-                def set_method( self, method ):
+                def set_method(self, method):
                     self._method = method
             
-            def __init__( self, xu, method ):
+            def __init__(self, xu, method):
                 self._xurllib = xu
                 self._method = method
             
-            def __call__( self, uri, data='', headers={}, useCache=False, grepResult=True ):
+            def __call__(self, uri, data=None, headers={},
+                         useCache=False, grepResult=True):
                 '''
-                @return: An httpResponse object that's the result of sending the request
-                with a method which is different from "GET" or "POST".
+                @return: An httpResponse object that's the result of
+                    sending the request with a method different from
+                    "GET" or "POST".
                 '''
                 if not isinstance(uri, url_object):
-                    raise ValueError('The uri parameter of anyMethod.__call__() must be of urlParser.url_object type.')
+                    raise ValueError('The uri parameter of AnyMethod.'
+                         '__call__() must be of urlParser.url_object type.')
                 
                 self._xurllib._init()
                 
-                if self._xurllib._isBlacklisted( uri ):
+                if self._xurllib._isBlacklisted(uri):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
             
-                if data:
-                    req = self.methodRequest( uri, data )
-                else:
-                    req = self.methodRequest( uri )
-                
-                req.set_method( self._method )
-
-                if headers:
-                    req = self._xurllib._add_headers( req, headers )
-                else:
-                    # This adds the default headers like the user-agent,
-                    # and any headers configured by the user
-                    # https://sourceforge.net/tracker/?func=detail&aid=2788341&group_id=170274&atid=853652
-                    req = self._xurllib._add_headers( req, {} )
-                
-                return self._xurllib._send( req, useCache=useCache, grepResult=grepResult )
+                req = self.MethodRequest(uri, data)
+                req.set_method(self._method)
+                req = self._xurllib._add_headers(req, headers or {})
+                return self._xurllib._send(req, useCache=useCache,
+                                           grepResult=grepResult)
         
-        am = anyMethod( self, method_name )
-        return am
+        return AnyMethod(self, method_name)
 
     def _add_headers( self , req, headers={} ):
         # Add all custom Headers if they exist
@@ -513,7 +503,7 @@ class xUrllib(object):
         start_time = time.time()
         res = None
 
-        req.get_from_cache = True if useCache else False
+        req.get_from_cache = useCache
         
         try:
             res = self._opener.open(req)
@@ -806,12 +796,15 @@ class xUrllib(object):
                                   encoding=response.charset)
         domain = url_instance.getDomain()
         
-        if len( self._grepPlugins ) and domain in cf.cf.getData('targetDomains'):
+        if self._grepPlugins and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
-            fuzzReq = createFuzzableRequestRaw(
-                           request.get_method(), url_instance,
-                           request.get_data(), request.headers)
+            fuzzReq = create_fuzzable_request(
+                                        url_instance,
+                                        request.get_method(),
+                                        request.get_data(),
+                                        request.headers
+                                        )
             
             for grep_plugin in self._grepPlugins:
                 #

@@ -50,19 +50,14 @@ class mangleHandler(urllib2.BaseHandler):
         @parameter request: A urllib2 request obj.
         @return: A fuzzableRequest.
         '''
-        fr = fuzzableRequest.fuzzableRequest()
-        fr.setURI( request.url_object )
-        fr.setMethod( request.get_method() )
-        
         headers = request.headers
-        for i in request.unredirected_hdrs.keys():
-            headers[ i ] = request.unredirected_hdrs[ i ]
-        fr.setHeaders( headers )
-        
-        if request.get_data() is None:
-            fr.setData( '' )
-        else:
-            fr.setData( request.get_data() )
+        headers.update(request.unredirected_hdrs)
+        fr = fuzzableRequest.fuzzableRequest(
+                                     request.url_object,
+                                     request.get_method(),
+                                     headers
+                                     )
+        fr.setData(request.get_data() or '')
         return fr
     
     def _fr2urllibReq( self, fuzzableRequest ):
@@ -80,9 +75,9 @@ class mangleHandler(urllib2.BaseHandler):
         else:
             data = fuzzableRequest.getData()
             
-        req = HTTPRequest( fuzzableRequest.getURI(), data=data,
+        req = HTTPRequest(fuzzableRequest.getURI(), data=data,
                            headers=fuzzableRequest.getHeaders(),
-                           origin_req_host=host )
+                           origin_req_host=host)
         return req
         
     def http_request(self, request):

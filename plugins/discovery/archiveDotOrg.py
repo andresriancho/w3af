@@ -29,11 +29,10 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 
 from core.controllers.misc.is_private_site import is_private_site
-from core.data.request.httpQsRequest import httpQsRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
 from core.controllers.w3afException import w3afException
 from core.data.parsers.dpCache import dpc as dpc
 from core.data.parsers.urlParser import url_object
-import core.data.kb.knowledgeBase as kb
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -86,8 +85,8 @@ class archiveDotOrg(baseDiscoveryPlugin):
         '''
         Analyze what references are cached by archive.org
         
-        @return: A list of query string objects for the URLs that are in the cache AND are in the
-                    target web site.
+        @return: A list of query string objects for the URLs that are in
+            the cache AND are in the target web site.
         '''
         # Init some internal variables
         res = []
@@ -110,24 +109,22 @@ class archiveDotOrg(baseDiscoveryPlugin):
         else:
             om.out.debug('Archive.org did not find any pages.')
         
-        # Verify if they exist in the target site and add them to the result if they do.
+        # Verify if they exist in the target site and add them to
+        # the result if they do.
         for real_url in real_URLs:
-            if self._exists_in_target( real_url ):
-                QSObject = real_url.getQueryString()
-                qsr = httpQsRequest()
-                qsr.setURI( real_url )
-                qsr.setDc( QSObject )
-                res.append( qsr )
-
-        if len( res ):
-            msg = 'The following pages are in Archive.org cache and also in'
-            msg += ' the target site:'
-            om.out.debug(msg)
-            for i in res:
-                om.out.debug('- ' + i.getURI() )
+            if self._exists_in_target(real_url):
+                qsr = HTTPQSRequest(real_url)
+                res.append(qsr)
+        
+        if not res:
+            om.out.debug('All pages found in archive.org cache are '
+                         'missing in the target site.')
         else:
-            om.out.debug('All pages found in archive.org cache are missing in the target site.')
-            
+            om.out.debug('The following pages are in Archive.org cache '
+                         'and also in the target site:')
+            for req in res:
+                om.out.debug('- ' + req.getURI())
+
         return res
     
     def _spider_archive( self, url_list, max_depth, domain ):

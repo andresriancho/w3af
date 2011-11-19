@@ -24,22 +24,18 @@ import json
 
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 
-class jsonPostDataRequest(httpPostDataRequest):
+class JSONPostDataRequest(httpPostDataRequest):
     '''
     This class represents a fuzzable request for a http request that contains JSON postdata.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
-        httpPostDataRequest.__init__(self)
-
     def getData( self ):
         '''
         @return: A string that represents the JSON data saved in the dc.
         '''
-        res = json.dumps(self._dc)
-        return res
+        return json.dumps(self._dc)
         
     def __str__( self ):
         '''

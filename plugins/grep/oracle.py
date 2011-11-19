@@ -61,9 +61,7 @@ class oracle(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> o = oracle()
         >>> o.grep(request, response)
         >>> len(kb.kb.getData('oracle', 'oracle'))
@@ -74,9 +72,7 @@ class oracle(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> o = oracle()
         >>> o.grep(request, response)
         >>> len(kb.kb.getData('oracle', 'oracle'))
@@ -89,9 +85,7 @@ class oracle(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> o = oracle()
         >>> o.grep(request, response)
         >>> len(kb.kb.getData('oracle', 'oracle'))

@@ -69,9 +69,7 @@ class strangeHTTPCode(baseGrepPlugin):
         >>> resp_666 = httpResponse(666, body , headers, url, url)
         >>> resp_777 = httpResponse(777, body , headers, url, url)
         >>> resp_404 = httpResponse(404, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL(url)
-        >>> request.setMethod('GET')
+        >>> request = fuzzableRequest(url, method='GET')
         >>> s = strangeHTTPCode()
 
         >>> s.grep(request, resp_200)

@@ -30,7 +30,7 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
                                             as core_num_gen)
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
-from core.data.request.frFactory import createFuzzableRequestRaw
+from core.data.request.frFactory import create_fuzzable_request
 
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
@@ -343,14 +343,10 @@ class SQLCachedResponse(CachedResponse):
         hi = HistoryItem()
         
         # Set the request
-        headers = dict(request.headers)
-        headers.update(request.unredirected_hdrs)
-    
-        req = createFuzzableRequestRaw(
-                   method=request.get_method(),
-                   url=request.url_object,
-                   postData=str(request.get_data() or ''),
-                   headers=headers)
+        req = create_fuzzable_request(
+                                 request,
+                                 add_headers=request.unredirected_hdrs
+                                 )
         hi.request = req
 
         # Set the response

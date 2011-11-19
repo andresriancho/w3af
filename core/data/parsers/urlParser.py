@@ -340,16 +340,14 @@ class url_object(object):
         Set the query string for this URL.
         '''
         from core.data.dc.form import form
+        
         if isinstance(qs, form):
             self.qs = str(qs)
-            return
-
-        if isinstance(qs, dict) and not isinstance(qs, QueryString):
-            qs = urllib.urlencode( qs )
+        elif isinstance(qs, dict) and not isinstance(qs, QueryString):
+            qs = urllib.urlencode(qs)
             self.qs = str(qs)
-            return
-        
-        self.qs = str(qs)
+        else:
+            self.qs = str(qs)
         
     def uri2url( self ):
         '''

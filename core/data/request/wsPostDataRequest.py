@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import cgi
 
 from core.data.request.httpPostDataRequest import httpPostDataRequest
-import cgi
 
 
 class wsPostDataRequest(httpPostDataRequest):
@@ -31,14 +31,16 @@ class wsPostDataRequest(httpPostDataRequest):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
-        httpPostDataRequest.__init__(self)
-        self._NS = None
-        self._name = None
-        self._parameters = None
-        self._action = None
+    def __init__(self, url, action, params,
+                 ns, meth_name, headers=None):
+        httpPostDataRequest.__init__(self, url, headers=headers)
+        self._action = action
+        self._NS = ns
+        self._name = meth_name
+        self.setParameters(params)
+        
 
-    def getData( self ):
+    def getData(self):
         '''
         @return: XML with the remote method call
 
@@ -62,19 +64,19 @@ class wsPostDataRequest(httpPostDataRequest):
         res = '<?xml version="1.0" encoding="UTF-8"?>\n'
         res += '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">\n'
         res += '<SOAP-ENV:Body>\n'
-        res += '<ns1:' + self.getMethodName() + ' xmlns:ns1="' + self.getNS() +'" SOAP-ENC:root="1">\n'
+        res += '<ns1:' + self.getMethodName() + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
         count = 0
         for param in self.getParameters():
             count += 1
-            res += '<v' + str(count) +' xsi:type="xsd:'+ param.getType() + '">'+ \
-            cgi.escape( self._dc[param.getName()] ) +'</v' + str(count) +'>\n'
+            res += '<v' + str(count) + ' xsi:type="xsd:' + param.getType() + '">' + \
+            cgi.escape(self._dc[param.getName()]) + '</v' + str(count) + '>\n'
             
         res += '</ns1:' + self.getMethodName() + '>\n'
         res += '</SOAP-ENV:Body>\n'
         res += '</SOAP-ENV:Envelope>\n'
         return res
         
-    def getHeaders( self ):
+    def getHeaders(self):
         '''
         web service calls MUST send a header with the action:
             -   SOAPAction: "urn:xmethodsBabelFish#BabelFish"
@@ -84,24 +86,35 @@ class wsPostDataRequest(httpPostDataRequest):
         
         return self._headers
         
-    def getNS( self ): return self._NS
-    def setNS( self , ns ): self._NS = ns
+    def getNS(self):
+        return self._NS
     
-    def getAction( self ): return self._action
-    def setAction( self , a ): self._action = a
+    def setNS(self, ns):
+        self._NS = ns
     
-    def getMethodName( self ): return self._name
-    def setMethodName( self , name ): self._name = name
+    def getAction(self):
+        return self._action
     
-    def getParameters( self ): return self._parameters
-    def setParameters( self, par ):
+    def setAction(self, a):
+        self._action = a
+    
+    def getMethodName(self):
+        return self._name
+    
+    def setMethodName(self , name):
+        self._name = name
+    
+    def getParameters(self):
+        return self._parameters
+    
+    def setParameters(self, par):
         # Fixed bug #1958368, we have to save this!
         self._parameters = par
         # And now save it so we can fuzz it.
         for param in par:
             self._dc[ param.getName() ] = ''
 
-    def __str__( self ):
+    def __str__(self):
         '''
         Return a str representation of this fuzzable request.
         '''
@@ -112,9 +125,10 @@ class wsPostDataRequest(httpPostDataRequest):
             strRes += ' | Parameters: ('
             for i in self._dc.keys():
                 strRes += i + ','
-            strRes = strRes[: -1]
+            strRes = strRes[:-1]
             strRes += ')'
         return strRes
         
-    def __repr__( self ):
-        return '<WS fuzzable request | '+ self.getMethod() +' | '+ self.getURI() +' >'
+    def __repr__(self):
+        return '<WS fuzzable request | %s | %s >' % (self.getMethod(),
+                                                     self.getURI())

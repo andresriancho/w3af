@@ -62,9 +62,7 @@ class blankBody(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> b = blankBody()
         >>> b.grep(request, response)
         >>> assert len(kb.kb.getData('blankBody', 'blankBody')) == 1
@@ -82,9 +80,7 @@ class blankBody(baseGrepPlugin):
         >>> body = ''
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'ARGENTINA' )
+        >>> request = fuzzableRequest(url, method='ARGENTINA')
         >>> b.grep(request, response)
         >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
 
@@ -93,9 +89,7 @@ class blankBody(baseGrepPlugin):
         >>> body = ''
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(401, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> b.grep(request, response)
         >>> len(kb.kb.getData('ssn', 'ssn'))
         0

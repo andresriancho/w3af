@@ -20,48 +20,42 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import httpQsRequest
+from .request.httpPostDataRequest import httpPostDataRequest
+from .request.httpQsRequest import HTTPQSRequest
 
-def isExchangable( self, fuzzableRequest ):
+def isExchangable(self, fuzzableRequest):
     '''
-    @parameter mutant: The mutant you want to test if sending using querystring or postdata is the same.
+    @parameter mutant: The mutant you want to test if sending using
+        querystring or postdata is the same.
     @return: [True|False]
     '''
-    if not ( isinstance( fuzzableRequest, httpQsRequest ) or isinstance( fuzzableRequest, httpPostDataRequest ) ) :
+    if not (isinstance(fuzzableRequest, HTTPQSRequest) or
+             isinstance(fuzzableRequest, httpPostDataRequest)) :
         return False
         
     # I get the mutant as it is
-    response = self._sendMutant( fuzzableRequest, analyze=False )
+    response = self._sendMutant(fuzzableRequest, analyze=False)
+    
     if fuzzableRequest.getMethod() == 'GET':
-        # I have to create a httpPostDataRequest and set all the parameters to it.
-        pdr = httpPostDataRequest()
-        pdr.setURL( fuzzableRequest.getURL() )
-        pdr.setDc( fuzzableRequest.getDc() )
-        pdr.setHeaders( fuzzableRequest.getHeaders() )
-        pdr.setCookie( fuzzableRequest.getCookie() )
-        response2 = self._sendMutant( pdr, analyze=False )
-        
-        if response2.getBody() == response.getBody():
-            return True
+        # I have to create a httpPostDataRequest and set all
+        # the parameters to it.
+        pdr = httpPostDataRequest(
+                          fuzzableRequest.getURL(),
+                          headers=fuzzableRequest.getHeaders(),
+                          cookie=fuzzableRequest.getCookie(),
+                          dc=fuzzableRequest.getDc()
+                          )
+        response2 = self._sendMutant(pdr, analyze=False)
     
     elif fuzzableRequest.getMethod() == 'POST':
-        # I have to create a httpQsRequest and set all the parameters to it.
-        qsr = httpQsRequest()
-        qsr.setURL( fuzzableRequest.getURL() )
-        qsr.setDc( fuzzableRequest.getDc() )
-        qsr.setHeaders( fuzzableRequest.getHeaders() )
-        qsr.setCookie( fuzzableRequest.getCookie() )
-        response2 = self._sendMutant( qsr, analyze=False )
+        # I have to create a HTTPQSRequest and set all the parameters to it.
+        qsr = HTTPQSRequest(
+                    fuzzableRequest.getURL(),
+                    headers=fuzzableRequest.getHeaders(),
+                    cookie=fuzzableRequest.getCookie()
+                    )
+        qsr.setDc(fuzzableRequest.getDc())
+        response2 = self._sendMutant(qsr, analyze=False)
         
-        if response2.getBody() == response.getBody():
-            return True 
-    
-    else:
-        return False
-        
-        
-        
-        
-        
-        
+    return response2.getBody() == response.getBody()
+

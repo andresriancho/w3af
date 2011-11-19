@@ -71,9 +71,7 @@ class user_defined_regex(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> udr = user_defined_regex()
         >>> options = udr.getOptions()
         >>> options['single_regex'].setValue('".*?"')

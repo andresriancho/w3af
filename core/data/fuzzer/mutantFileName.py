@@ -57,20 +57,17 @@ class mutantFileName(mutant):
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
         >>> from core.data.dc.dataContainer import dataContainer as dc
-        >>> fr = fuzzableRequest()
         >>> divided_file_name = dc()
         >>> divided_file_name['start'] = ''
         >>> divided_file_name['fuzzedFname'] = 'ping!'
         >>> divided_file_name['end'] = '.html'
         
-        >>> url = url_object('http://www.w3af.com/abc/def.html')
-        >>> fr.setURL( url )
+        >>> fr = fuzzableRequest(url_object('http://www.w3af.com/abc/def.html'))        
         >>> m = mutantFileName( fr )
         >>> m._mutant_dc = divided_file_name
         >>> m.setVar( 'fuzzedFname' )
         >>> m.getURL().url_string
         u'http://www.w3af.com/abc/ping%21.html'
-        
         '''
         domain_path = self._freq.getURL().getDomainPath()
         

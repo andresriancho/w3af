@@ -71,9 +71,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('ajax', 'ajax')) == 0
@@ -83,9 +81,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
@@ -96,9 +92,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
@@ -109,9 +103,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
@@ -122,9 +114,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> assert len(kb.kb.getData('ajax', 'ajax')) == 1
@@ -135,9 +125,7 @@ class ajax(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest()
-        >>> request.setURL( url )
-        >>> request.setMethod( 'GET' )
+        >>> request = fuzzableRequest(url, method='GET')
         >>> a = ajax()
         >>> a.grep(request, response)
         >>> len(kb.kb.getData('ajax', 'ajax'))

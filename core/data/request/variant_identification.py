@@ -19,75 +19,53 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.data.request.httpQsRequest as httpQsRequest
 from core.data.parsers.urlParser import url_object
+from core.data.request.httpQsRequest import HTTPQSRequest
 
-def are_variants( url_a ,  url_b ):
+def are_variants(uri, other_uri):
     '''
-    This function analyzes if two URLs are variants. Two requests are variants if:
-        - They have the same URL
-        - They have the same method
-        - They have the same parameters
-        - The values for each parameter have the same type (int / string)
+    This function analyzes if two URLs are variants. Two requests are
+    variants if the[y|ir]:
+        - have the same URL
+        - have the same method
+        - have the same parameters
+        - values for each parameter have the same type (int/string)
     
-    @parameter url_a: The URL we want to analyze
-    @parameter url_b: The other URL we want to analyze
+    @parameter uri: The URI we want to analyze
+    @parameter other_uri: The other URI we want to analyze
     @return: True if the URLs are variants.
 
     >>> from core.data.parsers.urlParser import url_object
     >>> a = url_object('http://www.w3af.com/foo.php')
     >>> b = url_object('http://www.w3af.com/foo.php')
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     True
 
     >>> a = url_object('http://www.w3af.com/foo.php?id=1')
     >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     False
 
     >>> a = url_object('http://www.w3af.com/bar.php?id=1')
     >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     False
 
     >>> a = url_object('http://www.w3af.com/foo.php?id=1')
     >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     False
 
     >>> a = url_object('http://www.w3af.com/foo.php?id=1&foo=bar')
     >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     False
 
     >>> a = 'http://www.w3af.com/foo.php?id=1'
     >>> b = 'http://www.rapid7.com/foo.php?id=1'
-    >>> are_variants( a, b )
+    >>> are_variants(a, b)
     Traceback (most recent call last):
       ...
-    TypeError: The "url_a" parameter in "are_variants"  must be of urlParser.url_object type.
+    ValueError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
     '''
-    if not isinstance(url_a, url_object):
-        msg = 'The "url_a" parameter in "are_variants" '
-        msg += ' must be of urlParser.url_object type.'
-        raise TypeError(msg)
-
-    if not isinstance(url_b, url_object):
-        msg = 'The "url_b" parameter in "are_variants" '
-        msg += ' must be of urlParser.url_object type.'
-        raise TypeError(msg)
-    
-    qs_a = url_a.getQueryString()
-    qsr_a = httpQsRequest.httpQsRequest()
-    qsr_a.setURL( url_a.uri2url() )
-    qsr_a.setDc( qs_a )
-
-    qs_b = url_b.getQueryString()
-    qsr_b = httpQsRequest.httpQsRequest()
-    qsr_b.setURL( url_b.uri2url() )
-    qsr_b.setDc( qs_b )
-    return qsr_a.is_variant_of( qsr_b )
-
-    
-
+    return HTTPQSRequest(uri).is_variant_of(HTTPQSRequest(other_uri))
