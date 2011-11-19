@@ -184,7 +184,7 @@ class symfony(baseGrepPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Skip symfony detection and search for the csrf (mis)protection.'
-        o1 = option('Skip symfony detection', self._override, d1, 'boolean')
+        o1 = option('override', self._override, d1, 'boolean')
         
         ol = optionList()
         ol.add(o1)
