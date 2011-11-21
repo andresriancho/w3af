@@ -265,13 +265,18 @@ class reqResViewer(gtk.VBox):
 
 class requestResponsePart(gtk.Notebook):
     """Request/response common class."""
+    
     def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
         super(requestResponsePart, self).__init__()
         self._obj = None
+        ### FIXME: REMOVE ME ###
+        self._set_vals = (False, 'default_val')
+        #######################
         self.w3af = w3af
         self.childButtons = []
         self._views = []
         self.enableWidget = enableWidget
+        
     def addView(self, view):
         self._views.append(view)
         self.append_page(view, gtk.Label(view.label))
@@ -314,10 +319,17 @@ class requestResponsePart(gtk.Notebook):
 
     def showObject(self, obj):
         self._obj = obj
+        ### FIXME: REMOVE ME ###
+        self._set_vals = (True, obj)
+        #######################
         self.synchronize()
 
     def setObject(self, obj):
         self._obj = obj
+        ### FIXME: REMOVE ME ###
+        self._set_vals = (True, obj)
+        #######################
+        
     def getObject(self):
         return self._obj
 
@@ -326,17 +338,30 @@ class requestResponsePart(gtk.Notebook):
             view.highlight(text, sev)
 
 class requestPart(requestResponsePart):
+    
     def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
         requestResponsePart.__init__(self, w3af, enableWidget,editable, widgname=widgname+"request")
         self.addView(HttpRawView(w3af, self, editable))
         self.addView(HttpHeadersView(w3af, self, editable))
+        
     def getBothTexts(self):
-        data = ''
-        if self._obj.getData():
-            data = str(self._obj.getData())
-        return (self._obj.dumpRequestHead(), data)
+        try:
+            data = ''
+            raise AttributeError
+            if self._obj.getData():
+                data = str(self._obj.getData())
+            return (self._obj.dumpRequestHead(), data)
+        except AttributeError: ### FIXME: REMOVE ME ###
+            msg = ("DEBUG_EXCEPTION: NoneType object has no attribute "
+                   "'getData': Was object tried to set?? %s. Value: '%r'" % 
+                   self._set_vals)
+            raise AttributeError, msg
+    
     def showRaw(self, head, body):
         self._obj = httpRequestParser(head, body)
+        ### FIXME: REMOVE ME ###
+        self._set_vals = (True, self._obj)
+        #######################        
         self.synchronize()
 
 class responsePart(requestResponsePart):
