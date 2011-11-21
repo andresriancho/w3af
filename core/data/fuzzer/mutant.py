@@ -137,9 +137,9 @@ class mutant(object):
         the first time.
         '''
         if self._originalResponseBody is None:
-            raise Exception('[mutant error] You should set the original response body before getting its value!')
-        else:
-            return self._originalResponseBody
+            raise ValueError, ('[mutant error] You should set the original '
+                               'response body before getting its value!')
+        return self._originalResponseBody
     
     def setOriginalResponseBody( self, orBody ):
         self._originalResponseBody = orBody

@@ -20,8 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.auto_update.auto_update import is_working_copy, \
-                                                        get_svnversion
+from core.controllers.auto_update.auto_update import (
+                                                is_working_copy,
+                                                get_svnversion
+                                                )
 
 def get_w3af_version():
     '''

@@ -134,10 +134,12 @@ class httpResponse(object):
     
     def __repr__(self):
 
-        vals = {'code': self.getCode(),
-                'url': str(self.getURL()),
-                'id': self.id and ' | id:%s' % self.id or '',
-                'fcache': self._fromCache and ' | fromCache:True' or ''}
+        vals = {
+            'code': self.getCode(),
+            'url': str(self.getURL()),
+            'id': self.id and ' | id:%s' % self.id or '',
+            'fcache': self._fromCache and ' | fromCache:True' or ''
+            }
         return '<httpResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
     
     def setId(self, id):

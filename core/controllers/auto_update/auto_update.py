@@ -27,10 +27,8 @@ import time
 import ConfigParser
 import threading
 
+from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.controllers.misc.decorators import retry
-
-# Get w3af install dir
-W3AF_LOCAL_PATH = os.sep.join(__file__.split(os.sep)[:-4])
 
 def is_working_copy():
     '''
@@ -111,7 +109,7 @@ class SVNClient(object):
         '''
         raise NotImplementedError
 
-    def status(self, localpath=None):
+    def status(self, localpath=None, recurse=False):
         '''
         Return a SVNFilesList object.
         
@@ -120,7 +118,7 @@ class SVNClient(object):
         '''
         raise NotImplementedError
 
-    def list(self, path_or_url=None):
+    def list(self, path_or_url=None, recurse=False):
         '''
         Return a SVNFilesList. Elements are tuples containing the path and
         the status for all files in `path_or_url` at the provided revision.
@@ -235,10 +233,12 @@ class w3afSVNClient(SVNClient):
     def URL(self):
         return self._repourl
 
-    @retry(tries=3, delay=0.5, backoff=2, exc_class=SVNUpdateError,
+    @retry(tries=3, delay=0.5, backoff=2,
+           exc_class=SVNUpdateError,
            err_msg=UPD_ERROR_MSG)
     def update(self, rev=None):
         with self._actionlock:
+
             kind = pysvn.opt_revision_kind
             if rev is None:
                 rev = pysvn.Revision(kind.head)
@@ -249,10 +249,11 @@ class w3afSVNClient(SVNClient):
 
             self._events = []
             try:
-                pysvn_rev = \
-                    self._svnclient.update(self._localpath,
-                                           revision=rev,
-                                           depth=pysvn.depth.infinity)[0]
+                pysvn_rev = self._svnclient.update(
+                                            self._localpath,
+                                            revision=rev,
+                                            depth=pysvn.depth.infinity
+                                            )[0]
             except pysvn.ClientError, ce:
                 raise SVNUpdateError(*ce.args)
             
@@ -260,19 +261,22 @@ class w3afSVNClient(SVNClient):
             updfiles.rev = Revision(pysvn_rev.number, pysvn_rev.date)
             return updfiles
 
-    def status(self, localpath=None):
+    def status(self, localpath=None, recurse=False):
         with self._actionlock:
             path = localpath or self._localpath
-            entries = self._svnclient.status(path, recurse=False)            
-            res = [(ent.path, pysvn_status_translator.get(ent.text_status,
-                                          ST_UNKNOWN)) for ent in entries]
+            entries = self._svnclient.status(path, recurse=recurse)            
+            res = [
+                (ent.path,
+                 pysvn_status_translator.get(ent.text_status, ST_UNKNOWN))
+                for ent in entries
+                ]
             return SVNFilesList(res)
 
-    def list(self, path_or_url=None):
+    def list(self, path_or_url=None, recurse=False):
         with self._actionlock:
             if not path_or_url:
                 path_or_url = self._localpath
-            entries = self._svnclient.list(path_or_url, recurse=False)
+            entries = self._svnclient.list(path_or_url, recurse=recurse)
             res = [(ent.path, None) for ent, _ in entries]
             return SVNFilesList(res)
 
@@ -309,7 +313,7 @@ class w3afSVNClient(SVNClient):
     def is_working_copy(localpath):
         try:
             pysvn.Client().status(localpath, recurse=False)
-        except Exception, ex:
+        except Exception:
             return False
         else:
             return True
@@ -528,13 +532,13 @@ class VersionMgr(object): #TODO: Make it singleton?
         # Startup configuration
         self._start_cfg = StartUpConfig()
         # Default events registration
-        msg = 'Checking if a new version is available in our SVN repository.' \
-        ' Please wait...'
+        msg = ('Checking if a new version is available in our SVN repository.'
+               ' Please wait...')
         self.register(VersionMgr.ON_UPDATE_CHECK, log, msg)
         msg = 'w3af is updating from the official SVN server...'
         self.register(VersionMgr.ON_UPDATE, log, msg)
-        msg = 'At least one new dependency was included in w3af. Please ' \
-        'update manually.'
+        msg = ('At least one new dependency was included in w3af. Please '
+               'update manually.')
         self.register(VersionMgr.ON_UPDATE_ADDED_DEP, log, msg)
     
     def __getattribute__(self, name):
@@ -575,8 +579,9 @@ class VersionMgr(object): #TODO: Make it singleton?
 
         if force or self._has_to_update():
             self._notify(VersionMgr.ON_UPDATE_CHECK)
-            remrev = remrev and Revision(remrev, None) or \
-                                            client.get_revision(local=False)
+            remrev = (Revision(remrev, None) if remrev
+                      else client.get_revision(local=False))
+            
             # If local and repo's rev are the same => Nothing to do.
             if localrev != remrev:
                 proceed_upd = True
@@ -612,7 +617,7 @@ class VersionMgr(object): #TODO: Make it singleton?
             # Skip downgrades
             if remrev > localrev and callback:
                 log = lambda: str(self.show_summary(localrev, remrev))
-                callback('Do you want to see a summary of the new code ' \
+                callback('Do you want to see a summary of the new code '
                          'commits log messages?', log)
         return (files, localrev, remrev)
     
@@ -627,7 +632,7 @@ class VersionMgr(object): #TODO: Make it singleton?
         return self._client.log(start_rev, end_rev)
 
     def status(self, path=None):
-        return self._client.status(path)
+        return self._client.status(path, recurse=False)
 
     def register(self, event, func, msg):
         '''
@@ -659,14 +664,14 @@ class VersionMgr(object): #TODO: Make it singleton?
         # Find dirs in repo
         repourl = self._client.URL + '/' + 'extlib'
         # In repo we distinguish dirs from files by the dot (.) presence
-        repodirs = (ospath.basename(d) for d, _ in client.list(repourl)[1:] \
-                                        if ospath.basename(d).find('.') == -1)
+        repodirs = (ospath.basename(d) for d, _ in client.list(repourl)[1:]
+                    if ospath.basename(d).find('.') == -1)
         # Get local dirs
         extliblocaldir = join(self._localpath, 'extlib')
-        extlibcontent = (join(extliblocaldir, f) for f in \
-                                                os.listdir(extliblocaldir))
-        localdirs = (ospath.basename(d) for d in \
-                                            extlibcontent if ospath.isdir(d))
+        extlibcontent = (join(extliblocaldir, f) for f in
+                         os.listdir(extliblocaldir))
+        localdirs = (ospath.basename(d) for d in
+                     extlibcontent if ospath.isdir(d))
         # New dependencies
         deps = tuple(set(repodirs).difference(localdirs))
 
@@ -680,8 +685,8 @@ class VersionMgr(object): #TODO: Make it singleton?
                         'core/ui/gtkUi/dependencyCheck.py')
             for depfile in depfiles:
                 diff_str = client.diff(depfile)
-                nlines = (nl[1:].strip() for nl in \
-                                    diff_str.split('\n') if nl.startswith('-'))
+                nlines = (nl[1:].strip() for nl in
+                                diff_str.split('\n') if nl.startswith('-'))
                 try_counter = 0
                 for nl in nlines:
                     if nl == 'try:':
@@ -711,9 +716,9 @@ class VersionMgr(object): #TODO: Make it singleton?
             freq = startcfg.freq
             diff_days = max((date.today()-startcfg.last_upd).days, 0)
             
-            if (freq == StartUpConfig.FREQ_DAILY and diff_days > 0) or \
-                (freq == StartUpConfig.FREQ_WEEKLY and diff_days > 6) or \
-                (freq == StartUpConfig.FREQ_MONTHLY and diff_days > 29):
+            if ((freq == StartUpConfig.FREQ_DAILY and diff_days > 0) or
+                (freq == StartUpConfig.FREQ_WEEKLY and diff_days > 6) or
+                (freq == StartUpConfig.FREQ_MONTHLY and diff_days > 29)):
                 return True
             return False
 
