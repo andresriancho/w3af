@@ -130,15 +130,18 @@ XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
                 '</methodcall>', '</methodname>', '</params>')
 def create_fuzzable_request(req_url, method='GET', post_data='',
                             add_headers=None):
-
     '''
-    XXX Creates a fuzzable request based on a query sent FROM the
-    browser. This is used in plugins like spiderMan.
-    
-    @param req_url: XXX An url_object that represents the URL
+    Creates a fuzzable request based on the input parameters.
+
+    @param req_url: Either a url_object that represents the URL or a
+        HTTPRequest instance. If the latter is the case the `method` and
+        `post_data` values are taken from the HTTPRequest object as well
+        as the values in `add_headers` will be merged with the request's
+        headers.
     @param method: A string that represents the method ('GET', 'POST', etc)
     @param post_data: A string that represents the postdata.
-    @param add_headers: XXX A dict that holds the headers
+    @param add_headers: A dict that holds the headers. If `req_url` is a
+        request then this dict will be merged with the request's headers.
     '''
     if isinstance(req_url, HTTPRequest):
         url = req_url.url_object
@@ -157,7 +160,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     else: # Seems to be something that has post data
         data = {}
         conttype = ''
-        for hname in headers.keys(): # XXX: '.keys()' is just fine. Don't
+        for hname in headers.keys(): # '.keys()' is just fine. Don't
             hnamelow = hname.lower() # remove it.
             if hnamelow == 'content-length':
                 del headers[hname]
