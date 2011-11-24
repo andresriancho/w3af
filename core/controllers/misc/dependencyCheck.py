@@ -57,7 +57,12 @@ def dependencyCheck():
         except Exception, e:
             msg = '    pybloomfiltermmap is a required dependency in *nix systems, please download from '
             msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0 and build using the python2.6-dev '
-            msg += 'package.'
+            msg += 'package. Follow these steps:\n'
+            msg += '    wget http://pypi.python.org/packages/source/p/pybloomfiltermmap/pybloomfiltermmap-0.2.0.tar.gz\n'
+            msg += '    tar -zxpvf pybloomfiltermmap-0.2.0.tar.gz\n'
+            msg += '    cd pybloomfiltermmap-0.2.0\n'
+            msg += '    sudo apt-get install python2.6-dev\n'
+            msg += '    sudo python setup.py install\n\n'
             
             additional_information.append(msg)
             reasonForExit = True        
