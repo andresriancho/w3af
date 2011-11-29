@@ -214,6 +214,8 @@ class phpEggs(baseDiscoveryPlugin):
                 ('40410284d460552a6c9e10c1f5ae7223', 'PHP Credits'), 
                 ('50caaf268b4f3d260d720a1a29c5fe21', 'PHP Logo 2'), 
                 ('7675f1d01c927f9e6a4752cf182345a2', 'Zend Logo')]
+        self._egg_DB['5.2.14'] = [
+                ('935b67af76c36bd96e59cf6bc158389a', 'PHP Credits')]
         
     def discover(self, fuzzableRequest ):
         '''
