@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.parsers.urlParser import url_object
 from core.data.request.httpQsRequest import HTTPQSRequest
 
 def are_variants(uri, other_uri):

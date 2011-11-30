@@ -292,36 +292,33 @@ class fuzzableRequest(object):
             
         @return: True if self and other are variants.
         '''
-        if self._uri == other._uri and \
+        if self._url == other._url and \
            self._method == other._method and \
            self._dc.keys() == other._dc.keys():
                 
             # Ok, so it has the same URI, method, dc:
             # I need to work now :(
             
-            # What I do now, is check if the values for each parameter has the
+            # Now, is check if the values for each parameter has the
             # same type or not.
-            for param_name in self._dc:
+            for pname in self._dc:
                 
                 # repeated parameter names
-                for index in xrange(len(self._dc[param_name])):
+                for index, valself in enumerate(self._dc[pname]):
                     try:
                         # I do it in a try, because "other" might not have
                         # that many repeated parameters, and index could be
                         # out of bounds.
-                        value_self = self._dc[param_name][index]
-                        value_other = other._dc[param_name][index]
+                        valother = other._dc[pname][index]
                     except IndexError:
                         return False
                     else:
-                        if value_other.isdigit() and not value_self.isdigit():
-                            return False
-                        elif value_self.isdigit() and not value_other.isdigit():
+                        if (valother.isdigit() and not valself.isdigit()) or \
+                            (valself.isdigit() and not valother.isdigit()):
                             return False
 
             return True
-        else:
-            return False
+        return False
     
     def setURL(self , url):
         '''

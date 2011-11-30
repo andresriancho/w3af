@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import urllib
 
-from core.controllers.w3afException import w3afException
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.urlParser import url_object
 
@@ -260,7 +259,7 @@ class BaseParser(object):
             
             # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
             # I'm removing those matches manually below
-            regex = '((:?[/]{1,2}[\w%\-~\.]+)+\.\w{2,4}(((\?)([\w%]*=[\w%]*)){1}((&)([\w%]*=[\w%]*))*)?)'
+            regex = '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)'
             relative_regex = re.compile(regex, re.U)
             
             for match_tuple in relative_regex.findall(doc_str):

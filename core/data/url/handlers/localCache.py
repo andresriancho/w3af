@@ -46,7 +46,7 @@ def gen_hash(request):
     '''
     Generate an unique ID for a request
     '''
-    req = request        
+    req = request
     thestr = '%s%s%s%s' % (
                 req.get_method(),
                 req.get_full_url(),

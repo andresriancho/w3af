@@ -147,7 +147,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
         url = req_url.url_object
         post_data = str(req_url.get_data() or '')
         method = req_url.get_method()
-        headers = req_url.headers
+        headers = dict(req_url.headers)
         headers.update(add_headers or {})
     else:
         url = req_url
