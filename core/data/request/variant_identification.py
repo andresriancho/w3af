@@ -35,34 +35,30 @@ def are_variants(uri, other_uri):
     @return: True if the URLs are variants.
 
     >>> from core.data.parsers.urlParser import url_object
-    >>> a = url_object('http://www.w3af.com/foo.php')
-    >>> b = url_object('http://www.w3af.com/foo.php')
-    >>> are_variants(a, b)
+    >>> URL = url_object
+    >>> are_variants(URL('http://w3af.com/foo.php'), \
+                     URL('http://w3af.com/foo.php'))
     True
-
-    >>> a = url_object('http://www.w3af.com/foo.php?id=1')
-    >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
-    >>> are_variants(a, b)
+    >>> are_variants(URL('http://w3af.com/foo.php?x=1'), \
+                     URL('http://w3af.com/foo.php?y=1'))
     False
-
-    >>> a = url_object('http://www.w3af.com/bar.php?id=1')
-    >>> b = url_object('http://www.w3af.com/foo.php?foo=1')
-    >>> are_variants(a, b)
+    >>> are_variants(URL('http://w3af.com/bar.php?id=1'), \
+                     URL('http://w3af.com/foo.php?foo=1'))
     False
-
-    >>> a = url_object('http://www.w3af.com/foo.php?id=1')
-    >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
-    >>> are_variants(a, b)
+    >>> are_variants(URL('http://w3af.com/foo.php?id=1'), \
+                     URL('http://rapid7.com/foo.php?id=1'))
     False
-
-    >>> a = url_object('http://www.w3af.com/foo.php?id=1&foo=bar')
-    >>> b = url_object('http://www.rapid7.com/foo.php?id=1')
-    >>> are_variants(a, b)
+    >>> are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'), \
+                     URL('http://rapid7.com/foo.php?id=1'))
     False
-
-    >>> a = 'http://www.w3af.com/foo.php?id=1'
-    >>> b = 'http://www.rapid7.com/foo.php?id=1'
-    >>> are_variants(a, b)
+    >>> are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'), \
+                     URL('http://w3af.com/foo.php?id=333&foo=spam'))
+    True
+    >>> are_variants(URL('http://w3af.com/foo.php?id=1111'), \
+                     URL('http://w3af.com/foo.php?id=spam'))
+    False
+    >>> are_variants('http://w3af.com/foo.php?id=1', \
+                     'http://rapid7.com/foo.php?id=1')
     Traceback (most recent call last):
       ...
     ValueError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
