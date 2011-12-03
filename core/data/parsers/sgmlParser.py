@@ -137,6 +137,11 @@ class SGMLParser(BaseParser):
             resp_body = resp_body.encode(http_resp.charset, 'replace')
             parser = etree.XMLParser(target=self, recover=True)
             etree.fromstring(resp_body, parser)
+        except etree.XMLSyntaxError:
+            msg = 'An error occurred while parsing "%s", original exception: "%s"'
+            msg = msg % (http_resp.getURL(), etree.XMLSyntaxError)
+            om.out.debug(msg)
+        
     
     def _find_references(self, tag, attrs):
         '''
