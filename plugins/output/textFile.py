@@ -119,124 +119,67 @@ class textFile(baseOutputPlugin):
             ' log output file:', e
             sys.exit(1)
             
+    def write(self, message, log_type, newLine = True ):
+        '''
+        Method that writes stuff to the textFile.
+        
+        @param message: The message to write to the file
+        @param log_type: Type of message are we writing to the file
+        @param newLine: Add a new line after the message
+        '''
+        if not self._initialized:
+            self._init()
+        
+        to_print = str(message)
+        if newLine == True:
+            to_print += '\n'
+        
+        now = time.localtime(time.time())
+        the_time = time.strftime("%c", now)
+        
+        if self._show_caller:
+            timestamp = '[ %s - %s - %s ]' % (the_time, log_type, self.getCaller())
+        else:
+            timestamp = '[ %s - %s ]' % (the_time, log_type)
+            
+        self._write_to_file( timestamp + to_print )
+
+        self._flush()
+    
     def debug(self, message, newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for debug messages.
         '''
-        if not self._initialized:
-            self._init()
-            
         if self.verbose:
-            to_print = message
+            self.write( message, 'debug', newLine)
             
-            now = time.localtime(time.time())
-            the_time = time.strftime("%c", now)
-            if self._show_caller:
-                timestamp = '[ ' + the_time + ' - debug - '+self.getCaller()+' ] '
-            else:
-                timestamp = '[ ' + the_time + ' - debug ] '
-            
-            to_print = timestamp + to_print
-            to_print = to_print.replace('\n', '\n'+timestamp)
-            if newLine == True:
-                to_print += '\n'
-            
-            self._write_to_file( to_print )
-            self._flush()
-
-    
     def information(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         '''
-        if not self._initialized:
-            self._init()
-            
-        to_print = message
-    
-        now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
-        if self._show_caller:
-            timestamp = '[ ' + the_time + ' - information - '+self.getCaller()+' ] '
-        else:
-            timestamp = '[ ' + the_time + ' - information ] '
-        
-        to_print = timestamp + to_print
-        to_print = to_print.replace('\n', '\n'+timestamp)
-        
-        if newLine == True:
-            to_print += '\n'
-            
-        self._write_to_file( to_print )
-
-        self._flush()
-
+        self.write( message, 'information', newLine)
 
     def error(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
-        '''     
-        if not self._initialized:
-            self._init()
-        
-        to_print = message
-        if newLine == True:
-            to_print += '\n'
-        
-        now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
-        if self._show_caller:
-            timestamp = '[ ' + the_time + ' - error - '+self.getCaller()+' ] '
-        else:
-            timestamp = '[ ' + the_time + ' - error ] '
-            
-        self._write_to_file( timestamp + to_print )
-
-        self._flush()
+        '''
+        self.write( message, 'error', newLine)     
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
-        '''     
-        if not self._initialized:
-            self._init()
-        
-        to_print = message
-        if newLine == True:
-            to_print += '\n'
-        now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
-        if self._show_caller:
-            timestamp = '[ ' + the_time + ' - vulnerability - '+self.getCaller()+' ] '
-        else:
-            timestamp = '[ ' + the_time + ' - vulnerability ] '
-        self._write_to_file( timestamp + to_print )
-
-        self._flush()
+        '''
+        self.write( message, 'vulnerability', newLine)
         
     def console( self, message, newLine = True ):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        if not self._initialized:
-            self._init()
-        to_print = message
-        if newLine == True:
-            to_print += '\n'
-        now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
-        
-        if self._show_caller:
-            timestamp = '[ ' + the_time + ' - console - '+self.getCaller()+' ] '
-        else:
-            timestamp = '[ ' + the_time + ' - console ] '
-            
-        self._write_to_file( timestamp + to_print )
-        self._flush()
+        self.write( message, 'console', newLine)
         
     def logEnabledPlugins(self,  plugins_dict,  options_dict):
         '''

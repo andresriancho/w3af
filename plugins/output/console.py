@@ -62,6 +62,7 @@ class console(baseOutputPlugin):
         self.verbose = False
 
     def _make_printable(self, a_string):
+        a_string = str( a_string )
         return ''.join(ch for ch in a_string if ch in string.printable)
 
     @catch_ioerror
@@ -71,10 +72,10 @@ class console(baseOutputPlugin):
         or from the framework. This method should take an action for debug messages.
         '''
         if self.verbose:
-            to_print = message
+            to_print = self._make_printable( message )
             if newLine == True:
                 to_print += '\r\n'
-            sys.stdout.write( self._make_printable(to_print) )
+            sys.stdout.write( to_print )
             sys.stdout.flush()
 
     @catch_ioerror
@@ -83,10 +84,10 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         ''' 
-        to_print = message
+        to_print = self._make_printable( message )
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._make_printable(to_print) )
+        sys.stdout.write( to_print )
         sys.stdout.flush()
 
     @catch_ioerror
@@ -95,10 +96,10 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
         '''     
-        to_print = message
+        to_print = self._make_printable( message )
         if newLine == True:
             to_print += '\r\n'
-        sys.stderr.write( self._make_printable(to_print) )
+        sys.stderr.write( to_print )
         sys.stdout.flush()
 
     @catch_ioerror
@@ -107,10 +108,10 @@ class console(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
         '''
-        to_print = message
+        to_print = self._make_printable( message )
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._make_printable(to_print) )
+        sys.stdout.write( to_print )
         sys.stdout.flush()
     
     @catch_ioerror
@@ -118,10 +119,10 @@ class console(baseOutputPlugin):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        to_print = message
+        to_print = self._make_printable( message )
         if newLine == True:
             to_print += '\r\n'
-        sys.stdout.write( self._make_printable(to_print) )
+        sys.stdout.write( to_print )
         sys.stdout.flush()
 
     def logHttp( self, request, response):
