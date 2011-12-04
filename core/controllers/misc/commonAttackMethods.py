@@ -55,6 +55,12 @@ class commonAttackMethods:
         
         @return: True if the cut could be defined
         '''
+        if expected_result not in body_a:
+            return False
+        
+        if body_a == body_b:
+            return False
+        
         sequence_matcher = difflib.SequenceMatcher(lambda x: len(x)<3, body_a, body_b)
         
         body_a_len = len(body_a)
