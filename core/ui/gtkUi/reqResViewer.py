@@ -35,7 +35,6 @@ from core.ui.gtkUi.httpeditor import HttpEditor
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
 from core.data.parsers.httpRequestParser import httpRequestParser
-from core.data.dc.queryString import queryString
 
 from core.controllers.w3afException import w3afException, w3afMustStopException, w3afMustStopOnUrlError
 
@@ -347,7 +346,6 @@ class requestPart(requestResponsePart):
     def getBothTexts(self):
         try:
             data = ''
-            raise AttributeError
             if self._obj.getData():
                 data = str(self._obj.getData())
             return (self._obj.dumpRequestHead(), data)
