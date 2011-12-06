@@ -68,7 +68,7 @@ class commonAttackMethods:
         
         longest_match = sequence_matcher.find_longest_match(0, body_a_len, 0, body_b_len)
         longest_match_a = longest_match[0]
-        longest_match_b = longest_match[1]        
+        longest_match_b = longest_match[1]
         longest_match_size = longest_match[2]
         
         #    This should return a long match at the beginning or the end of the string
@@ -76,12 +76,12 @@ class commonAttackMethods:
         #    If the longest_match is very small in relation to the whole response,
         #    then we're in a case in which there is no header or footer.
         #
-        #    I measure against the body_b_len because in that response (generarly an error)
+        #    I measure against the body_b_len because in that response (generally an error)
         #    the amount of bytes consumed by the "/etc/passwd" file is less and allows
         #    me to calculate a more accurate ratio.
         #
 
-        if (float(longest_match_size) / body_b_len) < 0.01:
+        if float(longest_match_size) == body_b_len == 0 or (float(longest_match_size) / body_b_len) < 0.01:
             self._footer_length = 0
             self._header_length = 0
             
