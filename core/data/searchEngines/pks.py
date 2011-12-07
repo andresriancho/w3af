@@ -45,12 +45,12 @@ class pks(searchEngine):
         @parameter hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
-            msg = 'You must provide the pks search engine with a root domain name (as returned by'
+            msg = 'You must provide the PKS search engine with a root domain name (as returned by'
             msg += ' url_object.getRootDomain).'
             raise w3afException( msg )
     
         res = self.met_search( hostname )
-        om.out.debug('pks search for hostname : '+ hostname + ' returned ' + str( len( res ) ) + ' results.' )
+        om.out.debug('PKS search for hostname: "'+ hostname + '" returned ' + str( len( res ) ) + ' results.' )
         return res
 
     def met_search(self, query):
@@ -93,10 +93,13 @@ class pks(searchEngine):
                 if re.match(emailRegex, email, re.IGNORECASE):
                     
                     account = email.split('@')[0]
-                    if account not in accounts:
-                        pksr = pksResult( name, account )
-                        results.append( pksr )
-                        accounts.append( account )
+                    domain = email.split('@')[1]
+                    
+                    if domain == query:
+                        if account not in accounts:
+                            pksr = pksResult( name, account )
+                            results.append( pksr )
+                            accounts.append( account )
 
         return results
     
