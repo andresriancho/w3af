@@ -226,6 +226,11 @@ class BaseParser(object):
         >>> url_object('http://www.w3af.com/foo/bar/index.html') in a._re_urls
         True
 
+        >>> a = BaseParser(response)
+        >>> a._regex_url_parse(u'header /subscribe.aspx footer')
+        >>> url_object('http://www.w3af.com/subscribe.aspx') in a._re_urls
+        True
+
         Relative with initial "/" , inside an href
         >>> a = BaseParser(response)
         >>> a._regex_url_parse(u'header <a href="/foo/bar/index.html">foo</a> footer')
