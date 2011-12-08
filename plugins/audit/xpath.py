@@ -155,7 +155,7 @@ class xpath(baseAuditPlugin):
             #   Populate the self._errors list with the compiled versions of the regular expressions.
             #
             error_strings = []
-            error_strings.append('XPathException' )
+            error_strings.append('System.Xml.XPath.XPathException:' )
             error_strings.append('MS.Internal.Xml.' )
             error_strings.append('Unknown error in XPath' )
             error_strings.append('org.apache.xpath.XPath' )
