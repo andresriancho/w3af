@@ -66,6 +66,9 @@ class swfParser(BaseParser):
         except zlib.error, e:
             raise Exception('Failed to inflate: ' + str(e))
         else:
+            # TODO: Strings in SWF are NULL-Byte delimited. Maybe we can
+            # use that to extract strings and apply regular expressions
+            # more carefully?
             return uncompressed_data
     
     def _parse(self, swf_body):
@@ -107,4 +110,4 @@ class swfParser(BaseParser):
         return []
         
     getReferencesOfTag = getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList
-    
+
