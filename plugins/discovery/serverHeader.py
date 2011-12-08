@@ -140,7 +140,7 @@ class serverHeader(baseDiscoveryPlugin):
                             #
                             i = info.info()
                             i.setPluginName(self.getName())
-                            i.setName('Powered by header')
+                            i.setName('"%s" header' % header_name)
                             i.setId( response.getId() )
                             msg = '"' + header_name + '" header for this HTTP server is: "'
                             msg += powered_by + '".'
