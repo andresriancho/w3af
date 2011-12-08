@@ -69,23 +69,24 @@ class generic(baseAuditPlugin):
         
         for m in mutants:
             
-            #   First I check that the current modified parameter in the mutant doesn't have
-            #   an already reported vulnerability. I don't want to report vulnerabilities more
-            #   than once.
+            #    First I check that the current modified parameter in the mutant doesn't have
+            #    an already reported vulnerability. I don't want to report vulnerabilities more
+            #    than once.
             if (m.getURL(), m.getVar()) in self._already_reported:
                 continue
             
             # Now, we request the limit (something that doesn't exist)
-            # If http://localhost/a.php?b=1 ; then I should request b=12938795  (random number)
-            # If http://localhost/a.php?b=abc ; then I should request b=hnv98yks (random alnum)
+            #     If http://localhost/a.php?b=1 ; then I should request b=12938795  (random number)
+            #     If http://localhost/a.php?b=abc ; then I should request b=hnv98yks (random alnum)
             limit_response = self._get_limit_response( m )
             
             # Now I request something that could generate an error
-            # If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
-            # If http://localhost/a.php?b=abc ; then I should request b=d'kcz'gj'"**5*(((*)
+            #     If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
+            #     If http://localhost/a.php?b=abc ; then I should request b=d'kcz'gj'"**5*(((*)
+            #
             # I also try to trigger errors by sending empty strings
-            # If http://localhost/a.php?b=1 ; then I should request b=
-            # If http://localhost/a.php?b=abc ; then I should request b=
+            #     If http://localhost/a.php?b=1 ; then I should request b=
+            #     If http://localhost/a.php?b=abc ; then I should request b=
             for error_string in self._get_error_strings():
                 m.setModValue( error_string )
                 error_response = self._sendMutant(  m , analyze=False )
@@ -125,13 +126,15 @@ class generic(baseAuditPlugin):
             # in order to remove some false positives
             limit_response2 = self._get_limit_response( mutant )
             
+            id_list = [oResponse.id, limit_response.id, error_response.id]
+            
             if relative_distance( limit_response2.getBody(), limit_response.getBody() ) > \
             1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.getName())
-                v.setId( error_response.id )
+                v.setId( id_list )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unidentified vulnerability' )
                 v.setDesc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
@@ -141,7 +144,7 @@ class generic(baseAuditPlugin):
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
                 i.setPluginName(self.getName())
-                i.setId( error_response.id )
+                i.setId( id_list )
                 i.setName( 'Possible unidentified vulnerability' )
                 msg = '[Manual verification required] A possible vulnerability was found at: '
                 msg += mutant.foundAt()
