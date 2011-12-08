@@ -152,7 +152,7 @@ class collectCookies(baseGrepPlugin):
                 except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
                     msg = 'The cookie that was sent by the remote web application'
-                    msg += ' doesn\'t respect the RFC.'
+                    msg += ' does NOT respect the RFC.'
                     om.out.information(msg)
                     i.setDesc(msg)
                     i.setName('Invalid cookie')
