@@ -128,23 +128,27 @@ class collectCookies(baseGrepPlugin):
         0
 
         '''
-        for key in response.getHeaders():  
+        headers = response.getHeaders()
+        
+        for key in headers:  
             if key.upper() in self._cookieHeaders:
-                # save
-                headers = response.getHeaders()
+
+                #
+                # save if not already in kb
+                #
                 
                 # Create the object to save the cookie in the kb
                 i = info.info()
                 i.setPluginName(self.getName())
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
-                cookieStr = headers[key].strip()
+
                 self._setCookieToRep(i, cstr=headers[key].strip())
                  
-                C = Cookie.SimpleCookie()
+                cookie_object = Cookie.SimpleCookie()
                 try:
                     # Note to self: This line may print some chars to the console
-                    C.load( headers[ key ].strip() )
+                    cookie_object.load( headers[ key ].strip() )
                 except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
                     msg = 'The cookie that was sent by the remote web application'
@@ -154,31 +158,41 @@ class collectCookies(baseGrepPlugin):
                     i.setName('Invalid cookie')
                     kb.kb.append( self, 'invalid-cookies', i )
                 else:
-                    i['cookie-object'] = C
-
-                    '''
-                    The expiration date tells the browser when to delete the cookie. If no 
-                    expiration date is provided, the cookie is deleted at the end of the user
-                    session, that is, when the user quits the browser. As a result, specifying an
-                    expiration date is a means for making cookies to survive across browser 
-                    sessions. For this reason, cookies that have an expiration date are called 
-                    persistent.
-                    '''
-                    i['persistent'] = False
-                    if 'expires' in C:
-                        i['persistent'] = True
-                        
-                    i.setId( response.id )
-                    i.addToHighlight(i['cookie-string'])
-                    msg = 'The URL: "' + i.getURL() + '" sent the cookie: "'
-                    msg += i['cookie-string'] + '".'
-                    i.setDesc( msg )
-                    kb.kb.append( self, 'cookies', i )
                     
-                    # Find if the cookie introduces any vulnerability, or discloses information
-                    self._analyzeCookie( request, response, C )
+                    store_in_kb = True
+                    for cookie_info in kb.kb.getData( self, 'cookies' ):
+                        stored_cookie_obj = cookie_info['cookie-object']
+                        
+                        if cookie_object == stored_cookie_obj:
+                            store_in_kb = False
+                            break
+
+                    if store_in_kb:
+                        i['cookie-object'] = cookie_object
+    
+                        '''
+                        The expiration date tells the browser when to delete the cookie. If no 
+                        expiration date is provided, the cookie is deleted at the end of the user
+                        session, that is, when the user quits the browser. As a result, specifying an
+                        expiration date is a means for making cookies to survive across browser 
+                        sessions. For this reason, cookies that have an expiration date are called 
+                        persistent.
+                        '''
+                        i['persistent'] = False
+                        if 'expires' in cookie_object:
+                            i['persistent'] = True
+                            
+                        i.setId( response.id )
+                        i.addToHighlight(i['cookie-string'])
+                        msg = 'The URL: "' + i.getURL() + '" sent the cookie: "'
+                        msg += i['cookie-string'] + '".'
+                        i.setDesc( msg )
+                        kb.kb.append( self, 'cookies', i )
+                        
+                        # Find if the cookie introduces any vulnerability, or discloses information
+                        self._analyzeCookie( request, response, cookie_object )
         
-        # do this check everytime
+        # do this check every time
         self._sslCookieValueUsedInHTTP( request, response )
     
     def _analyzeCookie( self, request, response, cookieObj ):
