@@ -205,8 +205,9 @@ class eval(baseAuditPlugin):
                         i.setId( response.id )
                         i.setDc( mutant.getDc() )
                         i.setName( 'eval() input injection vulnerability' )
-                        msg = 'eval() input injection was found at: ' + mutant.foundAt()
-                        msg += ' . Please review manually.'
+                        msg = 'eval() input injection was found at: '
+                        msg += mutant.foundAt()
+                        msg += 'Please review manually.'
                         i.setDesc( msg )
                         kb.kb.append( self, 'eval', i )
 
