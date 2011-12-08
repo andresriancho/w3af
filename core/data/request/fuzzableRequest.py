@@ -58,7 +58,7 @@ class fuzzableRequest(object):
         self._dc = dc or dataContainer()
         self._method = method
         self._headers = headers or {}
-        self._cookie = None
+        self._cookie = cookie
         self._data = None
         self.setURI(uri)
 

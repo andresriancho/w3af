@@ -122,9 +122,10 @@ def createMutants(freq, mutant_str_list, append=False,
     # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
         om.out.debug('Fuzzing cookie')
-        result.extend(_createMutantsWorker(freq, mutantCookie, mutant_str_list,
-                                           fuzzableParamList, append,
-                                           dataContainer=freq.getCookie()))
+        mutants = _createMutantsWorker(freq, mutantCookie, mutant_str_list,
+                                       fuzzableParamList, append,
+                                       dataContainer=freq.getCookie())        
+        result.extend( mutants )
     
     #
     # Improvement to reduce false positives with a double check:
