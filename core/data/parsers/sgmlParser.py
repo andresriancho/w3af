@@ -147,9 +147,18 @@ class SGMLParser(BaseParser):
         '''
         Find references inside the document.
         '''
-        # Filter valid attr_names and urls that are not fragments
+        # Filter valid attr_names and URLs that are not fragments.
+        #
+        # I don't want to inject into Apache's directory indexing parameters:
+        #    "?C=N;O=A"
+        #    "?C=M;O=A"
+        #    "?C=S;O=A"
+        #    "?C=D;O=D"
+        #        
         filter_ref = lambda attr: attr[0] in self.URL_ATTRS and attr[1] and \
-                                    not attr[1].startswith('#')
+                                    not attr[1].startswith('#') and \
+                                    not attr[1] in ["?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D"]
+        
         
         for _, attr_val in ifilter(filter_ref, attrs.iteritems()):
             try:
