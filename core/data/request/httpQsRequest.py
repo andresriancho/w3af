@@ -66,6 +66,5 @@ class HTTPQSRequest(fuzzableRequest):
         return None
     
     def __repr__(self):
-        #return '----' +  str(self._uri.getQueryString())
         return ('<QS fuzzable request | %s | %s>' % 
-                                (self.getMethod(), self.getURI()))
+                (self.getMethod(), self.getURI()))

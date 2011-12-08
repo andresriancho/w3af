@@ -60,7 +60,7 @@ def createFuzzableRequests(http_resp, request=None, add_self=True):
     headers = dict((h, '') for h in cf.cf.getData('fuzzableHeaders'))
     
     # Get the cookie!
-    cookieObj = _create_cookie(http_resp, request)
+    cookieObj = _create_cookie(http_resp)
     
     # Create the fuzzable request that represents the request object
     # passed as parameter
@@ -208,32 +208,30 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
             req = httpPostDataRequest(url, method, headers, dc=data)
     return req
 
-def _create_cookie(httpResponse, request):
+def _create_cookie(httpResponse):
     '''
     Create a cookie object based on a HTTP response.
     '''
     cookies = []
-    
-    # Get data from REQUEST
-    requestHeaders = {}
-    if request is not None:
-        requestHeaders = request.getHeaders()
-    
+        
     # Get data from RESPONSE
     responseHeaders = httpResponse.getHeaders()
     
-    for headers in [ requestHeaders, responseHeaders ]:
-        for hname, hvalue in headers.items():
-            if 'cookie' in hname.lower():
-                cookies.append(hvalue)
+    for hname, hvalue in responseHeaders.items():
+        if 'cookie' in hname.lower():
+            cookies.append(hvalue)
                 
-    # TODO: The application sends this cookie:
-    #    Set-Cookie: TestCookie=something+from+somewhere; expires=Sun, 04-Dec-2011 09:28:53 GMT; path=/w3af/
+    cookie_inst = cookie(''.join(cookies))
+    
     #
-    # And we're using that for fuzzing (TestCookie, expires, path). My opinion is
-    # that we should actually be using what browsers send:
+    # delete everything that the browsers usually keep to themselves, since
+    # this cookie object is the one we're going to send to the wire
     #
-    #    Cookie: TestCookie=something+from+somewhere
-    #
-    return cookie(''.join(cookies))
+    for key in ['path', 'expires', 'domain', 'max-age']:
+        try:
+            del cookie_inst[key]
+        except:
+            pass
+    
+    return cookie_inst 
 
