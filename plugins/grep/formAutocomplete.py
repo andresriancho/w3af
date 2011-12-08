@@ -41,6 +41,7 @@ PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 # All 'text' input elements
 TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
+
 class formAutocomplete(baseGrepPlugin):
     '''
     Grep every page for detection of forms with 'autocomplete' capabilities 
@@ -82,22 +83,25 @@ class formAutocomplete(baseGrepPlugin):
 
                     # Test existence of password-type inputs and verify that
                     # all inputs are autocompletable
-                    if passwd_inputs and \
-                        all(map(autocompletable,
-                        chain(passwd_inputs, form.xpath(TEXT_INPUT_XPATH)))):
-                        inf = info()
-                        inf.setName('Auto-completable form')
-                        inf.setURL(url)
-                        inf.setId(response.id)
-                        msg = 'The URL: "%s" has <form> element with ' \
-                        'autocomplete capabilities.' % url
-                        inf.setDesc(msg)
+                    if passwd_inputs and all(map(autocompletable,
+                    chain(passwd_inputs, form.xpath(TEXT_INPUT_XPATH)))):
+                        
+                        i = info()
+                        i.setName('Auto-completable form')
+                        i.setURL(url)
+                        i.setId(response.id)
+                        msg = 'The URL: "%s" has a "<form>" element with ' \
+                        'auto-complete enabled.' % url
+                        i.setDesc(msg)
                         form_str = etree.tostring(form)
                         to_highlight = form_str[:(form_str).find('>') + 1]
-                        inf.addToHighlight(to_highlight)
-                        kb.kb.append(self, 'formAutocomplete', inf)
-                        # Also send 'msg' to console
+                        i.addToHighlight(to_highlight)
+                        
+                        # Store and print
+                        kb.kb.append(self, 'formAutocomplete', i)
                         om.out.information(msg)
+                        
+                        break
 
 
     def setOptions(self, OptionList):
