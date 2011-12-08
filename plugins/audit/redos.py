@@ -64,7 +64,7 @@ class redos(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         #
-        #   We know for a fact that PHP is not vulnerable to this attack
+        #   We know for a fact that PHP is NOT vulnerable to this attack
         #
         #   TODO: Add other frameworks that are not vulnerable!
         #
@@ -153,7 +153,12 @@ class redos(baseAuditPlugin):
                         msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
                         msg += ' . Please review manually.'
                         i.setDesc( msg )
-                        kb.kb.append( self, 'redos', i )
+                        
+                        # Just printing to the debug log, we're not sure about this
+                        # finding and we don't want to clog the report with false
+                        # positives
+                        om.out.debug( str(i) )
+
     
     def end(self):
         '''
