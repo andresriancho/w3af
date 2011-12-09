@@ -122,6 +122,8 @@ class findComments(baseGrepPlugin):
                         i = info.info()
                         i.setPluginName(self.getName())
                         i.setName('HTML comment contains HTML code')
+                        comment = comment.replace('\n','')
+                        comment = comment.replace('\r','')
                         desc = 'A comment with the string "' +comment + '" was found in: "'
                         desc += response.getURL() + '" . This could be interesting.'
                         i.setDesc( desc )
