@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
 from core.data.kb.info import info as info
 from core.data.fuzzer.mutant import mutant as mutant
 
