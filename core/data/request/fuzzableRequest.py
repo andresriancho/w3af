@@ -156,9 +156,11 @@ class fuzzableRequest(object):
         >>> f = fuzzableRequest(url_object("""http://example.com/a?p=d'z"0&paged=2"""))
         >>> f.sent('d%5C%27z%5C%220')
         True
+        
         >>> f._data = 'p=<SCrIPT>alert("bsMs")</SCrIPT>'
         >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
         True
+        
         >>> f = fuzzableRequest(url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
