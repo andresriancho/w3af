@@ -72,7 +72,7 @@ class strangeParameters(baseGrepPlugin):
             #
             # - The re_references are the result of regular expressions, which in some cases
             # are just false positives.
-            parsed_references, re_references = dp.getReferences()
+            parsed_references, _ = dp.getReferences()
             
             for ref in parsed_references:
                 
@@ -82,9 +82,9 @@ class strangeParameters(baseGrepPlugin):
                     # This for loop is to address the repeated parameter name issue
                     for element_index in xrange(len(qs[param_name])):
                         if self._is_strange( request, param_name, qs[param_name][element_index] )\
-                        and ref not in self._already_reported:
+                        and (ref.uri2url(), param_name) not in self._already_reported:
                             # Don't repeat findings
-                            self._already_reported.add(ref)
+                            self._already_reported.add( (ref.uri2url(), param_name) )
 
                             i = info.info()
                             i.setPluginName(self.getName())
