@@ -43,7 +43,7 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 
 IS_EQUAL_RATIO = 0.90
-MAX_VARIANTS = 20
+MAX_VARIANTS = 40
 
 
 class webSpider(baseDiscoveryPlugin):
