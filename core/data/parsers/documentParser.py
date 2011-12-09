@@ -125,7 +125,13 @@ class documentParser:
         
     def getReferences( self ):
         '''
-        @return: A list of URL objects.
+        @return: A tuple that contains two lists:
+            * URL objects extracted through parsing,
+            * URL objects extracted through RE matching
+        
+        Returned in two separate lists because the first ones
+        are much more accurate and they might deserve a different
+        treatment.
         '''
         return self._parser.getReferences()
     
