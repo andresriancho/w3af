@@ -555,9 +555,8 @@ class xUrllib(object):
                 raise w3afException('Unexpected error in urllib2 : %s'
                                      % repr(e.reason))
 
-            msg = ('w3af failed to reach the server while requesting:'
-                  ' "%s".\nReason: "%s"; going to retry.' % 
-                  (original_url, e.reason))
+            msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' % 
+                  (req.get_method(), original_url, e.reason))
 
             # Log the errors
             om.out.debug(msg)
