@@ -38,6 +38,7 @@ import core.data.constants.severity as severity
 HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
 
+
 class responseSplitting(baseAuditPlugin):
     '''
     Find response splitting vulnerabilities.
@@ -110,6 +111,8 @@ class responseSplitting(baseAuditPlugin):
                         i = info.info()
                         i.setPluginName(self.getName())
                         i.setDesc( msg )
+                        i.setVar( mutant.getVar() )
+                        i.setURI( mutant.getURI() )
                         i.setId( response.id )
                         i.setName( 'Parameter modifies headers' )
                         kb.kb.append( self, 'responseSplitting', i )
