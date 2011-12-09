@@ -85,7 +85,7 @@ class findComments(baseGrepPlugin):
                 for comment in commentList:
                     # This next two lines fix this issue:
                     # audit.ssi + grep.findComments + web app with XSS = false positive
-                    if request.sent( '<!--'+comment+'>' ):
+                    if request.sent( comment ):
                         continue
                     
                     # show nice comments ;)
