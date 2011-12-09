@@ -24,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.getData('privateIP','html')) == 0
+assert len(kb.kb.getData('privateIP','HTML')) == 0
 
 exit

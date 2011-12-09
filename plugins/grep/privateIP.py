@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+import socket
+
 import core.controllers.outputManager as om
 
 # options
@@ -32,9 +35,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-import core.data.parsers.urlParser as urlParser
-import re
 
 
 class privateIP(baseGrepPlugin):
@@ -57,6 +57,7 @@ class privateIP(baseGrepPlugin):
         self._regex_list = [self._private_ip_address ]
 
         self._already_inspected = scalable_bloomfilter()
+        self._ignore_if_match = None
         
     def grep(self, request, response):
         '''
@@ -78,12 +79,23 @@ class privateIP(baseGrepPlugin):
             #
             headers_string = response.dumpHeaders()
 
+            if self._ignore_if_match is None:
+                self._ignore_if_match = []
+                requested_domain = response.getURL().getDomain()
+                self._ignore_if_match.append( requested_domain )
+                try:
+                    ip_address = socket.gethostbyname(requested_domain)
+                except:
+                    pass
+                else:
+                    self._ignore_if_match.append( ip_address )
+
             #   Match the regular expressions
             for regex in self._regex_list:
                 for match in regex.findall(headers_string):
 
                     # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                    if match != response.getURL().getDomain():
+                    if match not in self._ignore_if_match:
                         v = vuln.vuln()
                         v.setPluginName(self.getName())
                         v.setURL( response.getURL() )
@@ -114,16 +126,15 @@ class privateIP(baseGrepPlugin):
                 for regex in self._regex_list:
                     for match in regex.findall(response.getBody()):
                         match = match.strip()
-                        
+                                                
                         # Some proxy servers will return errors that include headers in the body
                         # along with the client IP which we want to ignore
                         if re.search("^.*X-Forwarded-For: .*%s" % match, response.getBody(), re.M):
                             continue
-                            
-                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
-                        if match != response.getURL().getDomain() and \
-                        not request.sent( match ):
 
+                        # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                        if match not in self._ignore_if_match and \
+                        not request.sent( match ):
                             v = vuln.vuln()
                             v.setPluginName(self.getName())
                             v.setURL( response.getURL() )
@@ -136,7 +147,7 @@ class privateIP(baseGrepPlugin):
                             v.setDesc( msg )
                             v['IP'] = match
                             v.addToHighlight( match )
-                            kb.kb.append( self, 'html', v )     
+                            kb.kb.append( self, 'HTML', v )     
 
     def setOptions( self, OptionList ):
         pass
@@ -153,7 +164,7 @@ class privateIP(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self.printUniq( kb.kb.getData( 'privateIP', 'header' ), None )
-        self.printUniq( kb.kb.getData( 'privateIP', 'html' ), None )
+        self.printUniq( kb.kb.getData( 'privateIP', 'HTML' ), None )
             
     def getPluginDeps( self ):
         '''
