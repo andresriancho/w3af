@@ -138,9 +138,9 @@ class textFile(baseOutputPlugin):
         the_time = time.strftime("%c", now)
         
         if self._show_caller:
-            timestamp = '[ %s - %s - %s ]' % (the_time, log_type, self.getCaller())
+            timestamp = '[%s - %s - %s] ' % (the_time, log_type, self.getCaller())
         else:
-            timestamp = '[ %s - %s ]' % (the_time, log_type)
+            timestamp = '[%s - %s] ' % (the_time, log_type)
             
         self._write_to_file( timestamp + to_print )
 
