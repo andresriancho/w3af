@@ -76,7 +76,10 @@ class objects(baseGrepPlugin):
                         i.setName(tag_name.title() + ' tag')
                         i.setURL(url)
                         i.setId( response.id )
-                        i.setDesc( 'The URL: "' + i.getURL() + '" has an '+ tag_name + ' tag.' )          
+                        msg = 'The URL: "%s" has an "%s" tag. We recommend you download the '
+                        msg +=  'client side code and analyze it manually.'
+                        msg = msg % (i.getURI(), tag_name)
+                        i.setDesc( msg )
                         i.addToHighlight( tag_name )
 
                         kb.kb.append( self, tag_name, i )
