@@ -178,7 +178,7 @@ class basePlugin(configurable):
         # IMPORTANT NOTE: If you touch something here, the whole framework may
         # stop working!
         #
-        url = mutant.getURI()
+        uri = mutant.getURI()
         data = mutant.getData()
 
         # Also add the cookie header; this is needed by the mutantCookie
@@ -187,7 +187,7 @@ class basePlugin(configurable):
         if cookie:
             headers['Cookie'] = str(cookie)
 
-        args = ( url, )
+        args = ( uri, )
         method = mutant.getMethod()
         
         functor = getattr(self._urlOpener , method)

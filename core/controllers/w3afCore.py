@@ -873,7 +873,7 @@ class w3afCore(object):
             for iFr, pluginWhoFoundIt in fuzzableRequestList:
                 # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
                 # so i'll remove fragments here
-                iFr.setURL( iFr.getURL().removeFragment() )
+                iFr.setURI( iFr.getURI().removeFragment() )
                 
                 if iFr not in self._alreadyWalked and iFr.getURL().baseUrl() in cf.cf.getData('baseURLs'):
                     # Found a new fuzzable request

@@ -38,7 +38,7 @@ class mutantPostData(mutant):
                 - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
         '''
         res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
+        res += '"' + self.getURI() + '", using HTTP method '
         res += self.getMethod() + '. The sent post-data was: "'
         
         # Depending on the data container, print different things:

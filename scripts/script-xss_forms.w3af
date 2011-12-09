@@ -25,6 +25,6 @@ back
 
 start
 
-assert len( kb.kb.getData('xss', 'xss') ) == 9
+assert len( kb.kb.getData('xss', 'xss') ) == 10
 
 exit

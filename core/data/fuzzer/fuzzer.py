@@ -396,6 +396,17 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     >>> [ i.getDc() for i in f ]
     [{'foo': ['abc'], 'address': ['Bonsai Street 123']}, {'foo': ['def'], 'address': ['Bonsai Street 123']}, {'foo': ['56'], 'address': ['abc']}, {'foo': ['56'], 'address': ['def']}]
 
+    Support for HTTP requests that have both QS and POST-Data
+    >>> from core.data.dc.form import form
+    >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
+    >>> f = form()
+    >>> _ = f.addInput( [("name", "password") , ("type", "password")] )
+    >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/foo.bar?action=login'), dc=f)
+    >>> mutants = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
+    >>> [ i.getURI() for i in mutants ]
+    [<url_object for "http://www.w3af.com/foo.bar?action=login">, <url_object for "http://www.w3af.com/foo.bar?action=login">]
+    >>> [ i.getDc() for i in mutants ]
+    [{'password': ['abc']}, {'password': ['def']}]
     '''
     result = []
     if not dataContainer:

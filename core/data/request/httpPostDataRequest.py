@@ -29,7 +29,7 @@ from core.data.request.fuzzableRequest import fuzzableRequest
 class httpPostDataRequest(fuzzableRequest):
     '''
     This class represents a fuzzable request that sends all variables in the
-    POSTDATA. This is tipically used for POST requests.
+    POSTDATA. This is typically used for POST requests.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
