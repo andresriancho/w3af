@@ -35,6 +35,7 @@ from core.ui.gtkUi.httpeditor import HttpEditor
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
 from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.visualization.string_representation import string_representation
 
 from core.controllers.w3afException import w3afException, w3afMustStopException, w3afMustStopOnUrlError
 
@@ -67,10 +68,10 @@ class reqResViewer(gtk.VBox):
         super(reqResViewer,self).__init__()
         self.w3af = w3af
         # Request
-        self.request = requestPart(w3af, enableWidget, editableRequest, widgname=widgname)
+        self.request = requestPart(self, w3af, enableWidget, editableRequest, widgname=widgname)
         self.request.show()
         # Response
-        self.response = responsePart(w3af, editableResponse, widgname=widgname)
+        self.response = responsePart(self, w3af, editableResponse, widgname=widgname)
         self.response.show()
         self.layout = layout
         if layout == 'Tabbed':
@@ -152,9 +153,13 @@ class reqResViewer(gtk.VBox):
             self.request.childButtons.append(b)
             b.show()
             hbox.pack_start(b, False, False, padding=2)
+
         # The throbber (hidden!)
         self.throbber = helpers.Throbber()
         hbox.pack_start(self.throbber, True, True)
+        
+        self.draw_area = helpers.DrawingAreaStringRepresentation()
+        hbox.pack_end(self.draw_area, False, False)
         
         self.pack_start(hbox, False, False, padding=5)
         hbox.show()
@@ -265,8 +270,9 @@ class reqResViewer(gtk.VBox):
 class requestResponsePart(gtk.Notebook):
     """Request/response common class."""
     
-    def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
+    def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
         super(requestResponsePart, self).__init__()
+        self._parent = parent
         self._obj = None
         ### FIXME: REMOVE ME ###
         self._set_vals = (False, 'default_val')
@@ -308,6 +314,7 @@ class requestResponsePart(gtk.Notebook):
 
     def clearPanes(self):
         self._obj = None
+        self._parent.draw_area.clear()
         for view in self._views:
             view.initial = True
             view.clear()
@@ -318,6 +325,13 @@ class requestResponsePart(gtk.Notebook):
 
     def showObject(self, obj):
         self._obj = obj
+
+        # String representation
+        if hasattr(obj, 'getBody'):
+            str_repr_inst = string_representation( obj.getBody() )
+            str_repr_dict = str_repr_inst.get_representation()
+            self._parent.draw_area.set_string_representation( str_repr_dict )
+        
         ### FIXME: REMOVE ME ###
         self._set_vals = (True, obj)
         #######################
@@ -338,8 +352,8 @@ class requestResponsePart(gtk.Notebook):
 
 class requestPart(requestResponsePart):
     
-    def __init__(self, w3af, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(self, w3af, enableWidget,editable, widgname=widgname+"request")
+    def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
+        requestResponsePart.__init__(self, parent, w3af, enableWidget,editable, widgname=widgname+"request")
         self.addView(HttpRawView(w3af, self, editable))
         self.addView(HttpHeadersView(w3af, self, editable))
         
@@ -363,8 +377,8 @@ class requestPart(requestResponsePart):
         self.synchronize()
 
 class responsePart(requestResponsePart):
-    def __init__(self, w3af, editable, widgname="default"):
-        requestResponsePart.__init__(self, w3af, editable=editable, widgname=widgname+"response")
+    def __init__(self, parent, w3af, editable, widgname="default"):
+        requestResponsePart.__init__(self, parent, w3af, editable=editable, widgname=widgname+"response")
         http = HttpRawView(w3af, self, editable)
         http.is_request = False
         self.addView(http)

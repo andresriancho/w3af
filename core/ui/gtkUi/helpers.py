@@ -470,3 +470,50 @@ def write_console_messages( dlg ):
         dlg.addMessage( text )
 
     yield False
+
+class DrawingAreaStringRepresentation(gtk.DrawingArea):
+    
+    def __init__(self, str_repr=None, width=60, height=40):
+        super(gtk.DrawingArea,self).__init__()
+        
+        self.width = width
+        self.height = height
+        self.str_repr = str_repr
+        
+        self.set_size_request(self.width, self.height)
+        self.set_events(gtk.gdk.POINTER_MOTION_MASK |
+                        gtk.gdk.POINTER_MOTION_HINT_MASK )
+        self.connect("expose-event", self.area_expose_cb)
+        self.show()
+        
+    def area_expose_cb(self, area, event):
+        self.draw()
+        return True
+    
+    def set_string_representation(self, str_repr):
+        self.str_repr = str_repr
+        self.draw()
+        return True
+    
+    def draw(self):
+        '''
+        Draw the string representation to the DrawingArea
+        '''
+        style = self.get_style()
+        gc = style.fg_gc[gtk.STATE_NORMAL]
+
+        #    Clear the area
+        #
+        self.clear()
+        
+        if self.str_repr is not None:                        
+            #
+            #    Draw
+            #                        
+            for index,value in self.str_repr.iteritems():
+                for i in xrange(value):
+                    self.window.draw_point(gc, index, self.height-i)
+
+    def clear(self):
+        style = self.get_style()
+        self.window.draw_rectangle(style.white_gc, True, 0, 0, self.width+1, self.height+1)        
