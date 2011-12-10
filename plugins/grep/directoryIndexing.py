@@ -105,7 +105,8 @@ class directoryIndexing(baseGrepPlugin):
         dir_indexing_regexes = []
         ### TODO: verify if I need to add more values here, IIS !!!
         dir_indexing_regexes.append("<title>Index of /") 
-        dir_indexing_regexes.append('<a href="\\?C=N;O=D">Name</a>') 
+        dir_indexing_regexes.append('<a href="\\?C=N;O=D">Name</a>')
+        dir_indexing_regexes.append('<A HREF="?M=A">Last modified</A>') 
         dir_indexing_regexes.append("Last modified</a>")
         dir_indexing_regexes.append("Parent Directory</a>")
         dir_indexing_regexes.append("Directory Listing for")
