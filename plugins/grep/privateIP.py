@@ -30,6 +30,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.misc.get_local_ip import get_local_ip
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -80,15 +81,7 @@ class privateIP(baseGrepPlugin):
             headers_string = response.dumpHeaders()
 
             if self._ignore_if_match is None:
-                self._ignore_if_match = []
-                requested_domain = response.getURL().getDomain()
-                self._ignore_if_match.append( requested_domain )
-                try:
-                    ip_address = socket.gethostbyname(requested_domain)
-                except:
-                    pass
-                else:
-                    self._ignore_if_match.append( ip_address )
+                self._generate_ignores( response )
 
             #   Match the regular expressions
             for regex in self._regex_list:
@@ -149,6 +142,25 @@ class privateIP(baseGrepPlugin):
                             v.addToHighlight( match )
                             kb.kb.append( self, 'HTML', v )     
 
+    def _generate_ignores(self, response):
+        '''
+        Generate the list of strings we want to ignore as private IP addresses
+        '''
+        self._ignore_if_match = []
+        
+        requested_domain = response.getURL().getDomain()
+        self._ignore_if_match.append( requested_domain )
+        
+        self._ignore_if_match.append( get_local_ip(requested_domain) )
+        self._ignore_if_match.append( get_local_ip() )
+        
+        try:
+            ip_address = socket.gethostbyname(requested_domain)
+        except:
+            pass
+        else:
+            self._ignore_if_match.append( ip_address )
+        
     def setOptions( self, OptionList ):
         pass
     
