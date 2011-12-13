@@ -46,18 +46,28 @@ class string_representation(object):
         True
         >>> si.get_representation()[0] == 25
         True
+
         >>> instr = 'AA\\n' * 40
         >>> si = string_representation( instr, 40, 40 )
         >>> si.get_representation()[1] == 10
         True
         >>> si.get_representation()[0] == 10
         True
+
         >>> instr = 'AA\\n' * 83
         >>> si = string_representation( instr, 40, 40 )
         >>> si.get_representation()[1] == 20
         True
         >>> si.get_representation()[0] == 20
         True
+        >>> len( si.get_representation() ) == 40
+        True
+
+        >>> instr = 'AB\\n' * 157
+        >>> si = string_representation( instr, 41, 40 )
+        >>> len( si.get_representation() ) == 41
+        True
+
         '''
         linecount = lambda ln: sum(map(ord, (char for char in ln)))
         sumlinecounts = lambda st, en: \
