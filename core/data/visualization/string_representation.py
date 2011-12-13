@@ -46,52 +46,32 @@ class string_representation(object):
         True
         >>> si.get_representation()[0] == 25
         True
-
-
         >>> instr = 'AA\\n' * 40
         >>> si = string_representation( instr, 40, 40 )
         >>> si.get_representation()[1] == 10
         True
         >>> si.get_representation()[0] == 10
         True
-
-        >>> instr = 'AA\\n' * 80
+        >>> instr = 'AA\\n' * 83
         >>> si = string_representation( instr, 40, 40 )
         >>> si.get_representation()[1] == 20
         True
         >>> si.get_representation()[0] == 20
         True
         '''
-        #
-        #    Initial parsing
-        #
-        splitted = instr.split('\n')
-        group_size = len(splitted) / width
-        current_group_index = 0
-        count = 0
-        index = 0 
+        linecount = lambda ln: sum(map(ord, (char for char in ln)))
+        sumlinecounts = lambda st, en: \
+                            sum(linecount(ln) for ln in split[st:en])
+        split = instr.split('\n')
+        length = max(len(split), width)
+        step, extra = divmod(length, width)
         
-        for line in splitted:
-            if current_group_index == 0:
-                count = 0
-            current_group_index += 1
-            
-            for char in line:
-                count += ord(char)
-            
-            if current_group_index == group_size:
-                self.parsed_instr[index] = count
-                index += 1
-                current_group_index = 0
-            
-        #
-        #    Now I have a dict with the correct width, but I'll
-        #    need to adjust the height also. The min value I can
-        #    put in the image is 0 and the highest is $height so
-        #    I have to translate all my values to that range. 
-        # 
-        for key, value in self.parsed_instr.iteritems():
-            self.parsed_instr[key] = value % height 
+        for i, j in enumerate(xrange(0, length-extra, step)):
+            accum = sumlinecounts(j, j+step)
+            self.parsed_instr[i] = accum % height
+        if extra:
+            self.parsed_instr[i] = \
+                        (accum + sumlinecounts(j+step, None)) % height
             
     def get_representation(self):
         return self.parsed_instr
