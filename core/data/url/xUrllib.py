@@ -48,7 +48,7 @@ from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
 from core.data.request.frFactory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
-from core.data.url.handlers import logHandler
+from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.httpResponse import httpResponse, from_httplib_resp
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
@@ -258,9 +258,11 @@ class xUrllib(object):
                                   headers=fuzzReq.getHeaders(), useCache=False,
                                   grepResult=False)
         
-    def GET(self, uri, data=None, headers={}, useCache=False, grepResult=True):
+    def GET(self, uri, data=None, headers={}, useCache=False,
+            grepResult=True, follow_redir=True):
         '''
-        HTTP GET a URI using a proxy, user agent, and other settings that where previously set in urlOpenerSettings.py .
+        HTTP GET a URI using a proxy, user agent, and other settings
+        that where previously set in urlOpenerSettings.py .
         
         #
         #   Simple tests to verify that everything is working as expected:
@@ -315,7 +317,7 @@ class xUrllib(object):
             uri = uri.copy()
             uri.setQueryString(str(data))
             
-        req = HTTPRequest(uri)
+        req = HTTPRequest(uri, follow_redir=follow_redir)
         req = self._add_headers(req, headers)
         return self._send(req, useCache=useCache, grepResult=grepResult)
     
@@ -343,7 +345,7 @@ class xUrllib(object):
         no_content_response = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
         if log_it:
             # This also assigns the id to both objects.
-            logHandler.logHandler().http_response(req, no_content_response)
+            LogHandler.log_req_resp(req, no_content_response)
         
         if no_content_response.id is None:
             no_content_response.id = seq_gen.inc()
@@ -484,10 +486,6 @@ class xUrllib(object):
         @param req: The HTTPRequest object that represents the request.
         @return: An httpResponse object.
         '''
-        if not isinstance(req, HTTPRequest):
-            msg = 'xUrllib._send() req parameter has to be of HTTPRequest type.'
-            raise ValueError( msg )
-        
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
         self._callBeforeSend()
@@ -536,7 +534,7 @@ class xUrllib(object):
             if grepResult:
                 self._grepResult(req, httpResObj)
             else:
-                om.out.debug('No grep for: "%s", the plugin sent ' \
+                om.out.debug('No grep for: "%s", the plugin sent '
                              'grepResult=False.' % geturl_instance)
 
             return httpResObj

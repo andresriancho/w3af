@@ -53,6 +53,7 @@ def createFuzzableRequests(http_resp, request=None, add_self=True):
     
     @return: A list of fuzzable requests.
     '''
+    is_redirect = lambda resp: 300 <= resp.getCode() < 400
     res = []
     
     # Headers for all fuzzable requests created here:
@@ -72,6 +73,20 @@ def createFuzzableRequests(http_resp, request=None, add_self=True):
                     cookie=cookieObj
                     )
         res.append(qsr)
+    
+    # If response was a 30X (i.e. a redirect) then include the
+    # corresponding fuzzable request. 
+    if is_redirect(http_resp):
+        redir_headers = http_resp.getLowerCaseHeaders()
+        location = redir_headers.get('location') or \
+                        redir_headers.get('uri', '')
+        if location:
+            qsr = HTTPQSRequest(
+                http_resp.getURI().urlJoin(location),
+                headers=self_headers,
+                cookie=cookieObj
+                )
+            res.append(qsr)
     
     # Try to find forms in the document
     try:

@@ -21,29 +21,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 # Some misc imports
-import core.controllers.outputManager as om
-from core.data.kb.config import cf as cfg
-from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import url_object
-
-# Handler imports
-import core.data.url.handlers.localCache as localCache
-from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
-from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
-import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
-from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
-from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
-import core.data.url.handlers.logHandler as logHandler
-import core.data.url.handlers.mangleHandler as mangleHandler
-from core.data.url.handlers.urlParameterHandler import URLParameterHandler
-
-import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
-
 from core.controllers.configurable import configurable
-
-# options
+from core.controllers.w3afException import w3afException
+from core.data.kb.config import cf as cfg
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
+from core.data.url.handlers.FastHTTPBasicAuthHandler import \
+    FastHTTPBasicAuthHandler
+from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
+from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP, \
+    HTTPSHandler as kAHTTPS
+from core.data.url.handlers.logHandler import LogHandler
+from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
+from core.data.url.handlers.urlParameterHandler import URLParameterHandler
+import core.controllers.outputManager as om
+import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
+import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
+import core.data.url.handlers.localCache as localCache
+import core.data.url.handlers.mangleHandler as mangleHandler
 
 
 class urlOpenerSettings( configurable ):
@@ -325,7 +321,8 @@ class urlOpenerSettings( configurable ):
         for handler in [self._proxyHandler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookieHandler,
                         MultipartPostHandler.MultipartPostHandler,
-                        self._kAHTTP, self._kAHTTPS, logHandler.logHandler,
+                        self._kAHTTP, self._kAHTTPS, LogHandler,
+                        HTTPErrorHandler, HTTP30XHandler,
                         mangleHandler.mangleHandler(self._manglePlugins),
                         HTTPGzipProcessor, self._urlParameterHandler, 
                         self._cache_hdler]:

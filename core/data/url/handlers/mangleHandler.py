@@ -28,7 +28,7 @@ from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.parsers.urlParser import url_object
 
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
-import core.data.url.handlers.logHandler
+from core.data.url.handlers.logHandler import LogHandler
 
 
 class mangleHandler(urllib2.BaseHandler):
@@ -36,7 +36,7 @@ class mangleHandler(urllib2.BaseHandler):
     Call mangle plugins for each request and response.
     """
     
-    handler_order = core.data.url.handlers.logHandler.logHandler.handler_order - 2
+    handler_order = LogHandler.handler_order - 2
     
     def __init__(self, pluginList):
         self._pluginList = pluginList
@@ -60,7 +60,7 @@ class mangleHandler(urllib2.BaseHandler):
         fr.setData(request.get_data() or '')
         return fr
     
-    def _fr2urllibReq( self, fuzzableRequest ):
+    def _fr2urllibReq(self, fuzzableRequest, orig_req):
         '''
         Convert a fuzzableRequest to a urllib2 request object. 
         Used in http_request.
@@ -75,19 +75,22 @@ class mangleHandler(urllib2.BaseHandler):
         else:
             data = fuzzableRequest.getData()
             
-        req = HTTPRequest(fuzzableRequest.getURI(), data=data,
-                           headers=fuzzableRequest.getHeaders(),
-                           origin_req_host=host)
+        req = HTTPRequest(
+                  fuzzableRequest.getURI(), data=data,
+                  headers=fuzzableRequest.getHeaders(),
+                  origin_req_host=host,
+                  follow_redir=orig_req.follow_redir
+                  )
         return req
-        
+
     def http_request(self, request):
-        if len( self._pluginList ):
-            fr = self._urllibReq2fr( request )
+        if self._pluginList:
+            fr = self._urllibReq2fr(request)
             
             for plugin in self._pluginList:
-                fr = plugin.mangleRequest( fr )
+                fr = plugin.mangleRequest(fr)
             
-            request = self._fr2urllibReq( fr )
+            request = self._fr2urllibReq(fr, request)
         return request
 
     def http_response(self, request, response):
@@ -129,4 +132,3 @@ class mangleHandler(urllib2.BaseHandler):
     
     https_request = http_request
     https_response = http_response
-
