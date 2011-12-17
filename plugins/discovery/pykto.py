@@ -257,7 +257,7 @@ class pykto(baseDiscoveryPlugin):
                         #
                         # Avoid some special cases
                         #
-                        if url.getPath().endswith('/./') or url.getPath().endswith('/%2e/'):
+                        if query.endswith('/./') or query.endswith('/%2e/'):
                             # avoid directory self references
                             continue
                         #
@@ -498,7 +498,9 @@ class pykto(baseDiscoveryPlugin):
             kb.kb.append( self, 'vuln', v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
-            self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+            fr_list = self._createFuzzableRequests( response )
+            fr_list = [ fr.setURI( fr.getURI().normalizeURL() ) for fr in fr_list ]
+            self._new_fuzzable_requests.extend( fr_list )
         
     def _analyzeResult( self , response , expected_response, parameters, uri ):
         '''
