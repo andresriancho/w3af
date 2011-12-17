@@ -445,9 +445,24 @@ class pykto(baseDiscoveryPlugin):
         #    performance improvement.
         #
         if expected_response == '200' and method == 'GET':
-            function_reference = getattr( self._urlOpener , 'HEAD' )
-        else:
-            function_reference = getattr( self._urlOpener , method )
+            try:
+                res = self._urlOpener.HEAD( url )
+            except:
+                pass
+            else:
+                if res.getCode() != int(expected_response):
+                    #
+                    #    If the response code is not 200, then there is nothing there.
+                    #
+                    return False
+
+        #
+        #    If we found a 200 with HEAD, or
+        #    If the expected response was not 200, or
+        #    If the request method is not GET, then
+        #    perform the request, analyze the response, etc. 
+        #
+        function_reference = getattr( self._urlOpener , method )
             
         try:
             response = function_reference( url )
