@@ -499,7 +499,7 @@ class pykto(baseDiscoveryPlugin):
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
             fr_list = self._createFuzzableRequests( response )
-            fr_list = [ fr.setURI( fr.getURI().normalizeURL() ) for fr in fr_list ]
+            fr_list = [ fr.getURI().normalizeURL() for fr in fr_list ]
             self._new_fuzzable_requests.extend( fr_list )
         
     def _analyzeResult( self , response , expected_response, parameters, uri ):
