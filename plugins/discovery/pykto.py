@@ -434,11 +434,21 @@ class pykto(baseDiscoveryPlugin):
         '''
         This method sends the request to the server.
         
-        @return: True if the requested uri responded as expected.
+        @return: True if the requested URI responded as expected.
         '''
         (server, query , expected_response, method , desc) = parameters
-
-        function_reference = getattr( self._urlOpener , method )
+        
+        #
+        #    Small performance improvement. If all we want to know is if the
+        #    file exists or not, lets use HEAD instead of GET. In 99% of the
+        #    cases this will work as expected and we'll have a significant
+        #    performance improvement.
+        #
+        if expected_response == '200' and method == 'GET':
+            function_reference = getattr( self._urlOpener , 'HEAD' )
+        else:
+            function_reference = getattr( self._urlOpener , method )
+            
         try:
             response = function_reference( url )
         except KeyboardInterrupt,e:
