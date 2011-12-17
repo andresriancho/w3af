@@ -431,6 +431,31 @@ class url_object(object):
         >>> u.url_string
         u'https://host.tld/foo/bar'
         
+        >>> u = url_object('https://host.tld:443////////////////')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'https://host.tld/'
+
+        >>> u = url_object('https://host.tld:443////////////////?id=3')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'https://host.tld/?id=3'
+
+        >>> u = url_object('https://host.tld:443////////////////?id=3&bar=4')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'https://host.tld/?id=3&bar=4'
+
+        >>> u = url_object('http://w3af.com/../f00.b4r?id=3&bar=4')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'http://w3af.com/f00.b4r?id=3&bar=4'
+
+        >>> u = url_object('http://w3af.com/f00.b4r?id=3&bar=//')
+        >>> u.normalizeURL()
+        >>> u.url_string
+        u'http://w3af.com/f00.b4r?id=3&bar=//'
+
         >>> u = url_object('http://user:passwd@host.tld:80')
         >>> u.normalizeURL()
         >>> u.url_string
@@ -492,13 +517,22 @@ class url_object(object):
         
         common_join_url = url_object(commonjoin)
         path = common_join_url.getPathQs()
-    
+
+        #
+        #    Remove the "../" from the beginning of the path 
+        # 
         while path.startswith('../') or path.startswith('/../'):
             if path.startswith('../'):
                 path = path[2:]
             elif path.startswith('/../'):
                 path = path[3:]
-    
+        
+        #
+        #    If there are multiple "/", collapse them. 
+        #         
+        while path.startswith('//'):
+            path = path[1:]
+
         fixed_url = urlparse.urljoin(baseURL, path)
         
         # "re-init" the object 
