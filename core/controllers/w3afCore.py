@@ -119,11 +119,11 @@ class w3afCore(object):
         # A dict with plugin types as keys and a list of plugin names as values
         self._strPlugins = {'audit': [], 'grep': [],
                             'bruteforce': [], 'discovery': [],
-                            'evasion': [], 'mangle': [], 'output': []}
+                            'evasion': [], 'mangle': [], 'output': [], 'auth': []}
 
         self._pluginsOptions = {'audit': {}, 'grep': {}, 'bruteforce': {},
                                 'discovery': {}, 'evasion': {}, 'mangle': {},
-                                'output': {}, 'attack': {}}
+                                'output': {}, 'attack': {}, 'auth': {}}
     
     def getHomePath( self ):
         '''
@@ -306,6 +306,7 @@ class w3afCore(object):
         self._plugins['mangle'] = self._rPlugFactory( self._strPlugins['mangle'] , 'mangle')
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
         
+        self._plugins['auth'] = self._rPlugFactory( self._strPlugins['auth'] , 'auth')
 
 
     def _updateURLsInKb( self, fuzzableRequestList ):
@@ -334,7 +335,15 @@ class w3afCore(object):
         uriList.extend( [ fr.getURI() for fr in fuzzableRequestList] )
         uriList = list( set( uriList ) )
         kb.kb.save( 'urls', 'uriList' ,  uriList )
-    
+
+    def _auth_login(self):
+        '''
+        Make login to the web app when it is needed.
+        '''
+        for plugin in self._plugins['auth']:
+            if not plugin.is_logged():
+                plugin.login()
+
     def _discover_and_bruteforce( self ):
         '''
         Discovery and bruteforce phases are related, so I have joined them
@@ -812,7 +821,7 @@ class w3afCore(object):
             fuzzableRequestList = []
             
             for plugin in self._plugins['discovery']:
-                
+                self._auth_login()
                 #
                 #   I use the self._time_limit_reported variable to break out of two loops
                 #
@@ -998,6 +1007,9 @@ class w3afCore(object):
             # For status
             self._setRunningPlugin( plugin.getName() )
 
+            # Before running each plugin let's make sure we're logged in
+            self._auth_login()
+
             for fr in self._fuzzableRequestList:
                 # Sends each fuzzable request to the plugin
                 try:
@@ -1100,6 +1112,7 @@ class w3afCore(object):
         return self._pluginsOptions.get(pluginType, {}).get(pluginName, None)
         
     def getEnabledPlugins( self, pluginType ):
+        
         return self._strPlugins[ pluginType ]
     
     def setPlugins( self, pluginNames, pluginType ):
@@ -1129,7 +1142,8 @@ class w3afCore(object):
         
         setMap = {'discovery':self._setDiscoveryPlugins, 'audit':self._setAuditPlugins, \
         'grep':self._setGrepPlugins, 'evasion':self._setEvasionPlugins, 'output':self._setOutputPlugins,  \
-        'mangle': self._setManglePlugins, 'bruteforce': self._setBruteforcePlugins}
+        'mangle': self._setManglePlugins, 'bruteforce': self._setBruteforcePlugins, \
+        'auth':self._setAuthPlugins}
         
         func = setMap[ pluginType ]
         func( pluginNames )
@@ -1226,6 +1240,13 @@ class w3afCore(object):
         self._strPlugins['evasion'] = evasionPlugins
         self._plugins['evasion'] = self._rPlugFactory( evasionPlugins , 'evasion')
         self.uriOpener.setEvasionPlugins( self._plugins['evasion'] )
+        
+    def _setAuthPlugins( self, authPlugins ):
+        '''
+        @parameter authlugins: A list with the names of Auth Plugins that will be used.
+        @return: No value is returned.
+        '''
+        self._strPlugins['auth'] = authPlugins
 
     def verifyEnvironment(self):
         '''
