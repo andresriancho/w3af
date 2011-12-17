@@ -328,7 +328,7 @@ class requestResponsePart(gtk.Notebook):
 
         # String representation
         if hasattr(obj, 'getBody'):
-            str_repr_inst = string_representation( obj.getBody() )
+            str_repr_inst = string_representation( obj.getBody(), self._parent.draw_area.width, self._parent.draw_area.height )
             str_repr_dict = str_repr_inst.get_representation()
             self._parent.draw_area.set_string_representation( str_repr_dict )
         

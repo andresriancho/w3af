@@ -478,9 +478,10 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
         
         self.width = width
         self.height = height
+        self.set_size_request(self.width, self.height)
+        
         self.str_repr = str_repr
         
-        self.set_size_request(self.width, self.height)
         self.set_events(gtk.gdk.POINTER_MOTION_MASK |
                         gtk.gdk.POINTER_MOTION_HINT_MASK )
         self.connect("expose-event", self.area_expose_cb)
