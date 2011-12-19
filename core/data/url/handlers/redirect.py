@@ -27,6 +27,7 @@ from core.controllers.misc.number_generator import \
 from core.data.parsers.urlParser import url_object
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
+
 class HTTP30XHandler(urllib2.HTTPRedirectHandler):
     
     def _inc_counter(self, step=1):
@@ -161,8 +162,21 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             err.id = self._inc_counter()
             raise err
 
+
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
+    
     def http_error_default(self, req, resp, code, msg, hdrs):
+        m = req.get_method()
+        if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
+            or code in (301, 302, 303) and m == "POST"):
+            _30X_resp = urllib2.addinfourl(resp, msg, req.get_full_url())
+            _30X_resp.code = code
+            _30X_resp.msg = msg
+            _30X_resp.headers = hdrs
+            _30X_resp.id = req.id
+            _30X_resp.encoding = getattr(resp, 'encoding', None)
+            return _30X_resp
+        
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
         err.id = req.id
         raise err

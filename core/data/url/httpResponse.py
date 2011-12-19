@@ -65,7 +65,7 @@ def from_httplib_resp(httplibresp, original_url=None):
     else:
         url_inst = original_url = url_object(resp.geturl())
     
-    charset = getattr(httplibresp, 'encoding', None)
+    charset = getattr(resp, 'encoding', None)
     return httpResponse(code, body, hdrs, url_inst,
                         original_url, msg, charset=charset)
 

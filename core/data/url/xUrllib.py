@@ -352,7 +352,8 @@ class xUrllib(object):
             
         return no_content_response
             
-    def POST(self, uri, data='', headers={}, grepResult=True, useCache=False):
+    def POST(self, uri, data='', headers={}, grepResult=True,
+             useCache=False, follow_redir=True):
         '''
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -375,7 +376,7 @@ class xUrllib(object):
         #
         #    Create and send the request
         #
-        req = HTTPRequest(uri, data)
+        req = HTTPRequest(uri, data=data, follow_redir=follow_redir)
         req = self._add_headers( req, headers )
         return self._send( req , grepResult=grepResult, useCache=useCache)
     
