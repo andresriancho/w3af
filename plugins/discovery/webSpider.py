@@ -266,7 +266,7 @@ class webSpider(baseDiscoveryPlugin):
             
             try:
                 resp = self._urlOpener.GET(reference, useCache=True, 
-                                           headers=headers)
+                                           headers=headers, follow_redir=False)
             except KeyboardInterrupt:
                 raise
             except w3afMustStopOnUrlError:
@@ -316,8 +316,10 @@ class webSpider(baseDiscoveryPlugin):
                             new_reference.setFileName(createRandAlpha(3) +
                                                       filename)
                             
-                            check_response = self._urlOpener.GET(new_reference,
-                                                useCache=True, headers=headers)
+                            check_response = \
+                                self._urlOpener.GET(new_reference,
+                                                    useCache=True,
+                                                    headers=headers)
                             resp_body = resp.getBody()
                             check_resp_body = check_response.getBody()
 
