@@ -60,7 +60,7 @@ class webSpider(baseDiscoveryPlugin):
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
         self._brokenLinks = []
-        self._fuzzableRequests = []
+        self._fuzzable_reqs = set()
         self._first_run = True
         self._already_crawled = DiskList()
         self._already_filled_form = scalable_bloomfilter()
@@ -71,15 +71,15 @@ class webSpider(baseDiscoveryPlugin):
         self._only_forward = False
         self._compileRE()
 
-    def discover(self, fuzzableRequest):
+    def discover(self, fuzzable_req):
         '''
         Searches for links on the html.
 
-        @param fuzzableRequest: A fuzzableRequest instance that contains
+        @param fuzzable_req: A fuzzable_req instance that contains
             (among other things) the URL to test.
         '''
         om.out.debug('webSpider plugin is testing: %s' %
-                     fuzzableRequest.getURL())
+                     fuzzable_req.getURL())
         
         if self._first_run:
             # I have to set some variables, in order to be able to code
@@ -89,15 +89,15 @@ class webSpider(baseDiscoveryPlugin):
             self._target_domain = cf.cf.getData('targets')[0].getDomain()
         
         # If its a form, then smartFill the Dc.
-        if isinstance(fuzzableRequest, HttpPostDataRequest):
+        if isinstance(fuzzable_req, HttpPostDataRequest):
             
             # TODO: !!!!!!
-            if fuzzableRequest.getURL() in self._already_filled_form:
+            if fuzzable_req.getURL() in self._already_filled_form:
                 return []
             
-            self._already_filled_form.add(fuzzableRequest.getURL())
+            self._already_filled_form.add(fuzzable_req.getURL())
             
-            to_send = fuzzableRequest.getDc().copy()
+            to_send = fuzzable_req.getDc().copy()
             
             for param_name in to_send:
                 
@@ -118,91 +118,90 @@ class webSpider(baseDiscoveryPlugin):
                     # SmartFill it!
                     to_send[param_name][elem_index] = smartFill(param_name)
                     
-            fuzzableRequest.setDc(to_send)
+            fuzzable_req.setDc(to_send)
 
-        self._fuzzableRequests = []
-        response = None
+        self._fuzzable_reqs.clear()
 
-        try:
-            response = self._sendMutant(fuzzableRequest, analyze=False)
-        except KeyboardInterrupt:
-            raise
-        else:
-            #
-            #   Simply ignore 401 responses, because they might bring problems
-            #   if I keep crawling them!
-            #
-            if response.getCode() == 401:
-                return []
+        resp = self._sendMutant(fuzzable_req, analyze=False,
+                                follow_redir=False)
+        
+        if resp.getCode() == 401:
+            return []
+
+        fuzz_req_list = self._createFuzzableRequests(
+                                             resp,
+                                             request=fuzzable_req,
+                                             add_self=False
+                                             )
+        self._fuzzable_reqs.update(fuzz_req_list)
+
+        #
+        # Note: I WANT to follow links that are in the 404 page.
+        #
+        
+        # Modified when I added the pdfParser
+        # I had to add this x OR y stuff, just because I don't want 
+        # the SGML parser to analyze a image file, its useless and
+        # consumes CPU power.
+        if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
+            originalURL = resp.getRedirURI()
+            try:
+                doc_parser = dpCache.dpc.getDocumentParserFor(resp)
+            except w3afException, w3:
+                om.out.debug('Failed to find a suitable document parser. '
+                             'Exception "%s"' % w3)
+            else:
+                # Note:
+                # - With parsed_refs I'm 100% that it's really 
+                # something in the HTML that the developer intended to add.
+                #
+                # - The re_refs are the result of regular expressions,
+                # which in some cases are just false positives.
+                parsed_refs, re_refs = doc_parser.getReferences()
                 
-            #
-            # Note: I WANT to follow links that are in the 404 page.
-            #
-            
-            # Modified when I added the pdfParser
-            # I had to add this x OR y stuff, just because I don't want 
-            # the SGML parser to analyze a image file, its useless and
-            # consumes CPU power.
-            if response.is_text_or_html() or response.is_pdf() or \
-                response.is_swf():
-                originalURL = response.getRedirURI()
-                try:
-                    doc_parser = dpCache.dpc.getDocumentParserFor(response)
-                except w3afException, w3:
-                    om.out.debug('Failed to find a suitable document parser. '
-                                 'Exception "%s"' % w3)
-                else:
-                    # Note:
-                    # - With parsed_refs I'm 100% that it's really 
-                    # something in the HTML that the developer intended to add.
-                    #
-                    # - The re_refs are the result of regular expressions,
-                    # which in some cases are just false positives.
-                    parsed_refs, re_refs = doc_parser.getReferences()
+                # I also want to analyze all directories, if the URL I just
+                # fetched is:
+                # http://localhost/a/b/c/f00.php I want to GET:
+                # http://localhost/a/b/c/
+                # http://localhost/a/b/
+                # http://localhost/a/
+                # http://localhost/
+                # And analyze the responses...
+                dirs = resp.getURL().getDirectories()
+                seen = set()
+                only_re_refs = set(re_refs) - set(dirs + parsed_refs)
+                
+                for ref in itertools.chain(dirs, parsed_refs, re_refs):
                     
-                    # I also want to analyze all directories, if the URL I just
-                    # fetched is:
-                    # http://localhost/a/b/c/f00.php I want to GET:
-                    # http://localhost/a/b/c/
-                    # http://localhost/a/b/
-                    # http://localhost/a/
-                    # http://localhost/
-                    # And analyze the responses...
-                    dirs = response.getURL().getDirectories()
-                    seen = set()
-                    only_re_refs = set(re_refs) - set(dirs + parsed_refs)
+                    if ref in seen:
+                        continue
+                    seen.add(ref)
                     
-                    for ref in itertools.chain(dirs, parsed_refs, re_refs):
-                        
-                        if ref in seen:
-                            continue
-                        seen.add(ref)
-                        
-                        # I don't want w3af sending requests to 3rd parties!
-                        if ref.getDomain() != self._target_domain:
-                            continue
-                        
-                        # Filter the URL's according to the configured regexs
-                        urlstr = ref.url_string
-                        if not self._compiled_follow_re.match(urlstr) or \
-                            self._compiled_ignore_re.match(urlstr):
-                            continue
-                        
-                        # Work with the parsed references and report broken
-                        # links. Then work with the regex references and DO NOT
-                        # report broken links
-                        if self._need_more_variants(ref):
-                            self._already_crawled.append(ref)
-                            possibly_broken = ref in only_re_refs
-                            targs = (ref, fuzzableRequest, originalURL,
-                                     possibly_broken)
-                            self._tm.startFunction(
-                                    target=self._verify_reference,
-                                    args=targs, ownerObj=self)
+                    # I don't want w3af sending requests to 3rd parties!
+                    if ref.getDomain() != self._target_domain:
+                        continue
+                    
+                    # Filter the URL's according to the configured regexs
+                    urlstr = ref.url_string
+                    if not self._compiled_follow_re.match(urlstr) or \
+                        self._compiled_ignore_re.match(urlstr):
+                        continue
+                    
+                    # Work with the parsed references and report broken
+                    # links. Then work with the regex references and DO NOT
+                    # report broken links
+                    if self._need_more_variants(ref):
+                        self._already_crawled.append(ref)
+                        possibly_broken = ref in only_re_refs
+                        targs = (ref, fuzzable_req, originalURL,
+                                 possibly_broken)
+                        self._tm.startFunction(
+                                target=self._verify_reference,
+                                args=targs, ownerObj=self)
             
         self._tm.join(self)
         
-        return self._fuzzableRequests
+        return list(self._fuzzable_reqs)
     
     
     def _need_more_variants(self, new_reference):
@@ -347,7 +346,7 @@ class webSpider(baseDiscoveryPlugin):
                 # Process the list.
                 for fuzz_req in fuzz_req_list:
                     fuzz_req.setReferer(referer)
-                    self._fuzzableRequests.append(fuzz_req)
+                    self._fuzzable_reqs.add(fuzz_req)
     
     def end(self):
         '''

@@ -90,7 +90,7 @@ class redos(baseAuditPlugin):
             if self._hasNoBug( 'redos' , 'redos', mutant.getURL() , mutant.getVar() ):
                 
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyze_wait}
+                kwds = {'analyze': self._analyze_wait}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
                                                     kwds=kwds, ownerObj=self )
                                                     

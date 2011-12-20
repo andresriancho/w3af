@@ -1,0 +1,18 @@
+plugins
+
+audit xss
+
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
+back
+
+target
+set target http://moth/w3af/audit/xss/302/
+back
+start
+
+assert len(kb.kb.getData('xss', 'xss')) == 5 
+
+exit

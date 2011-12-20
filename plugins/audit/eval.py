@@ -104,8 +104,9 @@ class eval(baseAuditPlugin):
             if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
                 
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyze_echo}
-                self._tm.startFunction( target=self._sendMutant, args=targs, kwds=kwds, ownerObj=self )
+                kwds = {'analyze': self._analyze_echo}
+                self._tm.startFunction(target=self._sendMutant, args=targs,
+                                       kwds=kwds, ownerObj=self)
 
     def _fuzz_with_time_delay( self, freq):
         '''
@@ -126,8 +127,9 @@ class eval(baseAuditPlugin):
             if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
                 
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyze_wait}
-                self._tm.startFunction( target=self._sendMutant, args=targs, kwds=kwds, ownerObj=self )
+                kwds = {'analyze': self._analyze_wait}
+                self._tm.startFunction(target=self._sendMutant, args=targs,
+                                       kwds=kwds, ownerObj=self)
             
 
     def _analyze_echo( self, mutant, response ):

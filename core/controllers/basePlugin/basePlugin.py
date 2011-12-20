@@ -170,9 +170,14 @@ class basePlugin(configurable):
                 om.out.information( i.getDesc() )
             
     def _sendMutant(self, mutant, analyze=True, grepResult=True,
-                    analyze_callback=None, useCache=True):
+                    useCache=True, follow_redir=True):
         '''
         Sends a mutant to the remote web server.
+        
+        @param analyze: If True, run the default callback, i.e.
+            '_analyzeResult'. If a method is passed then call it as
+            callback. Be aware of the arguments to be passed to
+            a callback method. If False, call nobody.
         '''
         #
         # IMPORTANT NOTE: If you touch something here, the whole framework may
@@ -187,33 +192,39 @@ class basePlugin(configurable):
         if cookie:
             headers['Cookie'] = str(cookie)
 
-        args = ( uri, )
+        args = (uri,)
+        kwargs = {
+              'data': data, 'headers': headers,
+              'grepResult': grepResult,
+              'useCache': useCache,
+              'follow_redir': follow_redir
+              }
         method = mutant.getMethod()
         
         functor = getattr(self._urlOpener , method)
-        # run functor , run !   ( forest gump flash )
-        res = functor(*args, data=data, headers=headers,
-                      grepResult=grepResult, useCache=useCache)
+        # run functor, run! (forest gump flash)
+        res = functor(*args, **kwargs)
         
         if analyze:
-            if analyze_callback:
-                # The user specified a custom callback for analyzing the sendMutant result
-                analyze_callback(mutant, res)
+            if callable(analyze):
+                # The user specified a custom callback for analyzing
+                # the sendMutant result
+                analyze(mutant, res)
             else:
                 # Calling the default callback
                 self._analyzeResult(mutant, res)
         return res
     
-    def _analyzeResult(self,  mutant,  res):
+    def _analyzeResult(self, mutant, res):
         '''
         Analyze the result of sending the mutant to the remote web server.
         
         @parameter mutant: The mutated request.
         @parameter res: The HTTP response.
         '''
-        msg = 'You must override the "_analyzeResult" method of basePlugin if'
-        msg += ' you want to use "_sendMutant" with the default callback.'
-        raise w3afException( msg )
+        msg = ('You must override the "_analyzeResult" method of basePlugin if'
+        ' you want to use "_sendMutant" with the default callback.')
+        raise NotImplementedError, msg
     
     def __eq__( self, other ):
         '''
@@ -268,4 +279,3 @@ class UrlOpenerProxy(object):
                     del exc_info
         attr = getattr(self._url_opener, name)
         return meth if callable(attr) else attr
-    

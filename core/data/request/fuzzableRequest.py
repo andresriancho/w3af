@@ -209,6 +209,9 @@ class fuzzableRequest(object):
                 return True
         # I didn't sent the smth_instng in any way
         return False
+    
+    def __hash__(self):
+        return hash(str(self._uri))
 
     def __str__(self):
         '''

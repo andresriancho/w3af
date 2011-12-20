@@ -108,7 +108,7 @@ class osCommanding(baseAuditPlugin):
             if self._hasNoBug( 'osCommanding' , 'osCommanding', mutant.getURL() , mutant.getVar() ):
                 
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyze_wait}
+                kwds = {'analyze': self._analyze_wait}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
                                                     kwds=kwds, ownerObj=self )
                                                     
@@ -134,7 +134,7 @@ class osCommanding(baseAuditPlugin):
             if self._hasNoBug( 'osCommanding' , 'osCommanding', mutant.getURL() , mutant.getVar() ):
                 
                 targs = (mutant,)
-                kwds = {'analyze_callback':self._analyze_echo}
+                kwds = {'analyze':self._analyze_echo}
                 self._tm.startFunction( target=self._sendMutant, args=targs , \
                                                     kwds=kwds, ownerObj=self )
                 

@@ -42,12 +42,12 @@ import core.data.parsers.wsdlParser as wsdlParser
 __all__ = ['createFuzzableRequests', 'create_fuzzable_request']
 
 
-def createFuzzableRequests(http_resp, request=None, add_self=True):
+def createFuzzableRequests(resp, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an http response instance.
     
-    @parameter http_resp: An HTTPResponse instance.
-    @parameter request: The HTTP request that generated the http_resp
+    @parameter resp: An HTTPResponse instance.
+    @parameter request: The HTTP request that generated the resp
     @parameter add_self: If I should add the current HTTP request
         (@parameter request) to the result on not.
     
@@ -59,38 +59,39 @@ def createFuzzableRequests(http_resp, request=None, add_self=True):
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
     headers = dict((h, '') for h in cf.cf.getData('fuzzableHeaders'))
+    req_headers = dict(headers)
+    req_headers.update(request and request.getHeaders() or {})
     
     # Get the cookie!
-    cookieObj = _create_cookie(http_resp)
+    cookieObj = _create_cookie(resp)
     
     # Create the fuzzable request that represents the request object
     # passed as parameter
     if add_self:
-        self_headers = request and request.getHeaders() or {}
         qsr = HTTPQSRequest(
-                    http_resp.getURI(),
-                    headers=self_headers,
+                    resp.getURI(),
+                    headers=req_headers,
                     cookie=cookieObj
                     )
         res.append(qsr)
     
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request. 
-    if is_redirect(http_resp):
-        redir_headers = http_resp.getLowerCaseHeaders()
+    if is_redirect(resp):
+        redir_headers = resp.getLowerCaseHeaders()
         location = redir_headers.get('location') or \
                         redir_headers.get('uri', '')
         if location:
             qsr = HTTPQSRequest(
-                http_resp.getURI().urlJoin(location),
-                headers=self_headers,
+                resp.getURI().urlJoin(location),
+                headers=req_headers,
                 cookie=cookieObj
                 )
             res.append(qsr)
     
     # Try to find forms in the document
     try:
-        dp = dpCache.dpc.getDocumentParserFor(http_resp)
+        dp = dpCache.dpc.getDocumentParserFor(resp)
     except w3afException:
         # Failed to find a suitable parser for the document
         form_list = []
@@ -101,7 +102,7 @@ def createFuzzableRequests(http_resp, request=None, add_self=True):
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
         try:
-            wsdlp.setWsdl(http_resp.getBody())
+            wsdlp.setWsdl(resp.getBody())
         except w3afException:
             pass
         else:
