@@ -57,9 +57,13 @@ class request:
         wait_time = 1
         while tries != 0:
             if tries < 3 and VERBOSE: print '!!! TRIES =', tries
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # Added by Andres Riancho to get SSL support !
             try:
+                si = socket.getaddrinfo(HOST, PORT)
+                if si[0][0] == 10:
+                    s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                else:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((HOST, PORT))
             except:
                 raise w3afException('Connection failed to ' + str(HOST) + ':' + str(PORT) )
