@@ -55,7 +55,14 @@ class blindSqli(baseAuditPlugin):
         '''
         om.out.debug('blindSqli plugin is testing: ' + freq.getURL())
         
+        # Setup bsqli detector objects
         bsqli_resp_diff = self._bsqli_response_diff
+        bsqli_resp_diff.setUrlOpener(self._urlOpener)
+        bsqli_resp_diff.setEqualLimit(self._equalLimit)
+        bsqli_resp_diff.setEquAlgorithm(self._equAlgorithm)
+        bsqli_time_delay = self._blind_sqli_time_delay
+        bsqli_time_delay.setUrlOpener(self._urlOpener)
+        # Setup partial function
         kb_has_no_bsqli = partial(
                               self._hasNoBug,
                               'blindSqli',
@@ -63,29 +70,15 @@ class blindSqli(baseAuditPlugin):
                               freq.getURL()
                               )
         
-        for parameter in freq.getDc():
-            
+        for param in freq.getDc():
             # Try to identify the vulnerabilities using response
-            # string differences
-            bsqli_resp_diff.setUrlOpener(self._urlOpener)
-            bsqli_resp_diff.setEqualLimit(self._equalLimit)
-            bsqli_resp_diff.setEquAlgorithm(self._equAlgorithm)
+            # string difference
             # FIXME: what about repeated parameter names?
-            vuln_resp_diff = bsqli_resp_diff.is_injectable(freq, parameter)
-            
-            if vuln_resp_diff is not None and \
-                kb_has_no_bsqli(vuln_resp_diff.getVar()):
-                om.out.vulnerability(vuln_resp_diff.getDesc())
-                kb.kb.append(self, 'blindSqli', vuln_resp_diff)
-            else:
-                # And I also check for Blind SQL Injections using time delays
-                self._blind_sqli_time_delay.setUrlOpener(self._urlOpener)
-                time_delay = \
-                    self._blind_sqli_time_delay.is_injectable(freq, parameter)
-                if time_delay is not None and \
-                    kb_has_no_bsqli(time_delay.getVar()):
-                    om.out.vulnerability(time_delay.getDesc())
-                    kb.kb.append(self, 'blindSqli', time_delay)
+            found_vuln = bsqli_resp_diff.is_injectable(freq, param) or \
+                                bsqli_time_delay.is_injectable(freq, param)
+            if found_vuln and kb_has_no_bsqli(found_vuln.getVar()):
+                om.out.vulnerability(found_vuln.getDesc())
+                kb.kb.append(self, 'blindSqli', found_vuln)
     
     def getOptions( self ):
         '''
