@@ -83,7 +83,7 @@ class blindSqli(baseAuditPlugin):
                 time_delay = \
                     self._blind_sqli_time_delay.is_injectable(freq, parameter)
                 if time_delay is not None and \
-                    kb_has_no_bsqli(vuln_resp_diff.getVar()):
+                    kb_has_no_bsqli(time_delay.getVar()):
                     om.out.vulnerability(time_delay.getDesc())
                     kb.kb.append(self, 'blindSqli', time_delay)
     
