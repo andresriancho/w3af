@@ -49,7 +49,7 @@ class blindSqli(baseAuditPlugin):
 
     def audit(self, freq):
         '''
-        Tests an URL for blind Sql injection vulnerabilities.
+        Tests an URL for blind SQL injection vulnerabilities.
         
         @param freq: A fuzzableRequest
         '''
