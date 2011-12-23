@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from itertools import ifilter
 import re
 import traceback
 
@@ -158,11 +157,11 @@ class SGMLParser(BaseParser):
                                     not attr[1].startswith('#') and \
                                     not attr[1] in apache_indexing
         
-        for _, attr_val in ifilter(filter_ref, attrs.iteritems()):
+        for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
-                url = unicode(self._baseUrl.urlJoin(attr_val))
-                url = url_object(self._decode_URL(url),
-                                 encoding=self._encoding)
+                url_path = self._decode_URL(url_path)
+                url = unicode(self._baseUrl.urlJoin(url_path))
+                url = url_object(url, encoding=self._encoding)
             except ValueError:
                 # Just ignore it
                 pass
