@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import os
-import commands
+import subprocess
+import shlex
 import time
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 from .xunit import XunitGen, ERROR, SKIP, SUCC, FAIL
-
 
 SCRIPT_DIR = 'scripts/'
 
@@ -57,7 +57,8 @@ def run_script( scriptName ):
 
     om.out.information('Running: ' + scriptName + ' ...', newLine=False )
     try:
-        output = commands.getoutput('python w3af_console -n -s ' + scriptName)
+        args = shlex.split('python w3af_console -n -s %s' % scriptName)
+        output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
     except KeyboardInterrupt, k:
         msg = ('User cancelled the script. Hit Ctrl+C again to cancel all '
            'the test or wait two seconds to continue with the next script.')
