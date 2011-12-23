@@ -293,7 +293,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self._fixContentLengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPart(w3af,\
+        self.originalReq = reqResViewer.requestPart(self, w3af,\
                 [analyzBut.set_sensitive, self.sendPlayBut.set_sensitive,\
                 functools.partial(self.sSB_state.change, "rRV")],\
                 editable=True, widgname="fuzzyrequest")
