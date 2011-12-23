@@ -35,7 +35,8 @@ from core.data.request.frFactory import create_fuzzable_request
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
 
-# TODO: Rethink this: why not POST?
+# TODO: Why not POST? Why don't we perform real caching and respect
+# the cache headers/meta tags?
 CACHE_METHODS = ('GET', 'HEAD')
 
 # Global cache location

@@ -20,8 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import urllib2
-from cStringIO import StringIO
 import gzip
+
+from cStringIO import StringIO
+
+from core.data.url.handlers.localCache import SQLCachedResponse 
 
 
 class HTTPGzipProcessor(urllib2.BaseHandler):
@@ -32,7 +35,18 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         return request
 
     def http_response(self, request, response):
+        '''
+        Decompress the HTTP response and send it to the next handler.
+        '''
+        # First I need to check if the response came from the cache
+        # stuff that's stored in the cache is there uncompressed,
+        # so I can simply return the same response!
+        if isinstance( response, SQLCachedResponse ): 
+            return response
+        
+        #
         # post-process response
+        #
         enc_hdrs = response.info().getheaders("Content-encoding")
         for enc_hdr in enc_hdrs:
             if ("gzip" in enc_hdr) or ("compress" in enc_hdr):
@@ -40,12 +54,11 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                 try:
                     data = gzip.GzipFile(fileobj=StringIO(response.read())).read()
                 except IOError:
-                    # I get here when the response came from the cache
-                    # where the responses are saved unziped but with the
-                    # original headers
+                    # I get here when the HTTP response body is corrupt
+                    # return the same thing that I got... can't do magic yet!
                     return response
                 else:
-                    # The response was successfully unziped
+                    # The response was successfully unzipped
                     response.setBody(data)
                     return response
         return response
