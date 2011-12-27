@@ -55,6 +55,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzableCookie', False )
             cf.cf.save('fuzzFileContent', True )
             cf.cf.save('fuzzFileName', False )
+            cf.cf.save('fuzzURLParts', False )
             cf.cf.save('fuzzFCExt', 'txt' )
             cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('autoDependencies', True )
@@ -104,6 +105,13 @@ class miscSettings(configurable):
         o3 = option('fuzzFileName', cf.cf.getData('fuzzFileName'), d3, 'boolean', help=h3, 
                             tabid='Fuzzer parameters')
         
+        d16 = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
+        h16 = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzzURLParts'
+        h16 += ' is enabled, w3af will request among other things: '
+        h16 += 'http://test/foo/bar/<script>alert(document.cookie)</script> in order to find XSS.'
+        o16 = option('fuzzURLParts', cf.cf.getData('fuzzURLParts'), d16, 'boolean', help=h16, 
+                            tabid='Fuzzer parameters')
+
         d4 = 'Indicates the extension to use when fuzzing file content'
         o4 = option('fuzzFCExt', cf.cf.getData('fuzzFCExt'), d4, 'string', tabid='Fuzzer parameters')
 
@@ -178,6 +186,7 @@ class miscSettings(configurable):
         ol.add(o13)
         ol.add(o14)
         ol.add(o15)
+        ol.add(o16)
         return ol
     
     def getDesc( self ):
@@ -194,6 +203,7 @@ class miscSettings(configurable):
         cf.cf.save('fuzzableCookie', optionsMap['fuzzCookie'].getValue() )
         cf.cf.save('fuzzFileContent', optionsMap['fuzzFileContent'].getValue() )
         cf.cf.save('fuzzFileName', optionsMap['fuzzFileName'].getValue() )
+        cf.cf.save('fuzzURLParts', optionsMap['fuzzURLParts'].getValue() )
         cf.cf.save('fuzzFCExt', optionsMap['fuzzFCExt'].getValue() )
         cf.cf.save('fuzzFormComboValues', optionsMap['fuzzFormComboValues'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )

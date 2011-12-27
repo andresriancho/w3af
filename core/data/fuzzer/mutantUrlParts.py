@@ -1,5 +1,5 @@
 '''
-mutantFileName.py
+mutantUrlParts.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,9 +24,9 @@ import urllib
 from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 
-class mutantFileName(mutant):
+class mutantUrlParts(mutant):
     '''
-    This class is a filename mutant.
+    This class is a urlparts mutant.
     '''
     def __init__( self, freq ):
         mutant.__init__(self, freq)
@@ -34,14 +34,14 @@ class mutantFileName(mutant):
         self._safeEncodeChars = ''
 
     def getMutantType( self ):
-        return 'filename'
+        return 'urlparts'
 
     def setDoubleEncoding( self, trueFalse ):
         self._doubleEncoding = trueFalse
     
     def setSafeEncodeChars( self, safeChars ):
         '''
-        @parameter safeChars: A string with characters we don't want to URL encode in the filename. Example:
+        @parameter safeChars: A string with characters we don't want to URL encode in the urlparts. Example:
             - '/&!'
             - '/'
         '''
@@ -54,26 +54,25 @@ class mutantFileName(mutant):
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
         >>> from core.data.dc.dataContainer import dataContainer as dc
-        >>> divided_file_name = dc()
-        >>> divided_file_name['start'] = ''
-        >>> divided_file_name['fuzzedFname'] = 'ping!'
-        >>> divided_file_name['end'] = '.html'
+        >>> divided_path = dc()
+        >>> divided_path['start'] = '/'
+        >>> divided_path['fuzzedUrlParts'] = 'ping!'
+        >>> divided_path['end'] = '/def'
         
-        >>> fr = fuzzableRequest(url_object('http://www.w3af.com/abc/def.html'))        
-        >>> m = mutantFileName( fr )
-        >>> m.setMutantDc(divided_file_name)
-        >>> m.setVar( 'fuzzedFname' )
+        >>> fr = fuzzableRequest(url_object('http://www.w3af.com/abc/def'))        
+        >>> m = mutantUrlParts( fr )
+        >>> m.setMutantDc(divided_path)
+        >>> m.setVar('fuzzedUrlParts')
         >>> m.getURL().url_string
-        u'http://www.w3af.com/abc/ping%21.html'
+        u'http://www.w3af.com/ping%21/def'
         '''
         domain_path = self._freq.getURL().getDomainPath()
         
         # Please note that this double encoding is needed if we want to work with mod_rewrite
-        encoded = urllib.quote_plus( self._mutant_dc['fuzzedFname'], self._safeEncodeChars )
+        encoded = urllib.quote_plus( self._mutant_dc['fuzzedUrlParts'], self._safeEncodeChars )
         if self._doubleEncoding:
             encoded = urllib.quote_plus( encoded, safe=self._safeEncodeChars )
-        
-        domain_path.setFileName( self._mutant_dc['start'] + encoded + self._mutant_dc['end'] )
+        domain_path.setPath( self._mutant_dc['start'] + encoded + self._mutant_dc['end'] )
         return domain_path
         
     getURI = getURL
@@ -83,17 +82,17 @@ class mutantFileName(mutant):
     
     def printModValue( self ):
         res = 'The sent '+ self.getMutantType() +' is: "' + self._mutant_dc['start']
-        res += self._mutant_dc['fuzzedFname'] + self._mutant_dc['end'] + '" .'
+        res += self._mutant_dc['fuzzedUrlParts'] + self._mutant_dc['end'] + '" .'
         return res
         
     def setModValue( self, val ):
-        self._mutant_dc['fuzzedFname'] = val
+        self._mutant_dc['fuzzedUrlParts'] = val
         
     def getModValue(self):
-        return self._mutant_dc['fuzzedFname']
+        return self._mutant_dc['fuzzedUrlParts']
     
     def setURL( self, u ):
-        raise w3afException('You can\'t change the value of the URL in a mutantFileName instance.')
+        raise w3afException('You can\'t change the value of the URL in a mutantUrlParts instance.')
 
     def foundAt(self):
         '''

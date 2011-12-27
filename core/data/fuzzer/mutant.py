@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.w3afException import w3afException
 import copy
 
+from core.controllers.w3afException import w3afException
+from core.data.dc.dataContainer import dataContainer
 
 class mutant(object):
     '''
@@ -35,7 +35,16 @@ class mutant(object):
         self._index = 0
         self._originalValue = ''
         self._originalResponseBody = None
-    
+        self._mutant_dc = {}
+
+    def getMutantDc(self):
+        return self._mutant_dc
+
+    def setMutantDc(self, dc):
+        if not isinstance(dc, dataContainer):
+            raise ValueError(
+                    'mutant.setMutantDc() - the argument must be a dataContainer instance.')
+        self._mutant_dc = dc
     #
     # this methods are from the mutant
     #
@@ -119,13 +128,6 @@ class mutant(object):
     
     def __repr__( self ):
         return '<'+ self.getMutantType() +' mutant | '+ self.getMethod() +' | '+ self.getURI() +' >'
-    
-    def dynamicURL( self ):
-        '''
-        @return: True if the URL is going to change from one mutant to another (when both mutants were created
-        in the same call to the createMutants call.) This was added mostly because of mutantFileName.py
-        '''
-        return False
     
     def copy( self ):
         return copy.deepcopy( self )
