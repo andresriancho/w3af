@@ -198,7 +198,7 @@ class PreviewWindow(entries.RememberingWindow):
         self.set_transient_for(parent)
 
         # content
-        self.panes = reqResViewer.requestPart(w3af, editable=False, widgname="fuzzypreview")
+        self.panes = reqResViewer.requestPart(self, w3af, editable=False, widgname="fuzzypreview")
         self.vbox.pack_start(self.panes)
         self.panes.show()
 
