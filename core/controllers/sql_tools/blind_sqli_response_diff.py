@@ -20,20 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-from core.data.fuzzer.fuzzer import createMutants, createRandNum
-import core.controllers.outputManager as om
-
-import core.data.kb.vuln as vuln
-import core.data.kb.knowledgeBase as kb
-import core.data.constants.severity as severity
-
-from core.controllers.w3afException import w3afException
-
 import re
 
-# importing this to have sendMutant and setUrlOpener
 from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.w3afException import w3afException
+from core.data.fuzzer.fuzzer import createMutants, createRandNum
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
+import core.data.kb.vuln as vuln
+
 
 class blind_sqli_response_diff(basePlugin):
     '''

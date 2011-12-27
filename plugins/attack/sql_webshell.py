@@ -123,8 +123,8 @@ class sql_webshell(baseAttackPlugin):
         return 'shell'
     
     def getExploitableVulns(self):
-        vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
-        vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+        vulns = list(kb.kb.getData('blindSqli', 'blindSqli'))
+        vulns.extend(kb.kb.getData('sqli', 'sqli'))
         return vulns
 
     def canExploit( self, vulnToExploit=None ):
@@ -156,8 +156,8 @@ class sql_webshell(baseAttackPlugin):
         if not self.canExploit():
             return []
         else:
-            vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
-            vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+            vulns = list(kb.kb.getData( 'blindSqli' , 'blindSqli'))
+            vulns.extend(kb.kb.getData( 'sqli' , 'sqli' ))
             
             bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )

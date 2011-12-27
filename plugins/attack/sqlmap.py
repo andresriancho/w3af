@@ -127,8 +127,8 @@ class sqlmap(baseAttackPlugin):
         return 'shell'
     
     def getExploitableVulns(self):
-        vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
-        vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+        vulns = list(kb.kb.getData('blindSqli', 'blindSqli'))
+        vulns.extend(kb.kb.getData('sqli', 'sqli'))
         return vulns
 
     def canExploit( self, vulnToExploit=None ):

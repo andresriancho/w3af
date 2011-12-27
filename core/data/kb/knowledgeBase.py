@@ -19,9 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from __future__ import with_statement
-
-from core.controllers.w3afException import w3afException
 import threading
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -63,15 +60,15 @@ class knowledgeBase:
             name = callingInstance
         else:
             name = callingInstance.getName()
-        
+
         with self._kb_lock:
             if name not in self._kb.keys():
-                self._kb[ name ] = {variableName:[value,]}
+                self._kb[name] = {variableName: [value]}
             else:
                 if variableName in self._kb[ name ] :
-                    self._kb[ name ][ variableName ].extend( [value,] )
+                    self._kb[name][variableName].append(value)
                 else:
-                    self._kb[ name ][ variableName ] = [value,]
+                    self._kb[name][variableName] = [value]
         
     def getData( self, pluginWhoSavedTheData, variableName=None ):
         '''
@@ -105,20 +102,21 @@ class knowledgeBase:
                     
         return res
 
-    def getAllEntriesOfClass( self, klass ):
+    def getAllEntriesOfClass(self, klass):
         '''
-        @return: A list of all objects of class == klass that are saved in the kb.
+        @return: A list of all objects of class == klass that are
+            saved in the kb.
         '''
         res = []
         
         with self._kb_lock:
-            for pluginName in self._kb:
-                for savedName in self._kb[ pluginName ]:
-                    if isinstance( self._kb[ pluginName ][ savedName ], list ):
-                        for i in self._kb[ pluginName ][ savedName ]:
-                            if isinstance(i, klass) :
-                                res.append( i )
-
+            for pdata in self._kb.values():
+                for vals in pdata.values():
+                    if not isinstance(vals, list):
+                        continue
+                    for v in vals:
+                        if type(v) is klass:
+                            res.append(v)
         return res
     
     def getAllVulns( self ):

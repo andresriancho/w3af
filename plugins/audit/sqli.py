@@ -19,24 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from __future__ import with_statement
 
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import re
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
-from core.controllers.w3afException import w3afException
+from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
 import core.data.constants.dbms as dbms
-
+import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
-
-import re
 
 
 class sqli(baseAuditPlugin):
@@ -88,7 +81,7 @@ class sqli(baseAuditPlugin):
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'sqli' , 'sqli' , mutant.getURL() , mutant.getVar() ):
+            if self._hasNoBug('sqli', 'sqli', mutant.getURL(), mutant.getVar()):
                 
                 sql_error_list = self._findsql_error( response )
                 for sql_regex, sql_error_string, dbms_type in sql_error_list:
@@ -103,15 +96,15 @@ class sqli(baseAuditPlugin):
                         v['error'] = sql_error_string
                         v['db'] = dbms_type
                         v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
-                        kb.kb.append( self, 'sqli', v )
+                        kb.kb.append(self, 'sqli', v )
                         break
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
-        self.printUniq( kb.kb.getData( 'sqli', 'sqli' ), 'VAR' )
+        self._tm.join(self)
+        self.printUniq(kb.kb.getData('sqli', 'sqli'), 'VAR')
     
     def _get_sqli_strings( self ):
         '''
