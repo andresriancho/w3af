@@ -138,7 +138,7 @@ class w3afCore(object):
         '''
         # A dict with plugin types as keys and a list of plugin instances as values
         self._plugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[], \
-        'evasion':[], 'mangle':[], 'output':[]}
+        'evasion':[], 'mangle':[], 'output':[], 'auth': []}
         
         self._fuzzableRequestList  = []
         
