@@ -1031,8 +1031,7 @@ class w3afCore(object):
                     plugin.audit_wrapper( fr )
                 except w3afException, e:
                     om.out.error( str(e) )
-                    tm.join( plugin )
-                else:
+                finally:
                     tm.join( plugin )
                 
                 # I performed one test
