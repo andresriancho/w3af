@@ -555,13 +555,11 @@ class w3afCore(object):
                 if not self._fuzzableRequestList:
                     om.out.information('No URLs found by discovery.')
                 else:
-                    # del() all the discovery and bruteforce plugins
-                    # this is a performance enhancement that will free memory
-                    for plugin in self._plugins['discovery']:
-                        del(plugin)
-                    for plugin in self._plugins['bruteforce']:
-                        del(plugin)
-                    
+                    # Remove the discovery and bruteforce plugins from memory
+                    # This is a performance enhancement.
+                    self._plugins['discovery'] = []
+                    self._plugins['bruteforce'] = []
+
                     # Sort URLs
                     tmp_url_list = []
                     for u in kb.kb.getData( 'urls', 'urlList'):
