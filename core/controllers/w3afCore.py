@@ -936,9 +936,6 @@ class w3afCore(object):
                         msg += ' in the end() method: ' + str(e)
                         om.out.error( msg )
                     
-                    # Don't waste memory on plugins that won't be run
-                    del(plugin_to_remove)
-                
         return self._alreadyWalked
     
     ######## These methods are here to show a detailed information of what the core is doing ############
