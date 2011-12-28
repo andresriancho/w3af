@@ -291,15 +291,15 @@ class w3afCore(object):
         # This is inited before all, to have a full logging support.
         om.out.setOutputPlugins( self._strPlugins['output'] )
         
-        # First, create an instance of each requested plugin and add it to the plugin list
-        # Plugins are added taking care of plugin dependencies
-        self._plugins['audit'] = self._rPlugFactory( self._strPlugins['audit'] , 'audit')
-        
-        self._plugins['bruteforce'] = self._rPlugFactory( self._strPlugins['bruteforce'] , 'bruteforce')        
-        
-        # First, create an instance of each requested module and add it to the module list
+        # Create an instance of each requested plugin and add it to the plugin list
+        # Plugins are added taking care of plugin dependencies and configuration
+
+        #
+        # Create the plugins that are needed during the initial discovery+bruteforce phase
+        #
         self._plugins['discovery'] = self._rPlugFactory( self._strPlugins['discovery'] , 'discovery')
-        
+        self._plugins['bruteforce'] = self._rPlugFactory( self._strPlugins['bruteforce'] , 'bruteforce')        
+       
         self._plugins['grep'] = self._rPlugFactory( self._strPlugins['grep'] , 'grep')
         self.uriOpener.setGrepPlugins( self._plugins['grep'] )
         
@@ -307,6 +307,13 @@ class w3afCore(object):
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
         
         self._plugins['auth'] = self._rPlugFactory( self._strPlugins['auth'] , 'auth')
+
+        #
+        # Audit plugins are special, since they don't require to be in memory during discovery+bruteforce
+        # so I'll create them here just to check that the configurations are fine and then I don't store
+        # them anywhere.
+        #
+        self._rPlugFactory( self._strPlugins['audit'] , 'audit')
 
 
     def _updateURLsInKb( self, fuzzableRequestList ):
@@ -993,14 +1000,26 @@ class w3afCore(object):
     
     def _audit(self):
         om.out.debug('Called _audit()' )
-        
+
+        audit_plugins = self._rPlugFactory( self._strPlugins['audit'] , 'audit')
+
         # For progress reporting
         self._set_phase('audit')
-        amount_of_tests = len(self._plugins['audit']) * len(self._fuzzableRequestList)
+        amount_of_tests = len(audit_plugins) * len(self._fuzzableRequestList)
         self.progress.set_total_amount( amount_of_tests )
+
+        # Put everything in a queue and remove the audit_plugins list
+        audit_queue = Queue.Queue()
+        for audit_plugin in audit_plugins:
+            audit_queue.put( audit_plugin )
+        del(audit_plugins)
+
         
-        # This two for loops do all the audit magic [KISS]
-        for plugin in self._plugins['audit']:
+        # This two loops do all the audit magic [KISS]
+        while not audit_queue.empty():
+
+            # Get the next plugin from the queue
+            plugin = audit_queue.get()
             
             # For status
             self._setRunningPlugin( plugin.getName() )
@@ -1028,10 +1047,6 @@ class w3afCore(object):
             except w3afException, e:
                 om.out.error( str(e) )
             
-            # And now remove it to free some memory, the valuable information was
-            # saved to the kb, so this is clean and harmless
-            del(plugin)
-
     def _bruteforce(self, fuzzableRequestList):
         '''
         @parameter fuzzableRequestList: A list of fr's to be analyzed by the bruteforce plugins
