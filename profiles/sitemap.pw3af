@@ -47,6 +47,3 @@ cookieJarFile =
 [output.console]
 verbose = False
 
-[discovery.yahooSiteExplorer]
-resultLimit = 300
-

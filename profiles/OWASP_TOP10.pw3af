@@ -1,8 +1,5 @@
 [discovery.phpinfo]
 
-[discovery.yahooSiteExplorer]
-resultLimit = 300
-
 [audit.frontpage]
 stopOnFirst = True
 
