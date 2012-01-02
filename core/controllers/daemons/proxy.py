@@ -64,7 +64,7 @@ class proxy(w3afThread):
         class myProxyHandler(w3afProxyHandler):
         
     And redefine the following methods:
-        def doAll( self )
+        def do_ALL( self )
             Which originally receives a request from the browser, sends it to the remote site, receives the response
             and returns the response to the browser. This method is called every time the browser sends a new request.
     
@@ -198,7 +198,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             elif self.command == 'CONNECT':
                 self.do_CONNECT()
             else:
-                self.doAll()
+                self.do_ALL()
         except Exception,  e:
             ### FIXME: Maybe I should perform some more detailed error handling...
             om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e) )
@@ -244,7 +244,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             fuzzReq.setData(postData)
         return fuzzReq
 
-    def doAll( self ):
+    def do_ALL( self ):
         '''
         This method handles EVERY request that was send by the browser.
         '''
@@ -282,36 +282,26 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             path = basePath + path
             uri_instance = url_object(path)
         
+        #
         # Do the request to the remote server
+        #
+        post_data = None
         if self.headers.dict.has_key('content-length'):
             # most likely a POST request
-            postData = self._getPostData()
+            post_data = self._getPostData()
 
-            try:
-                httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod( uri_instance, data=postData, headers=self.headers )
-            except w3afException, w:
-                om.out.error('The proxy request failed, error: ' + str(w) )
-            except Exception, e:
-                raise e
-            else:
-                return res
-            
+        try:
+            httpCommandMethod = getattr( self._urlOpener, self.command )
+            res = httpCommandMethod(uri_instance, data=post_data, headers=self.headers,  grepResult=grep )
+        except w3afException, w:
+            traceback.print_exc()
+            om.out.error('The proxy request failed, error: ' + str(w) )
+            raise w
+        except Exception, e:
+            traceback.print_exc()
+            raise e
         else:
-
-            # most likely a GET request
-            try:
-                httpCommandMethod = getattr( self._urlOpener, self.command )
-                res = httpCommandMethod(uri_instance, data=None, headers=self.headers,  grepResult=grep )
-            except w3afException, w:
-                traceback.print_exc()
-                om.out.error('The proxy request failed, error: ' + str(w) )
-                raise w
-            except Exception, e:
-                traceback.print_exc()
-                raise e
-            else:
-                return res
+            return res
     
     def _sendError( self, exceptionObj, trace=None ):
         '''
@@ -351,14 +341,39 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.send_response( res.getCode() )
 
             what_to_send = res.getBody()
+            what_to_send = what_to_send.encode( res.charset, errors='ignore' )
             
-            for header in res.getHeaders():
-                if header == 'transfer-encoding' and res.getHeaders()[header] == 'chunked':
-                    # don't send this header, and send the content-length instead
+            #
+            #    Header mangling!
+            #
+            for header, value in res.getLowerCaseHeaders().items():
+                #
+                #    We already un-ckunked this response and we're going to send it
+                #    as-is to the browser:
+                # 
+                if header == 'transfer-encoding' and value.lower() == 'chunked':
                     self.send_header( 'content-length', str(len(what_to_send)) )
-                else:    
-                    self.send_header( header, res.getHeaders()[header] )
-            
+                    
+                #
+                #    We already gunzipped this response!
+                #
+                elif header == 'content-encoding' and 'gzip' in value.lower():
+                    continue
+                
+                #
+                #    Send the rest of the headers as they came from the server:
+                #
+                else:
+                    #    Sent Content-Type header with the encoding I have in the HTTP
+                    #    response (res).
+                    self.send_header( header, value )
+
+            #    
+            #    TODO: I need to make this in a different way...
+            #    The issue is that I'm guessing the encoding, decoding using that,
+            #    then sending my guessed encoding and the decoded body. The best
+            #    would be to AVOID decoding/encoding for the proxy.
+            #
             self.send_header( 'Connection', 'close')
             self.end_headers()
             

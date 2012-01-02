@@ -36,7 +36,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
     '''
     The handler that traps requests and adds them to the queue.
     '''
-    def doAll( self ):
+    def do_ALL( self ):
         '''
         This method handles EVERY request that were send by the browser.
         '''
