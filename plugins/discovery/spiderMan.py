@@ -38,6 +38,7 @@ import core.data.constants.w3afPorts as w3afPorts
 # an error if we used the original one! Thanks Cohny!
 TERMINATE_URL = url_object('http://127.7.7.7/spiderMan?terminate')
 
+
 class spiderMan(baseDiscoveryPlugin):
     '''
     SpiderMan is a local proxy that will collect new URLs.
@@ -178,7 +179,7 @@ class proxyHandler(w3afProxyHandler):
         self._urlOpener = self._spiderMan._urlOpener
         w3afProxyHandler.__init__(self, request, client_address, server)
     
-    def doAll(self):
+    def do_ALL(self):
         global global_firstRequest
         if global_firstRequest:
             global_firstRequest = False
@@ -191,34 +192,36 @@ class proxyHandler(w3afProxyHandler):
             om.out.information('The user terminated the spiderMan session.')
             self._sendEnd()
             self._spiderMan.stopProxy()
-        else:
-            om.out.debug("[spiderMan] Handling request: %s %s" %
-                                                    (self.command, path))
-            #   Send this information to the plugin so it can send it to the core
-            freq = self._createFuzzableRequest()
-            self._spiderMan.append_fuzzable_request( freq )
-            
-            grep = True if path.getDomain() == self.server.w3afLayer.targetDomain else False
-                
-            try:
-                response = self._sendToServer(grep=grep)
-            except Exception, e:
-                self._sendError( e )
-            else:
-                if response.is_text_or_html():
-                    self._spiderMan.ext_fuzzable_requests( response )
-                
-                for h in response.getHeaders():
-                    if 'cookie' in h.lower():
-                        msg = ('The remote web application sent the following'
-                           ' cookie: "%s".\nw3af will use it during the rest '
-                           'of the process in order to maintain the session.'
-                           % response.getHeaders()[h])
-                        om.out.information( msg )
-                self._sendToBrowser(response)
-            return self._spiderMan._fuzzableRequests
+            return
 
-    do_GET = do_POST = do_HEAD = doAll
+
+        om.out.debug("[spiderMan] Handling request: %s %s" %
+                                                (self.command, path))
+        #   Send this information to the plugin so it can send it to the core
+        freq = self._createFuzzableRequest()
+        self._spiderMan.append_fuzzable_request( freq )
+        
+        grep = True if path.getDomain() == self.server.w3afLayer.targetDomain else False
+            
+        try:
+            response = self._sendToServer(grep=grep)
+        except Exception, e:
+            self._sendError( e )
+        else:
+            if response.is_text_or_html():
+                self._spiderMan.ext_fuzzable_requests( response )
+            
+            for h in response.getHeaders():
+                if 'cookie' in h.lower():
+                    msg = ('The remote web application sent the following'
+                       ' cookie: "%s".\nw3af will use it during the rest '
+                       'of the process in order to maintain the session.'
+                       % response.getHeaders()[h])
+                    om.out.information( msg )
+            self._sendToBrowser(response)
+        return self._spiderMan._fuzzableRequests
+
+    do_GET = do_POST = do_HEAD = do_ALL
 
     def _sendEnd( self ):
         '''

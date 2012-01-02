@@ -343,6 +343,11 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             what_to_send = res.getBody()
             what_to_send = what_to_send.encode( res.charset, errors='ignore' )
             
+            # TODO: There is a HUGE bug here:
+            #     str(len(what_to_send))
+            #     The problem is that the encoded/decoded len() is different!
+            
+            
             #
             #    Header mangling!
             #
