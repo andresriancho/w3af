@@ -120,7 +120,10 @@ class read_shell(shell):
         #
         elif hasattr( self, 'specific_user_input'):
             # forward to the plugin
-            return self.specific_user_input( command )
+            response = self.specific_user_input( command )
+            
+            if response is None:
+                return 'Command "%s" not found. Please type "help".' % command
 
     def _identifyOs( self ):
         '''
