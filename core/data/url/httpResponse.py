@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from itertools import imap
 import codecs
 import copy
 import re
 import httplib
 
 from lxml import etree
+from itertools import imap
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.urlParser import url_object
@@ -305,9 +305,9 @@ class httpResponse(object):
     def getLowerCaseHeaders(self):
         '''
         If the original headers were:
-            'Abc-Def: f00N3s'
+            {'Abc-Def': 'F00N3s'}
         This will return:
-            'abc-def: f00N3s'
+            {'abc-def': 'F00N3s'}
         
         The only thing that changes is the header name.
         '''
