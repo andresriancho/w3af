@@ -57,6 +57,8 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             e.id = self._get_counter()
             raise e
     
+    http_error_301 = http_error_303 = http_error_307 = http_error_302
+    
     # FIXME: A duplicated and slightly modified (see comment below)
     # version of urllib2.HTTPRedirectHandler.http_error_302 method. This
     # code duplication must be removed once the cause disappears (in py2.6.5
