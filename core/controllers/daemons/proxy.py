@@ -75,13 +75,17 @@ class proxy(w3afThread):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__( self, ip, port, urlOpener, proxyHandler=None, proxyCert = 'core/controllers/daemons/mitm.crt' ):
+    def __init__(self, ip, port, urlOpener, proxyHandler=None,
+                 proxyCert='core/controllers/daemons/mitm.crt'):
         '''
         @parameter ip: IP address to bind
         @parameter port: Port to bind
-        @parameter urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
-        @parameter proxyHandler: A class that will know how to handle requests from the browser
-        @parameter proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
+        @parameter urlOpener: The urlOpener that will be used to open
+            the requests that arrive from the browser
+        @parameter proxyHandler: A class that will know how to handle
+            requests from the browser
+        @parameter proxyCert: Proxy certificate to use, this is needed
+            for proxying SSL connections.
         '''
         w3afThread.__init__(self)
 
@@ -291,8 +295,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             post_data = self._getPostData()
 
         try:
-            httpCommandMethod = getattr( self._urlOpener, self.command )
-            res = httpCommandMethod(uri_instance, data=post_data, headers=self.headers,  grepResult=grep )
+            httpCommandMethod = getattr(self._urlOpener, self.command)
+            res = httpCommandMethod(uri_instance, data=post_data,
+                                    headers=self.headers, grepResult=grep)
         except w3afException, w:
             traceback.print_exc()
             om.out.error('The proxy request failed, error: ' + str(w) )
@@ -326,66 +331,52 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             traceback.print_exc()
             om.out.debug('An error occurred in proxy._sendError(). Maybe the browser closed the connection?')
             om.out.debug('Exception: ' + str(e) )
+        
         self.wfile.close()
     
-    def _sendToBrowser( self, res ):
+    def _sendToBrowser(self, res):
         '''
         Send a response that was sent by the remote web server to the browser
 
         Important methods used here:
             - self.send_header : Sends a header to the browser
             - self.end_headers : Ends the headers section
-            - self.wfile : A file like object that represents the body of the response
+            - self.wfile : A file like object that represents the body
+                of the response
         '''
+        send_header = self.send_header
         try:
-            self.send_response( res.getCode() )
+            self.send_response(res.getCode())
+            what_to_send = res.body.encode(res.charset)
 
-            what_to_send = res.getBody()
-            what_to_send = what_to_send.encode( res.charset, errors='ignore' )
-            
-            # TODO: There is a HUGE bug here:
-            #     str(len(what_to_send))
-            #     The problem is that the encoded/decoded len() is different!
-            
-            
-            #
-            #    Header mangling!
-            #
+            # Work with the response's headers.
+            # Overwrite 'content-length'
+            send_header('content-length', str(len(what_to_send)))
+
             for header, value in res.getLowerCaseHeaders().items():
-                #
-                #    We already un-ckunked this response and we're going to send it
-                #    as-is to the browser:
-                # 
-                if header == 'transfer-encoding' and value.lower() == 'chunked':
-                    self.send_header( 'content-length', str(len(what_to_send)) )
-                    
-                #
-                #    We already gunzipped this response!
-                #
-                elif header == 'content-encoding' and 'gzip' in value.lower():
+                
+                # We already un-ckunked this response and we're going to
+                # send it as-is to the browser:
+                if header == 'transfer-encoding' and \
+                    value.lower() == 'chunked':
+                    continue
+
+                # Ignore these: the response has already bin gunzipped and
+                # 'content-length' was overwritten
+                elif value.lower() in('gzip', 'content-length'):
                     continue
                 
-                #
-                #    Send the rest of the headers as they came from the server:
-                #
-                else:
-                    #    Sent Content-Type header with the encoding I have in the HTTP
-                    #    response (res).
-                    self.send_header( header, value )
-
-            #    
-            #    TODO: I need to make this in a different way...
-            #    The issue is that I'm guessing the encoding, decoding using that,
-            #    then sending my guessed encoding and the decoded body. The best
-            #    would be to AVOID decoding/encoding for the proxy.
-            #
-            self.send_header( 'Connection', 'close')
+                send_header(header, value)
+                
+            send_header('Connection', 'close')
             self.end_headers()
             
             self.wfile.write(what_to_send)
-            self.wfile.close()
         except Exception, e:
-            om.out.debug('Failed to send the data to the browser: ' + str(e) )
+            om.out.debug('Failed to send the data to the browser: %s' % (e,))
+        
+        finally:
+            self.wfile.close()
 
     def _verify_cb(self, conn, cert, errnum, depth, ok):
         '''
