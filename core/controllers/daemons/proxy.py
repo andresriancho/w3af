@@ -347,25 +347,28 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         send_header = self.send_header
         try:
             self.send_response(res.getCode())
-            what_to_send = res.body.encode(res.charset)
+            
+            what_to_send = res.body
+            if res.is_text_or_html():
+                what_to_send = what_to_send.encode(res.charset, 'replace')
 
             # Work with the response's headers.
             # Overwrite 'content-length'
             send_header('content-length', str(len(what_to_send)))
 
             for header, value in res.getLowerCaseHeaders().items():
-                
-                # We already un-ckunked this response and we're going to
-                # send it as-is to the browser:
-                if header == 'transfer-encoding' and \
-                    value.lower() == 'chunked':
+                # Ignore these headers:
+                #   - 'content-length', as it has been overwritten before
+                #   - 'transfer-encoding', when 'chunked' as the
+                #     response has already been read completely.
+                if header == 'content-length' or \
+                    (header == 'transfer-encoding' and 
+                     value.lower() == 'chunked'):
+                    continue
+                # The response has already bin gunzipped: ignore this header
+                elif value.lower() == 'gzip':
                     continue
 
-                # Ignore these: the response has already bin gunzipped and
-                # 'content-length' was overwritten
-                elif value.lower() in('gzip', 'content-length'):
-                    continue
-                
                 send_header(header, value)
                 
             send_header('Connection', 'close')
@@ -373,8 +376,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             
             self.wfile.write(what_to_send)
         except Exception, e:
-            om.out.debug('Failed to send the data to the browser: %s' % (e,))
-        
+            om.out.debug(
+                '**Failed to send the data to the browser: %s**' % (e,))
         finally:
             self.wfile.close()
 
