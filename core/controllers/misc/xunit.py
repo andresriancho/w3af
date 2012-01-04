@@ -18,17 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from __future__ import with_statement
-import os
+from xml.dom.minidom import parseString
 from xml.sax import saxutils
+import os
 
 import core.controllers.outputManager as om
 
-# Result constants
-SUCC = 0
-FAIL = 1
-ERROR = 3
-SKIP = 4
 
 class XunitGen(object):
     '''
@@ -44,7 +39,7 @@ class XunitGen(object):
         if outputfile:
             self.outputfile = outputfile
         self._stats = {'error': 0,
-                       'skip':0,
+                       'skip': 0,
                        'pass': 0,
                        'fail': 0}
         self.results = []
@@ -56,14 +51,21 @@ class XunitGen(object):
         '''
         self._stats['total'] = (self._stats['error'] + self._stats['fail']
                                + self._stats['pass'] + self._stats['skip'])
+        
+        xml_chunks = [
+              '<?xml version="1.0" encoding="UTF-8"?>'
+              '<testsuite name="w3aftestscripts" tests="%(total)d" '
+              'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
+              % self._stats
+              ]
+        xml_chunks.append(''.join(self.results))
+        xml_chunks.append('</testsuite>')
+        
         with open(self.outputfile, 'w') as output:
             output.write(
-                '<?xml version="1.0" encoding="UTF-8"?>'
-                '<testsuite name="w3aftestscripts" tests="%(total)d" '
-                'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
-                % self._stats)
-            output.write(''.join(self.results))
-            output.write('</testsuite>')
+                     parseString(''.join(xml_chunks)).toprettyxml()
+                     )
+        
         om.out.information('XML output file was successfuly generated: %s'
                            % self.outputfile)
 
