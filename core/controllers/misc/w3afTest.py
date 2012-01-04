@@ -19,89 +19,76 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+from subprocess import Popen, PIPE, STDOUT
 import os
-import subprocess
 import shlex
 import time
+
+from .xunit import XunitGen
+
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-from .xunit import XunitGen, ERROR, SKIP, SUCC, FAIL
 
 SCRIPT_DIR = 'scripts/'
-
+ERROR, SKIP, SUCC, FAIL = 'ERROR SKIP OK FAIL'.split()
 
 def getScripts():
     res = []
     withOutAssert = []
     for f in os.listdir(SCRIPT_DIR):
         if f.endswith('.w3af'):
-            content = file( SCRIPT_DIR + f ).read()
+            content = file(SCRIPT_DIR + f).read()
             if 'assert' in content:
-                res.append( SCRIPT_DIR + f )
+                res.append(SCRIPT_DIR + f)
             else:
-                withOutAssert.append( f )
+                withOutAssert.append(f)
     
     res.sort()
     withOutAssert.sort()
     
     return (res, withOutAssert)
 
-
-def run_script( scriptName ):
+def run_script(scriptName):
     '''
     Actually run the script.
     '''
-
-    start_time = time.time()
-
-    om.out.information('Running: ' + scriptName + ' ...', newLine=False )
+    now = lambda: time.time()
+    start_time = now()
     try:
         args = shlex.split('python w3af_console -n -s %s' % scriptName)
-        output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
+        output = Popen(args, stdout=PIPE, stderr=STDOUT).communicate()[0]
     except KeyboardInterrupt, k:
         msg = ('User cancelled the script. Hit Ctrl+C again to cancel all '
            'the test or wait two seconds to continue with the next script.')
-        om.out.information( msg )
+        om.out.information(msg)
         try:
             time.sleep(2)
         except:
             om.out.information('User cancelled the WHOLE test.')
             raise k
         else:
-            om.out.information('Continuing with the next script..., please wait.')
-            return (None, time.time() - start_time)
+            om.out.information(
+                        'Continuing with the next script... please wait.')
+            return (None, now() - start_time)
 
-    end_time = time.time()
-    took = end_time - start_time
-    
-    if took > 9:
-        om.out.information(' Run took ' + str(took) + ' seconds!')
-    else:
-        om.out.information('')
-            
+    took = now() - start_time
     return (output, took)
-
     
-def analyze_result(resultString):
+def analyze_result(res_str):
     
-    if resultString is None:
+    if res_str is None:
         res_code = SKIP
-        msg = "Skipped by user.\nKeyboardInterrupt"
+        msg = "Skipped by user: KeyboardInterrupt"
     else:
         res_code = SUCC
         msg = ""
-    lines = resultString.split('\n') if resultString else []
-
+    
+    lines = res_str.split('\n') if res_str else []
     for num, line in enumerate(lines):
         if 'Traceback (most recent call last):' in line:
-            om.out.error('An unhandled exception was raised during the '
-                         'execution of this script!')
             res_code = ERROR
             msg = "\n".join(lines[num:])
             break        
         elif 'Assert **FAILED**' in line:
-            om.out.error(line)
             res_code = FAIL
             msg = "Assert failed:\n%s\nAssertionError" % (line)
             break
@@ -112,34 +99,45 @@ def w3afTest():
     '''
     Test all scripts that have an assert call.
     '''
-    assert_script_list, scriptsWithoutAssert = getScripts()
+    with_assert, without_assert = getScripts()
     xunit_gen = XunitGen()
     bad_list = []
     ok_list = []
     
-    om.out.console('Going to test %s scripts.' % len(assert_script_list))
+    om.out.console('Going to test %s scripts.' % len(with_assert))
     
-    for assert_script in assert_script_list:
+    for script in with_assert:
         try:
-            result, took = run_script(assert_script)
-            res_code, msg = analyze_result(result)
-            # Get qualified name for test case
             sep = os.path.sep
-            test_script = (assert_script.split(sep)[-1]).replace('.w3af', '')
-            test_qname = '.'.join([SCRIPT_DIR[:-1].replace(sep, '.'), test_script,
-                                   'test_' + test_script.split('-')[-1]])
+            short_script = script.split(sep)[-1].replace('.w3af', '')
+            om.out.information(short_script + '...', newLine=False)
+            result, took = run_script(script)
+            res_code, msg = analyze_result(result)
+            
+            # Notify the user
+            output_msg = ' %s' % res_code
+            if res_code == SUCC and took > 10:
+                output_msg += ' (Took %.2f seconds!)' % took
+            om.out.information(output_msg)
+            
+            # Get qualified name for test case
+            test_qname = '.'.join([
+                               SCRIPT_DIR[:-1].replace(sep, '.'),
+                               short_script,
+                               'test_' + short_script.split('-')[-1]
+                               ])
 
             if res_code == SUCC:
-                ok_list.append(assert_script)
+                ok_list.append(script)
                 xunit_gen.add_success(test_qname, took)
                 
             elif res_code == FAIL:
-                bad_list.append(assert_script)
+                bad_list.append(script)
                 xunit_gen.add_failure(test_qname, msg, took)
                 
             elif res_code in (ERROR, SKIP):
-                bad_list.append(assert_script)
-                xunit_gen.add_error(test_qname, msg, took, 
+                bad_list.append(script)
+                xunit_gen.add_error(test_qname, msg, took,
                                     skipped=(res_code==SKIP))
 
         except KeyboardInterrupt:
@@ -148,28 +146,29 @@ def w3afTest():
     # Generate xunit file
     xunit_gen.genfile()
     
-    om.out.console( '')
-    om.out.console( 'Results:')
-    om.out.console( '========')
+    om.out.console('')
+    om.out.console('Results:')
+    om.out.console('========')
     
     # Summary
     msg = '- ' + str(len(ok_list) + len(bad_list)) + ' / ' 
-    msg += str(len(assert_script_list)) + ' scripts have been tested.'
-    om.out.console( msg )
+    msg += str(len(with_assert)) + ' scripts have been tested.'
+    om.out.console(msg)
     
     # Ok
-    om.out.console( '- ' + str(len(ok_list)) + ' OK.')
+    om.out.console('- ' + str(len(ok_list)) + ' OK.')
     
     # Without assert
-    scriptsWithoutAssert.sort()
-    msg = '- ' + str(len(scriptsWithoutAssert)) + ' scripts don\'t have'
+    without_assert.sort()
+    msg = '- ' + str(len(without_assert)) + ' scripts don\'t have'
     msg += ' assert statements. This is the list of scripts without assert statements:\n    - '
-    msg += '\n    - '.join(scriptsWithoutAssert)
-    om.out.console( msg )
+    msg += '\n    - '.join(without_assert)   
+    
+    om.out.console(msg)
 
     # Failed
     bad_list.sort()
-    om.out.console( '- ' + str(len(bad_list)) + ' Failed', newLine=False)
+    om.out.console('- ' + str(len(bad_list)) + ' Failed', newLine=False)
     if not bad_list:
         om.out.console('')
     else:
