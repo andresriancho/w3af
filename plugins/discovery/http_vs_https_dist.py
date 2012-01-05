@@ -82,10 +82,18 @@ class http_vs_https_dist(baseDiscoveryPlugin):
             else: # it has to be 'http'
                 http_port = port
 
-        # First try with httpS
-        https_troute = traceroute(domain, dport=https_port)[0].get_trace()
-        # Then with http
-        http_troute = traceroute(domain, dport=http_port)[0].get_trace()
+        try:
+            # First try with httpS
+            https_troute = traceroute(domain, dport=https_port)[0].get_trace()
+            # Then with http
+            http_troute = traceroute(domain, dport=http_port)[0].get_trace()
+        except:
+            #   I've seen numerous bug reports with the following exception:
+            #   "error: illegal IP address string passed to inet_aton"
+            #   that come from this part of the code. It seems that in some cases
+            #   the domain resolves to an IPv6 address and scapy does NOT
+            #   support that protocol.
+            return []
         
         # This destination was probably 'localhost' or a host reached
         # through a vpn?
