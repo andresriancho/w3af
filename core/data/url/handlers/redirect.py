@@ -151,7 +151,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             enc = req.url_object.encoding
             
             new_request = HTTPRequest(
-                                url_object(newurl.decode(enc), encoding=enc),
+                                url_object(newurl.decode(enc, 'ignore'), encoding=enc),
                                 headers=req.headers,
                                 origin_req_host=req.get_origin_req_host(),
                                 unverifiable=True
