@@ -71,7 +71,7 @@ class ProfileList(gtk.TreeView):
 
         self.show()
 
-    def loadProfiles(self, selected=None):
+    def loadProfiles(self, selected=None, retry=True):
         '''Load the profiles.
 
         @param selected: which profile is already selected.
@@ -145,8 +145,14 @@ class ProfileList(gtk.TreeView):
                     self._useProfile()
                     break
             else:
-                raise ValueError(_("Unexpected problem while loading profile "
-                               "%r (duplicated profile name?).") % selected)
+                # In some cases, this function is called in a thread while 
+                # the profile file is being stored to disk. Because of that
+                # it might happen that the profile "is there" but didn't get
+                # loaded properly in the first call to loadProfiles.
+                if retry:
+                    self.loadProfiles(selected, retry=False)
+                else:
+                    self.set_cursor(0)
                 
         # Now that we've finished loading everything, show the invalid profiles in a nice pop-up window
         if invalid_profiles:
