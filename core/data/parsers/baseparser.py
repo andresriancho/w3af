@@ -279,10 +279,19 @@ class BaseParser(object):
                     #"PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
                     continue
                 
-                url = self._baseUrl.urlJoin(match_str).url_string
-                url = url_object(self._decode_URL(url),
-                                 encoding=self._encoding)
-                res.add(url)
+                try:
+                    url = self._baseUrl.urlJoin(match_str).url_string
+                    url = url_object(self._decode_URL(url),
+                                     encoding=self._encoding)
+                except ValueError:
+                    # In some cases, the relative URL is invalid and triggers an 
+                    # ValueError: Invalid URL "%s" exception. All we can do at this
+                    # point is to ignore this "fake relative URL".
+                    pass
+                else:
+                    if url.url_string.lower().startswith('http://') or \
+                    url.url_string.lower().startswith('https://'):
+                        res.add(url)
             
             return res
         
