@@ -516,5 +516,7 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
                     self.window.draw_point(gc, index, self.height-i)
 
     def clear(self):
-        style = self.get_style()
-        self.window.draw_rectangle(style.white_gc, True, 0, 0, self.width+1, self.height+1)        
+        if self.window is not None:
+            style = self.get_style()
+            self.window.draw_rectangle(style.white_gc, True, 0, 0, self.width+1, self.height+1)
+
