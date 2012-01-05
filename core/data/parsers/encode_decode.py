@@ -51,16 +51,20 @@ def htmldecode(text, use_repr=False):
     def entitydecode(match):
         entity = match.group(1)
         
-        if entity.startswith('#x'):
-            return unichr(int(entity[2:], 16))
-        
-        elif entity.startswith('#'):
-            return unichr(int(entity[1:]))
-        
-        elif entity in name2codepoint:
-            return unichr(name2codepoint[entity])
-        
-        else:
+        # In some cases the entity is invalid and it triggers an exception
+        # in unichr, that's why I need to have a try/except
+        try:
+            if entity.startswith('#x'):
+                return unichr(int(entity[2:], 16))
+            
+            elif entity.startswith('#'):
+                return unichr(int(entity[1:]))
+            
+            elif entity in name2codepoint:
+                return unichr(name2codepoint[entity])
+            else:
+                return match.group(0)
+        except:
             return match.group(0)
             
     # "main"
