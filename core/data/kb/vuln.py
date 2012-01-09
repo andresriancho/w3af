@@ -29,8 +29,8 @@ class vuln(info):
     This class represents a web vulnerability.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__( self, data_obj=None ):
-        info.__init__( self, data_obj )
+    def __init__(self, data_obj=None):
+        info.__init__(self, data_obj)
         
         # Default values
         self._method = None
@@ -40,54 +40,54 @@ class vuln(info):
         self._variable = None
         self._mutant = None
         
-        if isinstance( data_obj, mutant ) or \
-        isinstance( data_obj, vuln ):
-            self.setMethod( data_obj.getMethod() )
-            self.setDc( data_obj.getDc() )
-            self.setVar( data_obj.getVar() )
-            self.setURI( data_obj.getURI() )
-            self.setMutant( data_obj )
+        if isinstance(data_obj, mutant) or \
+            isinstance(data_obj, vuln):
+            self.setMethod(data_obj.getMethod())
+            self.setDc(data_obj.getDc())
+            self.setVar(data_obj.getVar())
+            self.setURI(data_obj.getURI())
+            self.setMutant(data_obj)
 
-    def setMutant( self, mutant ):
+    def setMutant(self, mutant):
         '''
         Sets the mutant that created this vuln.
         '''
         self._mutant = mutant
         
-    def getMutant( self ):
+    def getMutant(self):
         return self._mutant
         
-    def setVar( self, variable ):
+    def setVar(self, variable):
         self._variable = variable
 
-    def setDc( self, dc ):
+    def setDc(self, dc):
         self._dc = dc
         
-    def setSeverity( self, severity ):
+    def setSeverity(self, severity):
         self._severity = severity
         
-    def getMethod( self ):
+    def getMethod(self):
         if self._mutant:
             return self._mutant.getMethod()
         else:
             return self._method
 
-    def getVar( self ):
+    def getVar(self):
         if self._mutant:
             return self._mutant.getVar()
         else:
             return self._variable
 
-    def getDc( self ):
+    def getDc(self):
         if self._mutant:
             return self._mutant.getDc()
         else:
             return self._dc
     
-    def getSeverity( self ):
+    def getSeverity(self):
         return self._severity
         
-    def getDesc( self ):
+    def getDesc(self):
         if self._id is not None and self._id != 0:
             if not self._desc.endswith('.'):
                 self._desc += '.'
@@ -96,7 +96,7 @@ class vuln(info):
             desc_to_return = self._desc
             if len(self._id) > 1:
                 desc_to_return += ' This vulnerability was found in the requests with'
-                desc_to_return += ' ids ' + self._convert_to_range_wrapper( self._id ) + '.'
+                desc_to_return += ' ids ' + self._convert_to_range_wrapper(self._id) + '.'
             else:
                 desc_to_return += ' This vulnerability was found in the request with'
                 desc_to_return += ' id ' + str(self._id[0]) + '.'
@@ -105,5 +105,5 @@ class vuln(info):
         else:
             return self._desc
             
-    def __repr__( self ):
-        return '<vuln object for vulnerability: "'+self._desc+'">'
+    def __repr__(self):
+        return '<vuln object for vulnerability: "' + self._desc + '">'

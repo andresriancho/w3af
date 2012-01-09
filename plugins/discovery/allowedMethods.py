@@ -84,18 +84,18 @@ class allowedMethods(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         if not self._exec:
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery
+            # plugins to be runned.
             raise w3afRunOnce()
             
-        else:
-            # Run the plugin.
-            if self._exec_one_time:
-                self._exec = False
-            
-            domain_path = fuzzableRequest.getURL().getDomainPath()
-            if domain_path not in self._already_tested:
-                self._already_tested.add( domain_path )
-                self._check_methods( domain_path )
+        # Run the plugin.
+        if self._exec_one_time:
+            self._exec = False
+        
+        domain_path = fuzzableRequest.getURL().getDomainPath()
+        if domain_path not in self._already_tested:
+            self._already_tested.add( domain_path )
+            self._check_methods( domain_path )
         return []
     
     def _check_methods( self, url ):
@@ -107,8 +107,8 @@ class allowedMethods(baseDiscoveryPlugin):
         with_options = False
         id_list = []
         
-        # First, try to check available methods using OPTIONS, if OPTIONS isn't 
-        # enabled, do it manually
+        # First, try to check available methods using OPTIONS,
+        # if OPTIONS isn't enabled, do it manually
         res = self._urlOpener.OPTIONS( url )
         headers = res.getLowerCaseHeaders()
         for header_name in ['allow', 'public']:
@@ -176,7 +176,7 @@ class allowedMethods(baseDiscoveryPlugin):
         allowed_methods.sort()
         
         # Check for DAV
-        if len( set( allowed_methods ).intersection( self._dav_methods ) ) != 0:
+        if set(allowed_methods).intersection(self._dav_methods):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
             i = info.info()

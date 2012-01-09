@@ -66,12 +66,9 @@ class xpath(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'xpath' , 'xpath', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-                
-        self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
         
     def _get_xpath_strings( self ):
         '''
@@ -89,17 +86,12 @@ class xpath(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'xpath' , 'xpath' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 xpath_error_list = self._find_xpath_error( response )
                 for xpath_error_re, xpath_error in xpath_error_list:
@@ -117,7 +109,7 @@ class xpath(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
     
     def _find_xpath_error( self, response ):

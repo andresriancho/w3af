@@ -62,12 +62,9 @@ class globalRedirect(baseAuditPlugin):
         mutants = createMutants( freq , [self._test_site, ] )
             
         for mutant in mutants:
-            if self._hasNoBug( 'globalRedirect' , 'globalRedirect' , mutant.getURL()\
-            , mutant.getVar() ):
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-        
-        self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
 
     def _analyzeResult( self, mutant, response ):
         '''
@@ -86,7 +83,7 @@ class globalRedirect(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'globalRedirect', 'globalRedirect' ), 'VAR' )
         
     def _find_redirect( self, response ):

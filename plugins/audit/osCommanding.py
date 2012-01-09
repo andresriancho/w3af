@@ -78,11 +78,6 @@ class osCommanding(baseAuditPlugin):
         # of the known techniques
         self._with_time_delay(freq)
         
-        #   Wait until the echo tests finish. I need to do this because of an odd problem with
-        #   Python's "with" statement. It seems that if I use two different with statements and
-        #   the same thread lock at the same time, the application locks and stops working.
-        self._tm.join(self)
-        
         self._with_echo(freq)
     
     def _with_time_delay(self, freq):
@@ -105,14 +100,13 @@ class osCommanding(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'osCommanding' , 'osCommanding', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                kwds = {'analyze': self._analyze_wait}
-                self._tm.startFunction( target=self._sendMutant, args=targs , \
-                                                    kwds=kwds, ownerObj=self )
-                                                    
-            self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(
+                        meth=self._sendMutant,
+                        args=(mutant,),
+                        kwds={'analyze': self._analyze_wait}
+                        )
+        self._join()
 
     def _with_echo(self, freq):
         '''
@@ -131,36 +125,32 @@ class osCommanding(baseAuditPlugin):
 
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'osCommanding' , 'osCommanding', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                kwds = {'analyze':self._analyze_echo}
-                self._tm.startFunction( target=self._sendMutant, args=targs , \
-                                                    kwds=kwds, ownerObj=self )
+            if self._has_no_bug(mutant):
+                self._run_async(
+                            meth=self._sendMutant,
+                            args=(mutant,),
+                            kwds={'analyze': self._analyze_echo}
+                            )
+        self._join()
                 
     def _analyze_echo( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the _with_echo method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'osCommanding' , 'osCommanding' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 file_patterns = self._get_file_patterns()
                 for file_pattern_re in file_patterns:
                     
                     match = file_pattern_re.search( response.getBody() )
                     
-                    if match\
-                    and not file_pattern_re.search( mutant.getOriginalResponseBody() ):
+                    if match and \
+                        not file_pattern_re.search(mutant.getOriginalResponseBody()):
                         # Search for the correct command and separator
                         sentOs, sentSeparator = self._get_os_separator(mutant)
 
@@ -237,17 +227,12 @@ class osCommanding(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method that was sent in the _with_time_delay method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'osCommanding' , 'osCommanding' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 if response.getWaitTime() > (self._original_wait_time + self._wait_time-2) and \
                 response.getWaitTime() < (self._original_wait_time + self._wait_time+2):
@@ -302,8 +287,8 @@ class osCommanding(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
-        self.printUniq( kb.kb.getData( 'osCommanding', 'osCommanding' ), 'VAR' )
+        self._join()
+        self.printUniq(kb.kb.getData('osCommanding', 'osCommanding'), 'VAR')
     
     def _get_echo_commands(self):
         '''

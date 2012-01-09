@@ -158,24 +158,24 @@ class mutant(object):
         
     def foundAt(self):
         '''
-        @return: A string representing WHAT was fuzzed. This string is used like this:
-                - v.setDesc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        Return a string representing WHAT was fuzzed. This string
+        is used like this:
+            - v.setDesc('SQL injection in a '+ v['db'] +
+                        ' was found at: ' + mutant.foundAt())
         '''
-        res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The sent data was: "'
+        res = ['"%s", using HTTP method %s. The sent data was: "'
+               % (self.getURL(), self.getMethod())]
         
         # Depending on the data container, print different things:
-        dc_length = 0
-        for i in self._freq._dc:
-            dc_length += len(i) + len(self._freq._dc[i])
+        dc = self.getDc()
+        dc_length = sum(
+                map(lambda item: len(item[0])+len(item[1]), dc.items())
+                )
         if dc_length > 65:
-            res += '...' + self.getVar()  + '=' + self.getModValue() + '...'
-            res += '"'
+            res.append('...%s=%s..."' % (self.getVar(), self.getModValue()))
         else:
-            res += str(self.getDc())
-            res += '".'
-            if len(self.getDc()) > 1:
-                res +=' The modified parameter was "' + self.getVar() +'".'
-        
-        return res
+            res.append('%s".' % (dc,))
+            if len(dc) > 1:
+                res.append(' The modified parameter was "%s".' % self.getVar())
+
+        return ''.join(res)

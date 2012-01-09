@@ -81,13 +81,12 @@ class sitemapReader(baseDiscoveryPlugin):
                 urlList = dom.getElementsByTagName("loc")
                 for url in urlList:
                     url = url.childNodes[0].data
-                    url_instance = url_object( url )
-                    #   Send the requests using threads:
-                    targs = ( url_instance,  )
-                    self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
+                    url = url_object(url)
+                    # Send the requests using threads:
+                    self._run_async(meth=self._get_and_parse, args=(url,))
             
                 # Wait for all threads to finish
-                self._tm.join( self )
+                self._join()
         
             return self._new_fuzzable_requests
         

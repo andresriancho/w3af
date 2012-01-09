@@ -102,11 +102,12 @@ class afd(baseDiscoveryPlugin):
                 offending_URL = fuzzableRequest.getURL() + '?' + rnd_param + '=' + offending_string
                 
                 # Perform requests in different threads
-                targs = (offending_string, offending_URL, original_response_body, rnd_param)
-                self._tm.startFunction( target=self._send_and_analyze, args=targs, ownerObj=self )
+                targs = (offending_string, offending_URL,
+                         original_response_body, rnd_param)
+                self._run_async(meth=self._send_and_analyze, args=targs)
             
             # Wait for threads to finish
-            self._tm.join( self )
+            self._join()
             
             # Analyze the results
             return self._filtered, self._not_filtered

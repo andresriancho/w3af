@@ -63,16 +63,14 @@ class fingerBing(baseDiscoveryPlugin):
         # This plugin will only run one time. 
         self._run = False
         bingSE = bing(self._urlOpener)
-        self._domain = domain = fuzzableRequest.getURL().getDomain()
+        self._domain = fuzzableRequest.getURL().getDomain()
         self._domain_root = fuzzableRequest.getURL().getRootDomain()
 
         results = bingSE.getNResults('@'+self._domain_root, self._resultLimit)
 
         for result in results:
-            targs = (result,)
-            self._tm.startFunction(target=self._findAccounts, args=targs, ownerObj=self)
-
-        self._tm.join(self)
+            self._run_async(meth=self._findAccounts, args=(result,))
+        self._join()
         self.printUniq(kb.kb.getData('fingerBing', 'mails'), None)
         return result
 

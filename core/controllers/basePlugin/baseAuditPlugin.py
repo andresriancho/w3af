@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
-import core.controllers.outputManager as om
+from core.data.request.variant_identification import are_variants
 import core.data.kb.knowledgeBase as kb
 
 
@@ -99,25 +99,31 @@ class baseAuditPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method _analyzeResult' )
 
-    def _hasNoBug( self, plugin_name, kb_name, uri, variable ):
+    def _has_no_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         '''
-        Verify if a (uri, variable) has a reported vulnerability in the kb or not.
+        Test if the current combination of `fuzz_req`, `varname` hasn't
+        already been reported to the knowledge base.
         
-        @parameter plugin_name: The name of the plugin that supposingly reported the vulnerability
-        @parameter kb_name: The name of the variable in the kb, where the vulnerability was saved.
-        
-        @parameter uri: The url object where we should search for bugs.
-        @parameter variable: The variable that is queried for bugs.
-        
-        @return: True if the (uri, variable) has NO vulnerabilities reported.
+        @param fuzz_req: A FuzzableRequest like object.
+        @param varname: Typically the name of the injection parameter.
+        @param pname: The name of the plugin that presumably reported
+            the vulnerability. Defaults to self.name.
+        @param kb_varname: The name of the variable in the kb, where
+            the vulnerability was saved. Defaults to self.name.
         '''
-        vuln_list = kb.kb.getData( plugin_name , kb_name )
-        url = uri.uri2url()
-        
-        for vuln in vuln_list:
-            if vuln.getVar() == variable and vuln.getURL().uri2url() == url:
+        varname = varname or \
+                (fuzz_req.getVar() if hasattr(fuzz_req, 'getVar') else '')
+        if not varname:
+            raise ValueError, "Invalid parameter 'varname': %s" % (varname,)
+        pname = pname or self.getName()
+        kb_varname = kb_varname or pname
+        vulns = kb.kb.getData(pname, kb_varname)
+
+        for vuln in vulns:
+            if (vuln.getVar() == varname and
+                fuzz_req.getDc().keys() == vuln.getDc().keys() and
+                are_variants(vuln.getURI(), fuzz_req.getURI())):
                 return False
-                
         return True
         
     def getType( self ):

@@ -63,31 +63,22 @@ class preg_replace(baseAuditPlugin):
         mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
         
         for mutant in mutants:
-
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'preg_replace' , 'preg_replace', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-                
-        self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
         
     def _analyzeResult( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 preg_error_list = self._find_preg_error( response )
                 for preg_error_re, preg_error_string in preg_error_list:
@@ -105,7 +96,7 @@ class preg_replace(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
     
     def _find_preg_error( self, response ):

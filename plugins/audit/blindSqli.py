@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from functools import partial
-
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.sql_tools.blind_sqli_response_diff import \
     blind_sqli_response_diff
@@ -63,12 +61,6 @@ class blindSqli(baseAuditPlugin):
         bsqli_time_delay = self._blind_sqli_time_delay
         bsqli_time_delay.setUrlOpener(self._urlOpener)
         # Setup partial function
-        kb_has_no_bsqli = partial(
-                              self._hasNoBug,
-                              'blindSqli',
-                              'blindSqli',
-                              freq.getURL()
-                              )
         
         for param in freq.getDc():
             # Try to identify the vulnerabilities using response
@@ -76,7 +68,8 @@ class blindSqli(baseAuditPlugin):
             # FIXME: what about repeated parameter names?
             found_vuln = bsqli_resp_diff.is_injectable(freq, param) or \
                                 bsqli_time_delay.is_injectable(freq, param)
-            if found_vuln and kb_has_no_bsqli(found_vuln.getVar()):
+            if found_vuln and \
+                self._has_no_bug(freq, varname=found_vuln.getVar()):
                 om.out.vulnerability(found_vuln.getDesc())
                 kb.kb.append(self, 'blindSqli', found_vuln)
     

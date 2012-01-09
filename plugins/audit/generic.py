@@ -177,7 +177,7 @@ class generic(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         vulnsAndInfos = kb.kb.getAllVulns()
         vulnsAndInfos.extend( kb.kb.getAllInfos() )
         self.printUniq( vulnsAndInfos, 'VAR' )

@@ -19,27 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
-
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
 
 # By aungkhant. Lists are taken from underground shell repositories and
 # common sense
-
 WEB_SHELLS = (
     # PHP
     'php-backdoor.php', 'simple-backdoor.php', 'cmd.php', 'phpshell.php',
@@ -150,14 +143,14 @@ class findBackdoor(baseDiscoveryPlugin):
             for web_shell_filename in WEB_SHELLS:
                 web_shell_url = domain_path.urlJoin(web_shell_filename)
                 # Perform the check in different threads
-                targs = (web_shell_url,)
-                self._tm.startFunction(target=self._check_if_exists, 
-                                       args=targs, ownerObj=self)
-
+                self._run_async(
+                            meth=self._check_if_exists,
+                            args=(web_shell_url,)
+                            )
             # Wait for all threads to finish
-            self._tm.join(self)
+            self._join()
 
-            return self._fuzzable_requests_to_return
+        return self._fuzzable_requests_to_return
 
     
     def _check_if_exists(self, web_shell_url):

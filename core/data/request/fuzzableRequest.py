@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from itertools import chain, izip_longest
 from urllib import unquote
 import copy
 
@@ -297,35 +298,24 @@ class fuzzableRequest(object):
             
         @return: True if self and other are variants.
         '''
-        if self._url == other._url and \
-           self._method == other._method and \
-           self._dc.keys() == other._dc.keys():
-                
-            # Ok, so it has the same URI, method, dc:
-            # I need to work now :(
-            
-            # Now, is check if the values for each parameter has the
-            # same type or not.
-            for pname in self._dc:
-                
-                # repeated parameter names
-                for index, valself in enumerate(self._dc[pname]):
-                    try:
-                        # I do it in a try, because "other" might not have
-                        # that many repeated parameters, and index could be
-                        # out of bounds.
-                        valother = other._dc[pname][index]
-                    except IndexError:
-                        return False
-                    else:
-                        if (valother.isdigit() and not valself.isdigit()) or \
-                            (valself.isdigit() and not valother.isdigit()):
-                            return False
-
+        dc = self._dc
+        odc = other._dc
+        
+        if (self._method == other._method and
+            self._url == other._url and
+            dc.keys() == odc.keys()):
+            for vself, vother in izip_longest(
+                                      chain(*dc.values()),
+                                      chain(*odc.values()),
+                                      fillvalue=None
+                                      ):
+                if None in (vself, vother) or \
+                    vself.isdigit() != vother.isdigit():
+                    return False
             return True
         return False
     
-    def setURL(self , url):
+    def setURL(self, url):
         '''
         >>> r = fuzzableRequest('http://www.google.com/')
         Traceback (most recent call last):
@@ -351,7 +341,7 @@ class fuzzableRequest(object):
         self._uri = url_object(uri.url_string.replace(' ', '%20'))
         self._url = self._uri.uri2url()
         
-    def setMethod(self , method):
+    def setMethod(self, method):
         self._method = method
         
     def setDc(self, dataCont):
@@ -360,13 +350,13 @@ class fuzzableRequest(object):
                             'argument must be a dataContainer instance.')
         self._dc = dataCont
         
-    def setHeaders(self , headers):
+    def setHeaders(self, headers):
         self._headers = headers
     
     def setReferer(self, referer):
         self._headers['Referer'] = referer
     
-    def setCookie(self , c):
+    def setCookie(self, c):
         '''
         @parameter cookie: A cookie object as defined in core.data.dc.cookie,
             or a string.

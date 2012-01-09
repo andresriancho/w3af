@@ -19,32 +19,25 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from __future__ import with_statement
-
-from core.data.fuzzer.fuzzer import createMutants
-from core.data.fuzzer.fuzzer import createRandAlpha
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import re
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
+from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
+import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.kb.info as info
-import core.data.constants.severity as severity
-from core.controllers.w3afException import w3afException
-
-import re
 
 
 class eval(baseAuditPlugin):
     '''
     Find insecure eval() usage.
 
-    @author: Viktor Gazdag ( woodspeed@gmail.com ) & Andres Riancho ( andres.riancho@gmail.com )
+    @author: Viktor Gazdag ( woodspeed@gmail.com ) &
+        Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
@@ -73,20 +66,13 @@ class eval(baseAuditPlugin):
         Tests an URL for eval() user input injection vulnerabilities.
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'eval plugin is testing: ' + freq.getURL() )
+        om.out.debug('eval plugin is testing: ' + freq.getURL())
 
         if self._use_echo:
-            self._fuzz_with_echo( freq )
-        
-        #   Wait until the echo tests finish. I need to do this because of an odd problem with
-        #   Python's "with" statement. It seems that if I use two different with statements and
-        #   the same thread lock at the same time, the application locks and stops working.
-        self._tm.join(self)
+            self._fuzz_with_echo(freq)
         
         if self._use_time_delay:
-            self._fuzz_with_time_delay( freq )
-            
-        self._tm.join( self )
+            self._fuzz_with_time_delay(freq)
 
     def _fuzz_with_echo( self, freq ):
         '''
@@ -101,12 +87,13 @@ class eval(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                kwds = {'analyze': self._analyze_echo}
-                self._tm.startFunction(target=self._sendMutant, args=targs,
-                                       kwds=kwds, ownerObj=self)
+            if self._has_no_bug(mutant):
+                self._run_async(
+                        meth=self._sendMutant,
+                        args=(mutant,),
+                        kwds = {'analyze': self._analyze_echo}
+                        )
+        self._join()
 
     def _fuzz_with_time_delay( self, freq):
         '''
@@ -124,30 +111,25 @@ class eval(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'eval' , 'eval', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                kwds = {'analyze': self._analyze_wait}
-                self._tm.startFunction(target=self._sendMutant, args=targs,
-                                       kwds=kwds, ownerObj=self)
-            
+            if self._has_no_bug(mutant):
+                self._run_async(
+                        meth=self._sendMutant,
+                        args=(mutant,),
+                        kwds = {'analyze': self._analyze_wait}
+                        )
+        self._join()
 
     def _analyze_echo( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the
         _fuzz_with_echo method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 eval_error_list = self._find_eval_result( response )
                 for eval_error in eval_error_list:
@@ -165,17 +147,13 @@ class eval(baseAuditPlugin):
         Analyze results of the _sendMutant method that was sent in the
         _fuzz_with_time_delay method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
+
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'eval' , 'eval' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                         
                 if response.getWaitTime() > (self._original_wait_time + self._wait_time - 2) and \
                 response.getWaitTime() < (self._original_wait_time + self._wait_time + 2):
@@ -265,7 +243,7 @@ class eval(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'eval', 'eval' ), 'VAR' )
 
     def _find_eval_result( self, response ):

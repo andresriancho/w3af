@@ -193,13 +193,11 @@ class webSpider(baseDiscoveryPlugin):
                     if self._need_more_variants(ref):
                         self._already_crawled.append(ref)
                         possibly_broken = ref in only_re_refs
-                        targs = (ref, fuzzable_req, originalURL,
+                        args = (ref, fuzzable_req, originalURL,
                                  possibly_broken)
-                        self._tm.startFunction(
-                                target=self._verify_reference,
-                                args=targs, ownerObj=self)
+                        self._run_async(meth=self._verify_reference, args=args)
             
-        self._tm.join(self)
+                        self._join()
         
         return list(self._fuzzable_reqs)
     

@@ -19,23 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from __future__ import with_statement
-
-import core.controllers.outputManager as om
-
-# options
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.w3afException import w3afException
+from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
+                                          INTERNET_EXPLORER_7, NETSCAPE_IE,
+                                          FIREFOX, NETSCAPE_G, OPERA)
+from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-from core.controllers.w3afException import w3afException
-
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
-
-import core.data.constants.browsers as browsers
 
 
 class xss(baseAuditPlugin):
@@ -43,11 +38,49 @@ class xss(baseAuditPlugin):
     Find cross site scripting vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    
+    # TODO: with these xss tests, and the rest of the plugin as
+    # it is, w3af has false negatives in the case in which we're
+    # already controlling something that is written inside
+    # <script></script> tags.
+    XSS_TESTS = (
+        ('<SCrIPT>alert("RANDOMIZE")</SCrIPT>', (ALL,)),
+        # No quotes, with tag
+        ("<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>", (ALL,)),
+        ("<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>", (ALL,)),
+        ("'';!--\"<RANDOMIZE>=&{()}", (ALL,)),
+        ("<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>", (ALL,)),
+        ("<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>", (ALL,)),
+        ("<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>",
+           (INTERNET_EXPLORER_6, INTERNET_EXPLORER_7,
+            NETSCAPE_IE, FIREFOX, NETSCAPE_G)),
+        # http://secunia.com/advisories/9716/
+        # ASP.NET bypass
+        ('<\0SCrIPT>alert("RANDOMIZE")</SCrIPT>',
+           (INTERNET_EXPLORER_6, NETSCAPE_IE)),
+        # This one only works in IE
+        ('<SCR\0IPt>alert("RANDOMIZE")</Sc\0RIPt>',
+           (INTERNET_EXPLORER_6, INTERNET_EXPLORER_7, NETSCAPE_IE)),
+        ("<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>", (ALL,)),
+        # IE only
+        ('</A/style="xss:exp/**/ression(alert(\'XSS\'))">',
+           (INTERNET_EXPLORER_6, INTERNET_EXPLORER_7)),
+        # Javascript
+        ('jAvasCript:alert("RANDOMIZE");',
+           (INTERNET_EXPLORER_6, NETSCAPE_IE, OPERA)),
+        ('javas\tcript:alert("RANDOMIZE");',
+           (INTERNET_EXPLORER_6, NETSCAPE_IE, OPERA)),
+        ('javas&#x09;cript:alert("RANDOMIZE");',
+           (INTERNET_EXPLORER_6, NETSCAPE_IE, OPERA)),
+        ('javas\0cript:alert("RANDOMIZE");',
+           (INTERNET_EXPLORER_6, NETSCAPE_IE))
+    )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-        # Some internal variables to keep track of remote web application sanitization
+        # Some internal variables to keep track of remote 
+        # web application sanitization
         self._fuzzableRequests = []
         self._xssMutants = []
         self._special_characters = ['<', '>', '"', "'", '(', ')']
@@ -57,24 +90,25 @@ class xss(baseAuditPlugin):
         self._number_of_stored_xss_checks = 3
         
         # Used in the message
-        self._xss_tests_length = len( self._get_xss_tests() )
+        self._xss_tests_length = len(xss.XSS_TESTS)
         
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Tests an URL for XSS vulnerabilities.
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'XSS plugin is testing: ' + freq.getURL() )
+        om.out.debug('XSS plugin is testing: ' + freq.getURL())
         
         # Save it here, so I can search for permanent XSS
-        self._fuzzableRequests.append( freq )
+        self._fuzzableRequests.append(freq)
         
         # This list is just to test if the parameter is echoed back
-        fake_mutants = createMutants( freq , ['', ] )
+        fake_mutants = createMutants(freq, ['',])
         for mutant in fake_mutants:
-            # verify if the variable we are fuzzing is actually being echoed back
-            if self._is_echoed( mutant ):
+            # verify if the variable we are fuzzing is actually being
+            # echoed back
+            if self._is_echoed(mutant):
                 # Search for reflected XSS
                 self._search_reflected_xss(mutant)
                 # And also check stored
@@ -86,11 +120,11 @@ class xss(baseAuditPlugin):
                 
     def _search_reflected_xss(self, mutant):
         '''
-        Analyze the mutant for reflected XSS. We get here because we already verified and the
-        parameter is being echoed back.
+        Analyze the mutant for reflected XSS. We get here because we
+        already verified and the parameter is being echoed back.
         
-        @parameter mutant: A mutant that was used to test if the parameter was echoed back or not
-        @return: None
+        @parameter mutant: A mutant that was used to test if the parameter
+            was echoed back or not
         '''
         # Verify what characters are allowed
         try:
@@ -99,7 +133,8 @@ class xss(baseAuditPlugin):
             # If something fails, every char is allowed
             allowed_chars = self._special_characters[:]
         
-        # Filter the tests based on the knowledge we got from the previous test
+        # Filter the tests based on the knowledge we got from the
+        # previous test
         orig_xss_tests = self._get_xss_tests()
         filtered_xss_tests = []
         for xss_string, affected_browsers in orig_xss_tests:
@@ -113,50 +148,51 @@ class xss(baseAuditPlugin):
                 filtered_xss_tests.append((xss_string, affected_browsers))
         
         # Get the strings only
-        xss_strings = [ i[0] for i in filtered_xss_tests ]
-        mutant_list = createMutants( mutant.getFuzzableReq() , xss_strings , \
-                                                    fuzzableParamList=[mutant.getVar(), ])
+        xss_strings = [i[0] for i in filtered_xss_tests]
+        mutant_list = createMutants(
+                            mutant.getFuzzableReq(),
+                            xss_strings,
+                            fuzzableParamList=[mutant.getVar()]
+                            )
 
-        # In the mutant, we have to save which browsers are vulnerable to that specific string
+        # In the mutant, we have to save which browsers are vulnerable
+        # to that specific string
         for mutant in mutant_list:
             for xss_string, affected_browsers in filtered_xss_tests:
                 if xss_string in mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
 
-        for mutant in mutant_list:
-            
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'xss' , 'xss', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-                
-        self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
     
     def _get_allowed_chars(self, mutant):
         '''
         These are the special characters that are tested:
             ['<', '>', '"', "'", '(', ')']
         
-        I'm aware that this doesn't work if the filter also filters by length.
-        The idea of this method is to reduce the amount of tests to be performed, if I start
-        testing each char separately, I lose that performance enhancement that I want to
-        get.
+        Notice that this doesn't work if the filter also filters
+        by length. The idea of this method is to reduce the amount of
+        tests to be performed, if I each char is tested separately the
+        wanted performance enhancement will be lost.
         
-        @return: A list with the special characters that are allowed by the XSS filter
+        @return: A list with the special characters that are allowed
+            by the XSS filter
         '''
-        # Create a random number and assign it to the mutant modified parameter
-        rndNum = str( createRandAlNum( 4 ) )
+        # Create a random number and assign it to the mutant
+        # modified parameter
+        rndNum = str(createRandAlNum(4))
         oldValue = mutant.getModValue() 
         
         joined_list = rndNum.join(self._special_characters)
-        list_delimiter = str( createRandAlNum( 5 ) )
+        list_delimiter = str(createRandAlNum(5))
         joined_list = list_delimiter + joined_list + list_delimiter
         mutant.setModValue(joined_list)
         
         # send
-        response = self._sendMutant( mutant, analyze=False )
+        response = self._sendMutant(mutant, analyze=False)
         
         # restore the mutant values
         mutant.setModValue(oldValue)
@@ -166,8 +202,8 @@ class xss(baseAuditPlugin):
         body = response.getBody()
         if body.count(list_delimiter) == 2:
             start = body.find(list_delimiter) 
-            end = body.find(list_delimiter, start+1)
-            the_list = body[start+len(list_delimiter):end]
+            end = body.find(list_delimiter, start + 1)
+            the_list = body[start + len(list_delimiter):end]
             split_list = the_list.split(rndNum)
             for i, char in enumerate(split_list):
                 if char == self._special_characters[i]:
@@ -182,153 +218,95 @@ class xss(baseAuditPlugin):
                 
     def _search_stored_xss(self, mutant):
         '''
-        Analyze the mutant for stored XSS. We get here because we already verified and the
-        parameter is NOT being echoed back.
+        Analyze the mutant for stored XSS. We get here because we
+        already verified and the parameter is NOT being echoed back.
         
-        @parameter mutant: A mutant that was used to test if the parameter was echoed back or not
-        @return: None
+        @parameter mutant: A mutant that was used to test if the
+            parameter was echoed back or not
         '''
         xss_tests = self._get_xss_tests()
         xss_tests = xss_tests[:self._number_of_stored_xss_checks]
         
         # Get the strings only
-        xss_strings = [ i[0] for i in xss_tests ]
-        # And now replace the alert by fake_alert; I don't want to break web applications
-        xss_strings = [ xss_test.replace('alert', 'fake_alert') for xss_test in xss_strings ]
+        xss_strings = [i[0] for i in xss_tests]
+        # And now replace the alert by fake_alert; I don't want to
+        # break web applications
+        xss_strings = [xss_test.replace('alert', 'fake_alert')
+                        for xss_test in xss_strings]
         
-        mutant_list = createMutants( mutant.getFuzzableReq() , xss_strings , \
-                                                    fuzzableParamList=[mutant.getVar(), ])
+        mutant_list = createMutants(
+                            mutant.getFuzzableReq(),
+                            xss_strings,
+                            fuzzableParamList=[mutant.getVar()]
+                            )
         
-        # In the mutant, we have to save which browsers are vulnerable to that specific string
+        # In the mutant, we have to save which browsers are vulnerable
+        # to that specific string
         for mutant in mutant_list:
             for xss_string, affected_browsers in xss_tests:
-                if xss_string.replace('alert', 'fake_alert') in mutant.getModValue():
+                if xss_string.replace('alert', 'fake_alert') in \
+                                                    mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
 
-        for mutant in mutant_list:
-            targs = (mutant,)
-            self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-            
-        self._tm.join( self )
-        
-    def _get_xss_tests( self ):
+    def _get_xss_tests(self):
         '''
-        Does a select to the DB for a list of XSS strings that will be tested agains the site.
+        Does a select to the DB for a list of XSS strings that will be
+        tested agains the site.
         
-        @return: A list of tuples with all XSS strings to test and the browsers in which they work. 
-        Example: [ ('<>RANDOMIZE', ['Internet Explorer']) ]
+        @return: A list of tuples with all XSS strings to test and
+            the browsers in which they work. 
+        Example: [('<>RANDOMIZE', ['Internet Explorer'])]
         '''
-        xss_tests = []
-        
-        #
-        #   TODO: with these xss tests, and the rest of the plugin as it is, w3af has false negatives
-        #    in the case in which we're already controlling something that is written inside <script></script>
-        #    tags.
-        #
-        
-        
-        # The number 2 is to inject in stored xss and not "letting the user know we are testing 
-        # the site". And also please note that I don't have this: alert2('abc'); this "failure" will
-        # let me find XSS in web applications that have magic_quotes enabled and will also 
-        # "double" invalidate the JS code, because RANDOMIZE will be replaced by something
-        # like ecd6c00b7 and that will be an undefined variables.
-        
-        # I use SCrIPT instead of script of SCRIPT, just because there are some programmers that
-        # use blacklists that have those words, and they may be doing the comparison with a case
-        # sensitive function (if 'script' in user_input...
-        # if 'SCRIPT' in user_input)
-        xss_tests += [
-            ('<SCrIPT>alert("RANDOMIZE")</SCrIPT>', [browsers.ALL, ]) ,
-        
-            # No quotes, with tag
-            ("<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>", [browsers.ALL, ]) ,
-            ("<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>", [browsers.ALL, ]) ,
-            ("'';!--\"<RANDOMIZE>=&{()}", [browsers.ALL, ]) ,
-            ("<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]) ,
-            ("<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>", [browsers.ALL, ]) ,
-            ("<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>", 
-                            [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7,
-                             browsers.NETSCAPE_IE, browsers.FIREFOX, browsers.NETSCAPE_G]) ,
-        
-
-            # http://secunia.com/advisories/9716/
-            # ASP.NET bypass
-            ('<\0SCrIPT>alert("RANDOMIZE")</SCrIPT>', [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE]) ,
-
-            # This one only works in IE
-            ('<SCR\0IPt>alert("RANDOMIZE")</Sc\0RIPt>',
-                [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7, browsers.NETSCAPE_IE]) ,
-                
-            ("<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>", [browsers.ALL, ]) ,
-        
-            # IE only
-            ('</A/style="xss:exp/**/ression(alert(\'XSS\'))">', [browsers.INTERNET_EXPLORER_6, browsers.INTERNET_EXPLORER_7]) ,
-
-            # Javascript
-            ('jAvasCript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
-            ('javas\tcript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
-            ('javas&#x09;cript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE, browsers.OPERA]) ,
-            ('javas\0cript:alert("RANDOMIZE");',
-                [browsers.INTERNET_EXPLORER_6, browsers.NETSCAPE_IE])
-        ]
-
-        # I need to identify everything I send to the web app
+        # Used to identify everything that is sent to the web app
         rnd_value = createRandAlNum(4)
 
-        xss_tests = [ (x[0].replace( "RANDOMIZE", rnd_value ), x[1]) for x in xss_tests ]
-
-        return xss_tests
+        return [(x[0].replace("RANDOMIZE", rnd_value), x[1])
+                    for x in xss.XSS_TESTS]
     
-    def _is_echoed( self, mutant ):
+    def _is_echoed(self, mutant):
         '''
-        Verify if the parameter we are fuzzing is really being echoed back in the
-        HTML response or not. If it isn't echoed there is no chance we are going to
-        find a reflected XSS here.
+        Verify if the parameter we are fuzzing is really being echoed
+        back in the HTML response or not. If it isn't echoed there is
+        no chance we are going to find a reflected XSS here.
         
-        Also please note that I send a random alphanumeric value, and not a numeric
-        value, because even if the number is echoed back (and only numbers are echoed
-        back by the application) that won't be of any use in the XSS detection.
+        Also please note that I send a random alphanumeric value, and
+        not a numeric value, because even if the number is echoed back
+        (and only numbers are echoed back by the application) that won't
+        be of any use in the XSS detection.
         
         @parameter mutant: The request to send.
         @return: True if variable is echoed
         '''
         # Create a random number and assign it to the mutant modified
         # parameter
-        rndNum = str( createRandAlNum( 5 ) )
+        rndNum = str(createRandAlNum(5))
         oldValue = mutant.getModValue() 
         mutant.setModValue(rndNum)
 
         # send
-        response = self._sendMutant( mutant, analyze=False )
+        response = self._sendMutant(mutant, analyze=False)
         
         # restore the mutant values
         mutant.setModValue(oldValue)
         
         # Analyze and return response
-        if rndNum in response:
-            om.out.debug('The variable ' + mutant.getVar() + ' is being echoed back.' )
-            return True
-        else:
-            om.out.debug('The variable ' + mutant.getVar() + ' is NOT being echoed back.' )
-            return False
+        res = rndNum in response
+        om.out.debug('The variable %s is %sbeing echoed back.' %
+                     (mutant.getVar(), '' if res else 'NOT '))
+        return res
     
-    def _analyzeResult( self, mutant, response ):
+    def _analyzeResult(self, mutant, response):
         '''
         Do we have a reflected XSS?
         
         @return: None, record all the results in the kb.
         '''
         # Add to the stored XSS checking
-        self._addToPermanentXssChecking( mutant, response.id )
+        self._addToPermanentXssChecking(mutant, response.id)
         
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             mod_value = mutant.getModValue()
@@ -336,14 +314,14 @@ class xss(baseAuditPlugin):
             #
             #   I will only report the XSS vulnerability once.
             #
-            if self._hasNoBug('xss', 'xss', mutant.getURL(), mutant.getVar()):
+            if self._has_no_bug(mutant):
                 
                 #   Internal variable for the analysis process
                 vulnerable = False
                 
                 if mod_value in response:
                     # Ok, we MAY have found a xss. Let's remove some false positives.
-                    if mod_value.lower().count( 'javas' ):
+                    if mod_value.lower().count('javas'):
                         # I have to check if javascript was written inside a SRC parameter of html
                         # afaik it is the only place this type (<IMG SRC="javascript:alert('XSS');">)
                         # of xss works.
@@ -355,18 +333,18 @@ class xss(baseAuditPlugin):
                 
                 # Save it to the KB
                 if vulnerable:                
-                    v = vuln.vuln( mutant )
+                    v = vuln.vuln(mutant)
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
-                    v.setName( 'Cross site scripting vulnerability' )
+                    v.setId(response.id)
+                    v.setName('Cross site scripting vulnerability')
                     v.setSeverity(severity.MEDIUM)
                     msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
                     msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
-                    v.setDesc( msg )
+                    v.setDesc(msg)
                     v.addToHighlight(mod_value)
-                    kb.kb.append( self, 'xss', v )
+                    kb.kb.append(self, 'xss', v)
     
-    def _checkHTML( self, xss_string , response ):
+    def _checkHTML(self, xss_string , response):
         '''
         This function checks if the javascript XSS is going to work or not.
         
@@ -380,23 +358,23 @@ class xss(baseAuditPlugin):
             _checkHTML returns False
         '''
         html_string = response.getBody()
-        html_string = html_string.replace(' ','')
-        xss_string = xss_string.replace(' ','')
+        html_string = html_string.replace(' ', '')
+        xss_string = xss_string.replace(' ', '')
         xss_tags = []
         xss_tags.extend(['<img', '<script'])
         
-        where_xss_starts = html_string.find( xss_string )
+        where_xss_starts = html_string.find(xss_string)
         for tag in xss_tags:
-            whereTagStarts = html_string.rfind( tag , 1, where_xss_starts )
+            whereTagStarts = html_string.rfind(tag , 1, where_xss_starts)
             if whereTagStarts != -1:
-                betweenImgAndXss = html_string[ whereTagStarts+1 : where_xss_starts ]
+                betweenImgAndXss = html_string[whereTagStarts + 1 : where_xss_starts]
                 if betweenImgAndXss.count('<') or betweenImgAndXss.count('>'):
                     return False
                 else:
                     return True
             return False
         
-    def _addToPermanentXssChecking( self, mutant, response_id ):
+    def _addToPermanentXssChecking(self, mutant, response_id):
         '''
         This is used to check for permanent xss.
         
@@ -405,17 +383,17 @@ class xss(baseAuditPlugin):
         
         @return: No value is returned.
         '''
-        self._xssMutants.append( (mutant, response_id) )
+        self._xssMutants.append((mutant, response_id))
         
-    def end( self ):
+    def end(self):
         '''
         This method is called to check for permanent Xss. 
-        Many times a xss isn't on the page we get after the GET/POST of the xss string.
-        This method searches for the xss string on all the pages that are available.
+        Many times a xss isn't on the page we get after the GET/POST of
+        the xss string. This method searches for the xss string on all
+        the pages that are available.
         
         @return: None, vulns are saved to the kb.
         '''
-        self._tm.join( self )
         if self._check_stored_xss:
             for fuzzable_request in self._fuzzableRequests:
                 response = self._sendMutant(fuzzable_request, analyze=False,
@@ -427,31 +405,31 @@ class xss(baseAuditPlugin):
                     # string in response                    
                     if mutant.getModValue() in response:
                         
-                        v = vuln.vuln( mutant )
+                        v = vuln.vuln(mutant)
                         v.setPluginName(self.getName())
-                        v.setURL( fuzzable_request.getURL() )
-                        v.setDc( fuzzable_request.getDc() )
-                        v.setMethod( fuzzable_request.getMethod() )
+                        v.setURL(fuzzable_request.getURL())
+                        v.setDc(fuzzable_request.getDc())
+                        v.setMethod(fuzzable_request.getMethod())
                         
                         v['permanent'] = True
                         v['write_payload'] = mutant
                         v['read_payload'] = fuzzable_request
-                        v.setName( 'Permanent cross site scripting vulnerability' )
+                        v.setName('Permanent cross site scripting vulnerability')
                         v.setSeverity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()
                         msg += ' . Using method: ' + v.getMethod() + '. The XSS was sent to the'
-                        msg += ' URL: ' + mutant.getURL()+ '. ' + mutant.printModValue()
-                        v.setDesc( msg )
-                        v.setId( [response.id, mutant_response_id] )
-                        v.addToHighlight( mutant.getModValue() )
+                        msg += ' URL: ' + mutant.getURL() + '. ' + mutant.printModValue()
+                        v.setDesc(msg)
+                        v.setId([response.id, mutant_response_id])
+                        v.addToHighlight(mutant.getModValue())
 
-                        om.out.vulnerability( v.getDesc() )
-                        kb.kb.append( self, 'xss', v )
+                        om.out.vulnerability(v.getDesc())
+                        kb.kb.append(self, 'xss', v)
                         break
         
-        self.printUniq( kb.kb.getData( 'xss', 'xss' ), 'VAR' )
+        self.printUniq(kb.kb.getData('xss', 'xss'), 'VAR')
 
-    def getOptions( self ):
+    def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''
@@ -461,7 +439,7 @@ class xss(baseAuditPlugin):
         o1 = option('checkStored', self._check_stored_xss, d1, 'boolean', help=h1)
         
         d2 = 'Set the amount of checks to perform for each fuzzable parameter.'
-        d2 += ' Valid numbers: 1 to '+str(self._xss_tests_length)
+        d2 += ' Valid numbers: 1 to ' + str(self._xss_tests_length)
         h2 = 'The XSS checks are ordered, if you set numberOfChecks to two, this plugin will only'
         h2 += ' send two XSS strings to each fuzzable parameter of the remote web application.'
         h2 += ' In most cases this setting is correct and you shouldn\'t change it. If you are'
@@ -475,7 +453,7 @@ class xss(baseAuditPlugin):
         ol.add(o2)
         return ol
         
-    def setOptions( self, optionsMap ):
+    def setOptions(self, optionsMap):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptions().
@@ -488,17 +466,17 @@ class xss(baseAuditPlugin):
         optionsMap['numberOfChecks'].getValue() <= self._xss_tests_length:
             self._number_of_stored_xss_checks = optionsMap['numberOfChecks'].getValue()
         else:
-            msg = 'Please enter a valid numberOfChecks value (1-'+str(self._xss_tests_length)+').'
+            msg = 'Please enter a valid numberOfChecks value (1-' + str(self._xss_tests_length) + ').'
             raise w3afException(msg)
         
-    def getPluginDeps( self ):
+    def getPluginDeps(self):
         '''
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
         return []
 
-    def getLongDesc( self ):
+    def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

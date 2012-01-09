@@ -58,7 +58,7 @@ class fingerGoogle(baseDiscoveryPlugin):
                                                     (among other things) the URL to test.
         '''
         if not self._run:
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery plugins to be run.
             raise w3afRunOnce()
         else:
             # This plugin will only run one time. 
@@ -69,12 +69,11 @@ class fingerGoogle(baseDiscoveryPlugin):
             self._domain_root = fuzzableRequest.getURL().getRootDomain()
             
             if self._fast_search:
-                self._do_fast_search( domain )
+                self._do_fast_search(domain)
             else:
-                self._do_complete_search( domain )
+                self._do_complete_search(domain)
             
-            self._tm.join( self )
-            self.printUniq( kb.kb.getData( 'fingerGoogle', 'mails' ), None )
+            self.printUniq(kb.kb.getData('fingerGoogle', 'mails'), None)
             return []
 
     def _do_fast_search( self, domain ):
@@ -83,7 +82,10 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         search_string = '@'+ self._domain_root
         try:
-            result_page_objects = self._google.getNResultPages( search_string , self._result_limit )
+            result_page_objects = self._google.getNResultPages(
+                                                           search_string,
+                                                           self._result_limit
+                                                           )
         except w3afException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
@@ -99,7 +101,10 @@ class fingerGoogle(baseDiscoveryPlugin):
         '''
         search_string = '@'+ self._domain_root
         try:
-            result_page_objects = self._google.getNResultPages(search_string, self._result_limit)
+            result_page_objects = self._google.getNResultPages(
+                                                           search_string,
+                                                           self._result_limit
+                                                           )
         except w3afException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
@@ -107,8 +112,8 @@ class fingerGoogle(baseDiscoveryPlugin):
         else:
             # Happy happy joy, no error here!
             for result in result_page_objects:
-                targs = (result,)
-                self._tm.startFunction( target=self._find_accounts, args=targs, ownerObj=self )
+                self._run_async(meth=self._find_accounts, args=(result,))
+            self._join()
             
     def _find_accounts(self, googlePage ):
         '''
@@ -117,22 +122,19 @@ class fingerGoogle(baseDiscoveryPlugin):
         @return: A list of valid accounts
         '''
         try:
-            om.out.debug('Searching for mails in: ' + googlePage.getURI() )
-            if self._domain == googlePage.getURI().getDomain():
-                response = self._urlOpener.GET( googlePage.getURI(), useCache=True, \
-                                                                grepResult=True )
-            else:
-                response = self._urlOpener.GET( googlePage.getURI(), useCache=True, \
-                                                                grepResult=False )
-        except KeyboardInterrupt, e:
-            raise e
+            gpuri = googlePage.getURI()
+            om.out.debug('Searching for mails in: ' + gpuri)
+            
+            grep_res = True if (gpuri.getDomain() == self._domain) else False
+            response = self._urlOpener.GET(gpuri, useCache=True,
+                                           grepResult=grep_res)
         except w3afException, w3:
             msg = 'xUrllib exception raised while fetching page in fingerGoogle,'
             msg += ' error description: ' + str(w3)
             om.out.debug( msg )
             self._newAccounts = []
         else:
-            self._parse_document( response )
+            self._parse_document(response)
             
     def _parse_document( self, response ):
         '''

@@ -81,11 +81,9 @@ class fileUpload(baseAuditPlugin):
                     mutant.uploaded_file_name = filename
        
                 for mutant in mutants:
-                    targs = (mutant,)
-                    self._tm.startFunction(target=self._sendMutant, 
-                                            args=targs, ownerObj=self)
+                    self._run_async(meth=self._sendMutant, args=(mutant,))
                     
-            self._tm.join( self )
+            self._join()
             
     def _get_files( self ):
         '''
@@ -144,8 +142,7 @@ class fileUpload(baseAuditPlugin):
         or one of the "default" ones like "upload" or "files".
         '''
         with self._plugin_lock:
-            if self._hasNoBug('fileUpload', 'fileUpload', 
-                              mutant.getURL(), mutant.getVar()):        
+            if self._has_no_bug(mutant):        
                 
                 # Gen expr for directories where I can search for the uploaded file
                 domain_path_list = set(u.getDomainPath() for u in 
@@ -178,7 +175,7 @@ class fileUpload(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
         
         # Clean up

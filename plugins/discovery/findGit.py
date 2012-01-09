@@ -66,7 +66,7 @@ class findGit(baseDiscoveryPlugin):
             #
             #   First we check if the .git/HEAD file exists
             #
-            relative_url, regular_expression = self._compiled_git_info[0]
+            relative_url, reg_ex = self._compiled_git_info[0]
             git_url = domain_path.urlJoin(relative_url)
             try:
                 response = self._urlOpener.GET( git_url, useCache=True )
@@ -77,14 +77,15 @@ class findGit(baseDiscoveryPlugin):
                     #
                     #   It looks like we have a GIT repository!
                     #
-                    for relative_url, regular_expression in self._compiled_git_info:
+                    for relative_url, reg_ex in self._compiled_git_info:
                         git_url = domain_path.urlJoin(relative_url)
-                        targs = (domain_path, git_url, regular_expression)
-                        # Note: The .git/HEAD request is only sent once. We use the cache.
-                        self._tm.startFunction(target=self._check_if_exists, args=targs, ownerObj=self)         
+                        args = (domain_path, git_url, reg_ex)
+                        # Note: The .git/HEAD request is only sent once.
+                        # The cache is used.
+                        self._run_async(meth=self._check_if_exists, args=args)
                     
                     # Wait for all threads to finish
-                    self._tm.join( self )
+                    self._join()
                 
             return self._fuzzable_requests_to_return
     

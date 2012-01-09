@@ -66,18 +66,15 @@ class phishingVector(baseAuditPlugin):
         
         mutants = createMutants( freq , self._test_urls )
         for mutant in mutants:
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-                
-        self._tm.join( self )
+            self._run_async(meth=self._sendMutant, args=(mutant,))
+        self._join()
             
     def _analyzeResult(self, mutant, response):
         '''
         Analyze results of the _sendMutant method.
         '''
         with self._plugin_lock:
-            if self._hasNoBug('phishingVector', 'phishingVector', \
-                              mutant.getURL() , mutant.getVar()):
+            if self._has_no_bug(mutant):
                     vulns = self._find_phishing_vector(mutant, response)
                     for vuln in vulns:
                         kb.kb.append(self, 'phishingVector', vuln)
@@ -110,7 +107,7 @@ class phishingVector(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'phishingVector', 'phishingVector' ), 'VAR' )
 
     def getOptions( self ):

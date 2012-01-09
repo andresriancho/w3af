@@ -128,7 +128,7 @@ class ghdb(baseDiscoveryPlugin):
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break
         
-        self._tm.join( self )
+        self._join()
         
         return self._fuzzableRequests
     

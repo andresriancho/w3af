@@ -75,13 +75,12 @@ class phpinfo(baseDiscoveryPlugin):
 
                 # Work!
                 for php_info_filename in self._get_PHP_infofile():
-
                     #   Send the requests using threads:
-                    targs = ( domain_path, php_info_filename, )
-                    self._tm.startFunction( target=self._check_and_analyze, args=targs , ownerObj=self )
-            
+                    args = (domain_path, php_info_filename)
+                    self._run_async(meth=self._check_and_analyze, args=args)
+
                 # Wait for all threads to finish
-                self._tm.join( self )
+                self._join()
                 
         return self._new_fuzzable_requests
 

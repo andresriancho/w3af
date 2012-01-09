@@ -64,12 +64,10 @@ class ssi(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'ssi' , 'ssi', mutant.getURL() , mutant.getVar() ):
-
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
                 
-        self._tm.join( self )
+        self._join()
     
     def _add_persistent_SSI(self, freq, oResponse):
         '''
@@ -136,7 +134,7 @@ class ssi(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         for fr in self._fuzzable_requests:
             self._sendMutant( fr )
             # The _analyzeResult is called and "permanent" SSI's are saved there to the kb

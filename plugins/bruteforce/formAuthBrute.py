@@ -116,7 +116,7 @@ class formAuthBrute(baseBruteforcePlugin):
                     self._bruteforce(freq.copy(), combinations)                    
                 
                 # Wait for all _bruteWorker threads to finish.
-                self._tm.join(self)
+                self._join()
                 
                 # Report that we've finished.
                 msg = 'Finished bruteforcing "%s".' % freq_url

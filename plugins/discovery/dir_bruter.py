@@ -82,13 +82,13 @@ class dir_bruter(baseDiscoveryPlugin):
                 to_test.append( domain_path )
             
             for base_path in to_test:
-                
-                #   Send the requests using threads:
-                targs = ( base_path,  )
-                self._tm.startFunction( target=self._bruteforce_directories, args=targs , ownerObj=self )
-            
+                # Send the requests using threads:
+                self._run_async(
+                            meth=self._bruteforce_directories,
+                            args=(base_path,)
+                            )
             # Wait for all threads to finish
-            self._tm.join( self )
+            self._join()
 
         return self._fuzzable_requests
     

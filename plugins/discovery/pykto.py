@@ -281,24 +281,27 @@ class pykto(baseDiscoveryPlugin):
                         
                         lines_sent += len( to_send )
                         
-                        # Send the request to the remote server and check the response.
-                        targs = (modified_url, parameters)
+                        # Send the request to the remote server and
+                        # check the response.
+                        args = (modified_url, parameters)
                         try:
-                            # Performing this with different threads adds overhead, but works better now.
+                            # Performing this with different threads adds
+                            # overhead, but works better now.
                             #   WithOUT threads:
                             #self._send_and_check(modified_url, parameters)
                             
-                            #   With threads:
-                            #           Performed 3630 requests in 13 seconds (279.230769 req/sec)
-                            self._tm.startFunction( target=self._send_and_check, args=targs , ownerObj=self )
+                            # With threads, performed 3630 requests in
+                            # 13 secs =~ 279 req/sec)
+                            self._run_async(
+                                        meth=self._send_and_check,
+                                        args=args
+                                        )
                             
                         except w3afException, e:
                             om.out.information( str(e) )
                             return
-                        except KeyboardInterrupt,e:
-                            raise e
                 
-                self._tm.join( self )
+                self._join()
         
         om.out.debug('Read ' + str(lines) + ' from file.' )
         om.out.debug('Sent ' + str(lines_sent) + ' requests to remote webserver.' )

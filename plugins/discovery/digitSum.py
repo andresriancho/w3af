@@ -77,12 +77,12 @@ class digitSum(baseDiscoveryPlugin):
             for fr in self._mangle_digits( fuzzableRequest ):
                 if fr.getURL() not in self._already_visited:
                     self._already_visited.add( fr.getURI() )
-                    
-                    targs = ( fr, original_response)
-                    self._tm.startFunction( target=self._do_request, args=targs , ownerObj=self )
-            
+                    self._run_async(
+                                meth=self._do_request,
+                                args=(fr, original_response)
+                                )
             # Wait for all threads to finish
-            self._tm.join( self )
+            self._join()
             
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html

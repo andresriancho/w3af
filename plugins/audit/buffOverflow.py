@@ -88,13 +88,11 @@ class buffOverflow(baseAuditPlugin):
             msg += ' overflow testing'
             om.out.debug( msg )
         else:
-            mutants = createMutants( freq , str_list, oResponse=oResponse )
+            mutants = createMutants(freq , str_list, oResponse=oResponse)
                 
             for mutant in mutants:
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
-                
-            self._tm.join( self )
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+            self._join()
             
     def _sendMutant( self, mutant, analyze=True, grepResult=True ):
         '''
@@ -174,7 +172,7 @@ class buffOverflow(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
     
     def _get_errors( self ):

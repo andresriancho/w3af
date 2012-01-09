@@ -433,6 +433,6 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         raw_request += '\r\n\r\n'
         
         proxyClientConnection = self.connection
-        #targs = ( host, port, raw_request, proxyClientConnection )
-        #self._tm.startFunction( target=self._work, args=targs, ownerObj=self )
+        #args = (host, port, raw_request, proxyClientConnection)
+        #self._run_async(meth=self._work, args=args)
         self._work( host, port, raw_request, proxyClientConnection )

@@ -84,33 +84,27 @@ class redos(baseAuditPlugin):
         mutants = createMutants( freq , patterns_list )
         
         for mutant in mutants:
-
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'redos' , 'redos', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                kwds = {'analyze': self._analyze_wait}
-                self._tm.startFunction( target=self._sendMutant, args=targs , \
-                                                    kwds=kwds, ownerObj=self )
-                                                    
-        self._tm.join( self )
+            if self._has_no_bug(mutant):
+                self._run_async(
+                            meth=self._sendMutant,
+                            args=(mutant,),
+                            kwds={'analyze': self._analyze_wait}
+                            )
+        self._join()
 
     def _analyze_wait( self, mutant, response ):
         '''
         Analyze results of the _sendMutant method that was sent in the audit method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'preg_replace' , 'preg_replace' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant, pname='preg_replace',
+                                kb_varname='preg_replace'):
                 
                 if response.getWaitTime() > (self._original_wait_time + self._wait_time) :
                     
@@ -164,7 +158,7 @@ class redos(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
+        self._join()
         self.printUniq( kb.kb.getData( 'redos', 'redos' ), 'VAR' )
     
     def _get_wait_patterns( self, run ):

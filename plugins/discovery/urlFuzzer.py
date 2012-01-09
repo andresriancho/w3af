@@ -84,9 +84,8 @@ class urlFuzzer(baseDiscoveryPlugin):
             mutants = self._mutate( url )
             om.out.debug('urlFuzzer is testing "%s"' % url )
             for mutant in mutants :
-                targs = ( url, mutant )
-                self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
-            self._tm.join( self )
+                self._run_async(meth=self._do_request, args=(url, mutant))
+            self._join()
         
         return self._fuzzable_requests
 

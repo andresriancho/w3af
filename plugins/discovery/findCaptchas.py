@@ -106,7 +106,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 image_list = document_parser.getReferencesOfTag('img')
                 image_list = [ i.uri2url() for i in image_list]
                 for img_src in image_list:
-                    # TODO: Use self._tm.startFunction
+                    # TODO: Use self._run_async
                     try:
                         image_response = self._urlOpener.GET( img_src, useCache=False )
                     except:

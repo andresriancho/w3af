@@ -63,13 +63,10 @@ class responseSplitting(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'responseSplitting' , 'responseSplitting',\
-                                        mutant.getURL() , mutant.getVar() ):
-                                            
-                targs = (mutant,)
-                self._tm.startFunction( target=self._sendMutant, args=targs, ownerObj=self )
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
                 
-        self._tm.join( self )
+        self._join()
             
     def _get_errors( self ):
         '''
@@ -86,18 +83,12 @@ class responseSplitting(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'responseSplitting' , 'responseSplitting' ,\
-                                        mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                                             
                 # When trying to send a response splitting to php 5.1.2 I get :
                 # Header may not contain more than a single header, new line detected
@@ -132,8 +123,10 @@ class responseSplitting(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
-        self.printUniq( kb.kb.getData( 'responseSplitting', 'responseSplitting' ), 'VAR' )
+        self._join()
+        self.printUniq(
+               kb.kb.getData('responseSplitting', 'responseSplitting'), 'VAR'
+               )
     
     def _get_header_inj( self ):
         '''

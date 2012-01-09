@@ -78,17 +78,18 @@ class localFileInclude(baseAuditPlugin):
             
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug( 'localFileInclude' , 'localFileInclude', mutant.getURL() , mutant.getVar() ):
-                
-                targs = (mutant,)
-                # I don't grep the result, because if I really find a local file inclusion,
-                # I will be requesting /etc/passwd and that would generate A LOT of false
-                # positives in the grep.pathDisclosure plugin
-                kwds = {'grepResult':False}
-                self._tm.startFunction( target=self._sendMutant, args=targs , \
-                                                    kwds=kwds, ownerObj=self )
+            if self._has_no_bug(mutant):
+                # I don't grep the result, because if I really find a local
+                # file inclusion I will be requesting /etc/passwd and that
+                # would generate A LOT of false positives in the
+                # grep.pathDisclosure plugin
+                self._run_async(
+                            meth=self._sendMutant,
+                            args=(mutant,),
+                            kwds={'grepResult': False}
+                            )
                                                     
-        self._tm.join( self )
+        self._join()
         
     def _get_local_file_list( self, origUrl):
         '''
@@ -140,11 +141,6 @@ class localFileInclude(baseAuditPlugin):
         Analyze results of the _sendMutant method.
         Try to find the local file inclusions.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
@@ -162,24 +158,25 @@ class localFileInclude(baseAuditPlugin):
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug( 'localFileInclude' , 'localFileInclude' , mutant.getURL() , mutant.getVar() ):
+            if self._has_no_bug(mutant):
                 
                 #
                 #   Identify the vulnerability
                 #
-                file_content_list = self._find_file( response )
+                file_content_list = self._find_file(response)
                 for file_pattern_regex, file_content in file_content_list:
-                    if not file_pattern_regex.search( mutant.getOriginalResponseBody() ):
-                        v = vuln.vuln( mutant )
+                    if not file_pattern_regex.search(mutant.getOriginalResponseBody()):
+                        v = vuln.vuln(mutant)
                         v.setPluginName(self.getName())
-                        v.setId( response.id )
-                        v.setName( 'Local file inclusion vulnerability' )
+                        v.setId(response.id)
+                        v.setName('Local file inclusion vulnerability')
                         v.setSeverity(severity.MEDIUM)
-                        v.setDesc( 'Local File Inclusion was found at: ' + mutant.foundAt() )
+                        v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
                         v['file_pattern'] = file_content
-                        v.addToHighlight( file_content )
-                        kb.kb.append( self, 'localFileInclude', v )
+                        v.addToHighlight(file_content)
+                        kb.kb.append(self, 'localFileInclude', v)
                         return
+
                 
                 #
                 #   If the vulnerability could not be identified by matching strings that commonly
@@ -231,9 +228,9 @@ class localFileInclude(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join( self )
-        self.printUniq( kb.kb.getData( 'localFileInclude', 'localFileInclude' ), 'VAR' )
-        self.printUniq( kb.kb.getData( 'localFileInclude', 'error' ), 'VAR' )
+        self._join()
+        self.printUniq(kb.kb.getData('localFileInclude', 'localFileInclude'), 'VAR')
+        self.printUniq(kb.kb.getData('localFileInclude', 'error'), 'VAR')
 
     def getOptions( self ):
         '''

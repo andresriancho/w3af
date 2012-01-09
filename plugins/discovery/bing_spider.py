@@ -71,10 +71,8 @@ class bing_spider(baseDiscoveryPlugin):
         results = bingSE.getNResults('site:'+ domain, self._resultLimit)
 
         for res in results:
-            targs = (res.URL,)
-            self._tm.startFunction(target=self._genFuzzableRequests,
-                                    args=targs, ownerObj=self)
-        self._tm.join( self )
+            self._run_async(meth=self._genFuzzableRequests, args=(res.URL,))
+        self._join()
 
         return self._fuzzableRequests
 

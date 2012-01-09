@@ -256,6 +256,17 @@ class basePlugin(configurable):
         om.out.error('There was an error while requesting "%s". Reason: %s' % 
                      (url_error.req.get_full_url(), url_error.msg))
 
+    def _run_async(self, meth, args=(), kwds={}):
+        self._tm.startFunction(
+                           target=meth,
+                           args=args,
+                           kwds=kwds,
+                           ownerObj=self
+                           )
+    
+    def _join(self):
+        self._tm.join(self)
+    
 
 class UrlOpenerProxy(object):
     '''

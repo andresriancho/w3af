@@ -20,59 +20,53 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.misc.levenshtein import relative_distance_lt
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
 
-import core.data.kb.knowledgeBase as kb
-from core.data.parsers.urlParser import url_object
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
-from core.controllers.misc.levenshtein import relative_distance_lt
-
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.coreHelpers.fingerprint_404 import is_404
-
-
-class slash( baseDiscoveryPlugin ):
+class slash(baseDiscoveryPlugin):
     '''
-    Identify if the resource http://host.tld/spam/ and http://host.tld/spam are the same.
+    Identify if the resource http://host.tld/spam/ and 
+    http://host.tld/spam are the same.
     
     @author: Nicolas Rotta ( nicolas.rotta@gmail.com )  
     '''
     
-    def __init__( self ):
-        baseDiscoveryPlugin.__init__( self )
+    def __init__(self):
+        baseDiscoveryPlugin.__init__(self)
         self._already_visited = scalable_bloomfilter()
         
-    def discover( self, fuzzableRequest ):
+    def discover(self, fuzzableRequest):
         '''
         Generates a new URL by adding or substracting the '/' character.      
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+            (among other things) the URL to test.
         '''     
         self._fuzzableRequests = []
         
         url = fuzzableRequest.getURL()
         if url not in self._already_visited:
-            self._already_visited.add( url )
-
-            om.out.debug( 'slash plugin is testing: "' + fuzzableRequest.getURI() + '".' )
+            om.out.debug('slash plugin is testing: "%s".' % 
+                         fuzzableRequest.getURI())
             
-            fr = self._get_fuzzed_request( fuzzableRequest )
-            original_response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache = True )
-                  
-            targs = ( fr, original_response )
-            self._tm.startFunction( target = self._do_request, args = targs , ownerObj = self )
-           
-            self._tm.join( self )
-            self._already_visited.add( fr.getURL() )
+            self._already_visited.add(url)
+            fr = self._get_fuzzed_request(fuzzableRequest)
+            orig_resp = self._urlOpener.GET(
+                                        fuzzableRequest.getURL(),
+                                        useCache=True
+                                        )
+            self._do_request(fr, orig_resp)
+            self._already_visited.add(fr.getURL())
                 
         return self._fuzzableRequests
 
-    def _get_fuzzed_request( self, fuzzableRequest ):
+    def _get_fuzzed_request(self, fuzzableRequest):
         '''
         Generate a new Url by adding or substracting the '/' character.
         @param fuzzableRequest: The original fuzzableRequest
@@ -80,22 +74,23 @@ class slash( baseDiscoveryPlugin ):
         '''
         fr = fuzzableRequest.copy()
         
-        url_string = fuzzableRequest.getURL().url_string 
+        url_string = str(fuzzableRequest.getURL()) 
         
-        if ( url_string.endswith( '/' ) ):
-            new_url = url_object( url_string.rstrip( '/' ) )
-            fr.setURL( new_url )
+        if url_string.endswith('/'):
+            new_url = url_object(url_string.rstrip('/'))
         else:
-            new_url = url_object( url_string + '/' )
-            fr.setURL( new_url )
-            
-        return fr
+            new_url = url_object(url_string + '/')
         
-    def _do_request( self, fuzzableRequest, orig_resp ):
+        fr.setURL(new_url)
+        return fr
+
+    def _do_request(self, fuzzableRequest, orig_resp):
         '''
         Sends the request.
+        
         @parameter fuzzableRequest: The fuzzable request object to modify.
-        @parameter orig_resp: The response for the original request that was sent.
+        @parameter orig_resp: The response for the original request
+            that was sent.
         '''
         try:
             resp = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True)
@@ -109,14 +104,14 @@ class slash( baseDiscoveryPlugin ):
                 self._fuzzableRequests.extend(self._createFuzzableRequests(resp))
                 om.out.debug('slash plugin found new URI: "' + fuzzableRequest.getURI() + '".')
         
-    def getOptions( self ):
+    def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = optionList()
         return ol
         
-    def setOptions( self, OptionList ):
+    def setOptions(self, OptionList):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptions().
@@ -126,14 +121,14 @@ class slash( baseDiscoveryPlugin ):
         ''' 
         pass
     
-    def getPluginDeps( self ):
+    def getPluginDeps(self):
         '''
         @return: A list with the names of the plugins that should be runned before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

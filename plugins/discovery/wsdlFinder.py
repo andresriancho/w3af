@@ -66,11 +66,10 @@ class wsdlFinder(baseDiscoveryPlugin):
                 url_instance = url_object(url_to_request)
                 
                 #   Send the requests using threads:
-                targs = ( url_instance, )
-                self._tm.startFunction( target=self._do_request, args=targs, ownerObj=self )
+                self._run_async(meth=self._do_request, args=(url_instance,))
         
             # Wait for all threads to finish
-            self._tm.join( self )
+            self._join()
         
         return self._new_fuzzable_requests
 

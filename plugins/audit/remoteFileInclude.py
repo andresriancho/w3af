@@ -91,9 +91,7 @@ class remoteFileInclude(baseAuditPlugin):
             # 2- create a request that will include a file from the w3af official site
             if self._use_w3af_site:
                 self._w3af_site_test_inclusion(freq)
-                
-        self._tm.join(self)
-    
+        
     def _correctly_configured(self):
         '''
         @return: True if the plugin is correctly configured to run.
@@ -157,9 +155,6 @@ class remoteFileInclude(baseAuditPlugin):
                 
                 # Perform the real work
                 self._test_inclusion(freq)
-                
-                # Wait for threads to finish
-                self._tm.join(self)
             except Exception, e:
                 om.out.error('An error occurred while running local webserver:'
                              ' "%s"' % e)
@@ -191,32 +186,23 @@ class remoteFileInclude(baseAuditPlugin):
         mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
         for mutant in mutants:
-            
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
-            if self._hasNoBug('remoteFileInclude', 'remoteFileInclude',
-                              mutant.getURL(), mutant.getVar()):
-                
-                targs = (mutant,)
-                self._tm.startFunction(target=self._sendMutant, args=targs,
-                                       ownerObj=self)
+            if self._has_no_bug(mutant):
+                self._run_async(meth=self._sendMutant, args=(mutant,))
+        # Wait for threads to finish
+        self._join()
                 
     def _analyzeResult(self, mutant, response):
         '''
         Analyze results of the _sendMutant method.
         '''
-        #
-        #   Only one thread at the time can enter here. This is because I want to report each
-        #   vulnerability only once, and by only adding the "if self._hasNoBug" statement, that
-        #   could not be done.
-        #
         with self._plugin_lock:
             
             #
             #   I will only report the vulnerability once.
             #
-            if self._hasNoBug('remoteFileInclude', 'remoteFileInclude', 
-                                mutant.getURL(), mutant.getVar()):
+            if self._has_no_bug(mutant):
                 
                 if self._rfi_result in response:
                     v = vuln.vuln(mutant)
@@ -249,7 +235,7 @@ class remoteFileInclude(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._tm.join(self)
+        self._join()
         self.printUniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
 
     def _create_file(self):

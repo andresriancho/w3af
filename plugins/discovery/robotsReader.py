@@ -94,12 +94,11 @@ class robotsReader(baseDiscoveryPlugin):
                         dirs.append( url )
 
             for url in dirs:
-                #   Send the requests using threads:
-                targs = ( url,  )
-                self._tm.startFunction( target=self._get_and_parse, args=targs , ownerObj=self )
+                # Send the requests using threads:
+                self._run_async(meth=self._get_and_parse, args=(url,))
             
             # Wait for all threads to finish
-            self._tm.join( self )
+            self._join()
         
         return self._new_fuzzable_requests
     

@@ -81,10 +81,12 @@ class googleSpider(baseDiscoveryPlugin):
             else:
                 # Happy happy joy, no error here!
                 for res in results:
-                    targs = (res.URL,)
-                    self._tm.startFunction( target=self._generateFuzzableRequests, 
-                                                        args=targs, ownerObj=self )
-                self._tm.join( self )
+                    self._run_async(
+                                meth=self._generateFuzzableRequests,
+                                args=(res.URL,)
+                                )
+                self._join()
+                
         return self._fuzzableRequests
     
     def _generateFuzzableRequests( self, url ):
