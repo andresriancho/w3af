@@ -275,7 +275,7 @@ class requestResponsePart(gtk.Notebook):
         self._parent = parent
         self._obj = None
         ### FIXME: REMOVE ME ###
-        self._set_vals = (False, 'default_val')
+        self._set_vals = [(False, 'default_val')]
         #######################
         self.w3af = w3af
         self.childButtons = []
@@ -314,6 +314,9 @@ class requestResponsePart(gtk.Notebook):
 
     def clearPanes(self):
         self._obj = None
+        ### FIXME: REMOVE ME ###
+        self._set_vals.append((False, 'panes_cleared'))
+        #######################
         self._parent.draw_area.clear()
         for view in self._views:
             view.initial = True
@@ -328,19 +331,23 @@ class requestResponsePart(gtk.Notebook):
 
         # String representation
         if hasattr(obj, 'getBody'):
-            str_repr_inst = string_representation( obj.getBody(), self._parent.draw_area.width, self._parent.draw_area.height )
+            str_repr_inst = string_representation(
+                                          obj.getBody(),
+                                          self._parent.draw_area.width,
+                                          self._parent.draw_area.height
+                                          )
             str_repr_dict = str_repr_inst.get_representation()
             self._parent.draw_area.set_string_representation( str_repr_dict )
         
         ### FIXME: REMOVE ME ###
-        self._set_vals = (True, obj)
+        self._set_vals.append((True, str(self._obj)))
         #######################
         self.synchronize()
 
     def setObject(self, obj):
         self._obj = obj
         ### FIXME: REMOVE ME ###
-        self._set_vals = (True, obj)
+        self._set_vals.append((True, str(self._obj)))
         #######################
         
     def getObject(self):
@@ -363,18 +370,18 @@ class requestPart(requestResponsePart):
             if self._obj.getData():
                 data = str(self._obj.getData())
             return (self._obj.dumpRequestHead(), data)
-        except AttributeError: ### FIXME: REMOVE ME ###
-            msg = ("DEBUG_EXCEPTION: NoneType object has no attribute "
-                   "'getData': Was object tried to set?? %s. Value: '%r'" % 
-                   self._set_vals)
+        except AttributeError, ae: ### FIXME: REMOVE ME ###
+            msg = ("DEBUG_EXCEPTION: %s. Actions were: %s" %
+                   (ae, self._set_vals))
             raise AttributeError, msg
     
     def showRaw(self, head, body):
         self._obj = httpRequestParser(head, body)
         ### FIXME: REMOVE ME ###
-        self._set_vals = (True, self._obj)
+        self._set_vals.append((True, str(self._obj)))
         #######################        
         self.synchronize()
+
 
 class responsePart(requestResponsePart):
     def __init__(self, parent, w3af, editable, widgname="default"):
