@@ -77,7 +77,8 @@ class form(dataContainer):
         True
         '''
         if not isinstance(action, url_object):
-            raise ValueError('The action of a form must be of urlParser.url_object type.')
+            raise ValueError('The action of a form must be of '
+                             'urlParser.url_object type.')
         
         self._action = action
         
@@ -338,11 +339,11 @@ class form(dataContainer):
             if variants_total > self.TOP_VARIANTS:
                 
                 # Inform user
-                om.out.information("w3af found an HTML form that has several checkbox, radio" \
-                    " and select input tags inside. Testing all combinations of those values" \
-                    " would take too much time, the framework will only test" \
-                    " %s randomly distributed variants."
-                    % self.TOP_VARIANTS)
+                om.out.information("w3af found an HTML form that has several"
+                   " checkbox, radio and select input tags inside. Testing "
+                   "all combinations of those values would take too much "
+                   "time, the framework will only test %s randomly "
+                   "distributed variants." % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed.
                 rand = random.Random()

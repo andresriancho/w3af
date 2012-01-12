@@ -42,12 +42,8 @@ import urllib
 import urllib2
 import mimetools, mimetypes
 import os, stat, hashlib
-from core.controllers.misc.io import NamedStringIO, is_file_like
+from core.controllers.misc.io import is_file_like
 from core.data.constants.encodings import DEFAULT_ENCODING
-
-class Callable:
-    def __init__(self, anycallable):
-        self.__call__ = anycallable
 
 # Controls how sequences are uncoded. If true, elements may be given multiple values by
 #  assigning a sequence.
@@ -116,7 +112,8 @@ class MultipartPostHandler(urllib2.BaseHandler):
     # I also want this to work with HTTPS!
     https_request = http_request
     
-    def multipart_encode(vars, files, boundary = None, buffer = None):
+    @staticmethod
+    def multipart_encode(vars, files, boundary=None, buffer=None):
         if boundary is None:
             # Before :
             # boundary = mimetools.choose_boundary()
@@ -145,9 +142,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
             buffer += '\r\n' + fd.read() + '\r\n'
         buffer += '--%s--\r\n\r\n' % boundary
         return boundary, buffer
-    multipart_encode = Callable(multipart_encode)
 
-    https_request = http_request
 
 def getFileSize(f):
     '''

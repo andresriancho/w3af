@@ -133,12 +133,10 @@ def smartFill( variable_name ):
             if variable_name in variable_name_db:
                 match_rate = get_match_rate(variable_name, variable_name_db)
                 possible_results.append( (filled_value, match_rate) )
-                continue
                 
-            if variable_name_db in variable_name:
+            elif variable_name_db in variable_name:
                 match_rate = get_match_rate(variable_name, variable_name_db)
                 possible_results.append( (filled_value, match_rate) )
-                continue
                 
     #
     #   We get here when there is not a 100% match and we need to analyze the possible_results
