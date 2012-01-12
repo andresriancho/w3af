@@ -433,14 +433,14 @@ class xUrllib(object):
                 self._method = method
             
             def __call__(self, uri, data=None, headers={},
-                         useCache=False, grepResult=True):
+                         useCache=False, grepResult=True, follow_redir=True):
                 '''
                 @return: An httpResponse object that's the result of
                     sending the request with a method different from
                     "GET" or "POST".
                 '''
                 if not isinstance(uri, url_object):
-                    raise ValueError('The uri parameter of AnyMethod.'
+                    raise TypeError('The uri parameter of AnyMethod.'
                          '__call__() must be of urlParser.url_object type.')
                 
                 self._xurllib._init()
@@ -448,7 +448,7 @@ class xUrllib(object):
                 if self._xurllib._isBlacklisted(uri):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
             
-                req = self.MethodRequest(uri, data)
+                req = self.MethodRequest(uri, data, follow_redir=follow_redir)
                 req.set_method(self._method)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, useCache=useCache,
