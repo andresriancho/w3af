@@ -521,9 +521,9 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
     >>> from core.data.request.fuzzableRequest import fuzzableRequest
     >>> url = url_object('http://www.w3af.com/abc/def')
     >>> fr = fuzzableRequest(url)
-    >>> mutant_list = _createUrlPartsMutants(fr, mutantUrlParts, ['ping!','pong-'], [], False)
+    >>> mutant_list = _createUrlPartsMutants(fr, mutantUrlParts, ['ping!'], [], False)
     >>> [m.getURL().url_string for m in mutant_list]
-    [u'http://www.w3af.com/ping%2521/def', u'http://www.w3af.com/pong-/def', u'http://www.w3af.com/abc/ping%2521', u'http://www.w3af.com/abc/pong-']
+    [u'http://www.w3af.com/ping%21/def', u'http://www.w3af.com/ping%2521/def', u'http://www.w3af.com/abc/ping%21', u'http://www.w3af.com/abc/ping%2521']
     
     '''
     res = []
@@ -546,8 +546,11 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
             m.setVar('fuzzedUrlParts')
             m.setMutantDc(divided_path)
             m.setModValue(mutant_str)
-            m.setDoubleEncoding(True)
             res.append(m)
+            # Same URLs but with different types of encoding!
+            m2 = m.copy()
+            m2.setDoubleEncoding(True)
+            res.append(m2)
     return res
  
 def createRandAlpha(length=0):
