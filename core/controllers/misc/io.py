@@ -20,23 +20,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from StringIO import StringIO
 
-class NamedStringIO(StringIO):
+
+class NamedStringIO(StringIO, str):
+    '''
+    A file-like string.
+    '''
+    def __new__(cls, *args, **kwargs):
+        return super(NamedStringIO, cls).__new__(cls, args[0])
     
-    def __init__(self, str, name):
-        StringIO.__init__(self, str)
+    def __init__(self, thestr, name):
+        super(NamedStringIO, self).__init__(thestr)
         self._name = name
     
     @property
     def name(self):
         return self._name
-    
 
 
 FILE_ATTRS = ('read', 'write', 'name', 'seek', 'closed')
 
 def is_file_like(f):
-    # TODO: When w3af migrates to Python 3 this function will likely
-    # disappear as we'll be able to do this check:
+    # TODO: When w3af migrates to Python 3k this function will likely
+    # disappear as it'll be possible to do this check:
     # >>> isinstance(f, io.IOBase)
     return all(hasattr(f, at) for at in FILE_ATTRS)
 
