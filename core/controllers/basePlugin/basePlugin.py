@@ -201,7 +201,7 @@ class basePlugin(configurable):
               }
         method = mutant.getMethod()
         
-        functor = getattr(self._urlOpener , method)
+        functor = getattr(self._urlOpener, method)
         # run functor, run! (forest gump flash)
         res = functor(*args, **kwargs)
         
@@ -247,14 +247,20 @@ class basePlugin(configurable):
 
     def handleUrlError(self, url_error):
         '''
-        Handle UrlError exceptions raised when requests are made. Subclasses
-        should redefine this method for a more refined behavior.
+        Handle UrlError exceptions raised when requests are made.
+        Subclasses should redefine this method for a more refined
+        behavior and must respect the return value format.
         
         @param url_error: w3afMustStopOnUrlError exception instance
-        @return: True if the exception should be stopped by the caller.
+        @return: (stopbubbling, result). The 1st is a boolean value
+            that indicates the caller if the original error should
+            stop bubbling or not. The 2nd is the result to be
+            returned by the caller. Note that only makes sense
+            when `stopbubbling` is True.
         '''
         om.out.error('There was an error while requesting "%s". Reason: %s' % 
                      (url_error.req.get_full_url(), url_error.msg))
+        return (False, None)
 
     def _run_async(self, meth, args=(), kwds={}):
         self._tm.startFunction(
@@ -282,11 +288,14 @@ class UrlOpenerProxy(object):
             try:
                 return attr(*args, **kwargs)
             except w3afMustStopOnUrlError, w3aferr:
-                try:
-                    exc_info = sys.exc_info()
-                    if not self._plugin_inst.handleUrlError(w3aferr):
+                stopbubbling, result = \
+                        self._plugin_inst.handleUrlError(w3aferr)
+                if not stopbubbling:
+                    try:
+                        exc_info = sys.exc_info()
                         raise exc_info[0], exc_info[1], exc_info[2]
-                finally:
-                    del exc_info
+                    finally:
+                        del exc_info
+                return result
         attr = getattr(self._url_opener, name)
         return meth if callable(attr) else attr
