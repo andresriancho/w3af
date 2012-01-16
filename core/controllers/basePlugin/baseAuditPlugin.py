@@ -111,17 +111,9 @@ class baseAuditPlugin(basePlugin):
         @param kb_varname: The name of the variable in the kb, where
             the vulnerability was saved. Defaults to self.name.
         '''
-
-        # FIXME: After detecting what causes bug #170450 please refactor
-        # the next validation code block. A one-liner should be enough.
-        if fuzz_req is None:
-            raise ValueError, "Arg 'fuzz_req'must not be None"
-        elif not varname:
+        if not varname:
             if hasattr(fuzz_req, 'getVar'):
                 varname = fuzz_req.getVar()
-                if not varname:
-                    raise ValueError, \
-                       "Empty 'var' was set in 'fuzz_req': '%s'" % fuzz_req
             else:
                 raise ValueError, "Invalid arg 'varname': %s" % varname
         
