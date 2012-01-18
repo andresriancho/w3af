@@ -93,6 +93,7 @@ class httpResponse(object):
         @param charset: Response's encoding; obligatory when `read` is unicode
         '''
         self._charset = charset
+        self._headers = None
         self._body = None
         self._raw_body = read
         self._content_type = ''
@@ -104,6 +105,8 @@ class httpResponse(object):
         self._fromCache = False
         # Set the info
         self._info = info
+        # Initialize headers
+        self.headers = info
         # Set code
         self.setCode(code)
         
@@ -121,7 +124,6 @@ class httpResponse(object):
         self._time = time
         self._alias = alias
         self._doc_type = None
-        self._headers = None
     
     def __contains__(self, string_to_test):
         '''
@@ -271,7 +273,6 @@ class httpResponse(object):
                 # we need exactly content type but not charset
                 self._content_type = headers[key].split(';', 1)[0]
                 content_type = self._content_type.lower()
-                
                 # Image?
                 if content_type.count('image'):
                     self._doc_type = httpResponse.DOC_TYPE_IMAGE
