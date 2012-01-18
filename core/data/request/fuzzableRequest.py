@@ -239,6 +239,7 @@ class fuzzableRequest(object):
                 # Because of repeated parameter names, we need to add this:
                 #
                 for the_value in values:
+                    the_value = the_value.decode(self._dc.encoding)
                     # the_value is always a string
                     if len(the_value) > 10:
                         the_value = the_value[:10] + '...'
@@ -248,7 +249,6 @@ class fuzzableRequest(object):
                     
             result_string = result_string[:-2]
             result_string += ')'
-        
         return result_string.encode(DEFAULT_ENCODING)
     
     def __repr__(self):
