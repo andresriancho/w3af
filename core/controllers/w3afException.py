@@ -64,7 +64,7 @@ class w3afMustStopException(Exception):
         self.errs = errs
 
     def __str__(self):
-        return str(self.msg) + '\n'.join( [str(e) for e in self.errs] )
+        return str(self.msg) + '\n'.join( [str(e) for e in self.errs])
     
     __repr__ = __str__
 
@@ -84,6 +84,12 @@ class w3afMustStopOnUrlError(w3afMustStopException):
         w3afMustStopException.__init__(self, em)
         self.errcode = ec
         self.req = req
+    
+    def __str__(self):
+        return ("UrlError '%s' while requesting '%s'. Error code was: %s" % 
+                (self.msg, self.req.get_full_url(), self.errcode))
+    
+    __repr__ = __str__
 
 
 class w3afMustStopByKnownReasonExc(w3afMustStopException):
