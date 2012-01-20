@@ -1121,7 +1121,6 @@ class w3afCore(object):
         return self._pluginsOptions.get(pluginType, {}).get(pluginName, None)
         
     def getEnabledPlugins( self, pluginType ):
-        
         return self._strPlugins[ pluginType ]
     
     def setPlugins( self, pluginNames, pluginType ):
@@ -1144,18 +1143,22 @@ class w3afCore(object):
         pluginNames = list( set( pluginNames ) )    # bleh !
         pList = self.getPluginList(  pluginType  )
         for p in pluginNames:
-            if p not in pList \
-            and p.replace('!','') not in pList\
-            and p != 'all':
+            if p not in pList and p.replace('!','') not in pList and p != 'all':
                 unknown_plugins.append( p )
         
-        setMap = {'discovery':self._setDiscoveryPlugins, 'audit':self._setAuditPlugins, \
-        'grep':self._setGrepPlugins, 'evasion':self._setEvasionPlugins, 'output':self._setOutputPlugins,  \
-        'mangle': self._setManglePlugins, 'bruteforce': self._setBruteforcePlugins, \
-        'auth':self._setAuthPlugins}
+        setMap = {
+            'discovery': self._setDiscoveryPlugins,
+            'audit': self._setAuditPlugins,
+            'grep': self._setGrepPlugins,
+            'evasion': self._setEvasionPlugins,
+            'output': self._setOutputPlugins,
+            'mangle': self._setManglePlugins,
+            'bruteforce': self._setBruteforcePlugins,
+            'auth': self._setAuthPlugins
+            }
         
-        func = setMap[ pluginType ]
-        func( pluginNames )
+        func = setMap[pluginType]
+        func(pluginNames)
         
         return unknown_plugins
     
@@ -1187,16 +1190,22 @@ class w3afCore(object):
         else:
             return aModule.getLongDescription()
         
-    def getPluginTypes( self ):
+    def getPluginTypes(self):
         '''
         @return: A list with all plugin types.
         '''
-        pluginTypes = [ x for x in os.listdir('plugins' + os.path.sep) ]
+        def rem_from_list(ele, lst):
+            try:
+                lst.remove(ele)
+            except:
+                pass
+        pluginTypes = [x for x in os.listdir('plugins' + os.path.sep)]
         # Now we filter to show only the directories
-        pluginTypes = [ d for d in pluginTypes if os.path.isdir('plugins' + os.path.sep + d) ]
-        pluginTypes.remove( 'attack' )
-        if '.svn' in pluginTypes:
-            pluginTypes.remove('.svn')
+        pluginTypes = [d for d in pluginTypes 
+                       if os.path.isdir(os.path.join('plugins', d))]
+        rem_from_list('attack', pluginTypes)
+        rem_from_list('tests', pluginTypes)
+        rem_from_list('.svn', pluginTypes)
         return pluginTypes
     
     def _setBruteforcePlugins( self, bruteforcePlugins ):

@@ -33,10 +33,10 @@ class config(dict):
         '''
         self[variableName] = value
         
-    def getData(self, variableName):
+    def getData(self, variableName, default=None):
         '''
         @return: Returns the data that was saved to the variableName
         '''
-        return self.get(variableName, None)
+        return self.get(variableName, default)
         
 cf = config()
