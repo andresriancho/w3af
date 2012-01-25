@@ -74,12 +74,18 @@ class swfParser(BaseParser):
     def _parse(self, swf_body):
         '''
         Parse the SWF bytecode.
+        For now... don't decompile anything, just apply regular
+        expressions to it.
         
-        For now... don't decompile anything, just apply regular expressions to it.
-        
-        @parameter swf_body: SWF bytecode string
+        @para swf_body: SWF bytecode string
         '''
-        self._regex_url_parse(swf_body)
+        # FIXME: Jan 2012, JAP - Now this method does nothing. Extracting
+        # urls from a compiled flash leads to serious encoding issues
+        # while performing scans. The definite solution is to decompile
+        # swf files and decode the proper substrings (urls in swf files
+        # are found in specific sections) using the proper encoding name.
+        ##self._regex_url_parse(swf_body)
+        pass
     
     def getReferences(self):
         '''
