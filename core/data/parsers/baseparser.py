@@ -39,6 +39,9 @@ class BaseParser(object):
     #    '[A-Fa-f0-9]{2})+(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?)')
     URL_RE = re.compile(
                     '((http|https)://([\w:@\-\./]*?)[^ \n\r\t"\'<>]*)', re.U)
+    RELATIVE_URL_RE = re.compile(
+        '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}'
+        '((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)', re.U)
     SAFE_CHARS = (('\x00', '%00'),)
     
     def __init__(self, httpResponse):
@@ -264,10 +267,7 @@ class BaseParser(object):
             
             # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
             # I'm removing those matches manually below
-            regex = '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)'
-            relative_regex = re.compile(regex, re.U)
-            
-            for match_tuple in relative_regex.findall(doc_str):
+            for match_tuple in self.RELATIVE_URL_RE.findall(doc_str):
                 
                 match_str = match_tuple[0]
                 
