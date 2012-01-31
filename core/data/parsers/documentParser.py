@@ -63,7 +63,7 @@ class documentParser:
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a PDF document.
         '''
-        if httpResponse.getContentType() in ('application/x-pdf', 'application/pdf'):
+        if httpResponse.content_type in ('application/x-pdf', 'application/pdf'):
             document = httpResponse.body
             
             #   With the objective of avoiding this bug:
@@ -89,7 +89,7 @@ class documentParser:
         '''
         @return: True if the httpResponse contains a SWF file.
         '''
-        if httpResponse.getContentType() == 'application/x-shockwave-flash':
+        if httpResponse.content_type == 'application/x-shockwave-flash':
             
             body = httpResponse.getBody()
         
@@ -107,7 +107,7 @@ class documentParser:
         @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a WML document.
         '''
-        if httpResponse.getContentType() == 'text/vnd.wap.wml':
+        if httpResponse.content_type == 'text/vnd.wap.wml':
         
             document = httpResponse.getBody()
             content_match = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)

@@ -264,7 +264,7 @@ class phpEggs(baseDiscoveryPlugin):
                 images = 0
                 not_images = 0
                 for response, egg_desc, egg_URL in GET_results:
-                    if 'image' in response.getContentType():
+                    if 'image' in response.content_type:
                         images += 1
                     else:
                         not_images += 1

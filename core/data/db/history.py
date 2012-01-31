@@ -273,7 +273,7 @@ class HistoryItem(object):
         values.append(str(resp.info()))
         values.append(resp.getWaitTime())
         values.append(resp.getMsg())
-        values.append(resp.getContentType())
+        values.append(resp.content_type)
         ch = resp.charset
         values.append(ch)
         values.append(self.request.getMethod())

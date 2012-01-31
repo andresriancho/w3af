@@ -132,7 +132,7 @@ class MozRenderingView(RenderingView):
     def showObject(self, obj):
         '''Show object in view.'''
         mimeType = 'text/html'
-        # mimeType = obj.getContentType()
+        # mimeType = obj.content_type
         if obj.is_text_or_html():
             self._renderingWidget.render_data(obj.getBody(), long(len(obj.getBody())), str(obj.getURI()), mimeType)
 

@@ -96,7 +96,7 @@ class httpResponse(object):
         self._headers = None
         self._body = None
         self._raw_body = read
-        self._content_type = ''
+        self._content_type = None
         self._dom = None
         self._clear_text_body = None
         # A unique id identifier for the response
@@ -105,8 +105,6 @@ class httpResponse(object):
         self._fromCache = False
         # Set the info
         self._info = info
-        # Initialize headers
-        self.headers = info
         # Set code
         self.setCode(code)
         
@@ -455,7 +453,6 @@ class httpResponse(object):
                         except:
                             charset = DEFAULT_CHARSET
 
-
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
@@ -471,12 +468,15 @@ class httpResponse(object):
                 _body = rawbody.decode(charset, 'returnEscapedChar')
             
         return _body, charset
-
-    def getContentType(self):
+    
+    @property
+    def content_type(self):
         '''
-        @return: The content type of the response
+        The content type of the response
         '''
-        return self._content_type
+        if self._content_type is None:
+            self.headers = self._info
+        return self._content_type or ''
 
     @property
     def doc_type(self):
@@ -537,7 +537,7 @@ class httpResponse(object):
         @return: a str representation of the headers.
         '''
         if self.headers:
-            return CRLF.join(h + ': ' + hv  for h, hv in self.headers.items()) + CRLF 
+            return CRLF.join(h + ': ' + hv  for h, hv in self.headers.items()) + CRLF
         else:
             return ''
         
