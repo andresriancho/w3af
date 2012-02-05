@@ -104,7 +104,7 @@ class sqli(baseAuditPlugin):
         (r'Dynamic Page Generation Error:', dbms.INFORMIX),
         (r'An illegal character has been found in the statement',
             dbms.INFORMIX),
-        (r'[Informix]', dbms.INFORMIX),
+        (r'\[Informix\]', dbms.INFORMIX),
         (r'<b>Warning</b>:  ibase_', dbms.INTERBASE),
         (r'Dynamic SQL Error', dbms.INTERBASE),
         # DML
