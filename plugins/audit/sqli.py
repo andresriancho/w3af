@@ -70,7 +70,7 @@ class sqli(baseAuditPlugin):
         # Sybase
         (r"Sybase message:", dbms.SYBASE),
         (r"Sybase Driver", dbms.SYBASE),
-        (r"[SYBASE]", dbms.SYBASE),
+        (r"\[SYBASE\]", dbms.SYBASE),
         # Access
         (r'Syntax error in query expression', dbms.ACCESS),
         (r'Data type mismatch in criteria expression.', dbms.ACCESS),
