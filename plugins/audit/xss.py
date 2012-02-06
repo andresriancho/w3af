@@ -32,6 +32,8 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
+import re
+
 
 class xss(baseAuditPlugin):
     '''
@@ -175,7 +177,7 @@ class xss(baseAuditPlugin):
         
         Notice that this doesn't work if the filter also filters
         by length. The idea of this method is to reduce the amount of
-        tests to be performed, if I each char is tested separately the
+        tests to be performed, if each char is tested separately the
         wanted performance enhancement will be lost.
         
         @return: A list with the special characters that are allowed
@@ -183,11 +185,11 @@ class xss(baseAuditPlugin):
         '''
         # Create a random number and assign it to the mutant
         # modified parameter
-        rndNum = str(createRandAlNum(4))
+        rndNum = str(createRandAlNum(2))
         oldValue = mutant.getModValue() 
         
         joined_list = rndNum.join(self._special_characters)
-        list_delimiter = str(createRandAlNum(5))
+        list_delimiter = str(createRandAlNum(2))
         joined_list = list_delimiter + joined_list + list_delimiter
         mutant.setModValue(joined_list)
         
@@ -200,19 +202,28 @@ class xss(baseAuditPlugin):
         # Analyze the response
         allowed = []
         body = response.getBody()
-        if body.count(list_delimiter) == 2:
-            start = body.find(list_delimiter) 
-            end = body.find(list_delimiter, start + 1)
-            the_list = body[start + len(list_delimiter):end]
-            split_list = the_list.split(rndNum)
+
+        # Create the regular expression
+        joined_char_regex = rndNum.join( ['.{0,7}?'] * len(self._special_characters) )
+        joined_re = list_delimiter + joined_char_regex + list_delimiter
+
+        for match in re.findall(joined_re, body):
+            match_without_lim = match[ len(list_delimiter) : -len(list_delimiter)]
+            split_list = match_without_lim.split(rndNum)
             for i, char in enumerate(split_list):
                 if char == self._special_characters[i]:
                     allowed.append(char)
-        else:
-            raise w3afException('The delimiter was not echoed back!')
-        
+
+        allowed = list(set(allowed))
+        allowed.sort()
+        self._special_characters.sort()
+        disallowed = list( set(self._special_characters) - set(allowed) )
+
         if allowed == self._special_characters:
-            om.out.debug('All special characters are allowed.')
+            om.out.debug('All XSS special characters are allowed: %s' % ''.join(allowed) ) 
+        else:
+            om.out.debug('Allowed XSS special characters: %s' % ''.join(allowed) )
+            om.out.debug('Encoded/Removed XSS special characters: %s' % ''.join(disallowed) )  
         
         return allowed
                 
