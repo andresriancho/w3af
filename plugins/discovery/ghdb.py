@@ -55,12 +55,10 @@ class ghdb(baseDiscoveryPlugin):
         self._run = True
         self._ghdb_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep
         self._ghdb_file += 'ghdb' + os.path.sep + 'GHDB.xml'
-        self._update_URL = 'http://johnny.ihackstuff.com/xml/schema.xml'
         self._fuzzableRequests = []
         
         # User configured variables
         self._result_limit = 300
-        self._update_ghdb = False
         
     def discover(self, fuzzableRequest ):
         '''
@@ -72,10 +70,6 @@ class ghdb(baseDiscoveryPlugin):
             raise w3afRunOnce()
         else:
             
-            # update !
-            if self._update_ghdb:
-                self._update_db()
-                
             # I will only run this one time. All calls to ghdb return the same url's
             self._run = False
             
@@ -90,27 +84,6 @@ class ghdb(baseDiscoveryPlugin):
         
         return []
     
-    def _update_db( self ):
-        '''
-        New versions of the ghdb can be downloaded from: 
-            - http://johnny.ihackstuff.com/xml/schema.xml
-        '''
-        # Only update once
-        self._update_ghdb = False
-        msg = 'Downloading the new google hack database from '+ self._update_URL
-        msg += ' . This may take a while...'
-        om.out.information( msg )
-        res = self._urlOpener.GET( self._update_URL )
-        try:
-            # Write new ghdb
-            fd_new_db = file( self._ghdb_file , 'w')
-            fd_new_db.write( res.getBody() )
-            fd_new_db.close()
-        except:
-            raise w3afException('There was an error while writing the new GHDB file to disk.')
-        else:
-            om.out.information('Successfully updated GHDB.xml.' )
-            
     def _do_clasic_GHDB( self, domain ):
         '''
         In classic GHDB, i search google for every term in the ghdb.
@@ -149,8 +122,8 @@ class ghdb(baseDiscoveryPlugin):
                 v.setMethod( 'GET' )
                 v.setName( 'Google hack database vulnerability' )
                 v.setSeverity(severity.MEDIUM)
-                msg = 'ghdb plugin found a vulnerability at URL: ' + result.URL
-                msg += ' . Vulnerability description: ' + gh.desc
+                msg = 'ghdb plugin found a vulnerability at URL: "' + result.URL
+                msg += '" . Vulnerability description: ' + gh.desc
                 v.setDesc( msg  )
                 v.setId( response.id )
                 kb.kb.append( self, 'vuln', v )
@@ -183,13 +156,16 @@ class ghdb(baseDiscoveryPlugin):
             
         signatures = dom.getElementsByTagName("signature")
         res = []
+        
+        
         for signature in signatures:
-            if len(signature.childNodes) != 19:
+            if len(signature.childNodes) != 6:
                 msg = 'GHDB is corrupt. The corrupt signature is: ' + signature.toxml()
                 raise w3afException( msg )
             else:
                 try:
-                    query_string = signature.childNodes[9].childNodes[0].data
+                    query_string = signature.childNodes[4].childNodes[0].data
+                    
                 except Exception, e:
                     msg = 'GHDB has a corrupt signature, ( it doesn\'t have a query string ).'
                     msg += ' Error while parsing: "' + signature.toxml() + '". Exception: "'
@@ -197,13 +173,13 @@ class ghdb(baseDiscoveryPlugin):
                     om.out.debug( msg )
                 else:
                     try:
-                        desc = signature.childNodes[13].childNodes[0].data
+                        desc = signature.childNodes[5].childNodes[0].data
                     except:
                         desc = 'Blank description.'
                     else:
                         gh = google_hack( query_string, desc )
                         res.append( gh )
-            
+          
         return res
         
     def getOptions( self ):
@@ -212,16 +188,9 @@ class ghdb(baseDiscoveryPlugin):
         '''        
         d2 = 'Fetch the first "resultLimit" results from the Google search'
         o2 = option('resultLimit', self._result_limit, d2, 'integer')
-        
-        # The ghdb is not online anymore, updating may brake this plugin.
-        # http://johnny.ihackstuff.com/HFC/Home.html
-        #
-        #d3 = 'Update the google hack database.'
-        #o3 = option('updateGHDB', self._update_ghdb, d3, 'boolean')
-        
+
         ol = optionList()
         ol.add(o2)
-        #ol.add(o3)
         return ol
 
     def setOptions( self, optionsMap ):
@@ -232,10 +201,6 @@ class ghdb(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        # The ghdb is not online anymore, updating may brake this plugin.
-        # http://johnny.ihackstuff.com/HFC/Home.html
-        #
-        #self._update_ghdb = optionsMap['updateGHDB'].getValue()
         self._result_limit = optionsMap['resultLimit'].getValue()
             
     def getPluginDeps( self ):
@@ -252,10 +217,10 @@ class ghdb(baseDiscoveryPlugin):
         return '''
         This plugin finds possible vulnerabilities using google.
         
-        Three configurable parameters exist:
+        One configurable parameter exist:
             - resultLimit
-            - updateGHDB
         
-        Using the google hack database released by jhonny, this plugin searches google for possible
-        vulnerabilities in the domain being tested.
+        Using the google hack database released by Offensive Security, this 
+	plugin searches google for possible vulnerabilities in the domain
+	being tested.
         '''
