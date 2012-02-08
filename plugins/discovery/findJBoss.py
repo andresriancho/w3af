@@ -1,7 +1,7 @@
 '''
 findJboss.py
 
-Copyright 2012 Nahuel Sanchez
+Copyright 2012 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from functools import partial
-import socket
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.decorators import runonce
@@ -34,39 +33,38 @@ import core.data.kb.vuln as vuln
 
 class findJBoss(baseDiscoveryPlugin):
     '''
-    Find Default Jboss Installations
+    Find default Jboss installations.
+
     @author: Nahuel Sanchez (nsanchez@bonsai-sec.com)
     '''
     _jboss_vulns = (
         {'url': '/admin-console/', 
          'name': 'JBoss Admin Console enabled',
          'desc': 'Jboss Admin Console was found!',
-         'type': 'i'},
+         'type': 'info'},
         {'url': '/jmx-console/', 
          'name': 'JBoss JMX Console found',
          'desc': 'JMX Console found without Auth Enabled',
-         'type': 'v'},
+         'type': 'vuln'},
         {'url': '/status', 
          'name': 'JBoss Status Servlet found',
          'desc': 'JBoss Status Servlet gives valuable information',
-         'type': 'i'},
+         'type': 'info'},
         {'url': '/web-console/ServerInfo.jsp', 
          'name': 'WebConsole ServerInfo.jsp found',
          'desc': 'WebConsole ServerInfo.jsp gives valuable information',
-         'type': 'i'},
+         'type': 'info'},
         {'url': 'WebConsole/Invoker', 
          'name': 'WebConsole ServerInfo.jsp found',
          'desc': 'JBoss WebConsole Invoker enables attackers to send any JMX '
                     'command to JBoss AS',
-         'type': 'v'},
+         'type': 'vuln'},
         {'url': '/invoker/JMXInvokerServlet', 
          'name': 'JMX Invoker enabled without Auth',
          'desc': 'JMX Invoker enables attackers to send any JMX command to '
                     'JBoss AS',
-         'type': 'v'}
+         'type': 'vuln'}
         )
-    
-    _ports = ['80', '8080']
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
@@ -75,61 +73,43 @@ class findJBoss(baseDiscoveryPlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest):
         '''
-        Checks if exists JBoss Interesting Directories 
-        And possible vulnerabilities
+        Checks if JBoss Interesting Directories exist in the target server.
+        Also verifies some vulnerabilities.
         '''
-        domain = fuzzableRequest.getURL().baseUrl()
-        enc = domain._encoding
-        domain = domain.url_string
-        host = fuzzableRequest.getURL().getDomain()
-        # ports test
-        ports = filter(partial(self._portTest, host), self._ports)
+        base_url = fuzzableRequest.getURL().baseUrl()
         
-        for vulnd in findJBoss._jboss_vulns:
-            for port in ports:
-                domain_port = url_object(domain + ":" + port, encoding=enc)
-                vuln_url = domain_port.urlJoin(vulnd['url'])
-                response = self._urlOpener.GET(vuln_url)
+        for vuln_db_instance in findJBoss._jboss_vulns:
+            vuln_url = base_url.urlJoin( vuln_db_instance['url'] )
+            response = self._urlOpener.GET(vuln_url)
+            
+            if response.getCode() == 200: 
                 
-                if response and response.getCode() == 200: 
+                if vuln_db_instance['type'] == 'info':
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName(vuln_db_instance['name'])
+                    i.setURL(vuln_url)
+                    i.setId(response.id)
+                    i.setDesc(vuln_db_instance['desc'])
+                    kb.kb.append(self, vuln_db_instance['name'], i)
                     
-                    if vulnd['type'] == 'i':
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName(vulnd['name'])
-                        i.setURL(vuln_url)
-                        i.setId(response.id)
-                        i.setDesc(vulnd['desc'])
-                        kb.kb.append(self, vulnd['name'], i)
-                        
-                    else:
-                        v = vuln.vuln()
-                        v.setPluginName(self.getName())
-                        v.setName(vulnd['name'])
-                        v.setURL(vuln_url)
-                        v.setId(response.id)
-                        v.setDesc(vulnd['desc'])
-                        kb.kb.append(self, vulnd['name'], v)
-                    
-                    fuzzable_requests = self._createFuzzableRequests(response)
-                    self._fuzzable_requests_to_return.extend(fuzzable_requests)
+                else:
+                    v = vuln.vuln()
+                    v.setPluginName(self.getName())
+                    v.setName(vuln_db_instance['name'])
+                    v.setURL(vuln_url)
+                    v.setId(response.id)
+                    v.setDesc(vuln_db_instance['desc'])
+                    kb.kb.append(self, vuln_db_instance['name'], v)
+                
+                fuzzable_requests = self._createFuzzableRequests(response)
+                self._fuzzable_requests_to_return.extend(fuzzable_requests)
       
         return self._fuzzable_requests_to_return
-    
+
     def handleUrlError(self, url_error):
         return (True, None)
     
-    def _portTest(self, host, port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(5)
-        try:
-            sock.connect((host, int(port)))
-        except:
-            return False
-        finally:
-            sock.close()
-        return True 
-                         
     def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
@@ -159,6 +139,6 @@ class findJBoss(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This Plugin searches JBoss installation directories and possible
+        This plugin identifies JBoss installation directories and possible
         security vulnerabilities.
         '''
