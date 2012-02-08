@@ -54,8 +54,8 @@ class findJBoss(baseDiscoveryPlugin):
          'name': 'WebConsole ServerInfo.jsp found',
          'desc': 'WebConsole ServerInfo.jsp gives valuable information',
          'type': 'info'},
-        {'url': 'WebConsole/Invoker', 
-         'name': 'WebConsole ServerInfo.jsp found',
+        {'url': '/WebConsole/Invoker', 
+         'name': 'WebConsole Invoker found',
          'desc': 'JBoss WebConsole Invoker enables attackers to send any JMX '
                     'command to JBoss AS',
          'type': 'vuln'},
@@ -82,7 +82,7 @@ class findJBoss(baseDiscoveryPlugin):
             vuln_url = base_url.urlJoin( vuln_db_instance['url'] )
             response = self._urlOpener.GET(vuln_url)
             
-            if response.getCode() == 200: 
+            if response.getCode() == 200:
                 
                 if vuln_db_instance['type'] == 'info':
                     i = info.info()
