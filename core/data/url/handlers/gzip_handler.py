@@ -53,7 +53,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                 # Decompress
                 try:
                     data = gzip.GzipFile(fileobj=StringIO(response.read())).read()
-                except IOError:
+                except:
                     # I get here when the HTTP response body is corrupt
                     # return the same thing that I got... can't do magic yet!
                     return response
