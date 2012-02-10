@@ -210,8 +210,8 @@ class xss(baseAuditPlugin):
         for match in re.findall(joined_re, body):
             match_without_lim = match[ len(list_delimiter) : -len(list_delimiter)]
             split_list = match_without_lim.split(rndNum)
-            for i, char in enumerate(split_list):
-                if char == self._special_characters[i]:
+            for char in split_list:
+                if char in self._special_characters:
                     allowed.append(char)
 
         allowed = list(set(allowed))
