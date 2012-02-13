@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import copy
 from core.controllers.w3afException import w3afException
 
 class optionList:

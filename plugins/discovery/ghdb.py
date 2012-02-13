@@ -20,26 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.w3afException import w3afException
-from core.controllers.w3afException import w3afRunOnce
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
-
-from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.misc.is_private_site import is_private_site
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.constants.severity as severity
-
 import os.path
 import xml.dom.minidom
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.misc.decorators import runonce
+from core.controllers.misc.is_private_site import is_private_site
+from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.searchEngines.googleSearchEngine import \
+    googleSearchEngine as google
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 
 
 class ghdb(baseDiscoveryPlugin):
@@ -52,38 +48,28 @@ class ghdb(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._run = True
-        self._ghdb_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep
-        self._ghdb_file += 'ghdb' + os.path.sep + 'GHDB.xml'
+        self._ghdb_file = os.path.join('plugins', 'discovery',
+                                       'ghdb', 'GHDB.xml')
         self._fuzzableRequests = []
         
         # User configured variables
         self._result_limit = 300
-        
+    
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @param fuzzableRequest: A fuzzableRequest instance that contains
+            (among other things) the URL to test.
         '''
         self._fuzzableRequests = []
-        if not self._run:
-            # This will remove the plugin from the discovery plugins to be runned.
-            raise w3afRunOnce()
-        else:
-            
-            # I will only run this one time. All calls to ghdb return the same url's
-            self._run = False
-            
-            # Get the domain and set some parameters
-            domain = fuzzableRequest.getURL().getDomain()
-            if is_private_site( domain ):
-                msg = 'There is no point in searching google for "site:'+ domain
-                msg += '" . Google doesnt index private pages.'
-                raise w3afException( msg )
-            
-            return self._do_clasic_GHDB( domain )
+        # Get the domain and set some parameters
+        domain = fuzzableRequest.getURL().getDomain()
+        if is_private_site(domain):
+            msg = 'There is no point in searching google for "site:'+ domain
+            msg += '" . Google doesnt index private pages.'
+            raise w3afException(msg)
+        return self._do_clasic_GHDB(domain)
         
-        return []
-    
     def _do_clasic_GHDB( self, domain ):
         '''
         In classic GHDB, i search google for every term in the ghdb.

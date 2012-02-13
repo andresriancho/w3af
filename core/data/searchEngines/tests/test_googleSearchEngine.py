@@ -25,7 +25,7 @@ import re
 import unittest
 
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine, \
-    GAjaxSearch, GStandardSearch, GMobileSearch, GSetSearch
+    GAjaxSearch, GStandardSearch, GMobileSearch
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
 

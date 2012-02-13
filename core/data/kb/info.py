@@ -119,7 +119,6 @@ class info(dict):
         
     def setDesc( self, desc ):
         self._desc = desc
-
         
     def getDesc( self ):
         #
@@ -247,15 +246,11 @@ class info(dict):
         Will save:
             [3, 4]
         '''
-        if isinstance(id, type([])):
+        if isinstance(id, list):
             # A list with more than one ID:
-            
-            # I have to check if all of them are actually integers
+            # Ensuring that all of them are actually integers
             for i in id:
-                if not isinstance(i, type(5)):
-                    # w3afException is correctly handled, I want a crash!
-                    raise Exception('All request/response ids have to be integers.')
-                    
+                assert isinstance(i, int), 'All request/response ids have to be integers.'
             id.sort()
             self._id = id
         else:
