@@ -58,7 +58,7 @@ class wmlParser(SGMLParser):
         >>> response = httpResponse( 200, form, {}, u, u )
         >>> w = wmlParser(response)
         >>> w.getForms()
-        [{'tipdat': ['D'], 'clave': ['$(clave)'], 'cuenta': ['$(cuenta)']}]
+        [Form({'clave': ['$(clave)'], 'cuenta': ['$(cuenta)'], 'tipdat': ['D']})]
 
         Get the simplest link
         >>> response = httpResponse( 200, '<a href="/index.aspx">ASP.NET</a>', {}, u, u )
@@ -100,10 +100,10 @@ class wmlParser(SGMLParser):
         if action:
             self._inside_form = True
             action = unicode(self._baseUrl.urlJoin(action))
-            action = url_object(self._decode_URL(action),
+            action = url_object(self._decode_url(action),
                                 encoding=self._encoding)
             # Create the form
-            f = form.form(encoding=self._encoding)
+            f = form.Form(encoding=self._encoding)
             f.setMethod(method)           
             f.setAction(action)
             self._forms.append(f)

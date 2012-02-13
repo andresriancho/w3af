@@ -36,8 +36,8 @@ import json
 from core.controllers.w3afException import w3afException
 
 # The data containers
-from core.data.dc.cookie import cookie as cookie
-from core.data.dc.dataContainer import dataContainer as dc
+from core.data.dc.cookie import Cookie
+from core.data.dc.dataContainer import DataContainer
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import HTTPQSRequest
 
@@ -55,7 +55,7 @@ from core.data.fuzzer.mutantFileContent import mutantFileContent
 import core.controllers.outputManager as om
 
 from core.controllers.misc.io import NamedStringIO
-from core.data.dc.form import form
+from core.data.dc.form import Form
 
 
 #
@@ -73,7 +73,7 @@ IGNORED_PARAMETERS = [
 def createMutants(freq, mutant_str_list, append=False,
                   fuzzableParamList=[], oResponse=None):
     '''
-    @parameter freq: A fuzzable request with a dataContainer inside.
+    @parameter freq: A fuzzable request with a DataContainer inside.
     @parameter mutant_str_list: a list with mutant strings to use
     @parameter append: This indicates if the content of mutant_str_list should
         be appended to the variable value
@@ -103,7 +103,7 @@ def createMutants(freq, mutant_str_list, append=False,
                                  mutant_str_list, fuzzableParamList, append))
  
     # POST-data parameters
-    if isinstance(freq, httpPostDataRequest):
+    elif isinstance(freq, httpPostDataRequest):
         # If this is a POST request, it could be a JSON request, and I want
         # to fuzz it!
         om.out.debug('Fuzzing POST data')
@@ -140,8 +140,8 @@ def createMutants(freq, mutant_str_list, append=False,
     #
     # Improvement to reduce network traffic:
     #    If the original response has an "ETag" header, set a "If-None-Match"
-    #    header with the same value. On a test that I run, the difference was
-    #    very noticable:
+    #    header with the same value. On a test that I ran, the difference was
+    #    very noticeable:
     #        - Without sending ETag headers: 304046 bytes
     #        - Sending ETag headers:          55320 bytes
     #
@@ -167,11 +167,11 @@ def createMutants(freq, mutant_str_list, append=False,
 
 def _createJSONMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append):
     '''
-    @parameter freq: A fuzzable request with a dataContainer inside.
-    @parameter mutantClass: The class to use to create the mutants
-    @parameter fuzzableParamList: What parameters should be fuzzed
-    @parameter append: True/False, if we should append the value or replace it.
-    @parameter mutant_str_list: a list with mutant strings to use
+    @param freq: A fuzzable request with a DataContainer inside.
+    @param mutantClass: The class to use to create the mutants
+    @param fuzzableParamList: What parameters should be fuzzed
+    @param append: True/False, if we should append the value or replace it.
+    @param mutant_str_list: a list with mutant strings to use
     @return: Mutants that have the JSON postdata changed with the strings at mutant_str_list
     '''
     # We define a function that creates the mutants...
@@ -278,7 +278,7 @@ def isJSON( freq ):
     
 def _createFileContentMutants(freq, mutant_str_list, fuzzableParamList, append):
     '''
-    @parameter freq: A fuzzable request with a dataContainer inside.
+    @parameter freq: A fuzzable request with a DataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
@@ -306,7 +306,7 @@ def _createFileContentMutants(freq, mutant_str_list, fuzzableParamList, append):
     
 def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append ):
     '''
-    @parameter freq: A fuzzable request with a dataContainer inside.
+    @parameter freq: A fuzzable request with a DataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
@@ -336,7 +336,7 @@ def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
         for mutant_str in mutant_str_list:
             
             if re.match('[a-zA-Z0-9]', fn_chunk):
-                divided_fname = dc()
+                divided_fname = DataContainer()
                 divided_fname['start'] = ''.join(fname_chunks[:idx])
                 divided_fname['end'] = ''.join(fname_chunks[idx+1:])
                 divided_fname['fuzzedFname'] = \
@@ -373,47 +373,45 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
 
     >>> from core.data.request.fuzzableRequest import fuzzableRequest
     >>> from core.data.parsers.urlParser import url_object
-    >>> from core.data.dc.dataContainer import dataContainer as dc
+    >>> from core.data.dc.dataContainer import DataContainer
 
     Mutant creation
-    >>> d = dc()
+    >>> d = DataContainer()
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
     >>> freq = fuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
     >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
-    [{'a': ['abc'], 'b': ['2']}, {'a': ['def'], 'b': ['2']}, {'a': ['1'], 'b': ['abc']}, {'a': ['1'], 'b': ['def']}]
+    [DataContainer({'a': ['abc'], 'b': ['2']}), DataContainer({'a': ['def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['abc']}), DataContainer({'a': ['1'], 'b': ['def']})]
 
     Repeated parameters
-    >>> d = dc()
+    >>> d = DataContainer()
     >>> d['a'] = ['1','2','3']
     >>> freq.setDc(d)
     >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
-    [{'a': ['abc', '2', '3']}, {'a': ['def', '2', '3']}, {'a': ['1', 'abc', '3']}, {'a': ['1', 'def', '3']}, {'a': ['1', '2', 'abc']}, {'a': ['1', '2', 'def']}]
+    [DataContainer({'a': ['abc', '2', '3']}), DataContainer({'a': ['def', '2', '3']}), DataContainer({'a': ['1', 'abc', '3']}), DataContainer({'a': ['1', 'def', '3']}), DataContainer({'a': ['1', '2', 'abc']}), DataContainer({'a': ['1', '2', 'def']})]
 
     SmartFill of parameters
-    >>> from core.data.dc.form import form
+    >>> from core.data.dc.form import Form
     >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
-    >>> f = form()
+    >>> f = Form()
     >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
     >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
     >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/'), dc=f)
     >>> f = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
-    [{'foo': ['abc'], 'address': ['Bonsai Street 123']}, {'foo': ['def'], 'address': ['Bonsai Street 123']}, {'foo': ['56'], 'address': ['abc']}, {'foo': ['56'], 'address': ['def']}]
+    [Form({'address': ['abc'], 'foo': ['56']}), Form({'address': ['def'], 'foo': ['56']}), Form({'address': ['Bonsai Street 123'], 'foo': ['abc']}), Form({'address': ['Bonsai Street 123'], 'foo': ['def']})]
 
     Support for HTTP requests that have both QS and POST-Data
-    >>> from core.data.dc.form import form
-    >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
-    >>> f = form()
+    >>> f = Form()
     >>> _ = f.addInput( [("name", "password") , ("type", "password")] )
     >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/foo.bar?action=login'), dc=f)
     >>> mutants = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
     >>> [ i.getURI() for i in mutants ]
     [<url_object for "http://www.w3af.com/foo.bar?action=login">, <url_object for "http://www.w3af.com/foo.bar?action=login">]
     >>> [ i.getDc() for i in mutants ]
-    [{'password': ['abc']}, {'password': ['def']}]
+    [Form({'password': ['abc']}), Form({'password': ['def']})]
     '''
     result = []
     if not dataContainer:
@@ -454,7 +452,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
                     dc_copy = dataContainer.copy()
                     original_value = element_value
                     
-                    if append :
+                    if append:
                         dc_copy[pname][element_index] += mutant_str
                     else:
                         dc_copy[pname][element_index] = mutant_str
@@ -465,7 +463,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
                     # developer checks like: "parameter A was filled".
                     
                     # But I only perform this task in HTML forms, everything else is left as it is:
-                    if isinstance( dc_copy, form ):
+                    if isinstance(dc_copy, Form):
                         for var_name_dc in dc_copy:
                             for element_index_dc, element_value_dc in enumerate(dc_copy[var_name_dc]):
                                 if (var_name_dc, element_index_dc) != (pname, element_index) and\
@@ -509,7 +507,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     
 def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append):
     '''
-    @parameter freq: A fuzzable request with a dataContainer inside.
+    @parameter freq: A fuzzable request with a DataContainer inside.
     @parameter mutantClass: The class to use to create the mutants
     @parameter fuzzableParamList: What parameters should be fuzzed
     @parameter append: True/False, if we should append the value or replace it.
@@ -534,7 +532,7 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
         if not p_chunk:
             continue
         for mutant_str in mutant_str_list:
-            divided_path = dc()
+            divided_path = DataContainer()
             divided_path['start'] = path_sep.join(path_chunks[:idx] + [''])
             divided_path['end'] = path_sep.join([''] + path_chunks[idx+1:])
             divided_path['fuzzedUrlParts'] = \
@@ -622,40 +620,38 @@ def createRandNum(length=0, excludeNumbers=[]):
             raise w3afException('Failed return random number.')
     return ru
     
-def createFormatString(  length ):
+def createFormatString(length):
     '''
     @return: A string with $length %s and a final %n
     '''
     result = '%n' * length
     return result
 
-def _createFuzzable( freq ):
+def _createFuzzable(freq):
     '''
     @return: This function verifies the configuration, and creates a map of
         things that can be fuzzed.
     '''
     _fuzzable = {}
     _fuzzable['dc'] = freq.getDc()
+    config = cf.cf
     
     # Add the fuzzable headers
-    tmp = {}
-    for header in cf.cf.getData('fuzzableHeaders') or []:
-        tmp[ header ] = ''
+    fuzzheaders = dict((h, '') for h in config.getData('fuzzableHeaders', []))
     
-    if len( tmp.keys() ):
-        _fuzzable['headers'] = tmp
+    if fuzzheaders:
+        _fuzzable['headers'] = fuzzheaders
         
-    if cf.cf.getData('fuzzableCookie'):     
-        _fuzzable['cookie'] = cookie()
+    if config.getData('fuzzableCookie'):     
+        _fuzzable['cookie'] = Cookie()
     
-    if cf.cf.getData('fuzzFileName'):
+    if config.getData('fuzzFileName'):
         _fuzzable['fuzzedFname'] = None
         
-    if cf.cf.getData('fuzzFileContent' ):
+    if config.getData('fuzzFileContent'):
         _fuzzable['fuzzFileContent'] = None
 
-    if cf.cf.getData('fuzzURLParts'):
+    if config.getData('fuzzURLParts'):
         _fuzzable['fuzzURLParts'] = None
     
     return _fuzzable
-

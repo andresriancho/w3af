@@ -53,8 +53,8 @@ class mutantFileName(mutant):
         
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.dc.dataContainer import dataContainer as dc
-        >>> divided_file_name = dc()
+        >>> from core.data.dc.dataContainer import DataContainer
+        >>> divided_file_name = DataContainer()
         >>> divided_file_name['start'] = ''
         >>> divided_file_name['fuzzedFname'] = 'ping!'
         >>> divided_file_name['end'] = '.html'

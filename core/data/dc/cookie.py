@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import dataContainer
+from core.data.dc.dataContainer import DataContainer
 
-class cookie(dataContainer):
+class Cookie(DataContainer):
     '''
     This class represents a cookie.
     
@@ -33,7 +33,7 @@ class cookie(dataContainer):
     '''
     def __init__(self, strValues='', encoding=DEFAULT_ENCODING):
         
-        dataContainer.__init__(self, encoding=encoding)
+        super(Cookie, self).__init__(encoding=encoding)
         
         for k, v in re.findall('(.*?)=(.*?);', strValues + ';' ):
             k = k.strip()
@@ -64,3 +64,7 @@ class cookie(dataContainer):
                 res += ks + '=' + vs + '; '
         return res[:-1]
     
+    def __reduce__(self):
+        r = list(super(Cookie, self).__reduce__())
+        r[1] = (str(self),)
+        return tuple(r)

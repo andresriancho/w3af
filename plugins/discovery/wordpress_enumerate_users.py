@@ -74,7 +74,7 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
             if not is_404( response ):
                 # Loop into authors and increment user ID
                 while (gap <= gap_tolerance):
-                    domain_path.setQueryString( {'author': str(uid)} )
+                    domain_path.querystring = {u'author': u'%s' % uid}
                     wp_author_url = domain_path
                     response_author = self._urlOpener.GET(wp_author_url, useCache=True)
                     if not is_404( response_author ):

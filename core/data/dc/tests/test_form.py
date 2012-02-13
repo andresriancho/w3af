@@ -135,10 +135,10 @@ class test_form(unittest.TestCase):
 
     def test_max_variants(self):
         # Combinatoric explosion (mode="all"): total_variants = 2*5*5*5 = 
-        # 250 > dc.form.TOP_VARIANTS = 150
+        # 250 > dc.Form.TOP_VARIANTS = 150
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc)
-        self.assertEquals(form.form.TOP_VARIANTS, 
+        self.assertEquals(form.Form.TOP_VARIANTS, 
                           len([fv for fv in new_form.getVariants(mode="all")])-1)
         
     def test_same_variants_generation(self):
@@ -170,13 +170,13 @@ def get_gruped_data(form_data):
 
 def create_form_helper(form_data):
     '''
-    Creates a dc.form object from a dict container
+    Creates a dc.Form object from a dict container
     
     @param form_data: A list containing dicts representing a form's
         internal structure
-    @return: A dc.form object from `form_data`
+    @return: A dc.Form object from `form_data`
     '''
-    new_form = form.form()
+    new_form = form.Form()
     
     for elem_data in form_data:
         elem_type = elem_data['tagname']

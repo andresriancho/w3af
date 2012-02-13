@@ -25,8 +25,9 @@ import copy
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.controllers.w3afException import w3afException
-from core.data.dc.cookie import cookie as cookie
-from core.data.dc.dataContainer import dataContainer
+from core.data.dc.cookie import Cookie
+from core.data.dc.header import Header
+from core.data.dc.dataContainer import DataContainer
 from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
@@ -56,9 +57,9 @@ class fuzzableRequest(object):
                  headers=None, cookie=None, dc=None):
         
         # Internal variables
-        self._dc = dc or dataContainer()
+        self._dc = dc or DataContainer()
         self._method = method
-        self._headers = headers or {}
+        self._headers = Header(headers or {})
         self._cookie = cookie
         self._data = None
         self.setURI(uri)
@@ -84,7 +85,9 @@ class fuzzableRequest(object):
     
     def getRequestLine(self):
         '''Return request line.'''
-        return "%s %s HTTP/1.1%s" % (self.getMethod(), self.getURI(), CRLF)
+        return "%s %s HTTP/1.1%s" % (self.getMethod(), 
+                                     self.getURI().urlEncode(),
+                                     CRLF)
 
     def dumpRequestHead(self):
         '''
@@ -96,8 +99,7 @@ class fuzzableRequest(object):
         '''
         @return: A string representation of the headers.
         '''
-        return ''.join("%s: %s%s" % (h, v, CRLF) for h, v
-                       in self._headers.iteritems())
+        return str(self._headers)
 
     def export(self):
         '''
@@ -110,13 +112,13 @@ class fuzzableRequest(object):
         
         @return: a csv str representation of the request
 
-        >>> from core.data.dc.dataContainer import dataContainer
+        >>> from core.data.dc.dataContainer import DataContainer
         >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
         >>> fr.export()
         'GET,http://www.w3af.com/,'
-        >>> d = dataContainer()
+        >>> d = DataContainer()
         >>> d['a'] = ['1',]
-        >>> fr.setDc( d )
+        >>> fr.setDc(d)
         >>> fr.export()
         'GET,http://www.w3af.com/?a=1,'
 
@@ -225,32 +227,26 @@ class fuzzableRequest(object):
         '<fuzzable request | GET | http://www.w3af.com/>'
 
         '''        
-        result_string = ''
-        result_string += self._url
-        result_string += ' | Method: ' + self._method
+        strelems = [unicode(self._url)]
+        strelems.append(u' | Method: ' + self._method)
         
         if self._dc:
-            result_string += ' | Parameters: ('
+            strelems.append(u' | Parameters: (')
             
             # Mangle the value for printing
-            for param_name, values in self._dc.items():
-
-                #
+            for pname, values in self._dc.items():
                 # Because of repeated parameter names, we need to add this:
-                #
                 for the_value in values:
-                    the_value = the_value.decode(self._dc.encoding, 'ignore')
-
                     # the_value is always a string
                     if len(the_value) > 10:
                         the_value = the_value[:10] + '...'
                     the_value = '"' + the_value + '"'
+                    strelems.append(pname + '=' + the_value + ', ')
                     
-                    result_string += param_name + '=' + the_value + ', '
-                    
-            result_string = result_string[:-2]
-            result_string += ')'
-        return result_string.encode(DEFAULT_ENCODING)
+            strelems[-1] = strelems[-1][:-2]
+            strelems.append(u')')
+        
+        return u''.join(strelems).encode(DEFAULT_ENCODING)
     
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % \
@@ -321,14 +317,14 @@ class fuzzableRequest(object):
         >>> r = fuzzableRequest('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        ValueError: The "uri" parameter of a fuzzableRequest must be of urlParser.url_object type.
+        TypeError: The "uri" parameter of a fuzzableRequest must be of urlParser.url_object type.
         >>> url = url_object('http://www.google.com/')
         >>> r = fuzzableRequest(url)
         >>> r.getURL() == url
         True
         '''        
         if not isinstance(url, url_object):
-            raise ValueError('The "url" parameter of a %s must be of '
+            raise TypeError('The "url" parameter of a %s must be of '
                          'urlParser.url_object type.' % type(self).__name__)
 
         self._url = url_object(url.url_string.replace(' ', '%20'))
@@ -336,36 +332,35 @@ class fuzzableRequest(object):
     
     def setURI(self, uri):
         if not isinstance(uri, url_object):
-            raise ValueError('The "uri" parameter of a %s must be of '
+            raise TypeError('The "uri" parameter of a %s must be of '
                          'urlParser.url_object type.' % type(self).__name__)
-
-        self._uri = url_object(uri.url_string.replace(' ', '%20'))
-        self._url = self._uri.uri2url()
+        self._uri = uri
+        self._url = uri.uri2url()
         
     def setMethod(self, method):
         self._method = method
         
     def setDc(self, dataCont):
-        if not isinstance(dataCont, dataContainer):
-            raise ValueError('Invalid call to fuzzableRequest.setDc(), the '
-                            'argument must be a dataContainer instance.')
+        if not isinstance(dataCont, DataContainer):
+            raise TypeError('Invalid call to fuzzableRequest.setDc(), the '
+                            'argument must be a DataContainer instance.')
         self._dc = dataCont
         
     def setHeaders(self, headers):
-        self._headers = headers
+        self._headers = Header(headers)
     
     def setReferer(self, referer):
         self._headers['Referer'] = referer
     
     def setCookie(self, c):
         '''
-        @parameter cookie: A cookie object as defined in core.data.dc.cookie,
+        @parameter cookie: A Cookie object as defined in core.data.dc.cookie,
             or a string.
         '''
-        if isinstance(c, cookie):
+        if isinstance(c, Cookie):
             self._cookie = c
         elif isinstance(c, basestring):
-            self._cookie = cookie(c)
+            self._cookie = Cookie(c)
         elif c is None:
             self._cookie = None
         else:
@@ -381,14 +376,14 @@ class fuzzableRequest(object):
         
     def setData(self, d):
         '''
-        The data is the string representation of the dataContainer, in most 
+        The data is the string representation of the DataContainer, in most 
         cases it wont be set.
         '''
         self._data = d
         
     def getData(self):
         '''
-        The data is the string representation of the dataContainer, in most
+        The data is the string representation of the DataContainer, in most
         cases it will be used as the POSTDATA for requests. Sometimes it is
         also used as the query string data.
         '''

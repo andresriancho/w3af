@@ -315,7 +315,7 @@ class xUrllib(object):
         #
         if data:
             uri = uri.copy()
-            uri.setQueryString(str(data))
+            uri.querystring = data
             
         req = HTTPRequest(uri, follow_redir=follow_redir)
         req = self._add_headers(req, headers)
@@ -589,8 +589,6 @@ class xUrllib(object):
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
 
-            original_url_inst = url_object(original_url)
-
             trace_str = traceback.format_exc()
             parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)',
                                           trace_str)
@@ -790,8 +788,7 @@ class xUrllib(object):
     def _grepResult(self, request, response):
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
-        url_instance = url_object(request.get_full_url(),
-                                  encoding=response.charset)
+        url_instance = request.url_object
         domain = url_instance.getDomain()
         
         if self._grepPlugins and domain in cf.cf.getData('targetDomains'):

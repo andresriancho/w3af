@@ -95,7 +95,7 @@ class HTMLParser(SGMLParser):
             except ValueError:
                 missing_or_invalid_action = True
             else:
-                action = self._decode_URL(unicode(action))
+                action = self._decode_url(unicode(action))
                 action = url_object(action, encoding=self._encoding)
 
         if missing_or_invalid_action:
@@ -107,7 +107,7 @@ class HTMLParser(SGMLParser):
             action = self._source_url
         
         # Create the form object and store everything for later use
-        form_obj = form.form(encoding=self._encoding)
+        form_obj = form.Form(encoding=self._encoding)
         form_obj.setMethod(method)
         form_obj.setAction(action)
         self._forms.append(form_obj)

@@ -120,7 +120,7 @@ class dbDriverFunctions:
         """
         m = self._vuln.getMutant()
         url = url_object( url )
-        m.setDc( url.getQueryString() )
+        m.setDc(url.querystring)
         m.setURL( url.uri2url() )
         response = self._sendMutant( m , analyze=False )
         if response.getCode() in range( 500, 599 ):

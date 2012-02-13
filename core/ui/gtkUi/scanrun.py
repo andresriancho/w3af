@@ -424,7 +424,7 @@ class URLsTree(gtk.TreeView):
             
             path = url.getPath()
             params = url.getParamsString()
-            query = str(url.getQueryString())
+            query = str(url.querystring)
             fragment = url.getFragment()
             scheme = url.getProtocol()
             netloc = url.getDomain()

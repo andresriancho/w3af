@@ -124,7 +124,7 @@ class importResults(baseDiscoveryPlugin):
         >>> pdr
         <postdata fuzzable request | GET | http://www.w3af.com/>
         >>> pdr._dc
-        {'id': ['1']}
+        QueryString({u'id': [u'1']})
         >>> pdr.getData()
         'id=1'
         '''

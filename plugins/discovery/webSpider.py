@@ -102,7 +102,7 @@ class webSpider(baseDiscoveryPlugin):
             for param_name in to_send:
                 
                 # I do not want to mess with the "static" fields
-                if isinstance(to_send, form.form):
+                if isinstance(to_send, form.Form):
                     if to_send.getType(param_name) in ('checkbox', 'file',
                                                        'radio', 'select'):
                         continue
@@ -157,6 +157,7 @@ class webSpider(baseDiscoveryPlugin):
                 #
                 # - The re_refs are the result of regular expressions,
                 # which in some cases are just false positives.
+                
                 parsed_refs, re_refs = doc_parser.getReferences()
                 
                 # I also want to analyze all directories, if the URL I just
@@ -196,8 +197,7 @@ class webSpider(baseDiscoveryPlugin):
                         args = (ref, fuzzable_req, originalURL,
                                  possibly_broken)
                         self._run_async(meth=self._verify_reference, args=args)
-            
-                        self._join()
+                self._join()
         
         return list(self._fuzzable_reqs)
     
@@ -264,8 +264,6 @@ class webSpider(baseDiscoveryPlugin):
             try:
                 resp = self._urlOpener.GET(reference, useCache=True, 
                                            headers=headers, follow_redir=False)
-            except KeyboardInterrupt:
-                raise
             except w3afMustStopOnUrlError:
                 pass
             else:

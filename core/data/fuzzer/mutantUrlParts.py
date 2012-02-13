@@ -53,8 +53,8 @@ class mutantUrlParts(mutant):
         
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.dc.dataContainer import dataContainer as dc
-        >>> divided_path = dc()
+        >>> from core.data.dc.dataContainer import DataContainer
+        >>> divided_path = DataContainer()
         >>> divided_path['start'] = '/'
         >>> divided_path['fuzzedUrlParts'] = 'ping!'
         >>> divided_path['end'] = '/def'

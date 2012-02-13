@@ -1,3 +1,4 @@
+# coding: utf8
 '''
 sgmlParser.py
 
@@ -159,7 +160,7 @@ class SGMLParser(BaseParser):
         
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
-                url_path = self._decode_URL(url_path)
+                url_path = self._decode_url(url_path)
                 url = unicode(self._baseUrl.urlJoin(url_path))
                 url = url_object(url, encoding=self._encoding)
             except ValueError:
@@ -273,9 +274,10 @@ class SGMLParser(BaseParser):
             #   "4;URL=http://www.f00.us/"
             #   "2; URL=http://www.f00.us/"
             #   "6  ; URL=http://www.f00.us/"
-            for url in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
-                url = unicode(self._baseUrl.urlJoin(url.strip()))
-                url = url_object(self._decode_URL(url), encoding=self._encoding) 
+            for urlstr in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
+                urlstr = self._decode_url(urlstr.strip())
+                url = unicode(self._baseUrl.urlJoin(urlstr))
+                url = url_object(url, encoding=self._encoding) 
                 self._parsed_urls.add(url)
                 self._tag_and_url.add(('meta', url))
 

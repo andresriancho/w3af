@@ -146,7 +146,7 @@ class fileUploadShell(baseAttackPlugin):
             # this will return the shell_handler.SHELL_IDENTIFIER if success
             dst = vuln_obj['fileDest']
             self._exploit = dst.getDomainPath().urlJoin( self._file_name )
-            self._exploit.setQueryString( 'cmd=' )
+            self._exploit.querystring = u'cmd='
             response = self._urlOpener.GET( self._exploit )
             
             # Clean-up
@@ -270,7 +270,7 @@ class fuShell(exec_shell):
         @return: The result of the command.
         '''
         to_send = self.getExploitURL()
-        to_send.setQueryString( parse_qs('cmd=' + command ) )
+        to_send.querystring = u'cmd=' + command
         response = self._urlOpener.GET( to_send )
         return response.getBody()
         

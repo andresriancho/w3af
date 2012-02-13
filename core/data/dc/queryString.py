@@ -21,27 +21,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import dataContainer
+from core.data.dc.dataContainer import DataContainer
 import core.data.parsers.encode_decode as enc_dec
 
 
-class queryString(dataContainer):
+class QueryString(DataContainer):
     '''
     This class represents a Query String.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, init_val=(), strict=False, encoding=DEFAULT_ENCODING):
-        dataContainer.__init__(self, init_val, encoding)
+    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+        super(QueryString, self).__init__(init_val, encoding)
 
     def __str__(self):
         '''
-        >>> str(queryString([('a','>'), ('b', ['a==1 && z >= 2','3>2'])]))
+        >>> str(QueryString([('a','>'), ('b', ['a==1 && z >= 2','3>2'])]))
         'a=%3E&b=a%3D%3D1%20%26%26%20z%20%3E%3D%202&b=3%3E2'
-        >>> str(queryString([('a', 'x=/etc/passwd')]))
+        >>> str(QueryString([('a', 'x=/etc/passwd')]))
         'a=x%3D%2Fetc%2Fpasswd'
     
-        @return: string representation of the dataContainer Object.
+        @return: string representation of the QueryString object.
         '''
         return enc_dec.urlencode(self, encoding=self.encoding, safe='')
-    

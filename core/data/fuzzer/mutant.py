@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 
 from core.controllers.w3afException import w3afException
-from core.data.dc.dataContainer import dataContainer
+from core.data.dc.dataContainer import DataContainer
 
 class mutant(object):
     '''
@@ -41,9 +41,8 @@ class mutant(object):
         return self._mutant_dc
 
     def setMutantDc(self, dc):
-        if not isinstance(dc, dataContainer):
-            raise ValueError(
-                    'mutant.setMutantDc() - the argument must be a dataContainer instance.')
+        if not isinstance(dc, DataContainer):
+            raise TypeError('Argument must be a DataContainer instance.')
         self._mutant_dc = dc
     #
     # this methods are from the mutant

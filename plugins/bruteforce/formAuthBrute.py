@@ -203,7 +203,7 @@ class formAuthBrute(baseBruteforcePlugin):
         passwd = text = other = 0
         data_container = freq.getDc()
         
-        if isinstance(data_container, form.form):
+        if isinstance(data_container, form.Form):
             
             for parameter_name in data_container:
 

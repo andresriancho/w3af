@@ -31,14 +31,14 @@ class HTTPQSRequest(fuzzableRequest):
     '''
 
     def __init__(self, uri, method='GET', headers=None, cookie=None):
-        fuzzableRequest.__init__(self, uri, method, headers, cookie)
+        super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
         
     def setURI(self, uri):
         '''
         >>> r = HTTPQSRequest('http://www.w3af.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        ValueError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
+        TypeError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
         >>> from core.data.parsers.urlParser import url_object
         >>> r = HTTPQSRequest(url_object('http://www.w3af.com/'))
         >>> uri = url_object('http://www.w3af.com/scan')
@@ -46,14 +46,14 @@ class HTTPQSRequest(fuzzableRequest):
         >>> r.getURI() == uri
         True
         '''
-        fuzzableRequest.setURI(self, uri)
-        self._dc = uri.getQueryString()
+        super(HTTPQSRequest, self).setURI(uri)
+        self._dc = self._uri.querystring
         
     def getURI(self):
-        res = self._url.copy()
+        uri = self._url.copy()
         if self._dc:
-            res.setQueryString(self._dc)
-        return res
+            uri.querystring = self._dc
+        return uri
     
     def setData(self, d):
         pass

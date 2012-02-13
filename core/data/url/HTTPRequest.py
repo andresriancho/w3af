@@ -43,7 +43,7 @@ class HTTPRequest(urllib2.Request):
         self.follow_redir = follow_redir
         
         # Call the base class
-        urllib2.Request.__init__(self, str(url.urlEncode()), data,
+        urllib2.Request.__init__(self, url.urlEncode(), data,
                                  headers, origin_req_host, unverifiable)
 
     def copy(self):

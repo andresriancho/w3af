@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import tempfile
 
-from core.data.dc.dataContainer import dataContainer as dataContainer
+from core.data.dc.dataContainer import DataContainer
 from core.ui.consoleUi.tables import table
 from plugins.attack.payloads.base_payload import base_payload
 import core.data.constants.severity as severity
@@ -75,7 +75,7 @@ class php_sca(base_payload):
                 
                 # TODO: Extract all the other variables that are
                 # present in the PHP file using the SCA
-                v.setDc(dataContainer())
+                v.setDc(DataContainer())
                 
                 #
                 ## TODO: This needs to be checked! OS Commanding specific

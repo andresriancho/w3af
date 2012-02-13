@@ -61,6 +61,6 @@ def are_variants(uri, other_uri):
                      'http://rapid7.com/foo.php?id=1')
     Traceback (most recent call last):
       ...
-    ValueError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
+    TypeError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
     '''
     return HTTPQSRequest(uri).is_variant_of(HTTPQSRequest(other_uri))

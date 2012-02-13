@@ -1,3 +1,4 @@
+# coding: utf8
 '''
 test_webspider.py
 
@@ -25,7 +26,7 @@ class TestWebSpider(PluginTest):
     
     follow_links_url = 'http://moth/w3af/discovery/web_spider/follow_links/'
     dir_get_url = 'http://moth/w3af/discovery/web_spider/a/b/c/d/'
-    
+    encoding_url = 'http://moth/w3af/core/encoding/'
     
     _run_configs = {
         'cfg1': {'target': follow_links_url + '1.html',
@@ -56,3 +57,21 @@ class TestWebSpider(PluginTest):
                 set(str(u) for u in urls),
                 set((self.follow_links_url + end) for end in expected_urls)
                 )
+    
+    def test_spider_urls_with_strange_charsets(self):
+        cfg = self._run_configs['cfg1']
+        self._scan(self.encoding_url + 'index.html', cfg['plugins'])
+        urls = self.kb.getData('urls', 'urlList')
+        expected = (
+            u'', u'index.html',
+            # Japanese
+            u'euc-jp/', u'euc-jp/jap1.php', u'euc-jp/jap2.php',
+            # UTF8
+            u'utf-8/', u'utf-8/vúlnerable.php', u'utf-8/é.html', u'utf-8/改.php',
+            # Hebrew
+            u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php'
+        )
+        self.assertEquals(
+            sorted([(self.encoding_url + u) for u in expected]),
+            sorted([u.url_string for u in urls])
+        )

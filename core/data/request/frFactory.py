@@ -29,8 +29,8 @@ from .jsonPostDataRequest import JSONPostDataRequest
 from .wsPostDataRequest import wsPostDataRequest
 from .xmlrpcRequest import XMLRPCRequest
 from core.controllers.w3afException import w3afException
-from core.data.dc.cookie import cookie as cookie
-from core.data.dc.queryString import queryString
+from core.data.dc.cookie import Cookie
+from core.data.dc.queryString import QueryString
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
 import core.controllers.outputManager as om
@@ -206,7 +206,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
                     om.out.debug('Multipart form data is invalid, the browser '
                                  'sent something weird.')
                 else:
-                    data = queryString()
+                    data = QueryString()
                     data.update(dc)
                     # We process multipart requests as x-www-form-urlencoded
                     # TODO: We need native support of multipart requests!
@@ -237,7 +237,7 @@ def _create_cookie(httpResponse):
         if 'cookie' in hname.lower():
             cookies.append(hvalue)
                 
-    cookie_inst = cookie(''.join(cookies))
+    cookie_inst = Cookie(''.join(cookies))
     
     #
     # delete everything that the browsers usually keep to themselves, since

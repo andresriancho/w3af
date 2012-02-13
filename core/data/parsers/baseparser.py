@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import urllib
 
+from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.urlParser import url_object
 
@@ -249,10 +250,10 @@ class BaseParser(object):
         re_urls = self._re_urls
         
         for url in re.findall(BaseParser.URL_RE, doc_str):
-            # This try is here because the _decode_URL method raises an
+            # This try is here because the _decode_url method raises an
             # exception whenever it fails to decode a url.
             try:
-                decoded_url = url_object(self._decode_URL(url[0]),
+                decoded_url = url_object(self._decode_url(url[0]),
                                          encoding=self._encoding)
             except ValueError:
                 pass
@@ -281,7 +282,7 @@ class BaseParser(object):
                 
                 try:
                     url = self._baseUrl.urlJoin(match_str).url_string
-                    url = url_object(self._decode_URL(url),
+                    url = url_object(self._decode_url(url),
                                      encoding=self._encoding)
                 except ValueError:
                     # In some cases, the relative URL is invalid and triggers an 
@@ -300,7 +301,7 @@ class BaseParser(object):
         # Finally normalize the urls
         map(lambda u: u.normalizeURL(), re_urls)    
         
-    def _decode_URL(self, url_string):
+    def _decode_url(self, url_string):
         '''
         Decode `url_string` using urllib's url-unquote
         algorithm. If the url is unicode it will preserve the type as well as
@@ -309,7 +310,7 @@ class BaseParser(object):
         See http://www.blooberry.com/indexdot/html/topics/urlencoding.htm for
         more info on urlencoding.
         
-        So, when _decode_URL() is called and take as input 
+        So, when _decode_url() is called and take as input 
         u'http://host.tld/%05%44', it is encoded using the instance's _encoding
         then it is applied the unquote routine and finally is decoded back to
         unicode being u'http://host.tld/é' the final result.
@@ -327,60 +328,60 @@ class BaseParser(object):
         >>> a._encoding = 'latin1'
         
         Simple, no strange encoding
-        >>> a._decode_URL(u'http://www.w3af.com/index.html')
+        >>> a._decode_url(u'http://www.w3af.com/index.html')
         u'http://www.w3af.com/index.html'
 
         Encoded
-        >>> a._decode_URL(u'http://www.w3af.com/ind%E9x.html') == \
+        >>> a._decode_url(u'http://www.w3af.com/ind%E9x.html') == \
         u'http://www.w3af.com/ind\xe9x.html'
         True
         
         Decoding of safe chars skipped ('\x00' and ' ')
-        >>> a._decode_URL(u'http://w3af.com/search.php?a=%00x&b=2%20c=3%D1') ==\
+        >>> a._decode_url(u'http://w3af.com/search.php?a=%00x&b=2%20c=3%D1') ==\
         u'http://w3af.com/search.php?a=%00x&b=2 c=3\xd1'
         True
         
         Ignoring possible decoding errors
         >>> a._encoding = 'utf-8'
-        >>> a._decode_URL(u'http://w3af.com/blah.jsp?p=SQU-300&bgc=%FFAAAA')
+        >>> a._decode_url(u'http://w3af.com/blah.jsp?p=SQU-300&bgc=%FFAAAA')
         u'http://w3af.com/blah.jsp?p=SQU-300&bgc=AAAA'
         '''
         enc = self._encoding
-        is_unicode = False
 
         if isinstance(url_string, unicode):
-            is_unicode = True
             url_string = url_string.encode(enc)
                 
         dec_url = urllib.unquote(url_string)
         for sch, repl in self.SAFE_CHARS:
             dec_url = dec_url.replace(sch, repl)
         
-        if is_unicode:
-            # Take it back to unicode
-            # TODO: Any improvement for this? We're certainly losing
-            # information by using the 'ignore' error handling
+        # Always return unicode
+        # TODO: Any improvement for this? We're certainly losing
+        # information by using the 'ignore' error handling
+        
+        try:
+            dec_url = dec_url.decode(UTF8)
+        except UnicodeDecodeError:
             dec_url = dec_url.decode(enc, 'ignore')
-            #
-            # TODO: Lines below will remain commented until we make a
-            # decision regarding which is the (right?) way to decode URLs.
-            # The tests made on FF and Chrome revealed that if strange
-            # (i.e. non ASCII) characters are present in a URL the browser
-            # will urlencode the URL string encoded until the beginning
-            # of the query string using the page charset and the query 
-            # string itself encoded in UTF-8.
-            #
-            # Apparently this is not a universal practice. We've found
-            # some static sites having URL's encoded *only* in Windows-1255
-            # (hebrew) for example.
-            #
-            # This is what de W3C recommends (not a universal practice either):
-            #    http://www.w3.org/TR/REC-html40/appendix/notes.html#h-B.2
-            #
-##            index = dec_url.find('?')
-##            if index > -1:
-##                dec_url = (dec_url[:index].decode(enc, 'ignore') +
-##                           dec_url[index:].decode('utf-8', 'ignore'))
+        #
+        # TODO: Lines below will remain commented until we make a
+        # decision regarding which is the (right?) way to decode URLs.
+        # The tests made on FF and Chrome revealed that if strange
+        # (i.e. non ASCII) characters are present in a URL the browser
+        # will urlencode the URL string encoded until the beginning
+        # of the query string using the page charset and the query 
+        # string itself encoded in UTF-8.
+        #
+        # Apparently this is not a universal practice. We've found
+        # some static sites having URL's encoded *only* in Windows-1255
+        # (hebrew) for example.
+        #
+        # This is what de W3C recommends (not a universal practice though):
+        #    http://www.w3.org/TR/REC-html40/appendix/notes.html#h-B.2
+        #
+##        index = dec_url.find('?')
+##        if index > -1:
+##            dec_url = (dec_url[:index].decode(enc, 'ignore') +
+##                       dec_url[index:].decode('utf-8', 'ignore'))
         
         return dec_url
-

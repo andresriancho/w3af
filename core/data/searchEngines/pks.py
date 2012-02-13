@@ -67,8 +67,8 @@ class pks(searchEngine):
                 self.name = name
                 self.username = username
                 
-        url = url_object('http://pgp.mit.edu:11371/pks/lookup')
-        url.setQueryString( {'op':'index', 'search':query} )
+        url = url_object(u'http://pgp.mit.edu:11371/pks/lookup')
+        url.querystring = {u'op': u'index', u'search': query}
 
         response = self._urlOpener.GET( url , headers=self._headers, useCache=True, grepResult=False )
         content = response.getBody()

@@ -25,13 +25,13 @@ import operator
 import random
 
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import dataContainer
+from core.data.dc.dataContainer import DataContainer
 from core.data.parsers.encode_decode import urlencode
 from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
 
-class form(dataContainer):
+class Form(DataContainer):
     '''
     This class represents a HTML form.
     
@@ -44,7 +44,7 @@ class form(dataContainer):
     SEED = 1
     
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
-        dataContainer.__init__(self, init_val, encoding)
+        super(Form, self).__init__(init_val, encoding)
         
         # Internal variables
         self._method = None
@@ -59,32 +59,31 @@ class form(dataContainer):
         
     def getAction(self):
         '''
-        @return: The form action.
+        @return: The Form action.
         '''
         return self._action
         
     def setAction(self, action):
         '''
-        >>> f = form()
+        >>> f = Form()
         >>> f.setAction('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        ValueError: The action of a form must be of urlParser.url_object type.
-        >>> f = form()
+        TypeError: The action of a Form must be of urlParser.url_object type.
+        >>> f = Form()
         >>> action = url_object('http://www.google.com/')
         >>> f.setAction(action)
         >>> f.getAction() == action
         True
         '''
         if not isinstance(action, url_object):
-            raise ValueError('The action of a form must be of '
+            raise TypeError('The action of a Form must be of '
                              'urlParser.url_object type.')
-        
         self._action = action
         
     def getMethod(self):
         '''
-        @return: The form method.
+        @return: The Form method.
         '''
         return self._method
     
@@ -104,7 +103,7 @@ class form(dataContainer):
 
     def addFileInput( self, attrs ):
         '''
-        Adds a file input to the form
+        Adds a file input to the Form
         @parameter attrs: attrs=[("class", "screen")]
         '''
         name = ''
@@ -129,32 +128,32 @@ class form(dataContainer):
     
     def __str__(self):
         '''
-        This method returns a string representation of the form Object.
+        This method returns a string representation of the Form object.
         
-        >>> f = form()
+        >>> f = Form()
         >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
         >>> str(f)
         'abc=123'
 
-        >>> f = form()
+        >>> f = Form()
         >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
         >>> _ = f.addInput([("type", "text"), ("name", "def"), ("value", "000")])        
         >>> str(f)
         'abc=123&def=000'
         
         >>> import urllib
-        >>> f = form() # Default encoding UTF-8
+        >>> f = Form() # Default encoding UTF-8
         >>> _ = f.addInput([("type", "text"), ("name", u"v"),("value", u"áéíóú")])
         >>> _ = f.addInput([("type", "text"), ("name", u"c"), ("value", u"ñçÑÇ")])
         >>> f.addSubmit('address', 'bsas')
         >>> urllib.unquote(str(f)).decode('utf-8') == u'c=ñçÑÇ&address=bsas&v=áéíóú'
         True
 
-        @return: string representation of the form Object.
+        @return: string representation of the Form object.
         '''
         #
         # FIXME: hmmm I think that we are missing something here... what about
-        # self._select values. See FIXME below. Maybe we need another for?
+        # self._select values. See FIXME below.
         #
         d = dict(self)
         d.update(self._submitMap)
@@ -169,7 +168,7 @@ class form(dataContainer):
         
     def addInput(self, attrs):
         '''
-        Adds a input to the form
+        Adds a input to the Form
         
         @parameter attrs: attrs=[("class", "screen")]
         '''
@@ -282,7 +281,7 @@ class form(dataContainer):
 
     def getVariants(self, mode="tmb"):
         """
-        Generate all variants of form by mode:
+        Generate all Form's variants by mode:
           "all" - all values
           "tb" - only top and bottom values
           "tmb" - top, middle and bottom values

@@ -76,7 +76,7 @@ class strangeParameters(baseGrepPlugin):
             
             for ref in parsed_references:
                 
-                qs = ref.getQueryString()
+                qs = ref.querystring
                 
                 for param_name in qs:
                     # This for loop is to address the repeated parameter name issue

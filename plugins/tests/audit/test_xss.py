@@ -46,23 +46,22 @@ class TestXSS(PluginTest):
         self._scan(self.xss_url, cfg['plugins'])
         xssvulns = self.kb.getData('xss', 'xss')
         expected = [
-            ('simple_xss_no_script_2.php', 'text', set(['text'])),
-            ('dataReceptor.php', 'firstname', set(['user', 'firstname'])),
-            ('simple_xss_no_script.php', 'text', set(['text'])),
-            ('simple_xss_no_js.php', 'text', set(['text'])),
-            ('simple_xss_no_quotes.php', 'text', set(['text'])),
-            ('dataReceptor3.php', 'user', set(['user', 'pass'])),
-            ('simple_xss.php', 'text', set(['text'])),
-            ('no_tag_xss.php', 'text', set(['text'])),
-            ('dataReceptor2.php', 'empresa', set(['empresa', 'firstname'])),
-            ('stored/writer.php', 'a', set(['a'])),
+            ('simple_xss_no_script_2.php', 'text', ['text']),
+            ('dataReceptor.php', 'firstname', ['user', 'firstname']),
+            ('simple_xss_no_script.php', 'text', ['text']),
+            ('simple_xss_no_js.php', 'text', ['text']),
+            ('simple_xss_no_quotes.php', 'text', ['text']),
+            ('dataReceptor3.php', 'user', ['user', 'pass']),
+            ('simple_xss.php', 'text', ['text']),
+            ('no_tag_xss.php', 'text', ['text']),
+            ('dataReceptor2.php', 'empresa', ['empresa', 'firstname']),
+            ('stored/writer.php', 'a', ['a']),
         ]
-        res = [(str(m.getURL()), m.getVar(), set(m.getDc().keys()))
+        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
                 for m in (xv.getMutant() for xv in xssvulns)]
         self.assertEquals(
-            sorted([(self.xss_url + e[0], e[1], e[2]) for e in expected],
-                    key=lambda r: r[0] + r[1]),
-            sorted(res, key=lambda r: r[0] + r[1]),
+            set([(self.xss_url + e[0], e[1],tuple(sorted(e[2]))) for e in expected]),
+            set(res),
         )
         
     def test_found_xss_with_redirect(self):
@@ -70,19 +69,17 @@ class TestXSS(PluginTest):
         self._scan(self.xss_302_url, cfg['plugins'])
         xssvulns = self.kb.getData('xss', 'xss')
         expected = [
-            ('302.php', 'x', set(['x'])),
-            ('302.php', 'a', set(['a'])),
-            ('printer.php', 'a', set(['a', 'added'])),
-            ('printer.php', 'added', set(['a', 'added'])),
-            ('printer.php', 'added', set(['added'])),
-            ('printer.php', 'x', set(['x', 'added'])),
-            ('printer.php', 'added', set(['x', 'added']))
+            ('302.php', 'x', ('x',)),
+            ('302.php', 'a', ('a',)),
+            ('printer.php', 'a', ('a', 'added',)),
+            ('printer.php', 'added', ('a', 'added',)),
+            ('printer.php', 'added', ('added',)),
+            ('printer.php', 'x', ('x', 'added')),
+            ('printer.php', 'added', ('x', 'added'))
         ]
-        res = [(str(m.getURL()), m.getVar(), set(m.getDc().keys()))
+        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
                         for m in (xv.getMutant() for xv in xssvulns)]
-        
         self.assertEquals(
-            sorted([(self.xss_302_url + e[0], e[1], e[2]) for e in expected],
-                    key=lambda r: r[0] + r[1]),
-            sorted(res, key=lambda r: r[0] + r[1]),
+            set([(self.xss_302_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
+            set(res),
         )

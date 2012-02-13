@@ -91,12 +91,12 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
         input.
 
 
-    >>> import cgi
-    >>> urlencode(cgi.parse_qs(u'a=1&a=c'), 'latin1')
+    >>> from urlparse import parse_qs
+    >>> urlencode(parse_qs(u'a=1&a=c'), 'latin1')
     'a=1&a=c'
-    >>> urlencode(cgi.parse_qs(u'a=1&b=c'), 'latin1')
+    >>> urlencode(parse_qs(u'a=1&b=c'), 'latin1')
     'a=1&b=c'
-    >>> urlencode(cgi.parse_qs(u'a=á&a=2'), 'latin1')
+    >>> urlencode(parse_qs(u'a=á&a=2'), 'latin1')
     'a=%C3%A1&a=2'
     >>> urlencode(u'a=b&c=d', 'utf-8')
     Traceback (most recent call last):
@@ -122,8 +122,8 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
         except TypeError:
             try:
                 tb = sys.exc_info()[2]
-                raise TypeError, "not a valid non-string sequence or mapping "\
-                       "object", tb
+                raise TypeError, "not a valid non-string sequence or " \
+                        "mapping object", tb
             finally:
                 del tb
 
@@ -142,11 +142,13 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
                 # is this a sufficient test for sequence-ness?
                 len(v)
             except TypeError:
-                v = [str(v)]
+                v = [(v if v is None else str(v))]
         for ele in v:
-            ele = ele.encode(encoding) if is_unicode(ele) else str(ele) 
-            l.append(k + '=' + urllib.quote(ele, safe))
+            if not ele:
+                toapp = k + '='
+            else:
+                ele = ele.encode(encoding) if is_unicode(ele) else str(ele)
+                toapp = k + '=' + urllib.quote(ele, safe) 
+            l.append(toapp)
     
     return '&'.join(l)
-
-

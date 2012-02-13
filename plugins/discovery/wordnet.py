@@ -95,7 +95,7 @@ class wordnet(baseDiscoveryPlugin):
         # The result
         result = []
 
-        query_string = fuzzableRequest.getURI().getQueryString()
+        query_string = fuzzableRequest.getURI().querystring
         for parameter_name in query_string:
             # this for loop was added to address the repeated parameter name issue
             for element_index in xrange(len(query_string[parameter_name])):

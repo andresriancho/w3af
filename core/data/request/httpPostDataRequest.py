@@ -40,8 +40,8 @@ class httpPostDataRequest(fuzzableRequest):
 
     def getData(self):
         '''
-        @return: A string representation of the dataContainer. There is a
-        special case, in which the dataContainer has a file inside, in which
+        @return: A string representation of the DataContainer. There is a
+        special case, in which the DataContainer has a file inside, in which
         we return the data container as it is. This is needed by the multipart
         post handler.
         '''

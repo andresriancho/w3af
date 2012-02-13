@@ -52,13 +52,13 @@ class rndParam(baseEvasionPlugin):
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> qs = rp.modifyRequest( r ).url_object.querystring
         >>> len(qs)
         1
 
         >>> u = url_object('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> qs = rp.modifyRequest( r ).url_object.querystring
         >>> len(qs)
         2
 
@@ -68,18 +68,18 @@ class rndParam(baseEvasionPlugin):
         >>> len(data)
         2
         
-        >>> data = rp.modifyRequest( r ).url_object.getQueryString()
+        >>> data = rp.modifyRequest( r ).url_object.querystring
         >>> len(data)
         2
 
         '''
         # First we mangle the URL        
-        qs = request.url_object.getQueryString()
+        qs = request.url_object.querystring.copy()
         qs = self._mutate(qs)
         
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setQueryString( qs )
+        new_url.querystring = qs
         
         # Mangle the postdata
         post_data = request.get_data()
