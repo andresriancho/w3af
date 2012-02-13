@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
+from core.data.request.fuzzableRequest import fuzzableRequest
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
@@ -35,6 +36,9 @@ import core.data.constants.severity as severity
 
 # xml
 import xml.dom.minidom
+
+# encoding
+import base64
 
 # time
 import time
@@ -200,6 +204,76 @@ class xmlFile(baseOutputPlugin):
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
 
+    def report_http_action(self, parentNode, action):
+        """
+        Write out the request/response in a more parseable XML format
+         will factor anything with a content-type not prefixed with a text/ in a CDATA
+        parent - the parent node (eg httprequest/httpresponse)
+        action - either a details.request or details.response
+        """
+        NON_BIN = ['atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
+                   'javascript', 'rss+xml', 'soap+xml', 'font-woff', 'xhtml+xml', 'xml-dtd',
+                   'xop+xml']
+        #escape_nulls = lambda str: str.replace('\0', 'NULL')
+        if isinstance(action, fuzzableRequest):
+            headers = action.getHeaders()
+            body = action.getData()
+            status = action.getRequestLine()
+        else:
+            headers = action.headers
+            body = action.body
+            status = action.getStatusLine()
+
+        # Put out the status as an element
+        actionStatusNode = self._xmldoc.createElement("status")
+        # strip is to try and remove the extraneous newline
+        actionStatus = self._xmldoc.createTextNode(status.strip())
+        actionStatusNode.appendChild(actionStatus)
+        parentNode.appendChild(actionStatusNode)
+
+        # Put out the headers as XML entity
+        actionHeaderNode = self._xmldoc.createElement("headers")
+        for (header, header_content) in headers.iteritems():
+            headerdetail = self._xmldoc.createElement("header")
+            headerdetail.setAttribute("field", header)
+            headerdetail.setAttribute("content", header_content)
+            actionHeaderNode.appendChild(headerdetail)
+        parentNode.appendChild(actionHeaderNode)
+        # if the body is defined, put it out
+        if body:
+            actionBodyNode = self._xmldoc.createElement("body")
+            actionBodyNode.setAttribute('content-encoding', 'text')
+            if "\0" in body:
+                # irrespective of the mimetype; if the NULL char is present; then base64.encode it
+                actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
+                actionBodyNode.setAttribute('content-encoding', 'base64')
+            else:
+                # try and extract the Content-Type header
+                content_type = headers.get('Content-Type', "")
+                try:
+                    # if we know the Content-Type (ie it's in the headers)
+                    (mime_type, sub_type) = content_type.split('/')
+                    if mime_type in ['image', 'audio', 'video']:
+                        # if one of image/, audio/, video/ put out base64encoded text
+                        actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
+                        actionBodyNode.setAttribute('content-encoding', 'base64')
+                    elif mime_type == 'application':
+                        if sub_type in NON_BIN:
+                            # Textual type application, eg json, javascript which for readability we'd
+                            # rather not base64.encode
+                            actionBodyContent = self._xmldoc.createCDATASection(body)
+                        else:
+                            # either known or unknown binary format
+                            actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
+                            actionBodyNode.setAttribute('content-encoding', 'base64')
+                    else:
+                        actionBodyContent = self._xmldoc.createTextNode(body)
+                except ValueError:
+                    # not strictly valid mime-type, play it safe with the content
+                    actionBodyContent = self._xmldoc.createCDATASection(body)
+            actionBodyNode.appendChild(actionBodyContent)
+            parentNode.appendChild(actionBodyNode)
+    
     def end(self):
         '''
         This method is called when the scan has finished.
@@ -207,7 +281,7 @@ class xmlFile(baseOutputPlugin):
         # TODO: Aug 31 2011, Is there improvement for this? We are
         # removing null characters from the xml doc. Would this be a
         # significant loss of data for any scenario?
-        escape_nulls = lambda str: str.replace('\0', 'NULL')
+        #escape_nulls = lambda str: str.replace('\0', 'NULL')
         
         # Add the vulnerability results
         vulns = kb.kb.getAllVulns()
@@ -217,6 +291,13 @@ class xmlFile(baseOutputPlugin):
             messageNode.setAttribute("method", str(i.getMethod()))
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("var", str(i.getVar()))
+            messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("plugin", str(i.getPluginName()))
+            # Wrap description in a <description> element and put it above the request/response elements
+            descriptionNode = self._xmldoc.createElement('description')
+            description = self._xmldoc.createTextNode(i.getDesc())
+            descriptionNode.appendChild(description)
+            messageNode.appendChild(descriptionNode)
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
                 for requestid in i.getId():
@@ -224,23 +305,15 @@ class xmlFile(baseOutputPlugin):
 
                     requestNode = self._xmldoc.createElement("httprequest")
                     requestNode.setAttribute("id", str(requestid))
-                    requestContent = self._xmldoc.createTextNode(
-                                        escape_nulls(details.request.dump()))
-                    requestNode.appendChild(requestContent)
+                    self.report_http_action(requestNode, details.request)
                     messageNode.appendChild(requestNode)
 
                     responseNode = self._xmldoc.createElement("httpresponse")
                     responseNode.setAttribute("id", str(requestid))
-                    responseContent = self._xmldoc.createTextNode(
-                                        escape_nulls(details.response.dump()))
-                    responseNode.appendChild(responseContent)
-
+                    self.report_http_action(responseNode, details.response)
                     messageNode.appendChild(responseNode)
 
-            messageNode.setAttribute("name", str(i.getName()))
-            messageNode.setAttribute("plugin", str(i.getPluginName()))
-            description = self._xmldoc.createTextNode(i.getDesc())
-            messageNode.appendChild(description)
+            
             self._topElement.appendChild(messageNode)
         
         # Add the information results
@@ -248,6 +321,13 @@ class xmlFile(baseOutputPlugin):
         for i in infos:
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.getURL()))
+            messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("plugin", str(i.getPluginName()))
+            # Wrap the description in a description element and put it above the request/response details
+            descriptionNode = self._xmldoc.createElement('description')
+            description = self._xmldoc.createTextNode(i.getDesc())
+            descriptionNode.appendChild(description)
+            messageNode.appendChild(descriptionNode)
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
                 for requestid in i.getId():
@@ -255,23 +335,15 @@ class xmlFile(baseOutputPlugin):
 
                     requestNode = self._xmldoc.createElement("httprequest")
                     requestNode.setAttribute("id", str(requestid))
-                    requestContent = self._xmldoc.createTextNode(
-                                        escape_nulls(details.request.dump()))
-                    requestNode.appendChild(requestContent)
+                    self.report_http_action(requestNode, details.request)
                     messageNode.appendChild(requestNode)
                     
                     responseNode = self._xmldoc.createElement("httpresponse")
                     responseNode.setAttribute("id", str(requestid))
-                    responseContent = self._xmldoc.createTextNode(
-                                        escape_nulls(details.response.dump()))
-                    responseNode.appendChild(responseContent)
-
+                    self.report_http_action(responseNode, details.response)
                     messageNode.appendChild(responseNode)
             
-            messageNode.setAttribute("name", str(i.getName()))
-            messageNode.setAttribute("plugin", str(i.getPluginName()))
-            description = self._xmldoc.createTextNode(i.getDesc())
-            messageNode.appendChild(description)
+           
             self._topElement.appendChild(messageNode)
         
         # Add additional information results
