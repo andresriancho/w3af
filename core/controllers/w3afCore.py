@@ -649,10 +649,10 @@ class w3afCore(object):
                     self._fuzzableRequestList = filtered_fuzzable_requests
                     '''
                     
-                    #   Now I simply print the list that I have after the filter.
+                    # Now I simply print the list that I have after the filter.
                     tmp_fr_list = []
                     for fuzzRequest in self._fuzzableRequestList:
-                        tmp_fr_list.append( '- ' + str(fuzzRequest) )
+                        tmp_fr_list.append( '- ' + str(fuzzRequest))
                     tmp_fr_list.sort()
 
                     om.out.information('The list of fuzzable requests is:')
@@ -773,10 +773,9 @@ class w3afCore(object):
         '''
         return self._isRunning
     
-    def _discover( self, toWalk ):
+    def _discover(self, toWalk):
         # Init some internal variables
         self._alreadyWalked = toWalk
-        self._urls = []
         self._set_phase('discovery')
         
         result = []
@@ -815,112 +814,96 @@ class w3afCore(object):
     def _discoverWorker(self, toWalk):
         om.out.debug('Called _discoverWorker()' )
         
-        while len( toWalk ):
+        while toWalk:
             
             # Progress stuff, do this inside the while loop, because the toWalk variable changes
             # in each loop
             amount_of_tests = len(self._plugins['discovery']) * len(toWalk)
-            self.progress.set_total_amount( amount_of_tests )
+            self.progress.set_total_amount(amount_of_tests)
             
             plugins_to_remove_list = []
-            fuzzableRequestList = []
+            fuzz_reqs = {}
             
             for plugin in self._plugins['discovery']:
                 self._auth_login()
-                #
-                #   I use the self._time_limit_reported variable to break out of two loops
-                #
+                # Using the self._time_limit_reported variable to break
+                # out of two loops
                 if self._time_limit_reported:
                     break
                     
                 for fr in toWalk:
-
-                    #
-                    #   Time exceeded?
-                    #
+                    # Time exceeded?
                     if self.get_discovery_time() > cf.cf.getData('maxDiscoveryTime'):
                         if not self._time_limit_reported:
-                            #   I use the self._time_limit_reported variable to break out of two loops
+                            # Using self._time_limit_reported variable to
+                            # break out of two loops
                             self._time_limit_reported = True
                             om.out.information('Maximum discovery time limit hit.')
                         
-                        #   Replaced the return [] with this break, so I don't loose all the
-                        #   gathered knowledge.
+                        # Replaced the return [] with this break to avoid
+                        # losing all the gathered knowledge.
                         break
-                        
-                    else:
-                        self._setRunningPlugin( plugin.getName() )
-                        self._setCurrentFuzzableRequest( fr )
+
+                    self._setRunningPlugin(plugin.getName())
+                    self._setCurrentFuzzableRequest(fr)
+                    try:
                         try:
                             # Perform the actual work
-                            pluginResult = plugin.discover_wrapper( fr )
-                        except w3afException,e:
-                            om.out.error( str(e) )
-                            tm.join( plugin )
-                        except w3afRunOnce, rO:
-                            # Some plugins are ment to be run only once
-                            # that is implemented by raising a w3afRunOnce exception
-                            plugins_to_remove_list.append( plugin )
-                            tm.join( plugin )
-                        else:
-                            tm.join( plugin )
-                        
-                            # We don't trust plugins, i'll only work if this is a list
-                            # or something else that is iterable
-                            if hasattr(pluginResult,'__iter__'):
-                                for i in pluginResult:
-                                    fuzzableRequestList.append( (i, plugin.getName()) )
-                                    
-                        om.out.debug('Ending plugin: ' + plugin.getName() )
+                            pluginResult = plugin.discover_wrapper(fr)
+                        finally:
+                            tm.join(plugin)
+                    except w3afException,e:
+                        om.out.error(str(e))
+                    except w3afRunOnce:
+                        # Some plugins are ment to be run only once
+                        # that is implemented by raising a w3afRunOnce
+                        # exception
+                        plugins_to_remove_list.append(plugin)
+                    else:
+                        # We don't trust plugins, i'll only work if this
+                        # is a list or something else that is iterable
+                        lst = fuzz_reqs.setdefault(plugin.getName(), [])
+                        if hasattr(pluginResult, '__iter__'):
+                            lst.extend(r for r in pluginResult)
+                                
+                    om.out.debug('Ending plugin: ' + plugin.getName())
                     
-                    # We finished one loop, inc!
+                    # Finished one loop, inc!
                     self.progress.inc()
+            
+            # The search has finished - now performing some mangling
+            # with the requests
+            new_fuzz_reqs = []
+            for pname, fuzzables in fuzz_reqs.items():
+                
+                for fuzz in fuzzables:
+                    # No need to care about fragments
+                    # (http://a.com/foo.php#frag). Remove them
+                    fuzz.setURI(fuzz.getURI().removeFragment())
+                    
+                    if fuzz not in self._alreadyWalked and \
+                        fuzz.getURL().baseUrl() in cf.cf.getData('baseURLs'):
+                        # Found a new fuzzable request
+                        new_fuzz_reqs.append(fuzz)
+                        self._alreadyWalked.append(fuzz)
+            
+                # Print the new URLs in a sorted manner.
+                for url in sorted(fr.getURL() for fr in new_fuzz_reqs):
+                    om.out.information('New URL found by %s plugin: %s' %
+                                       (pname, url.url_string))
 
-                #end-for
-            #end-for
-            
-            ##
-            ##  The search has finished, now i'll perform some mangling with the requests
-            ##
-            newFR = []
-            tmp_sort = []
-            for iFr, pluginWhoFoundIt in fuzzableRequestList:
-                # I dont care about fragments ( http://a.com/foo.php#frag ) and I dont really trust plugins
-                # so i'll remove fragments here
-                iFr.setURI( iFr.getURI().removeFragment() )
-                
-                if iFr not in self._alreadyWalked and iFr.getURL().baseUrl() in cf.cf.getData('baseURLs'):
-                    # Found a new fuzzable request
-                    newFR.append( iFr )
-                    self._alreadyWalked.append( iFr )
-                    if iFr.getURL() not in self._urls:
-                        tmp_sort.append(iFr.getURL())
-                        self._urls.append( iFr.getURL() )
-            
-            #   Print the new URLs in a sorted manner.
-            tmp_sort.sort()
-            for u in tmp_sort:
-                om.out.information('New URL found by %s plugin: %s' %
-                                            (pluginWhoFoundIt, unicode(u)))
-                
             # Update the list / queue that lives in the KB
-            self._updateURLsInKb( newFR )
+            self._updateURLsInKb(new_fuzz_reqs)
 
-            
-            ##
-            ##  Cleanup!
-            ##
-            
-            # This wont be used anymore, here i'm duplicating objects that are already saved
-            # in the self._alreadyWalked list.
-            del fuzzableRequestList
+            # Cleanup stuff
+            del fuzz_reqs
             try:
-                del iFr
+                del fuzz
             except:
                 pass
             
             # Get ready for next while loop
-            toWalk = newFR
+            toWalk = new_fuzz_reqs
             
             # Remove plugins that don't want to be runned anymore
             for plugin_to_remove in plugins_to_remove_list:
