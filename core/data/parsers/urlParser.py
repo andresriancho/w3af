@@ -616,6 +616,8 @@ class url_object(object):
         u'http://w3af.com:8080/abc.html'
 
         '''
+        if not isinstance(relative, unicode):
+            relative = relative.decode(self._encoding, 'ignore')
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = url_object(joined_url, self._encoding)
         jurl_obj.normalizeURL()
