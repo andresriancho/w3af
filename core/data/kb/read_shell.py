@@ -84,10 +84,12 @@ class read_shell(shell):
 
     def generic_user_input( self, command ):
         '''
-        This is the method that is called when a user wants to execute something in the shell.
+        This is the method that is called when a user wants to execute something
+        in the shell.
         
-        First, I trap the requests for starting the virtual daemon and the w3afAgent, and if this is not the
-        case, I forward the request to the specific_user_input method which should be implemented by all shellAttackPlugins.
+        First, I trap the requests for starting the virtual daemon and the w3afAgent,
+        and if this is not the case, I forward the request to the specific_user_input
+        method which should be implemented by all shellAttackPlugins.
         '''
         #
         #    Here I get all the common methods like help, payloads, lsp, etc.

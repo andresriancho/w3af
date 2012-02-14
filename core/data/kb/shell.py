@@ -82,15 +82,17 @@ class shell(vuln, exploitResult):
         result.append('    lsp                             List the available payloads')        
         result.append('    exit                            Exit the shell session')
         result.append('')
-        result.append('All the other commands are executed on the remote server.')
         return '\n'.join(result)
 
     def generic_user_input( self, command ):
         '''
-        This is the method that is called when a user wants to execute something in the shell.
+        This is the method that is called when a user wants to execute 
+        something in the shell.
         
-        First, I trap the requests for starting the virtual daemon and the w3afAgent, and if this is not the
-        case, I forward the request to the specific_user_input method which should be implemented by all shellAttackPlugins.
+        First, I trap the requests for starting the virtual daemon and
+        the w3afAgent, and if this is not the case, I forward the request
+        to the specific_user_input method which should be implemented by
+        all shellAttackPlugins.
         '''
         # Get the command and the parameters
         splist = command.split(' ')
@@ -117,6 +119,16 @@ class shell(vuln, exploitResult):
             #    that can be run
             #
             return self._print_runnable_payloads()
+
+        #
+        #    Call the shell subclass method if needed
+        #
+        elif hasattr( self, 'specific_user_input'):
+            # forward to the plugin
+            response = self.specific_user_input( command )
+            
+            if response is None:
+                return 'Command "%s" not found. Please type "help".' % command
 
 
     def end_interaction(self):
