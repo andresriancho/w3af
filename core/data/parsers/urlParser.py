@@ -109,8 +109,8 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
         else:
             def decode(item):
                 return (
-                    item[0].decode(encoding),
-                    [e.decode(encoding) for e in item[1]]
+                    item[0].decode(encoding, 'ignore'),
+                    [e.decode(encoding, 'ignore') for e in item[1]]
                 )
             qs.update((decode(item) for item in odict.items()))
     return qs
