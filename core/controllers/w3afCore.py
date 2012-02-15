@@ -471,6 +471,11 @@ class w3afCore(object):
             self._end(wmse, ignore_err=True)
             om.out.error('\n**IMPORTANT** The following error was '
              'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
+        # TODO: Remove me ASAP!!!
+        except UnicodeError:
+            exc_type, ue, tb = sys.exc_info()
+            ue.reason = ue.reason + ' while scanning ' + str(cf.cf.getData('targets')[0])
+            raise exc_type, ue, tb
         except Exception:
             om.out.error('\nUnhandled error, traceback: %s\n' %
                          traceback.format_exc()) 
