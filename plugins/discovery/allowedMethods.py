@@ -109,8 +109,12 @@ class allowedMethods(baseDiscoveryPlugin):
         
         # First, try to check available methods using OPTIONS,
         # if OPTIONS isn't enabled, do it manually
-        res = self._urlOpener.OPTIONS( url )
-        headers = res.getLowerCaseHeaders()
+        try:
+            res = self._urlOpener.OPTIONS( url )
+            headers = res.getLowerCaseHeaders()
+        except:
+            headers = {}
+
         for header_name in ['allow', 'public']:
             if header_name in headers:
                 allowed_methods.extend( headers[header_name].split(',') )
