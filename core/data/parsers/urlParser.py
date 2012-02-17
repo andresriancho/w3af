@@ -161,6 +161,10 @@ class url_object(object):
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: Invalid URL "'http://'"
+
+        >>> u = url_object(u'http://w3af.com/foo/bar.txt')
+        >>> u.path
+        u'/foo/bar.txt'
         '''
         self._already_calculated_url = None
         self._querystr = None

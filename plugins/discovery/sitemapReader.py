@@ -80,10 +80,16 @@ class sitemapReader(baseDiscoveryPlugin):
                     raise w3afException('Error while parsing sitemap.xml')
                 urlList = dom.getElementsByTagName("loc")
                 for url in urlList:
-                    url = url.childNodes[0].data
-                    url = url_object(url)
-                    # Send the requests using threads:
-                    self._run_async(meth=self._get_and_parse, args=(url,))
+                    try:
+                        url = url.childNodes[0].data
+                        url = url_object(url)
+                    except ValueError, ve:
+                        om.out.debug('Sitemap file had an invalid URL: "%s"' % ve)
+                    except:
+                        om.out.debug('Sitemap file had an invalid format')
+                    else:
+                        # Send the requests using threads:
+                        self._run_async(meth=self._get_and_parse, args=(url,))
             
                 # Wait for all threads to finish
                 self._join()
