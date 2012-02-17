@@ -1027,7 +1027,7 @@ class url_object(object):
         @return: An URL-Decoded version of the URL.
         '''
         url = urllib.unquote_plus(str(self))
-        return url_object(url.decode(self._encoding), self._encoding)
+        return url_object(url.decode(self._encoding,'ignore'), self._encoding)
     
     def urlEncode(self):
         '''
