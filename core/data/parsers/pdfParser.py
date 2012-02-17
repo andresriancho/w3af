@@ -25,7 +25,10 @@ from core.data.parsers.baseparser import BaseParser
 from core.data.parsers.urlParser import url_object
 
 
-import extlib.pyPdf.pyPdf as pyPdf
+try:
+    from extlib.pyPdf import pyPdf as pyPdf
+except ImportError:
+    import pyPdf
     
 import StringIO
 import re
