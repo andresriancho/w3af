@@ -128,7 +128,7 @@ def main():
     commandsToRun = []
     if scriptFile is not None:
         try:
-            fd = open( scriptFile )
+            fd = open( os.path.join(currentDir, scriptFile)  )
         except:
             om.out.error('Failed to open file : ' + scriptFile )
             sys.exit(2)
