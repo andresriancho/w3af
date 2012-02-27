@@ -35,6 +35,7 @@ import sys, os
 import cgi
 import time
 import tempfile
+import codecs
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
@@ -50,12 +51,12 @@ class htmlFile(baseOutputPlugin):
         
         # Internal variables
         self._initialized = False
-        self._aditional_info_fh = None
         self._style_filename = 'plugins' + os.path.sep + 'output' + os.path.sep
         self._style_filename += 'htmlFile' + os.path.sep +'style.css'        
         
         # These attributes hold the file pointers
         self._file = None
+        self._aditional_info_fh = None        
         
         # User configured parameters
         self._verbose = False
@@ -67,14 +68,14 @@ class htmlFile(baseOutputPlugin):
         '''
         self._initialized = True
         try:
-            #self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )            
-            self._file = open( self._file_name, "w" )
+            self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )            
+            #self._file = open( self._file_name, "w" )
         except IOError, io:
             msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
             msg += ': "' + io.strerror + '".'
             raise w3afException( msg )
         except Exception, e:
-            msg = 'Cant open report file ' + self._file_name + ' for output.'
+            msg = 'Can\'t open report file ' + self._file_name + ' for output.'
             msg += ' Exception: "' + str(e) + '".'
             raise w3afException( msg )
         
@@ -84,7 +85,7 @@ class htmlFile(baseOutputPlugin):
             raise w3afException('Cant open style file ' + self._style_filename + '.')
         else:
             html = '<HTML>\n<HEAD>\n<TITLE>\n' +  cgi.escape ( TITLE ) + ' </TITLE>\n<meta'
-            html += ' http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n'
+            html += ' http-equiv="Content-Type" content="text/html; charset=UTF-8">\n'
             html += '<STYLE TYPE="text/css">\n<!--\n'
             self._write_to_file( html )
             self._write_to_file( style_file.read() )
@@ -115,9 +116,10 @@ class htmlFile(baseOutputPlugin):
             self._init()
             
         if self._verbose:
-            message = message.replace('\n', '<br/>')
-            to_print = unicode ( self._cleanString(message) )
-            self._add_to_debug_table( cgi.escape(to_print), 'debug' )
+            to_print = self._cleanString(message)
+            to_print = cgi.escape(to_print)
+            to_print = to_print.replace('\n', '<br/>')
+            self._add_to_debug_table( to_print, 'debug' )
     
     def information(self, message , newLine = True ):
         '''
@@ -134,7 +136,7 @@ class htmlFile(baseOutputPlugin):
         if not self._initialized:
             self._init()
         
-        to_print = unicode ( self._cleanString(message) )
+        to_print = self._cleanString(message)
         self._add_to_debug_table( cgi.escape(to_print), 'error' )
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
@@ -150,7 +152,7 @@ class htmlFile(baseOutputPlugin):
         '''
         if not self._initialized:
             self._init()
-        to_print = unicode ( self._cleanString(message) )
+        to_print = self._cleanString(message)
         self._add_to_debug_table( cgi.escape(to_print), 'console' )
     
     def logEnabledPlugins(self,  plugins_dict,  options_dict):
