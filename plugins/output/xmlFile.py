@@ -27,6 +27,9 @@ from core.data.request.fuzzableRequest import fuzzableRequest
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
+# w3af version
+from core.controllers.misc import get_w3af_version
+
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -71,7 +74,13 @@ class xmlFile(baseOutputPlugin):
         self._topElement = self._xmldoc.createElement("w3afrun")
         self._topElement.setAttribute("start", self._timestampString)
         self._topElement.setAttribute("startstr", self._longTimestampString)
-        self._topElement.setAttribute("xmloutputversion", "1.00")
+        self._topElement.setAttribute("xmloutputversion", "2.0")
+        # Add in the version details
+        version_element = self._xmldoc.createElement("w3af-version")
+        version_data = self._xmldoc.createTextNode(str(get_w3af_version.get_w3af_version()))
+        version_element.appendChild(version_data)
+        self._topElement.appendChild(version_element)
+        
         self._scanInfo = self._xmldoc.createElement("scaninfo")
               
         # HistoryItem to get requests/responses
@@ -300,18 +309,23 @@ class xmlFile(baseOutputPlugin):
             messageNode.appendChild(descriptionNode)
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
+                # Wrap all transactions in a http-transactions node
+                transaction_set = self._xmldoc.createElement('http-transactions')
+                messageNode.appendChild(transaction_set)
                 for requestid in i.getId():
                     details = self._history.read(requestid)
+                    # Wrap the entire http transaction in a single block
+                    actionset = self._xmldoc.createElement("http-transaction")
+                    actionset.setAttribute("id", str(requestid))
+                    transaction_set.appendChild(actionset)
 
                     requestNode = self._xmldoc.createElement("httprequest")
-                    requestNode.setAttribute("id", str(requestid))
                     self.report_http_action(requestNode, details.request)
-                    messageNode.appendChild(requestNode)
+                    actionset.appendChild(requestNode)
 
                     responseNode = self._xmldoc.createElement("httpresponse")
-                    responseNode.setAttribute("id", str(requestid))
                     self.report_http_action(responseNode, details.response)
-                    messageNode.appendChild(responseNode)
+                    actionset.appendChild(responseNode)
 
             
             self._topElement.appendChild(messageNode)
@@ -330,18 +344,24 @@ class xmlFile(baseOutputPlugin):
             messageNode.appendChild(descriptionNode)
             if i.getId():
                 messageNode.setAttribute("id", str(i.getId()))
+                # Wrap all transactions in a http-transactions node
+                transaction_set = self._xmldoc.createElement('http-transactions')
+                messageNode.appendChild(transaction_set)
                 for requestid in i.getId():
                     details = self._history.read(requestid)
-
+                    # Wrap the entire http transaction in a single block
+                    actionset = self._xmldoc.createElement("http-transaction")
+                    actionset.setAttribute("id", str(requestid))
+                    transaction_set.appendChild(actionset)
+                    # create a node for the request content
                     requestNode = self._xmldoc.createElement("httprequest")
-                    requestNode.setAttribute("id", str(requestid))
                     self.report_http_action(requestNode, details.request)
-                    messageNode.appendChild(requestNode)
-                    
+                    actionset.appendChild(requestNode)
+                    # create a node for the response content
                     responseNode = self._xmldoc.createElement("httpresponse")
                     responseNode.setAttribute("id", str(requestid))
                     self.report_http_action(responseNode, details.response)
-                    messageNode.appendChild(responseNode)
+                    actionset.appendChild(responseNode)
             
            
             self._topElement.appendChild(messageNode)
