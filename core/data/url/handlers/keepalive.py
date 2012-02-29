@@ -369,7 +369,8 @@ class ConnectionManager:
             if host:
                 if host not in self._hostmap:
                     raise ValueError, 'Host "%s" not present in pool.' % host
-                self._hostmap[host].remove(conn)
+                if conn in self._hostmap[host]:
+                    self._hostmap[host].remove(conn)
 
             else: # We don't know the host. Need to find it by looping
                 for _host, conns in self._hostmap.items():
