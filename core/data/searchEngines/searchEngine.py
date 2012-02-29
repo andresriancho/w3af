@@ -33,7 +33,11 @@ class searchEngine:
     '''
 
     def __init__(self):
-        self._headers = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
+        #
+        #   Based on some tests performed by Nahuel Sanchez, Google will allow us to automate
+        #   searches if we use this user agent:
+        #
+        self._headers = {'User-Agent': 'Googlebot/2.1 (+http://www.googlebot.com/bot.html)'}
 
     def getNResults(self, query, limit=0):
         '''
