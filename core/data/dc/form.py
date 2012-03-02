@@ -309,7 +309,18 @@ class Form(DataContainer):
             
             for row_index, col_index in enumerate(sample_path):
                 sel_name = sel_names[row_index]
-                value = matrix[row_index][col_index]
+                try:
+                    value = matrix[row_index][col_index]
+                except IndexError:
+                    '''
+                    This handles "select" tags that have no options inside.
+
+                    The getVariants method should return a variant with the select tag name
+                    that is always an empty string.
+
+                    This case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
+                    '''
+                    value = ''
                 
                 if value != secret_value:
                     # FIXME: Needs to support repeated parameter names

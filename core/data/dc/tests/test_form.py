@@ -35,6 +35,11 @@ form_select_misc = [
                     (('value', 'i'),), (('value', 'j'),))}
     ]
 
+form_select_empty = [
+    {'tagname': 'select', 'name': 'spam', 
+        'options': ()
+    }]
+
 # Global container for form
 ALL_FORMS = (form_with_radio, form_with_checkbox, form_select_cars)
 
@@ -140,6 +145,7 @@ class test_form(unittest.TestCase):
                                       form_select_misc)
         self.assertEquals(form.Form.TOP_VARIANTS, 
                           len([fv for fv in new_form.getVariants(mode="all")])-1)
+
         
     def test_same_variants_generation(self):
         # Combinatoric explosion (mode="all"): total_variants = 250 > 150
@@ -152,8 +158,35 @@ class test_form(unittest.TestCase):
         variants = get_all_variants()
         for i in xrange(10):
             self.assertEquals(variants, get_all_variants())
+
+    def test_empty_select_all(self):
+        '''
+        This tests for handling of "select" tags that have no options inside.
+
+        The getVariants method should return a variant with the select tag name
+        that is always an empty string.
+
+        In this case I'm going to call getVariants with mode="all"
+        '''
+        new_form = create_form_helper(form_with_radio + form_select_cars + \
+                                      form_select_misc + form_select_empty)
+        [ i for i in new_form.getVariants(mode="all") ]
         
-        
+    def test_empty_select_tb(self):
+        '''
+        This tests for handling of "select" tags that have no options inside.
+
+        The getVariants method should return a variant with the select tag name
+        that is always an empty string.
+
+        In this case I'm going to call getVariants with mode="tb"
+
+        This is the case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
+        '''
+        new_form = create_form_helper(form_with_radio + form_select_cars + \
+                                      form_select_misc + form_select_empty)
+        [ i for i in new_form.getVariants(mode="tb") ]
+
 def get_gruped_data(form_data):
     '''
     Group form data by elem `name`. Return dict with the following structure:
