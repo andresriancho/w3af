@@ -605,19 +605,26 @@ class url_object(object):
         u'http://w3af.com/abc.html'
         >>> u.urlJoin('/abc.html').url_string
         u'http://w3af.com/abc.html'
+
         >>> u = url_object('http://w3af.com/')
         >>> u.urlJoin('/abc.html').url_string
         u'http://w3af.com/abc.html'
         >>> u.urlJoin('/def/abc.html').url_string
         u'http://w3af.com/def/abc.html'
+
         >>> u = url_object('http://w3af.com/def/jkl/')
         >>> u.urlJoin('/def/abc.html').url_string
         u'http://w3af.com/def/abc.html'
         >>> u.urlJoin('def/abc.html').url_string
         u'http://w3af.com/def/jkl/def/abc.html'
+
         >>> u = url_object('http://w3af.com:8080/')
         >>> u.urlJoin('abc.html').url_string
         u'http://w3af.com:8080/abc.html'
+
+        >>> u = url_object('http://w3af.com/def/')
+        >>> u.urlJoin('тест').url_string
+        u'http://w3af.com/def/тест'
         '''
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = url_object(joined_url, self._encoding)
