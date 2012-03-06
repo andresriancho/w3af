@@ -399,7 +399,7 @@ class fuzzableRequest(object):
         return self._headers
     
     def getReferer(self):
-        if 'Referer' in self._headers['headers']:
+        if 'Referer' in self._headers:
             return self._headers['Referer']
         else:
             return ''
