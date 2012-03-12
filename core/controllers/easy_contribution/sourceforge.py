@@ -108,6 +108,14 @@ class SourceforgeXMLRPC(Sourceforge):
         self._proxy = None
     
     def login(self):
+        '''
+        >>> sf = SourceforgeXMLRPC('fake','12345')
+        >>> sf.login()
+        False
+        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
+        >>> sf.login()
+        True
+        '''
         self._proxy = xmlrpclib.ServerProxy(
                     SourceforgeXMLRPC.LOGIN_URL % (self.username, self.passwd)
                     )
@@ -121,6 +129,26 @@ class SourceforgeXMLRPC(Sourceforge):
             
     def report_bug(self, summary, userdesc, tback='',
                    fname=None, plugins='', autogen=True):
+        '''
+        Without logging in:
+        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
+        >>> summary = 'Unittest bug report'
+        >>> userdesc = 'Please mark this ticket as invalid' 
+        >>> ticket_url = sf.report_bug(summary,userdesc)
+        Traceback (most recent call last):
+        ...
+        AssertionError: You should login first
+
+        Logged in:
+        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
+        >>> sf.login()
+        True
+        >>> summary = 'Unittest bug report'
+        >>> userdesc = 'Please mark this ticket as invalid' 
+        >>> ticket_url = sf.report_bug(summary,userdesc)
+        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
+        True
+        '''
         assert self.logged_in, "You should login first"
         
         summary, desc = self._build_summary_and_desc(
@@ -206,13 +234,6 @@ class SourceforgeHTTP(Sourceforge):
         @parameter passwd: The password
         
         @return: True if successful login, false otherwise.
-        
-        >>> sf = sourceforge()
-        >>> sf.login('fake','12345')
-        False
-        >>> sf.login('unittest','unittest12345')
-        True
-           
         '''
         values = {'return_to': '',
             'ssl_status': '',
@@ -246,24 +267,6 @@ class SourceforgeHTTP(Sourceforge):
         @return: The new ticket URL if the bug report was successful, or None
             if something failed.
         
-        Without logging in:
-        >>> sf = sourceforge()
-        >>> summary = 'Unittest bug report'
-        >>> userdesc = 'Please mark this ticket as invalid' 
-        >>> ticket_url = sf.report_bug(summary,userdesc)
-        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
-        True
-
-        Logged in:
-        >>> sf = sourceforge()
-        >>> sf.login('unittest','unittest12345')
-        True
-        >>> summary = 'Unittest bug report'
-        >>> userdesc = 'Please mark this ticket as invalid' 
-        >>> ticket_url = sf.report_bug(summary,userdesc)
-        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
-        True
-
         '''
         
         summary, details = self._build_summary_and_desc(
