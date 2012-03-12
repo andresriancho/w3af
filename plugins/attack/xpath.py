@@ -279,7 +279,18 @@ class xpath(baseAttackPlugin):
             else:
                 om.out.debug( 'Randomness is too high to use difflib, switching to error based detection...' )
                 return False
-        
+
+    def getLongDesc( self ):
+        '''
+        @return: A DETAILED description of the plugin functions and features.
+        '''
+        return '''
+        This plugin exploits XPATH injections. The exploit result is the full
+        text dump (without tags) of the remote XML file.
+
+        No options are available at this moment since the plugin is in beta phase.
+        '''
+    
 class xpath_reader(shell):
 
     def __init__(self, v):
