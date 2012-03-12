@@ -27,6 +27,20 @@ class mutantHeaders(mutant):
     This class is a headers mutant.
     '''
     def __init__( self, freq ):
+        '''
+
+        >>> from core.data.request.fuzzableRequest import fuzzableRequest
+        >>> from core.data.parsers.urlParser import url_object
+
+        >>> freq = fuzzableRequest( url_object('http://www.w3af.com/') )
+        >>> fake_ref = 'http://w3af.org/'
+        >>> mutant = mutantHeaders( freq.copy() )
+        >>> mutant.setVar('Referer')
+        >>> mutant.setOriginalValue(freq.getReferer())
+        >>> mutant.setModValue(fake_ref)
+        >>> mutant.getHeaders()['Referer'] == fake_ref
+        True
+        '''
         mutant.__init__(self, freq)
 
     def getMutantType( self ):
@@ -48,4 +62,20 @@ class mutantHeaders(mutant):
         res += self.getMethod() + '. The fuzzed header was: "'
         res += self.getVar() + '" and it\'s value was: "' + self.getModValue() + '".'
         return res
-        
+
+    def setModValue( self, val ):
+        '''
+        Set the value of the variable that this mutant modifies.
+        '''
+        try:
+            self._freq._headers[ self.getVar() ] = val
+        except Exception, e:
+            raise w3afException('The headers mutant object wasn\'t  correctly initialized.')
+
+    def getModValue( self ):
+        try:
+            return self._freq._headers[ self.getVar() ]
+        except:
+            raise w3afException('The headers mutant object was\'nt correctly initialized.')
+
+
