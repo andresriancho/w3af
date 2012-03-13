@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import codecs
 import copy
 import re
 import urllib
@@ -56,6 +57,17 @@ GTOP_LEVEL_DOMAINS = set(('ac','ad','ae','aero','af','ag','ai','al','am',
     'tm','tn','to','tp','tr','travel','tt','tv','tw','tz','ua','ug','uk',
     'us','uy','uz','va','vc','ve','vg','vi','vn','vu','wf','ws','xxx','ye',
     'yt','za','zm','zw'))
+
+def percentencode(encodingexc):
+    if not isinstance(encodingexc, UnicodeEncodeError):
+        raise encodingexc
+    st = encodingexc.start
+    en = encodingexc.end
+    return (
+        u'%s' % (urllib.quote(encodingexc.object[st:en].encode('utf8')),),
+        en
+    )
+codecs.register_error("percentencode", percentencode)
 
 def set_changed(meth):
     '''
@@ -188,7 +200,7 @@ class url_object(object):
                 scheme = 'http'
                 netloc = path
                 path = ''
-            
+        
         self.scheme = scheme or u''
         self.netloc = netloc or u''
         self.path = path or u''
@@ -623,8 +635,8 @@ class url_object(object):
         u'http://w3af.com:8080/abc.html'
 
         >>> u = url_object('http://w3af.com/def/')
-        >>> u.urlJoin('тест').url_string
-        u'http://w3af.com/def/тест'
+        >>> u.urlJoin(u'тест').url_string == u'http://w3af.com/def/тест'
+        True
         '''
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = url_object(joined_url, self._encoding)
@@ -1037,8 +1049,9 @@ class url_object(object):
 
         @return: An URL-Decoded version of the URL.
         '''
-        url = urllib.unquote_plus(str(self))
-        return url_object(url.decode(self._encoding), self._encoding)
+        unquotedurl = urllib.unquote_plus(str(self))
+        enc = self._encoding
+        return url_object(unquotedurl.decode(enc, 'ignore'), enc)
     
     def urlEncode(self):
         '''
@@ -1262,8 +1275,9 @@ class url_object(object):
         u'http://w3af.com/indéx.html'.encode('latin1')
         True
         '''
-        return self.url_string.encode(self._encoding).replace(' ', '%20')
-    
+        urlstr = self.url_string.encode(self._encoding, "percentencode")
+        return urlstr.replace(' ', '%20')
+        
     def __unicode__(self):
         '''
         @return: A unicode representation of myself
@@ -1281,7 +1295,7 @@ class url_object(object):
         @return: A string representation of myself for debugging
 
         '''
-        return '<url_object for "%s">' % self.url_string.encode(self._encoding)
+        return '<url_object for "%s">' % (self,)
 
     def __contains__(self, s):
         '''

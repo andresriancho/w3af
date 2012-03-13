@@ -90,14 +90,11 @@ class HTMLParser(SGMLParser):
         missing_or_invalid_action = action is None
 
         if not missing_or_invalid_action:
+            action = self._decode_url(action)
             try:
                 action = self._baseUrl.urlJoin(action)
             except ValueError:
                 missing_or_invalid_action = True
-            else:
-                action = self._decode_url(unicode(action))
-                action = url_object(action, encoding=self._encoding)
-
         if missing_or_invalid_action:
             msg = ('HTMLParser found a form without an action attribute. '
             'Javascript may be used... but another option (mozilla does '

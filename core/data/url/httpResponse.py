@@ -62,6 +62,7 @@ def from_httplib_resp(httplibresp, original_url=None):
     
     if original_url:
         url_inst = url_object(resp.geturl(), original_url.encoding)
+        url_inst = url_inst.urlDecode()
     else:
         url_inst = original_url = url_object(resp.geturl())
     

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
-from core.data.constants.encodings import DEFAULT_ENCODING
+from core.data.constants.encodings import UTF8
 from core.controllers.misc.ordereddict import OrderedDict
 import core.data.parsers.encode_decode as enc_dec
 
@@ -34,7 +34,7 @@ class DataContainer(OrderedDict):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+    def __init__(self, init_val=(), encoding=UTF8):
         
         super(DataContainer, self).__init__()
         self.encoding = encoding
@@ -101,7 +101,7 @@ class DataContainer(OrderedDict):
                     # is this a sufficient test for sequence-ness?
                     len(v)
                 except TypeError:
-                    v = [(v if v is None else unicode(v))]
+                    v = [(v if v is None else unicode(v, UTF8))]
             for ele in v:
                 if not ele:
                     toapp = k + u'='
@@ -109,3 +109,5 @@ class DataContainer(OrderedDict):
                     toapp = k + u'=' + ele
                 lst.append(toapp)
         return u'&'.join(lst)
+    
+    

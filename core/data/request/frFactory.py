@@ -28,6 +28,7 @@ from .httpQsRequest import HTTPQSRequest
 from .jsonPostDataRequest import JSONPostDataRequest
 from .wsPostDataRequest import wsPostDataRequest
 from .xmlrpcRequest import XMLRPCRequest
+from core.controllers.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
@@ -82,6 +83,7 @@ def createFuzzableRequests(resp, request=None, add_self=True):
         location = redir_headers.get('location') or \
                         redir_headers.get('uri', '')
         if location:
+            location = smart_unicode(location, encoding=resp.charset)
             qsr = HTTPQSRequest(
                 resp.getURI().urlJoin(location),
                 headers=req_headers,

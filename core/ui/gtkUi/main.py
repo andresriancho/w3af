@@ -617,7 +617,9 @@ class MainApp(object):
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
         options = self.w3af.target.getOptions()
-        url = self.pcbody.target.get_text()
+        
+        # unicode str needed. pygtk works with 'utf8'
+        url = self.pcbody.target.get_text().decode('utf8')
         options['target'].setValue( url )
         if relaxedTarget:
             try:

@@ -189,7 +189,14 @@ def dependencyCheck():
                 msg = '    Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
                 additional_information.append(msg)
                 reasonForExit = True
-        
+    
+    try:
+        import chardet
+    except Exception:
+        packages.append('chardet')
+        packages_debian.append('python-chardet')
+        reasonForExit = True
+    
     #Now output the results of the dependency check
     if packages:
         msg = 'Your python installation needs the following packages:\n'

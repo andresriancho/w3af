@@ -19,13 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.w3afException import w3afException
+import codecs
 import ConfigParser
-from core.controllers.misc.factory import *
 import os
 import shutil
+
+from core.controllers.misc.factory import *
 from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.w3afException import w3afException
+from core.data.constants.encodings import UTF8
 
 
 class profile:
@@ -53,10 +55,11 @@ class profile:
         if profname:
             # Get profile name's complete path
             profname = self._get_real_profile_name(profname, workdir)
-            try:
-                self._config.read(profname)
-            except Exception:
-                raise w3afException('Unknown format in profile: %s' % profname)
+            with codecs.open(profname, "rb", UTF8) as fp:
+                try:
+                    self._config.readfp(fp)
+                except Exception:
+                    raise w3afException('Unknown format in profile: %s' % profname)
         
         # Save the profname variable
         self._profile_file_name = profname
