@@ -28,9 +28,12 @@ class TestDirectoryIndexing(PluginTest):
     
     _run_configs = {
         'cfg1': {
-             'target': dir_indexing_url,
-             'plugins': (PluginConfig('grep.directoryIndexing'),)}
+            'target': dir_indexing_url,
+            'plugins': {
+                'grep': (PluginConfig('directoryIndexing'),)
+            }
         }
+    }
     
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']

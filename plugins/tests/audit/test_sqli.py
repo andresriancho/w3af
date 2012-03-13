@@ -28,9 +28,12 @@ class TestSQLI(PluginTest):
     _run_configs = {
         'cfg': {
             'target': sqli_url + '?name=xxx',
-            'plugins': (PluginConfig('audit.sqli'),),
+            'plugins': {
+                 'audit': (PluginConfig('sqli'),),
+                 }
             }
         }
+    
     def test_found_sqli(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

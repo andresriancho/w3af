@@ -29,17 +29,21 @@ class TestXSS(PluginTest):
     _run_configs = {
         'cfg': {
             'target': None,
-            'plugins': (
-                PluginConfig(
-                     'audit.xss',
-                     ('checkStored', True, PluginConfig.BOOL),
-                     ('numberOfChecks', 3, PluginConfig.INT)),
-                PluginConfig(
-                     'discovery.webSpider',
-                     ('onlyForward', True, PluginConfig.BOOL))
-                ),
-            }
+            'plugins': {
+                'audit': (
+                    PluginConfig(
+                         'xss',
+                         ('checkStored', True, PluginConfig.BOOL),
+                         ('numberOfChecks', 3, PluginConfig.INT)),
+                    ),
+                'discovery': (
+                    PluginConfig(
+                        'webSpider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
+            },
         }
+    }
     
     def test_found_xss(self):
         cfg = self._run_configs['cfg']

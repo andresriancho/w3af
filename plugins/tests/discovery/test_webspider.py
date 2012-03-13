@@ -27,21 +27,28 @@ class TestWebSpider(PluginTest):
     follow_links_url = 'http://moth/w3af/discovery/web_spider/follow_links/'
     dir_get_url = 'http://moth/w3af/discovery/web_spider/a/b/c/d/'
     encoding_url = 'http://moth/w3af/core/encoding/'
+    relative_url = 'http://moth/w3af/discovery/web_spider/relativeRegex.html'
     
     _run_configs = {
-        'cfg1': {'target': follow_links_url + '1.html',
-                 'plugins': (
-                    PluginConfig('discovery.webSpider',
-                         ('onlyForward', True, PluginConfig.BOOL)),
-                     )
-                 },
-        'cfg2': {'target': dir_get_url,
-                 'plugins': (
-                    PluginConfig('discovery.webSpider',
-                         ('onlyForward', True, PluginConfig.BOOL)),
-                    PluginConfig('discovery.allowedMethods')
-                    ),
-                 },
+        'cfg1': {
+            'target': follow_links_url + '1.html',
+            'plugins': {
+                'discovery': (
+                    PluginConfig('webSpider',
+                             ('onlyForward', True, PluginConfig.BOOL)),
+                )
+             }
+         },
+        'cfg2': {
+            'target': relative_url,
+            'plugins': {
+                'discovery': (
+                    PluginConfig('webSpider',
+                            ('onlyForward', True, PluginConfig.BOOL)),
+                    PluginConfig('allowedMethods')
+                )
+            },
+        },
     }
     
     def test_spider_found_urls(self):
@@ -75,3 +82,9 @@ class TestWebSpider(PluginTest):
             sorted([(self.encoding_url + u) for u in expected]),
             sorted([u.url_string for u in urls])
         )
+    
+    def test_spider_relative_urls_found_with_regex(self):
+        cfg = self._run_configs['cfg2']
+        self._scan(cfg['target'], cfg['plugins'])
+        urls = self.kb.getData('urls', 'urlList')
+        1+1

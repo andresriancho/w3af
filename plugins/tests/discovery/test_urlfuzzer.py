@@ -28,7 +28,7 @@ class TestURLFuzzer(PluginTest):
     _run_configs = {
         'cfg1': {
             'target': base_url + '/index.html',
-            'plugins': (PluginConfig('discovery.urlFuzzer'),)
+            'plugins': {'discovery': (PluginConfig('urlFuzzer'),)}
             }
         }
     

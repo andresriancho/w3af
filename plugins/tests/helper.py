@@ -70,10 +70,10 @@ class PluginTest(unittest.TestCase):
             target = (target,)
         self.w3afcore.target.setOptions(_targetoptions(*target))
         # Enable plugins to be tested
-        for ptype,pname,opts in (chain(pcfg.name.split('.'), (pcfg.options,))
-                                   for pcfg in plugins):
-            self.w3afcore.setPlugins([pname], ptype)
-            self.w3afcore.setPluginOptions(ptype, pname, opts)
+        for ptype, plugincfgs in plugins.items():
+            self.w3afcore.setPlugins([p.name for p in plugincfgs], ptype)
+            for pcfg in plugincfgs:
+                self.w3afcore.setPluginOptions(ptype, pcfg.name, pcfg.options)
         # Verify env and start the scan
         self.w3afcore.initPlugins()
         self.w3afcore.verifyEnvironment()

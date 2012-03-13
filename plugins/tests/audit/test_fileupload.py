@@ -28,15 +28,15 @@ class TestFileUpload(PluginTest):
     _run_configs = {
         'cfg': {
             'target': file_upload_url,
-            'plugins': (
-                PluginConfig(
-                     'audit.fileUpload',
-                     ('extensions',
-                      ['gif', 'html', 'bmp', 'jpg', 'png', 'txt'],
-                      PluginConfig.LIST)
-                     ),),
-            }
-        }
+            'plugins': {
+                'audit': (
+                    PluginConfig(
+                        'fileUpload', ('extensions',
+                         ['gif', 'html', 'bmp', 'jpg', 'png', 'txt'],
+                         PluginConfig.LIST)
+                     ),)
+            },}
+    }
     
     def test_reported_file_uploads(self):
         cfg = self._run_configs['cfg']
