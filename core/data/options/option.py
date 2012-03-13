@@ -106,7 +106,7 @@ class option:
                 res = []
                 # Yes, we are regex dummies
                 value += ','
-                tmp = re.findall('(".*?"|\'.*?\'|.*?),', str(value))
+                tmp = re.findall('(".*?"|\'.*?\'|.*?),', value, re.U)
                 if tmp:
                     tmp = [y.strip() for y in tmp if y != '']
                     
