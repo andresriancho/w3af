@@ -500,6 +500,9 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
         '''
         Draw the string representation to the DrawingArea
         '''
+        if self.window is None:
+            return
+        
         style = self.get_style()
         gc = style.fg_gc[gtk.STATE_NORMAL]
 
