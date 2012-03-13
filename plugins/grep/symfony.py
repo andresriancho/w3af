@@ -38,7 +38,9 @@ class symfony(baseGrepPlugin):
     '''
     Grep every page for traces of the Symfony framework.
       
-    @author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon work by Andres Riancho ( andres.riancho@gmail.com ) and help from Pablo Mouzo (pablomouzo@gmail.com)
+    @author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon 
+    work by Andres Riancho ( andres.riancho@gmail.com ) and help from
+    Pablo Mouzo (pablomouzo@gmail.com)
     '''
     
     def __init__(self):
@@ -65,8 +67,8 @@ class symfony(baseGrepPlugin):
         >>> emptyBody=''
         >>> unprotectedBody='<html><head></head><body><form action="login" method="post"><input type="text" name="signin" id="signin" /></form></body></html>'
         >>> protectedBody='<html><head></head><body><form action="login" method="post"><input type="text" name="signin" id="signin" /><input type="hidden" name="signin[_csrf_token]" value="069092edf6b67d5c25fd07642a54f6e3" id="signin__csrf_token" /></form></body></html>'
-        >>> symfonyHeaders={'set-cookie': 'symfony=sfasfasfa'}
-        >>> noSymfonyHeaders={}
+        >>> symfonyHeaders={'set-cookie': 'symfony=sfasfasfa', 'content-type': 'text/html'}
+        >>> noSymfonyHeaders={'content-type': 'text/html'}
 
         Symfony detection, positive
         >>> body = emptyBody
@@ -74,67 +76,54 @@ class symfony(baseGrepPlugin):
         >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
         >>> a = symfony()
-        >>> assert a.symfonyDetected(response) == True
+        >>> a.symfonyDetected(response)
+        True
    
         Symfony detection, negative
         >>> body = emptyBody
         >>> headers = noSymfonyHeaders
-        >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
         >>> a = symfony()
-        >>> assert a.symfonyDetected(response) == False
+        >>> a.symfonyDetected(response)
+        False
 
         Symfony detection, override
-        >>> body = emptyBody
-        >>> headers = noSymfonyHeaders
-        >>> url = url_object('http://www.w3af.com/')
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> a = symfony()
         >>> a._override = True
-        >>> assert a.symfonyDetected(response) == True
+        >>> a.symfonyDetected(response)
+        True
 
         CSRF detection, positive
         >>> body = protectedBody
-        >>> url = url_object('http://www.w3af.com/')
         >>> headers = symfonyHeaders
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> a = symfony()
-        >>> assert a.csrfDetected(response.getDOM()) == True
+        >>> a.csrfDetected(response.getDOM())
+        True
 
         CSRF detection, negative
         >>> body = unprotectedBody
-        >>> headers = symfonyHeaders
-        >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> a = symfony()
-        >>> assert a.csrfDetected(response.getDOM()) == False
-
-        #   TODO:                                                       #
-        #   The next two tests are broken. Don't really know why.       #
-        #                                                               #
+        >>> a.csrfDetected(response.getDOM())
+        False
+        
         Symfony plus CSRF detection, positive plus negative
         >>> kb.kb.save('symfony','symfony',[])
         >>> body = protectedBody
         >>> headers = symfonyHeaders        
-        >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> a = symfony()
         >>> a.grep(request, response)
-        >>> assert len(kb.kb.getData('symfony', 'symfony')) == 0
+        >>> len(kb.kb.getData('symfony', 'symfony'))
+        0
 
         Symfony plus CSRF detection, positive plus positive
         >>> kb.kb.save('symfony','symfony',[])
         >>> body = unprotectedBody
         >>> headers = symfonyHeaders
-        >>> url = url_object('http://www.w3af.com/')
         >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
         >>> a = symfony()
         >>> a.grep(request, response)
-        
-        # TODO: should != 0, outside the tests it works fine!
-        >>> assert len(kb.kb.getData('symfony', 'symfony')) == 0
+        >>> len(kb.kb.getData('symfony', 'symfony'))
+        1
         '''
         url = response.getURL()
         if response.is_text_or_html() and url not in self._already_inspected:
@@ -144,15 +133,16 @@ class symfony(baseGrepPlugin):
 
             if self.symfonyDetected(response):
                 dom = response.getDOM()
-                if dom is not None:
-                    if not self.csrfDetected(dom):
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Symfony Framework')
-                        i.setURL(url)
-                        i.setDesc('The URL: "%s" seems to be generated by the Symfony framework and contains a form that perhaps has CSRF protection disabled.' % url)
-                        i.setId(response.id)
-                        kb.kb.append(self, 'symfony', i)
+                if dom and not self.csrfDetected(dom):
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('Symfony Framework')
+                    i.setURL(url)
+                    i.setDesc('The URL: "%s" seems to be generated by the '
+                      'Symfony framework and contains a form that perhaps '
+                      'has CSRF protection disabled.' % url)
+                    i.setId(response.id)
+                    kb.kb.append(self, 'symfony', i)
 
     def symfonyDetected(self, response):
         if self._override:
