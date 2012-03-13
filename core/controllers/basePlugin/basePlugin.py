@@ -91,7 +91,8 @@ class basePlugin(configurable):
         @return: A list with the names of the plugins that should be 
         runned before the current one.
         '''
-        raise w3afException('Plugin is not implementing required method getPluginDeps' )
+        msg = 'Plugin "%s" is not implementing required method getPluginDeps' % self.getName()
+        raise w3afException( msg )
 
     def getDesc( self ):
         '''

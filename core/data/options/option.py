@@ -86,10 +86,11 @@ class option:
 
     def setValue( self, value ):
         '''
-        @parameter value: The value parameter is set by the user interface, which for example sends 'True' or 'a,b,c'
+        @parameter value: The value parameter is set by the user interface, which
+        for example sends 'True' or 'a,b,c'
 
-        Based on the value parameter and the option type, I have to create a nice looking object like True or ['a','b','c'].
-        This replaces the *old* parseOptions.
+        Based on the value parameter and the option type, I have to create a nice
+        looking object like True or ['a','b','c']. This replaces the *old* parseOptions.
         '''
         try:
             if self._type == 'integer':
@@ -111,7 +112,8 @@ class option:
                     
                     # Now I check for single and double quotes
                     for u in tmp:
-                        if ( u.startswith('"') and u.endswith('"') ) or ( u.startswith("'") and u.endswith("'") ):
+                        if ( u.startswith('"') and u.endswith('"') ) or \
+                           ( u.startswith("'") and u.endswith("'") ):
                             res.append( u[1:-1] )
                         else:
                             res.append( u )
@@ -140,7 +142,8 @@ class option:
             else:
                 raise w3afException('Unknown type: ' + self._type)
         except ValueError:
-            raise w3afException('The value "' + value + '" cannot be casted to "' + self._type + '".')
+            msg = 'The value "%s" cannot be casted to "%s".' % (value, self._type)
+            raise w3afException( msg )
         else:
             self._value = res
 
@@ -164,6 +167,15 @@ class option:
         A nice way of printing your object =)
         '''
         return '<option '+self._name+'|'+self._type+'|'+str(self._value)+'>'
+    
+    def __eq__(self, other):
+        if not isinstance(other, option):
+            return False
+        
+        name = self._name == other._name
+        type = self._type == other._type
+        value = self._value == other._value
+        return name and type and value 
         
     def copy(self):
         '''

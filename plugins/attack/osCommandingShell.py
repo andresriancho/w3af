@@ -191,14 +191,6 @@ class osCommandingShell(baseAttackPlugin):
         self._url = optionsMap['url'].getValue()
         self._change_to_post = optionsMap['changeToPost'].getValue()
 
-            
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be runned before the
-        current one.
-        '''
-        return []
-    
     def getRootProbability( self ):
         '''
         @return: This method returns the probability of getting a root shell using this attack plugin.

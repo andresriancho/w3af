@@ -187,3 +187,11 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
                     pass
         
         return kb.kb.getData( self.getName(), 'shell' )
+
+    def getPluginDeps( self ):
+        '''
+        @return: A list with the names of the plugins that should be run before the
+        current one. For attack plugins this doesn't make much sense since we're not
+        doing anything with the output from this method.
+        '''
+        return []

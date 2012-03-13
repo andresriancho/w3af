@@ -415,13 +415,6 @@ class sql_webshell(baseAttackPlugin):
         self._equalLimit = optionsMap['equalLimit'].getValue()
         self._goodSamaritan = optionsMap['goodSamaritan'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be runned before the
-        current one.
-        '''
-        return []
     
     def getRootProbability( self ):
         '''

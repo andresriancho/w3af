@@ -44,6 +44,13 @@ class optionList:
         '''
         return '<optionList: '+ '|'.join([i.getName() for i in self._oList]) +'>'
 
+    def __eq__(self, other):
+        if not isinstance(other, optionList):
+            return False
+        
+        return self._oList == other._oList
+            
+        
     def __contains__( self, item_name ):
         for o in self._oList:
             if o.getName() == item_name:

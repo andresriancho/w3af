@@ -223,13 +223,6 @@ class fileUploadShell(baseAttackPlugin):
         self._fileVars = optionsMap['fileVars'].getValue()
         self._fileDest = optionsMap['fileDest'].getValue()
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be runned before the
-        current one.
-        '''
-        return ['discovery.serverHeader']
-
     def getRootProbability( self ):
         '''
         @return: This method returns the probability of getting a root shell using this attack plugin.
