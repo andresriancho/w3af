@@ -1377,10 +1377,10 @@ class w3afCore(object):
                 if pOptions:
                     new_profile.setPluginOptions(pType, pName, pOptions)
                 
-        # Config the profile target
-        if cf.cf.getData('targets'):
-            new_profile.setTarget(' , '.join(str(t) for t in 
-                                             cf.cf.getData('targets')))
+        # Config the profile targets
+        targets = cf.cf.getData('targets')
+        if targets:
+            new_profile.setTarget(' , '.join(t.url_string for t in targets))
         
         # Config the misc and http settings
         misc_settings = miscSettings.miscSettings()

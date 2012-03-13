@@ -43,6 +43,9 @@ class BaseParser(object):
     RELATIVE_URL_RE = re.compile(
         '((:?[/]{1,2}[\w\-~\.%]+)+\.\w{2,4}(((\?)([\w\-~\.%]*=[\w\-~\.%]*)){1}'
         '((&)([\w\-~\.%]*=[\w\-~\.%]*))*)?)', re.U)
+    EMAIL_RE = re.compile(
+                    '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+                    re.I|re.U)
     SAFE_CHARS = (('\x00', '%00'),)
     
     def __init__(self, httpResponse):
@@ -188,11 +191,7 @@ class BaseParser(object):
         if doc_str.find('@') != -1:
             compiled_re = re.compile('[^\w@\-\\.]', re.UNICODE)
             doc_str = re.sub(compiled_re, ' ', doc_str)
-
-            # NOTE: emailRegex is also used in pks search engine.
-            # Now we have a clean doc_str; and we can match the mail addresses!
-            emailRegex = re.compile('([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})', re.I|re.U) 
-            for email, domain in re.findall(emailRegex, doc_str):
+            for email, domain in re.findall(self.EMAIL_RE, doc_str):
                 if email not in self._emails:
                     self._emails.append(email)
                     
@@ -304,8 +303,7 @@ class BaseParser(object):
     def _decode_url(self, url_string):
         '''
         Decode `url_string` using urllib's url-unquote
-        algorithm. If the url is unicode it will preserve the type as well as
-        for strings.
+        algorithm. The returned value is always a unicode string. 
         
         See http://www.blooberry.com/indexdot/html/topics/urlencoding.htm for
         more info on urlencoding.
