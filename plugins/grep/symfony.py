@@ -59,6 +59,7 @@ class symfony(baseGrepPlugin):
         @return: None, all results are saved in the kb.
         
         Init
+        >>> from functools import partial
         >>> from core.data.url.httpResponse import httpResponse
         >>> from core.data.request.fuzzableRequest import fuzzableRequest
         >>> from core.controllers.misc.temp_dir import create_temp_dir
@@ -69,20 +70,17 @@ class symfony(baseGrepPlugin):
         >>> protectedBody='<html><head></head><body><form action="login" method="post"><input type="text" name="signin" id="signin" /><input type="hidden" name="signin[_csrf_token]" value="069092edf6b67d5c25fd07642a54f6e3" id="signin__csrf_token" /></form></body></html>'
         >>> symfonyHeaders={'set-cookie': 'symfony=sfasfasfa', 'content-type': 'text/html'}
         >>> noSymfonyHeaders={'content-type': 'text/html'}
+        >>> url = url_object('http://www.w3af.com/')
+        >>> http_resp = partial(httpResponse, code=200, geturl=url, original_url=url)
 
         Symfony detection, positive
-        >>> body = emptyBody
-        >>> headers = symfonyHeaders
-        >>> url = url_object('http://www.w3af.com/')
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=emptyBody, info=symfonyHeaders)
         >>> a = symfony()
         >>> a.symfonyDetected(response)
         True
    
         Symfony detection, negative
-        >>> body = emptyBody
-        >>> headers = noSymfonyHeaders
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=emptyBody, info=noSymfonyHeaders)
         >>> a = symfony()
         >>> a.symfonyDetected(response)
         False
@@ -93,33 +91,25 @@ class symfony(baseGrepPlugin):
         True
 
         CSRF detection, positive
-        >>> body = protectedBody
-        >>> headers = symfonyHeaders
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=protectedBody, info=symfonyHeaders)
         >>> a.csrfDetected(response.getDOM())
         True
 
         CSRF detection, negative
-        >>> body = unprotectedBody
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=unprotectedBody, info=symfonyHeaders)
         >>> a.csrfDetected(response.getDOM())
         False
         
         Symfony plus CSRF detection, positive plus negative
         >>> kb.kb.save('symfony','symfony',[])
-        >>> body = protectedBody
-        >>> headers = symfonyHeaders        
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=protectedBody, info=symfonyHeaders)
         >>> request = fuzzableRequest(url, method='GET')
         >>> a.grep(request, response)
         >>> len(kb.kb.getData('symfony', 'symfony'))
         0
 
         Symfony plus CSRF detection, positive plus positive
-        >>> kb.kb.save('symfony','symfony',[])
-        >>> body = unprotectedBody
-        >>> headers = symfonyHeaders
-        >>> response = httpResponse(200, body , headers, url, url)
+        >>> response = http_resp(read=unprotectedBody, info=symfonyHeaders)
         >>> a = symfony()
         >>> a.grep(request, response)
         >>> len(kb.kb.getData('symfony', 'symfony'))
