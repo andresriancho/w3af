@@ -893,9 +893,11 @@ class w3afCore(object):
                         self._alreadyWalked.append(fuzz)
             
                 # Print the new URLs in a sorted manner.
-                for url in sorted(fr.getURL() for fr in new_fuzz_reqs):
-                    om.out.information('New URL found by %s plugin: %s' %
-                                       (pname, url.url_string))
+                for url in sorted(
+                    set(fr.getURL().url_string for fr in new_fuzz_reqs)
+                ):
+                    om.out.information(
+                        'New URL found by %s plugin: %s' % (pname, url))
 
             # Update the list / queue that lives in the KB
             self._updateURLsInKb(new_fuzz_reqs)
