@@ -72,6 +72,9 @@ class xpath(baseAttackPlugin):
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
+
+    def getRootProbability(self):
+        return 0.0
     
     def getVulnName2Exploit( self ):
         '''

@@ -42,9 +42,14 @@ class TestBasic(unittest.TestCase):
         for plugin in self.plugins:
             opt1 = plugin.getOptions()
 
-    def test_plugin_all(self):
+    def test_plugin_deps_desc(self):
         for plugin in self.plugins:
             plugin.getPluginDeps()
             plugin.getLongDesc()
                 
+    def test_plugin_root_probability(self):
+        for plugin in self.plugins:
+            if plugin.getType() == 'attack':
+                plugin.getRootProbability()
+
                 
