@@ -190,16 +190,6 @@ def dependencyCheck():
                 additional_information.append(msg)
                 reasonForExit = True
     
-    try:
-        import chardet
-    except Exception:
-        packages.append('chardet')
-        packages_debian.append('python-chardet')
-        msg  = '    Please install the chardet package which can be found here:\n'
-        msg += '    http://pypi.python.org/pypi/chardet\n'
-        additional_information.append(msg)
-        reasonForExit = True
-    
     #Now output the results of the dependency check
     if packages:
         msg = 'Your python installation needs the following packages:\n'

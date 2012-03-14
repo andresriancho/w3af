@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import chardet
+import extlib.chardet as chardet
 
 def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
     """
