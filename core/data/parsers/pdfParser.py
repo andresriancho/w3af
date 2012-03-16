@@ -41,8 +41,7 @@ class pdfParser(BaseParser):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self, httpResponse):
-        BaseParser.__init__(self , httpResponse)
-        
+        super(pdfParser, self).__init__(httpResponse)
         # Work !
         self._pre_parse(httpResponse.body)
         
@@ -63,44 +62,15 @@ class pdfParser(BaseParser):
         self._findEmails(content_text)
         
     def getPDFContent(self, documentString):
-        #   With the objective of avoiding this bug:
-        #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
-        #   I perform this safety check:
-        if documentString == '':
-            return ''
-        
-        #   Perform some real work:
-        content = ""
-        
-        # Load PDF into pyPDF
-        pdf = pyPdf.PdfFileReader( StringIO.StringIO(documentString) )
-        try:
-            
-            # Iterate pages
-            for i in range(0, pdf.getNumPages()):
-                # Extract text from page and add to content
-                content += pdf.getPage(i).extractText() + "\n"
-            # Collapse whitespace
-            content = " ".join(content.replace("\xa0", " ").strip().split())
-            
-        except Exception, e:
-            om.out.debug('Exception in getPDFContent() , error: ' + str(e) )
-            content = ''
-        
-        
-        '''
-        Added to avoid this bug:
-        ===============
-        
-        "/home/ulises2k/programas/w3af-svn/w3af/core/data/parsers/baseparser.py
-        ", line 52, in findAccounts
-        if line.count('@'+self._baseDomain):
-        UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 13:
-        ordinal not in range(128)
-        '''
-        # TODO: Review this line
-        res = unicode(content,'utf-8','ignore').encode('utf-8')
-        return res
+        content = u""
+        if documentString:
+            # Load PDF into pyPDF
+            pdfreader = pyPdf.PdfFileReader(StringIO.StringIO(documentString))
+            try:
+                content = u"\n".join(p.extractText() for p in pdfreader.pages)
+            except Exception, e:
+                om.out.debug('Exception in getPDFContent(), error: ' + str(e))
+        return content
     
     def getReferences( self ):
         '''
@@ -116,18 +86,5 @@ class pdfParser(BaseParser):
         '''
         return ([], list(self._re_urls))
         
-    def _returnEmptyList( self, *args, **kwds ):
-        '''
-        This method is called (see below) when the caller invokes one of:
-            - getForms
-            - getComments
-            - getMetaRedir
-            - getMetaTags
-            - getReferencesOfTag
-        
-        @return: Because we are a PDF document, we don't have the same things that
-        a nice HTML document has, so we simply return an empty list.
-        '''
-        return []
-        
-    getReferencesOfTag = getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList
+    getReferencesOfTag = getForms = getComments = \
+    getMetaRedir = getMetaTags = lambda *args, **kwds: []
