@@ -32,7 +32,20 @@
 Utility functions for PDF library.
 """
 __author__ = "Mathieu Fenniak"
-__author_email__ = "mfenniak@pobox.com"
+__author_email__ = "biziqe@mathieu.fenniak.net"
+
+#ENABLE_PSYCO = False
+#if ENABLE_PSYCO:
+#    try:
+#        import psyco
+#    except ImportError:
+#        ENABLE_PSYCO = False
+#
+#if not ENABLE_PSYCO:
+#    class psyco:
+#        def proxy(func):
+#            return func
+#        proxy = staticmethod(proxy)
 
 def readUntilWhitespace(stream, maxchars=None):
     txt = ""
@@ -85,6 +98,9 @@ def RC4_encrypt(key, plaintext):
         t = S[(S[i] + S[j]) % 256]
         retval += chr(ord(plaintext[x]) ^ t)
     return retval
+
+class PdfReadError(Exception):
+    pass
 
 if __name__ == "__main__":
     # test RC4
