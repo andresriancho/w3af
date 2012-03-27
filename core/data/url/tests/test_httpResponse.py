@@ -21,12 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import unittest
-import codecs
 
-from ..httpResponse import httpResponse, DEFAULT_CHARSET, _returnEscapedChar
+from ..httpResponse import httpResponse, DEFAULT_CHARSET
+from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.parsers.urlParser import url_object
-
-codecs.register_error('default', _returnEscapedChar)
 
 TEST_RESPONSES = {
     'hebrew': (u'ולהכיר טוב יותר את המוסכמות, האופי', 'Windows-1255'),
@@ -127,7 +125,11 @@ class TestHTTPResponse(unittest.TestCase):
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
             resp = self.create_resp({'Content-Type':'text/xml'}, html)
-            self.assertEquals(html.decode(DEFAULT_CHARSET, 'default'), resp.body)
+            self.assertEquals(
+                smart_unicode(html, DEFAULT_CHARSET,
+                              ESCAPED_CHAR, on_error_guess=False),
+                resp.body
+            )
     
     def test_parse_response_with_wrong_charset(self):
         # A wrong or non-existant charset was set; try to decode the response
@@ -138,7 +140,11 @@ class TestHTTPResponse(unittest.TestCase):
             headers = {'Content-Type': 'text/xml; charset=%s' % 
                                             choice(('XXX', 'utf-8'))}
             resp = self.create_resp(headers, html)
-            self.assertEquals(html.decode(DEFAULT_CHARSET, 'default'), resp.body)
+            self.assertEquals(
+                smart_unicode(html, DEFAULT_CHARSET,
+                              ESCAPED_CHAR, on_error_guess=False),
+                resp.body
+            )
     
     def test_eval_xpath_in_dom(self):
         html = """

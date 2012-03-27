@@ -19,8 +19,31 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+import codecs
+import urllib
 import extlib.chardet as chardet
+
+# Custom error handling schemes registration
+ESCAPED_CHAR = "return_escaped_char"
+PERCENT_ENCODE = "percentencode"
+
+def _return_escaped_char(exc):
+    slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
+    return (unicode(slash_x_XX), exc.end)
+
+def _percent_encode(encodingexc):
+    if not isinstance(encodingexc, UnicodeEncodeError):
+        raise encodingexc
+    st = encodingexc.start
+    en = encodingexc.end
+    return (
+        u'%s' % (urllib.quote(encodingexc.object[st:en].encode('utf8')),),
+        en
+    )
+
+codecs.register_error(ESCAPED_CHAR, _return_escaped_char)
+codecs.register_error(PERCENT_ENCODE, _percent_encode)
+
 
 def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
     """
@@ -47,9 +70,13 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
             s = unicode(str(s), encoding, errors)
     return s
 
-def smart_str(s, encoding='utf8'):
+
+def smart_str(s, encoding='utf-8', errors='strict'):
     """
-    Return the str representation of 's'. Encode unicode strings using
-    the 'encoding' codec.
+    Return a bytestring version of 's', encoded as specified in 'encoding'.
     """
-    pass
+    if isinstance(s, unicode):
+        s = s.encode(encoding, errors)
+    elif not isinstance(s, str):
+        s = str(s)
+    return s

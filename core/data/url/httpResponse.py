@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import codecs
 import copy
 import re
 import httplib
@@ -28,17 +27,10 @@ import httplib
 from lxml import etree
 from itertools import imap
 
+from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
-
-# Handle codecs. Register error handling scheme
-def _returnEscapedChar(exc):
-    slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
-    return (unicode(slash_x_XX), exc.end)
-
-codecs.register_error("returnEscapedChar", _returnEscapedChar)
-
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
 CR = '\r'
@@ -436,7 +428,8 @@ class httpResponse(object):
             if not charset:
                 # Start with the headers
                 charset_mo = re.search('charset=\s*?([\w-]+)',
-                                        lowerCaseHeaders['content-type'])
+                                        lowerCaseHeaders['content-type'],
+                                        re.I)
                 if charset_mo:
                     # Seems like the response's headers contain a charset
                     charset = charset_mo.groups()[0].lower().strip()
@@ -448,16 +441,17 @@ class httpResponse(object):
                     if charset_mo:
                         charset = charset_mo.groups()[0].lower().strip()
                     else:
-                        try:
-                            # TODO: Play here with chardet
-                            raise Exception
-                        except:
-                            charset = DEFAULT_CHARSET
+                        charset = DEFAULT_CHARSET
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = rawbody.decode(charset, 'returnEscapedChar')
+                _body = smart_unicode(
+                                rawbody,
+                                charset,
+                                errors=ESCAPED_CHAR,
+                                on_error_guess=False
+                            )
             except LookupError:
                 # Warn about a buggy charset
                 msg = ('Charset LookupError: unknown charset: %s; '
@@ -465,8 +459,12 @@ class httpResponse(object):
                     (charset, self._charset))
                 om.out.debug(msg)
                 # Forcing it to use the default
-                charset = DEFAULT_CHARSET
-                _body = rawbody.decode(charset, 'returnEscapedChar')
+                _body = smart_unicode(
+                                rawbody,
+                                DEFAULT_CHARSET,
+                                errors=ESCAPED_CHAR,
+                                on_error_guess=False
+                            )
             
         return _body, charset
     
