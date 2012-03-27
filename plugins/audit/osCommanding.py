@@ -76,9 +76,15 @@ class osCommanding(baseAuditPlugin):
         #       - Writing a known file to the HTML output
         # The basic idea is to be able to detect ANY vulnerability, so we use ALL
         # of the known techniques
-        self._with_time_delay(freq)
-        
+        #
+        # Please note that I'm running the echo ones first in order to get them into
+        # the KB before the ones with time delays so that the osCommanding exploit
+        # can (with a higher degree of confidence) exploit the vulnerability
+        #
+        # This also speeds-up the detection process a little bit in the cases where
+        # there IS a vulnerability present and can be found with both methods.
         self._with_echo(freq)
+        self._with_time_delay(freq)
     
     def _with_time_delay(self, freq):
         '''
