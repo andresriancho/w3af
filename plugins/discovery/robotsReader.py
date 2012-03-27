@@ -85,13 +85,19 @@ class robotsReader(baseDiscoveryPlugin):
                     
                     line = line.strip()
                     
-                    if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or\
-                    line.upper().find('DISALLOW') == 0 ):
+                    if len(line) > 0 and line[0] != '#' and \
+                    (line.upper().find('ALLOW') == 0 or \
+                     line.upper().find('DISALLOW') == 0 ):
                         
                         url = line[ line.find(':') + 1 : ]
                         url = url.strip()
-                        url = base_url.urlJoin( url )
-                        dirs.append( url )
+                        try:
+                            url = base_url.urlJoin( url )
+                        except:
+                            # Simply ignore the invalid URL
+                            pass
+                        else:
+                            dirs.append( url )
 
             for url in dirs:
                 # Send the requests using threads:
