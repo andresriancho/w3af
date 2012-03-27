@@ -84,7 +84,7 @@ class shell(vuln, exploitResult):
         result.append('')
         return '\n'.join(result)
 
-    def generic_user_input( self, command ):
+    def generic_user_input( self, user_command ):
         '''
         This is the method that is called when a user wants to execute 
         something in the shell.
@@ -95,7 +95,7 @@ class shell(vuln, exploitResult):
         all shellAttackPlugins.
         '''
         # Get the command and the parameters
-        splist = command.split(' ')
+        splist = user_command.split(' ')
         command = splist[0]
         params = [p for p in splist[1:] if p]
         
@@ -125,10 +125,12 @@ class shell(vuln, exploitResult):
         #
         elif hasattr( self, 'specific_user_input'):
             # forward to the plugin
-            response = self.specific_user_input( command )
+            response = self.specific_user_input( user_command )
             
             if response is None:
                 return 'Command "%s" not found. Please type "help".' % command
+            else:
+                return response
 
 
     def end_interaction(self):

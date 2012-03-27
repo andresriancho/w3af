@@ -82,25 +82,16 @@ class read_shell(shell):
                 fh.close()
                 return 'Success.'
 
-    def generic_user_input( self, command ):
+    def specific_user_input( self, user_command ):
         '''
-        This is the method that is called when a user wants to execute something
-        in the shell.
-        
-        First, I trap the requests for starting the virtual daemon and the w3afAgent,
-        and if this is not the case, I forward the request to the specific_user_input
-        method which should be implemented by all shellAttackPlugins.
+        This is the method that is called when a user wants to execute something in the shell and is called from
+        shell.generic_user_input() which provides generic commands like "help".
+
+        @param user_command: The string representing the command that the user types in the shell.
         '''
-        #
-        #    Here I get all the common methods like help, payloads, lsp, etc.
-        #
-        base_klass_result = shell.generic_user_input(self, command)
-        if base_klass_result is not None:
-            return base_klass_result
-        
         # Get the command and the parameters
-        parameters = command.split(' ')[1:]
-        command = command.split(' ')[0]
+        parameters = user_command.split(' ')[1:]
+        command = user_command.split(' ')[0]
         
         #
         #    Read remote files
@@ -117,15 +108,8 @@ class read_shell(shell):
             local_filename = parameters[1]
             return self.download(remote_filename, local_filename)
 
-        #
-        #    Call the shell subclass method if needed
-        #
-        elif hasattr( self, 'specific_user_input'):
-            # forward to the plugin
-            response = self.specific_user_input( command )
-            
-            if response is None:
-                return 'Command "%s" not found. Please type "help".' % command
+        else:
+            return 'Command "%s" not found. Please type "help".' % user_command
 
     def _identifyOs( self ):
         '''

@@ -138,25 +138,16 @@ class exec_shell(shell):
             return 'File upload was successful.'
 
         
-    def generic_user_input( self, command ):
+    def specific_user_input( self, user_command ):
         '''
-        This is the method that is called when a user wants to execute something in the shell.
-        
-        First, I trap the requests for the regular commands like read, write, upload, etc., and if this is not the
-        case, I forward the request to the specific_user_input method which should be implemented by all shell
-        attack plugins.
+        This is the method that is called when a user wants to execute something in the shell and is called from
+        shell.generic_user_input() which provides generic commands like "help".
+
+        @param user_command: The string representing the command that the user types in the shell.
         '''
-        #
-        #    Here I get all the common methods like help, payloads, lsp, etc.
-        #
-        base_klass_result = shell.generic_user_input(self, command)
-        if base_klass_result is not None:
-            return base_klass_result
-        
         # Get the command and the parameters
-        original_command = command
-        parameters = command.split(' ')[1:]
-        command = command.split(' ')[0]
+        parameters = user_command.split(' ')[1:]
+        command = user_command.split(' ')[0]
         
         #
         #    Read remote files
@@ -191,15 +182,8 @@ class exec_shell(shell):
         elif command in ['e', 'exec', 'execute']:
             return self.execute( ' '.join(parameters) )
                     
-        #
-        #    Call the shell subclass method if needed
-        #
-        elif hasattr( self, 'specific_user_input'):
-            # forward to the plugin
-            response = self.specific_user_input( command )
-            
-            if response is None:
-                return 'Command "%s" not found. Please type "help".' % command
+        else:
+            return 'Command "%s" not found. Please type "help".' % user_command
     
     def get_unlink_command(self):
         '''
