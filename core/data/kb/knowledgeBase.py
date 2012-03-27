@@ -115,7 +115,7 @@ class knowledgeBase:
                     if not isinstance(vals, list):
                         continue
                     for v in vals:
-                        if type(v) is klass:
+                        if isinstance(v, klass):
                             res.append(v)
         return res
     

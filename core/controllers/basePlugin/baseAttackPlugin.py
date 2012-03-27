@@ -178,6 +178,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
             s = self._generateShell(vuln)
             if s is not None:
                 kb.kb.append( self, 'shell', s )
+                om.out.console('Vulnerability successfully exploited. Generated shell object %s' % s)
                 if self._generateOnlyOne:
                     # A shell was generated, I only need one point of exec.
                     return [s,]
