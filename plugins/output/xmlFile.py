@@ -19,34 +19,29 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-from core.controllers.w3afException import w3afException
-from core.data.db.history import HistoryItem
-from core.data.request.fuzzableRequest import fuzzableRequest
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.config as cf
-
-# w3af version
-from core.controllers.misc import get_w3af_version
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-# severity constants for vuln messages
-import core.data.constants.severity as severity
-
-# xml
+from functools import partial
+import base64
+import os
+import time
 import xml.dom.minidom
 
-# encoding
-import base64
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.misc import get_w3af_version
+from core.controllers.misc.encoding import smart_str
+from core.controllers.w3afException import w3afException
+from core.data.db.history import HistoryItem
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.request.fuzzableRequest import fuzzableRequest
+import core.data.constants.severity as severity
+import core.data.kb.config as cf
+import core.data.kb.knowledgeBase as kb
 
-# time
-import time
-import os
-
+# Override builtin 'str' function in order to avoid encoding
+# errors while generating objects' utf8 bytestring representations.
+# Note that this 'str' re-definition only will be available within
+# this module's scope.
+str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
 class xmlFile(baseOutputPlugin):
     '''
@@ -89,7 +84,7 @@ class xmlFile(baseOutputPlugin):
                                 
     def _init( self ):
         try:
-            self._file = open( self._file_name, "w" )
+            self._file = open(self._file_name, "w")
         except IOError, io:
             msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
             msg += ': "' + io.strerror + '".'
@@ -226,11 +221,11 @@ class xmlFile(baseOutputPlugin):
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
         if isinstance(action, fuzzableRequest):
             headers = action.getHeaders()
-            body = action.getData()
+            body = str(action.getData() or '')
             status = action.getRequestLine()
         else:
             headers = action.headers
-            body = action.body
+            body = str(action.body or '')
             status = action.getStatusLine()
 
         # Put out the status as an element
