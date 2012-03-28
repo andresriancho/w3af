@@ -42,13 +42,13 @@ class eval(baseAuditPlugin):
     
     PRINT_STRINGS = (
         # PHP http://php.net/eval
-        "echo \x27%s\x27 . \x27%s\x27\x3b",
+        "echo str_repeat('%s',5);",
         # Perl http://perldoc.perl.org/functions/eval.html
-        "print \x27%s\x27.\x27%s\x27\x3b",
+        "print '%s'x5",
         # Python http://docs.python.org/reference/simple_stmts.html#the-exec-statement
-        "print \x27%s\x27 + \x27%s\x27",
+        "print '%s'*5",
         # ASP
-        "Response.Write\x28\x22%s+%s\x22\x29"
+        "Response.Write(new String(\"%s\",5))"
      )
     WAIT_STRINGS = (
         # PHP http://php.net/sleep
@@ -73,9 +73,7 @@ class eval(baseAuditPlugin):
 
         #Create some random strings, which the plugin will use.
         # for the fuzz_with_echo
-        self._rnd1 = createRandAlpha(5)
-        self._rnd2 = createRandAlpha(5)
-        self._rndn = self._rnd1 + self._rnd2
+        self._rnd = createRandAlpha(5)
         
         # And now for the fuzz_with_time_delay
         # The wait time of the unfuzzed request
@@ -108,8 +106,7 @@ class eval(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         oResponse = self._sendMutant(freq , analyze=False)
-        print_strings = [pstr % (self._rnd1, self._rnd2)
-                         for pstr in self.PRINT_STRINGS]
+        print_strings = [pstr % (self._rnd,) for pstr in self.PRINT_STRINGS]
             
         mutants = createMutants(freq, print_strings, oResponse=oResponse)
 
@@ -235,7 +232,7 @@ class eval(baseAuditPlugin):
 
     def _find_eval_result(self, response):
         '''
-        This method searches for the randomized self._rndn string in html's.
+        This method searches for the randomized self._rnd string in html's.
 
         @parameter response: The HTTP response object
         @return: A list of error found on the page
@@ -256,7 +253,7 @@ class eval(baseAuditPlugin):
         '''
         @return: The string that results from the evaluation of what I sent.
         '''
-        return [self._rndn]
+        return [self._rnd*5]
 
     def getOptions(self):
         '''
