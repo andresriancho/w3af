@@ -20,12 +20,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import codecs
 import copy
 import re
 import urllib
 import urlparse
 
+from core.controllers.misc.encoding import smart_str, PERCENT_ENCODE
 from core.controllers.misc.is_ip_address import is_ip_address
 from core.controllers.misc.ordereddict import OrderedDict
 from core.controllers.w3afException import w3afException
@@ -57,17 +57,6 @@ GTOP_LEVEL_DOMAINS = set(('ac','ad','ae','aero','af','ag','ai','al','am',
     'tm','tn','to','tp','tr','travel','tt','tv','tw','tz','ua','ug','uk',
     'us','uy','uz','va','vc','ve','vg','vi','vn','vu','wf','ws','xxx','ye',
     'yt','za','zm','zw'))
-
-def percentencode(encodingexc):
-    if not isinstance(encodingexc, UnicodeEncodeError):
-        raise encodingexc
-    st = encodingexc.start
-    en = encodingexc.end
-    return (
-        u'%s' % (urllib.quote(encodingexc.object[st:en].encode('utf8')),),
-        en
-    )
-codecs.register_error("percentencode", percentencode)
 
 def set_changed(meth):
     '''
@@ -1275,7 +1264,11 @@ class url_object(object):
         u'http://w3af.com/indéx.html'.encode('latin1')
         True
         '''
-        urlstr = self.url_string.encode(self._encoding, "percentencode")
+        urlstr = smart_str(
+                       self.url_string,
+                       self._encoding,
+                       errors=PERCENT_ENCODE
+                    )
         return urlstr.replace(' ', '%20')
         
     def __unicode__(self):
