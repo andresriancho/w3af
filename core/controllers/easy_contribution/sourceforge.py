@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import cookielib
 import hashlib
+import socket
 import re
 import string
 import time
@@ -124,6 +125,9 @@ class SourceforgeXMLRPC(Sourceforge):
             self._proxy.system.listMethods()
             self.logged_in = True
         except xmlrpclib.ProtocolError:
+            return False
+        except socket.gaierror:
+            print 'Error resolving DNS name for sourceforge. Is your DNS properly set?'
             return False
         return self.logged_in
             
