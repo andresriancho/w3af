@@ -394,7 +394,7 @@ class sqlShellObj(shell):
                     self._driver.goodSamaritanContribution( command )
                     return None
                 else:
-                    om.out.console('Unknown command: "'+cmd+'". Please read the help:')
+                    om.out.console('Unknown command: "%s". Please read the help:' % cmd)
                     self.help()
                     return ''
 
@@ -431,7 +431,7 @@ class sqlShellObj(shell):
     def _showPrompt( self ):
         om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
         
-    def help( self, command ):
+    def help( self, command='' ):
         '''
         Print the help to the user.
         '''
