@@ -166,6 +166,11 @@ class url_object(object):
         >>> u = url_object(u'http://w3af.com/foo/bar.txt')
         >>> u.path
         u'/foo/bar.txt'
+
+        >>> u = url_object('http://w3af.org/?foo=http://w3af.com')
+        >>> u.netloc
+        'w3af.org'
+
         '''
         self._already_calculated_url = None
         self._querystr = None
