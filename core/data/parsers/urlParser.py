@@ -198,7 +198,7 @@ class url_object(object):
         self.fragment = fragment or u''
 
         if not self.netloc:
-            raise ValueError, 'Invalid URL "%r"' % data
+            raise ValueError, 'Invalid URL "%r"' % (data,)
 
     @classmethod
     def from_parts(cls, scheme, netloc, path, params,
