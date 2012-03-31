@@ -77,7 +77,7 @@ class swfParser(BaseParser):
         For now... don't decompile anything, just apply regular
         expressions to it.
         
-        @para swf_body: SWF bytecode string
+        @param swf_body: SWF bytecode string
         '''
         # FIXME: Jan 2012, JAP - Now this method does nothing. Extracting
         # urls from a compiled flash leads to serious encoding issues
