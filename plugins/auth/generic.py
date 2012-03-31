@@ -29,7 +29,7 @@ import core.controllers.outputManager as om
 
 
 class generic(baseAuthPlugin):
-    '''Generic auth plugin.'''
+    '''Generic authentication plugin.'''
 
     def __init__(self):
         baseAuthPlugin.__init__(self)
@@ -144,7 +144,8 @@ class generic(baseAuthPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This auth plugin can logging in to web application with generic authentication schema
+        This authentication plugin can login to web application with generic
+        authentication schema.
         
         Three configurable parameters exist:
             - username
