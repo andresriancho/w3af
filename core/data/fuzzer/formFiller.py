@@ -33,7 +33,7 @@ parameter_name_knowledge = {
                                     'key', 'hash', 'pword', 'passe'], 
 
     'w3af@email.com':['mail','email','e-mail','correo','correio', 'to', 'cc', 'bcc'], 
-    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website', 'web'], 
+    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website', 'web', 'url', 'page', 'homepage'], 
     
     'AK':['state','estado'], 
     'Argentina':['location','country','pais', u'país','land'], 
@@ -51,7 +51,8 @@ parameter_name_knowledge = {
     '555':['area', 'prefijo','prefix'],
     '55550178':['phone','fax','code','number','telefono','numero', u'número', u'código','codigo','telefon',
                         'tel','code','nummer', 'call', 'llamar', 'passport', 'pasaporte'],
-    '987654320': ['ssn', 'social'], 
+    '987654320': ['ssn', 'social'],
+    'C00001234': ['passport'],  
     '7':['month','day','birthday','birthmonth','mes','dia', u'día','monat','tag','geburts', u'mês',
             'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article', 'score', 'puntos', 
             'hour', 'hora', 'minute', 'minuto', 'second', 'segundo', 'weight','peso', 'largo', 'length',
