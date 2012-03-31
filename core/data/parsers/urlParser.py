@@ -171,6 +171,11 @@ class url_object(object):
         >>> u.netloc
         'w3af.org'
 
+        >>> u = url_object('http://w3af.org/', encoding='x-euc-jp')
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: Invalid encoding "x-euc-jp" when creating URL.
+    
         '''
         self._already_calculated_url = None
         self._querystr = None
@@ -179,7 +184,15 @@ class url_object(object):
 
         if data is None:
             raise ValueError('Can not build a url_object from data=None.')
-        
+
+        # Verify that the encoding is a valid one. If we don't do it here,
+        # things might get crazy afterwards.
+        try:
+            # We could use encode or decode here, it doesn't really matter.
+            ''.decode(encoding)
+        except:
+            raise ValueError('Invalid encoding "%s" when creating URL.' % encoding)
+
         if isinstance(data, tuple):
             scheme, netloc, path, params, qs, fragment = data
         else:
