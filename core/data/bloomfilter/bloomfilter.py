@@ -80,13 +80,13 @@ class mmap_filter_wrapper(generic_bloomfilter):
         self.bf = mmap_filter(capacity, error_rate, temp_file)
 
     def __contains__(self, key):
-        return str(key) in self.bf
+        return key in self.bf
         
     def __len__(self):
         return len(self.bf)
         
     def add(self, key):
-        return self.bf.add( str(key) )
+        return self.bf.add( key )
         
 class pure_python_filter_wrapper(generic_bloomfilter):
     def __init__(self, capacity, error_rate=0.01):
@@ -94,13 +94,13 @@ class pure_python_filter_wrapper(generic_bloomfilter):
         self.bf = pure_python_filter(capacity, error_rate)
 
     def __contains__(self, key):
-        return str(key) in self.bf
+        return key in self.bf
         
     def __len__(self):
         return len(self.bf)
         
     def add(self, key):
-        return self.bf.add( str(key) )
+        return self.bf.add( key )
 
 if USE_PURE_PYTHON_FILTER:
     #
@@ -159,7 +159,6 @@ class scalable_bloomfilter(object):
         True
         >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
         True
-        
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
