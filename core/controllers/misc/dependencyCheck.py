@@ -65,7 +65,21 @@ def dependencyCheck():
             msg += '    sudo python setup.py install\n\n'
             
             additional_information.append(msg)
-            reasonForExit = True        
+            reasonForExit = True
+    
+    try:
+        import esmre
+        import esm
+    except ImportError:
+        msg = '    esmre is an optional (for now) library for running w3af which'
+        msg += ' will speed up pattern matching for most plugins. You'
+        msg += ' can download it from http://code.google.com/p/esmre/ or run'
+        msg += ' the following command to install it:\n'
+        msg += '    sudo easy_install esmre\n'
+        
+        packages.append('esmre')
+        packages.append('esm')
+        additional_information.append(msg)
     
     # nltk raises a warning... which I want to ignore...
     # This is the original warning:
