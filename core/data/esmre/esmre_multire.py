@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 '''
 esmre_multire.py
 
@@ -52,13 +51,12 @@ class esmre_multire(object):
             
             if isinstance(item, tuple):
                 regex = item[0]
-                # TODO: What about re flags?
-                self._re_cache[ regex ] = re.compile( regex, re_compile_flags )
                 regex = regex.encode(DEFAULT_ENCODING)
+                self._re_cache[ regex ] = re.compile( regex, re_compile_flags )
                 self._index.enter(regex, item)
             elif isinstance(item, basestring):
-                self._re_cache[ item ] = re.compile( item, re_compile_flags )
                 item = item.encode(DEFAULT_ENCODING)
+                self._re_cache[ item ] = re.compile( item, re_compile_flags )
                 self._index.enter(item, (item,) )
             else:
                 raise ValueError('Can NOT build esmre_multire with provided values.')
@@ -73,52 +71,7 @@ class esmre_multire(object):
         going to be applied. First we apply the esmre algorithm and then we do
         some magic of our own.
 
-        >>> re_list = ['123','456','789']
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( '456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '456', <_sre.SRE_Pattern object at 0x...>]]
-        >>> mre.query( '789' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '789', <_sre.SRE_Pattern object at 0x...>]]
-        
-        >>> re_list = ['123.*456','abc.*def']
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( '456' ) #doctest: +ELLIPSIS
-        []
-        >>> mre.query( '123a456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>]]
-        >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
-
-        >>> re_list = [ ('123.*456', None, None) , ('abc.*def', 1, 2) ]
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( '123A456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>, None, None]]
-        >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>, 1, 2]]
-
-        >>> re_list = [u'ñ', u'ý']
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( 'abcn' )
-        []
-        >>> mre.query( 'abcñ' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'ñ', <_sre.SRE_Pattern object at 0x...>]]
-
-        >>> re_list = [u'abc', u'def']
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( 'abcñ' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>]]
-        >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>], [<_sre.SRE_Match object at 0x...>, 'def', <_sre.SRE_Pattern object at 0x...>]]
-
-        >>> re_list = [u'\\x00']
-        >>> mre = esmre_multire( re_list )
-        >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '\\x00', <_sre.SRE_Pattern object at 0x...>]]
-        
-        >>> re_list = ['123.*456','abc.*def']
-        >>> mre = esmre_multire( re_list, re.IGNORECASE )
-        >>> mre.query( 'ABC3def' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
+        See test_multire.py for examples.
         '''
         result = []
         

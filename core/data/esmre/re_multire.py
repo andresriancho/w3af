@@ -64,35 +64,8 @@ class re_multire(object):
         @param target_str: The target string where the regular expressions are
         going to be applied. First we apply the esmre algorithm and then we do
         some magic of our own.
-
-        >>> re_list = ['123','456','789']
-        >>> mre = re_multire( re_list )
-        >>> mre.query( '456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '456', <_sre.SRE_Pattern object at 0x...>]]
-        >>> mre.query( '789' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '789', <_sre.SRE_Pattern object at 0x...>]]
         
-        >>> re_list = ['123.*456','abc.*def']
-        >>> mre = re_multire( re_list )
-        >>> mre.query( '456' ) #doctest: +ELLIPSIS
-        []
-        >>> mre.query( '123a456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>]]
-        >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
-
-        >>> re_list = [ ('123.*456', None, None) , ('abc.*def', 1, 2) ]
-        >>> mre = re_multire( re_list )
-        >>> mre.query( '123A456' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>, None, None]]
-        >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>, 1, 2]]
-        
-        >>> re_list = ['123.*456','abc.*def']
-        >>> mre = re_multire( re_list, re.IGNORECASE )
-        >>> mre.query( 'ABC3def' ) #doctest: +ELLIPSIS
-        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
-                
+        See test_re.py for usage examples.
         '''
         result = []
         
