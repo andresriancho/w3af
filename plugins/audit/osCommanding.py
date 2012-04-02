@@ -59,12 +59,12 @@ class osCommanding(baseAuditPlugin):
         ":usr/bin/ksh",
 
         # boot.ini
-        "\\[boot loader\\]",
-        "default=multi\\(",
-        "\\[operating systems\\]",
+        "[boot loader]",
+        "default=multi(",
+        "[operating systems]",
             
         # win.ini
-        "\\[fonts\\]",
+        "[fonts]",
     )
     _multi_in = multi_in( FILE_PATTERNS )
     
