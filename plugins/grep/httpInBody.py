@@ -73,6 +73,8 @@ class httpInBody (baseGrepPlugin):
             self._already_inspected.add(uri)
 
             body_without_tags = response.getClearTextBody()
+            if body_without_tags is None:
+                return
             
             for match, regex_str, regex_comp, reqres in self._multi_re.query( body_without_tags ):
 
