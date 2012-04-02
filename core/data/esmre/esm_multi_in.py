@@ -1,5 +1,5 @@
 '''
-multi_re.py
+esm_multi_in.py
 
 Copyright 2012 Andres Riancho
 
@@ -20,11 +20,5 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-try:
-    import esmre
-except ImportError:
-    from re_multire import re_multire
-    multi_re = re_multire
-else:
-    from esmre_multire import esmre_multire
-    multi_re = esmre_multire
+class esm_multi_in(object):
+    pass

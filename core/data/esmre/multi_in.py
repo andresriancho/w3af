@@ -1,5 +1,5 @@
 '''
-multi_re.py
+multi_in.py
 
 Copyright 2012 Andres Riancho
 
@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 try:
-    import esmre
+    import esm
 except ImportError:
-    from re_multire import re_multire
-    multi_re = re_multire
+    from in_multi_in import in_multi_in
+    multi_in = in_multi_in
 else:
-    from esmre_multire import esmre_multire
-    multi_re = esmre_multire
+    from esm_multi_in import esm_multi_in
+    multi_in = esm_multi_in
+
+

@@ -1,12 +1,12 @@
-from multire import multire
+from multi_re import multi_re
 from test_data import HTTP_RESPONSE, SQL_ERRORS
 
 def main():
 
-    _multire = multire( SQL_ERRORS )
+    _multi_re = multi_re( SQL_ERRORS )
 
     for i in xrange(10000):
-        _multire.query( HTTP_RESPONSE )
+        _multi_re.query( HTTP_RESPONSE )
 
     
 if __name__ == '__main__':

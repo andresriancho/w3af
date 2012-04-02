@@ -1,4 +1,3 @@
-from multire import multire
 from test_data import HTTP_RESPONSE, SQL_ERRORS
 import re
 
