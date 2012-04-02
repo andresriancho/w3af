@@ -26,15 +26,15 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.esmre.multi_in import multi_in
 
 import re
 
