@@ -23,11 +23,11 @@ from ..helper import PluginTest, PluginConfig
 
 class TestSQLI(PluginTest):
     
-    sqli_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+    target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
     
     _run_configs = {
         'cfg': {
-            'target': sqli_url + '?name=xxx',
+            'target': target_url + '?name=xxx',
             'plugins': {
                  'audit': (PluginConfig('sqli'),),
                  }
@@ -37,11 +37,10 @@ class TestSQLI(PluginTest):
     def test_found_sqli(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        sqlivulns = self.kb.getData('sqli', 'sqli')
-        self.assertEquals(1, len(sqlivulns))
+        vulns = self.kb.getData('sqli', 'sqli')
+        self.assertEquals(1, len(vulns))
         # Now some tests around specific details of the found vuln
-        sqlivuln = sqlivulns[0]
-        self.assertEquals("You have an error in your SQL syntax;",
-                          sqlivuln['error'])
-        self.assertEquals("MySQL database", sqlivuln['db'])
-        self.assertEquals(self.sqli_url, str(sqlivuln.getURL()))
+        vuln = vulns[0]
+        self.assertEquals("SELECT * FROM ", vuln['error'])
+        self.assertEquals("Unknown database", vuln['db'])
+        self.assertEquals(self.target_url, str(vuln.getURL()))
