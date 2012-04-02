@@ -34,7 +34,7 @@ class TestLDAPI(PluginTest):
             }
         }
     
-    def test_found_sqli(self):
+    def test_found_ldapi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.getData('LDAPi', 'LDAPi')
