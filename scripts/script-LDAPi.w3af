@@ -2,9 +2,12 @@
 
 plugins
 audit LDAPi
-output console
+output console, textFile
 output config console
 set verbose False
+back
+output config textFile
+set verbose True
 back
 back
 target
