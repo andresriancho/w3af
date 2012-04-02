@@ -8,11 +8,7 @@ import re
 import unittest
 
 
-class TestMultiRe(unittest.TestCase):
-
-    def __init__(self, testname):
-        super(TestMultiRe, self).__init__(testname)
-        self.klass = esmre_multire
+class BaseMultiReTest(object):
                 
     def test_simplest(self):
         re_list = ['123','456','789']
@@ -97,6 +93,16 @@ class TestMultiRe(unittest.TestCase):
         result = mre.query( 'abc\x00def' )
         self.assertEqual(1, len(result))
         self.assertEqual('\x00', result[0][1])
+
+class TestEsmreMultire(unittest.TestCase, BaseMultiReTest):
+    def __init__(self, testname):
+        super(TestEsmreMultire, self).__init__(testname)
+        self.klass = esmre_multire
+
+class TestReMultire(unittest.TestCase, BaseMultiReTest):
+    def __init__(self, testname):
+        super(TestReMultire, self).__init__(testname)
+        self.klass = re_multire
 
 if __name__ == '__main__':
     unittest.main()
