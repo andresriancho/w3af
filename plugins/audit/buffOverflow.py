@@ -161,7 +161,7 @@ class buffOverflow(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        for match, error_str, regex_comp in self._multi_in.query( response.body ):
+        for error_str in self._multi_in.query( response.body ):
             # And not in the original response
             if error_str not in mutant.getOriginalResponseBody():
                 v = vuln.vuln( mutant )
