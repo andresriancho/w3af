@@ -30,7 +30,7 @@ class re_multire(object):
     w3af users which don't have the esmre package installed.
     '''
     
-    def __init__(self, re_list):
+    def __init__(self, re_list, re_compile_flags=0):
         '''
         
         @param re_list: A list with all the regular expressions that we want
@@ -38,9 +38,8 @@ class re_multire(object):
         
         This list might be [re_str_1, re_str_2 ... , re_str_N] or something like
         [ (re_str_1, obj1) , (re_str_2, obj2) ... , (re_str_N, objN)]. In the first
-        case, if a match is found this class will return [ (match_obj, re_str_N), ]
-        in the second case we'll return [ (match_obj, re_str_N, objN), ]
-        
+        case, if a match is found this class will return [ (match_obj, re_str_N, pattern_obj), ]
+        in the second case we'll return [ (match_obj, re_str_N, pattern_obj, objN), ]        
         '''
         self._re_cache = {}
         self._assoc_obj = {}
@@ -49,11 +48,10 @@ class re_multire(object):
             
             if isinstance(item, tuple):
                 regex = item[0]
-                # TODO: What about re flags?
-                self._re_cache[ regex ] = re.compile( regex )
+                self._re_cache[ regex ] = re.compile( regex, re_compile_flags )
                 self._assoc_obj[ regex ] = item[1:]
             elif isinstance(item, basestring):
-                self._re_cache[ item ] = re.compile( item )
+                self._re_cache[ item ] = re.compile( item, re_compile_flags )
             else:
                 raise ValueError('Can NOT build re_multire with provided values.')
             
@@ -89,6 +87,12 @@ class re_multire(object):
         [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>, None, None]]
         >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
         [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>, 1, 2]]
+        
+        >>> re_list = ['123.*456','abc.*def']
+        >>> mre = re_multire( re_list, re.IGNORECASE )
+        >>> mre.query( 'ABC3def' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
+                
         '''
         result = []
         

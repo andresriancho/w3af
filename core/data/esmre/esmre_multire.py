@@ -33,7 +33,7 @@ class esmre_multire(object):
     easy to use API to esmre.
     '''
     
-    def __init__(self, re_list):
+    def __init__(self, re_list, re_compile_flags=0):
         '''
         
         @param re_list: A list with all the regular expressions that we want
@@ -41,8 +41,8 @@ class esmre_multire(object):
         
         This list might be [re_str_1, re_str_2 ... , re_str_N] or something like
         [ (re_str_1, obj1) , (re_str_2, obj2) ... , (re_str_N, objN)]. In the first
-        case, if a match is found this class will return [ (match_obj, re_str_N), ]
-        in the second case we'll return [ (match_obj, re_str_N, objN), ]
+        case, if a match is found this class will return [ (match_obj, re_str_N, pattern_obj), ]
+        in the second case we'll return [ (match_obj, re_str_N, pattern_obj, objN), ]
         
         '''
         self._index = esmre.Index()
@@ -53,11 +53,11 @@ class esmre_multire(object):
             if isinstance(item, tuple):
                 regex = item[0]
                 # TODO: What about re flags?
-                self._re_cache[ regex ] = re.compile( regex )
+                self._re_cache[ regex ] = re.compile( regex, re_compile_flags )
                 regex = regex.encode(DEFAULT_ENCODING)
                 self._index.enter(regex, item)
             elif isinstance(item, basestring):
-                self._re_cache[ item ] = re.compile( item )
+                self._re_cache[ item ] = re.compile( item, re_compile_flags )
                 item = item.encode(DEFAULT_ENCODING)
                 self._index.enter(item, (item,) )
             else:
@@ -115,6 +115,10 @@ class esmre_multire(object):
         >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
         [[<_sre.SRE_Match object at 0x...>, '\\x00', <_sre.SRE_Pattern object at 0x...>]]
         
+        >>> re_list = ['123.*456','abc.*def']
+        >>> mre = esmre_multire( re_list, re.IGNORECASE )
+        >>> mre.query( 'ABC3def' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>]]
         '''
         result = []
         
