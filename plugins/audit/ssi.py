@@ -24,6 +24,8 @@ import re
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.options.optionList import optionList
+from core.data.esmre.multi_in import multi_in
+
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
@@ -35,6 +37,26 @@ class ssi(baseAuditPlugin):
     Find server side inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    FILE_PATTERNS = (
+        "root:x:0:0:",  
+        "daemon:x:1:1:",
+        ":/bin/bash",
+        ":/bin/sh",
+
+        # /etc/passwd in AIX
+        "root:!:x:0:0:",
+        "daemon:!:x:1:1:",
+        ":usr/bin/ksh",
+
+        # boot.ini
+        "[boot loader]",
+        "default=multi(",
+        "[operating systems]",
+            
+        # win.ini
+        "[fonts]",
+    )
+    _multi_in = multi_in( FILE_PATTERNS )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
@@ -118,16 +140,16 @@ class ssi(baseAuditPlugin):
         Analyze the result of the previously sent request.
         @return: None, save the vuln to the kb.
         '''
-        ssi_error_list = self._find_file( response )
-        for ssi_error_re, ssi_error in ssi_error_list:
-            if not ssi_error_re.search( mutant.getOriginalResponseBody()):
+        file_patterns = self._find_file( response )
+        for file_pattern in file_patterns:
+            if file_pattern not in mutant.getOriginalResponseBody():
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.getName())
                 v.setName( 'Server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
                 v.setDesc( 'Server Side Include was found at: ' + mutant.foundAt() )
                 v.setId( response.id )
-                v.addToHighlight( ssi_error )
+                v.addToHighlight( file_pattern )
                 kb.kb.append( self, 'ssi', v )
     
     def end(self):
@@ -180,51 +202,13 @@ class ssi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for file_pattern_re in self._get_file_patterns():
-            match = file_pattern_re.search( response.getBody() )
-            if  match:
-                msg = 'Found file pattern. The section where the file pattern is included is (only'
-                msg += ' a fragment is shown): "' + match.group(0)
-                msg += '". The error was found on response with id ' + str(response.id) + '.'
-                om.out.information(msg)
-                res.append((file_pattern_re, match.group(0)))
+        for file_pattern_match in self._multi_in.query( response.body ):
+            msg = 'Found file pattern. The section where the file pattern is included is (only'
+            msg += ' a fragment is shown): "' + file_pattern_match
+            msg += '". The error was found on response with id ' + str(response.id) + '.'
+            om.out.information(msg)
+            res.append( file_pattern_match )
         return res
-    
-    def _get_file_patterns(self):
-        '''
-        @return: A list of strings to find in the resulting HTML in order to check for server side includes.
-        '''
-        if self._file_compiled_regex:
-            # returning the already compiled regular expressions
-            return self._file_compiled_regex
-        
-        else:
-            # Compile them for the first time, and return the compiled regular expressions
-            
-            file_patterns = []
-            
-            # /etc/passwd
-            file_patterns.append("root:x:0:0:")  
-            file_patterns.append("daemon:x:1:1:")
-            file_patterns.append(":/bin/bash")
-            file_patterns.append(":/bin/sh")
-
-            # /etc/passwd in AIX
-            file_patterns.append("root:!:x:0:0:")
-            file_patterns.append("daemon:!:x:1:1:")
-            file_patterns.append(":usr/bin/ksh") 
-
-            # boot.ini
-            file_patterns.append("\\[boot loader\\]")
-            file_patterns.append("default=multi\\(")
-            file_patterns.append("\\[operating systems\\]")
-            
-            # win.ini
-            file_patterns.append("\\[fonts\\]")
-            
-            self._file_compiled_regex = [re.compile(i, re.IGNORECASE) for i in file_patterns]
-            
-            return self._file_compiled_regex
         
     def getPluginDeps( self ):
         '''
