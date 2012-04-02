@@ -393,7 +393,7 @@ class HierarchicalClustering(BaseClusterMethod):
       >>> # or: from cluster import *
       >>> cl = HierarchicalClustering([123,334,345,242,234,1,3], lambda x,y: float(abs(x-y)))
       >>> cl.getlevel(90)
-      [[345, 334], [234, 242], [123], [3, 1]]
+      [[1, 3], [123], [242, 234], [334, 345]]
 
       Note that all of the returned clusters are more that 90 apart
 
@@ -614,12 +614,11 @@ class KMeansClustering:
    Implementation of the kmeans clustering method as explained in
    http://www.elet.polimi.it/upload/matteucc/Clustering/tutorial_html/kmeans.html
 
-   USAGE
-   =====
-
-     >>> from cluster import KMeansClustering
-     >>> cl = KMeansClustering([(1,1), (2,1), (5,3), ...])
-     >>> clusters = cl.getclusters(2)
+   Usage:
+   ======
+       from cluster import KMeansClustering
+       cl = KMeansClustering([(1,1), (2,1), (5,3), ...])
+       clusters = cl.getclusters(2)
    """
 
    def __init__(self, data, distance=None):
