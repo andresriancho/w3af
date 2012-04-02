@@ -38,8 +38,8 @@ class esm_multi_in(object):
         
         This list might be [str_1, str_2 ... , str_N] or something like
         [ (str_1, obj1) , (str_2, obj2) ... , (str_N, objN)]. In the first
-        case, if a match is found this class will return [ (str_N), ]
-        in the second case we'll return [ (re_str_N, objN), ]
+        case, if a match is found this class will return [ str_N, ]
+        in the second case we'll return [ [str_N, objN], ]
         
         '''
         self._index = esm.Index() 
@@ -68,9 +68,9 @@ class esm_multi_in(object):
         >>> in_list = ['123','456','789']
         >>> imi = esm_multi_in( in_list )
         >>> imi.query( '456' )
-        [['456']]
+        ['456']
         >>> imi.query( '789' )
-        [['789']]
+        ['789']
         
         >>> in_list = [ ('123456', None, None) , ('abcdef', 1, 2) ]
         >>> imi = esm_multi_in( in_list )
@@ -82,15 +82,16 @@ class esm_multi_in(object):
         >>> in_list = ['javax.naming.NameNotFoundException', '7', '8']
         >>> imi = esm_multi_in( in_list )
         >>> imi.query( 'abc \\n javax.naming.NameNotFoundException \\n 123' )
-        [['javax.naming.NameNotFoundException']]
+        ['javax.naming.NameNotFoundException']
         
         '''
         result = []
         query_result_list = self._index.query(target_str)
         
         for query_result in query_result_list:
-            # query_result is a tuple with the regular expression that matched
-            # as the first object and the associated objects following
-            result.append( list(query_result[1:][0]) )
+            if len(query_result[1]) == 1:
+                result.append( list(query_result[1:][0])[0] )
+            else:
+                result.append( list(query_result[1:][0]) )
 
         return result

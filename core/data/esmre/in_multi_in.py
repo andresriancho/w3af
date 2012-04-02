@@ -34,8 +34,8 @@ class in_multi_in(object):
         
         This list might be [str_1, str_2 ... , str_N] or something like
         [ (str_1, obj1) , (str_2, obj2) ... , (str_N, objN)]. In the first
-        case, if a match is found this class will return [ (str_N), ]
-        in the second case we'll return [ (match_obj, str_N, objN), ]
+        case, if a match is found this class will return [ str_N, ]
+        in the second case we'll return [ [str_N, objN], ]
         
         '''
         self._in = []
@@ -64,9 +64,9 @@ class in_multi_in(object):
         >>> in_list = ['123','456','789']
         >>> imi = in_multi_in( in_list )
         >>> imi.query( '456' )
-        [['456']]
+        ['456']
         >>> imi.query( '789' )
-        [['789']]
+        ['789']
         
         >>> in_list = [ ('123456', None, None) , ('abcdef', 1, 2) ]
         >>> imi = in_multi_in( in_list )
@@ -80,11 +80,12 @@ class in_multi_in(object):
         for in_str in self._in:
 
             if in_str in target_str:
-                resitem = [in_str,]
                 
                 if in_str in self._assoc_obj:
+                    resitem = [in_str,]
                     resitem.extend( self._assoc_obj[ in_str ] )
-                    
-                result.append( resitem )
+                    result.append( resitem )
+                else:
+                    result.append( in_str )
 
         return result

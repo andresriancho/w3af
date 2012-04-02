@@ -164,8 +164,7 @@ class LDAPi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for match in self._multi_in.query( response.body ):
-            match_string = match[0]
+        for match_string in self._multi_in.query( response.body ):
             msg = 'Found LDAP error string. '
             msg += 'The error returned by the web application is (only a fragment is shown): "'
             msg += match_string + '". The error was found on '

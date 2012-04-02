@@ -280,7 +280,7 @@ class localFileInclude(baseAuditPlugin):
         '''
         res = []
         for file_pattern_match in self._multi_in.query( response.getBody() ):
-            res.append( file_pattern_match[0] )
+            res.append( file_pattern_match )
         
         if len(res) == 1:
             msg = 'A file fragment was found. The section where the file is included is (only'
