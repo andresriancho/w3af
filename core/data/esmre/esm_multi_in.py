@@ -95,6 +95,16 @@ class esm_multi_in(object):
         []
         >>> imi.query( 'abcñ' )
         ['ñ']
+
+        >>> in_list = [u'\\x00']
+        >>> imi = esm_multi_in( in_list )
+        >>> imi.query( 'abc\\x00def' )
+        ['\\x00']
+
+        >>> in_list = [u'abc(def)', u'foo(bar)']
+        >>> imi = esm_multi_in( in_list )
+        >>> imi.query( 'foo abc(def) bar' )
+        ['abc(def)']
         '''
         result = []
         if isinstance(target_str, unicode):

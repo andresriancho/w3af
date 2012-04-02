@@ -109,6 +109,12 @@ class esmre_multire(object):
         [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>]]
         >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
         [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>], [<_sre.SRE_Match object at 0x...>, 'def', <_sre.SRE_Pattern object at 0x...>]]
+
+        >>> re_list = [u'\\x00']
+        >>> mre = esmre_multire( re_list )
+        >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, '\\x00', <_sre.SRE_Pattern object at 0x...>]]
+        
         '''
         result = []
         
