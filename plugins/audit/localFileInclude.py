@@ -38,6 +38,7 @@ import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
 from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
 
 import re
 
@@ -47,6 +48,27 @@ class localFileInclude(baseAuditPlugin):
     Find local file inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
+    FILE_PATTERNS = (
+        "root:x:0:0:",  
+        "daemon:x:1:1:",
+        ":/bin/bash",
+        ":/bin/sh",
+
+        # /etc/passwd in AIX
+        "root:!:x:0:0:",
+        "daemon:!:x:1:1:",
+        ":usr/bin/ksh",
+
+        # boot.ini
+        "\\[boot loader\\]",
+        "default=multi\\(",
+        "\\[operating systems\\]",
+            
+        # win.ini
+        "\\[fonts\\]",
+    )
+    _multi_in = multi_in( FILE_PATTERNS )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
@@ -164,16 +186,16 @@ class localFileInclude(baseAuditPlugin):
                 #   Identify the vulnerability
                 #
                 file_content_list = self._find_file(response)
-                for file_pattern_regex, file_content in file_content_list:
-                    if not file_pattern_regex.search(mutant.getOriginalResponseBody()):
+                for file_pattern_match in file_content_list:
+                    if file_pattern_match not in mutant.getOriginalResponseBody():
                         v = vuln.vuln(mutant)
                         v.setPluginName(self.getName())
                         v.setId(response.id)
                         v.setName('Local file inclusion vulnerability')
                         v.setSeverity(severity.MEDIUM)
                         v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
-                        v['file_pattern'] = file_content
-                        v.addToHighlight(file_content)
+                        v['file_pattern'] = file_pattern_match
+                        v.addToHighlight(file_pattern_match)
                         kb.kb.append(self, 'localFileInclude', v)
                         return
 
@@ -221,8 +243,7 @@ class localFileInclude(baseAuditPlugin):
                         i.setId( response.id )
                         i.setName( 'File read error' )
                         i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
-                        kb.kb.append( self, 'error', i )
-                
+                        kb.kb.append( self, 'error', i )        
     
     def end(self):
         '''
@@ -258,14 +279,12 @@ class localFileInclude(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for file_pattern_regex in self._get_file_patterns():
-            match = file_pattern_regex.search( response.getBody() )
-            if  match:
-                res.append( (file_pattern_regex, match.group(0) ) )
+        for file_pattern_match in self._multi_in.query( response.getBody() ):
+            res.append( file_pattern_match[0] )
         
         if len(res) == 1:
             msg = 'A file fragment was found. The section where the file is included is (only'
-            msg += ' a fragment is shown): "' + res[0] [1]
+            msg += ' a fragment is shown): "' + res[0]
             msg += '". This is just an informational message, which might be related to a'
             msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
             om.out.debug( msg )
@@ -273,48 +292,12 @@ class localFileInclude(baseAuditPlugin):
             msg = 'File fragments have been found. The following is a list of file fragments'
             msg += ' that were returned by the web application while testing for local file'
             msg += ' inclusion: \n'
-            for file_pattern_regex, file_pattern in res:
-                msg += '- "' + file_pattern + '" \n'
+            for file_pattern_match in res:
+                msg += '- "' + file_pattern_match + '" \n'
             msg += 'This is just an informational message, which might be related to a'
             msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
             om.out.debug( msg )
-        return res
-    
-    def _get_file_patterns(self):
-        '''
-        @return: A list of strings to find in the resulting HTML in order to check for local file includes.
-        '''
-        if self._file_compiled_regex:
-            # returning the already compiled regular expressions
-            return self._file_compiled_regex
-        
-        else:
-            # Compile them for the first time, and return the compiled regular expressions
-            
-            file_patterns = []
-            
-            # /etc/passwd
-            file_patterns.append("root:x:0:0:")  
-            file_patterns.append("daemon:x:1:1:")
-            file_patterns.append(":/bin/bash")
-            file_patterns.append(":/bin/sh")
-
-            # /etc/passwd in AIX
-            file_patterns.append("root:!:x:0:0:")
-            file_patterns.append("daemon:!:x:1:1:")
-            file_patterns.append(":usr/bin/ksh") 
-
-            # boot.ini
-            file_patterns.append("\\[boot loader\\]")
-            file_patterns.append("default=multi\\(")
-            file_patterns.append("\\[operating systems\\]")
-            
-            # win.ini
-            file_patterns.append("\\[fonts\\]")
-            
-            self._file_compiled_regex = [re.compile(i, re.IGNORECASE) for i in file_patterns]
-            
-            return self._file_compiled_regex
+        return res    
     
     def get_include_errors(self):
         '''
