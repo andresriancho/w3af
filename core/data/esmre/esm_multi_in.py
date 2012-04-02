@@ -78,6 +78,12 @@ class esm_multi_in(object):
         [['123456', None, None]]
         >>> imi.query( 'foo abcdef bar' )
         [['abcdef', 1, 2]]
+        
+        >>> in_list = ['javax.naming.NameNotFoundException', '7', '8']
+        >>> imi = esm_multi_in( in_list )
+        >>> imi.query( 'abc \\n javax.naming.NameNotFoundException \\n 123' )
+        [['javax.naming.NameNotFoundException']]
+        
         '''
         result = []
         query_result_list = self._index.query(target_str)
