@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+from core.data.esmre.multi_in import multi_in
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
@@ -86,7 +87,7 @@ class LDAPi(baseAuditPlugin):
         'Module Products.LDAPMultiPlugins'
     )
             
-    _multi_in = multi_in( OVERFLOW_ERRORS )
+    _multi_in = multi_in( LDAP_ERRORS )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
@@ -137,8 +138,8 @@ class LDAPi(baseAuditPlugin):
             if self._has_no_bug(mutant):
                 
                 ldap_error_list = self._find_ldap_error( response )
-                for ldap_error_regex, ldap_error_string in ldap_error_list:
-                    if not ldap_error_regex.search( mutant.getOriginalResponseBody(), re.IGNORECASE ):
+                for ldap_error_string in ldap_error_list:
+                    if ldap_error_string not in mutant.getOriginalResponseBody():
                         v = vuln.vuln( mutant )
                         v.setPluginName(self.getName())
                         v.setId( response.id )
@@ -163,13 +164,14 @@ class LDAPi(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for match, regex_str, regex_comp in self._multi_in.query( response.body ):
+        for match in self._multi_in.query( response.body ):
+            match_string = match[0]
             msg = 'Found LDAP error string. '
             msg += 'The error returned by the web application is (only a fragment is shown): "'
-            msg += match.group(0) + '". The error was found on '
+            msg += match_string + '". The error was found on '
             msg += 'response with id ' + str(response.id) + '.'
             om.out.information(msg)
-            res.append( (ldap_error_regex, match.group(0) ) )
+            res.append( match_string )
         return res
         
     def getOptions( self ):
