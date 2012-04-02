@@ -108,6 +108,7 @@ class mxInjection(baseAuditPlugin):
                         v.setId( response.id )
                         v.addToHighlight( mx_error )
                         kb.kb.append( self, 'mxInjection', v )
+                        break
     
     def end(self):
         '''

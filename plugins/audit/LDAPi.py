@@ -148,6 +148,7 @@ class LDAPi(baseAuditPlugin):
                         v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
                         v.addToHighlight( ldap_error_string )
                         kb.kb.append( self, 'LDAPi', v )
+                        break
     
     def end(self):
         '''
