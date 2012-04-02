@@ -33,6 +33,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.esmre.multi_in import multi_in
 
 import re
 
@@ -43,17 +44,29 @@ class directoryIndexing(baseGrepPlugin):
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
+    
+    DIR_INDEXING = (
+        "<title>Index of /", 
+        '<a href="?C=N;O=D">Name</a>',
+        '<A HREF="?M=A">Last modified</A>', 
+        "Last modified</a>",
+        "Parent Directory</a>",
+        "Directory Listing for",
+        "<TITLE>Folder Listing.",
+        '<table summary="Directory Listing" ',
+        "- Browsing directory ",
+        # IIS 6.0 and 7.0
+        '">[To Parent Directory]</a><br><br>', 
+        # IIS 5.0
+        '<A HREF=".*?">.*?</A><br></pre><hr></body></html>'
+    )
+    _multi_in = multi_in( DIR_INDEXING )    
+    
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
         self._already_visited = scalable_bloomfilter()
         
-        # Added performance by compiling all the regular expressions
-        # before using them. The setup time of the whole plugin raises,
-        # but the execution time is lowered *a lot*.
-        self._compiled_regex_list = [ re.compile(regex, re.IGNORECASE | re.DOTALL) for regex in self._get_indexing_regex() ]
-
     def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
@@ -72,21 +85,19 @@ class directoryIndexing(baseGrepPlugin):
             # Work,
             if response.is_text_or_html():
                 html_string = response.getBody()
-                for indexing_regex in self._compiled_regex_list:
-                    if indexing_regex.search( html_string ):
-                        v = vuln.vuln()
-                        v.setPluginName(self.getName())
-                        v.setURL( response.getURL() )
-                        msg = 'The URL: "' + response.getURL() + '" has a directory '
-                        msg += 'indexing vulnerability.'
-                        v.setDesc( msg )
-                        v.setId( response.id )
-                        v.setSeverity(severity.LOW)
-                        path = response.getURL().getPath()
-                        v.setName( 'Directory indexing - ' + path )
-                        
-                        kb.kb.append( self , 'directory' , v )
-                        break
+                for dir_indexing_match in self._multi_in.query( html_string ):
+                    v = vuln.vuln()
+                    v.setPluginName(self.getName())
+                    v.setURL( response.getURL() )
+                    msg = 'The URL: "' + response.getURL() + '" has a directory '
+                    msg += 'indexing vulnerability.'
+                    v.setDesc( msg )
+                    v.setId( response.id )
+                    v.setSeverity(severity.LOW)
+                    path = response.getURL().getPath()
+                    v.setName( 'Directory indexing - ' + path )
+                    kb.kb.append( self , 'directory' , v )
+                    break
     
     def setOptions( self, OptionList ):
         pass
@@ -97,25 +108,6 @@ class directoryIndexing(baseGrepPlugin):
         '''    
         ol = optionList()
         return ol
-
-    def _get_indexing_regex(self):
-        '''
-        @return: A list of the regular expression strings, in order to be compiled in __init__
-        '''
-        dir_indexing_regexes = []
-        ### TODO: verify if I need to add more values here, IIS !!!
-        dir_indexing_regexes.append("<title>Index of /") 
-        dir_indexing_regexes.append('<a href="\\?C=N;O=D">Name</a>')
-        dir_indexing_regexes.append('<A HREF="?M=A">Last modified</A>') 
-        dir_indexing_regexes.append("Last modified</a>")
-        dir_indexing_regexes.append("Parent Directory</a>")
-        dir_indexing_regexes.append("Directory Listing for")
-        dir_indexing_regexes.append("<TITLE>Folder Listing.")
-        dir_indexing_regexes.append('<table summary="Directory Listing" ')
-        dir_indexing_regexes.append("- Browsing directory ")
-        dir_indexing_regexes.append('">\\[To Parent Directory\\]</a><br><br>') # IIS 6.0 and 7.0
-        dir_indexing_regexes.append('<A HREF=".*?">.*?</A><br></pre><hr></body></html>') # IIS 5.0
-        return dir_indexing_regexes
         
     def end(self):
         '''
