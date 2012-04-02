@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.options.optionList import optionList
-from core.data.esmre.multire import multire
+from core.data.esmre.multi_re import multi_re
 
 import core.controllers.outputManager as om
 import core.data.constants.dbms as dbms
@@ -124,7 +124,7 @@ class sqli(baseAuditPlugin):
         (r'where clause', dbms.UNKNOWN),
         (r'SqlServer', dbms.UNKNOWN)
     )
-    _multire = multire( SQL_ERRORS )
+    _multi_re = multi_re( SQL_ERRORS )
     
     SQLI_STRINGS = (u"d'z\"0",)
 
@@ -194,7 +194,7 @@ class sqli(baseAuditPlugin):
         '''
         res = []
         
-        for match, regex_str, regex_comp, dbms_type in self._multire.query( response.body ):
+        for match, regex_str, regex_comp, dbms_type in self._multi_re.query( response.body ):
             msg = (u'A SQL error was found in the response supplied by '
                'the web application, the error is (only a fragment is '
                'shown): "%s". The error was found on response with id %s.'
