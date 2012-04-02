@@ -1,6 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-from test_data import HTTP_RESPONSE, SQL_ERRORS
 from re_multire import re_multire
 from esmre_multire import esmre_multire
 

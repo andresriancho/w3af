@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import re
 
+from core.data.constants.encodings import DEFAULT_ENCODING
+
 
 class re_multire(object):
     '''
@@ -48,9 +50,11 @@ class re_multire(object):
             
             if isinstance(item, tuple):
                 regex = item[0]
+                regex = regex.encode(DEFAULT_ENCODING)
                 self._re_cache[ regex ] = re.compile( regex, re_compile_flags )
                 self._assoc_obj[ regex ] = item[1:]
             elif isinstance(item, basestring):
+                item = item.encode(DEFAULT_ENCODING)
                 self._re_cache[ item ] = re.compile( item, re_compile_flags )
             else:
                 raise ValueError('Can NOT build re_multire with provided values.')
@@ -68,6 +72,9 @@ class re_multire(object):
         See test_re.py for usage examples.
         '''
         result = []
+
+        if isinstance(target_str, unicode):
+            target_str = target_str.encode(DEFAULT_ENCODING)
         
         for regex_str, compiled_regex in self._re_cache.iteritems():
              

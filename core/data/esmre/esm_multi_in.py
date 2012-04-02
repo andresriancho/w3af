@@ -70,41 +70,6 @@ class esm_multi_in(object):
         @param target_str: The target string where the in statements are
         going to be applied.
 
-        >>> in_list = ['123','456','789']
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( '456' )
-        ['456']
-        >>> imi.query( '789' )
-        ['789']
-        
-        >>> in_list = [ ('123456', None, None) , ('abcdef', 1, 2) ]
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( 'spam1234567890eggs' )
-        [['123456', None, None]]
-        >>> imi.query( 'foo abcdef bar' )
-        [['abcdef', 1, 2]]
-        
-        >>> in_list = ['javax.naming.NameNotFoundException', '7', '8']
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( 'abc \\n javax.naming.NameNotFoundException \\n 123' )
-        ['javax.naming.NameNotFoundException']
-        
-        >>> in_list = [u'ñ', u'ý']
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( 'abcn' )
-        []
-        >>> imi.query( 'abcñ' )
-        ['ñ']
-
-        >>> in_list = [u'\\x00']
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( 'abc\\x00def' )
-        ['\\x00']
-
-        >>> in_list = [u'abc(def)', u'foo(bar)']
-        >>> imi = esm_multi_in( in_list )
-        >>> imi.query( 'foo abc(def) bar' )
-        ['abc(def)']
         '''
         result = []
         if isinstance(target_str, unicode):

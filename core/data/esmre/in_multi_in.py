@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from core.data.constants.encodings import DEFAULT_ENCODING
+
+
 class in_multi_in(object):
     '''
     This is a class that provides the plugins (users) with an easy to use API to
@@ -45,9 +48,11 @@ class in_multi_in(object):
             
             if isinstance(item, tuple):
                 in_str = item[0]
+                in_str = in_str.encode(DEFAULT_ENCODING)
                 self._in.append( in_str )
                 self._assoc_obj[ in_str ] = item[1:]
             elif isinstance(item, basestring):
+                item = item.encode(DEFAULT_ENCODING)
                 self._in.append( item )
             else:
                 raise ValueError('Can NOT build in_multi_in with provided values.')
@@ -61,21 +66,11 @@ class in_multi_in(object):
         @param target_str: The target string where the in statements are
         going to be applied.
 
-        >>> in_list = ['123','456','789']
-        >>> imi = in_multi_in( in_list )
-        >>> imi.query( '456' )
-        ['456']
-        >>> imi.query( '789' )
-        ['789']
-        
-        >>> in_list = [ ('123456', None, None) , ('abcdef', 1, 2) ]
-        >>> imi = in_multi_in( in_list )
-        >>> imi.query( 'spam1234567890eggs' )
-        [['123456', None, None]]
-        >>> imi.query( 'foo abcdef bar' )
-        [['abcdef', 1, 2]]
         '''
         result = []
+
+        if isinstance(target_str, unicode):
+            target_str = target_str.encode(DEFAULT_ENCODING)
         
         for in_str in self._in:
 
