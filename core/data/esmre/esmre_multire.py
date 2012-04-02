@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 '''
 esmre_multire.py
 
@@ -22,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import esmre
 import re
+
+from core.data.constants.encodings import DEFAULT_ENCODING
 
 
 class esmre_multire(object):
@@ -51,9 +54,11 @@ class esmre_multire(object):
                 regex = item[0]
                 # TODO: What about re flags?
                 self._re_cache[ regex ] = re.compile( regex )
+                regex = regex.encode(DEFAULT_ENCODING)
                 self._index.enter(regex, item)
             elif isinstance(item, basestring):
                 self._re_cache[ item ] = re.compile( item )
+                item = item.encode(DEFAULT_ENCODING)
                 self._index.enter(item, (item,) )
             else:
                 raise ValueError('Can NOT build esmre_multire with provided values.')
@@ -90,8 +95,26 @@ class esmre_multire(object):
         [[<_sre.SRE_Match object at 0x...>, '123.*456', <_sre.SRE_Pattern object at 0x...>, None, None]]
         >>> mre.query( 'abcAAAdef' ) #doctest: +ELLIPSIS
         [[<_sre.SRE_Match object at 0x...>, 'abc.*def', <_sre.SRE_Pattern object at 0x...>, 1, 2]]
+
+        >>> re_list = [u'ñ', u'ý']
+        >>> mre = esmre_multire( re_list )
+        >>> mre.query( 'abcn' )
+        []
+        >>> mre.query( 'abcñ' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, 'ñ', <_sre.SRE_Pattern object at 0x...>]]
+
+        >>> re_list = [u'abc', u'def']
+        >>> mre = esmre_multire( re_list )
+        >>> mre.query( 'abcñ' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>]]
+        >>> mre.query( 'abc\\x00def' ) #doctest: +ELLIPSIS
+        [[<_sre.SRE_Match object at 0x...>, 'abc', <_sre.SRE_Pattern object at 0x...>], [<_sre.SRE_Match object at 0x...>, 'def', <_sre.SRE_Pattern object at 0x...>]]
         '''
         result = []
+        
+        if isinstance(target_str, unicode):
+            target_str = target_str.encode(DEFAULT_ENCODING)
+        
         query_result_list = self._index.query(target_str)
         
         for query_result in query_result_list:

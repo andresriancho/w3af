@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 '''
 esm_multi_in.py
 
@@ -21,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import esm
+
+from core.data.constants.encodings import DEFAULT_ENCODING
 
 
 class esm_multi_in(object):
@@ -48,8 +51,10 @@ class esm_multi_in(object):
             
             if isinstance(item, tuple):
                 in_str = item[0]
+                in_str = in_str.encode(DEFAULT_ENCODING)
                 self._index.enter(in_str, item)
             elif isinstance(item, basestring):
+                item = item.encode(DEFAULT_ENCODING)
                 self._index.enter(item, (item,) )
             else:
                 raise ValueError('Can NOT build esm_multi_in with provided values.')
@@ -84,8 +89,17 @@ class esm_multi_in(object):
         >>> imi.query( 'abc \\n javax.naming.NameNotFoundException \\n 123' )
         ['javax.naming.NameNotFoundException']
         
+        >>> in_list = [u'ñ', u'ý']
+        >>> imi = esm_multi_in( in_list )
+        >>> imi.query( 'abcn' )
+        []
+        >>> imi.query( 'abcñ' )
+        ['ñ']
         '''
         result = []
+        if isinstance(target_str, unicode):
+            target_str = target_str.encode(DEFAULT_ENCODING)
+        
         query_result_list = self._index.query(target_str)
         
         for query_result in query_result_list:
