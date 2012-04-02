@@ -2,6 +2,10 @@
 
 plugins
 audit xpath
+discovery webSpider
+discovery config webSpider
+set onlyForward True
+back
 output console,textFile
 output
 output config textFile
@@ -11,11 +15,13 @@ back
 back
 
 target
-set target http://moth/w3af/audit/xpath/xpath-attr-single.php?input=1
+set target http://moth/w3af/audit/xpath/
 back
 start
 
-assert len(kb.kb.getData('xpath','xpath')) == 1
+assert len(kb.kb.getData('xpath','xpath')) == 4
+
+#print kb.kb.getData('xpath','xpath')
 
 exit
 
