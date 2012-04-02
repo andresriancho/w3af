@@ -129,7 +129,7 @@ class phishingVector(baseAuditPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []

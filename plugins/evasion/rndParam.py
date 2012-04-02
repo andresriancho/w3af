@@ -130,7 +130,7 @@ class rndParam(baseEvasionPlugin):
         
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''        
         return []
@@ -140,7 +140,7 @@ class rndParam(baseEvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is runned first, 0 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 50
     

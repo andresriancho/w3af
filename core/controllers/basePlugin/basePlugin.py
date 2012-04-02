@@ -89,7 +89,7 @@ class basePlugin(configurable):
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be 
-        runned before the current one.
+        run before the current one.
         '''
         msg = 'Plugin "%s" is not implementing required method getPluginDeps' % self.getName()
         raise w3afException( msg )

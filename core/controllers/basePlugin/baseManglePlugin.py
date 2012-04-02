@@ -96,7 +96,7 @@ class baseManglePlugin(basePlugin):
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is runned first, 0 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         raise w3afException('Plugin is not implementing required method getPriority' )
     

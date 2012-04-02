@@ -241,7 +241,7 @@ class w3afCore(object):
 
         # The plugins are all on the requestedPluginsList, now I need to order them
         # based on the module dependencies. For example, if A depends on B , then
-        # B must be runned first.
+        # B must be run first.
         
         orderedPluginList = []
         for plugin in requestedPluginsList:
@@ -907,13 +907,13 @@ class w3afCore(object):
             # Get ready for next while loop
             toWalk = new_fuzz_reqs
             
-            # Remove plugins that don't want to be runned anymore
+            # Remove plugins that don't want to be run anymore
             for plugin_to_remove in plugins_to_remove_list:
                 if plugin_to_remove in self._plugins['discovery']:
                     
                     # Remove it from the plugin list, and run the end() method
                     self._plugins['discovery'].remove( plugin_to_remove )
-                    om.out.debug('The discovery plugin: ' + plugin_to_remove.getName() + ' wont be runned anymore.')      
+                    om.out.debug('The discovery plugin: ' + plugin_to_remove.getName() + ' wont be run anymore.')      
                     try:
                         plugin_to_remove.end()
                     except Exception, e:
@@ -1116,7 +1116,7 @@ class w3afCore(object):
         This way the user interface isnt bound to changes in the plugin types that are added or
         removed.
         
-        @parameter pluginNames: A list with the names of the Plugins that will be runned.
+        @parameter pluginNames: A list with the names of the Plugins that will be run.
         @parameter pluginType: The type of the plugin.
         
         @return: A list of plugins that are unknown to the framework. This is mainly used to have
@@ -1195,35 +1195,35 @@ class w3afCore(object):
     
     def _setBruteforcePlugins( self, bruteforcePlugins ):
         '''
-        @parameter manglePlugins: A list with the names of output Plugins that will be runned.
+        @parameter manglePlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
         self._strPlugins['bruteforce'] = bruteforcePlugins
     
     def _setManglePlugins( self, manglePlugins ):
         '''
-        @parameter manglePlugins: A list with the names of output Plugins that will be runned.
+        @parameter manglePlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
         self._strPlugins['mangle'] = manglePlugins
     
     def _setOutputPlugins( self, outputPlugins ):
         '''
-        @parameter outputPlugins: A list with the names of output Plugins that will be runned.
+        @parameter outputPlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
         self._strPlugins['output'] = outputPlugins
         
     def _setDiscoveryPlugins( self, discoveryPlugins ):
         '''
-        @parameter discoveryPlugins: A list with the names of Discovery Plugins that will be runned.
+        @parameter discoveryPlugins: A list with the names of Discovery Plugins that will be run.
         @return: No value is returned.
         '''         
         self._strPlugins['discovery'] = discoveryPlugins
     
     def _setAuditPlugins( self, auditPlugins ):
         '''
-        @parameter auditPlugins: A list with the names of Audit Plugins that will be runned.
+        @parameter auditPlugins: A list with the names of Audit Plugins that will be run.
         @return: No value is returned.
         '''         
         self._strPlugins['audit'] = auditPlugins

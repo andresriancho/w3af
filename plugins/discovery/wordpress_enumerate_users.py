@@ -62,7 +62,7 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
         gap = 0
 
         if not self._exec :
-            # Remove the plugin from the discovery plugins to be runned.
+            # Remove the plugin from the discovery plugins to be run.
             raise w3afRunOnce()
         else:
             # Check if the server is running WordPress
@@ -146,7 +146,7 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []

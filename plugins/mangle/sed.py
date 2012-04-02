@@ -177,7 +177,7 @@ class sed(baseManglePlugin):
   
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
@@ -187,7 +187,7 @@ class sed(baseManglePlugin):
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is runned first, 0 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''        
         return self._priority
         

@@ -352,7 +352,7 @@ class userDir(baseDiscoveryPlugin):
     
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         if self._do_fast_search:

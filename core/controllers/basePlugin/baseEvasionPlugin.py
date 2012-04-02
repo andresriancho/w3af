@@ -57,7 +57,7 @@ class baseEvasionPlugin(basePlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is runned first, 0 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         raise w3afException('Plugin is not implementing required method getPriority' )
     
