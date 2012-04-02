@@ -84,7 +84,7 @@ def dependencyCheck():
     # nltk raises a warning... which I want to ignore...
     # This is the original warning:
     #
-    # /usr/lib/python2.5/site-packages/nltk/__init__.py:117: UserWarning: draw module, app module, and gui downloader not loaded (please install Tkinter library).
+    # /usr/lib/python2.5/site-packages/nltk/__init__.py:117: UserWarning: draw module, ...
     # warnings.warn("draw module, app module, and gui downloader not loaded "
     #
     import warnings
