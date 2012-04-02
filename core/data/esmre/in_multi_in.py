@@ -34,7 +34,7 @@ class in_multi_in(object):
         
         This list might be [str_1, str_2 ... , str_N] or something like
         [ (str_1, obj1) , (str_2, obj2) ... , (str_N, objN)]. In the first
-        case, if a match is found this class will return [ (match_obj, str_N), ]
+        case, if a match is found this class will return [ (str_N), ]
         in the second case we'll return [ (match_obj, str_N, objN), ]
         
         '''
