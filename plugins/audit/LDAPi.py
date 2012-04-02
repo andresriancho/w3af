@@ -49,39 +49,39 @@ class LDAPi(baseAuditPlugin):
         'supplied argument is not a valid ldap',
     
         # Java
-        'javax.naming.NameNotFoundException'
-        'LDAPException'
-        'com.sun.jndi.ldap'
+        'javax.naming.NameNotFoundException',
+        'LDAPException',
+        'com.sun.jndi.ldap',
         
         # PHP
-        'Search: Bad search filter'
+        'Search: Bad search filter',
         
         # http://support.microsoft.com/kb/218185
-        'Protocol error occurred'
-        'Size limit has exceeded'
-        'An inappropriate matching occurred'
-        'A constraint violation occurred'
-        'The syntax is invalid'
-        'Object does not exist'
-        'The alias is invalid'
-        'The distinguished name has an invalid syntax'
-        'The server does not handle directory requests'
-        'There was a naming violation'
-        'There was an object class violation'
-        'Results returned are too large'
-        'Unknown error occurred'
-        'Local error occurred'
-        'The search filter is incorrect'
-        'The search filter is invalid'
-        'The search filter cannot be recognized'
+        'Protocol error occurred',
+        'Size limit has exceeded',
+        'An inappropriate matching occurred',
+        'A constraint violation occurred',
+        'The syntax is invalid',
+        'Object does not exist',
+        'The alias is invalid',
+        'The distinguished name has an invalid syntax',
+        'The server does not handle directory requests',
+        'There was a naming violation',
+        'There was an object class violation',
+        'Results returned are too large',
+        'Unknown error occurred',
+        'Local error occurred',
+        'The search filter is incorrect',
+        'The search filter is invalid',
+        'The search filter cannot be recognized',
         
         # OpenLDAP
-        'Invalid DN syntax'
-        'No Such Object'
+        'Invalid DN syntax',
+        'No Such Object',
 
         # IPWorks LDAP
         # http://www.tisc-insight.com/newsletters/58.html
-        'IPWorksASP.LDAP'
+        'IPWorksASP.LDAP',
 
         # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
         'Module Products.LDAPMultiPlugins'
