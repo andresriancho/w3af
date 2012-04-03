@@ -133,10 +133,12 @@ class favicon_identification(baseDiscoveryPlugin):
                     i.setName('Favicon identification failed')
                     i.setURL( def_favicon_url )
                     i.setId( response.id )
-                    desc = 'Favicon identification failed, please send a mail to w3af-develop'
-                    desc += '@lists.sourceforge.net including this md5 hash "'+favmd5+'"'
+                    desc = 'Favicon identification failed. If the remote site is using'
+                    desc += ' framework that is being exposed by its favicon, please send'
+                    desc += ' an email to w3af-develop@lists.sourceforge.net including'
+                    desc += ' this md5 hash "'+favmd5+'"'
                     desc += ' and what server or Web application it represents. New fingerprints'
-                    desc += ' make this plugin more powerfull and accurate.'
+                    desc += ' make this plugin more powerful and accurate.'
                     i.setDesc( desc )
                     kb.kb.append( self, 'info', i )
                     om.out.information( i.getDesc() )
