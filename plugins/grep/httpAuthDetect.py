@@ -135,12 +135,12 @@ class httpAuthDetect(baseGrepPlugin):
         >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
         0
         '''
-        already_reported = [u.getURL() for u in \
+        already_reported = [i.getURL().getDomainPath() for i in \
                             kb.kb.getData('httpAuthDetect', 'auth')]
         
         # If I have a 401 code, and this URL wasn't already reported...
         if response.getCode() == 401 and \
-        response.getURL() not in already_reported:
+        response.getURL().getDomainPath() not in already_reported:
             
             # Perform all the work in this method
             self._analyze_401(response)
