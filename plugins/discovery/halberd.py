@@ -75,7 +75,7 @@ class halberd(baseDiscoveryPlugin):
                                     (among other things) the URL to test.
         '''
         if not self._exec:
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery plugins to be run.
             raise w3afRunOnce()
         else:
             self._exec = False
@@ -107,7 +107,7 @@ class halberd(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []

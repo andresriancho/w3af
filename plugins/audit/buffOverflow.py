@@ -34,6 +34,7 @@ import core.data.constants.severity as severity
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+from core.data.esmre.multi_in import multi_in
 
 
 class buffOverflow(baseAuditPlugin):
@@ -41,6 +42,16 @@ class buffOverflow(baseAuditPlugin):
     Find buffer overflow vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
+    OVERFLOW_ERRORS = (
+        '*** stack smashing detected ***:',
+        'Backtrace:',
+        'Memory map:',
+        '<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>'
+        'Internal Server Error</h1>'
+    )
+
+    _multi_in = multi_in( OVERFLOW_ERRORS )
 
     def __init__(self):
         '''
@@ -150,23 +161,19 @@ class buffOverflow(baseAuditPlugin):
         '''
         Analyze results of the _sendMutant method.
         '''
-        for error in self._get_errors():
-            
-            # Check if the error string is in the response
-            if error in response:
-                # And not in the originally requested (non fuzzed) request
-                if not error not in mutant.getOriginalResponseBody():
-                    # vuln, vuln!
-                    v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setId( response.id )
-                    v.setSeverity(severity.MEDIUM)
-                    v.setName( 'Buffer overflow vulnerability' )
-                    msg = 'A possible buffer overflow (detection is really hard...) was found at: '
-                    msg += mutant.foundAt()
-                    v.setDesc( msg )
-                    v.addToHighlight( error )
-                    kb.kb.append( self, 'buffOverflow', v )
+        for error_str in self._multi_in.query( response.body ):
+            # And not in the original response
+            if error_str not in mutant.getOriginalResponseBody():
+                v = vuln.vuln( mutant )
+                v.setPluginName(self.getName())
+                v.setId( response.id )
+                v.setSeverity(severity.MEDIUM)
+                v.setName( 'Buffer overflow vulnerability' )
+                msg = 'A possible buffer overflow (detection is really hard...) was found at: '
+                msg += mutant.foundAt()
+                v.setDesc( msg )
+                v.addToHighlight( error_str )
+                kb.kb.append( self, 'buffOverflow', v )
     
     def end(self):
         '''
@@ -174,23 +181,7 @@ class buffOverflow(baseAuditPlugin):
         '''
         self._join()
         self.printUniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
-    
-    def _get_errors( self ):
-        '''
-        @return: A list of errors that are shown when a buffer overflow is triggered
-        '''
-        res = []
         
-        error = '<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>'
-        error += 'Internal Server Error</h1>'
-        res.append( error )
-        
-        res.append('*** stack smashing detected ***:')
-        res.append('Backtrace:')
-        res.append('Memory map:')
-        
-        return res
-    
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -210,7 +201,7 @@ class buffOverflow(baseAuditPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error500']

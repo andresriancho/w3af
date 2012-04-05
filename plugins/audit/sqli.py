@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import re
-
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.options.optionList import optionList
+from core.data.esmre.multi_re import multi_re
+
 import core.controllers.outputManager as om
 import core.data.constants.dbms as dbms
 import core.data.constants.severity as severity
@@ -124,9 +124,7 @@ class sqli(baseAuditPlugin):
         (r'where clause', dbms.UNKNOWN),
         (r'SqlServer', dbms.UNKNOWN)
     )
-    SQL_ERRORS = tuple(
-            (re.compile(et[0], re.IGNORECASE), et[1]) for et in SQL_ERRORS
-            )
+    _multi_re = multi_re( SQL_ERRORS )
     
     SQLI_STRINGS = (u"d'z\"0",)
 
@@ -160,8 +158,10 @@ class sqli(baseAuditPlugin):
         '''
         with self._plugin_lock:
             if self._has_no_bug(mutant):
+
                 sql_error_list = self._findsql_error(response)
                 orig_resp_body = mutant.getOriginalResponseBody()
+                
                 for sql_regex, sql_error_string, dbms_type in sql_error_list:
                     if not sql_regex.search(orig_resp_body):
                         # Create the vuln,
@@ -193,15 +193,14 @@ class sqli(baseAuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for sql_regex, dbms_type in self.SQL_ERRORS:
-            match = sql_regex.search(response.body)
-            if  match:
-                msg = (u'A SQL error was found in the response supplied by '
-                   'the web application, the error is (only a fragment is '
-                   'shown): "%s". The error was found on response with id %s.'
-                   % (match.group(0), response.id))
-                om.out.information(msg)
-                res.append((sql_regex, match.group(0), dbms_type))
+        
+        for match, regex_str, regex_comp, dbms_type in self._multi_re.query( response.body ):
+            msg = (u'A SQL error was found in the response supplied by '
+               'the web application, the error is (only a fragment is '
+               'shown): "%s". The error was found on response with id %s.'
+               % (match.group(0), response.id))
+            om.out.information(msg)
+            res.append((regex_comp, match.group(0), dbms_type))
         return res
         
     def getOptions(self):
@@ -223,7 +222,7 @@ class sqli(baseAuditPlugin):
 
     def getPluginDeps(self):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error500']
@@ -233,6 +232,7 @@ class sqli(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds SQL injections. To find this vulnerabilities the plugin sends the string d'z"0 to every
-        injection point, and searches for SQL errors in the response body.
+        This plugin finds SQL injections. To find this vulnerabilities the plugin
+        sends the string d'z"0 to every injection point, and searches for SQL errors
+        in the response body.
         '''

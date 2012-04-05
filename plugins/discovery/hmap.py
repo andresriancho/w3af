@@ -43,7 +43,7 @@ class hmap(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Control flow
-        self._runned_hmap = False
+        self._run_hmap = False
         self._exec = True
         
         # User configured parameters
@@ -56,16 +56,16 @@ class hmap(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
         '''
         if not self._exec:
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery plugins to be run.
             raise w3afRunOnce()
         else:
             
-            if self._runned_hmap:
+            if self._run_hmap:
                 # Nothing else to do here.
                 self._exec = False
                             
-            if not self._runned_hmap:
-                self._runned_hmap = True
+            if not self._run_hmap:
+                self._run_hmap = True
                 
                 msg = 'Hmap web server fingerprint is starting, this may take a while.'
                 om.out.information( msg )
@@ -153,7 +153,7 @@ class hmap(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         # I dont really use the serverType plugin here, but it is nice to have two

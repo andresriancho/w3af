@@ -72,7 +72,7 @@ class content_negotiation(baseDiscoveryPlugin):
                                                     (among other things) the URL to test.
         '''
         if not self._exec :
-            # This will remove the plugin from the discovery plugins to be runned.
+            # This will remove the plugin from the discovery plugins to be run.
             # This is true only when the remote web server is not vulnerable
             raise w3afRunOnce()
             
@@ -306,7 +306,7 @@ class content_negotiation(baseDiscoveryPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['discovery.webSpider']

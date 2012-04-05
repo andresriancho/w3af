@@ -119,7 +119,7 @@ class baseOutputPlugin(basePlugin):
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be 
-        runned before the current one.
+        run before the current one.
         '''
         return []
     

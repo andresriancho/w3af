@@ -29,6 +29,7 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
 
 # kb stuff
 import core.data.kb.vuln as vuln
@@ -45,6 +46,28 @@ class osCommanding(baseAuditPlugin):
     Find OS Commanding vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
+    FILE_PATTERNS = (
+        "root:x:0:0:",  
+        "daemon:x:1:1:",
+        ":/bin/bash",
+        ":/bin/sh",
+
+        # /etc/passwd in AIX
+        "root:!:x:0:0:",
+        "daemon:!:x:1:1:",
+        ":usr/bin/ksh",
+
+        # boot.ini
+        "[boot loader]",
+        "default=multi(",
+        "[operating systems]",
+            
+        # win.ini
+        "[fonts]",
+    )
+    _multi_in = multi_in( FILE_PATTERNS )
+    
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
@@ -150,13 +173,9 @@ class osCommanding(baseAuditPlugin):
             #
             if self._has_no_bug(mutant):
                 
-                file_patterns = self._get_file_patterns()
-                for file_pattern_re in file_patterns:
+                for file_pattern_match in self._multi_in.query( response.getBody() ):
                     
-                    match = file_pattern_re.search( response.getBody() )
-                    
-                    if match and \
-                        not file_pattern_re.search(mutant.getOriginalResponseBody()):
+                    if file_pattern_match not in mutant.getOriginalResponseBody():
                         # Search for the correct command and separator
                         sentOs, sentSeparator = self._get_os_separator(mutant)
 
@@ -171,47 +190,10 @@ class osCommanding(baseAuditPlugin):
                         v.setDc( mutant.getDc() )
                         v.setId( response.id )
                         v.setURI( response.getURI() )
-                        v.addToHighlight( match.group(0) )
+                        v.addToHighlight( file_pattern_match )
                         kb.kb.append( self, 'osCommanding', v )
                         break
     
-    def _get_file_patterns(self):
-        '''
-        @return: A list of file patterns, that if found in the response, indicate that a command
-        was successfully executed.
-        '''
-        if self._file_compiled_regex:
-            # returning the already compiled regular expressions
-            return self._file_compiled_regex
-        
-        else:
-            # Compile them for the first time, and return the compiled regular expressions
-            
-            file_patterns = []
-            
-            # /etc/passwd
-            file_patterns.append("root:x:0:0:")  
-            file_patterns.append("daemon:x:1:1:")
-            file_patterns.append(":/bin/bash")
-            file_patterns.append(":/bin/sh")
-
-            # /etc/passwd in AIX
-            file_patterns.append("root:!:x:0:0:")
-            file_patterns.append("daemon:!:x:1:1:")
-            file_patterns.append(":usr/bin/ksh") 
-
-            # boot.ini
-            file_patterns.append("\\[boot loader\\]")
-            file_patterns.append("default=multi\\(")
-            file_patterns.append("\\[operating systems\\]")
-            
-            # win.ini
-            file_patterns.append("\\[fonts\\]")
-            
-            self._file_compiled_regex = [re.compile(i, re.IGNORECASE) for i in file_patterns]
-            
-            return self._file_compiled_regex
-
     def _get_os_separator(self, mutant):
         '''
         @parameter mutant: The mutant that is being analyzed.
@@ -370,7 +352,7 @@ class osCommanding(baseAuditPlugin):
     
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
@@ -380,18 +362,21 @@ class osCommanding(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find OS commanding vulnerabilities. The detection is performed using two different techniques:
+        This plugin will find OS commanding vulnerabilities. The detection is 
+        performed using two different techniques:
             - Time delays
             - Writing a known file to the HTML output
         
-        With time delays, the plugin sends specially crafted requests that, if the vulnerability is present, will delay
-        the response for 5 seconds (ping -c 5 localhost). 
+        With time delays, the plugin sends specially crafted requests that,
+        if the vulnerability is present, will delay the response for 5 seconds
+        (ping -c 5 localhost). 
         
-        When using the second technique, the plugin sends specially crafted requests that, if the vulnerability is present, 
-        will print the content of a known file (i.e. /etc/passwd) to the HTML output
+        When using the second technique, the plugin sends specially crafted requests
+        that, if the vulnerability is present, will print the content of a known file
+        (i.e. /etc/passwd) to the HTML output
         
-        This plugin has a rather long list of command separators, like ";" and "`" to try to match all programming languages,
-        platforms and installations.
+        This plugin has a rather long list of command separators, like ";" and "`" to
+        try to match all programming languages, platforms and installations.
         '''
 
 

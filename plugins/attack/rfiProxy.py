@@ -241,7 +241,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         option_4 = option('proxyPublicIP', self._proxyPublicIP, desc_4, 'string',  help=help_4)
 
         desc_5 = 'URL for the remote file inclusion connection generator.'
-        help_5 = 'If left blank, a local webserver will be runned at proxyPublicIP:httpdPort'
+        help_5 = 'If left blank, a local webserver will be run at proxyPublicIP:httpdPort'
         help_5 += ' and the connection generator will be served to the remote web application'
         help_5 +=' this way.'
         option_5 = option('rfiConnGenerator', self._rfiConnGenerator, desc_5, 'integer', help=help_5)

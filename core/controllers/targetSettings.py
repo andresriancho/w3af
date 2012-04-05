@@ -48,7 +48,7 @@ class targetSettings(configurable):
         # User configured variables
         #if cf.cf.getData('targets') is None:
         if True:
-            # It's the first time I'm runned
+            # It's the first time I'm run
             # Set the defaults in the config
             cf.cf.save('targets', [] )
             cf.cf.save('targetOS', 'unknown' )

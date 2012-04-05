@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import traceback
+import pprint
 
 import core.data.kb.knowledgeBase as kb        
 from core.ui.consoleUi.util import *
@@ -217,7 +218,9 @@ class menu:
         except:
             om.out.console('Unknown variable.')
         else:
-            om.out.console( repr(res) )
+            pp = pprint.PrettyPrinter(indent=4)
+            output = pp.pformat(res)
+            om.out.console( output )
 
 
     def _cmd_assert(self, params):

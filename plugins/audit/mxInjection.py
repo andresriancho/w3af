@@ -28,8 +28,9 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
+from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -43,6 +44,17 @@ class mxInjection(baseAuditPlugin):
     Find MX injection vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
+    MX_ERRORS = (
+        'Unexpected extra arguments to Select',
+        'Bad or malformed request',
+        'Could not access the following folders',
+        'A000',
+        'A001',
+        'Invalid mailbox name',
+        'To check for outside changes to the folder list go to the folders page'
+    )
+    _multi_in = multi_in( MX_ERRORS )
 
     def __init__(self):
         '''
@@ -82,22 +94,21 @@ class mxInjection(baseAuditPlugin):
         '''
         with self._plugin_lock:
             
-            #
-            #   I will only report the vulnerability once.
-            #
+            # I will only report the vulnerability once.
             if self._has_no_bug(mutant):
                 
-                mx_error_list = self._find_MX_error( response )
-                for mx_error_re, mx_error_string in mx_error_list:
-                    if not mx_error_re.search( mutant.getOriginalResponseBody() ):
+                mx_error_list = self._multi_in.query( response.body )
+                for mx_error in mx_error_list:
+                    if mx_error not in mutant.getOriginalResponseBody():
                         v = vuln.vuln( mutant )
                         v.setPluginName(self.getName())
                         v.setName( 'MX injection vulnerability' )
                         v.setSeverity(severity.MEDIUM)
                         v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                         v.setId( response.id )
-                        v.addToHighlight( mx_error_string )
+                        v.addToHighlight( mx_error )
                         kb.kb.append( self, 'mxInjection', v )
+                        break
     
     def end(self):
         '''
@@ -117,57 +128,6 @@ class mxInjection(baseAuditPlugin):
         mx_injection_strings.append('iDontExist')
         mx_injection_strings.append('')
         return mx_injection_strings
-
-    def _find_MX_error( self, response ):
-        '''
-        This method searches for mx errors in html's.
-        
-        @parameter response: The HTTP response object
-        @return: A list of errors found on the page
-        '''
-        res = []
-        for mx_error_re in self._get_MX_errors():
-            match = mx_error_re.search( response.getBody() )
-            if match:
-                res.append( (mx_error_re, match.group(0)) )
-        return res
-
-    def _get_MX_errors(self):
-        '''
-        @return: A list of MX errors.
-        '''
-        if len(self._errors) != 0:
-            #
-            #   This will use a little bit more of memory, but will increase the performance of the
-            #   plugin considerably, because the regular expressions are going to be compiled
-            #   only once, and then used many times.
-            #
-            return self._errors
-            
-        else:
-            #
-            #   Populate the self._errors list with the compiled versions of the regular expressions.
-            #
-            errors = []
-        
-            errors.append( 'Unexpected extra arguments to Select' )
-            errors.append( 'Bad or malformed request' )
-            errors.append( 'Could not access the following folders' )
-            errors.append( 'A000' )
-            errors.append( 'A001' )
-            errors.append( 'Invalid mailbox name' )
-            
-            error_msg = 'To check for outside changes to the folder list go to the folders page'
-            errors.append( error_msg )
-            
-            #
-            #   Now that I have the regular expressions in the "errors" list, I will compile them
-            #   and save that into self._errors.
-            #
-            for re_string in errors:
-                self._errors.append( re.compile(re_string, re.IGNORECASE ) )
-                
-            return self._errors
         
     def getOptions( self ):
         '''
@@ -188,7 +148,7 @@ class mxInjection(baseAuditPlugin):
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be runned before the
+        @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
