@@ -27,7 +27,7 @@ import urllib
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.urlParser import url_object
-from core.controller.misc.encoding import is_known_encoding
+from core.controllers.misc.encoding import is_known_encoding
 
 
 class BaseParser(object):
