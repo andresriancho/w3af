@@ -459,9 +459,10 @@ class httpResponse(object):
                     (charset, self._charset))
                 om.out.debug(msg)
                 # Forcing it to use the default
+                charset = DEFAULT_CHARSET
                 _body = smart_unicode(
                                 rawbody,
-                                DEFAULT_CHARSET,
+                                charset,
                                 errors=ESCAPED_CHAR,
                                 on_error_guess=False
                             )
