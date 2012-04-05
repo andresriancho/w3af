@@ -88,7 +88,7 @@ class rootMenu(menu):
             if self._w3af.getCoreStatus() != 'Not running.':
                 self.show_progress_on_request()
         except KeyboardInterrupt, k:
-            om.out.console('User hitted Ctrl+C, stopping scan.')
+            om.out.console('User hit Ctrl+C, stopping scan.')
             time.sleep(1)
             self._w3af.stop()
             
