@@ -195,61 +195,14 @@ if __name__ == "__main__":
     performance_tests.append((bing2, google, 0.6))
     performance_tests.append((yahoo, google2, 0.6))
 
-
-
-    acceptance_tests = []
-    acceptance_tests.extend(performance_tests)
-    acceptance_tests.append(('a', 'a', 1.0))
-    acceptance_tests.append(('a', 'a', 0.1))
-    acceptance_tests.append(('a', 'a', 0.0))
-
-    acceptance_tests.append(('a', 'b', 1.0))
-    acceptance_tests.append(('a', 'b', 0.1))
-    acceptance_tests.append(('a', 'b', 0.0))
-
-    acceptance_tests.append(('a', 'ab', 1.0))
-    acceptance_tests.append(('a', 'ab', 0.1))
-
-    acceptance_tests.append(('a', 'b', 0.0000000000000000001))
-    acceptance_tests.append(('a', 'b' * 100, 1.0))
-
-    acceptance_tests.append(('a', 'ab', 0.66666666666))
-    acceptance_tests.append(('a', 'aab', 0.5))
-    acceptance_tests.append(('a', 'aaab', 0.4))
-    acceptance_tests.append(('a', 'aaaab', 0.33333333333333333333333333333333333333333333333333333333))
-
-    acceptance_tests.append(('a' * 25, 'a', 1.0))
-    acceptance_tests.append(('aaa', 'aa', 1.0))
-    acceptance_tests.append(('a', 'a', 1.0))
-
-    acceptance_tests.append(('a' * 25, 'a', 0.076923076923076927))
-    acceptance_tests.append(('aaa', 'aa', 0.8))
-
-    acceptance_tests.append(('a', 'a', 0.0))
-
-
     start = time.time()
     relative_distance_boolean('a', 'a', 1.0)
     needed = time.time() - start
     print "Setup of bounds took " + str(needed)
 
-
-    #acceptance tests
-    for e, d, f in acceptance_tests:
-        res1 = relative_distance_boolean(e, d, f)
-        res2 = relative_distance(e, d) >= f
-        if res1 == res2:
-            print "PASS", res1
-        else:
-            print "FAIL: ", e, d, f
-            print res1, res2
-            exit()
-
-
     #performance tests
     numOfTests = 20
     numOfOverallTests = 4
-
 
     boolean_time_sum = 0
     original_time_sum = 0
