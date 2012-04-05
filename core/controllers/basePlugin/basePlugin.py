@@ -179,6 +179,9 @@ class basePlugin(configurable):
             '_analyzeResult'. If a method is passed then call it as
             callback. Be aware of the arguments to be passed to
             a callback method. If False, call nobody.
+        
+        @return: The httpResponse object associated with the request
+        that was just sent.
         '''
         #
         # IMPORTANT NOTE: If you touch something here, the whole framework may
