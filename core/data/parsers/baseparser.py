@@ -27,6 +27,7 @@ import urllib
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.urlParser import url_object
+from core.controller.misc.encoding import is_known_encoding
 
 
 class BaseParser(object):
@@ -49,6 +50,11 @@ class BaseParser(object):
     SAFE_CHARS = (('\x00', '%00'),)
     
     def __init__(self, httpResponse):
+        
+        encoding = httpResponse.getCharset()
+        if not is_known_encoding( encoding ):
+            raise ValueError('Unknown encoding: %s' % encoding)
+        
         # "setBaseUrl"
         url = httpResponse.getURL()
         redirURL = httpResponse.getRedirURL()
