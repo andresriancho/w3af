@@ -80,3 +80,21 @@ def smart_str(s, encoding='utf-8', errors='strict'):
     elif not isinstance(s, str):
         s = str(s)
     return s
+
+
+def is_known_encoding( encoding ):
+    '''
+    @return: True if the encoding name is known.
+    
+    >>> is_known_encoding( 'foo' )
+    False
+    >>> is_known_encoding( 'utf-8' )
+    True
+    '''
+    try:
+        ''.decode(encoding)
+    except LookupError:
+        return False
+    else:
+        return True
+        
