@@ -224,10 +224,11 @@ class webSpider(baseDiscoveryPlugin):
         '''
         number_of_variants = 0
         
-        # TODO: The self._already_crawled should be an ORM instead of a simple
-        # disk_list, so I could iterate through all the results and avoid
-        # having to create the url_object() using parsing again.
-        for reference in self._already_crawled:
+        # The reversed() call is a performance enhancement since in most cases
+        # "links that are variants are found together", so it makes sense to
+        # start from the recently found links first when verifying if a new
+        # link is a variant of an already seen one or not.
+        for reference in reversed(self._already_crawled):
             if are_variants(reference, new_reference):
                 number_of_variants += 1
                 
