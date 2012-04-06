@@ -155,20 +155,18 @@ class disk_list(object):
             self._current_index += 1
     
     def __iter__(self):
-        # TODO: How do I make the __iter__ thread safe?
-        class my_cursor:
-            def __init__(self, cursor):
-                self._cursor = cursor
-            
-            def next(self):
-                r = self._cursor.next()
-                obj = cPickle.loads(r[0])
-                return obj
-        
+        # TODO: How do I make the __iter__ thread safe?        
         cursor = self._conn.execute('SELECT information FROM data')
-        mc = my_cursor(cursor)
-        return mc
+        for r in cursor:
+            obj = cPickle.loads(r[0])
+            yield obj
 
+    def __reversed__(self):
+        # TODO: How do I make the __iter__ thread safe?        
+        cursor = self._conn.execute('SELECT information FROM data order by index_ DESC')
+        for r in cursor:
+            obj = cPickle.loads(r[0])
+            yield obj
 
     def __getitem__(self, key):
         try:
@@ -185,4 +183,4 @@ class disk_list(object):
         with self._db_lock:
             cursor = self._conn.execute('SELECT count(*) FROM data')
             return cursor.fetchone()[0]
-    
+

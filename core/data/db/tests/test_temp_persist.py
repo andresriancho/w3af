@@ -86,6 +86,18 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[0] == u'à', True)
         self.assertEqual( dl[1] == u'המלצת השבוע', True)
 
+    def test_reverse_iteration(self):
+        dl = disk_list()
+        dl.append(1)
+        dl.append(2)
+        dl.append(3)
+        
+        reverse_iter_res = []
+        for i in reversed(dl):
+            reverse_iter_res.append(i)
+        
+        self.assertEqual( reverse_iter_res, [3,2,1])
+
 if __name__ == '__main__':
     unittest.main()
 
