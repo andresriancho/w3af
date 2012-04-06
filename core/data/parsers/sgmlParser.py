@@ -47,6 +47,11 @@ class SGMLParser(BaseParser):
         )
     
     URL_ATTRS = ('href', 'src', 'data', 'action')
+
+    # I don't want to inject into Apache's directory indexing parameters
+    APACHE_INDEXING = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
+                       '?C=N;O=D', '?C=D;O=A', '?N=D', '?M=A', '?S=A',
+                       '?D=A', '?D=D', '?S=D', '?M=D', '?N=D')
     
     def __init__(self, http_resp):
         BaseParser.__init__(self, http_resp)
@@ -146,21 +151,21 @@ class SGMLParser(BaseParser):
             msg = 'An error occurred while parsing "%s", original exception: "%s"'
             msg = msg % (http_resp.getURL(), etree.XMLSyntaxError)
             om.out.debug(msg)
-    
+
+    def _filter_ref(self, attr):
+        key = attr[0]
+        value = attr[1]
+        
+        return  key in self.URL_ATTRS and value \
+                and not value.startswith('#') \
+                and not value in self.APACHE_INDEXING
+ 
     def _find_references(self, tag, attrs):
         '''
         Find references inside the document.
         '''
-        # Filter valid attr_names and URLs that are not fragments.
-        #
-        # I don't want to inject into Apache's directory indexing parameters:
-        apache_indexing = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
-                           '?C=N;O=D', '?C=D;O=A', '?N=D', '?M=A', '?S=A',
-                           '?D=A', '?D=D', '?S=D', '?M=D', '?N=D')
-
-        filter_ref = lambda attr: attr[0] in self.URL_ATTRS and attr[1] and \
-                                    not attr[1].startswith('#') and \
-                                    not attr[1] in apache_indexing
+        
+        filter_ref = self._filter_ref
         
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
