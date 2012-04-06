@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.request.httpQsRequest import HTTPQSRequest
+from itertools import chain, izip_longest
+
 
 def are_variants(uri, other_uri):
     '''
@@ -61,6 +62,35 @@ def are_variants(uri, other_uri):
                      'http://rapid7.com/foo.php?id=1')
     Traceback (most recent call last):
       ...
-    TypeError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
+    AttributeError: 'str' object has no attribute 'getDomain'
     '''
-    return HTTPQSRequest(uri).is_variant_of(HTTPQSRequest(other_uri))
+    if uri.getDomain() != other_uri.getDomain():
+        return False
+    
+    if uri.getPath() != other_uri.getPath():
+        return False
+    
+    if not uri.hasQueryString() and not other_uri.hasQueryString():
+        # No QS and same Domain
+        return True
+    
+    if uri.hasQueryString() and other_uri.hasQueryString():
+        dc = uri.querystring
+        odc = other_uri.querystring
+
+        if dc.keys() != odc.keys():
+            return False
+        
+        for vself, vother in izip_longest(
+                                  chain(*dc.values()),
+                                  chain(*odc.values()),
+                                  fillvalue=None
+                                  ):
+            if None in (vself, vother) or \
+                vself.isdigit() != vother.isdigit():
+                return False
+        
+        return True
+    
+    return False    
+
