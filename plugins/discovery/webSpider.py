@@ -278,67 +278,11 @@ class webSpider(baseDiscoveryPlugin):
                         t = (resp.getURL(), original_request.getURI())
                         self._brokenLinks.append(t)
                 else:
-                    if possibly_broken:
-                        #
-                        # Now the caller is telling us that this link is 
-                        # possibly broken. This means that it came from a 
-                        # regular expression, or something that usually 
-                        # introduces "false positives". So what I'm going to do
-                        # is to perform one more request to the same directory
-                        # but with a different filename, and then compare it to
-                        # what we got in the first request.
-                        #
-                        #   Fixes this:
-                        '''
-                        /es/ga.js/google-analytics.com
-                        /ga.js/google-analytics.com
-                        /es/ga.js/google-analytics.com/ga.js/google-analytics.com/ga.js
-                        /ga.js/google-analytics.com/google-analytics.com/ga.js/
-                        /es/ga.js/google-analytics.com/google-analytics.com/ga.js/
-                        /es/ga.js/google-analytics.com/google-analytics.com/
-                        /es/ga.js/google-analytics.com/google-analytics.com/google-analytics.com/ga.js
-                        /ga.js/google-analytics.com/google-analytics.com/ga.js
-                        /services/google-analytics.com/google-analytics.com/
-                        /services/google-analytics.com/google-analytics.com/google-analytics.com/ga.js
-                        /es/ga.js/google-analytics.com/ga.js/google-analytics.com/ga.js/
-                        /ga.js/google-analytics.com/ga.js/google-analytics.com/ga.js/
-                        /ga.js/google-analytics.com/ga.js/google-analytics.com/
-                        /ga.js/google-analytics.com/ga.js/google-analytics.com/google-analytics.com/ga.js
-                        '''
-                        filename = reference.getFileName()
-                        if filename:
-                            new_reference = reference.copy()
-                            new_reference.setFileName(createRandAlpha(3) +
-                                                      filename)
-                            
-                            check_response = \
-                                self._urlOpener.GET(new_reference,
-                                                    useCache=True,
-                                                    headers=headers)
-                            resp_body = resp.getBody()
-                            check_resp_body = check_response.getBody()
-
-                            if relative_distance_ge(resp_body,
-                                            check_resp_body, IS_EQUAL_RATIO):
-                                # If they are equal, then they are both a 404
-                                # (or something invalid)
-                                # om.out.debug(reference + ' was broken!')
-                                return
-                            
-                            else:
-                                # The URL was possibly_broken, but after 
-                                # testing we found out that it was not, so now
-                                # we use it!
-                                om.out.debug('Adding relative reference "%s" '
-                                             'to the resp.' % reference)
-                                frlist = self._createFuzzableRequests(
-                                               resp, request=original_request)
-                                fuzz_req_list.extend(frlist)
-                
-                    else: # Not possibly_broken:
-                        fuzz_req_list = self._createFuzzableRequests(resp,
-                                                     request=original_request)
-                
+                    om.out.debug('Adding relative reference "%s" '
+                                 'to the result.' % reference)
+                    frlist = self._createFuzzableRequests(resp, request=original_request)
+                    fuzz_req_list.extend(frlist)
+                                
                 # Process the list.
                 for fuzz_req in fuzz_req_list:
                     fuzz_req.setReferer(referer)
