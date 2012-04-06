@@ -154,9 +154,9 @@ class SGMLParser(BaseParser):
         # Filter valid attr_names and URLs that are not fragments.
         #
         # I don't want to inject into Apache's directory indexing parameters:
-        apache_indexing = ["?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
+        apache_indexing = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
                            '?C=N;O=D', '?C=D;O=A', '?N=D', '?M=A', '?S=A',
-                           '?D=A', '?D=D', '?S=D', '?M=D', '?N=D']
+                           '?D=A', '?D=D', '?S=D', '?M=D', '?N=D')
 
         filter_ref = lambda attr: attr[0] in self.URL_ATTRS and attr[1] and \
                                     not attr[1].startswith('#') and \
