@@ -53,7 +53,8 @@ class fingerBing(baseDiscoveryPlugin):
 
     def discover(self, fuzzableRequest):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        (among other things) the URL to test.
         '''
         result = []
         # This will remove the plugin from the discovery plugins to be run.
@@ -70,8 +71,10 @@ class fingerBing(baseDiscoveryPlugin):
 
         for result in results:
             self._run_async(meth=self._findAccounts, args=(result,))
+        
         self._join()
         self.printUniq(kb.kb.getData('fingerBing', 'mails'), None)
+        
         return result
 
     def _findAccounts(self, page):
@@ -159,6 +162,6 @@ class fingerBing(baseDiscoveryPlugin):
         One configurable parameter exist:
             - resultLimit
 
-        This plugin searches Bing for : "@domain.com", requests all search results and parses them in order
-        to find new mail addresses.
+        This plugin searches Bing for : "@domain.com", requests all search results and 
+        parses them in order to find new mail addresses.
         '''
