@@ -42,16 +42,25 @@ class documentParser:
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self, httpResponse):
-        
-        # Create the proper parser instance
-        if self._isWML(httpResponse):
+
+        # Create the proper parser instance, please note that
+        # the order in which we ask for the type is not random,
+        # first we discard the images which account for a great
+        # % of the URLs in a site, then we ask for WML which is
+        # a very specific thing to match, then we try text or HTML
+        # which is very generic (if we would have exchanged these two
+        # we would have never got to WML), etc.
+        if httpResponse.is_image():
+            msg = 'There is no parser for images.'
+            raise w3afException(msg)
+        elif self._isWML(httpResponse):
             parser = wmlParser.wmlParser(httpResponse)
+        elif httpResponse.is_text_or_html():
+            parser = htmlParser.HTMLParser(httpResponse)
         elif self._isPDF(httpResponse):
             parser = pdfParser.pdfParser(httpResponse)
         elif self._isSWF(httpResponse):
             parser = swfParser.swfParser(httpResponse)
-        elif httpResponse.is_text_or_html():
-            parser = htmlParser.HTMLParser(httpResponse)
         else:
             msg = 'There is no parser for "%s".' % httpResponse.getURL()
             raise w3afException(msg)
@@ -97,10 +106,12 @@ class documentParser:
                 magic = body[:3]
             
                 # TODO: Add more checks here?
-                if magic in ['FWS', 'CWS']:
+                if magic in ('FWS', 'CWS'):
                     return True
         
         return False
+    
+    WML_RE = re.compile('<!DOCTYPE wml PUBLIC', re.IGNORECASE)
     
     def _isWML( self, httpResponse ):
         '''
@@ -110,9 +121,8 @@ class documentParser:
         if httpResponse.content_type == 'text/vnd.wap.wml':
         
             document = httpResponse.getBody()
-            content_match = re.search('<!DOCTYPE wml PUBLIC',  document,  re.IGNORECASE)
         
-            if content_match:
+            if self.WML_RE.search( document ):
                 return True
         
         return False
@@ -174,3 +184,5 @@ class documentParser:
         return self._parser.getMetaTags()
     
     
+def document_parser_factory(httpResponse):
+    return documentParser(httpResponse)
