@@ -48,6 +48,12 @@ class BaseParser(object):
                     '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
                     re.I|re.U)
     SAFE_CHARS = (('\x00', '%00'),)
+
+    # Matches
+    # "PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
+    # used in _find_relative() method
+    PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
+    
     
     def __init__(self, httpResponse):
         
@@ -254,7 +260,7 @@ class BaseParser(object):
         '''
         re_urls = self._re_urls
         
-        for url in re.findall(BaseParser.URL_RE, doc_str):
+        for url in self.URL_RE.findall(doc_str):
             # This try is here because the _decode_url method raises an
             # exception whenever it fails to decode a url.
             try:
@@ -265,46 +271,51 @@ class BaseParser(object):
             else:
                 re_urls.add(decoded_url)
         
-        #
-        # Now detect some relative URL's (also using regexs)
-        #
-        def find_relative():
-            res = set()
-            
-            # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
-            # I'm removing those matches manually below
-            for match_tuple in self.RELATIVE_URL_RE.findall(doc_str):
-                
-                match_str = match_tuple[0]
-                
-                # And now I filter out some of the common false positives
-                if match_str.startswith('//') or \
-                    match_str.startswith('://') or \
-                    re.match('HTTP/\d\.\d', match_str) or \
-                    re.match('.*?/\d\.\d\.\d', match_str): # Matches
-                    #"PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
-                    continue
-                
-                try:
-                    url = self._baseUrl.urlJoin(match_str).url_string
-                    url = url_object(self._decode_url(url),
-                                     encoding=self._encoding)
-                except ValueError:
-                    # In some cases, the relative URL is invalid and triggers an 
-                    # ValueError: Invalid URL "%s" exception. All we can do at this
-                    # point is to ignore this "fake relative URL".
-                    pass
-                else:
-                    if url.url_string.lower().startswith('http://') or \
-                    url.url_string.lower().startswith('https://'):
-                        res.add(url)
-            
-            return res
+        re_urls.update(self._find_relative(doc_str))
         
-        re_urls.update(find_relative())
-        
-        # Finally normalize the urls
+        # Finally, normalize the urls
         map(lambda u: u.normalizeURL(), re_urls)    
+    
+    def _filter_false_urls(self, potential_url):
+        potential_url = potential_url[0]
+        if potential_url.startswith('//') or \
+            potential_url.startswith('://') or \
+            potential_url.startswith('HTTP/') or \
+            self.PHP_VERSION_RE.match( potential_url ):
+            return False
+        
+        return True
+    
+    def _find_relative(self, doc_str):
+        '''
+        
+        Now detect some relative URL's (also using regexs)
+        
+        '''
+        res = set()
+        filter_false_urls = self._filter_false_urls
+        
+        # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
+        # I'm removing those matches manually below
+        for match_tuple in filter( filter_false_urls, self.RELATIVE_URL_RE.findall(doc_str) ):
+            
+            match_str = match_tuple[0]
+                        
+            try:
+                url = self._baseUrl.urlJoin(match_str).url_string
+                url = url_object(self._decode_url(url),
+                                 encoding=self._encoding)
+            except ValueError:
+                # In some cases, the relative URL is invalid and triggers an 
+                # ValueError: Invalid URL "%s" exception. All we can do at this
+                # point is to ignore this "fake relative URL".
+                pass
+            else:
+                url_lower = url.url_string.lower()
+                if url_lower.startswith('http://') or url_lower.startswith('https://'):
+                    res.add(url)
+        
+        return res
         
     def _decode_url(self, url_string):
         '''
