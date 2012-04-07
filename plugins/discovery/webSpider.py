@@ -25,18 +25,15 @@ import re
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.w3afException import w3afException, \
     w3afMustStopOnUrlError
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.temp_shelve import temp_shelve as temp_shelve
 from core.data.fuzzer.formFiller import smartFill
-from core.data.fuzzer.fuzzer import createRandAlpha
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.request.httpPostDataRequest import httpPostDataRequest as \
     HttpPostDataRequest
-from core.data.request.variant_identification import are_variants
 import core.controllers.outputManager as om
 import core.data.dc.form as form
 import core.data.kb.config as cf
