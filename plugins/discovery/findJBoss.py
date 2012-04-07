@@ -19,13 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from functools import partial
-
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afRunOnce
 from core.data.options.optionList import optionList
-from core.data.parsers.urlParser import url_object
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
