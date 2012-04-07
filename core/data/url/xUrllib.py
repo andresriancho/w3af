@@ -270,15 +270,18 @@ class xUrllib(object):
         >>> x = xUrllib()
         >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
         True
-        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=abc')).getBody()
+        >>> abc_url = 'http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=abc'
+        >>> 'American Broadcasting Company' in x.GET(url_object(abc_url)).getBody()
         True
-        >>> 'American Broadcasting Company' in x.GET(url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def')).getBody()
+        >>> def_url = 'http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def'
+        >>> 'American Broadcasting Company' in x.GET(url_object(def_url)).getBody()
         False
 
 
         #
-        #   This test verifies that the gzip_handler.py is properly working. It's very important to check this because we've
-        #   (more than once) disabled it without noticing, and it provides a very important performance improvement.
+        #   This test verifies that the gzip_handler.py is properly working. It's very important to
+        #   check this because we've (more than once) disabled it without noticing, and it provides
+        #   a very important performance improvement.
         #
         >>> res = x.GET(url_object('http://www.google.com.ar/'))
         >>> headers = res.getHeaders()
