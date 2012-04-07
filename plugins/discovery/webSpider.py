@@ -29,7 +29,7 @@ from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.w3afException import w3afException, \
     w3afMustStopOnUrlError
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.db.temp_persist import disk_list as DiskList
+from core.data.db.temp_shelve import temp_shelve as temp_shelve
 from core.data.fuzzer.formFiller import smartFill
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.data.options.option import option
@@ -62,7 +62,7 @@ class webSpider(baseDiscoveryPlugin):
         self._brokenLinks = []
         self._fuzzable_reqs = set()
         self._first_run = True
-        self._already_crawled = DiskList()
+        self._known_variants = variant_db()
         self._already_filled_form = scalable_bloomfilter()
 
         # User configured variables
@@ -192,7 +192,7 @@ class webSpider(baseDiscoveryPlugin):
                     # links. Then work with the regex references and DO NOT
                     # report broken links
                     if self._need_more_variants(ref):
-                        self._already_crawled.append(ref)
+                        self._known_variants.append(ref)
                         possibly_broken = ref in only_re_refs
                         args = (ref, fuzzable_req, originalURL,
                                  possibly_broken)
@@ -222,23 +222,13 @@ class webSpider(baseDiscoveryPlugin):
         links, but after a fixed number of variants, we will start ignoring all
         those variants.
         '''
-        number_of_variants = 0
-        
-        # The reversed() call is a performance enhancement since in most cases
-        # "links that are variants are found together", so it makes sense to
-        # start from the recently found links first when verifying if a new
-        # link is a variant of an already seen one or not.
-        for reference in reversed(self._already_crawled):
-            if are_variants(reference, new_reference):
-                number_of_variants += 1
-                
-            if number_of_variants > MAX_VARIANTS:
-                msg = ('Ignoring new reference "%s" (it is simply a variant).'
-                       % new_reference)
-                om.out.debug(msg)
-                return False
-            
-        return True
+        if self._known_variants.need_more_variants( new_reference ):
+            return True
+        else:
+            msg = ('Ignoring new reference "%s" (it is simply a variant).'
+                    % new_reference)
+            om.out.debug(msg)
+            return False
     
     def _verify_reference(self, reference, original_request,
                           originalURL, possibly_broken):
@@ -408,3 +398,80 @@ class webSpider(baseDiscoveryPlugin):
         
         The regular expressions are applied to the URLs that are found using the match function.
         '''
+
+class variant_db(object):
+    def __init__(self):
+        self._internal_dict = temp_shelve()
+        
+    def append(self, reference):
+        '''
+        Called when a new reference is found and we proved that new
+        variants are still needed.
+        
+        @param reference: The reference (as an url_object) to add. This method
+        will "normalize" it before adding it to the internal dict.
+        '''
+        clean_reference = self._clean_reference( reference )
+        
+        count = self._internal_dict.get( clean_reference, None)
+        
+        if count is not None:
+            self._internal_dict[ clean_reference ] = count + 1
+        else:
+            self._internal_dict[ clean_reference ] = 1
+            
+    def _clean_reference(self, reference):
+        '''
+        This method is VERY dependent on the are_variants method from
+        core.data.request.variant_identification , make sure to remember that
+        when changing stuff here or there.
+        
+        What this method does is to "normalize" any input reference string so
+        that they can be compared very simply using string match.
+
+        >>> from core.data.parsers.urlParser import url_object
+        >>> URL = url_object
+        >>> vdb = variant_db()
+        
+        >>> vdb._clean_reference(URL('http://w3af.org/'))
+        u'http://w3af.org/'
+        >>> vdb._clean_reference(URL('http://w3af.org/index.php'))
+        u'http://w3af.org/index.php'
+        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2'))
+        u'http://w3af.org/index.php?id=number'
+        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar'))
+        u'http://w3af.org/index.php?id=number&foo=string'
+        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar&spam='))
+        u'http://w3af.org/index.php?id=number&foo=string&spam=string'
+         
+        '''
+        res = reference.getDomainPath() + reference.getFileName()
+        
+        if reference.hasQueryString():
+            
+            res += '?'
+            qs = reference.querystring
+            
+            for key in qs:
+                value_list = qs[key]
+                for i, value in enumerate(value_list):
+                    if value.isdigit():
+                        qs[key][i] = 'number'
+                    else:
+                        qs[key][i] = 'string'
+            
+            res += str(qs)
+            
+        return res
+    
+    def need_more_variants(self, reference):
+        '''
+        @return: True if there are not enough variants associated with
+        this reference in the DB.
+        '''
+        clean_reference = self._clean_reference( reference )
+        count = self._internal_dict.get( clean_reference, 0)
+        if count >= MAX_VARIANTS:
+            return False
+        else:
+            return True
