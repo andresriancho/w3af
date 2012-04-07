@@ -37,9 +37,8 @@ class disk_list(object):
     A disk_list is a sqlite3 wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
         - Is thread safe
-        - **NEW** Allows the usage of "for ... in" by the means of an iterator
-            object.
-        - Deletes the file when the temp_shelve object is deleted
+        - Implements an iterator and a reversed iterator
+        - Deletes the file when the disk_list object is deleted from memory
     
     I had to replace the old disk_list because the old one did not support
     iteration, and the only way of adding iteration to that object was doing
