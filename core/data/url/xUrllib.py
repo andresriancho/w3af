@@ -813,9 +813,11 @@ class xUrllib(object):
                 #
                 self._grep_worker( grep_plugin, fuzzReq, response )
                 
-                # TODO: Analyze if creating a different threadpool for grep workers speeds up the whole process
+                # TODO: Analyze if creating a different threadpool for grep workers speeds 
+                #       up the whole process
                 #targs = (grep_plugin, fuzzReq, response)
-                #self._tm.startFunction( target=self._grep_worker, args=targs, ownerObj=self, restrict=False )
+                #self._tm.startFunction( target=self._grep_worker, args=targs, 
+                #                        ownerObj=self, restrict=False )
             
             msg = 'Finished "grep_worker" for response: "%s"' % repr(response)
             om.out.debug( msg )
