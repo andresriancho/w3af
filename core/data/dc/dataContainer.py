@@ -50,6 +50,7 @@ class DataContainer(OrderedDict):
                     key, val = item
                 except TypeError:
                     raise TypeError('key, val = item')
+                #BUGBUG: Do we have a bug here related to repeated parameters?
                 self[key] = val
     
     def copy(self):
