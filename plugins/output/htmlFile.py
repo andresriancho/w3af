@@ -394,9 +394,19 @@ class htmlFile(baseOutputPlugin):
             self._aditional_info_fh.close()
             self._aditional_info_fh = None
 
-        additional_info = file( self._aditional_info_fname ).read()
-        os.unlink( self._aditional_info_fname )
-        self._write_to_file( additional_info )
+        # I do this to avoid reading the whole file into
+        # a string as I was doing before with something similar to:
+        # foo = file( x ).read() ; write_to_file( foo )  
+        for line in file( self._aditional_info_fname ):
+            self._write_to_file( line )
+        
+        # Not sure why... but in some cases the file is not
+        # present and this unlink fails, an example of this is
+        # here https://sourceforge.net/apps/trac/w3af/ticket/171468
+        try:
+            os.unlink( self._aditional_info_fname )
+        except OSError:
+            pass
         
         # Close the debug table
         self._write_to_file('</td></tr></tbody></table></td></tr></tbody></table><br/>')
