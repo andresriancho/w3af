@@ -148,8 +148,11 @@ class w3afCore(object):
         # Init some values
         # TODO: May be consuming a lot of memory
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
-        self._isRunning = False
+        
+        self._is_running = False
         self._paused = False
+        self._stopped = True
+        
         # Reset global sequence number generator
         consecutive_number_generator.reset()
         
@@ -408,7 +411,8 @@ class w3afCore(object):
         @parameter trueFalse: True if the UI wants to pause the scan.
         '''
         self._paused = pauseYesNo
-        self._isRunning = not pauseYesNo
+        self._is_running = not pauseYesNo
+        self._stopped = False
         self.uriOpener.pause( pauseYesNo )
         om.out.debug('The user paused/unpaused the scan.')
 
@@ -507,7 +511,9 @@ class w3afCore(object):
             om.out.error(error)
             raise
         else:
-            self._isRunning = True
+            self._is_running = True
+            self._stopped = False
+            
             try:
                 ###### This is the main section ######
                 # Create the first fuzzableRequestList
@@ -761,7 +767,8 @@ class w3afCore(object):
                 raise
         finally:
             # Now I'm definitly not running:
-            self._isRunning = False
+            self._is_running = False
+            self._stopped = True
             
             # No targets to be scanned.
             cf.cf.save('targets', [])
@@ -771,7 +778,7 @@ class w3afCore(object):
         @return: If the user has called start, and then wants to know if the
         core is still working, it should call isRunning to know that.
         '''
-        return self._isRunning
+        return self._is_running
     
     def _discover(self, toWalk):
         # Init some internal variables
@@ -787,11 +794,11 @@ class w3afCore(object):
             result = self._alreadyWalked
         
         # Let the plugins know that they won't be used anymore
-        self._endDiscovery()
+        self._end_discovery()
         
         return result
     
-    def _endDiscovery( self ):
+    def _end_discovery( self ):
         '''
         Let the discovery plugins know that they won't be used anymore.
         '''
@@ -825,7 +832,10 @@ class w3afCore(object):
             fuzz_reqs = {}
             
             for plugin in self._plugins['discovery']:
+                
+                # Login is needed,
                 self._auth_login()
+                
                 # Using the self._time_limit_reported variable to break
                 # out of two loops
                 if self._time_limit_reported:
@@ -870,6 +880,10 @@ class w3afCore(object):
                     
                     # Finished one loop, inc!
                     self.progress.inc()
+                    
+                    # If the user wants to stop, I have to stop!
+                    if self._stopped:
+                        return []
             
             # The search has finished - now performing some mangling
             # with the requests
@@ -928,7 +942,7 @@ class w3afCore(object):
     def getCoreStatus( self ):
         if self._paused:
             return 'Paused.'
-        elif not self._isRunning:
+        elif self._stopped:
             return 'Not running.'
         else:
             if self.getPhase() != '' and self.getRunningPlugin() != '':
