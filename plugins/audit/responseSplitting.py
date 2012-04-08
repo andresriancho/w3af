@@ -104,6 +104,7 @@ class responseSplitting(baseAuditPlugin):
                         i.setDesc( msg )
                         i.setVar( mutant.getVar() )
                         i.setURI( mutant.getURI() )
+                        i.setDc( mutant.getDc() )
                         i.setId( response.id )
                         i.setName( 'Parameter modifies headers' )
                         kb.kb.append( self, 'responseSplitting', i )
