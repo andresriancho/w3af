@@ -85,43 +85,25 @@ class webSpider(baseDiscoveryPlugin):
             self._target_urls = [i.getDomainPath() for i in cf.cf.getData('targets')]
             self._target_domain = cf.cf.getData('targets')[0].getDomain()
         
-        # If its a form, then smartFill the Dc.
+        # Clear the previously found fuzzable requests,
+        self._fuzzable_reqs.clear()
+        
+        #
+        # If it is a form, then smartFill the parameters to send something that
+        # makes sense and will allow us to cover more code.
+        #
         if isinstance(fuzzable_req, HttpPostDataRequest):
             
-            # TODO: !!!!!!
             if fuzzable_req.getURL() in self._already_filled_form:
                 return []
-            
-            self._already_filled_form.add(fuzzable_req.getURL())
-            
-            to_send = fuzzable_req.getDc().copy()
-            
-            for param_name in to_send:
-                
-                # I do not want to mess with the "static" fields
-                if isinstance(to_send, form.Form):
-                    if to_send.getType(param_name) in ('checkbox', 'file',
-                                                       'radio', 'select'):
-                        continue
-                
-                # Set all the other fields, except from the ones that have a
-                # value set (example: hidden fields like __VIEWSTATE).
-                for elem_index in xrange(len(to_send[param_name])):
-                    
-                    # Should I ignore it because it already has a value?
-                    if to_send[param_name][elem_index] != '':
-                        continue
-                    
-                    # SmartFill it!
-                    to_send[param_name][elem_index] = smartFill(param_name)
-                    
-            fuzzable_req.setDc(to_send)
 
-        self._fuzzable_reqs.clear()
+            fuzzable_req = self._fill_form(fuzzable_req)            
 
+        # Send the HTTP request,
         resp = self._sendMutant(fuzzable_req, analyze=False,
                                 follow_redir=False)
-        
+
+        # Nothing to do here...        
         if resp.getCode() == 401:
             return []
 
@@ -132,6 +114,11 @@ class webSpider(baseDiscoveryPlugin):
                                              )
         self._fuzzable_reqs.update(fuzz_req_list)
 
+        self._extract_links_and_verify(resp, fuzzable_req)
+        return list(self._fuzzable_reqs)
+
+
+    def _extract_links_and_verify(self, resp, fuzzable_req):
         #
         # Note: I WANT to follow links that are in the 404 page.
         #
@@ -196,8 +183,37 @@ class webSpider(baseDiscoveryPlugin):
                         self._run_async(meth=self._verify_reference, args=args)
                 self._join()
         
-        return list(self._fuzzable_reqs)
-    
+
+    def _fill_form(self, fuzzable_req):
+        '''
+        Fill the HTTP request form that is passed as fuzzable_req.
+        @return: A filled form
+        '''
+        self._already_filled_form.add(fuzzable_req.getURL())
+        
+        to_send = fuzzable_req.getDc().copy()
+        
+        for param_name in to_send:
+            
+            # I do not want to mess with the "static" fields
+            if isinstance(to_send, form.Form):
+                if to_send.getType(param_name) in ('checkbox', 'file',
+                                                   'radio', 'select'):
+                    continue
+            
+            # Set all the other fields, except from the ones that have a
+            # value set (example: hidden fields like __VIEWSTATE).
+            for elem_index in xrange(len(to_send[param_name])):
+                
+                # TODO: Should I ignore it because it already has a value?
+                if to_send[param_name][elem_index] != '':
+                    continue
+                
+                # SmartFill it!
+                to_send[param_name][elem_index] = smartFill(param_name)
+                
+        fuzzable_req.setDc(to_send)
+        return fuzzable_req 
     
     def _need_more_variants(self, new_reference):
         '''
