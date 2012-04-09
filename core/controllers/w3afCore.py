@@ -456,8 +456,10 @@ class w3afCore(object):
         This method raises almost every possible exception, so please do your
         error handling!
         '''
+        om.out.debug('Called w3afCore.start()')
+        
         try:
-            self._realStart()
+            self._real_start()
         except MemoryError:
             msg = 'Python threw a MemoryError, this means that your'
             msg += ' OS is running very low in memory. w3af is going'
@@ -484,7 +486,7 @@ class w3afCore(object):
             om.out.information( msg )
             self.progress.stop()
             
-    def _realStart(self):
+    def _real_start(self):
         '''
         Starts the work.
         User interface coders: Please remember that you have to call 
@@ -492,8 +494,6 @@ class w3afCore(object):
         
         @return: No value is returned.
         '''
-        om.out.debug('Called w3afCore.start()')
-        
         # This will help identify the total discovery time
         self._discovery_start_time_epoch = time.time()
         
