@@ -40,7 +40,7 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 
 IS_EQUAL_RATIO = 0.90
-MAX_VARIANTS = 40
+MAX_VARIANTS = 5
 
 
 class webSpider(baseDiscoveryPlugin):
@@ -424,6 +424,7 @@ class variant_db(object):
         @param reference: The reference (as an url_object) to add. This method
         will "normalize" it before adding it to the internal dict.
         '''
+        reference = reference.copy()
         clean_reference = self._clean_reference( reference )
         
         count = self._internal_dict.get( clean_reference, None)
@@ -482,6 +483,7 @@ class variant_db(object):
         @return: True if there are not enough variants associated with
         this reference in the DB.
         '''
+        reference = reference.copy()
         clean_reference = self._clean_reference( reference )
         count = self._internal_dict.get( clean_reference, 0)
         if count >= MAX_VARIANTS:
