@@ -75,9 +75,11 @@ class TestWebSpider(PluginTest):
             u'euc-jp/', u'euc-jp/jap1.php', u'euc-jp/jap2.php',
             # UTF8
             u'utf-8/', u'utf-8/vúlnerable.php', u'utf-8/é.html', u'utf-8/改.php',
+            # Russian
+            u'utf-8/russian.html',
             # Hebrew
             u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php'
-        )
+        ) 
         self.assertEquals(
             sorted([(self.encoding_url + u) for u in expected]),
             sorted([u.url_string for u in urls])
