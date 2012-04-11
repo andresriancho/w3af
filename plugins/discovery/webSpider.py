@@ -424,7 +424,6 @@ class variant_db(object):
         @param reference: The reference (as an url_object) to add. This method
         will "normalize" it before adding it to the internal dict.
         '''
-        reference = reference.copy()
         clean_reference = self._clean_reference( reference )
         
         count = self._internal_dict.get( clean_reference, None)
@@ -444,7 +443,10 @@ class variant_db(object):
         that they can be compared very simply using string match.
 
         >>> from core.data.parsers.urlParser import url_object
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> _ = create_temp_dir()
         >>> URL = url_object
+        
         >>> vdb = variant_db()
         
         >>> vdb._clean_reference(URL('http://w3af.org/'))
@@ -464,7 +466,7 @@ class variant_db(object):
         if reference.hasQueryString():
             
             res += '?'
-            qs = reference.querystring
+            qs = reference.querystring.copy()
             
             for key in qs:
                 value_list = qs[key]
@@ -483,7 +485,6 @@ class variant_db(object):
         @return: True if there are not enough variants associated with
         this reference in the DB.
         '''
-        reference = reference.copy()
         clean_reference = self._clean_reference( reference )
         count = self._internal_dict.get( clean_reference, 0)
         if count >= MAX_VARIANTS:
