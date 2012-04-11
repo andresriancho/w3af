@@ -59,7 +59,7 @@ class temp_shelve(object):
         while True:
             # Get the temp filename to use
             tempdir = get_temp_dir()
-            filename = ''.join([choice(string.letters) for i in range(12)]) + '.w3af.temp_shelve'
+            filename = ''.join([choice(string.letters) for _ in range(12)]) + '.w3af.temp_shelve'
             self._filename = os.path.join(tempdir, filename)
             
             # https://sourceforge.net/tracker/?func=detail&aid=2828136&group_id=170274&atid=853652
@@ -74,7 +74,8 @@ class temp_shelve(object):
                 
                 fail_count += 1
                 if fail_count == 5:
-                    raise Exception('Failed to create shelve file. Original exception: ' + str(e))
+                    msg = 'Failed to create shelve file "%s". Original exception: "%s"'
+                    raise Exception( msg % (self._filename, e))
             else:
                 break
                 
