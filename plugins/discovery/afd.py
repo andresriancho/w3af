@@ -155,9 +155,10 @@ class afd(baseDiscoveryPlugin):
             for i in filtered:
                 om.out.information('- ' + i )
             
-            om.out.information('The following URLs passed undetected by the filter:')
-            for i in not_filtered:
-                om.out.information('- ' + i )
+            if not_filtered:
+                om.out.information('The following URLs passed undetected by the filter:')
+                for i in not_filtered:
+                    om.out.information('- ' + i )
     
     def _get_offending_strings( self ):
         '''
