@@ -15,6 +15,8 @@ discovery config webSpider
 set onlyForward True
 back
 
+audit sqli
+
 back
 
 target
