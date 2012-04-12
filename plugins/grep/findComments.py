@@ -21,8 +21,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.parsers.dpCache as dpCache
 import core.controllers.outputManager as om
+import core.data.parsers.dpCache as dpCache
+from core.data.esmre.multi_in import multi_in
 
 # options
 from core.data.options.option import option
@@ -44,23 +45,29 @@ class findComments(baseGrepPlugin):
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    
+    HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
+
+    INTERESTING_WORDS = (
+        'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
+        'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
+        'stupid', 'tonto', 'porqueria', 'ciudado', 'usuario', 'contrase',
+        'puta', 'secret', '@', 'email','security','captcha', 'pinga',
+        'cojones',
+        # some in Portuguese
+        'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
+        u'depósito', u'cartão', u'crédito', 'dados pessoais'
+    )
+    
+    _multi_in = multi_in( INTERESTING_WORDS )
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
 
         # Internal variables
         self._comments = {}
-        self._interestingWords = (
-            'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
-            'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
-            'stupid', 'tonto', 'porqueria', 'ciudado', 'usuario', 'contrase',
-            'puta', 'secret', '@', 'email','security','captcha', 'pinga',
-			'cojones',
-            # some in Portuguese
-            'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
-            u'depósito', u'cartão', u'crédito', 'dados pessoais'
-        )
         self._already_reported_interesting = []
+        
         # User configurations
         self._search404 = False
         
@@ -83,7 +90,7 @@ class findComments(baseGrepPlugin):
                 commentList = dp.getComments()
 
                 for comment in commentList:
-                    # This next two lines fix this issue:
+                    # These next two lines fix this issue:
                     # audit.ssi + grep.findComments + web app with XSS = false positive
                     if request.sent( comment ):
                         continue
@@ -98,9 +105,8 @@ class findComments(baseGrepPlugin):
                             self._comments[ comment ].append( (response.getURL(), response.id) )
                     
                     comment = comment.lower()
-                    for word in self._interestingWords:
-                        if word in comment and (word, response.getURL()) \
-                                    not in self._already_reported_interesting:
+                    for word in self._multi_in.query( response.body ):                    
+                        if (word, response.getURL()) not in self._already_reported_interesting:
                             i = info.info()
                             i.setPluginName(self.getName())
                             i.setName('HTML comment with "' + word + '" inside')
@@ -115,7 +121,7 @@ class findComments(baseGrepPlugin):
                             om.out.information( i.getDesc() )
                             self._already_reported_interesting.append( ( word, response.getURL() ) )
                     
-                    html_in_comment = re.search('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>', comment)
+                    html_in_comment = self.HTML_RE.search( comment )
                     if html_in_comment and \
                     ( comment, response.getURL() ) not in self._already_reported_interesting:
                         # There is HTML code in the comment.
@@ -159,8 +165,8 @@ class findComments(baseGrepPlugin):
             urls_with_this_comment = self._comments[comment]
             stick_comment = ' '.join(comment.split())
             if len(stick_comment) > 40:
-                msg = 'A comment with the string "%s..." (and %s more bytes) was found on these URL(s):' % (stick_comment[:40], str(len(stick_comment) - 40))
-                om.out.information( msg )
+                msg = 'A comment with the string "%s..." (and %s more bytes) was found on these URL(s):'
+                om.out.information( msg % (stick_comment[:40], str(len(stick_comment) - 40) ))
             else:
                 msg = 'A comment containing "%s" was found on these URL(s):' % (stick_comment)
                 om.out.information( msg )
