@@ -81,17 +81,13 @@ class findComments(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html():
-            if not is_404( response ) or self._search404:
-                
-                try:
-                    dp = dpCache.dpc.getDocumentParserFor( response )
-                except w3afException:
-                    return
-
-                commentList = dp.getComments()
-
-                for comment in commentList:
+        if response.is_text_or_html() and (not is_404( response ) or self._search404):
+            try:
+                dp = dpCache.dpc.getDocumentParserFor( response )
+            except w3afException:
+                return
+            else:
+                for comment in dp.getComments():
                     # These next two lines fix this issue:
                     # audit.ssi + grep.findComments + web app with XSS = false positive
                     if request.sent( comment ):
