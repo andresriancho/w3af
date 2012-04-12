@@ -21,6 +21,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from __future__ import with_statement
+
 import core.controllers.outputManager as om
 import core.data.parsers.dpCache as dpCache
 from core.data.esmre.multi_in import multi_in
@@ -98,49 +100,72 @@ class findComments(baseGrepPlugin):
                     # show nice comments ;)
                     comment = comment.strip()
                     
-                    if comment not in self._comments.keys():
-                        self._comments[ comment ] = [ (response.getURL(), response.id), ]
-                    else:
-                        if response.getURL() not in [ x[0] for x in self._comments[ comment ] ]:
-                            self._comments[ comment ].append( (response.getURL(), response.id) )
-                    
-                    comment = comment.lower()
-                    for word in self._multi_in.query( response.body ):                    
-                        if (word, response.getURL()) not in self._already_reported_interesting:
-                            i = info.info()
-                            i.setPluginName(self.getName())
-                            i.setName('HTML comment with "' + word + '" inside')
-                            msg = 'A comment with the string "' + word + '" was found in: "'
-                            msg += response.getURL() + '". This could be interesting.'
-                            i.setDesc( msg )
-                            i.setId( response.id )
-                            i.setDc( request.getDc )
-                            i.setURI( response.getURI() )
-                            i.addToHighlight( word )
-                            kb.kb.append( self, 'interestingComments', i )
-                            om.out.information( i.getDesc() )
-                            self._already_reported_interesting.append( ( word, response.getURL() ) )
-                    
-                    html_in_comment = self.HTML_RE.search( comment )
-                    if html_in_comment and \
-                    ( comment, response.getURL() ) not in self._already_reported_interesting:
-                        # There is HTML code in the comment.
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('HTML comment contains HTML code')
-                        comment = comment.replace('\n','')
-                        comment = comment.replace('\r','')
-                        desc = 'A comment with the string "' +comment + '" was found in: "'
-                        desc += response.getURL() + '" . This could be interesting.'
-                        i.setDesc( desc )
-                        i.setId( response.id )
-                        i.setDc( request.getDc )
-                        i.setURI( response.getURI() )
-                        i.addToHighlight( html_in_comment.group(0) )
-                        kb.kb.append( self, 'htmlCommentsHideHtml', i )
-                        om.out.information( i.getDesc() )
-                        self._already_reported_interesting.append( ( comment, response.getURL() ) )
+                    if self._is_new( comment, response):
+                        
+                        self._interesting_word( comment, request, response )
+                        self._html_in_comment( comment, request, response )
+
+    def _interesting_word(self, comment, request, response):
+        '''
+        Find interesting words in HTML comments
+        '''
+        comment = comment.lower()
+        for word in self._multi_in.query( response.body ):                    
+            if (word, response.getURL()) not in self._already_reported_interesting:
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('HTML comment with "' + word + '" inside')
+                msg = 'A comment with the string "' + word + '" was found in: "'
+                msg += response.getURL() + '". This could be interesting.'
+                i.setDesc( msg )
+                i.setId( response.id )
+                i.setDc( request.getDc )
+                i.setURI( response.getURI() )
+                i.addToHighlight( word )
+                kb.kb.append( self, 'interestingComments', i )
+                om.out.information( i.getDesc() )
+                self._already_reported_interesting.append( ( word, response.getURL() ) )
+
+    def _html_in_comment(self, comment, request, response):                    
+        '''
+        Find HTML code in HTML comments
+        '''
+        html_in_comment = self.HTML_RE.search( comment )
+        if html_in_comment and \
+        ( comment, response.getURL() ) not in self._already_reported_interesting:
+            # There is HTML code in the comment.
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('HTML comment contains HTML code')
+            comment = comment.replace('\n','')
+            comment = comment.replace('\r','')
+            desc = 'A comment with the string "' +comment + '" was found in: "'
+            desc += response.getURL() + '" . This could be interesting.'
+            i.setDesc( desc )
+            i.setId( response.id )
+            i.setDc( request.getDc )
+            i.setURI( response.getURI() )
+            i.addToHighlight( html_in_comment.group(0) )
+            kb.kb.append( self, 'htmlCommentsHideHtml', i )
+            om.out.information( i.getDesc() )
+            self._already_reported_interesting.append( ( comment, response.getURL() ) )
                             
+    def _is_new(self, comment, response):
+        '''
+        Make sure that we perform a thread safe check on the self._comments dict,
+        in order to avoid duplicates.
+        '''
+        with self._plugin_lock:
+            if comment not in self._comments.keys():
+                self._comments[ comment ] = [ (response.getURL(), response.id), ]
+                return True
+            else:
+                if response.getURL() not in [ x[0] for x in self._comments[ comment ] ]:
+                    self._comments[ comment ].append( (response.getURL(), response.id) )
+                    return True
+        
+        return False        
+    
     def setOptions( self, optionsMap ):
         self._search404 = optionsMap['search404'].getValue()
     
