@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
+import stat
 import shutil
-import tempfile
-import getpass
 
-TEMP_DIR = os.path.join(tempfile.gettempdir(),
-                        'w3af-' + getpass.getuser(), str(os.getpid()))
+from core.controllers.misc.homeDir import get_home_dir
+
+TEMP_DIR = os.path.join(get_home_dir(), 'tmp', str(os.getpid()))
 
 def get_temp_dir():
     '''
@@ -37,20 +36,18 @@ def get_temp_dir():
 def create_temp_dir():
     '''
     Create the temp directory for w3af to work inside.
-    
-    @return: A string that contains the temp directory to use, in Linux: "/tmp/w3af/<pid>"
+
+    @return: A string that contains the temp directory to use, in Linux: "~/.w3af/tmp/<pid>"
     '''
     complete_dir = get_temp_dir()
-    
-    if os.path.exists( complete_dir ):
+    if os.path.exists(complete_dir):
         remove_temp_dir()
-        
-    os.makedirs( complete_dir )
-
+    os.makedirs(complete_dir)
+    os.chmod(complete_dir, stat.S_IRWXU)
     return complete_dir
-    
+
 def remove_temp_dir():
     '''
-    Remove the directory that I created above.
+    Remove the temp directory.
     '''
-    shutil.rmtree( get_temp_dir(), ignore_errors=True )
+    shutil.rmtree(get_temp_dir(), ignore_errors=True)

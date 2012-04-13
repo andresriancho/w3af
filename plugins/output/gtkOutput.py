@@ -30,9 +30,7 @@ import time
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
-from core.controllers.misc.homeDir import get_home_dir
 from core.data.db.history import HistoryItem
-from core.data.db.db import DB
 
 # The output plugin must know the session name that is saved in the config object,
 # the session name is assigned in the target settings
@@ -55,42 +53,11 @@ class gtkOutput(baseOutputPlugin):
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        
-        if not kb.kb.getData('gtkOutput', 'db') == []:
-            # Restore it from the kb
-            self._db = kb.kb.getData('gtkOutput', 'db')
+        if not kb.kb.getData('gtkOutput', 'queue') == []:
             self.queue = kb.kb.getData('gtkOutput', 'queue')
         else:
             self.queue = Queue.Queue()
             kb.kb.save('gtkOutput', 'queue' , self.queue)
-            # Create DB and add tables
-            sessionName = cf.cf.getData('sessionName')
-            dbName = os.path.join(get_home_dir(), 'sessions', 'db_' + sessionName)
-            # Just in case the directory doesn't exist...
-            try:
-                os.mkdir(os.path.join(get_home_dir() , 'sessions'))
-            except OSError, oe:
-                # [Errno EEXIST] File exists
-                if oe.errno != EEXIST:
-                    msg = 'Unable to write to the user home directory: ' + get_home_dir()
-                    raise w3afException( msg )
-
-            self._db = DB()
-            # Check if the database already exists
-            if os.path.exists(dbName):
-                # Find one that doesn't exist
-                for i in xrange(100):
-                    newDbName = dbName + '-' + str(i)
-                    if not os.path.exists(newDbName):
-                        dbName = newDbName
-                        break
-
-            # Create DB!
-            self._db.connect(dbName)
-            # Init history
-            historyItem = HistoryItem(self._db)
-            historyItem.initStructure()
-            kb.kb.save('gtkOutput', 'db', self._db)
 
     def debug(self, msgString, newLine = True ):
         '''

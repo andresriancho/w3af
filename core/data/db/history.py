@@ -33,10 +33,12 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
-from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead
+from core.data.db.db import DB
 from core.data.db.db import WhereHelper
 
 
@@ -67,20 +69,16 @@ class HistoryItem(object):
     code = 200
     time = 0.2
 
-    def __init__(self, db=None):
+    def __init__(self):
         '''Construct object.'''
         self._border = '-#=' * 20
         self._ext = '.trace'
-        if db:
-            self._db = db
-        elif not kb.kb.getData('gtkOutput', 'db') == []:
-            # Restore it from the kb
-            self._db = kb.kb.getData('gtkOutput', 'db')
+        if not kb.kb.getData('history', 'db') == []:
+            self._db = kb.kb.getData('history', 'db')
+            self._sessionDir = kb.kb.getData('history', 'sessionDir')
         else:
-            raise w3afException('The database is not initialized yet.')
-        self._sessionDir = os.path.join(get_home_dir() , 'sessions',
-                                        self._db.getFileName() + '_traces')
-        
+            self.initStructure()
+
     @property
     def response(self):
         resp = self._response
@@ -107,24 +105,37 @@ class HistoryItem(object):
     
     def initStructure(self):
         '''Init history structure.'''
+        sessionName = cf.cf.getData('sessionName')
+        dbName = os.path.join(get_temp_dir(), 'db_' + sessionName)
+        self._db = DB()
+        # Check if the database already exists
+        if os.path.exists(dbName):
+            # Find one that doesn't exist
+            for i in xrange(100):
+                newDbName = dbName + '-' + str(i)
+                if not os.path.exists(newDbName):
+                    dbName = newDbName
+                    break
+        self._db.connect(dbName)
+        self._sessionDir = os.path.join(get_temp_dir(),
+                                        self._db.getFileName() + '_traces')
         tablename = self.getTableName()
         # Init tables
         self._db.createTable(
                 tablename,
                 self.getColumns(),
-                self.getPrimaryKeyColumns()
-                )
-
+                self.getPrimaryKeyColumns())
         self._db.createIndex(tablename, self.getIndexColumns())
-
         # Init dirs
         try:
             os.mkdir(self._sessionDir)
         except OSError, oe:
             # [Errno EEXIST] File exists
             if oe.errno != EEXIST:
-                msg = 'Unable to write to the user home directory: ' + get_home_dir()
+                msg = 'Unable to write to the user home directory: ' + get_temp_dir()
                 raise w3afException(msg)
+        kb.kb.save('history', 'db', self._db)
+        kb.kb.save('history', 'sessionDir', self._sessionDir)
 
     def find(self, searchData, resultLimit=-1, orderData=[], full=False):
         '''Make complex search.
@@ -257,7 +268,7 @@ class HistoryItem(object):
         '''Return item by ID.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
-        resultItem = self.__class__(self._db)
+        resultItem = self.__class__()
         resultItem.load(id, full)
         return resultItem
 
