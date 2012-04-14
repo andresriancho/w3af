@@ -163,7 +163,7 @@ class HistoryItem(object):
         try:
             rawResult = self._db.retrieve(sql, where.values(), all=True)
             for row in rawResult:
-                item = self.__class__(self._db)
+                item = self.__class__()
                 item._loadFromRow(row, full)
                 result.append(item)
         except w3afException:
