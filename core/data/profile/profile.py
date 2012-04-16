@@ -58,8 +58,13 @@ class profile:
             with codecs.open(profname, "rb", UTF8) as fp:
                 try:
                     self._config.readfp(fp)
-                except Exception:
-                    raise w3afException('Unknown format in profile: %s' % profname)
+                except ConfigParser.Error, cpe:
+                    msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
+                    raise w3afException( msg % (profname, str(cpe)))
+                except Exception, e:
+                    msg = 'Unknown error in profile: "%s". Exception: "%s"'
+                    raise w3afException( msg % (profname, str(e)))
+
         
         # Save the profname variable
         self._profile_file_name = profname
