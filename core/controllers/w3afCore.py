@@ -482,8 +482,17 @@ class w3afCore(object):
                          traceback.format_exc()) 
             raise
         finally:
-            msg = 'Scan finished in %s' % self._get_time_string()
-            om.out.information( msg )
+            
+            try:
+                msg = 'Scan finished in %s' % self._get_time_string()
+                om.out.information( msg )
+            except:
+                # In some cases we get here after a disk full exception
+                # where the output manager can't even writea log message
+                # to disk and/or the console. Seen this happen many times
+                # in LiveCDs like Backtrack that don't have "real disk space"  
+                pass
+            
             self.progress.stop()
             
     def _real_start(self):
