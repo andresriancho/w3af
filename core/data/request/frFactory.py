@@ -84,12 +84,20 @@ def createFuzzableRequests(resp, request=None, add_self=True):
                         redir_headers.get('uri', '')
         if location:
             location = smart_unicode(location, encoding=resp.charset)
-            qsr = HTTPQSRequest(
-                resp.getURI().urlJoin(location),
-                headers=req_headers,
-                cookie=cookieObj
-                )
-            res.append(qsr)
+            try:
+                absolute_location = resp.getURI().urlJoin(location)
+            except ValueError:
+                msg = 'The application sent a 30x redirect "Location:" that'
+                msg += ' w3af failed to correctly parse as a URL, the header'
+                msg += ' value was: "%s"'
+                om.out.debug( msg % location )
+            else:
+                qsr = HTTPQSRequest(
+                    absolute_location,
+                    headers=req_headers,
+                    cookie=cookieObj
+                    )
+                res.append(qsr)
     
     # Try to find forms in the document
     try:

@@ -173,8 +173,11 @@ class SGMLParser(BaseParser):
                 url = unicode(self._baseUrl.urlJoin(url_path))
                 url = url_object(url, encoding=self._encoding)
             except ValueError:
-                # Just ignore it
-                pass
+                # Just ignore it, this happens in many cases but one
+                # of the most noticeable is "d:url.html", where the 
+                # developer uses a colon in the URL.
+                msg = 'Ignoring URL "%s" as it generated an invalid URL.'
+                om.out.debug( msg % url_path)
             else:
                 url.normalizeURL()
                 # Save url

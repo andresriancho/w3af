@@ -27,6 +27,7 @@ import urlparse
 
 from core.controllers.misc.encoding import smart_str, PERCENT_ENCODE
 from core.controllers.misc.is_ip_address import is_ip_address
+from core.controllers.misc.encoding import is_known_encoding
 from core.controllers.misc.ordereddict import OrderedDict
 from core.controllers.w3afException import w3afException
 from core.data.constants.encodings import DEFAULT_ENCODING
@@ -161,7 +162,7 @@ class url_object(object):
         >>> u = url_object('http://')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        ValueError: Invalid URL "'http://'"
+        ValueError: Invalid URL "http://"
 
         >>> u = url_object(u'http://w3af.com/foo/bar.txt')
         >>> u.path
@@ -187,10 +188,7 @@ class url_object(object):
 
         # Verify that the encoding is a valid one. If we don't do it here,
         # things might get crazy afterwards.
-        try:
-            # We could use encode or decode here, it doesn't really matter.
-            ''.decode(encoding)
-        except:
+        if not is_known_encoding( encoding ):
             raise ValueError('Invalid encoding "%s" when creating URL.' % encoding)
 
         if isinstance(data, tuple):
@@ -216,7 +214,12 @@ class url_object(object):
         self.fragment = fragment or u''
 
         if not self.netloc:
-            raise ValueError, 'Invalid URL "%r"' % (data,)
+            # The URL is invalid, we don't have a netloc!
+            if isinstance(data, tuple):
+                invalid_url = urlparse.urlunparse(data)
+            else:
+                invalid_url = data 
+            raise ValueError, 'Invalid URL "%s"' % (invalid_url,)
 
     @classmethod
     def from_parts(cls, scheme, netloc, path, params,
@@ -644,6 +647,19 @@ class url_object(object):
         >>> u = url_object('http://w3af.com/def/')
         >>> u.urlJoin(u'тест').url_string == u'http://w3af.com/def/тест'
         True
+
+        
+        Opera and Chrome behave like this. For those browsers the URL
+        leads to no good, so I'm going to do the same thing. If the user
+        wants to specify a URL that contains a colon he should URL
+        encode it.
+        
+        >>> u = url_object('http://w3af.com/')
+        >>> u.urlJoin("d:url.html?id=13&subid=3").url_string
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in ?
+        ValueError: Invalid URL "d:url.html?id=13&subid=3"
+        
         '''
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = url_object(joined_url, self._encoding)

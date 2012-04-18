@@ -267,6 +267,21 @@ class TestSGMLParser(PyMockTestCase):
         parsed_refs = p.references[0]
         self.assertEquals(1, len(parsed_refs))
         self.assertEquals('http://w3af.com/x.py?a=1', parsed_refs[0].url_string)
+    
+    def test_reference_with_colon(self):
+        body = '''
+        <html>
+            <a href="d:url.html?id=13&subid=3">foo</a>
+        </html>'''
+        r = _build_http_response(URL, body)
+        p = _SGMLParser(r)
+        p._parse(r)
+        parsed_refs = p.references[0]
+        #
+        #    Finding zero URLs is the correct behavior based on what
+        #    I've seen in Opera and Chrome.
+        #
+        self.assertEquals(0, len(parsed_refs))         
         
 
 # We subclass HTMLParser to prevent that the parsing process
