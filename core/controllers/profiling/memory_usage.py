@@ -1,5 +1,5 @@
 '''
-memoryUsage.py
+memory_usage.py
 
 Copyright 2006 Andres Riancho
 
@@ -37,20 +37,20 @@ if DEBUGREFERENCES:
     from plugins.output.gtkOutput import message
 
     
-def dumpMemoryUsage():
+def dump_memory_usage():
     '''
     This is a function that prints the memory usage of w3af in real time.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     if not DEBUGMEMORY:
-        pass
+        return
     else:
         hpy = guppy.hpy()
         h = hpy.heap()
 
         byrcs = h.byrcs
         
-        msg = ''
+        msg = '\n'
         
         if isinstance( byrcs, guppy.heapy.UniSet.IdentitySetMulti ):
             try:
@@ -61,8 +61,8 @@ def dumpMemoryUsage():
                 for i in xrange(10):
                     msg += str(byrcs[i].byvia) + '\n'
                 
-            except:
-                msg += 'Memory dump: Failed!'
+            except Exception, e:
+                msg += 'Memory dump failed, exception: "%s"' % str(e)
             
             #om.out.debug( 'The one:' + repr(byrcs[0].byid[0].theone) )
         
@@ -70,10 +70,11 @@ def dumpMemoryUsage():
             classes_to_analyze = [url_object, message]
             
             for object_in_memory in gc.get_objects():
-                ###
-                ### Note: str objects CAN'T be analyzed this way. They can't create loops, so they arent
-                ### handled by the gc ( __cycling__ garcage collector ) .
-                ###
+                #
+                #    Note: str objects CAN'T be analyzed this way. They 
+                #    can't create loops, so they aren't handled by the gc
+                #    ( __cycling__ garbage collector ).
+                #
                 for kls in classes_to_analyze:
                     if isinstance( object_in_memory, kls ):
                         tmp = 'Objects of class %s are referenced by:\n' % kls

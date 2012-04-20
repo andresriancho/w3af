@@ -35,7 +35,7 @@ import sqlite3
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
-from core.controllers.misc.memoryUsage import dumpMemoryUsage
+from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import \
     consecutive_number_generator as seq_gen
 from core.controllers.threads.threadManager import threadManagerObj as \
@@ -110,7 +110,7 @@ class xUrllib(object):
         
         self._memoryUsageCounter += 1
         if self._memoryUsageCounter == 300:
-            dumpMemoryUsage()
+            dump_memory_usage()
             self._memoryUsageCounter = 0
     
     def _sleepIfPausedDieIfStopped(self):
