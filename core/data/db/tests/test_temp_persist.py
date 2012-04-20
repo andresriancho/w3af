@@ -4,8 +4,6 @@ import random
 import unittest
 import string
 
-from guppy import hpy
-
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.temp_persist import disk_list
 
