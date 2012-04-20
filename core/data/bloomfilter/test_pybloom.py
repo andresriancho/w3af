@@ -2,8 +2,6 @@ import random
 import unittest
 import string
 
-from guppy import hpy
-
 from pybloom import BloomFilter
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -41,8 +39,6 @@ class TestBloomFilter(unittest.TestCase):
 class TestScalableBloomfilter(unittest.TestCase):
 
     def test_bloom_int(self):
-        h = hpy()
-        a = h.heap()
 
         f = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
 
