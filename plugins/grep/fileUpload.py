@@ -45,6 +45,7 @@ class fileUpload(baseGrepPlugin):
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()
+        self._file_input_xpath = etree.XPath( FILE_INPUT_XPATH )
 
     def grep(self, request, response):
         '''
@@ -65,7 +66,7 @@ class fileUpload(baseGrepPlugin):
             if dom is not None:
 
                 # Loop through file inputs tags                
-                for input_file in dom.xpath(FILE_INPUT_XPATH):
+                for input_file in self._file_input_xpath( dom ):
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('File upload form')
