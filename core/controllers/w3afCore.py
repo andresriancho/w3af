@@ -146,7 +146,10 @@ class w3afCore(object):
         self.target = targetSettings()
         
         # Init some values
-        # TODO: May be consuming a lot of memory
+        #
+        # TODO: Can we remove this? Note that this does NOT necessary consume
+        # lots of memory since items are get() by the GTK ui. The issue comes
+        # when we're in the console and nobody consumes the values in the queue. 
         kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
         
         self._is_running = False
@@ -330,8 +333,8 @@ class w3afCore(object):
         old_list.extend( new_list )
         kb.kb.save( 'urls', 'url_objects' ,  old_list )
         
-        # Update the Queue
-        # Create the queue that will be used in gtkUi
+        # Update the Queue that's used in the GTK ui.
+        # TODO: Can we remove this?
         urlQueue = kb.kb.getData( 'urls', 'urlQueue' )
         for u in new_list:
             urlQueue.put( u )
@@ -565,7 +568,7 @@ class w3afCore(object):
                     self.export.exportFuzzableRequestList(self._fuzzableRequestList)
                     
                 if not self._fuzzableRequestList:
-                    om.out.information('No URLs found by discovery.')
+                    om.out.information('No URLs found during discovery phase.')
                 else:
                     # Remove the discovery and bruteforce plugins from memory
                     # This is a performance enhancement.
@@ -573,28 +576,21 @@ class w3afCore(object):
                     self._plugins['bruteforce'] = []
 
                     # Sort URLs
-                    tmp_url_list = []
-                    for u in kb.kb.getData( 'urls', 'url_objects'):
-                        tmp_url_list.append( u )
+                    tmp_url_list = kb.kb.getData( 'urls', 'url_objects')[:]
                     tmp_url_list = list(set(tmp_url_list))
                     tmp_url_list.sort()
-        
-                    # Save the list of uniques to the kb; this will avoid some extra loops
-                    # in some plugins that use this knowledge
-                    kb.kb.save('urls', 'url_objects', tmp_url_list )
                     
-                    # Filter out the fuzzable requests that aren't important (and will be ignored
-                    # by audit plugins anyway...)
-                    msg = ('Found %s URLs and %s different points of '
-                           'injection.' % 
-                           (len(tmp_url_list), len(self._fuzzableRequestList)))
+                    msg = 'Found %s URLs and %s different points of injection.' 
+                    msg = msg % (len(tmp_url_list), len(self._fuzzableRequestList))
                     om.out.information( msg )
                     
                     # print the URLs
                     om.out.information('The list of URLs is:')
                     for i in tmp_url_list:
                         om.out.information( '- ' + i )
-                    
+
+                    # Filter out the fuzzable requests that aren't important 
+                    # (and will be ignored by audit plugins anyway...)
                     #
                     #   What I want to do here, is filter the repeated fuzzable requests.
                     #   For example, if the spidering process found:
@@ -655,13 +651,11 @@ class w3afCore(object):
                     '''
                     
                     # Now I simply print the list that I have after the filter.
-                    tmp_fr_list = []
-                    for fuzzRequest in self._fuzzableRequestList:
-                        tmp_fr_list.append( '- ' + str(fuzzRequest))
-                    tmp_fr_list.sort()
+                    tmp_fr = [ '- ' + str(fr) for fr in self._fuzzableRequestList]
+                    tmp_fr.sort()
 
                     om.out.information('The list of fuzzable requests is:')
-                    map(om.out.information, tmp_fr_list)
+                    map(om.out.information, tmp_fr)
                     
                     self._audit()
                     
