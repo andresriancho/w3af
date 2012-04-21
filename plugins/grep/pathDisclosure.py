@@ -215,7 +215,7 @@ class pathDisclosure(baseGrepPlugin):
             
             # Note that this list is recalculated every time a new page is accesed
             # this is goood :P
-            url_list = kb.kb.getData( 'urls', 'urlList' )
+            url_list = kb.kb.getData( 'urls', 'url_objects' )
             
             # Now I find the longest match between one of the URLs that w3af has
             # discovered, and one of the path disclosure strings that this plugin has

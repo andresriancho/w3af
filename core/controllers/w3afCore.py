@@ -319,32 +319,22 @@ class w3afCore(object):
         self._rPlugFactory( self._strPlugins['audit'] , 'audit')
 
 
-    def _updateURLsInKb( self, fuzzableRequestList ):
+    def _update_URLs_in_KB( self, fuzzable_request_list ):
         '''
         Creates an URL list in the kb
         '''
-        # TODO:
-        # kb.kb.getData( 'urls', 'urlList') consumes a lot of memory
-        
-        # Create the queue that will be used in gtkUi
-        old_list = kb.kb.getData( 'urls', 'urlList')
-        new_list = [ fr.getURL() for fr in fuzzableRequestList if fr.getURL() not in old_list ]
+        old_list = kb.kb.getData( 'url', 'url_objects' )
+        new_list = [ fr.getURL() for fr in fuzzable_request_list if fr.getURL() not in old_list ]
+
+        # Update the list of URLs that is used world wide
+        old_list.extend( new_list )
+        kb.kb.save( 'urls', 'url_objects' ,  old_list )
         
         # Update the Queue
+        # Create the queue that will be used in gtkUi
         urlQueue = kb.kb.getData( 'urls', 'urlQueue' )
         for u in new_list:
             urlQueue.put( u )
-            
-        # Update the list of URLs that is used world wide
-        old_list = kb.kb.getData( 'urls', 'urlList')
-        new_list.extend( old_list )
-        kb.kb.save( 'urls', 'urlList' ,  new_list )
-
-        # Update the list of URIs that is used world wide
-        uriList = kb.kb.getData( 'urls', 'uriList')
-        uriList.extend( [ fr.getURI() for fr in fuzzableRequestList] )
-        uriList = list( set( uriList ) )
-        kb.kb.save( 'urls', 'uriList' ,  uriList )
 
     def _auth_login(self):
         '''
@@ -390,7 +380,7 @@ class w3afCore(object):
                 # Now I reconfigure the urllib to use the newly found credentials
                 self._reconfigureUrllib()
         
-        self._updateURLsInKb( res )
+        self._update_URLs_in_KB( res )
         
         return res
     
@@ -565,7 +555,7 @@ class w3afCore(object):
                                      traceback.format_exc())
                 
                 # Load the target URLs to the KB
-                self._updateURLsInKb( self._fuzzableRequestList )
+                self._update_URLs_in_KB( self._fuzzableRequestList )
                 
                 self._fuzzableRequestList = self._discover_and_bruteforce()
                 
@@ -584,14 +574,14 @@ class w3afCore(object):
 
                     # Sort URLs
                     tmp_url_list = []
-                    for u in kb.kb.getData( 'urls', 'urlList'):
+                    for u in kb.kb.getData( 'urls', 'url_objects'):
                         tmp_url_list.append( u )
                     tmp_url_list = list(set(tmp_url_list))
                     tmp_url_list.sort()
         
                     # Save the list of uniques to the kb; this will avoid some extra loops
                     # in some plugins that use this knowledge
-                    kb.kb.save('urls', 'urlList', tmp_url_list )
+                    kb.kb.save('urls', 'url_objects', tmp_url_list )
                     
                     # Filter out the fuzzable requests that aren't important (and will be ignored
                     # by audit plugins anyway...)
@@ -918,7 +908,7 @@ class w3afCore(object):
                         'New URL found by %s plugin: %s' % (pname, url))
 
             # Update the list / queue that lives in the KB
-            self._updateURLsInKb(new_fuzz_reqs)
+            self._update_URLs_in_KB(new_fuzz_reqs)
 
             # Cleanup stuff
             del fuzz_reqs

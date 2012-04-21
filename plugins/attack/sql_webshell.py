@@ -340,7 +340,7 @@ class sql_webshell(baseAttackPlugin):
         '''
         @return: A list of the website directories.
         '''
-        url_list = kb.kb.getData('urls','urlList')
+        url_list = kb.kb.getData('urls','url_objects')
         url_list = [ i.getPathWithoutFile() for i in url_list ]
         url_list = list(set(url_list))
         return url_list

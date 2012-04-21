@@ -146,7 +146,7 @@ class fileUpload(baseAuditPlugin):
                 
                 # Gen expr for directories where I can search for the uploaded file
                 domain_path_list = set(u.getDomainPath() for u in 
-                                       kb.kb.getData('urls' , 'urlList'))
+                                       kb.kb.getData('urls' , 'url_objects'))
         
                 # Try to find the file!
                 for url in domain_path_list:
