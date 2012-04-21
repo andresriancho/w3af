@@ -33,6 +33,8 @@ import core.data.kb.info as info
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
+from lxml import etree
+
 
 class objects(baseGrepPlugin):
     '''
@@ -44,8 +46,11 @@ class objects(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
+        # Compile the XPATH
+        self._tag_xpath = etree.XPath('//object | //applet')
         self._tag_names = ('object', 'applet')
         self._already_analyzed = scalable_bloomfilter()
+        
 
     def grep(self, request, response):
         '''
@@ -56,33 +61,30 @@ class objects(baseGrepPlugin):
         @return: None
         '''
         url = response.getURL()
-        if response.is_text_or_html() and url not in self._already_analyzed:
+        dom = response.getDOM()
+        
+        if response.is_text_or_html() and dom is not None \
+           and url not in self._already_analyzed:
 
             self._already_analyzed.add(url)
             
-            dom = response.getDOM()
+            elem_list = self._tag_xpath( dom )
+            for element in elem_list:
 
-            # In some strange cases, we fail to normalize the document
-            if dom is not None:
-            
-                for tag_name in self._tag_names:
-                    
-                    # Find all input tags with a type file attribute
-                    element_list = dom.xpath('//%s' % tag_name )
-                    
-                    if element_list:
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName(tag_name.title() + ' tag')
-                        i.setURL(url)
-                        i.setId( response.id )
-                        msg = 'The URL: "%s" has an "%s" tag. We recommend you download the '
-                        msg +=  'client side code and analyze it manually.'
-                        msg = msg % (i.getURI(), tag_name)
-                        i.setDesc( msg )
-                        i.addToHighlight( tag_name )
+                tag_name = element.tag
+                
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName(tag_name.title() + ' tag')
+                i.setURL(url)
+                i.setId( response.id )
+                msg = 'The URL: "%s" has an "%s" tag. We recommend you download the '
+                msg +=  'client side code and analyze it manually.'
+                msg = msg % (i.getURI(), tag_name)
+                i.setDesc( msg )
+                i.addToHighlight( tag_name )
 
-                        kb.kb.append( self, tag_name, i )
+                kb.kb.append( self, tag_name, i )
     
     def setOptions( self, OptionList ):
         pass
@@ -98,12 +100,9 @@ class objects(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        # Print objects
-        self.printUniq( kb.kb.getData( 'objects', 'object' ), 'URL' )
-        
-        # Print applets
-        self.printUniq( kb.kb.getData( 'objects', 'applet' ), 'URL' )
-        
+        for obj_type in self._tag_names:
+            self.printUniq( kb.kb.getData( 'objects', obj_type ), 'URL' )
+                
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
