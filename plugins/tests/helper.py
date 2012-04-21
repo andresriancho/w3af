@@ -63,7 +63,9 @@ class PluginTest(unittest.TestCase):
                       )
             opts.add(opt)
             return opts
-            
+        
+        self.kb.cleanup()
+        
         self.w3afcore = w3afCore()
         # Set target(s)
         if isinstance(target, basestring):
