@@ -15,9 +15,9 @@ def backToCurrentDir():
 gettext.install('w3af', 'locales/')
 
 # Now we can load all modules and stuff...
+import core.controllers.outputManager as om
 from core.controllers.profiling.cpu_usage import dump_cpu_usage
 from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 
 try:
     om.out.setOutputPlugins( ['console'] )
