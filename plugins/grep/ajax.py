@@ -31,6 +31,7 @@ import core.data.kb.info as info
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import re
+from lxml import etree
 
 
 class ajax(baseGrepPlugin):
@@ -50,6 +51,9 @@ class ajax(baseGrepPlugin):
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
         ajax_regex_string += 'ActiveXObject|Microsoft\.XMLHTTP)'
         self._ajax_regex_re = re.compile( ajax_regex_string, re.IGNORECASE )
+        
+        # Compile the XPATH
+        self._script_xpath = etree.XPath('.//script')
 
     def grep(self, request, response):
         '''
@@ -142,7 +146,7 @@ class ajax(baseGrepPlugin):
             # In some strange cases, we fail to normalize the document
             if dom is not None:
 
-                script_elements = dom.xpath('.//script')
+                script_elements = self._script_xpath( dom )
                 for element in script_elements:
                     # returns the text between <script> and </script>
                     script_content = element.text
