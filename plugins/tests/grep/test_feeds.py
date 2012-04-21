@@ -29,7 +29,7 @@ from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 
 
-class test_codeDisclosure(unittest.TestCase):
+class test_feeds(unittest.TestCase):
     
     def setUp(self):
         self.plugin = feeds()
