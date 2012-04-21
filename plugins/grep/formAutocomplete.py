@@ -52,7 +52,12 @@ class formAutocomplete(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        
+        # Internal variables
         self._already_inspected = scalable_bloomfilter()
+        self._autocomplete_forms_xpath = etree.XPath( AUTOCOMPLETE_FORMS_XPATH )
+        self._pwd_input_xpath = etree.XPath( PWD_INPUT_XPATH )
+        self._text_input_xpath =  etree.XPath( TEXT_INPUT_XPATH )
 
     def grep(self, request, response):
         '''
@@ -65,43 +70,41 @@ class formAutocomplete(baseGrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         url = response.getURL()
-
-        if response.is_text_or_html() and not url in self._already_inspected:
+        dom = response.getDOM()
+        
+        if response.is_text_or_html() and dom is not None \
+        and not url in self._already_inspected:
 
             self._already_inspected.add(url)
-            dom = response.getDOM()
 
-            if dom is not None:
-                
-                autocompletable = \
-                    lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
+            autocompletable = lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
 
-                # Loop through "auto-completable" forms
-                for form in dom.xpath(AUTOCOMPLETE_FORMS_XPATH):
+            # Loop through "auto-completable" forms
+            for form in self._autocomplete_forms_xpath( dom ):
 
-                    passwd_inputs = form.xpath(PWD_INPUT_XPATH)
+                passwd_inputs = self._pwd_input_xpath( form )
 
-                    # Test existence of password-type inputs and verify that
-                    # all inputs are autocompletable
-                    if passwd_inputs and all(map(autocompletable,
-                    chain(passwd_inputs, form.xpath(TEXT_INPUT_XPATH)))):
-                        
-                        i = info()
-                        i.setName('Auto-completable form')
-                        i.setURL(url)
-                        i.setId(response.id)
-                        msg = 'The URL: "%s" has a "<form>" element with ' \
-                        'auto-complete enabled.' % url
-                        i.setDesc(msg)
-                        form_str = etree.tostring(form)
-                        to_highlight = form_str[:(form_str).find('>') + 1]
-                        i.addToHighlight(to_highlight)
-                        
-                        # Store and print
-                        kb.kb.append(self, 'formAutocomplete', i)
-                        om.out.information(msg)
-                        
-                        break
+                # Test existence of password-type inputs and verify that
+                # all inputs are autocompletable
+                if passwd_inputs and all(map(autocompletable,
+                chain(passwd_inputs, self._text_input_xpath(form) ))):
+                    
+                    i = info()
+                    i.setName('Auto-completable form')
+                    i.setURL(url)
+                    i.setId(response.id)
+                    msg = 'The URL: "%s" has a "<form>" element with ' \
+                    'auto-complete enabled.' % url
+                    i.setDesc(msg)
+                    form_str = etree.tostring(form)
+                    to_highlight = form_str[:(form_str).find('>') + 1]
+                    i.addToHighlight(to_highlight)
+                    
+                    # Store and print
+                    kb.kb.append(self, 'formAutocomplete', i)
+                    om.out.information(msg)
+                    
+                    break
 
 
     def setOptions(self, OptionList):
