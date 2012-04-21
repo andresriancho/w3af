@@ -29,9 +29,9 @@ if DEBUG_CPU_USAGE:
     try:
         import yappi
     except:
-        USE_YAPPI = False
+        DEBUG_CPU_USAGE = False
     else:
-        USE_YAPPI = True
+        DEBUG_CPU_USAGE = True
         import pprint
         yappi.start()
     
@@ -40,7 +40,7 @@ def dump_cpu_usage():
     This is a function that prints the memory usage of w3af in real time.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    if not USE_YAPPI:
+    if not DEBUG_CPU_USAGE:
         return
     else:
         
