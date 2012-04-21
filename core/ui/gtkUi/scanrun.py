@@ -25,13 +25,13 @@ import urllib2
 import sys
 import re, Queue, threading
 from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
-import core.data.kb.knowledgeBase as kb
 import webbrowser
 import core.controllers.outputManager as om
 from extlib.xdot import xdot
 
 # To show request and responses
 from core.data.db.history import HistoryItem
+import core.data.kb.knowledgeBase as kb
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
@@ -395,9 +395,8 @@ class URLsTree(gtk.TreeView):
         self.treeholder = {}
 
         # get the queue and go live
-        queue = kb.kb.getData('urls', 'urlQueue')
-        self.urls = helpers.IteratedQueue(queue)
-        gobject.timeout_add(500, self.addUrl().next)
+        self.urls = IteratedURLList()
+        gobject.timeout_add(750, self.addUrl().next)
         self.show()
 
     def _doubleClick(self, widg, event):
@@ -449,9 +448,8 @@ class URLsTree(gtk.TreeView):
             parts = [x for x in nodes if x]
             self._insertNodes(None, parts, self.treeholder, 1)
             
-            # TODO: Finish this, right now it's not automatically sorting after each insertion
+            # TODO: Automatically sort after each insertion
             # Order the treeview
-            #
             self.treestore.sort_column_changed()
             
         yield False
@@ -583,3 +581,28 @@ class ScanRunBody(gtk.Notebook):
     def changedPage(self, notebook, page, page_num):
         '''Changed the page in the Notebook.'''
         self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]
+
+class IteratedURLList(object):
+    '''
+    Simply provide a way to access the kb.kb.getData('urls', 'url_objects')
+    in an iterated manner!
+     
+    @author: Andres Riancho < andres.riancho @ gmail.com >
+    '''
+    def __init__(self):
+        self._index = 0
+
+    def get(self):
+        '''Serves the elements taken from the list.'''
+        while True:
+            llist = kb.kb.getData('urls', 'url_objects')
+            
+            if self._index < len(llist):
+                msg = llist[ self._index ]
+                self._index += 1
+                data = msg
+            else:
+                data = None
+            
+            yield data
+

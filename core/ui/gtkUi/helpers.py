@@ -297,6 +297,7 @@ class IteratedQueue(RegistThread):
     def qsize(self):
         return self.inputqueue.qsize()
 
+
 class BroadcastWrapper(object):
     '''Broadcast methods access to several widgets.
     

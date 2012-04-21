@@ -146,12 +146,6 @@ class w3afCore(object):
         self.target = targetSettings()
         
         # Init some values
-        #
-        # TODO: Can we remove this? Note that this does NOT necessary consume
-        # lots of memory since items are get() by the GTK ui. The issue comes
-        # when we're in the console and nobody consumes the values in the queue. 
-        kb.kb.save( 'urls', 'urlQueue' ,  Queue.Queue() )
-        
         self._is_running = False
         self._paused = False
         self._stopped = True
@@ -326,19 +320,14 @@ class w3afCore(object):
         '''
         Creates an URL list in the kb
         '''
-        old_list = kb.kb.getData( 'url', 'url_objects' )
-        new_list = [ fr.getURL() for fr in fuzzable_request_list if fr.getURL() not in old_list ]
+        url_object_list = kb.kb.getData( 'url', 'url_objects' )
+        new_list = [ fr.getURL() for fr in fuzzable_request_list \
+                     if fr.getURL() not in url_object_list ]
 
         # Update the list of URLs that is used world wide
-        old_list.extend( new_list )
-        kb.kb.save( 'urls', 'url_objects' ,  old_list )
+        url_object_list.extend( new_list )
+        kb.kb.save( 'urls', 'url_objects' ,  url_object_list )
         
-        # Update the Queue that's used in the GTK ui.
-        # TODO: Can we remove this?
-        urlQueue = kb.kb.getData( 'urls', 'urlQueue' )
-        for u in new_list:
-            urlQueue.put( u )
-
     def _auth_login(self):
         '''
         Make login to the web app when it is needed.
