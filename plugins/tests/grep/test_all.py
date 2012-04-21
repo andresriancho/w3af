@@ -84,11 +84,11 @@ class test_all(unittest.TestCase):
             '''
             To be profiled
             '''
-            for _ in xrange(10):
+            for _ in xrange(1):
                 for counter in xrange(1,5):
                     
                     file_name = 'test-' + str(counter) + '.html'
-                    file_path = os.path.join('plugins','grep','tests',file_name)
+                    file_path = os.path.join('plugins','tests','grep',file_name)
                     
                     body = file( file_path ).read()
                     response = httpResponse(200, body, {'Content-Type': 'text/html'},
