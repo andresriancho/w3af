@@ -32,6 +32,9 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from lxml import etree
+
+
 class feeds(baseGrepPlugin):
     '''
     Grep every page and finds rss, atom, opml feeds.
@@ -41,11 +44,15 @@ class feeds(baseGrepPlugin):
     
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._rss_tag_attr = [('rss', 'version', 'RSS'),# <rss version="...">
-                              ('feed', 'version', 'OPML'),# <feed version="..."
-                              ('opml', 'version', 'OPML') # <opml version="...">
-                              ]
+        self._feed_types = {'rss': 'RSS', # <rss version="...">
+                            'feed': 'OPML',# <feed version="..."
+                            'opml': 'OPML' # <opml version="...">
+                           }
         self._already_inspected = scalable_bloomfilter()
+        
+        # Compile the XPATH
+        self._tag_xpath = etree.XPath('//rss | //feed | //opml')
+                
                 
     def grep(self, request, response):
         '''
@@ -63,26 +70,25 @@ class feeds(baseGrepPlugin):
 
             self._already_inspected.add(uri)
 
-            for tag_name, attr_name, feed_type in self._rss_tag_attr:
+            # Find all feed tags 
+            element_list = self._tag_xpath(dom)
+        
+            for element in element_list:
                 
-                # Find all tags with tag_name
-                element_list = dom.xpath('//%s' % tag_name)
-            
-                for element in element_list:
-                    
-                    if attr_name in element.attrib:
-                        
-                        version = element.attrib[attr_name]                        
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName(feed_type +' feed')
-                        i.setURI(uri)
-                        msg = 'The URL: "' + uri + '" is a ' + feed_type + ' version "' 
-                        msg += version + '" feed.'
-                        i.setDesc( msg )
-                        i.setId( response.id )
-                        i.addToHighlight( feed_type )
-                        kb.kb.append( self, 'feeds', i )
+                feed_tag = element.tag
+                feed_type = self._feed_types[ feed_tag.lower() ]
+                version = element.attrib.get('version', 'unknown')
+                
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName(feed_type +' feed')
+                i.setURI(uri)
+                fmt = 'The URL "%s" is a %s version %s feed.'
+                msg = fmt % (uri, feed_type, version) 
+                i.setDesc( msg )
+                i.setId( response.id )
+                i.addToHighlight( feed_type )
+                kb.kb.append( self, 'feeds', i )
     
     def setOptions( self, OptionList ):
         pass
