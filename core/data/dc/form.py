@@ -39,7 +39,7 @@ class Form(DataContainer):
         Javier Andalia (jandalia =at= gmail.com)
     '''
     # Max
-    TOP_VARIANTS = 150
+    TOP_VARIANTS = 15
     MAX_VARIANTS_TOTAL = 10**9
     SEED = 1
     
