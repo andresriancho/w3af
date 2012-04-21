@@ -33,9 +33,14 @@ from core.data.url.xUrllib import xUrllib
 HEADERS = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
 # TODO: This needs to be mocked up!
 URL_OPENER = xUrllib()
-URL_OPEN_FUNC = lambda url: URL_OPENER.GET(url, headers=HEADERS,
-                                            useCache=True, grepResult=False)
 URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
+
+def URL_OPEN_FUNC( url ):
+    try:
+        return URL_OPENER.GET(url, headers=HEADERS, useCache=True, grepResult=False)
+    except KeyboardInterrupt:
+        raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+
 
 class test_googleSearchEngine(unittest.TestCase):
     
@@ -48,28 +53,39 @@ class test_googleSearchEngine(unittest.TestCase):
     
     def test_get_links_results_len(self):
         # Len of results must be ge. than limit
-        results = self.gse.getNResults(self.query, self.limit)
-        self.assertTrue(len(results) <= self.limit)
+        try:
+            results = self.gse.getNResults(self.query, self.limit)
+        except KeyboardInterrupt:
+            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+        else:
+            self.assertTrue(len(results) <= self.limit)
+
     
     def test_get_links_results_unique(self):
         # URLs should be unique
-        results = self.gse.getNResults(self.query, self.limit)
-        self.assertTrue(len(results) == len(set([r.URL for r in results])))
+        try:
+            results = self.gse.getNResults(self.query, self.limit)
+        except KeyboardInterrupt:
+            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+        else:
+            self.assertTrue(len(results) == len(set([r.URL for r in results])))
     
     def test_page_body(self):
         # Verify that responses' body contains at least one word in query
-        responses = self.gse.getNResultPages(self.query, self.limit)
-        words = self.query.split()
-        for resp in responses:
-            found = False
-            html_text = resp.getBody()
-            for word in words:
-                if word in html_text:
-                    found = True
-                    break
-            self.assertTrue(found)
-            
-        
+        try:
+            responses = self.gse.getNResultPages(self.query, self.limit)
+        except KeyboardInterrupt:
+            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+        else:
+            words = self.query.split()
+            for resp in responses:
+                found = False
+                html_text = resp.getBody()
+                for word in words:
+                    if word in html_text:
+                        found = True
+                        break
+                self.assertTrue(found)
 
 class test_GoogleAPISearch(unittest.TestCase):
     
