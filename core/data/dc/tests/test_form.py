@@ -78,17 +78,21 @@ class test_form(unittest.TestCase):
             if i == 0: # First element must be the created `new_bigform`
                 self.assertEquals(id(new_bigform), id(form_variant))
                 continue
-
+            
             for name, values in clean_data.items():
                 tmb_values = filter_tmb(values)
                 self.assertTrue(form_variant[name][0] in tmb_values)
             
             variants_set.add(repr(form_variant))
+
         
         # Ensure we actually got the expected number of variants
-        self.assertEquals(i, total_variants)
+        f = form.Form()
+        expected = min(total_variants, f.TOP_VARIANTS)
+        self.assertEquals(i, expected)
+        
         # Variants shouldn't duplicated
-        self.assertEquals(len(variants_set), total_variants)
+        self.assertEquals(len(variants_set), expected)
         
 
     def test_all_variants(self):
@@ -110,9 +114,12 @@ class test_form(unittest.TestCase):
             variants_set.add(repr(form_variant))
 
         # Ensure we actually got the expected number of variants
-        self.assertEquals(total_variants, i)
+        f = form.Form()
+        expected = min(total_variants, f.TOP_VARIANTS)
+        self.assertEquals(expected, i)
+        
         # Variants shouldn't duplicated
-        self.assertEquals(total_variants, len(variants_set))
+        self.assertEquals(expected, len(variants_set))
 
     def test_t_b_variants(self):
         # 'top' and 'bottom' variants
