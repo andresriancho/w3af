@@ -324,7 +324,14 @@ class w3afCore(object):
         new_list = [ fr.getURL() for fr in fuzzable_request_list \
                      if fr.getURL() not in url_object_list ]
 
-        # Update the list of URLs that is used world wide
+        # Update the list of URLs that is used world wide, it is VERY
+        # important to notice that we always need to append stuff to the
+        # end of this list and avoid things like sorting, inserting in
+        # positions different than the tail, etc. This helps with the
+        # implementation of scanrun.IteratedURLList .
+        #
+        # TODO: Force this somehow so that this isn't just a warning but
+        # something that fails if developers change it.
         url_object_list.extend( new_list )
         kb.kb.save( 'urls', 'url_objects' ,  url_object_list )
         
