@@ -278,9 +278,10 @@ class urlOpenerSettings( configurable ):
         res += cfg.getData('basicAuthPass') + '@' + domain + '/'
         return res
     
-    def setNtlmAuth( self, url, username, password ):
+    def setNtlmAuth( self, url, ntlm_domain, username, password ):
 
         cfg.save('ntlmAuthPass', password )
+        cfg.save('ntlmAuthDomain', ntlm_domain )
         cfg.save('ntlmAuthUser', username )
         cfg.save('ntlmAuthURL', url )
         
@@ -290,16 +291,11 @@ class urlOpenerSettings( configurable ):
             # create a new password manager
             self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
 
-        # add the username and password
-        if url.startswith('http://') or url.startswith('https://'):
-            scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( url )
-            self._password_mgr.add_password(None, url, username, password)
-
-        else:
-            domain = url
-            scheme = 'http://'
-            self._password_mgr.add_password(None, url, username, password)
-
+        # HTTPNtmlAuthHandler expects username to have the domain name
+        # separated with a '\', so that's what we do here:
+        username = ntlm_domain + '\\' + username
+        
+        self._password_mgr.add_password(None, url, username, password)
         self._ntlmAuthHandler = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(self._password_mgr)
    
         self.needUpdate = True
@@ -395,6 +391,10 @@ class urlOpenerSettings( configurable ):
         h5 += ' target domain name.'
         o5 = option('basicAuthDomain', cfg.getData('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
 
+        
+        d6a= 'Set the NTLM authentication domain (the windows domain name) for HTTP requests'
+        o6a = option('ntlmAuthDomain', cfg.getData('ntlmAuthDomain'), d6a, 'string', tabid='NTLM Authentication')
+        
         d6= 'Set the NTLM authentication username for HTTP requests'
         o6 = option('ntlmAuthUser', cfg.getData('ntlmAuthUser'), d6, 'string', tabid='NTLM Authentication')
 
@@ -460,6 +460,7 @@ class urlOpenerSettings( configurable ):
         ol.add(o3)
         ol.add(o4)
         ol.add(o5)
+        ol.add(o6a)
         ol.add(o6)
         ol.add(o7)
         ol.add(o7b)
@@ -502,14 +503,16 @@ class urlOpenerSettings( configurable ):
             
             self.setBasicAuth(bAuthDomain, bAuthUser, bAuthPass)
         
+        ntlmAuthDomain = getOptsMapValue('ntlmAuthDomain')
         ntlmAuthUser = getOptsMapValue('ntlmAuthUser')
         ntlmAuthPass = getOptsMapValue('ntlmAuthPass')
         ntlmAuthURL = getOptsMapValue('ntlmAuthURL')
         
-        if ntlmAuthUser != cfg['ntlmAuthUser'] or \
-            ntlmAuthPass != cfg['ntlmAuthPass'] or \
-            ntlmAuthURL!= cfg['ntlmAuthURL']:
-            self.setNtlmAuth(ntlmAuthURL, ntlmAuthUser, ntlmAuthPass)
+        if ntlmAuthDomain != cfg['ntlmAuthDomain'] or \
+           ntlmAuthUser != cfg['ntlmAuthUser'] or \
+           ntlmAuthPass != cfg['ntlmAuthPass'] or \
+           ntlmAuthURL!= cfg['ntlmAuthURL']:
+            self.setNtlmAuth(ntlmAuthURL, ntlmAuthDomain, ntlmAuthUser, ntlmAuthPass)
 
         # Only apply changes if they exist
         proxyAddress = getOptsMapValue('proxyAddress')
