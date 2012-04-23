@@ -34,6 +34,7 @@ from core.controllers.coreHelpers.fingerprint_404 import \
 from core.controllers.coreHelpers.progress import progress
 from core.controllers.misc.factory import factory
 from core.controllers.misc.epoch_to_string import epoch_to_string
+from core.controllers.misc.get_file_list import get_file_list
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.homeDir import (create_home_dir,
     verify_dir_has_perm, HOME_DIR)
@@ -1281,7 +1282,7 @@ class w3afCore(object):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        strPluginList = self._getListOfFiles( 'plugins' + os.path.sep + pluginType + os.path.sep )
+        strPluginList = get_file_list( 'plugins' + os.path.sep + pluginType + os.path.sep )
         return strPluginList
         
     def getProfileList( self ):
@@ -1292,7 +1293,7 @@ class w3afCore(object):
             - One with the file names of the profiles that are invalid
         '''
         profile_home = os.path.join(HOME_DIR, 'profiles')
-        str_profile_list = self._getListOfFiles(profile_home, extension='.pw3af')
+        str_profile_list = get_file_list(profile_home, extension='.pw3af')
         
         instance_list = []
         invalid_profiles = []
@@ -1306,20 +1307,6 @@ class w3afCore(object):
             else:
                 instance_list.append( profile_instance )
         return instance_list, invalid_profiles
-        
-    def _getListOfFiles( self, directory, extension='.py' ):
-        '''
-        @return: A string list of the names of all available plugins by type.
-        '''
-        strFileList = []
-        
-        for f in os.listdir(directory):
-            fname, ext = os.path.splitext(f)
-            if ext == extension and fname != '__init__':
-                strFileList.append(fname)
-
-        strFileList.sort()
-        return strFileList
         
     def getPluginInstance(self, pluginName, pluginType):
         '''
