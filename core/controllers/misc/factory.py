@@ -26,8 +26,9 @@ This module defines a factory function that is used around the project.
 @author: Andres Riancho ( andres.riancho@gmail.com )
 '''
 import sys
-from core.controllers.w3afException import w3afException
 import traceback
+from core.controllers.w3afException import w3afException
+
 
 def factory(moduleName, *args):
     '''
@@ -39,7 +40,7 @@ def factory(moduleName, *args):
     >> print f00
     <googleSpider.googleSpider instance at 0xb7a1f28c>
     
-    @parameter moduleName: What do you want to instanciate ?
+    @parameter moduleName: What plugin type do you need?
     @return: An instance.
     '''
     try:
