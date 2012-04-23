@@ -105,6 +105,7 @@ class urlOpenerSettings( configurable ):
             cfg.save('basicAuthUser', '' )
             cfg.save('basicAuthDomain', '' )
 
+            cfg.save('ntlmAuthDomain', '' )
             cfg.save('ntlmAuthUser', '' )
             cfg.save('ntlmAuthPass', '' )
             cfg.save('ntlmAuthURL', '' )
