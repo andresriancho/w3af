@@ -22,6 +22,6 @@ set target http://moth/w3af/discovery/wordnet/show.php?os=unix, http://moth/w3af
 back
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 7
+assert len( kb.kb.getData('urls', 'url_objects') ) == 7
 
 exit

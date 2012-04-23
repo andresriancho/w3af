@@ -23,7 +23,7 @@ set target http://moth/w3af/core/wml_parser/index.html
 back
 start
 
-assert len(kb.kb.getData('urls','urlList')) >= 7
+assert len(kb.kb.getData('urls','url_objects')) >= 7
 assert len(kb.kb.getData('sqli','sqli')) == 1
 
 exit

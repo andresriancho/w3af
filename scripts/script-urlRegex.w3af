@@ -23,6 +23,6 @@ back
 
 start
 
-assert 'http://moth/w3af/core/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','urlList')
+assert 'http://moth/w3af/core/htmlParser/urlRegexWorked.html' in kb.kb.getData('urls','url_objects')
 
 exit

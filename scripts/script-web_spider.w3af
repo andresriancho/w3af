@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 9
+assert len(kb.kb.getData('urls','url_objects')) == 9
 
 exit

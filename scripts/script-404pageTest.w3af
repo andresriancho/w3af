@@ -25,6 +25,6 @@ start
 # 1- The simple_test.html page
 # 2- The exists.html page
 # 3- The index page for the 404 directory
-assert len(kb.kb.getData('urls','urlList')) == 3
+assert len(kb.kb.getData('urls','url_objects')) == 3
 
 exit

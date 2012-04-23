@@ -8,7 +8,7 @@
 # And analyze the response...
 
 misc-settings
-set maxDiscoveryTime 1
+set maxDiscoveryTime 10
 back
 
 plugins
@@ -21,6 +21,7 @@ output config console
 set verbose False
 back
 discovery allowedMethods,webSpider
+audit sqli
 back
 
 target
@@ -29,6 +30,6 @@ back
 
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) >= 14
+assert len( kb.kb.getData('urls', 'url_objects') ) >= 14
 
 exit

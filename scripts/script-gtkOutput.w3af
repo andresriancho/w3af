@@ -21,7 +21,7 @@ back
 start
 
 assert len(kb.kb.getData('pykto','vuln')) >= 3
-assert len(kb.kb.getData('urls','urlList')) >= 3
+assert len(kb.kb.getData('urls','url_objects')) >= 3
 
 # Check that message objects are stored here...
 assert kb.kb.getData('gtkOutput','queue').get().getMsg()

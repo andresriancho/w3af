@@ -25,6 +25,6 @@ back
 
 start
 
-assert len( kb.kb.getData('urls', 'urlList') ) == 2
+assert len( kb.kb.getData('urls', 'url_objects') ) == 2
 
 exit

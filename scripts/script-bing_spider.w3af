@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('urls','urlList')) >= 12
+assert len(kb.kb.getData('urls','url_objects')) >= 12
 
 exit

@@ -17,6 +17,6 @@ back
 
 start
 
-assert len(kb.kb.getData('urls','urlList')) == 5 
+assert len(kb.kb.getData('urls','url_objects')) == 5 
 
 exit

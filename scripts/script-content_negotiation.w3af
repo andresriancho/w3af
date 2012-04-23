@@ -23,6 +23,6 @@ back
 start
 
 assert len(kb.kb.getData('content_negotiation','content_negotiation')) == 1
-assert len(kb.kb.getData('urls','urlList')) == 5
+assert len(kb.kb.getData('urls','url_objects')) == 5
 
 exit
