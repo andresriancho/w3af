@@ -663,7 +663,7 @@ class MainApp(object):
                     import copy
                     from itertools import chain
                     plugs_opts = copy.deepcopy(self.w3af._pluginsOptions)
-                    plugs = self.w3af._strPlugins
+                    plugs = self.w3af.getAllEnabledPlugins()
 
                     for ptype, plist in plugs.iteritems():
                         for p in plist:

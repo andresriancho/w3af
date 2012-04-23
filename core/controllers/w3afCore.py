@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import copy
-import datetime
 import os
 import Queue
 import sys
@@ -34,6 +33,7 @@ from core.controllers.coreHelpers.fingerprint_404 import \
     fingerprint_404_singleton
 from core.controllers.coreHelpers.progress import progress
 from core.controllers.misc.factory import factory
+from core.controllers.misc.epoch_to_string import epoch_to_string
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.homeDir import (create_home_dir,
     verify_dir_has_perm, HOME_DIR)
@@ -118,9 +118,9 @@ class w3afCore(object):
         loads a new profile.
         '''
         # A dict with plugin types as keys and a list of plugin names as values
-        self._strPlugins = {'audit': [], 'grep': [],
-                            'bruteforce': [], 'discovery': [],
-                            'evasion': [], 'mangle': [], 'output': [], 'auth': []}
+        self._plugin_name_list = {'audit': [], 'grep': [], 'bruteforce': [],
+                                  'discovery': [], 'evasion': [], 'mangle': [],
+                                  'output': [], 'auth': []}
 
         self._pluginsOptions = {'audit': {}, 'grep': {}, 'bruteforce': {},
                                 'discovery': {}, 'evasion': {}, 'mangle': {},
@@ -186,8 +186,8 @@ class w3afCore(object):
             
             # Update the plugin list
             # This update is usefull for cases where the user selected "all" plugins,
-            # the self._strPlugins[pluginType] is useless if it says 'all'.
-            self._strPlugins[pluginType] = strReqPlugins
+            # the self._plugin_name_list[pluginType] is useless if it says 'all'.
+            self._plugin_name_list[pluginType] = strReqPlugins
                 
         for pluginName in strReqPlugins:
             plugin = factory( 'plugins.' + pluginType + '.' + pluginName )
@@ -213,13 +213,13 @@ class w3afCore(object):
                             '"%s" is not enabled.' % (pluginName, dep, dep))
                             raise w3afException(msg)
                 else:
-                    if depPlugin not in self._strPlugins[depType]:
+                    if depPlugin not in self._plugin_name_list[depType]:
                         if cf.cf.getData('autoDependencies'):
                             dependObj = factory( 'plugins.' + depType + '.' + depPlugin )
                             dependObj.setUrlOpener( self.uriOpener )
                             if dependObj not in self._plugins[depType]:
                                 self._plugins[depType].insert( 0, dependObj )
-                                self._strPlugins[depType].append( depPlugin )
+                                self._plugin_name_list[depType].append( depPlugin )
                             om.out.information('Auto-enabling plugin: ' + depType + '.' + depPlugin)
                         else:
                             msg = ('Plugin "%s" depends on plugin "%s" and '
@@ -227,8 +227,8 @@ class w3afCore(object):
                             raise w3afException(msg)
                     else:
                         # if someone in another planet depends on me... run first
-                        self._strPlugins[depType].remove( depPlugin )
-                        self._strPlugins[depType].insert( 0, depPlugin )
+                        self._plugin_name_list[depType].remove( depPlugin )
+                        self._plugin_name_list[depType].insert( 0, depPlugin )
             
             # Now we set the plugin options
             if pluginName in self._pluginsOptions[ pluginType ]:
@@ -290,7 +290,7 @@ class w3afCore(object):
         self._initialized = True
         
         # This is inited before all, to have a full logging support.
-        om.out.setOutputPlugins( self._strPlugins['output'] )
+        om.out.setOutputPlugins( self._plugin_name_list['output'] )
         
         # Create an instance of each requested plugin and add it to the plugin list
         # Plugins are added taking care of plugin dependencies and configuration
@@ -298,23 +298,22 @@ class w3afCore(object):
         #
         # Create the plugins that are needed during the initial discovery+bruteforce phase
         #
-        self._plugins['discovery'] = self._rPlugFactory( self._strPlugins['discovery'] , 'discovery')
-        self._plugins['bruteforce'] = self._rPlugFactory( self._strPlugins['bruteforce'] , 'bruteforce')        
-       
-        self._plugins['grep'] = self._rPlugFactory( self._strPlugins['grep'] , 'grep')
+        for plugin_type in ('discovery', 'bruteforce', 'grep', 'mangle', 'auth'):
+            self._plugins[plugin_type] = self._rPlugFactory( self._plugin_name_list[plugin_type], 
+                                                             plugin_type)
+        
+        #
+        # Some extra init steps for grep and mangle plugins
+        #
         self.uriOpener.setGrepPlugins( self._plugins['grep'] )
-        
-        self._plugins['mangle'] = self._rPlugFactory( self._strPlugins['mangle'] , 'mangle')
         self.uriOpener.settings.setManglePlugins( self._plugins['mangle'] )
-        
-        self._plugins['auth'] = self._rPlugFactory( self._strPlugins['auth'] , 'auth')
 
         #
         # Audit plugins are special, since they don't require to be in memory during discovery+bruteforce
         # so I'll create them here just to check that the configurations are fine and then I don't store
         # them anywhere.
         #
-        self._rPlugFactory( self._strPlugins['audit'] , 'audit')
+        self._rPlugFactory( self._plugin_name_list['audit'] , 'audit')
 
 
     def _update_URLs_in_KB( self, fuzzable_request_list ):
@@ -402,39 +401,6 @@ class w3afCore(object):
         self._stopped = False
         self.uriOpener.pause( pauseYesNo )
         om.out.debug('The user paused/unpaused the scan.')
-
-    def _get_time_string(self):
-        '''
-        @return: A string that represents in weeks/days/hours/minutes/seconds
-        how much time the scan lasted.
-        '''
-        time_diff = time.time() - self._discovery_start_time_epoch
-        time_delta = datetime.timedelta(seconds=time_diff)
-
-        weeks, days = divmod(time_delta.days, 7)
-
-        minutes, seconds = divmod(time_delta.seconds, 60)
-        hours, minutes = divmod(minutes, 60)
-
-        msg = ''
-
-        if weeks == days == hours == minutes == seconds == 0:
-            msg += '0 seconds.'
-        else:
-            if weeks:
-                msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
-            if days:
-                msg += str(days) + ' day%s ' % ('s' if days > 1 else '')
-            if hours:
-                msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
-            if minutes:
-                msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
-            if seconds:
-                msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
-            msg += '.'
-        
-        return msg
-
         
     def start(self):
         '''
@@ -471,7 +437,7 @@ class w3afCore(object):
         finally:
             
             try:
-                msg = 'Scan finished in %s' % self._get_time_string()
+                msg = 'Scan finished in %s' % epoch_to_string(self._discovery_start_time_epoch)
                 om.out.information( msg )
             except:
                 # In some cases we get here after a disk full exception
@@ -495,7 +461,7 @@ class w3afCore(object):
         
         # Let the output plugins know what kind of plugins we're
         # using during the scan
-        om.out.logEnabledPlugins(self._strPlugins, self._pluginsOptions)
+        om.out.logEnabledPlugins(self._plugin_name_list, self._pluginsOptions)
         
         try:
             # Just in case the gtkUi / consoleUi forgot to do this...
@@ -1018,7 +984,7 @@ class w3afCore(object):
     def _audit(self):
         om.out.debug('Called _audit()' )
 
-        audit_plugins = self._rPlugFactory( self._strPlugins['audit'] , 'audit')
+        audit_plugins = self._rPlugFactory( self._plugin_name_list['audit'] , 'audit')
 
         # For progress reporting
         self._set_phase('audit')
@@ -1140,8 +1106,11 @@ class w3afCore(object):
         '''
         return self._pluginsOptions.get(pluginType, {}).get(pluginName, None)
         
+    def getAllEnabledPlugins(self):
+        return self._plugin_name_list
+    
     def getEnabledPlugins( self, pluginType ):
-        return self._strPlugins[ pluginType ]
+        return self._plugin_name_list[ pluginType ]
     
     def setPlugins( self, pluginNames, pluginType ):
         '''
@@ -1233,49 +1202,49 @@ class w3afCore(object):
         @parameter manglePlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
-        self._strPlugins['bruteforce'] = bruteforcePlugins
+        self._plugin_name_list['bruteforce'] = bruteforcePlugins
     
     def _setManglePlugins( self, manglePlugins ):
         '''
         @parameter manglePlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
-        self._strPlugins['mangle'] = manglePlugins
+        self._plugin_name_list['mangle'] = manglePlugins
     
     def _setOutputPlugins( self, outputPlugins ):
         '''
         @parameter outputPlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.
         '''
-        self._strPlugins['output'] = outputPlugins
+        self._plugin_name_list['output'] = outputPlugins
         
     def _setDiscoveryPlugins( self, discoveryPlugins ):
         '''
         @parameter discoveryPlugins: A list with the names of Discovery Plugins that will be run.
         @return: No value is returned.
         '''         
-        self._strPlugins['discovery'] = discoveryPlugins
+        self._plugin_name_list['discovery'] = discoveryPlugins
     
     def _setAuditPlugins( self, auditPlugins ):
         '''
         @parameter auditPlugins: A list with the names of Audit Plugins that will be run.
         @return: No value is returned.
         '''         
-        self._strPlugins['audit'] = auditPlugins
+        self._plugin_name_list['audit'] = auditPlugins
         
     def _setGrepPlugins( self, grepPlugins):
         '''
         @parameter grepPlugins: A list with the names of Grep Plugins that will be used.
         @return: No value is returned.
         '''     
-        self._strPlugins['grep'] = grepPlugins
+        self._plugin_name_list['grep'] = grepPlugins
         
     def _setEvasionPlugins( self, evasionPlugins ):
         '''
         @parameter evasionPlugins: A list with the names of Evasion Plugins that will be used.
         @return: No value is returned.
         '''
-        self._strPlugins['evasion'] = evasionPlugins
+        self._plugin_name_list['evasion'] = evasionPlugins
         self._plugins['evasion'] = self._rPlugFactory( evasionPlugins , 'evasion')
         self.uriOpener.setEvasionPlugins( self._plugins['evasion'] )
         
@@ -1284,7 +1253,7 @@ class w3afCore(object):
         @parameter authlugins: A list with the names of Auth Plugins that will be used.
         @return: No value is returned.
         '''
-        self._strPlugins['auth'] = authPlugins
+        self._plugin_name_list['auth'] = authPlugins
 
     def verifyEnvironment(self):
         '''
@@ -1301,8 +1270,8 @@ class w3afCore(object):
             
         try:
             cry = True
-            if len(self._strPlugins['audit']) == 0 and len(self._strPlugins['discovery']) == 0 \
-            and len(self._strPlugins['grep']) == 0:
+            if len(self._plugin_name_list['audit']) == 0 and len(self._plugin_name_list['discovery']) == 0 \
+            and len(self._plugin_name_list['grep']) == 0:
                 cry = False
             assert cry , 'No audit, grep or discovery plugins configured to run.'
         except AssertionError, ae:
