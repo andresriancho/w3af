@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.w3afException import w3afException
 
-class optionList:
+class optionList(object):
     '''
     This class represents a list of options.
     

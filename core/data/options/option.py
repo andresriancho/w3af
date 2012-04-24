@@ -164,9 +164,10 @@ class option:
         
     def __repr__(self):
         '''
-        A nice way of printing your object =)
+        A nice way of printing your object =)        
         '''
-        return '<option '+self._name+'|'+self._type+'|'+str(self._value)+'>'
+        fmt = '<option name:%s|type:%s|value:%s>'
+        return fmt % (self._name, self._type, self._value)
     
     def __eq__(self, other):
         if not isinstance(other, option):

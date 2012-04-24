@@ -43,6 +43,7 @@ import core.data.kb.knowledgeBase as kb
 # this module's scope.
 str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
+
 class xmlFile(baseOutputPlugin):
     '''
     Print all messages to a xml file.

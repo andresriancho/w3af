@@ -24,6 +24,7 @@ import os
 import unittest
 
 from core.controllers.w3afCore import w3afCore
+from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption as ComboOption
@@ -31,6 +32,7 @@ from core.data.options.optionList import optionList as OptionList
 import core.data.kb.knowledgeBase as kb
 
 os.chdir(W3AF_LOCAL_PATH)
+
 
 class PluginTest(unittest.TestCase):
     
@@ -76,7 +78,15 @@ class PluginTest(unittest.TestCase):
         for ptype, plugincfgs in plugins.items():
             self.w3afcore.plugins.setPlugins([p.name for p in plugincfgs], ptype)
             for pcfg in plugincfgs:
-                self.w3afcore.plugins.setPluginOptions(ptype, pcfg.name, pcfg.options)
+                plugin_instance = self.w3afcore.plugins.getPluginInstance(pcfg.name, ptype)
+                default_option_list = plugin_instance.getOptions()
+                unit_test_options = pcfg.options
+                for option in default_option_list:
+                    if option.getName() not in unit_test_options:
+                        unit_test_options.add(option) 
+                    
+                self.w3afcore.plugins.setPluginOptions(ptype, pcfg.name, unit_test_options)
+                
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
         self.w3afcore.verifyEnvironment()
@@ -85,13 +95,6 @@ class PluginTest(unittest.TestCase):
     def tearDown(self):
         self.w3afcore.quit()
         self.kb.cleanup()
-
-
-class OptionDict(dict):
-    def __missing__(self, key):
-        opt = Option(key, u'', '', Option.STRING)
-        self[key] = opt
-        return opt
 
 
 class PluginConfig(object):
@@ -103,9 +106,9 @@ class PluginConfig(object):
     
     def __init__(self, name, *opts):
         self._name = name
-        self._options = OptionDict()
+        self._options = OptionList()
         for optname, optval, optty in opts:
-            self._options[optname] = Option(optname, optval, '', optty)
+            self._options.append( Option(optname, optval, '', optty) )
     
     @property
     def name(self):
