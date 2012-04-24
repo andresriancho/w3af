@@ -1,0 +1,26 @@
+# This is the eval() detection demo
+
+plugins
+output console,textFile
+output config textFile
+set fileName output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+back
+
+plugins
+audit eval
+back
+
+target
+set target http://moth/w3af/audit/eval/eval-blind.php?c=
+back
+
+start
+
+assert len(kb.kb.getData('eval','eval')) == 1
+
+exit
