@@ -5,7 +5,6 @@ name = bruteforce
 [output.gtkOutput]
 
 [misc-settings]
-exportFuzzableRequests = 
 maxThreads = 15
 fuzzFormComboValues = tmb
 fuzzFCExt = txt

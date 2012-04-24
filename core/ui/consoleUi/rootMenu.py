@@ -72,7 +72,7 @@ class rootMenu(menu):
         @return: None
         '''
         # Check if the console output plugin is enabled or not, and warn.
-        output_plugins = self._w3af.getEnabledPlugins('output')
+        output_plugins = self._w3af.plugins.getEnabledPlugins('output')
         if 'console' not in output_plugins:
             msg = "Warning: You disabled the console output plugin. The scan information, such as"
             msg += ' discovered vulnerabilities won\'t be printed to the console, we advise you'
@@ -85,7 +85,7 @@ class rootMenu(menu):
         try:
             # let the core start
             time.sleep(1)
-            if self._w3af.getCoreStatus() != 'Not running.':
+            if self._w3af.status.get_status() != 'Not running.':
                 self.show_progress_on_request()
         except KeyboardInterrupt, k:
             om.out.console('User hit Ctrl+C, stopping scan.')
@@ -107,7 +107,7 @@ class rootMenu(menu):
         @return: None
         '''
         try:
-            self._w3af.initPlugins()
+            self._w3af.plugins.init_plugins()
             self._w3af.verifyEnvironment()
             self._w3af.start()
         except w3afException, w3:
@@ -122,7 +122,7 @@ class rootMenu(menu):
         '''
         When the user hits enter, show the progress
         '''
-        while self._w3af.isRunning():
+        while self._w3af.status.is_running():
             
             # Define some variables...
             rfds = []
@@ -159,7 +159,7 @@ class rootMenu(menu):
                 # Create the message to print
                 progress = str(progress * 100)
                 progress = progress[:5] + ' ' + '%'
-                msg = 'Status: ' + self._w3af.getCoreStatus() + '\n'
+                msg = 'Status: ' + self._w3af.status.get_status() + '\n'
                 msg += 'Current phase status: ' + progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
                 
                 # Print

@@ -37,7 +37,7 @@ class pluginsMenu(menu):
 
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
-        types = w3af.getPluginTypes()        
+        types = w3af.plugins.getPluginTypes()        
         self._children = {}
 
         self._loadHelp('plugins')
@@ -53,7 +53,7 @@ class pluginsMenu(menu):
     def __loadPluginTypesHelp(self, types): 
         vars = {}
         for t in types:
-            pList = self._w3af.getPluginList(t)
+            pList = self._w3af.plugins.getPluginList(t)
             (p1, p2) = len(pList)>1 and (pList[0], pList[1]) \
                 or ('plugin1', 'plugin2')
             vars['PLUGIN1'], vars['PLUGIN2'] = p1, p2
@@ -115,11 +115,11 @@ class pluginsTypeMenu(menu):
     '''
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
-        plugins = w3af.getPluginList(name)
+        plugins = w3af.plugins.getPluginList(name)
         self._plugins = {} # name to number of options
         for p in plugins:
             try:
-                options = self._w3af.getPluginInstance(p, self._name).getOptions()
+                options = self._w3af.plugins.getPluginInstance(p, self._name).getOptions()
             except w3afException, w3:
                 om.out.error('Error while reading plugin options.')                
                 om.out.error(str(w3))
@@ -158,7 +158,7 @@ class pluginsTypeMenu(menu):
             return self
 
     def _enablePlugins(self, list):
-        enabled = copy.copy(self._w3af.getEnabledPlugins(self._name))
+        enabled = copy.copy(self._w3af.plugins.getEnabledPlugins(self._name))
         
         for plugin in list:
             if plugin=='':
@@ -199,7 +199,7 @@ class pluginsTypeMenu(menu):
             msg += ' the scan output.'
             om.out.console( msg )
             
-        self._w3af.setPlugins(enabled, self._name)
+        self._w3af.plugins.setPlugins(enabled, self._name)
 
     def _cmd_desc(self, params):
         
@@ -210,7 +210,7 @@ class pluginsTypeMenu(menu):
         if pluginName not in self._plugins:
             raise w3afException("Unknown plugin: '%s'" % pluginName)
 
-        plugin = self._w3af.getPluginInstance(pluginName, self._name)
+        plugin = self._w3af.plugins.getPluginInstance(pluginName, self._name)
         om.out.console( str(plugin.getLongDesc()) )
 
 
@@ -226,7 +226,7 @@ class pluginsTypeMenu(menu):
         filter = len(params)>0 and params[0] or 'all'
 
         all = self._plugins.keys()
-        enabled = self._w3af.getEnabledPlugins(self._name)
+        enabled = self._w3af.plugins.getEnabledPlugins(self._name)
 
         if filter == 'all':
             list = all
@@ -248,7 +248,7 @@ class pluginsTypeMenu(menu):
 
         for pluginName in list:
             row = []
-            plugin = self._w3af.getPluginInstance(pluginName, self._name)
+            plugin = self._w3af.plugins.getPluginInstance(pluginName, self._name)
     
             optCount = self._plugins[pluginName]
             row.append(pluginName)
@@ -275,7 +275,7 @@ class pluginsTypeMenu(menu):
         if self._configs.has_key(name):
             config = self._configs[name]
         else:
-            config = configMenu(name, self._console, self._w3af, self, self._w3af.getPluginInstance(params[0], self._name))
+            config = configMenu(name, self._console, self._w3af, self, self._w3af.plugins.getPluginInstance(params[0], self._name))
             self._configs[name] = config
 
         return config

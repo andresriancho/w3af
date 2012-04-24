@@ -289,7 +289,7 @@ class LogBody(entries.RememberingVPaned):
         self._progress_bar.set_fraction( progress )
         
         # Create text
-        text = self.w3af.getPhase().title() + ' progress: ' + str(progress * 100)[:5] + ' ' + '%' + ' - '
+        text = self.w3af.status.get_phase().title() + ' progress: ' + str(progress * 100)[:5] + ' ' + '%' + ' - '
         eta = self.w3af.progress.get_eta()
         text += 'ETA: %.2dd %.2dh %.2dm %.2ds' % eta
         self._progress_bar.set_text( text )
@@ -299,7 +299,7 @@ class LogBody(entries.RememberingVPaned):
         '''
         @return: True so the timeout_add keeps calling it.
         '''
-        core_status = self.w3af.getCoreStatus()
+        core_status = self.w3af.status.get_status()
         
         # Fixing 
         # https://sourceforge.net/tracker/?func=detail&aid=2680683&group_id=170274&atid=853652

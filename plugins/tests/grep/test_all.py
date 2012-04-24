@@ -50,8 +50,8 @@ class test_all(unittest.TestCase):
 
         self._w3af = core.controllers.w3afCore.w3afCore()
         self._plugins = []
-        for pname in self._w3af.getPluginList('grep'):
-            self._plugins.append( self._w3af.getPluginInstance(pname, 'grep') )
+        for pname in self._w3af.plugins.getPluginList('grep'):
+            self._plugins.append( self._w3af.plugins.getPluginInstance(pname, 'grep') )
 
     def test_options_for_grep_plugins(self):
         '''

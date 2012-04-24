@@ -114,7 +114,7 @@ class consoleUi:
         cons_upd.update()
         # Core initialization
         self._w3af = core.controllers.w3afCore.w3afCore()
-        self._w3af.setPlugins(['console'], 'output')
+        self._w3af.plugins.setPlugins(['console'], 'output')
 
     def __initFromParent(self, parent):
         self._context = parent._context

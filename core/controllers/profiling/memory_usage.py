@@ -20,22 +20,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
 DEBUGMEMORY = False
-DEBUGREFERENCES = False
 
 if DEBUGMEMORY:
     import core.controllers.outputManager as om
+    import random
+    import inspect
+    import sys
+    import gc
+    
     try:
-        import guppy
+        import objgraph
     except ImportError:
         DEBUGMEMORY = False
-
-if DEBUGREFERENCES:
-    import gc
-    from core.data.parsers.urlParser import url_object
-    from plugins.output.gtkOutput import message
-
     
 def dump_memory_usage():
     '''
@@ -45,45 +42,78 @@ def dump_memory_usage():
     if not DEBUGMEMORY:
         return
     else:
-        hpy = guppy.hpy()
-        h = hpy.heap()
-
-        byrcs = h.byrcs
-        
-        msg = '\n'
-        
-        if isinstance( byrcs, guppy.heapy.UniSet.IdentitySetMulti ):
-            try:
-                msg += 'Memory dump:\n'
-                msg += '============\n'
-                msg += str(byrcs) + '\n'
-    
-                for i in xrange(10):
-                    msg += str(byrcs[i].byvia) + '\n'
+        print 'Object References:'
+        print '=================='
+        interesting = ['HTTPQSRequest', 'url_object', 'list', 'tuple', 'httpResponse']
+        for interesting_klass in interesting:
+            interesting_instances = objgraph.by_type(interesting_klass)
+            
+            l = len(interesting_instances)
+            if l < 10:
+                sample = random.sample(interesting_instances, l)
+            else:
+                sample = random.sample(interesting_instances, 10)
+            
+            for s in sample:
+                fmt = 'memory-refs/%s-backref-graph-%s.png'
+                fname = fmt % (interesting_klass, id(s))
                 
-            except Exception, e:
-                msg += 'Memory dump failed, exception: "%s"' % str(e)
-            
-            #om.out.debug( 'The one:' + repr(byrcs[0].byid[0].theone) )
+                ignores = [id(interesting_instances), id(s), id(sample)]
+                ignores.extend( [id(v) for v in locals().values()] )
+                ignores.extend( [id(v) for v in globals().values()] )
+                ignores.append( id(locals()) )
+                ignores.append( id(globals()) )
+                objgraph.show_backrefs(s, highlight=inspect.isclass,
+                                       extra_ignore=ignores,filename=fname,
+                                       extra_info=_extra_info)
         
-        if DEBUGREFERENCES:
-            classes_to_analyze = [url_object, message]
-            
-            for object_in_memory in gc.get_objects():
-                #
-                #    Note: str objects CAN'T be analyzed this way. They 
-                #    can't create loops, so they aren't handled by the gc
-                #    ( __cycling__ garbage collector ).
-                #
-                for kls in classes_to_analyze:
-                    if isinstance( object_in_memory, kls ):
-                        tmp = 'Objects of class %s are referenced by:\n' % kls
-                        tmp += str(hpy.iso(object_in_memory).sp) + '\n'
-                        
-                        #  Objects of class plugins.output.gtkOutput.message are referenced by:
-                        #   0: hpy().Root.t140285309286144_exc_traceback.tb_frame.f_locals['object_in_memory']
-                        if '1: ' in tmp:
-                            msg += tmp
+        print
+        
+        print 'Most common:'
+        print '============'
+        objgraph.show_most_common_types()
 
-        om.out.debug( msg )
+        print 
+                
+        print 'Memory delta:'
+        print '============='
+        objgraph.show_growth(limit=25)
+        
+        
+        
+def _extra_info( obj_ignore ):
+    '''
+    Takes an object and returns some extra information about it depending on the
+    object type.
+    '''
+    try:
+        if isinstance(obj_ignore, dict):
+            name = find_names(obj_ignore)
+            data = ','.join( [str(x) for x in obj_ignore.keys()] )[:50]
+            return '%s:{%s}' % (name, data)
+        
+        if isinstance(obj_ignore, tuple):
+            name = find_names(obj_ignore)
+            data = str(obj_ignore)[1:-1][:50]
+            return '%s:(%s)' % (name, data)
 
+        if isinstance(obj_ignore, list):
+            name = find_names(obj_ignore)
+            data = ','.join( [str(x) for x in obj_ignore] )[:50]
+            return '%s:[%s]' % (name, data) 
+        
+        return str(obj_ignore)[:50]
+    except:
+        return None
+
+def find_names(obj_ignore):
+    frame = sys._getframe()
+    for frame in iter(lambda: frame.f_back, None):
+        frame.f_locals
+    result = []
+    for referrer in gc.get_referrers(obj_ignore):
+        if isinstance(referrer, dict):
+            for k, v in referrer.iteritems():
+                if v is obj_ignore and k != 'obj_ignore':
+                    result.append(k)
+    return result

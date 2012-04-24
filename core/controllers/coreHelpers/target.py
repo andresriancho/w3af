@@ -1,5 +1,5 @@
 '''
-targetSettings.py
+w3af_core_target.py
 
 Copyright 2006 Andres Riancho
 
@@ -38,29 +38,27 @@ cf.cf.save('targetDomains', [] )
 cf.cf.save('baseURLs', [] )
 
 
-class targetSettings(configurable):
+class w3af_core_target(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can configure the target
     settings using getOptions and SetOptions.
     '''
     
     def __init__( self ):
-        # User configured variables
-        #if cf.cf.getData('targets') is None:
-        if True:
-            # It's the first time I'm run
-            # Set the defaults in the config
-            cf.cf.save('targets', [] )
-            cf.cf.save('targetOS', 'unknown' )
-            cf.cf.save('targetFramework', 'unknown' )
-            cf.cf.save('targetDomains', [] )
-            cf.cf.save('baseURLs', [] )
-            cf.cf.save('sessionName', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
+        # Set defaults for user configured variables
+        self.clear()
         
         # Some internal variables
         self._operatingSystems = ['unknown','unix','windows']
         self._programmingFrameworks = ['unknown', 'php','asp','asp.net','java','jsp','cfm','ruby','perl']
 
+    def clear(self):
+        cf.cf.save('targets', [] )
+        cf.cf.save('targetOS', 'unknown' )
+        cf.cf.save('targetFramework', 'unknown' )
+        cf.cf.save('targetDomains', [] )
+        cf.cf.save('baseURLs', [] )
+        cf.cf.save('sessionName', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
                 
     def getOptions( self ):
         '''
@@ -99,7 +97,7 @@ class targetSettings(configurable):
         Verify if the URL is valid and raise an exception if w3af doesn't
         support it.
         
-        >>> ts = targetSettings()        
+        >>> ts = w3af_core_target()        
         >>> ts._verifyURL('ftp://www.google.com/')
         Traceback (most recent call last):
           ...

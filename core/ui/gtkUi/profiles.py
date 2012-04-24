@@ -83,7 +83,7 @@ class ProfileList(gtk.TreeView):
         self.profile_instances = {None:None}
 
         # build the list with the profiles name, description, profile_instance
-        instance_list, invalid_profiles = self.w3af.getProfileList()
+        instance_list, invalid_profiles = self.w3af.profiles.getProfileList()
         tmpprofiles = []
         for profile_obj in instance_list:
             nom = profile_obj.getName()
@@ -172,9 +172,9 @@ class ProfileList(gtk.TreeView):
             return True
 
         # Check plugins config
-        for ptype in self.w3af.getPluginTypes():
-            for pname in self.w3af.getPluginList(ptype):
-                opts = self.w3af.getPluginOptions(ptype, pname)
+        for ptype in self.w3af.plugins.getPluginTypes():
+            for pname in self.w3af.plugins.getPluginList(ptype):
+                opts = self.w3af.plugins.getPluginOptions(ptype, pname)
                 if not opts:
                     continue
 
@@ -369,7 +369,7 @@ class ProfileList(gtk.TreeView):
         self.selectedProfile = profileName
 
         try:
-            self.w3af.useProfile(profile_obj.get_profile_file())
+            self.w3af.profiles.useProfile(profile_obj.get_profile_file())
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
             dlg.run()
@@ -402,7 +402,7 @@ class ProfileList(gtk.TreeView):
 
         # use the empty profile
         try:
-            self.w3af.useProfile(None)
+            self.w3af.profiles.useProfile(None)
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
             dlg.run()
@@ -414,7 +414,7 @@ class ProfileList(gtk.TreeView):
         filename, description = dlgResponse
         filename = cgi.escape(filename)
         try:
-            profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile,
+            profile_obj = helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile,
                                            filename , description)
         except w3afException:
             #FIXME: This message should be more descriptive
@@ -436,7 +436,7 @@ class ProfileList(gtk.TreeView):
         profile_obj = self._getProfile()
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
-        self.w3af.saveCurrentToProfile(profile_obj.getName(), 
+        self.w3af.profiles.saveCurrentToProfile(profile_obj.getName(), 
                                        prof_desc=profile_obj.getDesc(),
                                        prof_path=profile_obj.get_profile_file())
         self.w3af.mainwin.sb(_("Profile saved"))
@@ -458,7 +458,7 @@ class ProfileList(gtk.TreeView):
             filename,description = dlgResponse
             filename = cgi.escape(filename)
             try:
-                profile_obj = helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+                profile_obj = helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile, filename , description)
             except w3afException:
                 self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
                 return
@@ -495,6 +495,6 @@ class ProfileList(gtk.TreeView):
             if profile_obj.get_profile_file() == self._parameter_profile:
                 self._parameter_profile = None
 
-            self.w3af.removeProfile( profile_obj.get_profile_file() )
+            self.w3af.profiles.removeProfile( profile_obj.get_profile_file() )
             self.w3af.mainwin.sb(_("The profile was deleted"))
             self.loadProfiles()

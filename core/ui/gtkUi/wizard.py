@@ -174,7 +174,7 @@ class Wizard(entries.RememberingWindow):
 
         filename = cgi.escape(filename)
         try:
-            helpers.coreWrap(self.w3af.saveCurrentToNewProfile, filename , description)
+            helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile, filename , description)
         except w3afException:
             self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
             return
@@ -310,8 +310,8 @@ class WizardChooser(entries.RememberingWindow):
     def _goWizard(self, widget):
         '''Runs the selected wizard.'''
         # First, clean all the enabled plugins that the user may have selected:
-        for ptype in self.w3af.getPluginTypes():
-            self.w3af.setPlugins([], ptype)
+        for ptype in self.w3af.plugins.getPluginTypes():
+            self.w3af.plugins.setPlugins([], ptype)
         
         # Destroy myself
         self.destroy()

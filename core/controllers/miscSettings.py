@@ -82,7 +82,6 @@ class miscSettings(configurable):
             cf.cf.save('localAddress', local_address)
             cf.cf.save('demo', False )
             cf.cf.save('nonTargets', [] )
-            cf.cf.save('exportFuzzableRequests', '')
     
     def getOptions( self ):
         '''
@@ -162,10 +161,6 @@ class miscSettings(configurable):
         h12 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
         o12 = option('nonTargets', cf.cf.getData('nonTargets'), d12, 'list', tabid='Misc settings')
         
-        d13 = 'Export all discovered fuzzable requests to the given file (CSV)'
-        o13 = option('exportFuzzableRequests', cf.cf.getData('exportFuzzableRequests'), d13,
-                            'string', tabid='Export fuzzable Requests')
-        
         ######### Metasploit ###########
         d15 = 'Full path of Metasploit framework binary directory (%s in most linux installs)' % cf.cf.getData('msf_location')
         o15 = option('msf_location', cf.cf.getData('msf_location'), d11, 'string', tabid='Metasploit')
@@ -183,7 +178,6 @@ class miscSettings(configurable):
         ol.add(o10)
         ol.add(o11)
         ol.add(o12)
-        ol.add(o13)
         ol.add(o14)
         ol.add(o15)
         ol.add(o16)
@@ -224,8 +218,6 @@ class miscSettings(configurable):
         for url_str in optionsMap['nonTargets'].getValue():
             url_list.append( url_object( url_str ) )
         cf.cf.save('nonTargets', url_list )
-        
-        cf.cf.save('exportFuzzableRequests', optionsMap['exportFuzzableRequests'].getValue() )
         
         cf.cf.save('msf_location', optionsMap['msf_location'].getValue() )
         

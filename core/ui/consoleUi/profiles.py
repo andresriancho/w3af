@@ -37,7 +37,7 @@ class profilesMenu(menu):
     def __init__(self, name, console, w3af, parent=None):
         menu.__init__(self, name, console, w3af, parent)
         self._profiles = {}
-        instance_list, invalid_profiles = w3af.getProfileList()
+        instance_list, invalid_profiles = w3af.profiles.getProfileList()
         for profile in instance_list:
             self._profiles[profile.getName()] = profile
         self._loadHelp('profiles')
@@ -61,7 +61,7 @@ class profilesMenu(menu):
             except IndexError:
                 workdir = None            
             
-            self._w3af.useProfile(profile, workdir=workdir)
+            self._w3af.profiles.useProfile(profile, workdir=workdir)
             
             om.out.console('The plugins configured by the scan profile have '
                            'been enabled, and their options configured.')

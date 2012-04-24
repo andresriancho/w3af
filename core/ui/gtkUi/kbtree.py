@@ -229,7 +229,7 @@ class KBTree(gtk.TreeView):
         @return: True to keep being called by gobject.
         '''        
         # if the core is not running, don't have anything to update
-        if not self.w3af.isRunning():
+        if not self.w3af.status.is_running():
             if self.lastcheck:
                 return True
             else:
@@ -428,8 +428,8 @@ class KBTree(gtk.TreeView):
         # Ensure the each vuln is processed only once.
         if not exploits:
             vuln_id = vuln.getId()
-            for exploit_name in self.w3af.getPluginList("attack"):
-                exploit = self.w3af.getPluginInstance(exploit_name, "attack")
+            for exploit_name in self.w3af.plugins.getPluginList("attack"):
+                exploit = self.w3af.plugins.getPluginInstance(exploit_name, "attack")
                 if exploit.canExploit(vuln_id):
                     exploits.append(exploit_name)
             # If found at least one exploit, add entry

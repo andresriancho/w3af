@@ -33,7 +33,7 @@ class progress:
 
     def __init__(self):
         self._max_value = 0.0
-        self._current_value = 0.1
+        self._current_value = 0.0
         self._first_amount_change_time = None
         self._eta = None
 
@@ -42,12 +42,18 @@ class progress:
         Set the max value that the progress "bar" will have.
         '''
         self._max_value = value
-        self._current_value = 0.1
+        self._current_value = 0.0
         self._first_amount_change_time = None
         
     def inc(self):
         '''
         Add 1 unit to the current value.
+        >>> p = progress()
+        >>> p.set_total_amount(100)
+        >>> p.inc()
+        >>> p.get_progress()
+        0.01
+                
         '''
         if self._current_value == self._max_value:
             om.out.error('Current value can never be greater than max value!')
@@ -63,19 +69,31 @@ class progress:
         else:
             time_already_elapsed = time.time() - self._first_amount_change_time
             #
-            # regla de tres para estimar cuanto va a tardar en total
+            # Simple calculation to find out how much time it is going to take
             #
             try:
                 time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
             except ZeroDivisionError:
                 # I should never get here...
-                time_for_all_requests = time_already_elapsed * 2
+                time_for_all_requests = time_already_elapsed * self._max_value * 2
             else:
                 self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
         '''
         @return: The % done.
+        
+        >>> p = progress()
+        >>> p.get_progress()
+        0.0
+        
+        >>> p.set_total_amount(10)
+        >>> p.get_progress()
+        0.0
+        
+        >>> p.stop()
+        >>> p.get_progress()
+        0.0
         '''
         # This if is to avoid division by zero
         if self._max_value == 0:
@@ -90,7 +108,7 @@ class progress:
         by the user, or an error has been found.
         '''
         self._max_value = 0.0
-        self._current_value = 0.1
+        self._current_value = 0.0
         self._first_amount_change_time = None
         self._eta = None
 

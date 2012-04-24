@@ -37,6 +37,10 @@ class PluginTest(unittest.TestCase):
     runconfig = {}
     kb = kb.kb
     
+    def setUp(self):
+        self.kb.cleanup()        
+        self.w3afcore = w3afCore()
+        
     def _scan(self, target, plugins):
         '''
         Setup env and start scan. Typically called from children's
@@ -64,20 +68,17 @@ class PluginTest(unittest.TestCase):
             opts.add(opt)
             return opts
         
-        self.kb.cleanup()
-        
-        self.w3afcore = w3afCore()
         # Set target(s)
         if isinstance(target, basestring):
             target = (target,)
         self.w3afcore.target.setOptions(_targetoptions(*target))
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
-            self.w3afcore.setPlugins([p.name for p in plugincfgs], ptype)
+            self.w3afcore.plugins.setPlugins([p.name for p in plugincfgs], ptype)
             for pcfg in plugincfgs:
-                self.w3afcore.setPluginOptions(ptype, pcfg.name, pcfg.options)
+                self.w3afcore.plugins.setPluginOptions(ptype, pcfg.name, pcfg.options)
         # Verify env and start the scan
-        self.w3afcore.initPlugins()
+        self.w3afcore.plugins.init_plugins()
         self.w3afcore.verifyEnvironment()
         self.w3afcore.start()
     

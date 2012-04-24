@@ -608,12 +608,12 @@ class MainApp(object):
         @return: True if all went ok
         '''
         # Clear everything
-        for ptype in self.w3af.getPluginTypes():
-            self.w3af.setPlugins([], ptype)
+        for ptype in self.w3af.plugins.getPluginTypes():
+            self.w3af.plugins.setPlugins([], ptype)
         
         # save the activated plugins
         for ptype,plugins in self.pcbody.getActivatedPlugins():
-            self.w3af.setPlugins(plugins, ptype)
+            self.w3af.plugins.setPlugins(plugins, ptype)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
         options = self.w3af.target.getOptions()
@@ -644,7 +644,7 @@ class MainApp(object):
         
         # Verify that everything is ready to run
         try:
-            helpers.coreWrap(self.w3af.initPlugins)
+            helpers.coreWrap(self.w3af.plugins.init_plugins)
             helpers.coreWrap(self.w3af.verifyEnvironment)
         except w3afException:
             return
@@ -662,8 +662,8 @@ class MainApp(object):
                     # Return a pretty-printed string from the plugins dicts
                     import copy
                     from itertools import chain
-                    plugs_opts = copy.deepcopy(self.w3af._pluginsOptions)
-                    plugs = self.w3af.getAllEnabledPlugins()
+                    plugs_opts = copy.deepcopy(self.w3af.plugins.getAllPluginOptions())
+                    plugs = self.w3af.plugins.getAllEnabledPlugins()
 
                     for ptype, plist in plugs.iteritems():
                         for p in plist:
@@ -772,7 +772,7 @@ class MainApp(object):
 
         @return: True to be called again
         '''
-        if self.w3af.isRunning():
+        if self.w3af.status.is_running():
             return True
 
         if self.paused:

@@ -172,7 +172,7 @@ class reqResViewer(gtk.VBox):
         # Create the popup menu
         gm = gtk.Menu()
         pluginType = "audit"
-        for pluginName in sorted(self.w3af.getPluginList(pluginType)):
+        for pluginName in sorted(self.w3af.plugins.getPluginList(pluginType)):
             e = gtk.MenuItem(pluginName)
             e.connect('activate', self._auditRequest, pluginName, pluginType)
             gm.append(e)
@@ -449,8 +449,8 @@ class ThreadedURLImpact(threading.Thread):
                 #
                 #   Get all the plugins and work with that list
                 #
-                for pluginName in self.w3af.getPluginList('audit'):
-                    plugin = self.w3af.getPluginInstance(pluginName, 'audit')
+                for pluginName in self.w3af.plugins.getPluginList('audit'):
+                    plugin = self.w3af.plugins.getPluginInstance(pluginName, 'audit')
                     tmp_result = []
                     try:
                         tmp_result = plugin.audit_wrapper(self.request)
@@ -470,7 +470,7 @@ class ThreadedURLImpact(threading.Thread):
                 #
                 #   Only one plugin was enabled
                 #
-                plugin = self.w3af.getPluginInstance(self.pluginName, self.pluginType)
+                plugin = self.w3af.plugins.getPluginInstance(self.pluginName, self.pluginType)
                 try:
                     self.result = plugin.audit_wrapper(self.request)
                     plugin.end()

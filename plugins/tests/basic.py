@@ -29,13 +29,13 @@ class TestBasic(unittest.TestCase):
     def setUp(self):
         self.w3afcore = w3afCore()
         
-        self.plugin_types = self.w3afcore.getPluginTypes()
+        self.plugin_types = self.w3afcore.plugins.getPluginTypes()
         self.plugin_types += ['attack']
         self.plugins = []
         
         for plugin_type in self.plugin_types:
-            for plugin_name in self.w3afcore.getPluginList( plugin_type ): 
-                plugin = self.w3afcore.getPluginInstance(plugin_name, plugin_type)
+            for plugin_name in self.w3afcore.plugins.getPluginList( plugin_type ): 
+                plugin = self.w3afcore.plugins.getPluginInstance(plugin_name, plugin_type)
                 self.plugins.append(plugin)
             
     def test_plugin_options(self):

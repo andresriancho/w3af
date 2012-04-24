@@ -45,14 +45,6 @@ class w3afRunOnce(Exception):
     def __str__(self):
         return self.value
 
-        
-class w3afFileException(Exception):
-    '''
-    A small class that defines a w3af File Exception.
-    '''
-    pass
-
-
 class w3afMustStopException(Exception):
     '''
     If this exception is caught by the core, then it should stop the whole 

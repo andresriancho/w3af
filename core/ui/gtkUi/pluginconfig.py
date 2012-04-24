@@ -206,7 +206,7 @@ class PluginTree(gtk.TreeView):
 
         # decide which type in function of style
         if style == "standard":
-            plugins_toshow = sorted(x for x in w3af.getPluginTypes() if x != "output")
+            plugins_toshow = sorted(x for x in w3af.plugins.getPluginTypes() if x != "output")
             col_title = _("Plugin")
         elif style == "output":
             plugins_toshow = ("output",)
@@ -219,8 +219,8 @@ class PluginTree(gtk.TreeView):
         for plugintype in plugins_toshow:
 
             # let's see if some of the children are activated or not
-            pluginlist = w3af.getPluginList(plugintype)
-            activated = set(w3af.getEnabledPlugins(plugintype))
+            pluginlist = w3af.plugins.getPluginList(plugintype)
+            activated = set(w3af.plugins.getEnabledPlugins(plugintype))
             if plugintype == "output":
                 activated.add("gtkOutput")
             if not activated:
@@ -236,7 +236,7 @@ class PluginTree(gtk.TreeView):
 
             dlg = gtk.Dialog()
             editpixbuf = dlg.render_icon(gtk.STOCK_EDIT, gtk.ICON_SIZE_MENU)
-            for plugin in sorted(w3af.getPluginList(plugintype)):
+            for plugin in sorted(w3af.plugins.getPluginList(plugintype)):
                 activ = int(plugin in activated)
                 if self._getEditablePlugin(plugin, plugintype):
                     thispixbuf = editpixbuf
@@ -293,7 +293,7 @@ class PluginTree(gtk.TreeView):
 
     def _getEditablePlugin(self, pname, ptype):
         '''Returns if the plugin has options.'''
-        plugin = self.w3af.getPluginInstance(pname, ptype)
+        plugin = self.w3af.plugins.getPluginInstance(pname, ptype)
         options = plugin.getOptions()
         return bool(len(options))
 
@@ -350,7 +350,7 @@ class PluginTree(gtk.TreeView):
         # here it must use the name in the column 3, as it's always the original
         pname = self.treestore[path][3]
         ptype = self.treestore[path[:1]][3]
-        plugin = self.w3af.getPluginInstance(pname, ptype)
+        plugin = self.w3af.plugins.getPluginInstance(pname, ptype)
         plugin.pname = pname
         plugin.ptype = ptype
         self.plugin_instances[path] = plugin
@@ -412,7 +412,7 @@ class PluginTree(gtk.TreeView):
         
         # Reload the plugin
         try:
-            self.w3af.reloadModifiedPlugin(pluginType,  pluginName)
+            self.w3af.plugins.reloadModifiedPlugin(pluginType,  pluginName)
         except Exception, e:
             msg = 'The plugin you modified raised the following exception'
             msg += ' while trying to reload it: "%s",' % str(e)
@@ -437,8 +437,8 @@ class PluginTree(gtk.TreeView):
 
         if len(path) == 1:
             pluginType = self.treestore[path][3]
-            self.w3af.getPluginTypesDesc( pluginType )
-            label = helpers.cleanDescription( self.w3af.getPluginTypesDesc( pluginType ) )
+            desc = self.w3af.plugins.getPluginTypesDesc( pluginType )
+            label = helpers.cleanDescription( desc )
             self.config_panel.clear(label=label )
         else:
             plugin = self._getPluginInstance(path)

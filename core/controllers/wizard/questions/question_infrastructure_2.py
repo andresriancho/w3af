@@ -85,9 +85,9 @@ class question_infrastructure_2(question):
             plugin_list.append('halberd')
         
         # Set the plugins to be run
-        old_discovery = self.w3af_core.getEnabledPlugins( 'discovery' )
+        old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'discovery' )
         plugin_list.extend(old_discovery)
-        self.w3af_core.setPlugins( plugin_list, 'discovery' )
+        self.w3af_core.plugins.setPlugins( plugin_list, 'discovery' )
         
         # Next question
         return 'infrastructure_3'

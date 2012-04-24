@@ -41,10 +41,7 @@ class knowledgeBase:
         '''
         This method saves the variableName value to a dict.
         '''
-        if isinstance( callingInstance, basestring ):
-            name = callingInstance
-        else:
-            name = callingInstance.getName()
+        name = self._get_real_name(callingInstance)
         
         with self._kb_lock:
             if name not in self._kb.keys():
@@ -56,10 +53,7 @@ class knowledgeBase:
         '''
         This method appends the variableName value to a dict.
         '''
-        if isinstance( callingInstance, basestring ):
-            name = callingInstance
-        else:
-            name = callingInstance.getName()
+        name = self._get_real_name(callingInstance)
 
         with self._kb_lock:
             if name not in self._kb.keys():
@@ -82,10 +76,7 @@ class knowledgeBase:
         
         @return: Returns the data that was saved by another plugin.
         '''
-        if isinstance( pluginWhoSavedTheData, basestring ):
-            name = pluginWhoSavedTheData
-        else:
-            name = pluginWhoSavedTheData.getName()
+        name = self._get_real_name(pluginWhoSavedTheData)
             
         res = []
         
@@ -146,5 +137,11 @@ class knowledgeBase:
         '''
         with self._kb_lock:
             self._kb.clear()
-        
+    
+    def _get_real_name(self, data):
+        if isinstance( data, basestring ):
+            return data
+        else:
+            return data.getName()
+
 kb = knowledgeBase()
