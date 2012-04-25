@@ -120,13 +120,16 @@ class disk_list(object):
                 pass
     
     def __del__(self):
-        with self._db_lock:
-            try:
-                self._conn.close()
-                os.remove(self._filename)
-            except:
-                pass
-    
+        try:
+            with self._db_lock:
+                try:
+                    self._conn.close()
+                    os.remove(self._filename)
+                except:
+                    pass
+        except:
+            pass
+        
     def __contains__(self, value):
         '''
         @return: True if the value is in our list.
@@ -152,6 +155,15 @@ class disk_list(object):
             t = (self._current_index, value)
             self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
             self._current_index += 1
+    
+    def extend(self, value_list):
+        '''
+        Extend the disk list with a group of items that is provided in @value_list
+        
+        @return: None
+        '''
+        for value in value_list:
+            self.append(value)
     
     def __iter__(self):
         # TODO: How do I make the __iter__ thread safe?        
