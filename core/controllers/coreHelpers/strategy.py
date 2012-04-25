@@ -34,6 +34,7 @@ from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
 
 from core.data.request.frFactory import createFuzzableRequests
+from core.data.db.temp_persist import disk_list
 
 
 class w3af_core_strategy(object):
@@ -55,7 +56,7 @@ class w3af_core_strategy(object):
         self._w3af_core = w3af_core
         
         # Internal variables:
-        self._fuzzable_request_list  = []
+        self._fuzzable_request_list  = disk_list()
         kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_list)
 
     def start(self):
@@ -198,8 +199,8 @@ class w3af_core_strategy(object):
                 #    in a list and use them as our bootstrap URLs
                 #
                 response = self._w3af_core.uriOpener.GET(url, useCache=True)
-                self._fuzzable_request_list += filter(
-                    get_curr_scope_pages, createFuzzableRequests(response))
+                self._fuzzable_request_list.extend( filter(
+                    get_curr_scope_pages, createFuzzableRequests(response)) )
 
                 #
                 #    NOTE: I need to perform this test here in order to avoid some weird
