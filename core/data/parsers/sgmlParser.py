@@ -43,10 +43,10 @@ class SGMLParser(BaseParser):
     TAGS_WITH_URLS = (
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
-        'form', 'ilayer', 'bgsound'
+        'form', 'ilayer', 'bgsound', 'html'
         )
     
-    URL_ATTRS = ('href', 'src', 'data', 'action')
+    URL_ATTRS = ('href', 'src', 'data', 'action', 'manifest')
 
     # I don't want to inject into Apache's directory indexing parameters
     APACHE_INDEXING = ("?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
