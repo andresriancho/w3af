@@ -41,7 +41,7 @@ class export_requests(baseOutputPlugin):
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        self.output_file = ''
+        self.output_file = 'output-requests.csv'
 
     def do_nothing(self, *args, **kwds): pass
 
