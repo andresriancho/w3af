@@ -43,7 +43,7 @@ class SGMLParser(BaseParser):
     TAGS_WITH_URLS = (
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
         'embed', 'area', 'frame', 'applet', 'input', 'base', 'div', 'layer',
-        'form', 'ilayer', 'bgsound', 'html'
+        'form', 'ilayer', 'bgsound', 'html', 'audio', 'video'
         )
     
     URL_ATTRS = ('href', 'src', 'data', 'action', 'manifest')
