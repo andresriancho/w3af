@@ -63,7 +63,7 @@ class FileLock(object):
                     raise
                 time.sleep(self.delay)
         else: 
-            raise FileLockException("Timeout occured.")
+            raise FileLockException("Timeout occurred.")
                 
         self.is_locked = True
  
@@ -130,7 +130,7 @@ class FileLockRead(FileLock):
                 break
             time.sleep(self.delay)
         else:
-            raise FileLockException("Timeout occured.")
+            raise FileLockException("Timeout occurred.")
                 
         self.is_locked = True
  
