@@ -20,33 +20,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-# Only to be used with care.
 import Queue
-import os
-from errno import EEXIST
-
-# I'm timestamping the messages
 import time
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-from core.controllers.w3afException import w3afException
-from core.data.db.history import HistoryItem
-
-# The output plugin must know the session name that is saved in the config object,
-# the session name is assigned in the target settings
-import core.data.kb.config as cf
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
-# options
-from core.data.options.option import option
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.data.options.optionList import optionList
 
 
 class gtkOutput(baseOutputPlugin):
     '''
-    Saves messages to kb.kb.getData('gtkOutput', 'queue'), messages are saved in the form of objects.
+    Saves messages to kb.kb.getData('gtkOutput', 'queue') to be displayed in the UI.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
