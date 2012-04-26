@@ -57,19 +57,8 @@ else:
 if sys.platform == "win32":
     gtk.rc_add_default_file('%USERPROFILE%/.gtkrc-2.0')
 
-# splash!
-from core.ui.gtkUi.splash import Splash
-splash = Splash()
 
-try:
-    import sqlite3
-except ImportError:
-    # TODO: Why am I checking this here and not in the dependencyCheck?
-    msg = 'You have to install the sqlite3 database module to be able to run the GTK user'
-    msg += ' interface. On debian based distributions you should install: python-pysqlite2'
-    print msg
-    sys.exit( 1 )
-
+import sqlite3
 import threading, shelve, os
 from core.controllers.w3afCore import wCore
 import core.controllers.miscSettings
@@ -81,6 +70,7 @@ from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, 
 from . import export_request
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
+from core.ui.gtkUi.splash import Splash
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
@@ -306,6 +296,10 @@ class MainApp(object):
     '''
 
     def __init__(self, profile, do_upd):
+        # First of all, create the nice splash screen so we can show something
+        # to the user while all the hard work is done on the background
+        splash = Splash()
+        
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file(W3AF_ICON)
