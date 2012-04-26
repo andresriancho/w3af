@@ -83,7 +83,16 @@ class webSpider(baseDiscoveryPlugin):
             # the "onlyForward" feature
             self._first_run = False
             self._target_urls = [i.getDomainPath() for i in cf.cf.getData('targets')]
-            self._target_domain = cf.cf.getData('targets')[0].getDomain()
+            
+            #    The following line triggered lots of bugs when the "stop" button
+            #    was pressed and the core did this: "cf.cf.save('targets', [])"
+            #self._target_domain = cf.cf.getData('targets')[0].getDomain()
+            #    Changing it to something awful but bug-free.
+            targets = cf.cf.getData('targets')
+            if not targets:
+                return []
+            else:
+                self._target_domain = targets[0].getDomain()
         
         # Clear the previously found fuzzable requests,
         self._fuzzable_reqs.clear()
