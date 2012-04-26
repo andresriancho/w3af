@@ -171,23 +171,30 @@ class passwordProfiling(baseGrepPlugin):
         '''
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
-            
-        items = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' ).items()
-        if len( items ) != 0:
         
-            items.sort(sortfunc)
-            om.out.information('Password profiling TOP 100:')
+        profiling_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+        
+        # This fixes a very strange bug where for some reason the kb doesn't 
+        # have a dict anymore (threading issue most likely) Seen here:
+        # https://sourceforge.net/apps/trac/w3af/ticket/171745
+        if isinstance(profiling_data, dict):
+
+            items = profiling_data.items()
+            if len( items ) != 0:
             
-            list_length = len(items)
-            if list_length > 100:
-                xLen = 100
-            else:
-                xLen = list_length
-            
-            for i in xrange(xLen):
-                msg = '- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) 
-                msg += ' repetitions.'
-                om.out.information( msg )
+                items.sort(sortfunc)
+                om.out.information('Password profiling TOP 100:')
+                
+                list_length = len(items)
+                if list_length > 100:
+                    xLen = 100
+                else:
+                    xLen = list_length
+                
+                for i in xrange(xLen):
+                    msg = '- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) 
+                    msg += ' repetitions.'
+                    om.out.information( msg )
             
 
     def getPluginDeps( self ):
