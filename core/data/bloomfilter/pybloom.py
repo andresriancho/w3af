@@ -62,6 +62,15 @@ def make_hashfuncs(num_slices, num_bits):
         if isinstance(key, unicode):
             key = key.encode('utf-8')
         else:
+            #     FIXME: This brings some serious false positives/false negatives!
+            #>>> class ooo(object):
+            #...     pass
+            #... 
+            #>>> o = ooo()
+            #>>> str(o)
+            #'<__main__.ooo object at 0x7fba3b23eb10>'
+            #    
+            #    Maybe this should be something like cPickle.dumps() ?
             key = str(key)
         rval = []
         for salt in salts:
