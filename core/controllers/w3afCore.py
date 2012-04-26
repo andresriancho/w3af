@@ -254,6 +254,9 @@ class w3afCore(object):
             self.status.stop()
             self.progress.stop()
             
+            # Remove all references to plugins from memory
+            self.plugins.zero_enabled_plugins()            
+            
             # No targets to be scanned.
             cf.cf.save('targets', [])
             

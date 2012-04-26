@@ -633,6 +633,9 @@ class MainApp(object):
 
         @param widget: the widget that generated the signal.
         '''
+        # This is inited before all, to have a full logging facility.
+        om.out.setOutputPlugins( ['gtkOutput'] )
+
         if not self.saveStateToCore():
             return
         
@@ -758,7 +761,7 @@ class MainApp(object):
         self.scanShould = "start"
         self.window.set_title(MAINTITLE)
         
-        # This is inited before all, to have a full logging facility.
+        # This is done here in order to keep the logging facility.
         om.out.setOutputPlugins( ['gtkOutput'] )
 
     def _scan_superviseStatus(self):

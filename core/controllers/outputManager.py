@@ -45,6 +45,20 @@ class outputManager:
     def endOutputPlugins(self):
         for oPlugin in self._outputPluginList:
             oPlugin.end()
+
+        # This is a neat trick which basically removes all plugin references
+        # from memory. Those plugins might have pointers to memory parts that
+        # are not required anymore (since someone is calling endOutputPlugins
+        # which indicates that the scan is done).
+        #
+        # If the console or gtkOutput plugins were enabled, I re-enable them
+        # since I don't want to loose the capability of seeing my log messages
+        # in the linux console or the message box in the GTK ui.
+        currently_enabled_plugins = self.getOutputPlugins()
+        keep_enabled = [pname for pname in currently_enabled_plugins 
+                        if pname in ('console', 'gtkOutput')]
+        self.setOutputPlugins( keep_enabled )
+            
             
     def logEnabledPlugins(self, enabledPluginsDict, pluginOptionsDict):
         '''
