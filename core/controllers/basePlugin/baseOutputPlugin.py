@@ -127,41 +127,47 @@ class baseOutputPlugin(basePlugin):
             stringToClean = stringToClean.replace(char,replace)
         return stringToClean
 
-    def getCaller( self, whatStackItem=4 ):
+    def getCaller( self, which_stack_item=4 ):
         '''
-        What I'm going to do is to:
+        What I'm going to do is:
             - inspect the stack and try to find a reference to a plugin
             - if a plugin is the caller, then i'll return something like audit.xss
-            - if no plugin is in the caller stack, i'll return the stack item specified by whatStackItem
+            - if no plugin is in the caller stack, i'll return the stack item 
+              specified by which_stack_item
         
-        Maybe you are asking yourself why whatStackItem == 4, well, this is why:
+        Maybe you are asking yourself why which_stack_item == 4, well, this is why:
             I know that getCaller method will be in the stack
             I also know that the method that calls getCaller will be in the stack
             I also know that the om.out.XYZ method will be in the stack
             That's 3... so... number 4 is the one that really called me.
         
-        @return: The caller of the om.out.XYZ method; this is used to make output more readable.
+        @return: The caller of the om.out.XYZ method; this is used to make output
+                 more readable.
+                 
+        >>> bop = baseOutputPlugin()
+        >>> bop.getCaller()
+        'doctest'
+        
         '''
-        theStack = inspect.stack()
+        try:
+            the_stack = inspect.stack()
         
-        found = False
-        for item in theStack:
-            if item[1].startswith('plugins/'):
-                found = True
-                break
-        
-        if found:
-            # Now I have the caller item from the stack, I want to do some things with it...        
-            res = item[1].replace('plugins/','')
-            res = res.replace('/','.')
-            res = res.replace('.py','')
-        else:
-            # From the unknown caller, I just need the name of the function
-            item = theStack[ whatStackItem ]
-            res = item[1].split('/')[-1:][0]
-            res = res.replace('.py','')
-        
-        return res
+            for item in the_stack:
+                if item[1].startswith('plugins/'):
+                    # Now I have the caller item from the stack, I want to do 
+                    # some things with it...        
+                    res = item[1].replace('plugins/','')
+                    res = res.replace('/','.')
+                    return res.replace('.py','')
+            else:
+                # From the unknown caller, I just need the name of the function
+                item = the_stack[ which_stack_item ]
+                res = item[1].split('/')[-1:][0]
+                return res.replace('.py','')
+            
+        except:
+            return 'unknown-caller'
+
         
     def getMessageCache(self):
         '''
