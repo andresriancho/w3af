@@ -20,46 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import re
+from core.data.esmre.multi_re import multi_re
 
-# This regex means: "find all tags that are of the form <? something ?> , 
-# but if that something is "xml .*" ignore it completely. This is to remove 
-# the false positive in the detection of code disclosure that is added when
-# the web application uses something like "<?xml version="1.0" encoding="UTF-8"?>"
-# This was added to fix bug #1989056
-#
-# Also added (?!xpacket) in order to avoid ticket #164090 with PSD files
-#
-php = re.compile( '<\?(?! *xml)(?!xpacket).*\?>', re.IGNORECASE | re.DOTALL)
+SOURCE_CODE = (
+        ('<\?(?! *xml)(?!xpacket).*\?>', 'PHP'),
+        ('<%.*?%>', 'ASP or JSP'),
+        ('<jsp:.*?>', 'JSP'),
+        ('<!--\s*%.*?%(--)?>', 'PHP'),
+        ('<!--\s*\?.*?\?(--)?>', 'ASP or JSP'),
+        ('<!--\s*jsp:.*?(--)?>', 'JSP'),
+)
 
-# The rest of the regex are ok, because this patterns aren't used in html / xhtml
-asp = re.compile( '<%.*?%>', re.IGNORECASE | re.DOTALL)
-# Commented this one because it's the same regular expression that ASP
-#jsp = re.compile( '<%.*?%>', re.IGNORECASE | re.DOTALL)
-jsp2 = re.compile( '<jsp:.*?>', re.IGNORECASE | re.DOTALL)
-
-# I've also seen some devs think like this:
-#
-# 1- I have my code that says <? print 'something' ?>
-# 2- I want to comment that code
-# 3- I comment it like this!  <!--? print 'something' ?-->
-# or like this:  <!--? print 'something' ?>
-#
-# Not a bad idea, huh?
-commented_asp = re.compile( '<!--\s*%.*?%(--)?>', re.IGNORECASE | re.DOTALL)
-commented_php = re.compile( '<!--\s*\?.*?\?(--)?>', re.IGNORECASE | re.DOTALL)
-# Commented this one because it's the same regular expression that ASP
-#commented_jsp = re.compile( '<!--\s*%.*?%(--)?>', re.IGNORECASE | re.DOTALL)
-commented_jsp2 = re.compile( '<!--\s*jsp:.*?(--)?>', re.IGNORECASE | re.DOTALL)
-
-REGEX_LIST = []
-REGEX_LIST.append( (php, 'PHP') )
-REGEX_LIST.append( (asp, 'ASP or JSP') )
-#REGEX_LIST.append( (jsp, 'JSP') )
-REGEX_LIST.append( (jsp2, 'JSP') )
-REGEX_LIST.append( (commented_php, 'PHP') )
-REGEX_LIST.append( (commented_asp, 'ASP or JSP') )
-#REGEX_LIST.append( (commented_jsp, 'JSP') )
-REGEX_LIST.append( (commented_jsp2, 'JSP') )
+_multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 
 def is_source_file( file_content ):
@@ -85,11 +57,8 @@ def is_source_file( file_content ):
     >>> is_source_file( 'foo <?ypacket ?> "bar' ) != (None, None )
     True
     '''
-    for regex, lang in REGEX_LIST:
-        
-        match = regex.search( file_content )
-        if match:
-            return (match, lang)
+    for match, _, _, lang in _multi_re.query( file_content ):
+        return (match, lang)
     
     return (None, None)
 
