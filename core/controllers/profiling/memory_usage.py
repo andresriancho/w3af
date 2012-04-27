@@ -20,7 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-DEBUGMEMORY = False
+DEBUGMEMORY = True
+SAMPLE_LEN = 20
 
 if DEBUGMEMORY:
     import core.controllers.outputManager as om
@@ -48,11 +49,7 @@ def dump_memory_usage():
         for interesting_klass in interesting:
             interesting_instances = objgraph.by_type(interesting_klass)
             
-            l = len(interesting_instances)
-            if l < 10:
-                sample = random.sample(interesting_instances, l)
-            else:
-                sample = random.sample(interesting_instances, 10)
+            sample = random.sample(interesting_instances, min(SAMPLE_LEN, len(interesting_instances)) )
             
             for s in sample:
                 fmt = 'memory-refs/%s-backref-graph-%s.png'
