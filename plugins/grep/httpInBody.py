@@ -32,8 +32,6 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
-
 
 class httpInBody (baseGrepPlugin):
     """
@@ -76,7 +74,7 @@ class httpInBody (baseGrepPlugin):
             if body_without_tags is None:
                 return
             
-            for match, regex_str, regex_comp, reqres in self._multi_re.query( body_without_tags ):
+            for match, _, _, reqres in self._multi_re.query( body_without_tags ):
 
                 if reqres == 'REQUEST':            
                     i = info.info()
