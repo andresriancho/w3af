@@ -156,6 +156,12 @@ class disk_list(object):
             self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
             self._current_index += 1
     
+    def clear(self):
+        # thread safe here!
+        with self._db_lock:
+            self._conn.execute("DELETE FROM data WHERE 1=1")
+            self._current_index = 0
+    
     def extend(self, value_list):
         '''
         Extend the disk list with a group of items that is provided in @value_list

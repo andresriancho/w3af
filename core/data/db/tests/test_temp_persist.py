@@ -90,7 +90,19 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[1] , 1)
         self.assertEqual( dl[2] , 2)
         self.assertEqual( dl[3] , 3)
+    
+    def test_clear(self):
+        dl = disk_list()
+
+        dl.append( 'a' )
+        dl.append( 'b' )
         
+        self.assertEqual( len(dl), 2)
+        
+        dl.clear()
+        
+        self.assertEqual( len(dl), 0)
+                
 
     def test_unicode(self):
         dl = disk_list()
