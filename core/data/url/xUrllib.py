@@ -68,6 +68,7 @@ class xUrllib(object):
         self.settings = urlOpenerSettings.urlOpenerSettings()
         self._opener = None
         self._memoryUsageCounter = 0
+        self._non_targets = set()
         
         # For error handling
         self._lastRequestFailed = False
@@ -210,18 +211,20 @@ class xUrllib(object):
         req = self._add_headers( req )
         return req.headers
     
-    def _isBlacklisted(self, uri):
+    def _is_blacklisted(self, uri):
         '''
-        If the user configured w3af to ignore a URL, we are going to be applying that configuration here.
-        This is the lowest layer inside w3af.
+        If the user configured w3af to ignore a URL, we are going to be applying
+        that configuration here. This is the lowest layer inside w3af.
         '''
-        list_of_non_targets = cf.cf.getData('nonTargets') or []
-        for non_target in list_of_non_targets:
-            if uri.uri2url() == non_target.uri2url():
-                msg = 'The URL you are trying to reach was configured as a non-target. ( '
-                msg += uri +' ). Returning an empty response.'
-                om.out.debug( msg )
-                return True
+        if not self._non_targets:
+            non_targets = cf.cf.getData('nonTargets') or []
+            self._non_targets.update([nt_url.uri2url() for nt_url in non_targets])
+             
+        if uri.uri2url() in self._non_targets:
+            msg = 'The URL you are trying to reach was configured as a non-target. ( '
+            msg += uri +' ). Returning an empty response.'
+            om.out.debug( msg )
+            return True
 
         return False
     
@@ -310,7 +313,7 @@ class xUrllib(object):
 
         self._init()
 
-        if self._isBlacklisted(uri):
+        if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
 
         #
@@ -366,14 +369,17 @@ class xUrllib(object):
         @return: An httpResponse object.
         '''
         #
-        #    Validate what I'm sending, init the library (if needed) and check blacklists.
+        #    Validate what I'm sending, init the library (if needed) and check
+        #    blacklists.
         #
         if not isinstance(uri, url_object):
-            raise ValueError('The uri parameter of xUrllib.POST() must be of urlParser.url_object type.')
+            msg = 'The uri parameter of xUrllib.POST() must be of urlParser.'
+            msg += 'url_object type.'
+            raise ValueError(msg)
 
         self._init()
 
-        if self._isBlacklisted(uri):
+        if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
         
         #
@@ -385,15 +391,18 @@ class xUrllib(object):
     
     def getRemoteFileSize(self, req, useCache=True):
         '''
-        This method was previously used in the framework to perform a HEAD request before each GET/POST (ouch!)
-        and get the size of the response. The bad thing was that I was performing two requests for each resource...
+        This method was previously used in the framework to perform a HEAD 
+        request before each GET/POST (ouch!) and get the size of the response.
+        The bad thing was that I was performing two requests for each resource...
         I moved the "protection against big files" to the keepalive.py module.
         
-        I left it here because maybe I want to use it at some point... Mainly to call it directly or something.
+        I left it here because maybe I want to use it at some point... Mainly
+        to call it directly or something.
         
         @return: The file size of the remote file.
         '''
-        res = self.HEAD( req.get_full_url(), headers=req.headers, data=req.get_data(), useCache=useCache )  
+        res = self.HEAD( req.get_full_url(), headers=req.headers, 
+                         data=req.get_data(), useCache=useCache )  
         
         resource_length = None
         for i in res.getHeaders():
@@ -448,7 +457,7 @@ class xUrllib(object):
                 
                 self._xurllib._init()
                 
-                if self._xurllib._isBlacklisted(uri):
+                if self._xurllib._is_blacklisted(uri):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
             
                 req = self.MethodRequest(uri, data, follow_redir=follow_redir)
@@ -475,7 +484,8 @@ class xUrllib(object):
         # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
         # Too many retries when trying to get: http://localhost/w3af/globalRedirect/2.php?url=javascript%3Aalert
         #
-        ###TODO: The problem is that the urllib2 library fails even if i do this tests, it fails if it finds javascript: in some part of the URL    
+        ###TODO: The problem is that the urllib2 library fails even if i do this
+        #        tests, it fails if it finds javascript: in some part of the URL    
         if req.get_full_url().startswith( 'http' ):
             return True
         elif req.get_full_url().startswith( 'javascript:' ) or req.get_full_url().startswith( 'mailto:' ):
@@ -783,8 +793,8 @@ class xUrllib(object):
             try:
                 request = eplugin.modifyRequest( request )
             except w3afException, e:
-                msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"' % (eplugin.getName(), e)
-                om.out.error( msg )
+                msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"'
+                om.out.error( msg % (eplugin.getName(), e) )
                 
         return request
         
@@ -830,7 +840,8 @@ class xUrllib(object):
 
         @parameter grep_plugin: The grep plugin to run.
         @parameter request: The request which generated the response. A request object.
-        @parameter response: The response which was generated by the request (first parameter). A httpResponse object.
+        @parameter response: The response which was generated by the request (first parameter).
+                             A httpResponse object.
         '''
         #msg = 'Starting "'+ grep_plugin.getName() +'" grep_worker for response: ' + repr(response)
         #om.out.debug( msg )
