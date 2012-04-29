@@ -20,11 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-DEBUGMEMORY = True
-SAMPLE_LEN = 20
+DEBUG_MEMORY = False
+DEBUG_REFERENCES = False
+SAMPLE_LEN = 5
 
-if DEBUGMEMORY:
+if DEBUG_MEMORY:
     import core.controllers.outputManager as om
+    from .ps_mem import get_memory_usage, human
+    
     import random
     import inspect
     import sys
@@ -33,38 +36,40 @@ if DEBUGMEMORY:
     try:
         import objgraph
     except ImportError:
-        DEBUGMEMORY = False
+        DEBUG_MEMORY = False
+        DEBUG_REFERENCES= False
     
 def dump_memory_usage():
     '''
     This is a function that prints the memory usage of w3af in real time.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    if not DEBUGMEMORY:
+    if not DEBUG_MEMORY:
         return
     else:
-        print 'Object References:'
-        print '=================='
-        interesting = ['HTTPQSRequest', 'url_object', 'list', 'tuple', 'httpResponse']
-        for interesting_klass in interesting:
-            interesting_instances = objgraph.by_type(interesting_klass)
-            
-            sample = random.sample(interesting_instances, min(SAMPLE_LEN, len(interesting_instances)) )
-            
-            for s in sample:
-                fmt = 'memory-refs/%s-backref-graph-%s.png'
-                fname = fmt % (interesting_klass, id(s))
+        if DEBUG_REFERENCES:
+            print 'Object References:'
+            print '=================='
+            interesting = ['HTTPQSRequest', 'url_object', 'list', 'tuple', 'httpResponse']
+            for interesting_klass in interesting:
+                interesting_instances = objgraph.by_type(interesting_klass)
                 
-                ignores = [id(interesting_instances), id(s), id(sample)]
-                ignores.extend( [id(v) for v in locals().values()] )
-                ignores.extend( [id(v) for v in globals().values()] )
-                ignores.append( id(locals()) )
-                ignores.append( id(globals()) )
-                objgraph.show_backrefs(s, highlight=inspect.isclass,
-                                       extra_ignore=ignores,filename=fname,
-                                       extra_info=_extra_info)
+                sample = random.sample(interesting_instances, min(SAMPLE_LEN, len(interesting_instances)) )
+                
+                for s in sample:
+                    fmt = 'memory-refs/%s-backref-graph-%s.png'
+                    fname = fmt % (interesting_klass, id(s))
+                    
+                    ignores = [id(interesting_instances), id(s), id(sample)]
+                    ignores.extend( [id(v) for v in locals().values()] )
+                    ignores.extend( [id(v) for v in globals().values()] )
+                    ignores.append( id(locals()) )
+                    ignores.append( id(globals()) )
+                    objgraph.show_backrefs(s, highlight=inspect.isclass,
+                                           extra_ignore=ignores,filename=fname,
+                                           extra_info=_extra_info)
         
-        print
+            print
         
         print 'Most common:'
         print '============'
@@ -75,6 +80,13 @@ def dump_memory_usage():
         print 'Memory delta:'
         print '============='
         objgraph.show_growth(limit=25)
+        
+        sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True )
+        cmd = sorted_cmds[0]
+        msg = "%8sB Private + %8sB Shared = %8sB" % ( human(cmd[1]-shareds[cmd[0]]),
+                                                      human(shareds[cmd[0]]), human(cmd[1])
+                                                    )
+        print 'Total memory usage:',  msg
         
         
         
