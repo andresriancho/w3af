@@ -1,5 +1,5 @@
 '''
-dependencyCheck.py
+dependency_check.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,18 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
 import sys
 import platform
 
+import core.controllers.outputManager as om
 
-def dependencyCheck():
+from core.controllers.dependency_check.lazy_load import lazy_load
+
+def dependency_check():
     '''
     This function verifies that the dependencies that are needed by the
     framework core are met.
     '''
-
+    #mem_test('at start')
     om.out.debug('Checking core dependencies')
     
     # Check python version
@@ -66,7 +67,7 @@ def dependencyCheck():
             
             additional_information.append(msg)
             reasonForExit = True
-    
+    #mem_test('after bloom filter import')
     try:
         import esmre
         import esm
@@ -89,10 +90,8 @@ def dependencyCheck():
     #
     import warnings
     warnings.filterwarnings('ignore', '.*',)
-
-    try:
-        import nltk
-    except Exception, e:
+    #mem_test('after esmre import')
+    if not lazy_load('nltk'):
         packages.append('nltk')
         packages_debian.append('python-nltk')
         #TODO
@@ -109,19 +108,16 @@ def dependencyCheck():
         msg += '        python setup.py install'
         additional_information.append(msg)
         reasonForExit = True
-
-    try:
-        import extlib.SOAPpy.SOAPpy as SOAPpy
-    except:
-        try:
-            import SOAPpy
-        except:
+    #mem_test('after nltk import')
+    
+    if not lazy_load('extlib.SOAPpy.SOAPpy'):
+        if not lazy_load('SOAPpy'):
             packages.append('SOAPpy')
             packages_debian.append('python-soappy')
             #TODO
             #packages_mac_port.append()
             reasonForExit = True
-    
+    #mem_test('after soappy import')
     try:
         import extlib.pyPdf.pyPdf as pyPdf
     except:
@@ -133,7 +129,7 @@ def dependencyCheck():
             #TODO
             #packages_mac_port.append()
             reasonForExit = True
-            
+    #mem_test('after pypdf import')   
     try:
         from OpenSSL import SSL
     except:
@@ -141,7 +137,7 @@ def dependencyCheck():
         packages_debian.append('python-pyopenssl')
         packages_mac_ports.extend(['py26-openssl'])
         reasonForExit = True
-
+    #mem_test('after ssl import')
     try:
         from lxml import etree
     except:
@@ -150,7 +146,7 @@ def dependencyCheck():
         #TODO
         #packages_mac_port.append()
         reasonForExit = True
-    
+    #mem_test('after lxml import')
     try:
         import pysvn
     except Exception, e:
@@ -173,13 +169,11 @@ def dependencyCheck():
         #TODO
         #packages_mac_port.append()
         reasonForExit = True       
-
+    #mem_test('after pysvn import')
     import logging
     logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
-    try:
-        import scapy
-    except:
+    if not lazy_load('scapy'):
         packages.append('scapy')
         packages_debian.append('python-scapy')
         #TODO
@@ -203,7 +197,7 @@ def dependencyCheck():
                 msg = '    Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
                 additional_information.append(msg)
                 reasonForExit = True
-    
+    #mem_test('after scapy import')
     #Now output the results of the dependency check
     if packages:
         msg = 'Your python installation needs the following packages:\n'
@@ -226,3 +220,11 @@ def dependencyCheck():
         exit(1)
         
 
+def mem_test(when):
+    from core.controllers.profiling.ps_mem import get_memory_usage, human
+    sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True )
+    cmd = sorted_cmds[0]
+    msg = "%8sB Private + %8sB Shared = %8sB" % ( human(cmd[1]-shareds[cmd[0]]),
+                                                  human(shareds[cmd[0]]), human(cmd[1])
+                                                )
+    print 'Total memory usage %s: %s' % (when,msg)

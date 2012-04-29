@@ -653,7 +653,7 @@ class VersionMgr(object): #TODO: Make it singleton?
         Return tuple with the dependencies added to extlib/ in the repo if
         any. Basically it compares local dirs under extlib/ to those in the
         repo as well as checks if at least a new sentence containing the 
-        import keyword was added to the dependencyCheck.py file.
+        import keyword was added to the dependency_check.py file.
         '''
         #
         # Check if a new directory was added to repo's extlib
@@ -681,7 +681,7 @@ class VersionMgr(object): #TODO: Make it singleton?
         # dependencyCheck.py files
         #
         if deps:
-            depfiles = ('core/controllers/misc/dependencyCheck.py',
+            depfiles = ('core/controllers/dependency_check/dependency_check.py',
                         'core/ui/gtkUi/dependencyCheck.py')
             for depfile in depfiles:
                 diff_str = client.diff(depfile)
