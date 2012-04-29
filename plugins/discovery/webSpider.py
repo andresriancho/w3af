@@ -25,10 +25,11 @@ import re
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException, \
-    w3afMustStopOnUrlError
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
+from core.controllers.misc.itertools_toolset import unique_justseen, unique_everseen
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.temp_shelve import temp_shelve as temp_shelve
+from core.data.db.temp_persist import disk_list
 from core.data.fuzzer.formFiller import smartFill
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -56,7 +57,7 @@ class webSpider(baseDiscoveryPlugin):
         # Internal variables
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
-        self._brokenLinks = []
+        self._broken_links = set()
         self._fuzzable_reqs = set()
         self._first_run = True
         self._known_variants = variant_db()
@@ -93,10 +94,10 @@ class webSpider(baseDiscoveryPlugin):
                 return []
             else:
                 self._target_domain = targets[0].getDomain()
-        
+
         # Clear the previously found fuzzable requests,
         self._fuzzable_reqs.clear()
-        
+
         #
         # If it is a form, then smartFill the parameters to send something that
         # makes sense and will allow us to cover more code.
@@ -124,7 +125,8 @@ class webSpider(baseDiscoveryPlugin):
         self._fuzzable_reqs.update(fuzz_req_list)
 
         self._extract_links_and_verify(resp, fuzzable_req)
-        return list(self._fuzzable_reqs)
+        
+        return self._fuzzable_reqs
 
 
     def _extract_links_and_verify(self, resp, fuzzable_req):
@@ -162,14 +164,10 @@ class webSpider(baseDiscoveryPlugin):
                 # http://localhost/
                 # And analyze the responses...
                 dirs = resp.getURL().getDirectories()
-                seen = set()
                 only_re_refs = set(re_refs) - set(dirs + parsed_refs)
                 
-                for ref in itertools.chain(dirs, parsed_refs, re_refs):
-                    
-                    if ref in seen:
-                        continue
-                    seen.add(ref)
+                for ref in unique_everseen(
+                           itertools.chain(dirs, parsed_refs, re_refs) ):
                     
                     # I don't want w3af sending requests to 3rd parties!
                     if ref.getDomain() != self._target_domain:
@@ -258,10 +256,8 @@ class webSpider(baseDiscoveryPlugin):
         This method GET's every new link and parses it in order to get
         new links and forms.
         '''
-        fuzz_req_list = []
         is_forward = self._is_forward(reference)
         if not self._only_forward or is_forward:
-            resp = None
             #
             # Remember that this "breaks" the useCache=True in most cases!
             #     headers = { 'Referer': originalURL }
@@ -280,6 +276,7 @@ class webSpider(baseDiscoveryPlugin):
             except w3afMustStopOnUrlError:
                 pass
             else:
+                fuzz_req_list = []
                 # Note: I WANT to follow links that are in the 404 page, but
                 # if the page I fetched is a 404 then it should be ignored.
                 if is_404(resp):
@@ -289,7 +286,7 @@ class webSpider(baseDiscoveryPlugin):
                                      request=original_request, add_self=False)
                     if not possibly_broken:
                         t = (resp.getURL(), original_request.getURI())
-                        self._brokenLinks.append(t)
+                        self._broken_links.add(t)
                 else:
                     om.out.debug('Adding relative reference "%s" '
                                  'to the result.' % reference)
@@ -305,15 +302,13 @@ class webSpider(baseDiscoveryPlugin):
         '''
         Called when the process ends, prints out the list of broken links.
         '''
-        if len(self._brokenLinks):
-            reported = []
+        if len(self._broken_links):
+            
             om.out.information('The following is a list of broken links that '
                                'were found by the webSpider plugin:')
-            for broken, where in self._brokenLinks:
-                if (broken, where) not in reported:
-                    reported.append((broken, where))
-                    om.out.information('- %s [ referenced from: %s ]' %
-                                       (broken, where))
+            for broken, where in self._broken_links:
+                om.out.information('- %s [ referenced from: %s ]' %
+                                   (broken, where))
     
     def _is_forward(self, reference):
         '''
