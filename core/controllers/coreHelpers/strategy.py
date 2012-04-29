@@ -1,5 +1,5 @@
 '''
-w3af_core_strategy.py
+strategy.py
 
 Copyright 2006 Andres Riancho
 
@@ -71,7 +71,7 @@ class w3af_core_strategy(object):
             self._pre_discovery()
             
             self._fuzzable_request_list.extend( self._discover_and_bruteforce() )
-                            
+            
             if not self._fuzzable_request_list:
                 om.out.information('No URLs found during discovery phase.')
                 self._w3af_core._end()
@@ -79,7 +79,7 @@ class w3af_core_strategy(object):
                 self._post_discovery()
                 self._audit()
                 self._w3af_core._end()
-        
+            
         except w3afException, e:
             self._w3af_core._end(e)
             raise
@@ -244,18 +244,18 @@ class w3af_core_strategy(object):
         @return: A list with fuzzable requests that were found during discovery
                  and bruteforce.
         '''
-        res = []
+        res = set()
+        add = res.add
         tmp_list = self._fuzzable_request_list
         
         while True:
             discovered_fr_list = self._discover( tmp_list )
             successfully_bruteforced = self._bruteforce( discovered_fr_list )
 
-            append = res.append
             chain = itertools.chain( discovered_fr_list,
                                      successfully_bruteforced,
                                      self._fuzzable_request_list)
-            [append(fr) for fr in chain if fr not in res]
+            map(add, chain)
             
             if not successfully_bruteforced:
                 # Haven't found new credentials
