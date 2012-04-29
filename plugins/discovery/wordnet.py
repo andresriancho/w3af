@@ -20,14 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
-
-from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
+from core.data.fuzzer.fuzzer import createMutants
 from core.data.nltk_wrapper.nltk_wrapper import wn
 
 # options
