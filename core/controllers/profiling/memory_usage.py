@@ -26,7 +26,7 @@ SAMPLE_LEN = 5
 
 if DEBUG_MEMORY:
     import core.controllers.outputManager as om
-    from .ps_mem import get_memory_usage, human
+    from core.controllers.profiling.ps_mem import get_memory_usage, human
     
     import random
     import inspect
