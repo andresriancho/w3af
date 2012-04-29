@@ -171,6 +171,13 @@ class disk_list(object):
         for value in value_list:
             self.append(value)
     
+    def ordered_iter(self):
+        # TODO: How do I make the __iter__ thread safe?        
+        cursor = self._conn.execute('SELECT information FROM data ORDER BY information ASC')
+        for r in cursor:
+            obj = cPickle.loads(r[0])
+            yield obj        
+    
     def __iter__(self):
         # TODO: How do I make the __iter__ thread safe?        
         cursor = self._conn.execute('SELECT information FROM data')

@@ -103,7 +103,30 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( len(dl), 0)
                 
+    def test_sorted(self):
+        dl = disk_list()
 
+        dl.append( 'abc' )
+        dl.append( 'def' )
+        dl.append( 'aaa' )
+        
+        sorted_dl = sorted(dl)
+        
+        self.assertEqual( ['aaa','abc','def'], sorted_dl)
+    
+    def test_ordered_iter(self):
+        dl = disk_list()
+
+        dl.append( 'abc' )
+        dl.append( 'def' )
+        dl.append( 'aaa' )
+        
+        sorted_dl = []
+        for i in dl.ordered_iter():
+            sorted_dl.append(i)
+        
+        self.assertEqual( ['aaa','abc','def'], sorted_dl)        
+        
     def test_unicode(self):
         dl = disk_list()
 
