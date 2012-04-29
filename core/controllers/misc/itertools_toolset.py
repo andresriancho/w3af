@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import itertools
+import operator
 
 #
 #    Source for this code was taken from http://docs.python.org/library/itertools.html
@@ -30,7 +32,7 @@ def unique_everseen(iterable, key=None):
     seen = set()
     seen_add = seen.add
     if key is None:
-        for element in ifilterfalse(seen.__contains__, iterable):
+        for element in itertools.ifilterfalse(seen.__contains__, iterable):
             seen_add(element)
             yield element
     else:
@@ -39,3 +41,12 @@ def unique_everseen(iterable, key=None):
             if k not in seen:
                 seen_add(k)
                 yield element
+
+def unique_justseen(iterable, key=None):
+    "List unique elements, preserving order. Remember only the element just seen."
+    # unique_justseen('AAAABBBCCDAABBB') --> A B C D A B
+    # unique_justseen('ABBCcAD', str.lower) --> A B C A D
+    imap = itertools
+    itemgetter = operator.itemgetter
+    groupby = itertools.groupby
+    return imap(next, imap(itemgetter(1), groupby(iterable, key)))
