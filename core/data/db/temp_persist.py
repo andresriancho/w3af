@@ -87,9 +87,20 @@ class disk_list(object):
                                              check_same_thread=False)
                 self._conn.text_factory = str
                 
+                # Modify some default values
+                # http://www.sqlite.org/pragma.html#pragma_cache_size (default: 2000)
+                # less pages in memory
+                self._conn.execute('PRAGMA cache_size = 200')
+                # http://www.sqlite.org/pragma.html#pragma_synchronous (default: 1)
+                # sends data to OS and does NOT wait for it to be on-disk
+                self._conn.execute('PRAGMA synchronous = 0')
+                # http://www.sqlite.org/pragma.html#pragma_synchronous
+                # disables journal -> ROLLBACK
+                self._conn.execute('PRAGMA journal_mode = OFF')
+                 
                 # Create table
                 self._conn.execute(
-                    '''CREATE TABLE data (index_ real, information text)''')
+                    '''CREATE TABLE data (index_ REAL PRIMARY KEY, information TEXT)''')
 
                 # Create index
                 self._conn.execute(
