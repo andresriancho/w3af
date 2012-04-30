@@ -278,8 +278,8 @@ class fuzzableRequest(object):
         False
 
         '''
-        return (self._uri == other._uri and
-                self._method == other._method and
+        return (self._method == other._method and
+                self._uri == other._uri and
                 self._dc == other._dc)
     
     def __ne__(self, other):
