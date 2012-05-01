@@ -34,7 +34,7 @@ from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
 
 from core.data.request.frFactory import createFuzzableRequests
-from core.data.db.temp_persist import disk_list
+from core.data.db.disk_set import disk_set
 
 
 class w3af_core_strategy(object):
@@ -56,8 +56,8 @@ class w3af_core_strategy(object):
         self._w3af_core = w3af_core
         
         # Internal variables:
-        self._fuzzable_request_list  = disk_list()
-        kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_list)
+        self._fuzzable_request_set  = set()
+        kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
 
     def start(self):
         '''
@@ -70,9 +70,9 @@ class w3af_core_strategy(object):
         try:
             self._pre_discovery()
             
-            self._fuzzable_request_list.extend( self._discover_and_bruteforce() )
+            self._fuzzable_request_set.update( self._discover_and_bruteforce() )
             
-            if not self._fuzzable_request_list:
+            if not self._fuzzable_request_set:
                 om.out.information('No URLs found during discovery phase.')
                 self._w3af_core._end()
             else:
@@ -148,7 +148,7 @@ class w3af_core_strategy(object):
         #   TODO: Is the previous statement completely true?
         #
         '''filtered_fuzzable_requests = []
-        for fr_original in self._fuzzable_request_list:
+        for fr_original in self._fuzzable_request_set:
             
             different_from_all = True
             
@@ -160,7 +160,7 @@ class w3af_core_strategy(object):
             if different_from_all:
                 filtered_fuzzable_requests.append( fr_original )
         
-        self._fuzzable_request_list = filtered_fuzzable_requests
+        self._fuzzable_request_set = filtered_fuzzable_requests
         '''
         # Sort URLs
         tmp_url_list = kb.kb.getData( 'urls', 'url_objects')[:]
@@ -168,7 +168,7 @@ class w3af_core_strategy(object):
         tmp_url_list.sort()
         
         msg = 'Found %s URLs and %s different points of injection.' 
-        msg = msg % (len(tmp_url_list), len(self._fuzzable_request_list))
+        msg = msg % (len(tmp_url_list), len(self._fuzzable_request_set))
         om.out.information( msg )
         
         # print the URLs
@@ -177,7 +177,7 @@ class w3af_core_strategy(object):
             om.out.information( '- ' + i )
 
         # Now I simply print the list that I have after the filter.
-        tmp_fr = [ '- ' + str(fr) for fr in self._fuzzable_request_list]
+        tmp_fr = [ '- ' + str(fr) for fr in self._fuzzable_request_set]
         tmp_fr.sort()
 
         om.out.information('The list of fuzzable requests is:')
@@ -199,7 +199,7 @@ class w3af_core_strategy(object):
                 #    in a list and use them as our bootstrap URLs
                 #
                 response = self._w3af_core.uriOpener.GET(url, useCache=True)
-                self._fuzzable_request_list.extend( filter(
+                self._fuzzable_request_set.update( filter(
                     get_curr_scope_pages, createFuzzableRequests(response)) )
 
                 #
@@ -226,7 +226,7 @@ class w3af_core_strategy(object):
                              traceback.format_exc())
         
         # Load the target URLs to the KB
-        update_URLs_in_KB( self._fuzzable_request_list )
+        update_URLs_in_KB( self._fuzzable_request_set )
                 
     def _auth_login(self):
         '''
@@ -246,15 +246,15 @@ class w3af_core_strategy(object):
         '''
         res = set()
         add = res.add
-        tmp_list = self._fuzzable_request_list
+        tmp_set = self._fuzzable_request_set
         
         while True:
-            discovered_fr_list = self._discover( tmp_list )
+            discovered_fr_list = self._discover( tmp_set )
             successfully_bruteforced = self._bruteforce( discovered_fr_list )
 
             chain = itertools.chain( discovered_fr_list,
                                      successfully_bruteforced,
-                                     self._fuzzable_request_list)
+                                     self._fuzzable_request_set)
             map(add, chain)
             
             if not successfully_bruteforced:
@@ -263,7 +263,7 @@ class w3af_core_strategy(object):
             else:
                 # So in the next "while True:" loop I can do a discovery
                 # using the new URLs found during bruteforce
-                tmp_list = successfully_bruteforced
+                tmp_set = successfully_bruteforced
                 
                 # Now I reconfigure the urllib to use the newly found credentials
                 self._reconfigureUrllib()
@@ -491,7 +491,7 @@ class w3af_core_strategy(object):
 
         # For progress reporting
         self._w3af_core.status.set_phase('audit')
-        amount_of_tests = len(audit_plugins) * len(self._fuzzable_request_list)
+        amount_of_tests = len(audit_plugins) * len(self._fuzzable_request_set)
         self._w3af_core.progress.set_total_amount( amount_of_tests )
 
         # Put everything in a queue and remove the audit_plugins list
@@ -513,7 +513,7 @@ class w3af_core_strategy(object):
             # Before running each plugin let's make sure we're logged in
             self._auth_login()
 
-            for fr in self._fuzzable_request_list:
+            for fr in self._fuzzable_request_set:
                 # Sends each fuzzable request to the plugin
                 try:
                     self._w3af_core.status.set_current_fuzzable_request( fr )

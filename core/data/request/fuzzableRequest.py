@@ -28,6 +28,7 @@ from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.header import Header
 from core.data.dc.dataContainer import DataContainer
+from core.data.db.disk_item import disk_item
 from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 
@@ -38,7 +39,7 @@ CRLF = CR + LF
 SP = ' '
 
 
-class fuzzableRequest(object):
+class fuzzableRequest(disk_item):
     '''
     This class represents a fuzzable request. Fuzzable requests were created
     to allow w3af plugins to be much simpler and don't really care if the
@@ -282,6 +283,9 @@ class fuzzableRequest(object):
                 self._uri == other._uri and
                 self._dc == other._dc)
     
+    def get_eq_attrs(self):
+        return ['_method', '_uri', '_dc']
+        
     def __ne__(self, other):
         return not self.__eq__(other)
             

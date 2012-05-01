@@ -1,5 +1,5 @@
 '''
-temp_persist.py
+disk_list.py
 
 Copyright 2008 Andres Riancho
 
@@ -30,6 +30,7 @@ import threading
 import cPickle
 
 from core.controllers.misc.temp_dir import get_temp_dir
+from core.data.db.disk_item import disk_item
 
 
 class disk_list(object):
@@ -100,11 +101,12 @@ class disk_list(object):
                  
                 # Create table
                 self._conn.execute(
-                    '''CREATE TABLE data (index_ REAL PRIMARY KEY, information TEXT)''')
+                    '''CREATE TABLE data (index_ REAL PRIMARY KEY, eq_attrs BLOB, pickle BLOB)''')
 
                 # Create index
                 self._conn.execute(
-                    '''CREATE INDEX data_index ON data(information)''')
+                    '''CREATE INDEX data_index ON data(eq_attrs)''')
+                
             except Exception, e:
                 
                 fail_count += 1
@@ -140,18 +142,55 @@ class disk_list(object):
                     pass
         except:
             pass
+    
+    def _get_eq_attrs_values(self, obj):
+        '''
+        @param obj: The object from which I need a unique string.
         
+        @return: A string with all the values from the get_eq_attrs() method
+                 concatenated. This should represent the object in an unique
+                 way. 
+        '''
+        result = ''
+        
+        if isinstance(obj, basestring):
+            return obj
+        
+        elif isinstance(obj, (int, float)):
+            return str(obj)
+        
+        elif isinstance(obj, (list, tuple, set)):
+            for sub_obj in obj:
+                result += self._get_eq_attrs_values(sub_obj)
+            return result
+        
+        elif isinstance(obj, dict):
+            for key, value in obj.iteritems():
+                result += self._get_eq_attrs_values(key)
+                result += self._get_eq_attrs_values(value)
+            return result
+           
+        elif isinstance(obj, disk_item):        
+            for attr in obj.get_eq_attrs():
+                value = getattr(obj, attr)
+                result += self._get_eq_attrs_values(value)
+            
+            return result
+        else:
+            msg = 'Complex classes like %s need to inherit from disk_item to be stored.'
+            raise Exception(msg % type(obj))
+    
     def __contains__(self, value):
         '''
         @return: True if the value is in our list.
         '''
         with self._db_lock:
-            t = (cPickle.dumps(value),)
+            t = (self._get_eq_attrs_values(value),)
             # Adding the "limit 1" to the query makes it faster, as it won't 
             # have to scan through all the table/index, it just stops on the
             # first match.
             cursor = self._conn.execute(
-                    'SELECT count(*) FROM data WHERE information=? limit 1', t)
+                    'SELECT count(*) FROM data WHERE eq_attrs=? limit 1', t)
             return cursor.fetchone()[0]
     
     def append(self, value):
@@ -162,9 +201,10 @@ class disk_list(object):
         '''
         # thread safe here!
         with self._db_lock:
-            value = cPickle.dumps(value)
-            t = (self._current_index, value)
-            self._conn.execute("INSERT INTO data VALUES (?, ?)", t)
+            pickled_obj = cPickle.dumps(value)
+            eq_attrs = self._get_eq_attrs_values(value)
+            t = (self._current_index, eq_attrs, pickled_obj)
+            self._conn.execute("INSERT INTO data VALUES (?, ?, ?)", t)
             self._current_index += 1
     
     def clear(self):
@@ -184,29 +224,28 @@ class disk_list(object):
     
     def ordered_iter(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT information FROM data ORDER BY information ASC')
+        cursor = self._conn.execute('SELECT pickle FROM data ORDER BY eq_attrs ASC')
         for r in cursor:
             obj = cPickle.loads(r[0])
             yield obj        
     
     def __iter__(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT information FROM data')
+        cursor = self._conn.execute('SELECT pickle FROM data')
         for r in cursor:
             obj = cPickle.loads(r[0])
             yield obj
 
     def __reversed__(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT information FROM data order by index_ DESC')
+        cursor = self._conn.execute('SELECT pickle FROM data ORDER BY index_ DESC')
         for r in cursor:
             obj = cPickle.loads(r[0])
             yield obj
 
     def __getitem__(self, key):
         try:
-            query = 'SELECT information FROM data WHERE index_ = %s' % key
-            cursor = self._conn.execute( query )
+            cursor = self._conn.execute( 'SELECT pickle FROM data WHERE index_ = ?', (key,) )
             r = cursor.next()
             obj = cPickle.loads( r[0] )
         except:

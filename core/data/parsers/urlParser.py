@@ -33,6 +33,7 @@ from core.controllers.w3afException import w3afException
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.dataContainer import DataContainer
 from core.data.dc.queryString import QueryString
+from core.data.db.disk_item import disk_item
 
 # TODO: this list should be updated from time to time, automatically.
 # last upd: 14 Jul 2011
@@ -118,7 +119,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     return qs
 
 
-class url_object(object):
+class url_object(disk_item):
     '''
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
@@ -1409,6 +1410,9 @@ class url_object(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def get_eq_attrs(self):
+        return ['url_string']
 
 if __name__ == "__main__":
     import doctest

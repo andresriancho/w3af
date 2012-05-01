@@ -23,7 +23,7 @@ import gtk, gobject
 from . import helpers, entries
 import core.data.kb.knowledgeBase as kb
 from core.ui.gtkUi.common.searchable import Searchable
-from core.data.db.temp_persist import disk_list
+from core.data.db.disk_list import disk_list
 
 
 def getQueueDiverter(reset=False, instance=[]):

@@ -26,10 +26,10 @@ import re
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
-from core.controllers.misc.itertools_toolset import unique_justseen, unique_everseen
+from core.controllers.misc.itertools_toolset import unique_justseen
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.temp_shelve import temp_shelve as temp_shelve
-from core.data.db.temp_persist import disk_list
+from core.data.db.disk_set import disk_set
 from core.data.fuzzer.formFiller import smartFill
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -57,8 +57,8 @@ class webSpider(baseDiscoveryPlugin):
         # Internal variables
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
-        self._broken_links = set()
-        self._fuzzable_reqs = set()
+        self._broken_links = disk_set()
+        self._fuzzable_reqs = disk_set()
         self._first_run = True
         self._known_variants = variant_db()
         self._already_filled_form = scalable_bloomfilter()
@@ -166,8 +166,8 @@ class webSpider(baseDiscoveryPlugin):
                 dirs = resp.getURL().getDirectories()
                 only_re_refs = set(re_refs) - set(dirs + parsed_refs)
                 
-                for ref in unique_everseen(
-                           itertools.chain(dirs, parsed_refs, re_refs) ):
+                for ref in unique_justseen(
+                               sorted( itertools.chain(dirs, parsed_refs, re_refs) )):
                     
                     # I don't want w3af sending requests to 3rd parties!
                     if ref.getDomain() != self._target_domain:
@@ -306,7 +306,7 @@ class webSpider(baseDiscoveryPlugin):
             
             om.out.information('The following is a list of broken links that '
                                'were found by the webSpider plugin:')
-            for broken, where in self._broken_links:
+            for broken, where in unique_justseen(self._broken_links.ordered_iter()):
                 om.out.information('- %s [ referenced from: %s ]' %
                                    (broken, where))
     
