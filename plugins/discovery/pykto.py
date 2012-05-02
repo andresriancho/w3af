@@ -449,7 +449,7 @@ class pykto(baseDiscoveryPlugin):
         #
         if expected_response == '200' and method == 'GET':
             try:
-                res = self._urlOpener.HEAD( url )
+                res = self._urlOpener.HEAD( url, follow_redir=False )
             except:
                 pass
             else:
@@ -468,7 +468,7 @@ class pykto(baseDiscoveryPlugin):
         function_reference = getattr( self._urlOpener , method )
             
         try:
-            response = function_reference( url )
+            response = function_reference( url, follow_redir=False )
         except KeyboardInterrupt,e:
             raise e
         except w3afException, e:
