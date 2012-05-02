@@ -486,8 +486,8 @@ class w3af_core_strategy(object):
     def _audit(self):
         om.out.debug('Called _audit()' )
 
-        audit_plugins = self._w3af_core.plugins.plugin_factory( self._w3af_core.plugins.getEnabledPlugins('audit'),
-                                                     'audit')
+        enabled_plugins = self._w3af_core.plugins.getEnabledPlugins('audit')
+        audit_plugins = self._w3af_core.plugins.plugin_factory( enabled_plugins, 'audit')
 
         # For progress reporting
         self._w3af_core.status.set_phase('audit')

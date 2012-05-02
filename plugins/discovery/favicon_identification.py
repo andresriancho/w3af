@@ -38,6 +38,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
+from core.controllers.misc.decorators import runonce
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
@@ -57,91 +58,82 @@ class favicon_identification(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._exec = True
         self._version = None
 
         # User configured parameters
         self._db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'favicon'
         self._db_file += os.path.sep + 'favicon-md5'
 
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         Identify server software using favicon.   
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
         (among other things) the URL to test.
         '''
-        if not self._exec :
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-            
-        else:
-            
-            # Only run once
-            self._exec = False
+        domain_path = fuzzableRequest.getURL().getDomainPath()
+        
+        def_favicon_url = domain_path.urlJoin('favicon.ico' )
+        response = self._urlOpener.GET( def_favicon_url, useCache=True )
 
-            domain_path = fuzzableRequest.getURL().getDomainPath()
+        if not is_404( response ):
+            favmd5=md5.new(response.getBody()).hexdigest()
+
+            try:
+                # read MD5 database.
+                db_file_1 = open(self._db_file, "r")
+            except Exception, e:
+                raise w3afException('Failed to open the MD5 database. Exception: "' + str(e) + '".')
+            else:
+                favicon_list = db_file_1.readlines()
+                db_file_1.close()
             
-            def_favicon_url = domain_path.urlJoin('favicon.ico' )
-            response = self._urlOpener.GET( def_favicon_url, useCache=True )
-
-            if not is_404( response ):
-                favmd5=md5.new(response.getBody()).hexdigest()
-
-                try:
-                    # read MD5 database.
-                    db_file_1 = open(self._db_file, "r")
-                except Exception, e:
-                    raise w3afException('Failed to open the MD5 database. Exception: "' + str(e) + '".')
-                else:
-                    favicon_list = db_file_1.readlines()
-                    db_file_1.close()
-                
-                desc = ''
-                # check if MD5 is matched in database/list
-                for fmd5 in favicon_list:
-                    dbline=fmd5.split( ":", 2 );
-                    md5part=dbline[0].split();
-                    if dbline[0]==favmd5:
-                        if len(dbline)>1:
-                            favname=dbline[1].rstrip()
-                            desc += 'Favicon.ico file was identified as "' + favname + '".'
-                            break
-                
+            desc = ''
+            # check if MD5 is matched in database/list
+            for fmd5 in favicon_list:
+                dbline=fmd5.split( ":", 2 );
+                md5part=dbline[0].split();
+                if dbline[0]==favmd5:
+                    if len(dbline)>1:
+                        favname=dbline[1].rstrip()
+                        desc += 'Favicon.ico file was identified as "' + favname + '".'
+                        break
+            
+            #
+            #   Left here for debugging, but the final user doesn't really care about the md5
+            #   of the favicon if it was not identified.
+            #
+            #desc += 'Favicon MD5: "'+ favmd5 +'".'
+            
+            if desc:
+                # Save it to the kb!
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('Favicon identification')
+                i.setURL( def_favicon_url )
+                i.setId( response.id )
+                i.setDesc( desc )
+                kb.kb.append( self, 'info', i )
+                om.out.information( i.getDesc() )
+            else:
                 #
-                #   Left here for debugging, but the final user doesn't really care about the md5
-                #   of the favicon if it was not identified.
+                #   Report to the kb that we failed to ID this favicon.ico and that the md5
+                #   should be sent to the developers.
                 #
-                #desc += 'Favicon MD5: "'+ favmd5 +'".'
-                
-                if desc:
-                    # Save it to the kb!
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Favicon identification')
-                    i.setURL( def_favicon_url )
-                    i.setId( response.id )
-                    i.setDesc( desc )
-                    kb.kb.append( self, 'info', i )
-                    om.out.information( i.getDesc() )
-                else:
-                    #
-                    #   Report to the kb that we failed to ID this favicon.ico and that the md5
-                    #   should be sent to the developers.
-                    #
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Favicon identification failed')
-                    i.setURL( def_favicon_url )
-                    i.setId( response.id )
-                    desc = 'Favicon identification failed. If the remote site is using'
-                    desc += ' framework that is being exposed by its favicon, please send'
-                    desc += ' an email to w3af-develop@lists.sourceforge.net including'
-                    desc += ' this md5 hash "'+favmd5+'"'
-                    desc += ' and what server or Web application it represents. New fingerprints'
-                    desc += ' make this plugin more powerful and accurate.'
-                    i.setDesc( desc )
-                    kb.kb.append( self, 'info', i )
-                    om.out.information( i.getDesc() )
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('Favicon identification failed')
+                i.setURL( def_favicon_url )
+                i.setId( response.id )
+                desc = 'Favicon identification failed. If the remote site is using'
+                desc += ' framework that is being exposed by its favicon, please send'
+                desc += ' an email to w3af-develop@lists.sourceforge.net including'
+                desc += ' this md5 hash "'+favmd5+'"'
+                desc += ' and what server or Web application it represents. New fingerprints'
+                desc += ' make this plugin more powerful and accurate.'
+                i.setDesc( desc )
+                kb.kb.append( self, 'info', i )
+                om.out.information( i.getDesc() )
 
 
         return []
