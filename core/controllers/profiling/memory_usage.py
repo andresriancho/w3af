@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 DEBUG_MEMORY = False
 DEBUG_REFERENCES = False
-SAMPLE_LEN = 5
+SAMPLE_LEN = 20
 
 if DEBUG_MEMORY:
     import core.controllers.outputManager as om
@@ -50,7 +50,7 @@ def dump_memory_usage():
         if DEBUG_REFERENCES:
             print 'Object References:'
             print '=================='
-            interesting = ['HTTPQSRequest', 'url_object', 'list', 'tuple', 'httpResponse']
+            interesting = ['tuple', 'dict', 'list']
             for interesting_klass in interesting:
                 interesting_instances = objgraph.by_type(interesting_klass)
                 
@@ -65,9 +65,12 @@ def dump_memory_usage():
                     ignores.extend( [id(v) for v in globals().values()] )
                     ignores.append( id(locals()) )
                     ignores.append( id(globals()) )
-                    objgraph.show_backrefs(s, highlight=inspect.isclass,
-                                           extra_ignore=ignores,filename=fname,
-                                           extra_info=_extra_info)
+                    try:
+                        objgraph.show_backrefs(s, highlight=inspect.isclass,
+                                               extra_ignore=ignores,filename=fname,
+                                               extra_info=_extra_info)
+                    except:
+                        pass
         
             print
         
