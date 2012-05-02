@@ -25,8 +25,9 @@ from core.data.options.optionList import optionList
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.db.temp_persist import disk_list as DiskList
+from core.data.db.disk_list import disk_list
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 
 class clickJacking(baseGrepPlugin):
     '''
@@ -39,7 +40,7 @@ class clickJacking(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         self._total_count = 0
         self._vuln_count = 0
-        self._vulns = DiskList()
+        self._vulns = disk_list()
 
     def grep(self, request, response):
         if not response.is_text_or_html():
