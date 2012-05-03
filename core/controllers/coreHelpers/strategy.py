@@ -246,7 +246,11 @@ class w3af_core_strategy(object):
         '''
         res = set()
         add = res.add
-        tmp_set = self._fuzzable_request_set
+        #TODO: This is a horrible thing to do, we consume lots of memory
+        #      for just a loop. The issue is that we had some strange
+        #      "RuntimeError: Set changed size during iteration" and I had
+        #      no time to solve them.
+        tmp_set = set(self._fuzzable_request_set)
         
         while True:
             discovered_fr_list = self._discover( tmp_set )
@@ -494,26 +498,20 @@ class w3af_core_strategy(object):
         amount_of_tests = len(audit_plugins) * len(self._fuzzable_request_set)
         self._w3af_core.progress.set_total_amount( amount_of_tests )
 
-        # Put everything in a queue and remove the audit_plugins list
-        audit_queue = Queue.Queue()
-        for audit_plugin in audit_plugins:
-            audit_queue.put( audit_plugin )
-        del(audit_plugins)
-
-        
         # This two loops do all the audit magic [KISS]
-        while not audit_queue.empty():
+        for plugin in audit_plugins:
 
-            # Get the next plugin from the queue
-            plugin = audit_queue.get()
-            
             # For status
             self._w3af_core.status.set_running_plugin( plugin.getName() )
 
             # Before running each plugin let's make sure we're logged in
             self._auth_login()
 
-            for fr in self._fuzzable_request_set:
+            #TODO: This is a horrible thing to do, we consume lots of memory
+            #      for just a loop. The issue is that we had some strange
+            #      "RuntimeError: Set changed size during iteration" and I had
+            #      no time to solve them.
+            for fr in set(self._fuzzable_request_set):
                 # Sends each fuzzable request to the plugin
                 try:
                     self._w3af_core.status.set_current_fuzzable_request( fr )
