@@ -380,15 +380,24 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
     >>> freq = fuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
-    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['abc'], 'b': ['2']}), DataContainer({'a': ['def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['abc']}), DataContainer({'a': ['1'], 'b': ['def']})]
+
+    Append
+    >>> d = DataContainer()
+    >>> d['a'] = ['1',]
+    >>> d['b'] = ['2',]
+    >>> freq = fuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
+    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> [ i.getDc() for i in f ]
+    [DataContainer({'a': ['1abc'], 'b': ['2']}), DataContainer({'a': ['1def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['2abc']}), DataContainer({'a': ['1'], 'b': ['2def']})]
 
     Repeated parameters
     >>> d = DataContainer()
     >>> d['a'] = ['1','2','3']
     >>> freq.setDc(d)
-    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> f = _createMutantsWorker( freq, mutantQs, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['abc', '2', '3']}), DataContainer({'a': ['def', '2', '3']}), DataContainer({'a': ['1', 'abc', '3']}), DataContainer({'a': ['1', 'def', '3']}), DataContainer({'a': ['1', '2', 'abc']}), DataContainer({'a': ['1', '2', 'def']})]
 
@@ -399,7 +408,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
     >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
     >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/'), dc=f)
-    >>> f = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
+    >>> f = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [Form({'address': ['abc'], 'foo': ['56']}), Form({'address': ['def'], 'foo': ['56']}), Form({'address': ['Bonsai Street 123'], 'foo': ['abc']}), Form({'address': ['Bonsai Street 123'], 'foo': ['def']})]
 
@@ -407,7 +416,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
     >>> f = Form()
     >>> _ = f.addInput( [("name", "password") , ("type", "password")] )
     >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/foo.bar?action=login'), dc=f)
-    >>> mutants = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], True)
+    >>> mutants = _createMutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
     >>> [ i.getURI() for i in mutants ]
     [<url_object for "http://www.w3af.com/foo.bar?action=login">, <url_object for "http://www.w3af.com/foo.bar?action=login">]
     >>> [ i.getDc() for i in mutants ]
@@ -452,11 +461,6 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
                     dc_copy = dataContainer.copy()
                     original_value = element_value
                     
-                    if append:
-                        dc_copy[pname][element_index] += mutant_str
-                    else:
-                        dc_copy[pname][element_index] = mutant_str
-
                     # Ok, now we have a data container with the mutant string, but it's possible that
                     # all the other fields of the data container are empty (think about a form)
                     # We need to fill those in, with something *useful* to get around the easiest
@@ -491,6 +495,10 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
                                            cf.cf.getData('fuzzFCExt' ) or 'txt') 
                         str_file = NamedStringIO('', name=fname)
                         dc_copy[var_name][0] = str_file
+                    
+                    if append:
+                        mutant_str = original_value + mutant_str
+                    dc_copy[pname][element_index] = mutant_str
                     
                     # Create the mutant
                     freq_copy = freq.copy()
