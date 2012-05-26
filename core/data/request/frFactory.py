@@ -85,10 +85,10 @@ def createFuzzableRequests(resp, request=None, add_self=True):
         if location:
             location = smart_unicode(location, encoding=resp.charset)
             try:
-                absolute_location = resp.getURI().urlJoin(location)
+                absolute_location = resp.getURL().urlJoin(location)
             except ValueError:
                 msg = 'The application sent a 30x redirect "Location:" that'
-                msg += ' w3af failed to correctly parse as a URL, the header'
+                msg += ' w3af failed to correctly parse as an URL, the header'
                 msg += ' value was: "%s"'
                 om.out.debug( msg % location )
             else:
