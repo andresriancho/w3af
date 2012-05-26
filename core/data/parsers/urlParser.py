@@ -656,11 +656,12 @@ class url_object(disk_item):
         encode it.
         
         >>> u = url_object('http://w3af.com/')
-        >>> u.urlJoin("d:url.html?id=13&subid=3").url_string
+        >>> u.urlJoin("d:url.html?id=13&subid=3")
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: Invalid URL "d:url.html?id=13&subid=3"
-        
+
+
         '''
         joined_url = urlparse.urljoin(self.url_string, relative)
         jurl_obj = url_object(joined_url, self._encoding)
