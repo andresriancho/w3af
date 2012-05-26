@@ -603,6 +603,9 @@ class VersionMgr(object): #TODO: Make it singleton?
                         files = client.update(rev=remrev)
                         # Update last-rev.
                         self._start_cfg.last_rev = min(localrev, remrev)
+                        # Reload all modules to make sure we have all the latest
+                        # versions of py files in memory. 
+                        self.reload_all_modules()
 
             # Save today as last-update date and persist it.
             self._start_cfg.last_upd = date.today()
@@ -620,6 +623,23 @@ class VersionMgr(object): #TODO: Make it singleton?
                 callback('Do you want to see a summary of the new code '
                          'commits log messages?', log)
         return (files, localrev, remrev)
+    
+    def reload_all_modules(self):
+        '''
+        After an update, which changes .py files, it is a good idea
+        to reload all modules (and get those changes from the py files into
+        memory) before continuing.
+        
+        @return: None.
+        
+        TODO: This still needs to be implemented, I tried some ideas from:
+        http://stackoverflow.com/questions/437589/how-do-i-unload-reload-a-python-module
+        http://code.activestate.com/recipes/81731-reloading-all-modules/
+        
+        But both failed. What I want to avoid are bugs like the ones related to
+        the "complex type needs to implement..." disk_list.
+        '''
+        pass
     
     def show_summary(self, start_rev, end_rev):
         '''
