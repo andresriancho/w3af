@@ -29,6 +29,7 @@ import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
+from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
@@ -75,10 +76,11 @@ class w3af_core_strategy(object):
             if not self._fuzzable_request_set:
                 om.out.information('No URLs found during discovery phase.')
                 self._w3af_core._end()
-            else:
-                self._post_discovery()
-                self._audit()
-                self._w3af_core._end()
+                return
+
+            self._post_discovery()
+            self._audit()
+            self._w3af_core._end()
             
         except w3afException, e:
             self._w3af_core._end(e)
@@ -386,8 +388,9 @@ class w3af_core_strategy(object):
                     if self._should_stop_discovery(): return result
                     
                     # Status reporting
-                    self._w3af_core.status.set_running_plugin(plugin.getName())
-                    self._w3af_core.status.set_current_fuzzable_request(fr)
+                    status = self._w3af_core.status
+                    status.set_running_plugin(plugin.getName())
+                    status.set_current_fuzzable_request(fr)
                     
                     try:
                         try:
@@ -402,10 +405,19 @@ class w3af_core_strategy(object):
                     except w3afException,e:
                         om.out.error(str(e))
                     except w3afRunOnce:
-                        # Some plugins are ment to be run only once
+                        # Some plugins are meant to be run only once
                         # that is implemented by raising a w3afRunOnce
                         # exception
                         plugins_to_remove_list.append(plugin)
+                    except Exception, e:
+                        # Smart error handling, much better than just crashing.
+                        # Doing this here and not with something similar to:
+                        # sys.excepthook = handle_crash because we want to handle
+                        # plugin exceptions in this way, and not framework 
+                        # exceptions
+                        exception_handler.handle( status, e )
+                        raise
+                    
                     else:
                         # We don't trust plugins, i'll only work if this
                         # is a list or something else that is iterable
