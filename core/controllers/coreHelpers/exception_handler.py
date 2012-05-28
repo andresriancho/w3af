@@ -20,9 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import threading
+import traceback
 
 import core.data.kb.config as cf
-     
+import core.controllers.outputManager as om
+
+from core.controllers.w3afException import (w3afMustStopException,
+                                            w3afMustStopByUnknownReasonExc)
+
         
 class ExceptionHandler(object):
     '''
@@ -33,6 +38,7 @@ class ExceptionHandler(object):
     '''
     
     MAX_EXCEPTIONS_PER_PLUGIN = 5
+    NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc, w3afMustStopException)
     
     def __init__(self):
         # TODO: Maybe this should be a disk_list just to make sure we don't
@@ -40,7 +46,7 @@ class ExceptionHandler(object):
         self._exception_data = []
         self._lock = threading.RLock()
 
-    def handle( self, current_status, exception ):
+    def handle( self, current_status, exception, exec_info ):
         '''
         This method stores the current status and the exception for later
         processing. If there are already too many stored exceptions for this
@@ -48,32 +54,60 @@ class ExceptionHandler(object):
         
         @return: None
         '''
+        #
+        # There are some exceptions, that because of their nature I don't want
+        # to handle. So what I do is to raise them in order for them to get to
+        # w3afCore.py , most likely to the except lines around self.strategy.start()
+        #
+        if isinstance(exception, self.NO_HANDLING):
+            raise
+            
         stop_on_first_exception = cf.cf.getData( 'stop_on_first_exception' )
         if stop_on_first_exception:
-            # TODO: BUGBUG: I'm I loosing the traceback information here? 
-            raise exception
+            # TODO: Not sure if this is 100% secure code, but it should work
+            # in most cases, and in the worse scenario it is just a developer
+            # getting hit ;)
+            #
+            # The risk is that the exception being raise is NOT the same exception
+            # that was caught before calling this handle method. This might happen
+            # (not sure actually) in places where lots of exceptions are raised
+            # in a threaded environment
+            raise
         
-        else:
+        #
+        # Now we really handle the exception that was produced by the plugin in
+        # the way we want to.
+        #
+        except_type, except_class, tb = exec_info
+        tb = traceback.extract_tb(tb)
         
-            with self._lock:
-                edata = ExceptionData(e, current_status)
-                
-                count = 0
-                for stored_edata in self._exception_data:
-                    if edata.plugin == stored_edata.plugin and\
-                    edata.phase == stored_edata.phase:
-                        count += 1
-                
-                if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
-                    self._exception_data.append(edata)
+        with self._lock:
+            edata = ExceptionData(current_status, exception, tb)
             
+            count = 0
+            for stored_edata in self._exception_data:
+                if edata.plugin == stored_edata.plugin and\
+                edata.phase == stored_edata.phase:
+                    count += 1
+            
+            if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
+                self._exception_data.append(edata)
+
+                om.out.information( str(edata) )
+                    
         
 class ExceptionData(object):
-    def __init__(self, e, current_status):
+    def __init__(self, current_status, e, tb):
         self.exception = e
+        self.traceback = tb
         self.plugin = current_status.get_running_plugin()
         self.phase = current_status.get_phase()
         self.fuzzable_request = current_status.get_current_fuzzable_request()
 
+    def __str__(self):
+        res = 'An exception was found while running %s.%s on "%s": "%s". Traceback:\n %s'
+        tbstr = '\n'.join([str(i) for i in self.traceback])
+        res = res % (self.phase, self.plugin, self.fuzzable_request, self.exception, tbstr)
+        return res
 
 exception_handler = ExceptionHandler()
