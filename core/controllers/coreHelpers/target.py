@@ -169,7 +169,7 @@ class w3af_core_target(configurable):
         
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', target_url_objects)
-        cf.cf.save('targetDomains', [ i.getNetLocation() for i in target_url_objects ] )
+        cf.cf.save('targetDomains', [ i.getDomain() for i in target_url_objects ] )
         cf.cf.save('baseURLs', [ i.baseUrl() for i in target_url_objects ] )
         
         if target_url_objects:
