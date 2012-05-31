@@ -233,11 +233,25 @@ class w3af_core_strategy(object):
                 
     def _auth_login(self):
         '''
-        Make login to the web app when it is needed.
+        Make login to the web application when it is needed.
         '''
         for plugin in self._w3af_core.plugins.plugins['auth']:
-            if not plugin.is_logged():
-                plugin.login()
+
+            try:
+                try:
+                    if not plugin.is_logged():
+                        plugin.login()
+                finally:
+                    tm.join(plugin)
+            except Exception, e:
+                # Smart error handling, much better than just crashing.
+                # Doing this here and not with something similar to:
+                # sys.excepthook = handle_crash because we want to handle
+                # plugin exceptions in this way, and not framework 
+                # exceptions                        
+                exec_info = sys.exc_info()
+                exception_handler.handle( status, e , exec_info )
+            
 
     def _discover_and_bruteforce( self ):
         '''
